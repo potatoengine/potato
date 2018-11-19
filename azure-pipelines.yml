@@ -2,21 +2,19 @@ jobs:
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
+  strategy:
+    maxParallel: 2
+    matrix:
+      debug:
+        configuration: debug
+      release:
+        configuration: release
   steps:
   - task: CMake@1
-    displayName:  CMake Configure
+    displayName: CMake Configure
     inputs:
       cmakeArgs: -A x64 ..
-  - job: Build
+  - task: CMake@1
     displayName: Build
-    strategy:
-      maxParallel: 2
-      matrix:
-        debug:
-          configuration: debug
-        release:
-          configuration: release
-    steps:
-    - task: CMake@1
-      inputs:
-        cmakeArgs: --build .. --config $(configuration)
+    inputs:
+      cmakeArgs: --build .. --config $(configuration)
