@@ -5,10 +5,10 @@ jobs:
   strategy:
     maxParallel: 2
     matrix:
-      debug:
-        configuration: debug
-      release:
-        configuration: release
+      Debug:
+        configuration: Debug
+      Release:
+        configuration: RelWithDebInfo
   steps:
   - task: CMake@1
     displayName: CMake Configure
@@ -17,4 +17,4 @@ jobs:
   - task: CMake@1
     displayName: Build
     inputs:
-      cmakeArgs: . --build .. --config $(configuration)
+      cmakeArgs: --build . --config $(configuration) --target all
