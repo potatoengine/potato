@@ -1,0 +1,13 @@
+jobs:
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+  - task: CMake@1
+    displayName: Configure CMake
+    inputs:
+      cmakeArgs: -A x64 ..
+  - task: CMake@1
+    displayName: Build Release
+    inputs:
+      cmakeArgs: --build .. --config release
