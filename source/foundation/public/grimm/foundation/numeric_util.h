@@ -1,0 +1,32 @@
+// Copyright (C) 2014,2015 Sean Middleditch, all rights reserverd.
+
+#pragma once
+
+#include "utility.h"
+
+namespace gm {
+
+template <typename T>
+inline T max(T const& lhs, T const& rhs)
+{
+	return lhs < rhs ? rhs : lhs;
+}
+
+template <typename T>
+inline T min(T const& lhs, T const& rhs)
+{
+	return lhs < rhs ? lhs : rhs;
+}
+
+template <typename IteratorT, typename SentinelT, typename FunctionT, typename ResultT, typename ProjT = identity>
+ResultT accumulate(IteratorT first, SentinelT last, ResultT initial, FunctionT const& op, ProjT const& proj = {})
+{
+	while (first != last)
+	{
+		initial = op(initial, proj(*first));
+		++first;
+	}
+	return initial;
+}
+
+} // namespace gm

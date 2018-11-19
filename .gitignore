@@ -1,0 +1,6 @@
+# Build output directory
+build/
+
+# Local configuration files
+.vs
+.vscode
