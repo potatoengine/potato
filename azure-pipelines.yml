@@ -17,4 +17,4 @@ jobs:
   - task: CMake@1
     displayName: Build
     inputs:
-      cmakeArgs: --build .. --config $(configuration)
+      cmakeArgs: . --build .. --config $(configuration)
