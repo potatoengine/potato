@@ -18,3 +18,22 @@ jobs:
     displayName: Build
     inputs:
       cmakeArgs: --build . --config $(configuration)
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  strategy:
+    maxParallel: 2
+    matrix:
+      Debug:
+        configuration: Debug
+      Release:
+        configuration: RelWithDebInfo
+  steps:
+  - task: CMake@1
+    displayName: CMake Configure
+    inputs:
+      cmakeArgs: -A x64 -DCMAKE_BUILD_TYPE:STRING=${configuration}
+  - task: CMake@1
+    displayName: Build
+    inputs:
+      cmakeArgs: --build . --config
