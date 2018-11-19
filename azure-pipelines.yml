@@ -4,10 +4,19 @@ jobs:
     vmImage: 'vs2017-win2016'
   steps:
   - task: CMake@1
-    displayName: Configure CMake
+    displayName:  CMake Configure
     inputs:
       cmakeArgs: -A x64 ..
-  - task: CMake@1
-    displayName: Build Release
-    inputs:
-      cmakeArgs: --build .. --config release
+  - job: Build
+    displayName: Build
+    strategy:
+      maxParallel: 2
+      matrix:
+        debug:
+          configuration: debug
+        release:
+          configuration: release
+    steps:
+    - task: CMake@1
+      inputs:
+        cmakeArgs: --build .. --config $(configuration)
