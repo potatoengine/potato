@@ -32,7 +32,7 @@ jobs:
   - task: CMake@1
     displayName: CMake Configure
     inputs:
-      cmakeArgs: -A x64 -DCMAKE_BUILD_TYPE:STRING=${configuration}
+      cmakeArgs: -A x64 -DCMAKE_BUILD_TYPE:STRING=${configuration} ..
   - task: CMake@1
     displayName: Build
     inputs:
