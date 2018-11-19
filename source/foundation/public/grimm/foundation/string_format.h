@@ -61,7 +61,7 @@ namespace gm
         using size_type = size_t;
 
         format_fixed_buffer() = default;
-        ~format_fixed_buffer();
+        ~format_fixed_buffer() = default;
 
         format_fixed_buffer(format_fixed_buffer const&) = delete;
         format_fixed_buffer& operator=(format_fixed_buffer const&) = delete;
@@ -78,6 +78,16 @@ namespace gm
         size_t _size = 0;
         char _buffer[Capacity] = { '\0', };
     };
+
+    template <size_t Capacity>
+    void format_fixed_buffer<Capacity>::push_back(value_type ch)
+    {
+        if (_size < Capacity - 1)
+        {
+            _buffer[_size++] = ch;
+            _buffer[_size] = '\0';
+        }
+    }
 
     template <typename... Args>
     constexpr decltype(auto) format(string_view format, Args const&... args) {
