@@ -90,7 +90,7 @@ namespace
 		return FALSE;
 	}
 
-	GM_NOINLINE(gm::error_action) ShowAssertDialog(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText)
+	GM_NOINLINE gm::error_action ShowAssertDialog(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText)
 	{
 		using namespace gm;
 
