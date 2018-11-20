@@ -31,7 +31,7 @@ jobs:
   steps:
   - bash: sudo add-apt-repository ppa:janisozaur/cmake-update && sudo apt-get update
     displayName: Install PPA repositories
-  - bash: sudo apt-get upgrade cmake
+  - bash: sudo apt-get install cmake
     displayName: Install latest CMake
   - task: CMake@1
     displayName: CMake Configure
