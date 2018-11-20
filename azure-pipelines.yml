@@ -31,9 +31,11 @@ jobs:
   steps:
   - bash: sudo add-apt-repository ppa:janisozaur/cmake-update && sudo apt-get update
     displayName: Install PPA repositories
-  - bash: sudo apt-get install cmake
-    displayName: Install latest CMake
-  - bash: mkdir build && cd build && /usr/bin/cmake -A x64 -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
+  - bash: sudo apt-get install cmake clang-3.8
+    displayName: Install build dependencies
+  - bash: mkdir build && cd build && /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
     displayName: Configure CMake
+    env:
+      -CXX: clang++
   - bash: cd build && /usr/bin/cmake --build .
     displayName: Build
