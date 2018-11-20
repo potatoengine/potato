@@ -29,9 +29,9 @@ jobs:
       # Release:
       #   configuration: RelWithDebInfo
   steps:
-  - bash: sudo add-apt-repository ppa:janisozaur/cmake-update
+  - bash: sudo add-apt-repository ppa:janisozaur/cmake-update && sudo apt-get update cmake
     displayName: Install PPA repositories
-  - bash: sudo apt-get install cmake
+  - bash: sudo apt-get upgrade cmake
     displayName: Install latest CMake
   - task: CMake@1
     displayName: CMake Configure
