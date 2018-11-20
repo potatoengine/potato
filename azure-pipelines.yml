@@ -36,6 +36,7 @@ jobs:
   - bash: mkdir build && cd build && /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
     displayName: Configure CMake
     env:
-      -CXX: clang++
+      CXX: clang++
+      CXXFLAGS: -m64
   - bash: cd build && /usr/bin/cmake --build .
     displayName: Build
