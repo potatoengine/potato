@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "utility.h"
+#include <utility>
 
 namespace gm {
 
@@ -18,7 +18,7 @@ inline T min(T const& lhs, T const& rhs)
 	return lhs < rhs ? lhs : rhs;
 }
 
-template <typename IteratorT, typename SentinelT, typename FunctionT, typename ResultT, typename ProjT = identity>
+template <typename IteratorT, typename SentinelT, typename FunctionT, typename ResultT, typename ProjT = std::forward<ResultT>>
 ResultT accumulate(IteratorT first, SentinelT last, ResultT initial, FunctionT const& op, ProjT const& proj = {})
 {
 	while (first != last)
