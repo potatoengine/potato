@@ -24,6 +24,7 @@ template <typename T> struct gm::is_range : std::false_type {};
 
 template <typename T> struct gm::is_contiguous : std::integral_constant<bool, std::is_integral_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>> {};
 
+#if defined(GM_PLATFORM_WINDOWS)
 template <typename R, typename... A> struct gm::signature<R(__stdcall)(A...)> { using type = R(A...); };
 template <typename R, typename... A> struct gm::signature<R(__vectorcall)(A...)> { using type = R(A...); };
 template <typename R, typename... A> struct gm::signature<R(__stdcall *)(A...)> { using type = R(A...); };
@@ -32,6 +33,11 @@ template <typename T, typename R, typename... A> struct gm::signature<R(__thisca
 template <typename T, typename R, typename... A> struct gm::signature<R(__vectorcall T::*)(A...)> { using type = R(T&, A...); };
 template <typename T, typename R, typename... A> struct gm::signature<R(__thiscall T::*)(A...) const> { using type = R(T const&, A...); };
 template <typename T, typename R, typename... A> struct gm::signature<R(__vectorcall T::*)(A...) const> { using type = R(T const&, A...); };
+#else
+template <typename R, typename... A> struct gm::signature<R(A...)> { using type = R(A...); };
+template <typename R, typename... A> struct gm::signature<R(*)(A...)> { using type = R(A...); };
+template <typename T, typename R, typename... A> struct gm::signature<R(T::*)(A...)> { using type = R(T&, A...); };
+#endif
 
 template <typename R, typename... A> struct gm::function_params<R(A...)> { using type = gm::typelist<A...>; };
 template <typename R, typename... A> struct gm::function_result<R(A...)> { using type = R; };
