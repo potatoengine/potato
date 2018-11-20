@@ -47,10 +47,11 @@ target_sources(foundation PRIVATE
     public/grimm/foundation/memory_util.h
     public/grimm/foundation/numeric_util.h
     private/debug.cpp
-    $<$<PLATFORM_ID:UNIX>:private/debug.posix.cpp>
+    $<$<NOT:$<PLATFORM_ID:Windows>>:private/debug.posix.cpp>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.cpp>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.h>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.rc>
+    $<$<NOT:$<PLATFORM_ID:Windows>>:private/callstack.posix.cpp>
     $<$<PLATFORM_ID:Windows>:private/callstack.windows.cpp>
     private/logging.cpp
     private/string_format.cpp
