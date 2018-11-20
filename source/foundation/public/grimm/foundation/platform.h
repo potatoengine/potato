@@ -53,16 +53,10 @@
 #	error "Unsupported architecture"
 #endif
 
-// ensure GM_API is defined
-#if !defined(GM_API)
-//#   error "GM_API must be defined for the compilation mode"
-#   define GM_API
-#endif
-
 // ensure C++17
-// #if __cplusplus < 201703L
-// #   error "C++17 or higher is required"
-// #endif
+#if __cplusplus < 201703L
+#   error "C++17 or higher is required"
+#endif
 
 // compiler detection
 #if defined(_MSC_VER)

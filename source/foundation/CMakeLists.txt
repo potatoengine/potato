@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.11)
 project(foundation VERSION 0.1 LANGUAGES CXX)
 
-add_library(foundation SHARED)
+add_library(foundation)
 
 set_target_properties(foundation PROPERTIES
     LINKER_LANGUAGE CXX
+    DEFINE_SYMBOL GM_FRAMEWORK_EXPORTS
 )
 
 target_compile_features(foundation
@@ -27,10 +28,6 @@ target_link_libraries(foundation
 )
 
 target_compile_definitions(foundation
-    PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:GM_API=__declspec\(dllexport\)>
-    INTERFACE
-        $<$<CXX_COMPILER_ID:MSVC>:GM_API=__declspec\(dllimport\)>
     PUBLIC
         $<$<PLATFORM_ID:Windows>:UNICODE>
         $<$<PLATFORM_ID:Windows>:_UNICODE>
