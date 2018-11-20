@@ -11,7 +11,7 @@ jobs:
 #         configuration: RelWithDebInfo
 #   steps:
 #   - task: CMake@1
-#     displayName: CMake Configure
+#     displayName: Configure CMake
 #     inputs:
 #       cmakeArgs: -A x64 ..
 #   - task: CMake@1
@@ -33,11 +33,7 @@ jobs:
     displayName: Install PPA repositories
   - bash: sudo apt-get install cmake
     displayName: Install latest CMake
-  - task: CMake@1
-    displayName: CMake Configure
-    inputs:
-      cmakeArgs: -A x64 -DCMAKE_BUILD_TYPE:STRING=${configuration} ..
-  - task: CMake@1
+  - bash: cmake -A x64 -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
+    displayName: Configure CMake
+  - bash: cmake --build .
     displayName: Build
-    inputs:
-      cmakeArgs: --build . --config
