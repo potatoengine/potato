@@ -40,16 +40,11 @@
 
 // detect architecture and details
 // #FIXME: this is very Windows-only right now and doesn't handle ARM or HTML5
-#if defined(_M_X64)
+#if defined(_M_X64) || defined(__x86_64__)
 #	define GM_ARCH_LITTLE_ENDIAN 1
 #	define GM_ARCH_INTEL 1
 #	define GM_ARCH_64 1
 #	define GM_ARCH_LLP64 1
-#	define GM_ARCH_CACHELINE 64
-#elif defined(_M_IX86)
-#	define GM_ARCH_LITTLE_ENDIAN 1
-#	define GM_ARCH_INTEL 1
-#	define GM_ARCH_32 1
 #	define GM_ARCH_CACHELINE 64
 #else
 #	error "Unsupported architecture"
@@ -76,7 +71,7 @@
 #		error "Unsupported Visual C++ compiler version (requires 19.10 or higher from Visual Studio 2017)"
 #	endif
 #elif defined(__clang__)
-#	if __clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 5)
+#	if __clang_major__ > 7
 #		define GM_COMPILER_CLANG 1
 #		define GM_COMPILER_VERSION (__clang_major__ * 10 + __clang_minor__)
 #		define GM_THREAD_LOCAL thread_local
