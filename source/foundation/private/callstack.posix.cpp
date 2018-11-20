@@ -20,7 +20,7 @@ int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip)
 bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records)
 {
 #if !defined(NDEBUG)
-    void* const addrs = const_cast<void*>(static_cast<uintptr*>(addresses.data()));
+    void* const addrs = const_cast<void*>(static_cast<uintptr const*>(addresses.data()));
     char** symbols = backtrace_symbols(&addrs, addresses.size());
 
     for (auto index = 0; index != addresses.size(); ++index)
