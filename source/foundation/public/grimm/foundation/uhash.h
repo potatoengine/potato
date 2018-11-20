@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "stdfwd.h"
 #include "fnv1a.h"
 #include "traits.h"
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <typeindex>

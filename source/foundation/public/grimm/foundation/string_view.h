@@ -4,7 +4,6 @@
 
 #include "uhash.h"
 #include "numeric_util.h"
-#include "stdfwd.h"
 #include <cstring>
 #include <string_view>
 
