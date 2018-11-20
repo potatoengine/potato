@@ -4,12 +4,12 @@
 
 // detect platform
 #if defined(_WIN32) || defined(_WINDOWS)
+#   if !defined(_WIN64)
+#       error "Only Win64 is supported on Windows"
+#   endif
 #	define GM_PLATFORM_WINDOWS 1
-#	if defined(_WIN64)
-#		define GM_PLATFORM_WIN64 1
-#	else
-#		define GM_PLATFORM_WIN32 1
-#	endif
+#	define GM_PLATFORM_WIN64 1
+#	define GM_PLATFORM_WIN32 1
 #elif __APPLE__
 #	define GM_PLATFORM_APPLE 1
 #	define GM_PLATFORM_POSIX 1
@@ -17,7 +17,7 @@
 #	if TARGET_OS_IPHONE
 #		define GM_PLATFORM_IOS 1
 #	else
-#		define GM_PLATFORM_OSX 1
+#		define GM_PLATFORM_MACOS 1
 #	endif
 #elif __linux
 #	define GM_PLATFORM_LINUX 1
@@ -25,8 +25,6 @@
 #	if defined(__ANDROID__)
 #		define GM_PLATFORM_ANDROID 1
 #	endif
-#elif __posix
-#	define GM_PLATFORM_POSIX 1
 #else
 #	error "Unsupported platform"
 #endif
@@ -98,9 +96,9 @@
 #	define GM_UNLIKELY(x) (x)
 #	define GM_ASSUME(x) __assume((x))
 #elif GM_COMPILER_CLANG || GM_COMPILER_GCC
-#	define GM_NOINLINE [[noinline]]
-#	define GM_NORETURN [[noreturn]]
-#	define GM_FORCEINLINE [[flatten]]
+#	define GM_NOINLINE [[gnu::noinline]]
+#	define GM_NORETURN [[gnu::noreturn]]
+#	define GM_FORCEINLINE [[gnu::flatten]]
 #	define GM_LIKELY(x) __builtin_expect((x), 1)
 #	define GM_UNLIKELY(x) __builtin_expect((x), 0)
 #	define GM_ASSUME(x) __builtin_assume((x))
