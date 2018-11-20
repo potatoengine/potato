@@ -76,3 +76,18 @@ jobs:
     displayName: CMake Configure (Debug)
   - bash: /usr/bin/cmake --build build/Debug --parallel
     displayName: Build (Debug)
+
+- job: MacOS
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+  - bash: |
+      brew install cmake
+    displayName: Installing Dependencies
+  - bash: |
+      mkdir -p build/RelWithDebInfo
+      cd build/RelWithDebInfo
+      cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
+    displayName: Configure CMake (Release)
+  - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
+    displayName: Build (Release)
