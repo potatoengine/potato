@@ -16,22 +16,10 @@ namespace gm
 	template <typename HashAlgorithm> struct uhash;
 
 	template <typename, typename> class vector;
+}
 
-	template <typename HashAlgorithm = gm::fnv1a>
-	struct uhash
-	{
-		using result_type = typename HashAlgorithm::result_type;
-
-		template <typename T>
-		result_type operator()(T&& value) const
-		{
-			HashAlgorithm hasher;
-			using gm::hash_append;
-			//hash_append(hasher, value);
-			return static_cast<result_type>(hasher);
-		}
-	};
-
+namespace gm
+{
 	template <typename HashAlgorithm, typename T>
 	inline std::enable_if_t<is_contiguous<T>::value> hash_append(HashAlgorithm& hasher, T const& value)
 	{
@@ -81,5 +69,19 @@ namespace gm
 		for (auto&& value : container)
 			hash_append(hasher, value);
 	}
-
 }
+
+template <typename HashAlgorithm = gm::fnv1a>
+struct uhash
+{
+	using result_type = typename HashAlgorithm::result_type;
+
+	template <typename T>
+	result_type operator()(T&& value) const
+	{
+		HashAlgorithm hasher;
+		using gm::hash_append;
+		hash_append(hasher, value);
+		return static_cast<result_type>(hasher);
+	}
+};
