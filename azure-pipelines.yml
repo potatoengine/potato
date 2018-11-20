@@ -36,7 +36,7 @@ jobs:
       sudo apt-get update
     displayName: Install PPA repositories
   - bash: |
-      sudo apt-get -y install cmake clang-7 libc++-7-dev
+      sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev
     displayName: Install build dependencies
   - bash: |
       mkdir build
