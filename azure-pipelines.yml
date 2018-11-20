@@ -33,7 +33,7 @@ jobs:
     displayName: Install PPA repositories
   - bash: sudo apt-get install cmake
     displayName: Install latest CMake
-  - bash: mkdir build && cd build && cmake -A x64 -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
+  - bash: mkdir build && cd build && /usr/bin/cmake -A x64 -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
     displayName: Configure CMake
-  - bash: cd build && cmake --build .
+  - bash: cd build && /usr/bin/cmake --build .
     displayName: Build
