@@ -6,25 +6,25 @@ trigger:
     - releases/*
 
 jobs:
-# - job: Windows
-#   pool:
-#     vmImage: 'vs2017-win2016'
-#   strategy:
-#     maxParallel: 2
-#     matrix:
-#       Debug:
-#         configuration: Debug
-#       Release:
-#         configuration: RelWithDebInfo
-#   steps:
-#   - task: CMake@1
-#     displayName: Configure CMake
-#     inputs:
-#       cmakeArgs: -A x64 ..
-#   - task: CMake@1
-#     displayName: Build
-#     inputs:
-#       cmakeArgs: --build . --config $(configuration)
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  strategy:
+    maxParallel: 2
+    matrix:
+      Debug:
+        configuration: Debug
+      Release:
+        configuration: RelWithDebInfo
+  steps:
+  - task: CMake@1
+    displayName: Configure CMake
+    inputs:
+      cmakeArgs: -A x64 ..
+  - task: CMake@1
+    displayName: Build
+    inputs:
+      cmakeArgs: --build . --config $(configuration)
 - job: Linux
   pool:
     vmImage: 'ubuntu-16.04'
@@ -33,8 +33,8 @@ jobs:
     matrix:
       Debug:
         configuration: Debug
-      # Release:
-      #   configuration: RelWithDebInfo
+      Release:
+        configuration: RelWithDebInfo
   steps:
   - bash: |
       sudo add-apt-repository ppa:janisozaur/cmake-update
