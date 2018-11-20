@@ -6,11 +6,9 @@
 #include "allocator.h"
 #include "string_format.h"
 
-#if !defined(NDEBUG) && !defined(_PREFAST_)
-
 namespace gm::_detail {
 	// platform-specific function that must be implemented
-	extern GM_API GM_NOINLINE error_action platform_fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
+	GM_FRAMEWORK_API GM_NOINLINE error_action platform_fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
 }
 
 auto gm::fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText) -> error_action
@@ -27,11 +25,20 @@ auto gm::fatal_error(char const* file, int line, char const* failedConditionText
     CallStackReader reader;
     reader.readCallstack(addresses);
 
+#if !defined(NDEBUG)
     if (reader.tryResolveCallstack(addresses, records)) 
     {
         for (auto const& record : records)
         {
             format_into(buffer, "{}({}): {}\r\n", record.filename, record.line, record.symbol);
+        }
+    }
+    else
+#endif // !defined(NDEBUG)
+    {
+        for (uintptr addr : addresses)
+        {
+            format_into(buffer, "{:016X}\r\n", addr);
         }
     }
 
@@ -40,4 +47,3 @@ auto gm::fatal_error(char const* file, int line, char const* failedConditionText
 	return _detail::platform_fatal_error(file, line, failedConditionText, messageText, buffer.data());
 }
 
-#endif // !defined(NDEBUG)

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 project(shell VERSION 0.1 LANGUAGES CXX)
 
-add_library(shell)
+add_executable(shell)
 
 target_include_directories(shell
     PUBLIC

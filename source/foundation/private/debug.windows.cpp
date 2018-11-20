@@ -1,6 +1,7 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
 #include "platform_windows.h"
+#include "debug.h"
 #include "debug.windows.h"
 #include "callstack.h"
 #include "string_format.h"

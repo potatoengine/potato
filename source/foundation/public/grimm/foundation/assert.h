@@ -23,7 +23,7 @@
 namespace gm::_detail
 {
 	// abstraction to deal with assert instances that don't have a message at all
-	template <typename Buffer, typename... Args> void constexpr format_failure(Buffer& buffer, char const* format, Args&&... args) { ::fmt::format((format), std::forward<Args>(args)...); }
+	template <typename Buffer, typename... Args> void constexpr format_failure(Buffer& buffer, char const* format, Args&&... args) { format_into(buffer, format, std::forward<Args>(args)...); }
 	template <typename Buffer> void constexpr format_failure(Buffer&) {}
 }
 

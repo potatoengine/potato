@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "_export.h"
 #include "string_format.h"
 #include "string_view.h"
 #include "delegate.h"
@@ -23,14 +24,14 @@ namespace gm {
 
 	/// Add a new handler to the list of outputs.
 	/// #FIXME: need a registration mechanism
-	void GM_API addLoggerCallback(LoggerCallback handler);
+	void GM_FRAMEWORK_API addLoggerCallback(LoggerCallback handler);
 
 	/// Log text (with appended newline) to the most appropriate output sink for the given platform.
 	/// @param file The location of the message.
 	/// @param line The location of the message.
 	/// @param severity The log severity.
 	/// @param msg The message to display.
-	void GM_API logLine(string_view file, int line, LogSeverity severity, string_view msg);
+	void GM_FRAMEWORK_API logLine(string_view file, int line, LogSeverity severity, string_view msg);
 
 	/// Log a cppformat formatted message (with appended newline) to the most appropriate output sink for the given platform.
 	/// @tparam ParamsT Types of the parameters to be formatted.

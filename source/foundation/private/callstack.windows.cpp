@@ -32,23 +32,26 @@ namespace {
         static CallstackHelper& instance();
 
     private:
+        bool _initialized = false;
+        HANDLE _process;
+
         using CaptureStackBackTraceType = USHORT(WINAPI*)(__in ULONG, __in ULONG, __out PVOID*, __out_opt PULONG);
+
+        HMODULE _kernelLib;
+        CaptureStackBackTraceType _captureStackBackTrace;
+
+#if !defined(NDEBUG)
         using SymInitializeType = BOOL(WINAPI*)(__in HANDLE, __in_opt PCTSTR, __in BOOL);
         using SymCleanupType = BOOL(WINAPI*)(__in HANDLE);
         using SymGetLineFromAddr64Type = BOOL(WINAPI*)(__in HANDLE, __in DWORD64, __out PDWORD, __out PIMAGEHLP_LINE64);
         using SymFromAddrType = BOOL(WINAPI*)(__in HANDLE, __in DWORD64, __out_opt PDWORD64, __inout PSYMBOL_INFO);
-        
-        HANDLE _process;
-        HMODULE _kernelLib;
+
         HMODULE _dbghelpLib;
-
-        bool _initialized = false;
-
-        CaptureStackBackTraceType _captureStackBackTrace;
         SymInitializeType _symInitialize;
         SymCleanupType _symCleanup;
         SymGetLineFromAddr64Type _symGetLineFromAddr64;
         SymFromAddrType _symFromAddr;
+#endif // !defined(NDEBUG)
     };
 
     CallstackHelper::CallstackHelper()
@@ -59,12 +62,13 @@ namespace {
         if (!_kernelLib)
             return;
 
-        _dbghelpLib = LoadLibraryW(L"dbghelp.dll");
-        if (!_dbghelpLib)
-            return;
-
         _captureStackBackTrace = reinterpret_cast<CaptureStackBackTraceType>(GetProcAddress(_kernelLib, "RtlCaptureStackBackTrace"));
         if (!_captureStackBackTrace)
+            return;
+
+#if !defined(NDEBUG)
+        _dbghelpLib = LoadLibraryW(L"dbghelp.dll");
+        if (!_dbghelpLib)
             return;
 
         _symInitialize = reinterpret_cast<SymInitializeType>(GetProcAddress(_dbghelpLib, "SymInitialize"));
@@ -85,12 +89,15 @@ namespace {
 
         if (!_symInitialize(_process, nullptr, true))
             return;
+#endif // !defined(NDEBUG)
 
         _initialized = true;
     }
 
     CallstackHelper::~CallstackHelper()
     {
+        
+#if !defined(NDEBUG)
         if (_symCleanup != nullptr)
             _symCleanup(_process);
 
@@ -98,9 +105,11 @@ namespace {
         _symInitialize = nullptr;
         _symGetLineFromAddr64 = nullptr;
         _symFromAddr = nullptr;
-        _captureStackBackTrace = nullptr;
 
         FreeLibrary(_dbghelpLib);
+#endif // !defined(NDEBUG)
+
+        _captureStackBackTrace = nullptr;
         FreeLibrary(_kernelLib);
     }
 
@@ -112,6 +121,7 @@ namespace {
             return 0;
     }
 
+#if !defined(NDEBUG)
     void CallstackHelper::readSymbol(void* entry, PSYMBOL_INFO symInfo, PIMAGEHLP_LINE64 lineInfo)
     {
         if (_symFromAddr != nullptr)
@@ -121,6 +131,7 @@ namespace {
         if (_symGetLineFromAddr64 != nullptr)
             _symGetLineFromAddr64(GetCurrentProcess(), DWORD64(entry), &displacement, lineInfo);
     }
+#endif // !defined(NDEBUG)
 
     CallstackHelper& CallstackHelper::instance()
     {
@@ -130,14 +141,19 @@ namespace {
 
 } // anonymous namespace
 
-int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip, int max)
+int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip)
 {
     CallstackHelper& helper = CallstackHelper::instance();
-    return helper.captureStackTrace(skip + 1, gm::min(max, static_cast<int>(addresses.size())), reinterpret_cast<void**>(addresses.data()));
+
+    if (!helper.isInitialized())
+        return 0;
+
+    return helper.captureStackTrace(skip + 1, static_cast<int>(addresses.size()), reinterpret_cast<void**>(addresses.data()));
 }
 
 bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records)
 {
+#if !defined(NDEBUG)
     CallstackHelper& helper = CallstackHelper::instance();
 
     if (!helper.isInitialized())
@@ -176,4 +192,7 @@ bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresse
     }
 
     return true;
+#else
+    return false;
+#endif // !defined(NDEBUG)
 }

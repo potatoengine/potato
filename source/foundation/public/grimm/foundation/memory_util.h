@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "traits.h"
+#include <utility>
+
 namespace gm
 {
     template <typename InputIt, typename SizeT>

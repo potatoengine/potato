@@ -1,0 +1,59 @@
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+    - releases/*
+
+jobs:
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  strategy:
+    maxParallel: 2
+    matrix:
+      Debug:
+        configuration: Debug
+      Release:
+        configuration: RelWithDebInfo
+  steps:
+  - task: CMake@1
+    displayName: Configure CMake
+    inputs:
+      cmakeArgs: -A x64 ..
+  - task: CMake@1
+    displayName: Build
+    inputs:
+      cmakeArgs: --build . --config $(configuration)
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  strategy:
+    maxParallel: 2
+    matrix:
+      Debug:
+        configuration: Debug
+      Release:
+        configuration: RelWithDebInfo
+  steps:
+  - bash: |
+      sudo add-apt-repository ppa:janisozaur/cmake-update
+      wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+      sudo add-apt-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main"
+      sudo apt-get update
+    displayName: Install PPA repositories
+  - bash: |
+      sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev
+    displayName: Install build dependencies
+  - bash: |
+      mkdir build
+      cd build
+      /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
+    displayName: Configure CMake
+    env:
+      CXX: clang++-7
+      CXXFLAGS: -m64 -stdlib=libc++
+  - bash: |
+      cd build
+      /usr/bin/cmake --build .
+    displayName: Build
