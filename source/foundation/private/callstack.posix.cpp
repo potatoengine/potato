@@ -15,6 +15,8 @@ int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip)
     skip = std::min(skip, count);
 
     std::memcpy(addresses.data(), static_cast<uintptr*>(buffer) + skip, std::min(count, max));
+
+    return count - skip;
 }
 
 bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records)
