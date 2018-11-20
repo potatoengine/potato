@@ -20,7 +20,7 @@ namespace gm
 
     struct CallStackReader
     {
-        static int readCallstack(array_view<uintptr> addresses, int skip = 0, int max = -1);
+        static int readCallstack(array_view<uintptr> addresses, int skip = 0);
         static bool tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records);
     };
 }

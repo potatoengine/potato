@@ -141,14 +141,14 @@ namespace {
 
 } // anonymous namespace
 
-int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip, int max)
+int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip)
 {
     CallstackHelper& helper = CallstackHelper::instance();
 
     if (!helper.isInitialized())
         return 0;
 
-    return helper.captureStackTrace(skip + 1, gm::min(max, static_cast<int>(addresses.size())), reinterpret_cast<void**>(addresses.data()));
+    return helper.captureStackTrace(skip + 1, static_cast<int>(addresses.size()), reinterpret_cast<void**>(addresses.data()));
 }
 
 bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records)
