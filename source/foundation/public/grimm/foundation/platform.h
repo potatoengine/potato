@@ -40,11 +40,17 @@
 
 // detect architecture and details
 // #FIXME: this is very Windows-only right now and doesn't handle ARM or HTML5
-#if defined(_M_X64) || defined(__x86_64__)
+#if defined(_M_X64)
 #	define GM_ARCH_LITTLE_ENDIAN 1
 #	define GM_ARCH_INTEL 1
 #	define GM_ARCH_64 1
 #	define GM_ARCH_LLP64 1
+#	define GM_ARCH_CACHELINE 64
+#elif defined(__x86_64__))
+#	define GM_ARCH_LITTLE_ENDIAN 1
+#	define GM_ARCH_INTEL 1
+#	define GM_ARCH_64 1
+#	define GM_ARCH_LP64 1
 #	define GM_ARCH_CACHELINE 64
 #else
 #	error "Unsupported architecture"
