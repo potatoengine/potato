@@ -89,15 +89,15 @@
 #endif
 
 #if GM_COMPILER_MICROSOFT
-#	define GM_NOINLINE __declspec(noinline)
-#	define GM_NORETURN __declspec(noreturn)
+#	define GM_NOINLINE(return_type) __declspec(noinline) return_type
+#	define GM_NORETURN(return_type) __declspec(noreturn) return_type
 #	define GM_FORCEINLINE __forceinline
 #	define GM_LIKELY(x) (x)
 #	define GM_UNLIKELY(x) (x)
 #	define GM_ASSUME(x) __assume((x))
 #elif GM_COMPILER_CLANG || GM_COMPILER_GCC
-#	define GM_NOINLINE [[gnu::noinline]]
-#	define GM_NORETURN [[gnu::noreturn]]
+#	define GM_NOINLINE(return_type) return_type [[gnu::noinline]]
+#	define GM_NORETURN(return_type) return_type [[gnu::noreturn]]
 #	define GM_FORCEINLINE [[gnu::flatten]]
 #	define GM_LIKELY(x) __builtin_expect((x), 1)
 #	define GM_UNLIKELY(x) __builtin_expect((x), 0)

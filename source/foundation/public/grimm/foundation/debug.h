@@ -26,7 +26,7 @@ namespace gm
 	};
 
 	/// Ask the user if they should abort, skip the error, or always skip this error.
-	GM_API GM_NOINLINE error_action fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText);
+	GM_API GM_NOINLINE(error_action) fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText);
 }
 
 #	define _gm_FAIL(failure, message) \
