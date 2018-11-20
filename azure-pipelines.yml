@@ -1,23 +1,23 @@
 jobs:
-- job: Windows
-  pool:
-    vmImage: 'vs2017-win2016'
-  strategy:
-    maxParallel: 2
-    matrix:
-      Debug:
-        configuration: Debug
-      Release:
-        configuration: RelWithDebInfo
-  steps:
-  - task: CMake@1
-    displayName: CMake Configure
-    inputs:
-      cmakeArgs: -A x64 ..
-  - task: CMake@1
-    displayName: Build
-    inputs:
-      cmakeArgs: --build . --config $(configuration)
+# - job: Windows
+#   pool:
+#     vmImage: 'vs2017-win2016'
+#   strategy:
+#     maxParallel: 2
+#     matrix:
+#       Debug:
+#         configuration: Debug
+#       Release:
+#         configuration: RelWithDebInfo
+#   steps:
+#   - task: CMake@1
+#     displayName: CMake Configure
+#     inputs:
+#       cmakeArgs: -A x64 ..
+#   - task: CMake@1
+#     displayName: Build
+#     inputs:
+#       cmakeArgs: --build . --config $(configuration)
 - job: Linux
   pool:
     vmImage: 'ubuntu-16.04'
@@ -26,16 +26,13 @@ jobs:
     matrix:
       Debug:
         configuration: Debug
-      Release:
-        configuration: RelWithDebInfo
+      # Release:
+      #   configuration: RelWithDebInfo
   steps:
-  - task: Bash@3
-    displayName: Install dependencies
-    inputs:
-      type: inline
-      script: |
-        sudo add-apt-repository ppa:janisozaur/cmake-update
-        sudo apt-get install cmake
+  - bash: sudo add-apt-repository ppa:janisozaur/cmake-update
+    displayName: Install PPA repositories
+  - bash: sudo apt-get install cmake
+    displayName: Install latest CMake
   - task: CMake@1
     displayName: CMake Configure
     inputs:
