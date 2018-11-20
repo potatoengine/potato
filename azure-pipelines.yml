@@ -31,10 +31,11 @@ jobs:
   steps:
   - task: Bash@3
     displayName: Install dependencies
-    type: inline
-    script: |
-      sudo add-apt-repository ppa:janisozaur/cmake-update
-      sudo apt-get install cmake
+    inputs:
+      type: inline
+      script: |
+        sudo add-apt-repository ppa:janisozaur/cmake-update
+        sudo apt-get install cmake
   - task: CMake@1
     displayName: CMake Configure
     inputs:
