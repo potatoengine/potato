@@ -29,14 +29,23 @@ jobs:
       # Release:
       #   configuration: RelWithDebInfo
   steps:
-  - bash: sudo add-apt-repository ppa:janisozaur/cmake-update && sudo apt-get update
+  - bash: |
+      sudo add-apt-repository ppa:janisozaur/cmake-update
+      sudo add-apt-repository ppa:jonathonf/llvm-7
+      sudo apt-get update
     displayName: Install PPA repositories
-  - bash: sudo apt-get install cmake clang-3.8
+  - bash: |
+      sudo apt-get install cmake clang-3.8 libc++-dev
     displayName: Install build dependencies
-  - bash: mkdir build && cd build && /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
+  - bash: |
+      mkdir build
+      cd build
+      /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
     displayName: Configure CMake
     env:
       CXX: clang++
-      CXXFLAGS: -m64
-  - bash: cd build && /usr/bin/cmake --build .
+      CXXFLAGS: -m64 -stdlib=libc++
+  - bash: |
+      cd build
+      /usr/bin/cmake --build .
     displayName: Build
