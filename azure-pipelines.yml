@@ -32,11 +32,11 @@ jobs:
   - bash: |
       sudo add-apt-repository ppa:janisozaur/cmake-update
       wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-      sudo add-apt-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7.0 main"
+      sudo add-apt-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main"
       sudo apt-get update
     displayName: Install PPA repositories
   - bash: |
-      sudo apt-get -y install cmake clang-7.0 libc++-7-dev
+      sudo apt-get -y install cmake clang-7 libc++-7-dev
     displayName: Install build dependencies
   - bash: |
       mkdir build
@@ -44,7 +44,7 @@ jobs:
       /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
     displayName: Configure CMake
     env:
-      CXX: clang++-7.0
+      CXX: clang++-7
       CXXFLAGS: -m64 -stdlib=libc++
   - bash: |
       cd build
