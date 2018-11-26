@@ -34,9 +34,9 @@ jobs:
       Release:
         configuration: RelWithDebInfo
   steps:
-  - bash: ./scripts/bootstrap-ubuntu.bat
+  - bash: ./scripts/bootstrap-ubuntu.sh
     displayName: Bootstrapping
   - bash: |
-      cd build/$(configuration)
+      cd build/ubuntu/$(configuration)
       /usr/bin/cmake --build .
     displayName: Build
