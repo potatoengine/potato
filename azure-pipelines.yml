@@ -19,9 +19,7 @@ jobs:
   steps:
   - script: .\scripts\bootstrap-windows.bat
     displayName: Bootstrapping
-  - script: |
-      cd build\windows
-      cmake --build . --config $(configuration)
+  - script: cmake --build "build\windows" --config "$(configuration)"
     displayName: Build
 - job: Linux
   pool:
@@ -34,9 +32,7 @@ jobs:
       Release:
         configuration: RelWithDebInfo
   steps:
-  - bash: ./scripts/bootstrap-ubuntu.sh
+  - bash: bash ./scripts/bootstrap-ubuntu.sh
     displayName: Bootstrapping
-  - bash: |
-      cd build/ubuntu/$(configuration)
-      /usr/bin/cmake --build .
+  - bash: /usr/bin/cmake --build "build/ubuntu/$(configuration)"
     displayName: Build
