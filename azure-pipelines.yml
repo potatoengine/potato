@@ -17,12 +17,14 @@ jobs:
       Release:
         configuration: RelWithDebInfo
   steps:
+  - script: vcpkg\bootstrap_vcpkg.bat
+    displayName: Bootstrapping vcpkg
   - script: vcpkg.exe install sdl2:x64-windows
     displayName: Install build dependencies
   - task: CMake@1
     displayName: Configure CMake
     inputs:
-      cmakeArgs: -A x64 ..
+      cmakeArgs: -A x64 -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake ..
   - task: CMake@1
     displayName: Build
     inputs:
@@ -45,12 +47,16 @@ jobs:
       sudo apt-get update
     displayName: Install PPA repositories
   - bash: |
-      sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev libsdl2-dev
-    displayName: Install build dependencies
+      sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev
+    displayName: Install apt build dependencies
+  - script: vcpkg\bootstrap_vcpkg.bat
+    displayName: Bootstrapping vcpkg
+  - script: vcpkg.exe install sdl2:x64-linux
+    displayName: Install vcpkg build dependencies
   - bash: |
       mkdir build
       cd build
-      /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=$(configuration) ..
+      /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=$(configuration) -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake ..
     displayName: Configure CMake
     env:
       CXX: clang++-7
