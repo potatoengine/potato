@@ -13,7 +13,9 @@ sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-to
 sudo apt-get -y update
 sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev unzip g++-7
 
-"$ROOT/vcpkg/bootstrap-vcpkg.sh"
+export CXX=g++-7
+
+bash "$ROOT/vcpkg/bootstrap-vcpkg.sh"
 "$ROOT/vcpkg/vcpkg" install sdl2:x64-linux
 
 export CXX=clang++-7
