@@ -18,7 +18,7 @@ jobs:
         configuration: RelWithDebInfo
   steps:
   - script: vcpkg.exe install sdl2:x64-windows
-    display: Install build dependencies
+    displayName: Install build dependencies
   - task: CMake@1
     displayName: Configure CMake
     inputs:
