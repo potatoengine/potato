@@ -17,9 +17,9 @@ jobs:
       Release:
         configuration: RelWithDebInfo
   steps:
-  - script: vcpkg\bootstrap_vcpkg.bat
+  - script: .\vcpkg\bootstrap-vcpkg.bat
     displayName: Bootstrapping vcpkg
-  - script: vcpkg.exe install sdl2:x64-windows
+  - script: .\vcpkg\vcpkg.exe install sdl2:x64-windows
     displayName: Install build dependencies
   - task: CMake@1
     displayName: Configure CMake
@@ -49,9 +49,9 @@ jobs:
   - bash: |
       sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev
     displayName: Install apt build dependencies
-  - script: vcpkg\bootstrap_vcpkg.bat
+  - script: .\vcpkg\bootstrap_vcpkg.bat
     displayName: Bootstrapping vcpkg
-  - script: vcpkg.exe install sdl2:x64-linux
+  - script: .\vcpkg\vcpkg install sdl2:x64-linux
     displayName: Install vcpkg build dependencies
   - bash: |
       mkdir build
