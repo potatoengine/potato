@@ -19,7 +19,7 @@ jobs:
   steps:
   - script: .\scripts\bootstrap-windows.bat
     displayName: Bootstrapping
-  - script: cmake --build "build\windows" --config "$(configuration)"
+  - script: cmake --build .\build\windows --config "$(configuration)"
     displayName: Build
 - job: Linux
   pool:
@@ -34,5 +34,5 @@ jobs:
   steps:
   - bash: bash ./scripts/bootstrap-ubuntu.sh
     displayName: Bootstrapping
-  - bash: /usr/bin/cmake --build "build/ubuntu/$(configuration)"
+  - bash: /usr/bin/cmake --build "./build/ubuntu/$(configuration)"
     displayName: Build

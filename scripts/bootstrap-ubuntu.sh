@@ -16,7 +16,8 @@ sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev g++-7 ninja-b
 export CXX=g++-7
 
 bash "$ROOT/vcpkg/bootstrap-vcpkg.sh"
-"$ROOT/vcpkg/vcpkg" install sdl2:x64-linux
+"$ROOT/vcpkg/vcpkg" install sdl2:x64-linux 
+"$ROOT/vcpkg/vcpkg" install fmt:x64-linux
 
 export CXX=clang++-7
 export CXXFLAGS="-m64 -stdlib=libc++"

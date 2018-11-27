@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.11)
 project(foundation VERSION 0.1 LANGUAGES CXX)
 
+find_package(fmt CONFIG REQUIRED)
+
 add_library(foundation)
 
 set_target_properties(foundation PROPERTIES
@@ -24,7 +26,7 @@ target_include_directories(foundation
 
 target_link_libraries(foundation
     PUBLIC
-        fmt
+        fmt::fmt
 )
 
 target_compile_definitions(foundation
