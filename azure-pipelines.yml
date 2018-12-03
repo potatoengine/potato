@@ -9,30 +9,20 @@ jobs:
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
-  strategy:
-    maxParallel: 2
-    matrix:
-      Debug:
-        configuration: Debug
-      Release:
-        configuration: RelWithDebInfo
   steps:
   - script: .\scripts\bootstrap-windows.bat
     displayName: Bootstrapping
-  - script: cmake --build "build\windows" --config "$(configuration)"
-    displayName: Build
+  - script: cmake --build "build\windows" --config RelWithDebInfo
+    displayName: Build Release
+  - script: cmake --build "build\windows" --config Debug
+    displayName: Build Debug
 - job: Linux
   pool:
     vmImage: 'ubuntu-16.04'
-  strategy:
-    maxParallel: 2
-    matrix:
-      Debug:
-        configuration: Debug
-      Release:
-        configuration: RelWithDebInfo
   steps:
   - bash: bash ./scripts/bootstrap-ubuntu.sh
     displayName: Bootstrapping
-  - bash: /usr/bin/cmake --build "build/ubuntu/$(configuration)"
-    displayName: Build
+  - bash: /usr/bin/cmake --build "build/ubuntu/RelWithDebInfo"
+    displayName: Build Release
+  - bash: /usr/bin/cmake --build "build/ubuntu/Debug"
+    displayName: Build Debug
