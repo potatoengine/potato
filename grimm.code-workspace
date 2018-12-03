@@ -6,8 +6,5 @@
 	],
 	"settings": {
 		"cmake.buildDirectory": "${workspaceRoot}/build/local",
-		"cmake.configureArgs": [
-			"-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-		]
 	}
 }
