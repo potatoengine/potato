@@ -17,7 +17,7 @@ export CXX=clang++-7
 export CXXFLAGS="-m64 -stdlib=libc++"
 
 mkdir -p "$BUILD_DIR/RelWithDebInfo" && cd "$BUILD_DIR/RelWithDebInfo"
-/usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo -DCMAKE_TOOLCHAIN_FILE="$ROOT/vcpkg/scripts/buildsystems/vcpkg.cmake" "$ROOT"
+/usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo "$ROOT"
 
 mkdir -p "$BUILD_DIR/Debug" && cd "$BUILD_DIR/Debug"
-/usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_TOOLCHAIN_FILE="$ROOT/vcpkg/scripts/buildsystems/vcpkg.cmake" "$ROOT"
+/usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug "$ROOT"
