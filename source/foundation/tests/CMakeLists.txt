@@ -12,4 +12,4 @@ target_compile_definitions(foundation PRIVATE
     DOCTEST_CONFIG_SUPER_FAST_ASSERTS
 )
 
-add_test(NAME foundation COMMAND foundation_test)
+add_test(NAME grimm_foundation COMMAND foundation_test)
