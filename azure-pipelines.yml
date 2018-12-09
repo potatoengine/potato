@@ -16,6 +16,8 @@ jobs:
     displayName: Build Release
   - script: cmake --build "build\windows" --config Debug --parallel
     displayName: Build Debug
+  - script: ctest --build "build\windows" --config RelWithDebInfo -R grimm
+    displayName: Run Tests
 
 - job: Linux
   pool:
@@ -27,3 +29,5 @@ jobs:
     displayName: Build Release
   - bash: /usr/bin/cmake --build "build/ubuntu/Debug" --parallel
     displayName: Build Debug
+  - script: /usr/bin/ctest --build "build/ubuntu/RelWithDebInfo" -R grimm
+    displayName: Run Tests

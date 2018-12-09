@@ -25,12 +25,17 @@ target_include_directories(foundation
 target_link_libraries(foundation
     PUBLIC
         fmt
+    PRIVATE
+        doctest
 )
 
 target_compile_definitions(foundation
     PUBLIC
         $<$<PLATFORM_ID:Windows>:UNICODE>
         $<$<PLATFORM_ID:Windows>:_UNICODE>
+    PRIVATE
+        DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
+        DOCTEST_CONFIG_SUPER_FAST_ASSERTS
 )
 
 target_compile_options(foundation
@@ -55,5 +60,6 @@ target_sources(foundation PRIVATE
     $<$<PLATFORM_ID:Windows>:private/callstack.windows.cpp>
     private/logging.cpp
     private/string_format.cpp
-    private/test.cpp
 )
+
+add_subdirectory(tests)
