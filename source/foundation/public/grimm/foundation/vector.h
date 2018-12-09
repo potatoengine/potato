@@ -15,6 +15,9 @@
 namespace gm
 {
 	template <typename T, typename AllocatorT = gm::default_allocator> class vector;
+
+	template <typename T> vector(std::initializer_list<T>) -> vector<T, gm::default_allocator>;
+	template <typename IteratorT, typename SentinelT> vector(IteratorT, SentinelT) -> vector<decltype(*std::declval<IteratorT>()), gm::default_allocator>;
 }
 
 template <typename T, typename AllocatorT>
