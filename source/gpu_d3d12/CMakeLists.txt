@@ -27,6 +27,9 @@ target_link_libraries(gpu_d3d12
     PUBLIC
         grimm::foundation
         grimm::gpu
+        d3d12
+        dxgi
+        d3dcompiler
     PRIVATE
         doctest
 )
