@@ -49,10 +49,17 @@ target_compile_options(gpu
 target_sources(gpu PRIVATE
     public/grimm/gpu/_export.h
     public/grimm/gpu/device.h
+    public/grimm/gpu/device_info.h
+    public/grimm/gpu/factory.h
+    public/grimm/gpu/null_device.h
+    public/grimm/gpu/null_factory.h
 )
 
 target_sources(gpu PRIVATE
     private/device.cpp
+    private/factory.cpp
+    private/null_device.cpp
+    private/null_factory.cpp
 )
 
 add_subdirectory(tests)

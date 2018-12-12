@@ -6,6 +6,7 @@ namespace gm
 {
     class IGPUDevice {
     public:
+        IGPUDevice() = default;
         virtual ~IGPUDevice();
 
         IGPUDevice(IGPUDevice&&) = delete;

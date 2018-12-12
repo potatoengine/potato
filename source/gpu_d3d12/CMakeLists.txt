@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.11)
 project(gpu_d3d12 VERSION 0.1 LANGUAGES CXX)
 
+if(WIN32) # Not supported on Linux/OSX/etc.
+
 add_library(gpu_d3d12)
 add_library(grimm::gpu_d3d12 ALIAS gpu_d3d12)
 
@@ -60,3 +62,5 @@ target_sources(gpu_d3d12 PRIVATE
 )
 
 add_subdirectory(tests)
+
+endif(WIN32)

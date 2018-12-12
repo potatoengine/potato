@@ -14,6 +14,7 @@ target_include_directories(shell
 target_link_libraries(shell PRIVATE
     grimm::foundation
     grimm::gpu_vulkan
+    $<$<PLATFORM_ID:Windows>:grimm::gpu_d3d12>
     SDL2
     SDL2main
 )

@@ -4,6 +4,8 @@ project(gpu_vulkan VERSION 0.1 LANGUAGES CXX)
 add_library(gpu_vulkan)
 add_library(grimm::gpu_vulkan ALIAS gpu_vulkan)
 
+find_package(Vulkan REQUIRED)
+
 set_target_properties(gpu_vulkan PROPERTIES
     LINKER_LANGUAGE CXX
     DEFINE_SYMBOL GM_FRAMEWORK_EXPORTS
@@ -27,6 +29,7 @@ target_link_libraries(gpu_vulkan
     PUBLIC
         grimm::foundation
         grimm::gpu
+        Vulkan::Vulkan
     PRIVATE
         doctest
 )

@@ -51,6 +51,7 @@ target_sources(foundation PRIVATE
     public/grimm/foundation/allocator.h
     public/grimm/foundation/array_view.h
     public/grimm/foundation/assert.h
+    public/grimm/foundation/box.h
     public/grimm/foundation/callstack.h
     public/grimm/foundation/debug.h
     public/grimm/foundation/delegate.h
