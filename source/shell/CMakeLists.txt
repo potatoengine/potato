@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 project(shell VERSION 0.1 LANGUAGES CXX)
 
-
 add_executable(shell)
 
 target_include_directories(shell
@@ -13,7 +12,8 @@ target_include_directories(shell
 )
 
 target_link_libraries(shell PRIVATE
-    foundation
+    grimm::foundation
+    grimm::gpu_vulkan
     SDL2
     SDL2main
 )

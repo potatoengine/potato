@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 project(foundation VERSION 0.1 LANGUAGES CXX)
 
 add_library(foundation)
+add_library(grimm::foundation ALIAS foundation)
 
 set_target_properties(foundation PROPERTIES
     LINKER_LANGUAGE CXX
