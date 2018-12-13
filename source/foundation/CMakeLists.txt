@@ -62,6 +62,7 @@ target_sources(foundation PRIVATE
     public/grimm/foundation/memory_util.h
     public/grimm/foundation/memory.h
     public/grimm/foundation/numeric_util.h
+    public/grimm/foundation/out_ptr.h
     public/grimm/foundation/platform_windows.h
     public/grimm/foundation/platform.h
     public/grimm/foundation/string_format.h
@@ -76,6 +77,9 @@ target_sources(foundation PRIVATE
 target_sources(foundation PRIVATE
     $<$<NOT:$<PLATFORM_ID:Windows>>:private/callstack.posix.cpp>
     $<$<PLATFORM_ID:Windows>:private/callstack.windows.cpp>
+)
+
+target_sources(foundation PRIVATE
     private/debug.cpp
     $<$<NOT:$<PLATFORM_ID:Windows>>:private/debug.posix.cpp>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.cpp>
