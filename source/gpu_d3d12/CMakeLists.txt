@@ -54,11 +54,15 @@ target_compile_options(gpu_d3d12
 
 target_sources(gpu_d3d12 PRIVATE
     public/grimm/gpu_d3d12/_export.h
+    public/grimm/gpu_d3d12/com_ptr.h
     public/grimm/gpu_d3d12/d3d12_device.h
+    public/grimm/gpu_d3d12/d3d12_factory.h
+    public/grimm/gpu_d3d12/direct3d.h
 )
 
 target_sources(gpu_d3d12 PRIVATE
     private/d3d12_device.cpp
+    private/d3d12_factory.cpp
 )
 
 add_subdirectory(tests)
