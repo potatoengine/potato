@@ -45,7 +45,7 @@ auto gm::D3d12Factory::createDevice(int index) -> box<IGPUDevice>
     while (_dxgiFactory->EnumAdapters1(index, out_ptr(adaptor)) == S_OK) {
         if (targetIndex == index) {
             com_ptr<ID3D12Device1> device;
-            D3D12CreateDevice(adaptor.get(), D3D_FEATURE_LEVEL_12_1, __uuidof(ID3D12Device1), out_ptr(device));
+            D3D12CreateDevice(adaptor.get(), D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device1), out_ptr(device));
             if (device.empty()) {
                 return nullptr;
             }
