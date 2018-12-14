@@ -32,8 +32,8 @@ target_link_libraries(gpu_vulkan
     PUBLIC
         grimm::foundation
         grimm::gpu
-        Vulkan::Vulkan
     PRIVATE
+        Vulkan::Vulkan
         doctest
 )
 
