@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.11)
 project(gpu_vulkan VERSION 0.1 LANGUAGES CXX)
 
-add_library(gpu_vulkan)
-add_library(grimm::gpu_vulkan ALIAS gpu_vulkan)
-
 find_package(Vulkan)
 
 if(Vulkan_FOUND)
 message(STATUS "ENABLED Vulkan support")
+
+add_library(gpu_vulkan)
+add_library(grimm::gpu_vulkan ALIAS gpu_vulkan)
 
 set_target_properties(gpu_vulkan PROPERTIES
     LINKER_LANGUAGE CXX
