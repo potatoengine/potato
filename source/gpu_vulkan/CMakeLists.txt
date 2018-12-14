@@ -55,7 +55,11 @@ target_compile_options(gpu_vulkan
 
 target_sources(gpu_vulkan PRIVATE
     public/grimm/gpu_vulkan/_export.h
-    public/grimm/gpu_vulkan/vk_device.h
+    public/grimm/gpu_vulkan/vk_factory.h
+)
+
+target_sources(gpu_vulkan PRIVATE
+    private/vk_device.h
 )
 
 target_sources(gpu_vulkan PRIVATE

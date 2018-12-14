@@ -51,8 +51,11 @@ target_sources(gpu PRIVATE
     public/grimm/gpu/device.h
     public/grimm/gpu/device_info.h
     public/grimm/gpu/factory.h
-    public/grimm/gpu/null_device.h
-    public/grimm/gpu/null_factory.h
+)
+
+target_sources(gpu PRIVATE
+    private/null_device.h
+    private/null_factory.h
 )
 
 target_sources(gpu PRIVATE

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "_export.h"
 #include "grimm/gpu/device.h"
 
 namespace gm
