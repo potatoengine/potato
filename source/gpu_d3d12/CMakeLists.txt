@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.11)
 project(gpu_d3d12 VERSION 0.1 LANGUAGES CXX)
 
-if(WIN32) # Not supported on Linux/OSX/etc.
+find_library(D3D12_PATH d3d12)
+find_library(DXGI_PATH dxgi)
+find_library(D3DCOMPILER_PATH d3dcompiler)
+
+if(D3D12_PATH AND DXGI_PATH AND D3DCOMPILER_PATH)
+message(STATUS "ENABLED Direct3D 12 support")
 
 add_library(gpu_d3d12)
 add_library(grimm::gpu_d3d12 ALIAS gpu_d3d12)
@@ -67,4 +72,6 @@ target_sources(gpu_d3d12 PRIVATE
 
 add_subdirectory(tests)
 
-endif(WIN32)
+else(D3D12_PATH AND DXGI_PATH AND D3DCOMPILER_PATH)
+message(STATUS "DISABLED Direct3D 12 support")
+endif(D3D12_PATH AND DXGI_PATH AND D3DCOMPILER_PATH)

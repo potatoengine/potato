@@ -4,7 +4,10 @@ project(gpu_vulkan VERSION 0.1 LANGUAGES CXX)
 add_library(gpu_vulkan)
 add_library(grimm::gpu_vulkan ALIAS gpu_vulkan)
 
-find_package(Vulkan REQUIRED)
+find_package(Vulkan)
+
+if(Vulkan_FOUND)
+message(STATUS "ENABLED Vulkan support")
 
 set_target_properties(gpu_vulkan PROPERTIES
     LINKER_LANGUAGE CXX
@@ -60,3 +63,7 @@ target_sources(gpu_vulkan PRIVATE
 )
 
 add_subdirectory(tests)
+
+else(Vulkan_FOUND)
+message(STATUS "DISABLED Vulkan support")
+endif(Vulkan_FOUND)
