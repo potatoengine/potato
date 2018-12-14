@@ -46,18 +46,39 @@ target_compile_options(foundation
 )
 
 target_sources(foundation PRIVATE
+    public/grimm/foundation/_export.h
     public/grimm/foundation/allocator.h
     public/grimm/foundation/array_view.h
+    public/grimm/foundation/assert.h
+    public/grimm/foundation/callstack.h
+    public/grimm/foundation/debug.h
+    public/grimm/foundation/delegate.h
+    public/grimm/foundation/fnv1a.h
     public/grimm/foundation/integral_range.h
+    public/grimm/foundation/iterator_range.h
+    public/grimm/foundation/logging.h
     public/grimm/foundation/memory_util.h
+    public/grimm/foundation/memory.h
     public/grimm/foundation/numeric_util.h
+    public/grimm/foundation/platform_windows.h
+    public/grimm/foundation/platform.h
+    public/grimm/foundation/string_format.h
+    public/grimm/foundation/string_view.h
+    public/grimm/foundation/traits.h
+    public/grimm/foundation/typelist.h
+    public/grimm/foundation/types.h
+    public/grimm/foundation/uhash.h
+    public/grimm/foundation/vector.h
+)
+
+target_sources(foundation PRIVATE
+    $<$<NOT:$<PLATFORM_ID:Windows>>:private/callstack.posix.cpp>
+    $<$<PLATFORM_ID:Windows>:private/callstack.windows.cpp>
     private/debug.cpp
     $<$<NOT:$<PLATFORM_ID:Windows>>:private/debug.posix.cpp>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.cpp>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.h>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.rc>
-    $<$<NOT:$<PLATFORM_ID:Windows>>:private/callstack.posix.cpp>
-    $<$<PLATFORM_ID:Windows>:private/callstack.windows.cpp>
     private/logging.cpp
     private/string_format.cpp
 )
