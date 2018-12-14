@@ -34,8 +34,8 @@ template <typename T>
 class gm::box : private gm::_detail::box_traits<T>
 {
 public:
-	using gm::_detail::box_traits<T>::pointer;
-	using gm::_detail::box_traits<T>::reference;
+	using pointer = gm::_detail::box_traits<T>::pointer;
+	using reference = gm::_detail::box_traits<T>::reference;
 
 	box() = default;
 	~box() { reset(); }
