@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "grimm/gpu/device.h"
+#include "device.h"
 
 namespace gm
 {

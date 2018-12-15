@@ -1,7 +1,7 @@
 #include "doctest.h"
 
-#include "grimm/gpu_d3d12/d3d12_factory.h"
-#include "grimm/gpu_d3d12/d3d12_device.h"
+#include "d3d12_factory.h"
+#include "d3d12_device.h"
 
 DOCTEST_TEST_SUITE("[grimm][gpu_d3d12] D3d12Factory")
 {

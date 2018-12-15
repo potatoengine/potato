@@ -10,6 +10,7 @@ target_link_libraries(gpu_test PRIVATE
 
 target_include_directories(gpu_test PRIVATE
     ../private
+    ../public/grimm/gpu
 )
 
 target_compile_definitions(gpu_test PRIVATE
