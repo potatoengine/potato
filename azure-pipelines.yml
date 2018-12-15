@@ -82,8 +82,12 @@ jobs:
     vmImage: 'macOS-10.13'
   steps:
   - bash: |
-      brew install cmake
+      brew upgrade cmake
     displayName: Installing Dependencies
+  - bash: |
+      clang++ --version
+      usr/bin/cmake --version
+    displayName: Build Information
   - bash: |
       mkdir -p build/RelWithDebInfo
       cd build/RelWithDebInfo
