@@ -20,3 +20,7 @@ auto gm::NullFactory::createDevice(int index) -> box<IGPUDevice>
 {
     return make_box<NullDevice>();
 }
+
+GM_GPU_API auto gm::CreateNullGPUFactory() -> box<IGPUFactory> {
+    return make_box<NullFactory>();
+}

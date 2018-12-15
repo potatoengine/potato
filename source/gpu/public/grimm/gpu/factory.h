@@ -5,6 +5,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/delegate.h"
 
+#include "_export.h"
 #include "device_info.h"
 
 namespace gm
@@ -23,4 +24,6 @@ namespace gm
         virtual void enumerateDevices(delegate<void(DeviceInfo const&)> callback) = 0;
         virtual box<IGPUDevice> createDevice(int index) = 0;
     };
+
+    GM_GPU_API box<IGPUFactory> CreateNullGPUFactory();
 }
