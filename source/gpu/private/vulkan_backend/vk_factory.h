@@ -3,14 +3,15 @@
 #pragma once
 
 #include "_export.h"
-#include "grimm/gpu/device.h"
-#include "grimm/foundation/box.h"
+#include "grimm/gpu/factory.h"
 
 #if GM_GPU_ENABLE_VULKAN
 
 namespace gm
 {
-    GM_GPU_API box<IGPUDevice> CreateVulkanFactory();
+    class VkFactory final : public IGPUFactory {
+    public:
+    };
 }
 
 #endif

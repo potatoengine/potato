@@ -18,11 +18,6 @@ target_link_libraries(shell PRIVATE
     SDL2main
 )
 
-if(TARGET grimm::gpu_d3d12)
-    target_compile_definitions(shell PRIVATE GM_USE_D3D12)
-    target_link_libraries(shell PRIVATE grimm::gpu_d3d12)
-endif()
-
 add_subdirectory(public/grimm/shell)
 add_subdirectory(private)
 add_subdirectory(tests)
