@@ -23,7 +23,9 @@ jobs:
     displayName: Build (Release)
   - script: cmake --build build --config Debug --parallel
     displayName: Build (Debug)
-  - script: ctest --build build --config RelWithDebInfo -R grimm
+  - script: |
+      cd build
+      ctest --config RelWithDebInfo -R grimm
     displayName: Run Tests
 
 - job: Linux
@@ -60,7 +62,9 @@ jobs:
     displayName: CMake Configure (Release)
   - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
     displayName: Build (Release)
-  - script: /usr/bin/ctest --build build/RelWithDebInfo -R grimm
+  - script: |
+      cd build
+      /usr/bin/ctest -R grimm
     displayName: Run Tests
   - bash: |
       mkdir -p build/Debug
