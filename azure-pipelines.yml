@@ -53,6 +53,8 @@ jobs:
   - bash: |
       mkdir -p build/RelWithDebInfo
       cd build/RelWithDebInfo
+      export CXX=clang++-7
+      export CC=clang-7
       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
     displayName: CMake Configure (Release)
   - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
@@ -62,6 +64,8 @@ jobs:
   - bash: |
       mkdir -p build/Debug
       cd build/Debug
+      export CXX=clang++-7
+      export CC=clang-7
       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug ../..
     displayName: CMake Configure (Debug)
   - bash: /usr/bin/cmake --build build/Debug --parallel
