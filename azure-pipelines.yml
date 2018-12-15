@@ -50,7 +50,7 @@ jobs:
       cmake --version
       ninja --version
     displayName: Build Information
-  - base: |
+  - bash: |
       mkdir -p build/RelWithDebInfo
       cd build/RelWithDebInfo
       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
