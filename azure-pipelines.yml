@@ -71,6 +71,7 @@ jobs:
       cd build/Debug
       export CXX=clang++-7
       export CC=clang-7
+      export CXXFLAGS="-m64 -stdlib=libc++"
       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug ../..
     displayName: CMake Configure (Debug)
   - bash: /usr/bin/cmake --build build/Debug --parallel
