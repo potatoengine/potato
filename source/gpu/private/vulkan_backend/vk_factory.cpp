@@ -9,4 +9,15 @@ auto gm::CreateVulkanGPUFactory() -> box<IGPUDevice> {
     return nullptr;
 }
 
+bool gm::VkFactory::isEnabled() const {
+    return false;
+}
+
+void gm::VkFactory::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
+}
+
+auto gm::VkFactory::createDevice(int index) -> box<IGPUDevice> {
+    return nullptr;
+}
+
 #endif

@@ -11,6 +11,11 @@ namespace gm
 {
     class VkFactory final : public IGPUFactory {
     public:
+        virtual ~VkFactory();
+
+        bool isEnabled() const override;
+        void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
+        box<IGPUDevice> createDevice(int index) override;
     };
 }
 
