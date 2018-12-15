@@ -23,7 +23,7 @@ jobs:
     displayName: Build (Release)
   - script: |
       cd build
-      ctest --config RelWithDebInfo -R grimm
+      ctest -C RelWithDebInfo -R grimm
     displayName: Run Tests
   - script: cmake --build build --config Debug --parallel
     displayName: Build (Debug)
