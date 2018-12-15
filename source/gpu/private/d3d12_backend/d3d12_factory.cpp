@@ -1,5 +1,7 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
+#if GM_GPU_ENABLE_D3D12
+
 #include "d3d12_factory.h"
 #include "d3d12_device.h"
 #include "grimm/foundation/out_ptr.h"
@@ -56,3 +58,5 @@ auto gm::D3d12Factory::createDevice(int index) -> box<IGPUDevice>
 
     return nullptr;
 }
+
+#endif
