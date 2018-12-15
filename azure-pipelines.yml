@@ -21,12 +21,12 @@ jobs:
     displayName: CMake Configure
   - script: cmake --build build --config RelWithDebInfo --parallel
     displayName: Build (Release)
-  - script: cmake --build build --config Debug --parallel
-    displayName: Build (Debug)
   - script: |
       cd build
       ctest --config RelWithDebInfo -R grimm
     displayName: Run Tests
+  - script: cmake --build build --config Debug --parallel
+    displayName: Build (Debug)
 
 - job: Linux
   pool:
