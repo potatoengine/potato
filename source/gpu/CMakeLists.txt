@@ -6,7 +6,7 @@ add_library(grimm::gpu ALIAS gpu)
 
 set_target_properties(gpu PROPERTIES
     LINKER_LANGUAGE CXX
-    DEFINE_SYMBOL GM_FRAMEWORK_EXPORTS
+    DEFINE_SYMBOL GM_GPU_EXPORTS
 )
 
 target_compile_features(gpu
@@ -53,16 +53,5 @@ target_sources(gpu PRIVATE
     public/grimm/gpu/factory.h
 )
 
-target_sources(gpu PRIVATE
-    private/null_device.h
-    private/null_factory.h
-)
-
-target_sources(gpu PRIVATE
-    private/device.cpp
-    private/factory.cpp
-    private/null_device.cpp
-    private/null_factory.cpp
-)
-
+add_subdirectory(private)
 add_subdirectory(tests)

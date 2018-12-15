@@ -1,7 +1,7 @@
 #include "doctest.h"
 
-#include "null_factory.h"
-#include "null_device.h"
+#include "null_backend/null_factory.h"
+#include "null_backend/null_device.h"
 
 DOCTEST_TEST_SUITE("[grimm][gpu] NullDevice")
 {
