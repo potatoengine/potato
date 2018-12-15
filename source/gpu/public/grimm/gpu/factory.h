@@ -26,4 +26,5 @@ namespace gm
     };
 
     GM_GPU_API box<IGPUFactory> CreateNullGPUFactory();
+    GM_GPU_API box<IGPUDevice> CreateVulkanGPUFactory();
 }

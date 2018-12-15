@@ -5,6 +5,8 @@
 #include "_export.h"
 #include "grimm/gpu/device.h"
 
+#if GM_GPU_ENABLE_VULKAN
+
 namespace gm
 {
     class VkDevice final : public IGPUDevice {
@@ -15,3 +17,5 @@ namespace gm
         VkDevice& operator=(VkDevice&) = delete;
     };
 }
+
+#endif

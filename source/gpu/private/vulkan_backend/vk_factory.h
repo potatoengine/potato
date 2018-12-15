@@ -4,8 +4,13 @@
 
 #include "_export.h"
 #include "grimm/gpu/device.h"
+#include "grimm/foundation/box.h"
+
+#if GM_GPU_ENABLE_VULKAN
 
 namespace gm
 {
-    GM_GPU_VULKAN_API box<IGPUDevice> CreateVulkanFactory();
+    GM_GPU_API box<IGPUDevice> CreateVulkanFactory();
 }
+
+#endif

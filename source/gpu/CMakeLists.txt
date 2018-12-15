@@ -53,5 +53,14 @@ target_sources(gpu PRIVATE
     public/grimm/gpu/factory.h
 )
 
+find_package(Vulkan)
+if(Vulkan_FOUND)
+    message(STATUS "ENABLED Vulkan support")
+    target_compile_definitions(gpu PUBLIC GM_GPU_ENABLE_VULKAN)
+    target_link_libraries(gpu PRIVATE Vulkan::Vulkan)
+else()
+    message(STATUS "DISABLED Vulkan support")
+endif(Vulkan_FOUND)
+
 add_subdirectory(private)
 add_subdirectory(tests)

@@ -2,4 +2,8 @@
 
 #include "vk_device.h"
 
-gm::IGPUDevice::~IGPUDevice() = default;
+#if GM_GPU_ENABLE_VULKAN
+
+gm::VkDevice::~VkDevice() = default;
+
+#endif
