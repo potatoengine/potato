@@ -55,6 +55,7 @@ jobs:
       cd build/RelWithDebInfo
       export CXX=clang++-7
       export CC=clang-7
+      export CXXFLAGS="-m64 -stdlib=libc++"
       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
     displayName: CMake Configure (Release)
   - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
