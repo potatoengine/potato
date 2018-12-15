@@ -10,13 +10,20 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
-  - script: .\scripts\bootstrap-windows.bat
-    displayName: Bootstrapping
-  - script: cmake --build "build\windows" --config RelWithDebInfo --parallel
+  - script: |
+      "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+      cmake --version
+    displayName: Build Information
+  - script: |
+      mkdir build
+      cd build
+      cmake -A x64
+    displayName: CMake Configure
+  - script: cmake --build build --config RelWithDebInfo --parallel
     displayName: Build Release
-  - script: cmake --build "build\windows" --config Debug --parallel
+  - script: cmake --build build --config Debug --parallel
     displayName: Build Debug
-  - script: ctest --build "build\windows" --config RelWithDebInfo -R grimm
+  - script: ctest --build build --config RelWithDebInfo -R grimm
     displayName: Run Tests
 
 - job: Linux
