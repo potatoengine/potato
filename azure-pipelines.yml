@@ -10,28 +10,27 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
-  - displayName: Build Information
-    script: |
+  - script: |
       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
       cmake --version
-  - displayName: CMake Configure
-    script: |
+    displayName: Build Information
+  - script: |
       mkdir build
       cd build
       cmake -A x64 ..
-  - displayName: Build (Release)
-    script: cmake --build build --config RelWithDebInfo --parallel
-  - displayName: Build (Debug)
-    script: cmake --build build --config Debug --parallel
-  - displayName: Run Tests
-    script: ctest --build build --config RelWithDebInfo -R grimm
+    displayName: CMake Configure
+  - script: cmake --build build --config RelWithDebInfo --parallel
+    displayName: Build (Release)
+  - script: cmake --build build --config Debug --parallel
+    displayName: Build (Debug)
+  - script: ctest --build build --config RelWithDebInfo -R grimm
+    displayName: Run Tests
 
 - job: Linux
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-  - displayName: Installing Dependencies
-    bash: |
+  - bash: |
       . /etc/lsb-release
 
       wget -O - "https://apt.llvm.org/llvm-snapshot.gpg.key" | sudo apt-key add -
@@ -45,24 +44,25 @@ jobs:
 
       sudo apt-get -y update
       sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev ninja-build lunarg-vulkan-sdk
-  - displayName: Build Information
-    bash: |
+    displayName: Installing Dependencies
+  - bash: |
       clang++-7 --version
       cmake --version
       ninja --version
-  - displayName: CMake Configure (Release)
-    base: |
+    displayName: Build Information
+  - base: |
       mkdir -p build/RelWithDebInfo
       cd build/RelWithDebInfo
       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
-  - displayName: Build (Release)
-    bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
-  - displayName: Run Tests
-    script: /usr/bin/ctest --build build/RelWithDebInfo -R grimm
-  - displayName: CMake Configure (Debug)
-    bash: |
+    displayName: CMake Configure (Release)
+  - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
+    displayName: Build (Release)
+  - script: /usr/bin/ctest --build build/RelWithDebInfo -R grimm
+    displayName: Run Tests
+  - bash: |
       mkdir -p build/Debug
       cd build/Debug
       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug ../..
-  - displayName: Build (Debug)
-    bash: /usr/bin/cmake --build build/Debug --parallel
+    displayName: CMake Configure (Debug)
+  - bash: /usr/bin/cmake --build build/Debug --parallel
+    displayName: Build (Debug)
