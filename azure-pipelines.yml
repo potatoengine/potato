@@ -87,12 +87,12 @@ jobs:
   - bash: |
       xcode-select --print-path
       clang++ --version
-      /usr/bin/cmake --version
+      cmake --version
     displayName: Build Information
   - bash: |
       mkdir -p build/RelWithDebInfo
       cd build/RelWithDebInfo
-      /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
+      cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
     displayName: Configure CMake (Release)
-  - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
+  - bash: cmake --build build/RelWithDebInfo --parallel
     displayName: Build (Release)
