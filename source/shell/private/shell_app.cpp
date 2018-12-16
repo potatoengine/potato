@@ -35,18 +35,14 @@ int gm::ShellApp::initialize() {
     return 0;
 }
 
-void gm::ShellApp::run()
-{
+void gm::ShellApp::run() {
     SDL_Event ev;
-    while (SDL_WaitEvent(&ev))
-    {
-        switch (ev.type)
-        {
+    while (SDL_WaitEvent(&ev)) {
+        switch (ev.type) {
         case SDL_QUIT:
             return;
         case SDL_WINDOWEVENT:
-            switch (ev.window.type)
-            {
+            switch (ev.window.type) {
             case SDL_WINDOWEVENT_CLOSE:
                 return;
             }
