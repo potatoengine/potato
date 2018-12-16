@@ -4,20 +4,20 @@
 #include "platform.h"
 
 #if !defined(GM_PLATFORM_WINDOWS)
-#	error "Unsupported platform"
+#    error "Unsupported platform"
 #endif
 
-#include "platform_windows.h"
 #include "numeric_util.h"
+#include "platform_windows.h"
 #include "string.h"
 
-#pragma warning(disable:4091)
+
+#pragma warning(disable : 4091)
 #include <dbghelp.h>
 
 namespace {
 
-    class CallstackHelper
-    {
+    class CallstackHelper {
     public:
         CallstackHelper();
         ~CallstackHelper();
@@ -54,8 +54,7 @@ namespace {
 #endif // !defined(NDEBUG)
     };
 
-    CallstackHelper::CallstackHelper()
-    {
+    CallstackHelper::CallstackHelper() {
         _process = GetCurrentProcess();
 
         _kernelLib = LoadLibraryW(L"kernel32.dll");
@@ -94,9 +93,8 @@ namespace {
         _initialized = true;
     }
 
-    CallstackHelper::~CallstackHelper()
-    {
-        
+    CallstackHelper::~CallstackHelper() {
+
 #if !defined(NDEBUG)
         if (_symCleanup != nullptr)
             _symCleanup(_process);
@@ -113,8 +111,7 @@ namespace {
         FreeLibrary(_kernelLib);
     }
 
-    int CallstackHelper::captureStackTrace(int skip, int count, void** entries)
-    {
+    int CallstackHelper::captureStackTrace(int skip, int count, void** entries) {
         if (_captureStackBackTrace != nullptr)
             return _captureStackBackTrace(skip + 1, count, entries, nullptr);
         else
@@ -122,8 +119,7 @@ namespace {
     }
 
 #if !defined(NDEBUG)
-    void CallstackHelper::readSymbol(void* entry, PSYMBOL_INFO symInfo, PIMAGEHLP_LINE64 lineInfo)
-    {
+    void CallstackHelper::readSymbol(void* entry, PSYMBOL_INFO symInfo, PIMAGEHLP_LINE64 lineInfo) {
         if (_symFromAddr != nullptr)
             _symFromAddr(GetCurrentProcess(), DWORD64(entry), nullptr, symInfo);
 
@@ -133,16 +129,14 @@ namespace {
     }
 #endif // !defined(NDEBUG)
 
-    CallstackHelper& CallstackHelper::instance()
-    {
+    CallstackHelper& CallstackHelper::instance() {
         static CallstackHelper helper;
         return helper;
     }
 
 } // anonymous namespace
 
-int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip)
-{
+int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip) {
     CallstackHelper& helper = CallstackHelper::instance();
 
     if (!helper.isInitialized())
@@ -151,8 +145,7 @@ int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip)
     return helper.captureStackTrace(skip + 1, static_cast<int>(addresses.size()), reinterpret_cast<void**>(addresses.data()));
 }
 
-bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records)
-{
+bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records) {
 #if !defined(NDEBUG)
     CallstackHelper& helper = CallstackHelper::instance();
 
@@ -175,8 +168,7 @@ bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresse
 
     HANDLE process = GetCurrentProcess();
 
-    for (auto index = 0; index != max; ++index)
-    {
+    for (auto index = 0; index != max; ++index) {
         helper.readSymbol(reinterpret_cast<void*>(addresses[index]), symbolInfoPtr, &imagehlpLine64);
 
         CallStackRecord& record = out_records[index];

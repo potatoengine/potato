@@ -8,26 +8,23 @@
 
 // needed by fmtlib
 #if !defined(FMT_ASSERT)
-#   define FMT_ASSERT(cond, message) \
-    do{ \
-        if (!(cond)) { \
-            ::gm::fatal_error(__FILE__, __LINE__, #cond, (message)); \
-            std::abort(); \
-        } \
-    }while(false)
+#    define FMT_ASSERT(cond, message)                                    \
+        do {                                                             \
+            if (!(cond)) {                                               \
+                ::gm::fatal_error(__FILE__, __LINE__, #cond, (message)); \
+                std::abort();                                            \
+            }                                                            \
+        } while (false)
 #endif
 #if !defined(assert)
-#   define assert(cond) \
-    FMT_ASSERT((cond), "assertion failed")
+#    define assert(cond) \
+        FMT_ASSERT((cond), "assertion failed")
 #endif
-
 
 #include <fmt/format.h>
 
-namespace gm
-{
-    class format_memory_buffer
-    {
+namespace gm {
+    class format_memory_buffer {
     public:
         using value_type = char;
         using size_type = size_t;
@@ -50,12 +47,13 @@ namespace gm
         size_t _size = 0;
         size_t _capacity = sizeof(_buffer) - 1;
         char* _ptr = _buffer;
-        char _buffer[512] = { '\0', };
+        char _buffer[512] = {
+            '\0',
+        };
     };
 
     template <size_t Capacity>
-    class format_fixed_buffer
-    {
+    class format_fixed_buffer {
     public:
         using value_type = char;
         using size_type = size_t;
@@ -76,14 +74,14 @@ namespace gm
 
     private:
         size_t _size = 0;
-        char _buffer[Capacity] = { '\0', };
+        char _buffer[Capacity] = {
+            '\0',
+        };
     };
 
     template <size_t Capacity>
-    void format_fixed_buffer<Capacity>::push_back(value_type ch)
-    {
-        if (_size < Capacity - 1)
-        {
+    void format_fixed_buffer<Capacity>::push_back(value_type ch) {
+        if (_size < Capacity - 1) {
             _buffer[_size++] = ch;
             _buffer[_size] = '\0';
         }
@@ -98,4 +96,4 @@ namespace gm
     constexpr decltype(auto) format_into(Buffer& buffer, string_view format, Args const&... args) {
         return ::fmt::format_to(std::back_inserter(buffer), ::fmt::string_view(format.data(), format.size()), args...);
     }
-}
+} // namespace gm

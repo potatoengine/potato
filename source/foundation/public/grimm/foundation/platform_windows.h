@@ -5,11 +5,11 @@
 #include "platform.h"
 
 #if !defined(GM_PLATFORM_WINDOWS)
-#	error "WindowsKit.h must only be included on Windows, check for GM_PLATFORM_WINDOWS before including"
+#    error "WindowsKit.h must only be included on Windows, check for GM_PLATFORM_WINDOWS before including"
 #endif
 
 #if !defined(_UNICODE)
-#	error "Always compile Windows apps in _UNICODE mode to ensure compatibility"
+#    error "Always compile Windows apps in _UNICODE mode to ensure compatibility"
 #endif
 
 #undef WIN32_LEAN_AND_MEAN

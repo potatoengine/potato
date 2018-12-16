@@ -6,8 +6,7 @@
 #include <initializer_list>
 #include <type_traits>
 
-namespace gm
-{
+namespace gm {
     template <typename T, typename A>
     class vector;
 
@@ -16,13 +15,12 @@ namespace gm
 
     template <typename HashAlgorithm, typename T>
     inline void hash_append(HashAlgorithm&, gm::array_view<T> const&);
-}
+} // namespace gm
 
 /// <summary> A non-owning slice of an array. </summary>
 /// <typeparam name="T"> Type of the elements in the array. </typeparam>
 template <typename T>
-struct gm::array_view
-{
+struct gm::array_view {
 public:
     using iterator = T*;
     using sentinel = T*;
@@ -31,12 +29,17 @@ public:
 
     array_view() = default; // #FIXME: figure out why this is needed even though I've inherited constructors
     /*implicit*/ template <typename U>
-    array_view(array_view<U> src) : _begin(src.begin()), _end(src.end()) {}
+    array_view(array_view<U> src)
+        : _begin(src.begin()), _end(src.end()) {}
     /*implicit*/ template <std::size_t N>
-    array_view(T(&src)[N]) : _begin(src), _end(src + N) {}
-    /*implicit*/ array_view(T* begin, T* end) : _begin(begin), _end(end) {}
-    /*implicit*/ array_view(std::initializer_list<T> src) : _begin(src.begin()), _end(src.end()) {}
-    explicit array_view(T* ptr, std::size_t size) : _begin(ptr), _end(ptr + size) {}
+    array_view(T (&src)[N])
+        : _begin(src), _end(src + N) {}
+    /*implicit*/ array_view(T* begin, T* end)
+        : _begin(begin), _end(end) {}
+    /*implicit*/ array_view(std::initializer_list<T> src)
+        : _begin(src.begin()), _end(src.end()) {}
+    explicit array_view(T* ptr, std::size_t size)
+        : _begin(ptr), _end(ptr + size) {}
 
     iterator begin() const { return _begin; }
     sentinel end() const { return _end; }
@@ -62,16 +65,12 @@ private:
 };
 
 template <typename HashAlgorithm, typename T>
-void gm::hash_append(HashAlgorithm& hasher, gm::array_view<T> const& view)
-{
-    if constexpr (gm::is_contiguous_v<T>)
-    {
+void gm::hash_append(HashAlgorithm& hasher, gm::array_view<T> const& view) {
+    if constexpr (gm::is_contiguous_v<T>) {
         hasher(view.data(), view.size() * sizeof(T));
     }
-    else
-    {
-        for (auto&& value : view)
-        {
+    else {
+        for (auto&& value : view) {
             hash_append(hasher, value);
         }
     }
