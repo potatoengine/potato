@@ -106,3 +106,8 @@ jobs:
       set -o xtrace
       cmake --build build/RelWithDebInfo --parallel
     displayName: Build (Release)
+  - script: |
+      set -o xtrace
+      cd build/RelWithDebInfo
+      ctest -R grimm
+    displayName: Run Tests
