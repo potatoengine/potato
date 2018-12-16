@@ -85,13 +85,14 @@ jobs:
       brew upgrade cmake
     displayName: Installing Dependencies
   - bash: |
+      xcode-select --print-path
       clang++ --version
-      usr/bin/cmake --version
+      /usr/bin/cmake --version
     displayName: Build Information
   - bash: |
       mkdir -p build/RelWithDebInfo
       cd build/RelWithDebInfo
-      cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
+      /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
     displayName: Configure CMake (Release)
   - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
     displayName: Build (Release)
