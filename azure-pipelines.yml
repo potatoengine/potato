@@ -33,6 +33,7 @@ jobs:
     vmImage: 'ubuntu-16.04'
   steps:
   - bash: |
+      set -o xtrace
       . /etc/lsb-release
 
       wget -O - "https://apt.llvm.org/llvm-snapshot.gpg.key" | sudo apt-key add -
@@ -48,11 +49,13 @@ jobs:
       sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev ninja-build lunarg-vulkan-sdk
     displayName: Installing Dependencies
   - bash: |
+      set -o xtrace
       clang++-7 --version
       cmake --version
       ninja --version
     displayName: Build Information
   - bash: |
+      set -o xtrace
       mkdir -p build/RelWithDebInfo
       cd build/RelWithDebInfo
       export CXX=clang++-7
@@ -63,10 +66,12 @@ jobs:
   - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
     displayName: Build (Release)
   - script: |
+      set -o xtrace
       cd build
       /usr/bin/ctest -R grimm
     displayName: Run Tests
   - bash: |
+      set -o xtrace
       mkdir -p build/Debug
       cd build/Debug
       export CXX=clang++-7
@@ -74,5 +79,42 @@ jobs:
       export CXXFLAGS="-m64 -stdlib=libc++"
       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug ../..
     displayName: CMake Configure (Debug)
-  - bash: /usr/bin/cmake --build build/Debug --parallel
+  - bash: |
+      set -o xtrace
+      /usr/bin/cmake --build build/Debug --parallel
     displayName: Build (Debug)
+
+- job: MacOS
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+  - bash: |
+      set -o xtrace
+      brew upgrade cmake
+      brew install llvm
+    displayName: Installing Dependencies
+  - bash: |
+      set -o xtrace
+      xcode-select --print-path
+      clang++ --version
+      cmake --version
+      brew info llvm
+    displayName: Build Information
+  - bash: |
+      set -o xtrace
+      export CXX=/usr/local/opt/llvm/bin/clang++ CC=/usr/local/opt/llvm/bin/clang
+      export LDFLAGS=-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib
+      export CXXFLAGS=-I/usr/local/opt/llvm/include
+      mkdir -p build/RelWithDebInfo
+      cd build/RelWithDebInfo
+      cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
+    displayName: Configure CMake (Release)
+  - bash: |
+      set -o xtrace
+      cmake --build build/RelWithDebInfo --parallel
+    displayName: Build (Release)
+  - script: |
+      set -o xtrace
+      cd build/RelWithDebInfo
+      ctest -R grimm
+    displayName: Run Tests
