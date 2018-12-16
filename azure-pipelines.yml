@@ -6,76 +6,76 @@ trigger:
     - releases/*
 
 jobs:
-# - job: Windows
-#   pool:
-#     vmImage: 'vs2017-win2016'
-#   steps:
-#   - script: |
-#       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
-#       cmake --version
-#     displayName: Build Information
-#   - script: |
-#       mkdir build
-#       cd build
-#       cmake -A x64 ..
-#     displayName: CMake Configure
-#   - script: cmake --build build --config RelWithDebInfo --parallel
-#     displayName: Build (Release)
-#   - script: |
-#       cd build
-#       ctest -C RelWithDebInfo -R grimm
-#     displayName: Run Tests
-#   - script: cmake --build build --config Debug --parallel
-#     displayName: Build (Debug)
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+  - script: |
+      "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+      cmake --version
+    displayName: Build Information
+  - script: |
+      mkdir build
+      cd build
+      cmake -A x64 ..
+    displayName: CMake Configure
+  - script: cmake --build build --config RelWithDebInfo --parallel
+    displayName: Build (Release)
+  - script: |
+      cd build
+      ctest -C RelWithDebInfo -R grimm
+    displayName: Run Tests
+  - script: cmake --build build --config Debug --parallel
+    displayName: Build (Debug)
 
-# - job: Linux
-#   pool:
-#     vmImage: 'ubuntu-16.04'
-#   steps:
-#   - bash: |
-#       . /etc/lsb-release
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - bash: |
+      . /etc/lsb-release
 
-#       wget -O - "https://apt.llvm.org/llvm-snapshot.gpg.key" | sudo apt-key add -
-#       wget -qO - "http://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo apt-key add -
+      wget -O - "https://apt.llvm.org/llvm-snapshot.gpg.key" | sudo apt-key add -
+      wget -qO - "http://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo apt-key add -
 
-#       sudo wget -qO "/etc/apt/sources.list.d/lunarg-vulkan-1.1.92-${DISTRIB_CODENAME}.list" "http://packages.lunarg.com/vulkan/1.1.92/lunarg-vulkan-1.1.92-${DISTRIB_CODENAME}.list"
+      sudo wget -qO "/etc/apt/sources.list.d/lunarg-vulkan-1.1.92-${DISTRIB_CODENAME}.list" "http://packages.lunarg.com/vulkan/1.1.92/lunarg-vulkan-1.1.92-${DISTRIB_CODENAME}.list"
 
-#       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-#       sudo add-apt-repository -y ppa:janisozaur/cmake-update
-#       sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-7 main"
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      sudo add-apt-repository -y ppa:janisozaur/cmake-update
+      sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-7 main"
 
-#       sudo apt-get -y update
-#       sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev ninja-build lunarg-vulkan-sdk
-#     displayName: Installing Dependencies
-#   - bash: |
-#       clang++-7 --version
-#       cmake --version
-#       ninja --version
-#     displayName: Build Information
-#   - bash: |
-#       mkdir -p build/RelWithDebInfo
-#       cd build/RelWithDebInfo
-#       export CXX=clang++-7
-#       export CC=clang-7
-#       export CXXFLAGS="-m64 -stdlib=libc++"
-#       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
-#     displayName: CMake Configure (Release)
-#   - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
-#     displayName: Build (Release)
-#   - script: |
-#       cd build
-#       /usr/bin/ctest -R grimm
-#     displayName: Run Tests
-#   - bash: |
-#       mkdir -p build/Debug
-#       cd build/Debug
-#       export CXX=clang++-7
-#       export CC=clang-7
-#       export CXXFLAGS="-m64 -stdlib=libc++"
-#       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug ../..
-#     displayName: CMake Configure (Debug)
-#   - bash: /usr/bin/cmake --build build/Debug --parallel
-#     displayName: Build (Debug)
+      sudo apt-get -y update
+      sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev ninja-build lunarg-vulkan-sdk
+    displayName: Installing Dependencies
+  - bash: |
+      clang++-7 --version
+      cmake --version
+      ninja --version
+    displayName: Build Information
+  - bash: |
+      mkdir -p build/RelWithDebInfo
+      cd build/RelWithDebInfo
+      export CXX=clang++-7
+      export CC=clang-7
+      export CXXFLAGS="-m64 -stdlib=libc++"
+      /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
+    displayName: CMake Configure (Release)
+  - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
+    displayName: Build (Release)
+  - script: |
+      cd build
+      /usr/bin/ctest -R grimm
+    displayName: Run Tests
+  - bash: |
+      mkdir -p build/Debug
+      cd build/Debug
+      export CXX=clang++-7
+      export CC=clang-7
+      export CXXFLAGS="-m64 -stdlib=libc++"
+      /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug ../..
+    displayName: CMake Configure (Debug)
+  - bash: /usr/bin/cmake --build build/Debug --parallel
+    displayName: Build (Debug)
 
 - job: MacOS
   pool:
