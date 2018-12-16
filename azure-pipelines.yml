@@ -46,7 +46,7 @@ jobs:
       sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-7 main"
 
       sudo apt-get -y update
-      sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev ninja-build lunarg-vulkan-sdk
+      sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev ninja-build lunarg-vulkan-sdk libsdl2-dev
     displayName: Installing Dependencies
   - bash: |
       set -o xtrace
@@ -92,6 +92,7 @@ jobs:
       set -o xtrace
       brew upgrade cmake
       brew install llvm
+      brew install sdl2
     displayName: Installing Dependencies
   - bash: |
       set -o xtrace
