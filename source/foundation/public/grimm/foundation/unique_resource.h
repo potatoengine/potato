@@ -31,7 +31,7 @@ public:
 	inline void reset();
 
 private:
-	T _object;
+	T _object = {};
 };
 
 template <typename T, auto D>
