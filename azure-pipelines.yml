@@ -82,17 +82,24 @@ jobs:
     vmImage: 'macOS-10.13'
   steps:
   - bash: |
+      set -o xtrace
       brew upgrade cmake
+      brew install llvm
     displayName: Installing Dependencies
   - bash: |
+      set -o xtrace
       xcode-select --print-path
       clang++ --version
       cmake --version
+      brew info llvm
     displayName: Build Information
   - bash: |
+      set -o xtrace
       mkdir -p build/RelWithDebInfo
       cd build/RelWithDebInfo
       cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
     displayName: Configure CMake (Release)
-  - bash: cmake --build build/RelWithDebInfo --parallel
+  - bash: |
+      set -o xtrace
+      cmake --build build/RelWithDebInfo --parallel
     displayName: Build (Release)
