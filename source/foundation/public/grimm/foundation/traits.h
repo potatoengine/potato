@@ -37,9 +37,9 @@ struct gm::is_contiguous : std::integral_constant<bool, std::is_integral_v<T> ||
 
 #if defined(GM_PLATFORM_WINDOWS)
 template <typename R, typename... A>
-struct gm::signature<R(__stdcall)(A...)> { using type = R(A...); };
+struct gm::signature<R __stdcall(A...)> { using type = R(A...); };
 template <typename R, typename... A>
-struct gm::signature<R(__vectorcall)(A...)> { using type = R(A...); };
+struct gm::signature<R __vectorcall(A...)> { using type = R(A...); };
 template <typename R, typename... A>
 struct gm::signature<R(__stdcall*)(A...)> { using type = R(A...); };
 template <typename R, typename... A>
