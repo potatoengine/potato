@@ -10,6 +10,10 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
+  - bash: |
+      curl -o SDL.zip https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+      unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
+    displayName: Installing Dependencies
   - script: |
       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
       cmake --version
@@ -17,7 +21,7 @@ jobs:
   - script: |
       mkdir build
       cd build
-      cmake -A x64 ..
+      cmake -A x64 -DSDL2DIR="${BUILD_SOURCESDIRECTORY}/deps/SDL-2.0.9" ..
     displayName: CMake Configure
   - script: cmake --build build --config RelWithDebInfo --parallel
     displayName: Build (Release)
