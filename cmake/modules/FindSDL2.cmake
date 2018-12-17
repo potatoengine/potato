@@ -105,21 +105,9 @@ if(NOT ${SDL2_INCLUDE_DIR} MATCHES ".framework")
     )
 endif(NOT ${SDL2_INCLUDE_DIR} MATCHES ".framework")
 
-# SDL2 may require threads on your system.
-# The Apple build may not need an explicit flag because one of the
-# frameworks may already provide it.
-# But for non-OSX systems, I will use the CMake Threads package.
-if(NOT APPLE)
-	find_package(Threads)
-endif(NOT APPLE)
-
-# MinGW needs an additional link flag, -mwindows
-# It's total link flags should look like -lmingw32 -lSDL2main -lSDL2 -mwindows
-if(MINGW)
-	set(MINGW32_LIBRARY mingw32 "-mwindows" CACHE STRING "mwindows for MinGW")
-endif(MINGW)
-
 if(SDL2_LIBRARY_TEMP)
+    set(SDL2_INTERFACE_LIBRARIES "" CACHE INTERNAL "")
+
 	# For OS X, SDL2 uses Cocoa as a backend so it must link to Cocoa.
 	# CMake doesn't display the -framework Cocoa string in the UI even
 	# though it actually is there if I modify a pre-used variable.
@@ -127,19 +115,23 @@ if(SDL2_LIBRARY_TEMP)
 	# So I use a temporary variable until the end so I can set the
 	# "real" variable in one-shot.
 	if(APPLE)
-		set(SDL2_LIBRARY_TEMP ${SDL2_LIBRARY_TEMP} "-framework Cocoa")
+        list(APPEND SDL2_INTERFACE_LIBRARIES "-framework Cocoa")
 	endif(APPLE)
 
-	# For threads, as mentioned Apple doesn't need this.
-	# In fact, there seems to be a problem if I used the Threads package
-	# and try using this line, so I'm just skipping it entirely for OS X.
-	if(NOT APPLE)
-		set(SDL2_LIBRARY_TEMP ${SDL2_LIBRARY_TEMP} ${CMAKE_THREAD_LIBS_INIT})
+	# SDL2 may require threads on your system.
+    # The Apple build may not need an explicit flag because one of the
+    # frameworks may already provide it.
+    # But for non-OSX systems, I will use the CMake Threads package.
+    if(NOT APPLE)
+        find_package(Threads)
+        list(APPEND SDL2_INTERFACE_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 	endif(NOT APPLE)
 
-	# For MinGW library
-	if(MINGW)
-		set(SDL2_LIBRARY_TEMP ${MINGW32_LIBRARY} ${SDL2_LIBRARY_TEMP})
+	# MinGW needs an additional link flag, -mwindows
+    # It's total link flags should look like -lmingw32 -lSDL2main -lSDL2 -mwindows
+    if(MINGW)
+        set(MINGW32_LIBRARY mingw32 "-mwindows" CACHE STRING "mwindows for MinGW")
+		list(APPEND SDL2_INTERFACE_LIBRARIES ${MINGW32_LIBRARY})
 	endif(MINGW)
 
 	# Set the final string here so the GUI reflects the final state.
@@ -149,20 +141,20 @@ if(SDL2_LIBRARY_TEMP)
 
     add_library(SDL2 IMPORTED SHARED GLOBAL)
     add_library(SDL2::SDL2 ALIAS SDL2)
-    set_target_properties(SDL2 PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}")
+    set_target_properties(SDL2 PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIR}
+        IMPORTED_LINK_INTERFACE_LIBRARIES "${SDL2_INTERFACE_LIBRARIES}"
+    )
 
     add_library(SDL2main IMPORTED STATIC GLOBAL)
     add_library(SDL2::SDL2main ALIAS SDL2main)
-    set_target_properties(SDL2main PROPERTIES IMPORTED_LOCATION "${SDL2MAIN_LIBRARY}")
+    set_target_properties(SDL2main PROPERTIES IMPORTED_LOCATION ${SDL2MAIN_LIBRARY})
 
     if(WIN32)
-        string(REPLACE ".lib" ".dll" SDL2_LIBRARY_DLL "${SDL2_LIBRARY}")
-        set_target_properties(SDL2 PROPERTIES
-            IMPORTED_LOCATION "${SDL2_LIBRARY_DLL}"
-            IMPORTED_IMPLIB "${SDL2_LIBRARY}"
-        )
+        string(REPLACE ".lib" ".dll" SDL2_LIBRARY_DLL ${SDL2_LIBRARY})
+        set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIBRARY_DLL} IMPORTED_IMPLIB ${SDL2_LIBRARY})
     else(WIN32)
-        set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION "${SDL2_LIBRARY}")
+        set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIBRARY})
     endif(WIN32)
 endif(SDL2_LIBRARY_TEMP)
 
