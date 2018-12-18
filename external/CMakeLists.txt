@@ -1,17 +1,6 @@
 set(FMT_TEST OFF CACHE BOOL "enable fmtlib tests")
 add_subdirectory(fmt-5.2.0 EXCLUDE_FROM_ALL)
 
-find_package(SDL2)
-if(SDL2_LIBRARY)
-    message(STATUS "Using system SDL2")
-else()
-    message(STATUS "Using bundled SDL2")
-    set(SDL_STATIC OFF CACHE BOOL "enable sdl2 static lib")
-    add_subdirectory(sdl-2.0.9 EXCLUDE_FROM_ALL)
-    add_library(SDL2::SDL2 ALIAS SDL2)
-    add_library(SDL2::SDL2main ALIAS SDL2main)
-endif()
-
 set(DOCTEST_WITH_TESTS OFF CACHE BOOL "enable doctest tests")
 set(DOCTEST_WITH_MAIN_IN_STATIC_LIB OFF CACHE BOOL "enable doctest static lib")
 add_subdirectory(doctest-2.2.0 EXCLUDE_FROM_ALL)
