@@ -11,6 +11,7 @@ jobs:
     vmImage: 'vs2017-win2016'
   steps:
   - bash: |
+      set -o xtrace
       curl -o SDL.zip https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
       unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
     displayName: Installing Dependencies
@@ -18,18 +19,24 @@ jobs:
       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
       cmake --version
     displayName: Build Information
-  - script: |
+  - bash: |
+      set -o xtrace
       mkdir build
       cd build
-      cmake -A x64 -DSDL2_PATH="$(Build.SourcesDirectory)/deps/SDL-2.0.9" ..
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" ..
     displayName: CMake Configure
-  - script: cmake --build build --config RelWithDebInfo --parallel
+  - bash: |
+      set -o xtrace
+      cmake --build build --config RelWithDebInfo --parallel
     displayName: Build (Release)
-  - script: |
+  - bash: |
+      set -o xtrace
       cd build
       ctest -C RelWithDebInfo -R grimm
     displayName: Run Tests
-  - script: cmake --build build --config Debug --parallel
+  - bash: |
+      set -o xtrace
+      cmake --build build --config Debug --parallel
     displayName: Build (Debug)
 
 - job: Linux
