@@ -9,7 +9,6 @@
 #if defined(GM_PLATFORM_WINDOWS)
 #    include "platform_windows.h"
 #endif
-
 namespace {
     gm::vector<gm::LoggerCallback> s_Handlers;
 }
@@ -37,7 +36,7 @@ void gm::logLine(string_view file, int line, LogSeverity severity, string_view m
     format(buffer, "{}\n", msg);
     OutputDebugStringA(buffer.c_str());
     fputs(buffer.c_str(), stdout);
-#else
+#else // defined(GM_PLATFORM_WINDOWS)
     //if (loc.file() && loc.line())
     //	printf("%s(%i): ", loc.file(), loc.line());
     //else if (loc.file())
@@ -46,8 +45,9 @@ void gm::logLine(string_view file, int line, LogSeverity severity, string_view m
     //	printf("(%i): ", loc.line());
 
     printf("%.*s\n", static_cast<int>(msg.size()), msg.data());
-#endif
+#endif // defined(GM_PLATFORM_WINDOWS)
 
-    for (auto& handler : s_Handlers)
+    for (auto& handler : s_Handlers) {
         handler(file, line, severity, msg);
+    }
 }

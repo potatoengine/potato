@@ -1,7 +1,7 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
 #include "allocator.h"
-#include "assert.h"
+#include "./assert.h"
 #include "callstack.h"
 #include "logging.h"
 #include "string_format.h"
@@ -15,17 +15,17 @@ auto gm::fatal_error(char const* file, int line, char const* failedConditionText
     logLine(file, line, LogSeverity::Error, "**ASSERTION FAILED**");
     logFormattedLine(file, line, LogSeverity::Error, "{}({}): {}", file, line, failedConditionText);
 
-    if (messageText != nullptr && messageText[0] != '\0')
+    if (messageText != nullptr && *messageText != '\0') {
         logLine(file, line, LogSeverity::Error, messageText);
+    }
 
     format_memory_buffer buffer;
     uintptr addresses[32];
     CallStackRecord records[32];
-    CallStackReader reader;
-    reader.readCallstack(addresses);
+    CallStackReader::readCallstack(addresses);
 
 #if !defined(NDEBUG)
-    if (reader.tryResolveCallstack(addresses, records)) {
+    if (CallStackReader::tryResolveCallstack(addresses, records)) {
         for (auto const& record : records) {
             format_into(buffer, "{}({}): {}\r\n", record.filename, record.line, record.symbol);
         }

@@ -14,9 +14,9 @@ namespace {
         char const* callstack = nullptr;
     };
 
-    static void CopyToClipboard(DialogData const& data) {
+    void CopyToClipboard(DialogData const& data) {
         // copy into clipboard
-        if (OpenClipboard(nullptr)) {
+        if (OpenClipboard(nullptr) == TRUE) {
             EmptyClipboard();
 
             gm::format_fixed_buffer<1024> buffer;
@@ -33,7 +33,7 @@ namespace {
         }
     }
 
-    static BOOL CALLBACK AssertDialogProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+    INT_PTR CALLBACK AssertDialogProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         using namespace gm;
 
         switch (msg) {
@@ -94,9 +94,10 @@ namespace {
         data.callstack = callstackText;
 
         // display dialog
-        HMODULE module = NULL;
-        GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCTSTR)AssertDialogProc, &module);
-        INT_PTR rs = DialogBoxParamW(module, MAKEINTRESOURCEW(IDD_ASSERT), GetActiveWindow(), (DLGPROC)AssertDialogProc, reinterpret_cast<LPARAM>(&data));
+        HMODULE module = nullptr;
+        static const LPCWSTR address = L"";
+        GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, address, &module);
+        INT_PTR rs = DialogBoxParamW(module, MAKEINTRESOURCEW(IDD_ASSERT), GetActiveWindow(), static_cast<DLGPROC>(AssertDialogProc), reinterpret_cast<LPARAM>(&data));
         return error_action(rs);
     }
 } // namespace

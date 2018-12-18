@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 static void run_shell()
 {
     SDL_Event ev;
-    while (SDL_WaitEvent(&ev))
+    while (SDL_WaitEvent(&ev) != 0)
     {
         switch (ev.type)
         {
