@@ -21,7 +21,7 @@ jobs:
   - script: |
       mkdir build
       cd build
-      cmake -A x64 -DSDL2DIR="${BUILD_SOURCESDIRECTORY}/deps/SDL-2.0.9" ..
+      cmake -A x64 -DSDL2_PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL-2.0.9" ..
     displayName: CMake Configure
   - script: cmake --build build --config RelWithDebInfo --parallel
     displayName: Build (Release)
