@@ -6,7 +6,48 @@ trigger:
     - releases/*
 
 jobs:
+- job: Analyze
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - bash: |
+      set -o xtrace
+      . /etc/lsb-release
+
+      wget -O - "https://apt.llvm.org/llvm-snapshot.gpg.key" | sudo apt-key add -
+      wget -qO - "http://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo apt-key add -
+
+      sudo wget -qO "/etc/apt/sources.list.d/lunarg-vulkan-1.1.92-${DISTRIB_CODENAME}.list" "http://packages.lunarg.com/vulkan/1.1.92/lunarg-vulkan-1.1.92-${DISTRIB_CODENAME}.list"
+
+      sudo add-apt-repository -y ppa:janisozaur/cmake-update
+      sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-7 main"
+
+      sudo apt-get -y update
+      sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev ninja-build lunarg-vulkan-sdk libsdl2-dev
+    displayName: Installing Dependencies
+  - bash: |
+      set -o xtrace
+      clang++-7 --version
+      cmake --version
+      ninja --version
+    displayName: Build Information
+  - bash: |
+      set -o xtrace
+      mkdir -p build/RelWithDebInfo
+      cd build/RelWithDebInfo
+      export CXX=clang++-7
+      export CC=clang-7
+      export CXXFLAGS="-m64 -stdlib=libc++"
+      /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON ../..
+    displayName: CMake Configure
+  - bash: |
+      set -o xtrace
+      find source -name '*.cpp' -exec clang-tidy-7 -p build/RelWithDebInfo '{}' ';'
+      /usr/bin/cmake --build build/RelWithDebInfo --parallel
+    displayName: Clang Tidy
+
 - job: Windows
+  dependsOn: Analyze
   pool:
     vmImage: 'vs2017-win2016'
   steps:
@@ -40,6 +81,7 @@ jobs:
     displayName: Build (Debug)
 
 - job: Linux
+  dependsOn: Analyze
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
@@ -52,7 +94,6 @@ jobs:
 
       sudo wget -qO "/etc/apt/sources.list.d/lunarg-vulkan-1.1.92-${DISTRIB_CODENAME}.list" "http://packages.lunarg.com/vulkan/1.1.92/lunarg-vulkan-1.1.92-${DISTRIB_CODENAME}.list"
 
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
       sudo add-apt-repository -y ppa:janisozaur/cmake-update
       sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-7 main"
 
@@ -74,7 +115,9 @@ jobs:
       export CXXFLAGS="-m64 -stdlib=libc++"
       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
     displayName: CMake Configure (Release)
-  - bash: /usr/bin/cmake --build build/RelWithDebInfo --parallel
+  - bash: |
+      set -o xtrace
+      /usr/bin/cmake --build build/RelWithDebInfo --parallel
     displayName: Build (Release)
   - script: |
       set -o xtrace
@@ -96,6 +139,7 @@ jobs:
     displayName: Build (Debug)
 
 - job: MacOS
+  dependsOn: Analyze
   pool:
     vmImage: 'macOS-10.13'
   steps:
