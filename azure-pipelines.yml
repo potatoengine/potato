@@ -23,7 +23,7 @@ jobs:
       sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-7 main"
 
       sudo apt-get -y update
-      sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev ninja-build lunarg-vulkan-sdk libsdl2-dev
+      sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev ninja-build lunarg-vulkan-sdk libsdl2-dev clang-tidy-7 clang-format-7
     displayName: Installing Dependencies
   - bash: |
       set -o xtrace
@@ -42,8 +42,8 @@ jobs:
     displayName: CMake Configure
   - bash: |
       set -o xtrace
-      find source -name '*.cpp' -exec clang-tidy-7 -p build/RelWithDebInfo '{}' ';'
-      /usr/bin/cmake --build build/RelWithDebInfo --parallel
+      clang-tidy-7 -dump-config
+      find ./source -name '*.cpp' | xargs -t -L1 clang-tidy-7 -p build/RelWithDebInfo
     displayName: Clang Tidy
 
 - job: Windows
