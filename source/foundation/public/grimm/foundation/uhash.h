@@ -11,7 +11,6 @@
 #include <typeindex>
 #include <utility>
 
-
 namespace gm {
     template <typename HashAlgorithm>
     struct uhash;

@@ -7,7 +7,6 @@
 #include <cstring>
 #include <string_view>
 
-
 namespace gm {
     using string_view = std::string_view;
 

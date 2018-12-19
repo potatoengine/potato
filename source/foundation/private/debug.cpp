@@ -1,7 +1,7 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
-#include "allocator.h"
 #include "./assert.h"
+#include "allocator.h"
 #include "callstack.h"
 #include "logging.h"
 #include "string_format.h"

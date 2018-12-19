@@ -9,7 +9,6 @@
 #include "memory_util.h"
 #include "numeric_util.h"
 
-
 #include <initializer_list>
 #include <type_traits>
 

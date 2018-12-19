@@ -8,12 +8,12 @@
 
 // needed by fmtlib
 #if !defined(FMT_ASSERT)
-#    define FMT_ASSERT(cond, message)                                    \
-        do {                                                             \
-            if (!(cond)) {                                               \
+#    define FMT_ASSERT(cond, message) \
+        do { \
+            if (!(cond)) { \
                 ::gm::fatal_error(__FILE__, __LINE__, #cond, (message)); \
-                std::abort();                                            \
-            }                                                            \
+                std::abort(); \
+            } \
         } while (false)
 #endif
 #if !defined(assert)

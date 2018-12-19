@@ -17,7 +17,8 @@ namespace gm::_detail {
     struct delegate_vtable {
         void (*move)(void* dst, void* src) = nullptr;
         void (*destruct)(void* obj) = nullptr;
-        R (*call)(void* obj, P&&... params) = nullptr;
+        R(*call)
+        (void* obj, P&&... params) = nullptr;
 
         constexpr explicit operator bool() const { return move != nullptr; }
     };
