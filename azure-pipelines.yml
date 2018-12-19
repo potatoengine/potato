@@ -40,11 +40,16 @@ jobs:
       export CXXFLAGS="-m64 -stdlib=libc++"
       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON ../..
     displayName: CMake Configure
+  # - bash: |
+  #     set -o xtrace
+  #     clang-tidy-7 -dump-config
+  #     find ./source -name '*.cpp' | xargs -t -L1 clang-tidy-7 -p build/RelWithDebInfo
+  #   displayName: Clang Tidy
   - bash: |
       set -o xtrace
-      clang-tidy-7 -dump-config
-      find ./source -name '*.cpp' | xargs -t -L1 clang-tidy-7 -p build/RelWithDebInfo
-    displayName: Clang Tidy
+      clang-format-7 -dump-config
+      python extra/ci/run-clang-format.py source/ -r --clang-format-executable=clang-format-7 -e '*/debug.windows.h'
+    displayName: Clang Format
 
 - job: Windows
   dependsOn: Analyze
