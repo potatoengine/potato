@@ -4,20 +4,19 @@
 
 #include "string_format.h"
 
-gm::format_memory_buffer::~format_memory_buffer()
-{
-    if (_ptr != _buffer)
+gm::format_memory_buffer::~format_memory_buffer() {
+    if (_ptr != static_cast<char*>(_buffer)) {
         delete[] _ptr;
+    }
 }
 
-void gm::format_memory_buffer::push_back(value_type ch)
-{
-    if (_size >= _capacity)
-    {
-        value_type* new_buffer = new value_type[_capacity * 2];
+void gm::format_memory_buffer::push_back(value_type ch) {
+    if (_size >= _capacity) {
+        auto new_buffer = new value_type[_capacity * 2];
         std::memcpy(new_buffer, _ptr, _size + 1);
-        if (_ptr != _buffer)
+        if (_ptr != static_cast<char*>(_buffer)) {
             delete[] _ptr;
+        }
         _ptr = new_buffer;
     }
 

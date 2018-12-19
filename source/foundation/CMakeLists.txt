@@ -8,10 +8,19 @@ set_target_properties(foundation PROPERTIES
     DEFINE_SYMBOL GM_FRAMEWORK_EXPORTS
 )
 
-target_compile_features(foundation
+# CMake doesn't generate the correct command-line for clang-tidy (7.x) using
+# the cxx_std_17 so we instead must set these options manually. Since we're
+# only targeting MSC and Clang, this is a bit easier than it would be.
+#
+target_compile_options(foundation
     PUBLIC
-        cxx_std_17
+        $<$<CXX_COMPILER_ID:MSVC>:/std:c++17>
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-std=c++17>
 )
+# target_compile_features(foundation
+#     PUBLIC
+#         cxx_std_17
+# )
 
 target_include_directories(foundation
     PUBLIC
@@ -41,6 +50,8 @@ target_compile_definitions(foundation
 target_compile_options(foundation
     PUBLIC
         $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
+        $<$<CXX_COMPILER_ID:MSVC>:/std:c++17>
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-std=c++17>
     PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/permissive->
 )
