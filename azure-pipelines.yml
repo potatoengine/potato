@@ -4,6 +4,9 @@ trigger:
     include:
     - master
     - releases/*
+  paths:
+    exclude:
+    - extra/docker/
 
 jobs:
 - job: Analyze
@@ -16,7 +19,7 @@ jobs:
     displayName: Docker Pull
   - bash: |
       set -o xtrace
-      docker run --mount="type=bind,source=${BUILD_SOURCESDIRECTORY},target=/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/analyze.sh
+      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/analyze.sh
     displayName: Clang Format
 
 # - job: Windows
@@ -64,11 +67,11 @@ jobs:
     displayName: Docker Pull
   - bash: |
       set -o xtrace
-      docker run --mount="type=bind,source=${BUILD_SOURCESDIRECTORY},target=/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/build-ubuntu.sh RelWithDebInfo
+      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/build-ubuntu.sh RelWithDebInfo
     displayName: Build (Release)
   - bash: |
       set -o xtrace
-      docker run --mount="type=bind,source=${BUILD_SOURCESDIRECTORY},target=/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/build-ubuntu.sh Debug
+      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/build-ubuntu.sh Debug
     displayName: Build (Debug)
 
 # - job: MacOS
