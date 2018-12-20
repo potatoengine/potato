@@ -1,0 +1,3 @@
+deb http://ppa.launchpad.net/janisozaur/cmake-update/ubuntu xenial main
+deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main
+deb https://packages.lunarg.com/vulkan/1.1.92 xenial main
