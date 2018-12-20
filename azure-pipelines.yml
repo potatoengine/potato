@@ -11,8 +11,13 @@ jobs:
     vmImage: 'ubuntu-16.04'
   steps:
   - bash: |
+      set -o xtrace
+      docker pull seanmiddleditch/grimm-ubuntu-build:latest
+    displayName: Docker Pull
+  - bash: |
+      set -o xtrace
       docker run --mount="type=bind,source=${BUILD_SOURCESDIRECTORY},target=/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/analyze.sh
-    displayName: Analyze
+    displayName: Clang Format
 
 # - job: Windows
 #   dependsOn: Analyze
@@ -48,63 +53,23 @@ jobs:
 #       cmake --build build --config Debug --parallel
 #     displayName: Build (Debug)
 
-# - job: Linux
-#   dependsOn: Analyze
-#   pool:
-#     vmImage: 'ubuntu-16.04'
-#   steps:
-#   - bash: |
-#       set -o xtrace
-#       . /etc/lsb-release
-
-#       wget -O - "https://apt.llvm.org/llvm-snapshot.gpg.key" | sudo apt-key add -
-#       wget -qO - "http://packages.lunarg.com/lunarg-signing-key-pub.asc" | sudo apt-key add -
-
-#       sudo wget -qO "/etc/apt/sources.list.d/lunarg-vulkan-1.1.92-${DISTRIB_CODENAME}.list" "http://packages.lunarg.com/vulkan/1.1.92/lunarg-vulkan-1.1.92-${DISTRIB_CODENAME}.list"
-
-#       sudo add-apt-repository -y ppa:janisozaur/cmake-update
-#       sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-7 main"
-
-#       sudo apt-get -y update
-#       sudo apt-get -y install cmake clang-7 libc++-7-dev libc++abi-7-dev ninja-build lunarg-vulkan-sdk libsdl2-dev
-#     displayName: Installing Dependencies
-#   - bash: |
-#       set -o xtrace
-#       clang++-7 --version
-#       cmake --version
-#       ninja --version
-#     displayName: Build Information
-#   - bash: |
-#       set -o xtrace
-#       mkdir -p build/RelWithDebInfo
-#       cd build/RelWithDebInfo
-#       export CXX=clang++-7
-#       export CC=clang-7
-#       export CXXFLAGS="-m64 -stdlib=libc++"
-#       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
-#     displayName: CMake Configure (Release)
-#   - bash: |
-#       set -o xtrace
-#       /usr/bin/cmake --build build/RelWithDebInfo --parallel
-#     displayName: Build (Release)
-#   - script: |
-#       set -o xtrace
-#       cd build
-#       /usr/bin/ctest -R grimm
-#     displayName: Run Tests
-#   - bash: |
-#       set -o xtrace
-#       mkdir -p build/Debug
-#       cd build/Debug
-#       export CXX=clang++-7
-#       export CC=clang-7
-#       export CXXFLAGS="-m64 -stdlib=libc++"
-#       /usr/bin/cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug ../..
-#     displayName: CMake Configure (Debug)
-#   - bash: |
-#       set -o xtrace
-#       /usr/bin/cmake --build build/Debug --parallel
-#     displayName: Build (Debug)
+- job: Linux
+  dependsOn: Analyze
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - bash: |
+      set -o xtrace
+      docker pull seanmiddleditch/grimm-ubuntu-build:latest
+    displayName: Docker Pull
+  - bash: |
+      set -o xtrace
+      docker run --mount="type=bind,source=${BUILD_SOURCESDIRECTORY},target=/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/build-ubuntu.sh RelWithDebInfo
+    displayName: Build (Release)
+  - bash: |
+      set -o xtrace
+      docker run --mount="type=bind,source=${BUILD_SOURCESDIRECTORY},target=/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/build-ubuntu.sh Debug
+    displayName: Build (Debug)
 
 # - job: MacOS
 #   dependsOn: Analyze
