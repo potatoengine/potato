@@ -22,39 +22,39 @@ jobs:
       docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/analyze.sh
     displayName: Clang Format
 
-# - job: Windows
-#   dependsOn: Analyze
-#   pool:
-#     vmImage: 'vs2017-win2016'
-#   steps:
-#   - bash: |
-#       set -o xtrace
-#       curl -o SDL.zip https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
-#       unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
-#     displayName: Installing Dependencies
-#   - script: |
-#       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
-#       cmake --version
-#     displayName: Build Information
-#   - bash: |
-#       set -o xtrace
-#       mkdir build
-#       cd build
-#       cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" ..
-#     displayName: CMake Configure
-#   - bash: |
-#       set -o xtrace
-#       cmake --build build --config RelWithDebInfo --parallel
-#     displayName: Build (Release)
-#   - bash: |
-#       set -o xtrace
-#       cd build
-#       ctest -C RelWithDebInfo -R grimm
-#     displayName: Run Tests
-#   - bash: |
-#       set -o xtrace
-#       cmake --build build --config Debug --parallel
-#     displayName: Build (Debug)
+- job: Windows
+  dependsOn: Analyze
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+  - bash: |
+      set -o xtrace
+      curl -o SDL.zip https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+      unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
+    displayName: Installing Dependencies
+  - script: |
+      "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+      cmake --version
+    displayName: Build Information
+  - bash: |
+      set -o xtrace
+      mkdir build
+      cd build
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" ..
+    displayName: CMake Configure
+  - bash: |
+      set -o xtrace
+      cmake --build build --config RelWithDebInfo --parallel
+    displayName: Build (Release)
+  - bash: |
+      set -o xtrace
+      cd build
+      ctest -C RelWithDebInfo -R grimm
+    displayName: Run Tests
+  - bash: |
+      set -o xtrace
+      cmake --build build --config Debug --parallel
+    displayName: Build (Debug)
 
 - job: Linux
   dependsOn: Analyze
@@ -74,39 +74,39 @@ jobs:
       docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/build-ubuntu.sh Debug
     displayName: Build (Debug)
 
-# - job: MacOS
-#   dependsOn: Analyze
-#   pool:
-#     vmImage: 'macOS-10.13'
-#   steps:
-#   - bash: |
-#       set -o xtrace
-#       brew upgrade cmake
-#       brew install llvm
-#       brew install sdl2
-#     displayName: Installing Dependencies
-#   - bash: |
-#       set -o xtrace
-#       xcode-select --print-path
-#       clang++ --version
-#       cmake --version
-#       brew info llvm
-#     displayName: Build Information
-#   - bash: |
-#       set -o xtrace
-#       export CXX=/usr/local/opt/llvm/bin/clang++ CC=/usr/local/opt/llvm/bin/clang
-#       export LDFLAGS=-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib
-#       export CXXFLAGS=-I/usr/local/opt/llvm/include
-#       mkdir -p build/RelWithDebInfo
-#       cd build/RelWithDebInfo
-#       cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
-#     displayName: Configure CMake (Release)
-#   - bash: |
-#       set -o xtrace
-#       cmake --build build/RelWithDebInfo --parallel
-#     displayName: Build (Release)
-#   - script: |
-#       set -o xtrace
-#       cd build/RelWithDebInfo
-#       ctest -R grimm
-#     displayName: Run Tests
+- job: MacOS
+  dependsOn: Analyze
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+  - bash: |
+      set -o xtrace
+      brew upgrade cmake
+      brew install llvm
+      brew install sdl2
+    displayName: Installing Dependencies
+  - bash: |
+      set -o xtrace
+      xcode-select --print-path
+      clang++ --version
+      cmake --version
+      brew info llvm
+    displayName: Build Information
+  - bash: |
+      set -o xtrace
+      export CXX=/usr/local/opt/llvm/bin/clang++ CC=/usr/local/opt/llvm/bin/clang
+      export LDFLAGS=-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib
+      export CXXFLAGS=-I/usr/local/opt/llvm/include
+      mkdir -p build/RelWithDebInfo
+      cd build/RelWithDebInfo
+      cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
+    displayName: Configure CMake (Release)
+  - bash: |
+      set -o xtrace
+      cmake --build build/RelWithDebInfo --parallel
+    displayName: Build (Release)
+  - script: |
+      set -o xtrace
+      cd build/RelWithDebInfo
+      ctest -R grimm
+    displayName: Run Tests
