@@ -2,27 +2,26 @@
 
 #pragma once
 
-namespace gm
-{
-    template <typename S, typename P> class out_ptr_t;
+namespace gm {
+    template <typename S, typename P>
+    class out_ptr_t;
 
-    template <typename S> auto out_ptr(S& out) -> out_ptr_t<S, typename S::pointer>;
-}
+    template <typename S>
+    auto out_ptr(S& out) -> out_ptr_t<S, typename S::pointer>;
+} // namespace gm
 
 template <typename S, typename P>
-class gm::out_ptr_t
-{
+class gm::out_ptr_t {
 public:
     using pointer = P;
 
-    out_ptr_t(S& out) noexcept : _out(out) {};
+    out_ptr_t(S& out) noexcept : _out(out){};
     ~out_ptr_t() noexcept { _out.reset(_ptr); }
 
     out_ptr_t(out_ptr_t const&) = delete;
     out_ptr_t& operator=(out_ptr_t&) = delete;
 
-    operator P*() noexcept
-    {
+    operator P*() noexcept {
         delete _ptr;
         _ptr = nullptr;
         return &_ptr;
@@ -36,7 +35,6 @@ private:
 };
 
 template <typename S>
-auto gm::out_ptr(S& out) -> out_ptr_t<S, typename S::pointer>
-{
+auto gm::out_ptr(S& out) -> out_ptr_t<S, typename S::pointer> {
     return out_ptr_t<S, typename S::pointer>(out);
 }

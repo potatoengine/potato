@@ -8,8 +8,7 @@
 #include "_export.h"
 #include "device_info.h"
 
-namespace gm
-{
+namespace gm {
     class IGPUDevice;
 
     class IGPUFactory {
@@ -26,10 +25,10 @@ namespace gm
     };
 
     GM_GPU_API box<IGPUFactory> CreateNullGPUFactory();
-    #if GM_GPU_ENABLE_VULKAN
+#if GM_GPU_ENABLE_VULKAN
     GM_GPU_API box<IGPUDevice> CreateVulkanGPUFactory();
-    #endif
-    #if GM_GPU_ENABLE_D3D12
+#endif
+#if GM_GPU_ENABLE_D3D12
     GM_GPU_API box<IGPUFactory> CreateD3d12GPUFactory();
-    #endif
-}
+#endif
+} // namespace gm

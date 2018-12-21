@@ -2,12 +2,10 @@
 
 #pragma once
 
-namespace gm
-{
+namespace gm {
     struct DeviceInfo;
 }
 
-struct gm::DeviceInfo
-{
+struct gm::DeviceInfo {
     int index;
 };

@@ -2,12 +2,11 @@
 
 #pragma once
 
-#include "grimm/gpu/device.h"
 #include "com_ptr.h"
 #include "direct3d.h"
+#include "grimm/gpu/device.h"
 
-namespace gm
-{
+namespace gm {
     class D3d12Device final : public IGPUDevice {
     public:
         D3d12Device(com_ptr<IDXGIFactory1>, com_ptr<IDXGIAdapter1> adaptor, com_ptr<ID3D12Device1> device);
@@ -21,4 +20,4 @@ namespace gm
         com_ptr<IDXGIAdapter1> _adaptor;
         com_ptr<ID3D12Device1> _device;
     };
-}
+} // namespace gm

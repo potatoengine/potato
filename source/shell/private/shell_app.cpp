@@ -1,13 +1,13 @@
-#include "grimm/foundation/vector.h"
+#include "shell_app.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/unique_resource.h"
+#include "grimm/foundation/vector.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/factory.h"
-#include "shell_app.h"
 
 #include <SDL.h>
-#include <SDL_syswm.h>
 #include <SDL_messagebox.h>
+#include <SDL_syswm.h>
 
 gm::ShellApp::~ShellApp() {
     _device.reset();

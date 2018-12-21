@@ -2,12 +2,11 @@
 
 #pragma once
 
-#include "grimm/gpu/factory.h"
 #include "com_ptr.h"
 #include "direct3d.h"
+#include "grimm/gpu/factory.h"
 
-namespace gm
-{
+namespace gm {
     class D3d12Factory final : public IGPUFactory {
     public:
         D3d12Factory(com_ptr<IDXGIFactory1> dxgiFactory);
@@ -24,6 +23,5 @@ namespace gm
         com_ptr<IDXGIFactory1> _dxgiFactory;
     };
 
-    
     box<IGPUFactory> CreateD3d12Factory();
-}
+} // namespace gm

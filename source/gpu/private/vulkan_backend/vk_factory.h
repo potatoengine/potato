@@ -7,8 +7,7 @@
 
 #if GM_GPU_ENABLE_VULKAN
 
-namespace gm
-{
+namespace gm {
     class VkFactory final : public IGPUFactory {
     public:
         virtual ~VkFactory();
@@ -17,6 +16,6 @@ namespace gm
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
         box<IGPUDevice> createDevice(int index) override;
     };
-}
+} // namespace gm
 
 #endif

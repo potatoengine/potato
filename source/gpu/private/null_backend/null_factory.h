@@ -4,8 +4,7 @@
 
 #include "factory.h"
 
-namespace gm
-{
+namespace gm {
     class NullDevice;
 
     class NullFactory final : public IGPUFactory {
@@ -20,4 +19,4 @@ namespace gm
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
         box<IGPUDevice> createDevice(int index) override;
     };
-}
+} // namespace gm

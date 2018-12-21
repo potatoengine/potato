@@ -4,8 +4,7 @@
 
 #include "device.h"
 
-namespace gm
-{
+namespace gm {
     class NullDevice final : public IGPUDevice {
     public:
         NullDevice();
@@ -14,4 +13,4 @@ namespace gm
         NullDevice(NullDevice&&) = delete;
         NullDevice& operator=(NullDevice&) = delete;
     };
-}
+} // namespace gm

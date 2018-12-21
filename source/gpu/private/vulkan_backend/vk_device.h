@@ -7,8 +7,7 @@
 
 #if GM_GPU_ENABLE_VULKAN
 
-namespace gm
-{
+namespace gm {
     class VkDevice final : public IGPUDevice {
     public:
         virtual ~VkDevice();
@@ -16,6 +15,6 @@ namespace gm
         VkDevice(VkDevice&&) = delete;
         VkDevice& operator=(VkDevice&) = delete;
     };
-}
+} // namespace gm
 
 #endif

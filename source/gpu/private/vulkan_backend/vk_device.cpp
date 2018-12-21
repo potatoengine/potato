@@ -2,7 +2,7 @@
 
 #if GM_GPU_ENABLE_VULKAN
 
-#include "vk_device.h"
+#    include "vk_device.h"
 
 gm::VkDevice::~VkDevice() = default;
 

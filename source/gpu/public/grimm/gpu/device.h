@@ -2,8 +2,7 @@
 
 #pragma once
 
-namespace gm
-{
+namespace gm {
     class IGPUDevice {
     public:
         IGPUDevice() = default;
@@ -12,4 +11,4 @@ namespace gm
         IGPUDevice(IGPUDevice&&) = delete;
         IGPUDevice& operator=(IGPUDevice&) = delete;
     };
-}
+} // namespace gm
