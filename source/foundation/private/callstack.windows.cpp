@@ -4,26 +4,27 @@
 #include "platform.h"
 
 #if !defined(GM_PLATFORM_WINDOWS)
-#	error "Unsupported platform"
+#    error "Unsupported platform"
 #endif
 
-#include "platform_windows.h"
 #include "numeric_util.h"
-#include "string.h"
+#include "platform_windows.h"
 
-#pragma warning(disable:4091)
+#pragma warning(disable : 4091)
 #include <dbghelp.h>
 
 namespace {
 
-    class CallstackHelper
-    {
+    class CallstackHelper {
     public:
         CallstackHelper();
         ~CallstackHelper();
 
         CallstackHelper(CallstackHelper const&) = delete;
         CallstackHelper& operator=(CallstackHelper const&) = delete;
+
+        CallstackHelper(CallstackHelper&&) = delete;
+        CallstackHelper& operator=(CallstackHelper&&) = delete;
 
         bool isInitialized() const { return _initialized; }
         int captureStackTrace(int skip, int count, void** entries);
@@ -54,52 +55,59 @@ namespace {
 #endif // !defined(NDEBUG)
     };
 
-    CallstackHelper::CallstackHelper()
-    {
+    CallstackHelper::CallstackHelper() {
         _process = GetCurrentProcess();
 
         _kernelLib = LoadLibraryW(L"kernel32.dll");
-        if (!_kernelLib)
+        if (_kernelLib == nullptr) {
             return;
+        }
 
         _captureStackBackTrace = reinterpret_cast<CaptureStackBackTraceType>(GetProcAddress(_kernelLib, "RtlCaptureStackBackTrace"));
-        if (!_captureStackBackTrace)
+        if (_captureStackBackTrace == nullptr) {
             return;
+        }
 
 #if !defined(NDEBUG)
         _dbghelpLib = LoadLibraryW(L"dbghelp.dll");
-        if (!_dbghelpLib)
+        if (_dbghelpLib == nullptr) {
             return;
+        }
 
         _symInitialize = reinterpret_cast<SymInitializeType>(GetProcAddress(_dbghelpLib, "SymInitialize"));
-        if (!_symInitialize)
+        if (_symInitialize == nullptr) {
             return;
+        }
 
         _symCleanup = reinterpret_cast<SymCleanupType>(GetProcAddress(_dbghelpLib, "SymCleanup"));
-        if (!_symCleanup)
+        if (_symCleanup == nullptr) {
             return;
+        }
 
         _symGetLineFromAddr64 = reinterpret_cast<SymGetLineFromAddr64Type>(GetProcAddress(_dbghelpLib, "SymGetLineFromAddr64"));
-        if (!_symGetLineFromAddr64)
+        if (_symGetLineFromAddr64 == nullptr) {
             return;
+        }
 
         _symFromAddr = reinterpret_cast<SymFromAddrType>(GetProcAddress(_dbghelpLib, "SymFromAddr"));
-        if (!_symFromAddr)
+        if (_symFromAddr == nullptr) {
             return;
+        }
 
-        if (!_symInitialize(_process, nullptr, true))
+        if (_symInitialize(_process, nullptr, TRUE) == FALSE) {
             return;
+        }
 #endif // !defined(NDEBUG)
 
         _initialized = true;
     }
 
-    CallstackHelper::~CallstackHelper()
-    {
-        
+    CallstackHelper::~CallstackHelper() {
+
 #if !defined(NDEBUG)
-        if (_symCleanup != nullptr)
+        if (_symCleanup != nullptr) {
             _symCleanup(_process);
+        }
 
         _symCleanup = nullptr;
         _symInitialize = nullptr;
@@ -113,58 +121,58 @@ namespace {
         FreeLibrary(_kernelLib);
     }
 
-    int CallstackHelper::captureStackTrace(int skip, int count, void** entries)
-    {
-        if (_captureStackBackTrace != nullptr)
+    int CallstackHelper::captureStackTrace(int skip, int count, void** entries) {
+        if (_captureStackBackTrace != nullptr) {
             return _captureStackBackTrace(skip + 1, count, entries, nullptr);
-        else
-            return 0;
+        }
+
+        return 0;
     }
 
 #if !defined(NDEBUG)
-    void CallstackHelper::readSymbol(void* entry, PSYMBOL_INFO symInfo, PIMAGEHLP_LINE64 lineInfo)
-    {
-        if (_symFromAddr != nullptr)
+    void CallstackHelper::readSymbol(void* entry, PSYMBOL_INFO symInfo, PIMAGEHLP_LINE64 lineInfo) {
+        if (_symFromAddr != nullptr) {
             _symFromAddr(GetCurrentProcess(), DWORD64(entry), nullptr, symInfo);
+        }
 
         DWORD displacement = 0;
-        if (_symGetLineFromAddr64 != nullptr)
+        if (_symGetLineFromAddr64 != nullptr) {
             _symGetLineFromAddr64(GetCurrentProcess(), DWORD64(entry), &displacement, lineInfo);
+        }
     }
 #endif // !defined(NDEBUG)
 
-    CallstackHelper& CallstackHelper::instance()
-    {
+    CallstackHelper& CallstackHelper::instance() {
         static CallstackHelper helper;
         return helper;
     }
 
 } // anonymous namespace
 
-int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip)
-{
+int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip) {
     CallstackHelper& helper = CallstackHelper::instance();
 
-    if (!helper.isInitialized())
+    if (!helper.isInitialized()) {
         return 0;
+    }
 
     return helper.captureStackTrace(skip + 1, static_cast<int>(addresses.size()), reinterpret_cast<void**>(addresses.data()));
 }
 
-bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records)
-{
+bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records) {
 #if !defined(NDEBUG)
     CallstackHelper& helper = CallstackHelper::instance();
 
-    if (!helper.isInitialized())
+    if (!helper.isInitialized()) {
         return false;
+    }
 
     int const max = static_cast<int>(gm::min(addresses.size(), out_records.size()));
 
     int constexpr kMaxNameLen = 128;
 
     std::aligned_union_t<sizeof(SYMBOL_INFO) + kMaxNameLen, SYMBOL_INFO> symbolStorage;
-    PSYMBOL_INFO symbolInfoPtr = reinterpret_cast<PSYMBOL_INFO>(&symbolStorage);
+    auto symbolInfoPtr = reinterpret_cast<PSYMBOL_INFO>(&symbolStorage);
     IMAGEHLP_LINE64 imagehlpLine64;
 
     ZeroMemory(&symbolStorage, sizeof(symbolStorage));
@@ -173,14 +181,11 @@ bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresse
     symbolInfoPtr->SizeOfStruct = sizeof(SYMBOL_INFO);
     symbolInfoPtr->MaxNameLen = kMaxNameLen;
 
-    HANDLE process = GetCurrentProcess();
-
-    for (auto index = 0; index != max; ++index)
-    {
+    for (auto index = 0; index != max; ++index) {
         helper.readSymbol(reinterpret_cast<void*>(addresses[index]), symbolInfoPtr, &imagehlpLine64);
 
         CallStackRecord& record = out_records[index];
-        record.symbol = string_view(symbolInfoPtr->Name, symbolInfoPtr->NameLen);
+        record.symbol = string_view(static_cast<char*>(symbolInfoPtr->Name), symbolInfoPtr->NameLen);
         record.filename = imagehlpLine64.FileName;
         record.line = imagehlpLine64.LineNumber;
 
