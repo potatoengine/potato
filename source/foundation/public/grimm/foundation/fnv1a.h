@@ -14,16 +14,16 @@ namespace gm {
 
 template <>
 struct gm::_detail::fnva1_constants<4> {
-    static const std::uint32_t kOffset = 2166136261U;
-    static const std::uint32_t kPrime = 16777619U;
-    static const std::uint32_t kShift = 16;
+    static const std::uint32_t offset = 2166136261U;
+    static const std::uint32_t prime = 16777619U;
+    static const std::uint32_t shift = 16;
 };
 
 template <>
 struct gm::_detail::fnva1_constants<8> {
-    static const std::uint64_t kOffset = 14695981039346656037ULL;
-    static const std::uint64_t kPrime = 1099511628211ULL;
-    static const std::uint32_t kShift = 32;
+    static const std::uint64_t offset = 14695981039346656037ULL;
+    static const std::uint64_t prime = 1099511628211ULL;
+    static const std::uint32_t shift = 32;
 };
 
 /// <summary> A uhash-compatible fnv1-a hasher. </summary>
@@ -35,21 +35,21 @@ public:
     inline explicit operator result_type() const;
 
 private:
-    size_t _state = _detail::fnva1_constants<sizeof(result_type)>::kOffset;
+    size_t _state = _detail::fnva1_constants<sizeof(result_type)>::offset;
 };
 
 void gm::fnv1a::operator()(void const* data, size_t count) {
     char const* bytes = static_cast<char const*>(data);
     for (size_t i = 0; i != count; ++i) {
         _state ^= static_cast<size_t>(bytes[i]);
-        _state *= _detail::fnva1_constants<sizeof(result_type)>::kPrime;
+        _state *= _detail::fnva1_constants<sizeof(result_type)>::prime;
     }
 }
 
 gm::fnv1a::operator result_type() const {
 #if defined(_MSC_VER)
     // Microsoft's implementation does this, so let's be compatible for std::string's sake
-    return _state ^ (_state >> _detail::fnva1_constants<sizeof(result_type)>::kShift);
+    return _state ^ (_state >> _detail::fnva1_constants<sizeof(result_type)>::shift);
 #else
     return _state;
 #endif

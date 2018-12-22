@@ -9,7 +9,7 @@ namespace gm {
     template <typename>
     class box;
     template <typename T, typename... Args>
-    auto make_box(Args&&...) -> box<T>;
+    auto make_box(Args&&... args) -> std::enable_if_t<std::is_constructible_v<T, Args...>, box<T>>;
 
     namespace _detail {
         template <typename>
@@ -136,7 +136,6 @@ void gm::box<T>::reset(pointer ptr) {
 /// <param name="args"> Parameters to pass to the constructor. </param>
 /// <returns> A box containing a new instance of the requested object. </returns>
 template <typename T, typename... Args>
-auto gm::make_box(Args&&... args) -> box<T> {
-    static_assert(std::is_constructible<T, Args...>::value, "Box has incompatible constructor parameters");
+auto gm::make_box(Args&&... args) -> std::enable_if_t<std::is_constructible_v<T, Args...>, box<T>> {
     return box<T>(new (GM_DEFAULT_ALLOC(sizeof(T), alignof(T))) T(std::forward<Args>(args)...));
 }
