@@ -3,11 +3,11 @@
 #pragma once
 
 namespace gm {
-    template <typename T, auto D>
+    template <typename T, auto D, auto Default = T{}>
     class unique_resource;
 }
 
-template <typename T, auto D>
+template <typename T, auto D, auto Default>
 class gm::unique_resource {
 public:
     using value_type = T;
@@ -25,6 +25,9 @@ public:
 
     inline unique_resource& operator=(rvalue_reference obj);
 
+    friend bool operator==(unique_resource const& lhs, T const& rhs) { return lhs._object == rhs; }
+    friend bool operator!=(unique_resource const& lhs, T const& rhs) { return lhs._object != rhs; }
+
     const_reference get() const { return _object; }
     reference get() { return _object; }
 
@@ -32,19 +35,19 @@ public:
     inline void reset();
 
 private:
-    T _object = {};
+    T _object = Default;
 };
 
-template <typename T, auto D>
-gm::unique_resource<T, D>& gm::unique_resource<T, D>::operator=(unique_resource&& src) {
+template <typename T, auto D, auto Default>
+auto gm::unique_resource<T, D, Default>::operator=(unique_resource&& src) -> gm::unique_resource<T, D, Default>& {
     if (this != &src) {
         reset(std::move(src.get()));
     }
     return *this;
 }
 
-template <typename T, auto D>
-gm::unique_resource<T, D>& gm::unique_resource<T, D>::operator=(rvalue_reference obj) {
+template <typename T, auto D, auto Default>
+auto gm::unique_resource<T, D, Default>::operator=(rvalue_reference obj) -> gm::unique_resource<T, D, Default>& {
     if (std::addressof(obj) != std::addressof(_object)) {
         D(_object);
         _object = std::move(obj);
@@ -52,14 +55,14 @@ gm::unique_resource<T, D>& gm::unique_resource<T, D>::operator=(rvalue_reference
     return *this;
 }
 
-template <typename T, auto D>
-void gm::unique_resource<T, D>::reset(rvalue_reference obj) {
+template <typename T, auto D, auto Default>
+void gm::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
     D(_object);
     _object = std::forward<T>(obj);
 }
 
-template <typename T, auto D>
-void gm::unique_resource<T, D>::reset() {
+template <typename T, auto D, auto Default>
+void gm::unique_resource<T, D, Default>::reset() {
     D(_object);
-    _object = T{};
+    _object = Default;
 }
