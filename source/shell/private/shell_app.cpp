@@ -4,6 +4,7 @@
 #include "grimm/foundation/vector.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/factory.h"
+#include "grimm/gpu/swap_chain.h"
 
 #include <SDL.h>
 #include <SDL_messagebox.h>
@@ -22,14 +23,14 @@ int gm::ShellApp::initialize() {
     SDL_SysWMinfo wmInfo;
     SDL_GetWindowWMInfo(_window.get(), &wmInfo);
 
-#if GM_USE_D3D12
-    HWND hwnd = wmInfo.info.win.window;
+#if GM_GPU_ENABLE_D3D12
     auto factory = CreateD3d12GPUFactory();
-    device = factory->createDevice(0);
+    auto device = factory->createDevice(0);
     if (device == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not find device", window);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not find device", _window.get());
         return 1;
     }
+    auto swapChain = device->createSwapChain(wmInfo.info.win.window);
 #endif
 
     return 0;
