@@ -27,7 +27,7 @@ if(WIN32)
         MAIN_DEPENDENCY "${SDL2_LIBRARY}"
         BYPRODUCTS "${SDL2_LIBRARY_NAME}"
         COMMENT "Copying SDL2 DLL"
-        COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_LIBRARY}" "${SDL2_LIBRARY_NAME}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_LIBRARY}" "$<TARGET_FILE_DIR:shell>/${SDL2_LIBRARY_NAME}"
     )
 endif()
 
