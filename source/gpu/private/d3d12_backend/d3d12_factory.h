@@ -9,7 +9,7 @@
 namespace gm {
     class D3d12Factory final : public IGPUFactory {
     public:
-        D3d12Factory(com_ptr<IDXGIFactory1> dxgiFactory);
+        D3d12Factory(com_ptr<IDXGIFactory2> dxgiFactory);
         virtual ~D3d12Factory();
 
         D3d12Factory(D3d12Factory&&) = delete;
@@ -20,8 +20,6 @@ namespace gm {
         box<IGPUDevice> createDevice(int index) override;
 
     private:
-        com_ptr<IDXGIFactory1> _dxgiFactory;
+        com_ptr<IDXGIFactory2> _dxgiFactory;
     };
-
-    box<IGPUFactory> CreateD3d12Factory();
 } // namespace gm

@@ -8,16 +8,16 @@
 #    include "grimm/foundation/assert.h"
 #    include "grimm/foundation/out_ptr.h"
 
-gm::D3d12Factory::D3d12Factory(com_ptr<IDXGIFactory1> dxgiFactory)
+gm::D3d12Factory::D3d12Factory(com_ptr<IDXGIFactory2> dxgiFactory)
     : _dxgiFactory(std::move(dxgiFactory)) {
     GM_ASSERT(_dxgiFactory != nullptr);
 }
 
 gm::D3d12Factory::~D3d12Factory() = default;
 
-auto gm::CreateD3d12Factory() -> box<IGPUFactory> {
-    com_ptr<IDXGIFactory1> dxgiFactory;
-    CreateDXGIFactory1(__uuidof(IDXGIFactory1), out_ptr(dxgiFactory));
+auto gm::CreateD3d12GPUFactory() -> box<IGPUFactory> {
+    com_ptr<IDXGIFactory2> dxgiFactory;
+    CreateDXGIFactory1(__uuidof(IDXGIFactory2), out_ptr(dxgiFactory));
     return make_box<D3d12Factory>(std::move(dxgiFactory));
 }
 
@@ -47,7 +47,13 @@ auto gm::D3d12Factory::createDevice(int index) -> box<IGPUDevice> {
                 return nullptr;
             }
 
-            return make_box<D3d12Device>(_dxgiFactory, std::move(adaptor), std::move(device));
+            D3D12_COMMAND_QUEUE_DESC desc = {0};
+            desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+            com_ptr<ID3D12CommandQueue> graphicsQueue;
+            device->CreateCommandQueue(&desc, __uuidof(ID3D12CommandQueue), out_ptr(graphicsQueue));
+
+            return make_box<D3d12Device>(_dxgiFactory, std::move(adaptor), std::move(device), std::move(graphicsQueue));
         }
     }
 

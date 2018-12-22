@@ -2,7 +2,11 @@
 
 #pragma once
 
+#include "grimm/foundation/box.h"
+
 namespace gm {
+    class ISwapChain;
+
     class IGPUDevice {
     public:
         IGPUDevice() = default;
@@ -10,5 +14,7 @@ namespace gm {
 
         IGPUDevice(IGPUDevice&&) = delete;
         IGPUDevice& operator=(IGPUDevice&) = delete;
+
+        virtual box<ISwapChain> createSwapChain(void* native_window) = 0;
     };
 } // namespace gm

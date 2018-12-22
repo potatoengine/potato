@@ -12,5 +12,7 @@ namespace gm {
 
         NullDevice(NullDevice&&) = delete;
         NullDevice& operator=(NullDevice&) = delete;
+
+        box<ISwapChain> createSwapChain(void* native_window) override;
     };
 } // namespace gm

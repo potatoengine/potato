@@ -48,6 +48,7 @@ target_sources(gpu PRIVATE
     public/grimm/gpu/device.h
     public/grimm/gpu/device_info.h
     public/grimm/gpu/factory.h
+    public/grimm/gpu/swap_chain.h
 )
 
 find_package(Vulkan)

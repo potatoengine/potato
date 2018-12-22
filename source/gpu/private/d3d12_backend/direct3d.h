@@ -4,4 +4,4 @@
 
 #include "grimm/foundation/platform_windows.h"
 #include <d3d12.h>
-#include <dxgi.h>
+#include <dxgi1_2.h>

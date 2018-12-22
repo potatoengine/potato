@@ -14,6 +14,8 @@ namespace gm {
 
         VkDevice(VkDevice&&) = delete;
         VkDevice& operator=(VkDevice&) = delete;
+
+        box<ISwapChain> createSwapChain(void* native_window) override;
     };
 } // namespace gm
 
