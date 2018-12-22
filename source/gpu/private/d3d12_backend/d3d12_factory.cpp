@@ -26,34 +26,22 @@ bool gm::D3d12Factory::isEnabled() const {
 }
 
 void gm::D3d12Factory::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
-    com_ptr<IDXGIAdapter1> adaptor;
+    com_ptr<IDXGIAdapter1> adapter;
 
     int index = 0;
-    while (_dxgiFactory->EnumAdapters1(index, out_ptr(adaptor)) == S_OK) {
+    while (_dxgiFactory->EnumAdapters1(index, out_ptr(adapter)) == S_OK) {
         DeviceInfo info = {index};
         callback(info);
     }
 }
 
 auto gm::D3d12Factory::createDevice(int index) -> box<IGPUDevice> {
-    com_ptr<IDXGIAdapter1> adaptor;
+    com_ptr<IDXGIAdapter1> adapter;
 
     UINT targetIndex = 0;
-    while (_dxgiFactory->EnumAdapters1(index, out_ptr(adaptor)) == S_OK) {
+    while (_dxgiFactory->EnumAdapters1(index, out_ptr(adapter)) == S_OK) {
         if (targetIndex == index) {
-            com_ptr<ID3D12Device1> device;
-            D3D12CreateDevice(adaptor.get(), D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device1), out_ptr(device));
-            if (device.empty()) {
-                return nullptr;
-            }
-
-            D3D12_COMMAND_QUEUE_DESC desc = {0};
-            desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-            com_ptr<ID3D12CommandQueue> graphicsQueue;
-            device->CreateCommandQueue(&desc, __uuidof(ID3D12CommandQueue), out_ptr(graphicsQueue));
-
-            return make_box<D3d12Device>(_dxgiFactory, std::move(adaptor), std::move(device), std::move(graphicsQueue));
+            return D3d12Device::createDevice(_dxgiFactory, std::move(adapter));
         }
     }
 

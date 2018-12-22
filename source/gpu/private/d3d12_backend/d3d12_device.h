@@ -9,11 +9,13 @@
 namespace gm {
     class D3d12Device final : public IGPUDevice {
     public:
-        D3d12Device(com_ptr<IDXGIFactory2>, com_ptr<IDXGIAdapter1> adaptor, com_ptr<ID3D12Device1> device, com_ptr<ID3D12CommandQueue> graphicsQueue);
+        D3d12Device(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D12Device1> device, com_ptr<ID3D12CommandQueue> graphicsQueue);
         virtual ~D3d12Device();
 
         D3d12Device(D3d12Device&&) = delete;
         D3d12Device& operator=(D3d12Device&) = delete;
+
+        static box<IGPUDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
         box<ISwapChain> createSwapChain(void* native_window) override;
 
