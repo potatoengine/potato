@@ -2,6 +2,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/foundation/vector.h"
+#include "grimm/gpu/descriptor_heap.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/factory.h"
 #include "grimm/gpu/swap_chain.h"
@@ -33,6 +34,8 @@ int gm::ShellApp::initialize() {
 #if GM_GPU_ENABLE_D3D12
     auto factory = CreateD3d12GPUFactory();
     _device = factory->createDevice(0);
+#endif
+
     if (_device == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not find device", _window.get());
         return 1;
@@ -43,14 +46,19 @@ int gm::ShellApp::initialize() {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Failed to create swap chain", _window.get());
         return 1;
     }
-#endif
+
+    auto descriptorHeap = _device->createDescriptorHeap();
+    if (descriptorHeap == nullptr) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create descriptor heap", _window.get());
+        return 1;
+    }
 
     return 0;
 }
 
 void gm::ShellApp::run() {
-    SDL_Event ev;
-    for (;;) {
+    while (isRunning()) {
+        SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
             switch (ev.type) {
             case SDL_QUIT:
@@ -58,17 +66,29 @@ void gm::ShellApp::run() {
             case SDL_WINDOWEVENT:
                 switch (ev.window.type) {
                 case SDL_WINDOWEVENT_CLOSE:
-                    return;
-                case SDL_WINDOWEVENT_SIZE_CHANGED: {
-                    int width, height;
-                    SDL_GetWindowSize(_window.get(), &width, &height);
-                    _swapChain->resizeBuffers(width, height);
+                    onWindowClosed();
                     break;
-                }
+                case SDL_WINDOWEVENT_SIZE_CHANGED:
+                    onWindowSizeChanged();
+                    break;
                 }
             }
         }
 
         _swapChain->present();
     }
+}
+
+void gm::ShellApp::quit() {
+    _running = false;
+}
+
+void gm::ShellApp::onWindowClosed() {
+    quit();
+}
+
+void gm::ShellApp::onWindowSizeChanged() {
+    int width, height;
+    SDL_GetWindowSize(_window.get(), &width, &height);
+    _swapChain->resizeBuffers(width, height);
 }

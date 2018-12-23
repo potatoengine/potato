@@ -4,6 +4,7 @@
 
 #    include "d3d12_device.h"
 #    include "com_ptr.h"
+#    include "d3d12_descriptor_heap.h"
 #    include "d3d12_swap_chain.h"
 #    include "direct3d.h"
 #    include "grimm/foundation/out_ptr.h"
@@ -38,4 +39,7 @@ auto gm::D3d12Device::createSwapChain(void* nativeWindow) -> box<ISwapChain> {
     return D3d12SwapChain::createSwapChain(_factory.get(), _graphicsQueue.get(), nativeWindow);
 }
 
+auto gm::D3d12Device::createDescriptorHeap() -> box<IDescriptorHeap> {
+    return D3d12DescriptorHeap::createDescriptorHeap(_device.get());
+}
 #endif

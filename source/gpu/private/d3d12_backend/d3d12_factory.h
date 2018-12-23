@@ -13,7 +13,7 @@ namespace gm {
         virtual ~D3d12Factory();
 
         D3d12Factory(D3d12Factory&&) = delete;
-        D3d12Factory& operator=(D3d12Factory&) = delete;
+        D3d12Factory& operator=(D3d12Factory&&) = delete;
 
         bool isEnabled() const override;
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;

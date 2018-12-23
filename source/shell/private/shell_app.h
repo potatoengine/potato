@@ -19,8 +19,16 @@ public:
 
     int initialize();
     void run();
+    void quit();
+
+    bool isRunning() const { return _running; }
 
 private:
+    void onWindowSizeChanged();
+    void onWindowClosed();
+
+private:
+    bool _running = true;
     gm::box<gm::IGPUDevice> _device;
     gm::box<gm::ISwapChain> _swapChain;
     gm::unique_resource<SDL_Window*, SDL_DestroyWindow> _window;

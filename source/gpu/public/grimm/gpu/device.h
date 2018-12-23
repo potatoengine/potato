@@ -6,6 +6,7 @@
 
 namespace gm {
     class ISwapChain;
+    class IDescriptorHeap;
 
     class IGPUDevice {
     public:
@@ -13,8 +14,9 @@ namespace gm {
         virtual ~IGPUDevice();
 
         IGPUDevice(IGPUDevice&&) = delete;
-        IGPUDevice& operator=(IGPUDevice&) = delete;
+        IGPUDevice& operator=(IGPUDevice&&) = delete;
 
         virtual box<ISwapChain> createSwapChain(void* native_window) = 0;
+        virtual box<IDescriptorHeap> createDescriptorHeap() = 0;
     };
 } // namespace gm

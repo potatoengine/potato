@@ -14,7 +14,7 @@ namespace gm {
         virtual ~D3d12SwapChain();
 
         D3d12SwapChain(D3d12SwapChain&&) = delete;
-        D3d12SwapChain& operator=(D3d12SwapChain&) = delete;
+        D3d12SwapChain& operator=(D3d12SwapChain&&) = delete;
 
         static box<ISwapChain> createSwapChain(IDXGIFactory2* factory, ID3D12CommandQueue* graphicsQueue, void* nativeWindow);
 

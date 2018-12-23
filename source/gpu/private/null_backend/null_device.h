@@ -14,5 +14,6 @@ namespace gm {
         NullDevice& operator=(NullDevice&) = delete;
 
         box<ISwapChain> createSwapChain(void* native_window) override;
+        box<IDescriptorHeap> createDescriptorHeap() override;
     };
 } // namespace gm

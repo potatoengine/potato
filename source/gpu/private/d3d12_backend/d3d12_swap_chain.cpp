@@ -34,7 +34,7 @@ auto gm::D3d12SwapChain::createSwapChain(IDXGIFactory2* factory, ID3D12CommandQu
         return nullptr;
     }
 
-    //factory->MakeWindowAssociation(window, DXGI_MWA_NO_ALT_ENTER);
+    factory->MakeWindowAssociation(window, DXGI_MWA_NO_ALT_ENTER);
 
     return make_box<D3d12SwapChain>(std::move(swapChain));
 }

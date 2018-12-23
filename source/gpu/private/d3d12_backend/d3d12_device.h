@@ -13,11 +13,12 @@ namespace gm {
         virtual ~D3d12Device();
 
         D3d12Device(D3d12Device&&) = delete;
-        D3d12Device& operator=(D3d12Device&) = delete;
+        D3d12Device& operator=(D3d12Device&&) = delete;
 
         static box<IGPUDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
         box<ISwapChain> createSwapChain(void* native_window) override;
+        box<IDescriptorHeap> createDescriptorHeap() override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;

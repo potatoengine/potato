@@ -45,6 +45,7 @@ target_compile_options(gpu
 
 target_sources(gpu PRIVATE
     public/grimm/gpu/_export.h
+    public/grimm/gpu/descriptor_heap.h
     public/grimm/gpu/device.h
     public/grimm/gpu/device_info.h
     public/grimm/gpu/factory.h

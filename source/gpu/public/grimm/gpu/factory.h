@@ -17,7 +17,7 @@ namespace gm {
         virtual ~IGPUFactory();
 
         IGPUFactory(IGPUFactory&&) = delete;
-        IGPUFactory& operator=(IGPUFactory&) = delete;
+        IGPUFactory& operator=(IGPUFactory&&) = delete;
 
         virtual bool isEnabled() const = 0;
         virtual void enumerateDevices(delegate<void(DeviceInfo const&)> callback) = 0;
