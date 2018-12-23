@@ -9,7 +9,7 @@ namespace gm {
     template <typename>
     class box;
     template <typename T, typename... Args>
-    auto make_box(Args&&... args) -> std::enable_if_t<std::is_constructible_v<T, Args...>, box<T>>;
+    auto make_box(Args&&... args) -> std::enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>>;
 
     namespace _detail {
         template <typename>
@@ -23,7 +23,7 @@ struct gm::_detail::box_traits {
     using reference = T&;
 
     static void _deallocate(T* ptr) {
-        GM_DEFAULT_FREE(ptr, sizeof(T), alignof(T));
+        delete ptr;
     }
 };
 
@@ -136,6 +136,6 @@ void gm::box<T>::reset(pointer ptr) {
 /// <param name="args"> Parameters to pass to the constructor. </param>
 /// <returns> A box containing a new instance of the requested object. </returns>
 template <typename T, typename... Args>
-auto gm::make_box(Args&&... args) -> std::enable_if_t<std::is_constructible_v<T, Args...>, box<T>> {
-    return box<T>(new (GM_DEFAULT_ALLOC(sizeof(T), alignof(T))) T(std::forward<Args>(args)...));
+auto gm::make_box(Args&&... args) -> std::enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>> {
+    return box<T>(new T(std::forward<Args>(args)...));
 }
