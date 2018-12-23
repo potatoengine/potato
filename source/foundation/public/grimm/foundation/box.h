@@ -71,8 +71,7 @@ public:
     explicit operator bool() const { return _ptr != nullptr; }
     bool empty() const { return _ptr == nullptr; }
 
-    template <typename U = T>
-    inline void reset(pointer ptr = nullptr);
+    inline void reset(pointer ptr = pointer{});
     pointer release() {
         pointer tmp = _ptr;
         _ptr = nullptr;
@@ -124,9 +123,8 @@ private:
 };
 
 template <typename T>
-template <typename U>
 void gm::box<T>::reset(pointer ptr) {
-    static_assert(sizeof(U), "Incomplete type used in box reset/destructor");
+    static_assert(sizeof(T) > 0, "box can not delete incomplete type");
     this->_deallocate(_ptr);
     _ptr = ptr;
 }

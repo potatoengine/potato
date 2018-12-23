@@ -4,6 +4,7 @@
 
 #    include "d3d12_swap_chain.h"
 #    include "com_ptr.h"
+#    include "d3d12_resource.h"
 #    include "direct3d.h"
 #    include "grimm/foundation/box.h"
 #    include "grimm/foundation/logging.h"
@@ -45,6 +46,15 @@ void gm::D3d12SwapChain::present() {
 
 void gm::D3d12SwapChain::resizeBuffers(int width, int height) {
     _swapChain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+}
+
+auto gm::D3d12SwapChain::getBuffer(int index) -> box<IGpuResource> {
+    com_ptr<ID3D12Resource> buffer;
+    _swapChain->GetBuffer(index, __uuidof(ID3D12Resource), out_ptr(buffer));
+    if (buffer == nullptr) {
+        return nullptr;
+    }
+    return make_box<D3d12Resource>(std::move(buffer));
 }
 
 #endif

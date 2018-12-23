@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "grimm/foundation/types.h"
+
 namespace gm {
     class IDescriptorHeap {
     public:
@@ -10,5 +12,8 @@ namespace gm {
 
         IDescriptorHeap(IDescriptorHeap&&) = delete;
         IDescriptorHeap& operator=(IDescriptorHeap&&) = delete;
+
+        virtual uint64 getCpuHandle() const = 0;
+        virtual uint64 getCpuHandleSize() const = 0;
     };
 } // namespace gm

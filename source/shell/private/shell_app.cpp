@@ -5,6 +5,7 @@
 #include "grimm/gpu/descriptor_heap.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/factory.h"
+#include "grimm/gpu/resource.h"
 #include "grimm/gpu/swap_chain.h"
 
 #include <SDL.h>
@@ -51,6 +52,16 @@ int gm::ShellApp::initialize() {
     if (descriptorHeap == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create descriptor heap", _window.get());
         return 1;
+    }
+
+    auto handle = descriptorHeap->getCpuHandle();
+    auto offset = descriptorHeap->getCpuHandleSize();
+
+    for (int n = 0; n < 2; n++) {
+        auto buffer = _swapChain->getBuffer(0);
+
+        _device->createRenderTargetView(buffer.get(), handle);
+        handle += offset;
     }
 
     return 0;

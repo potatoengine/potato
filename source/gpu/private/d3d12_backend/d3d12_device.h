@@ -19,6 +19,7 @@ namespace gm {
 
         box<ISwapChain> createSwapChain(void* native_window) override;
         box<IDescriptorHeap> createDescriptorHeap() override;
+        void createRenderTargetView(IGpuResource* renderTarget, std::size_t cpuHandle) override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;
