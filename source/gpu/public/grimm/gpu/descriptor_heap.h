@@ -5,15 +5,19 @@
 #include "grimm/foundation/types.h"
 
 namespace gm {
+    struct DescriptorHandle {
+        uint64 ptr;
+        uint64 size;
+    };
+
     class IDescriptorHeap {
     public:
         IDescriptorHeap() = default;
-        virtual ~IDescriptorHeap();
+        virtual ~IDescriptorHeap() = default;
 
         IDescriptorHeap(IDescriptorHeap&&) = delete;
         IDescriptorHeap& operator=(IDescriptorHeap&&) = delete;
 
-        virtual uint64 getCpuHandle() const = 0;
-        virtual uint64 getCpuHandleSize() const = 0;
+        virtual DescriptorHandle getCpuHandle() const = 0;
     };
 } // namespace gm

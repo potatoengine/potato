@@ -10,7 +10,7 @@
 namespace gm {
     class D3d12DescriptorHeap final : public IDescriptorHeap {
     public:
-        D3d12DescriptorHeap(com_ptr<ID3D12DescriptorHeap> heap, uint64 descriptorSize);
+        D3d12DescriptorHeap(com_ptr<ID3D12DescriptorHeap> heap, DescriptorHandle handle);
         virtual ~D3d12DescriptorHeap();
 
         D3d12DescriptorHeap(D3d12DescriptorHeap&&) = delete;
@@ -18,11 +18,10 @@ namespace gm {
 
         static box<IDescriptorHeap> createDescriptorHeap(ID3D12Device1* device);
 
-        uint64 getCpuHandle() const override;
-        uint64 getCpuHandleSize() const override { return _descriptorSize; }
+        DescriptorHandle getCpuHandle() const override { return _handle; }
 
     private:
         com_ptr<ID3D12DescriptorHeap> _heap;
-        uint64 _descriptorSize = -1;
+        DescriptorHandle _handle = {0, 0};
     };
 } // namespace gm

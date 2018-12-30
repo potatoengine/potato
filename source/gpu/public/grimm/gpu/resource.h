@@ -6,7 +6,7 @@ namespace gm {
     class IGpuResource {
     public:
         IGpuResource() = default;
-        virtual ~IGpuResource();
+        virtual ~IGpuResource() = default;
 
         IGpuResource(IGpuResource&&) = delete;
         IGpuResource& operator=(IGpuResource&&) = delete;

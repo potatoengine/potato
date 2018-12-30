@@ -16,7 +16,7 @@ namespace gm {
         D3d12Resource(D3d12Resource&&) = delete;
         D3d12Resource& operator=(D3d12Resource&&) = delete;
 
-        ID3D12Resource* get() { return _resource.get(); }
+        com_ptr<ID3D12Resource> const& get() const { return _resource; }
 
     private:
         com_ptr<ID3D12Resource> _resource;

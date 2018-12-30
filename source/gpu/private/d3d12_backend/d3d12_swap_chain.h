@@ -21,8 +21,10 @@ namespace gm {
         void present() override;
         void resizeBuffers(int width, int height) override;
         box<IGpuResource> getBuffer(int index) override;
+        int getCurrentBufferIndex() override;
 
     private:
         com_ptr<IDXGISwapChain1> _swapChain;
+        int _bufferIndex = 0;
     };
 } // namespace gm

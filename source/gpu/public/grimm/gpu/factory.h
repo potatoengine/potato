@@ -14,7 +14,7 @@ namespace gm {
     class IGPUFactory {
     public:
         IGPUFactory() = default;
-        virtual ~IGPUFactory();
+        virtual ~IGPUFactory() = default;
 
         IGPUFactory(IGPUFactory&&) = delete;
         IGPUFactory& operator=(IGPUFactory&&) = delete;

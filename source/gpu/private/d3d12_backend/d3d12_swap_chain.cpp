@@ -41,7 +41,8 @@ auto gm::D3d12SwapChain::createSwapChain(IDXGIFactory2* factory, ID3D12CommandQu
 }
 
 void gm::D3d12SwapChain::present() {
-    _swapChain->Present(1, DXGI_PRESENT_ALLOW_TEARING);
+    _swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
+    _bufferIndex = (_bufferIndex + 1) % 2;
 }
 
 void gm::D3d12SwapChain::resizeBuffers(int width, int height) {
@@ -55,6 +56,10 @@ auto gm::D3d12SwapChain::getBuffer(int index) -> box<IGpuResource> {
         return nullptr;
     }
     return make_box<D3d12Resource>(std::move(buffer));
+}
+
+int gm::D3d12SwapChain::getCurrentBufferIndex() {
+    return _bufferIndex;
 }
 
 #endif

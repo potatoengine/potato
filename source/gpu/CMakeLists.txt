@@ -45,12 +45,14 @@ target_compile_options(gpu
 
 target_sources(gpu PRIVATE
     public/grimm/gpu/_export.h
+    public/grimm/gpu/command_list.h
     public/grimm/gpu/descriptor_heap.h
     public/grimm/gpu/device.h
     public/grimm/gpu/device_info.h
     public/grimm/gpu/factory.h
     public/grimm/gpu/resource.h
     public/grimm/gpu/swap_chain.h
+    public/grimm/gpu/transition.h
 )
 
 find_package(Vulkan)

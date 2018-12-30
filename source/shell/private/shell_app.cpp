@@ -13,8 +13,12 @@
 #include <SDL_syswm.h>
 
 gm::ShellApp::~ShellApp() {
-    _device.reset();
+    _commandList.reset();
+    _rtvHeap.reset();
+    _swapChain.reset();
     _window.reset();
+
+    _device.reset();
 }
 
 int gm::ShellApp::initialize() {
@@ -48,20 +52,25 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    auto descriptorHeap = _device->createDescriptorHeap();
-    if (descriptorHeap == nullptr) {
+    _rtvHeap = _device->createDescriptorHeap();
+    if (_rtvHeap == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create descriptor heap", _window.get());
         return 1;
     }
 
-    auto handle = descriptorHeap->getCpuHandle();
-    auto offset = descriptorHeap->getCpuHandleSize();
+    auto [handle, offset] = _rtvHeap->getCpuHandle();
 
     for (int n = 0; n < 2; n++) {
-        auto buffer = _swapChain->getBuffer(0);
+        auto buffer = _swapChain->getBuffer(n);
 
         _device->createRenderTargetView(buffer.get(), handle);
         handle += offset;
+    }
+
+    _commandList = _device->createCommandList();
+    if (_commandList == nullptr) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create command list", _window.get());
+        return 1;
     }
 
     return 0;
@@ -85,6 +94,15 @@ void gm::ShellApp::run() {
                 }
             }
         }
+
+        auto [handle, offset] = _rtvHeap->getCpuHandle();
+
+        int frameIndex = _swapChain->getCurrentBufferIndex();
+        _commandList->reset();
+        _commandList->resourceBarrier(_swapChain->getBuffer(frameIndex).get(), GpuResourceState::Present, GpuResourceState::RenderTarget);
+        _commandList->clearRenderTarget(handle + offset * frameIndex);
+        _commandList->resourceBarrier(_swapChain->getBuffer(frameIndex).get(), GpuResourceState::RenderTarget, GpuResourceState::Present);
+        _device->execute(_commandList.get());
 
         _swapChain->present();
     }

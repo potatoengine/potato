@@ -4,6 +4,7 @@
 
 #include "com_ptr.h"
 #include "direct3d.h"
+#include "grimm/foundation/unique_resource.h"
 #include "grimm/gpu/device.h"
 
 namespace gm {
@@ -19,6 +20,9 @@ namespace gm {
 
         box<ISwapChain> createSwapChain(void* native_window) override;
         box<IDescriptorHeap> createDescriptorHeap() override;
+        box<ICommandList> createCommandList() override;
+        void execute(ICommandList* commandList) override;
+
         void createRenderTargetView(IGpuResource* renderTarget, std::size_t cpuHandle) override;
 
     private:
@@ -26,5 +30,7 @@ namespace gm {
         com_ptr<IDXGIAdapter1> _adaptor;
         com_ptr<ID3D12Device1> _device;
         com_ptr<ID3D12CommandQueue> _graphicsQueue;
+        com_ptr<ID3D12Fence> _executeFence;
+        unique_resource<HANDLE, CloseHandle> _fenceEvent;
     };
 } // namespace gm

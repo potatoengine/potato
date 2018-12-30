@@ -10,11 +10,12 @@ namespace gm {
         NullDevice();
         virtual ~NullDevice();
 
-        NullDevice(NullDevice&&) = delete;
-        NullDevice& operator=(NullDevice&) = delete;
-
         box<ISwapChain> createSwapChain(void* native_window) override;
         box<IDescriptorHeap> createDescriptorHeap() override;
+        box<ICommandList> createCommandList() override;
+
         void createRenderTargetView(IGpuResource* renderTarget, uint64 cpuHandle) override;
+
+        void execute(ICommandList* commands) override;
     };
 } // namespace gm

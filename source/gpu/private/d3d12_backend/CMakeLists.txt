@@ -1,5 +1,7 @@
 target_sources(gpu PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/com_ptr.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_command_list.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_command_list.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_descriptor_heap.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_descriptor_heap.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_device.h
