@@ -1,5 +1,6 @@
 #include "shell_app.h"
 #include "grimm/foundation/box.h"
+#include "grimm/foundation/platform.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/foundation/vector.h"
 #include "grimm/gpu/descriptor_heap.h"
@@ -54,7 +55,9 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
+#if GM_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
+#endif
     if (_swapChain == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Failed to create swap chain", _window.get());
         return 1;
