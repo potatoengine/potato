@@ -4,20 +4,20 @@
 
 #include "array_view.h"
 #include "delegate.h"
+#include "fixed_string.h"
 #include "platform.h"
-#include "string_view.h"
 #include "types.h"
 
 namespace gm {
     struct CallStackRecord {
-        string_view filename;
-        string_view symbol;
+        fixed_string<128> filename;
+        fixed_string<128> symbol;
         uintptr address;
         int line = 0;
     };
 
     struct CallStackReader {
-        static int readCallstack(array_view<uintptr> addresses, int skip = 0);
+        static uint readCallstack(array_view<uintptr> addresses, uint skip = 0);
         static bool tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records);
     };
 } // namespace gm
