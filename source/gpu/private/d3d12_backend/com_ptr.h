@@ -13,9 +13,9 @@ namespace gm {
         com_ptr() = default;
         explicit com_ptr(pointer ptr) : _ptr(ptr) {}
         com_ptr(std::nullptr_t) {}
-        ~com_ptr() { _release(); }
+        ~com_ptr() { _decRef(); }
 
-        com_ptr(com_ptr const& rhs) : _ptr(rhs._ptr) { _addref(); }
+        com_ptr(com_ptr const& rhs) : _ptr(rhs._ptr) { _addRef(); }
         com_ptr(com_ptr&& rhs) : _ptr(rhs._ptr) { rhs._ptr = nullptr; }
 
         inline com_ptr& operator=(com_ptr const& rhs);
@@ -41,11 +41,11 @@ namespace gm {
         friend bool operator!=(std::nullptr_t, com_ptr const& rhs) { return nullptr != rhs.get(); }
 
     private:
-        void _addref() {
+        void _addRef() {
             if (_ptr != nullptr)
                 _ptr->AddRef();
         }
-        void _release() {
+        void _decRef() {
             if (_ptr != nullptr)
                 _ptr->Release();
         }
@@ -56,9 +56,9 @@ namespace gm {
     template <typename T>
     auto com_ptr<T>::operator=(com_ptr const& rhs) -> com_ptr& {
         if (this != std::addressof(rhs)) {
-            _release();
+            _decRef();
             _ptr = rhs._ptr;
-            _addref();
+            _addRef();
         }
         return *this;
     }
@@ -66,17 +66,16 @@ namespace gm {
     template <typename T>
     auto com_ptr<T>::operator=(com_ptr&& rhs) -> com_ptr& {
         if (this != std::addressof(rhs)) {
-            _release();
+            _decRef();
             _ptr = rhs._ptr;
             rhs._ptr = nullptr;
-            ;
         }
         return *this;
     }
 
     template <typename T>
     auto com_ptr<T>::operator=(std::nullptr_t) -> com_ptr& {
-        _release();
+        _decRef();
         _ptr = nullptr;
         return *this;
     }
@@ -84,7 +83,7 @@ namespace gm {
     template <typename T>
     void com_ptr<T>::reset(pointer ptr) {
         if (ptr != _ptr) {
-            _release();
+            _decRef();
             _ptr = ptr;
         }
     }
