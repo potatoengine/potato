@@ -22,12 +22,14 @@ auto gm::fatal_error(char const* file, int line, char const* failedConditionText
     format_memory_buffer buffer;
     uintptr addresses[32];
     CallStackRecord records[32];
-    CallStackReader::readCallstack(addresses);
+    uint count = CallStackReader::readCallstack(addresses);
+
+    auto recordsView = array_view{records, count};
 
 #if !defined(NDEBUG)
-    if (CallStackReader::tryResolveCallstack(addresses, records)) {
-        for (auto const& record : records) {
-            format_into(buffer, "{}({}): {}\r\n", record.filename, record.line, record.symbol);
+    if (CallStackReader::tryResolveCallstack(array_view{addresses, count}, recordsView)) {
+        for (auto const& record : recordsView) {
+            format_into(buffer, "[{:016X}] ({}:{}) {}\r\n", record.address, record.filename, record.line, record.symbol);
         }
     }
     else

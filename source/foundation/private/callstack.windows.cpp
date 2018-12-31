@@ -27,7 +27,7 @@ namespace {
         CallstackHelper& operator=(CallstackHelper&&) = delete;
 
         bool isInitialized() const { return _initialized; }
-        int captureStackTrace(int skip, int count, void** entries);
+        uint captureStackTrace(uint skip, uint count, void** entries);
         void readSymbol(void* entry, PSYMBOL_INFO symInfo, PIMAGEHLP_LINE64 lineInfo);
 
         static CallstackHelper& instance();
@@ -121,7 +121,7 @@ namespace {
         FreeLibrary(_kernelLib);
     }
 
-    int CallstackHelper::captureStackTrace(int skip, int count, void** entries) {
+    uint CallstackHelper::captureStackTrace(uint skip, uint count, void** entries) {
         if (_captureStackBackTrace != nullptr) {
             return _captureStackBackTrace(skip + 1, count, entries, nullptr);
         }
@@ -149,14 +149,14 @@ namespace {
 
 } // anonymous namespace
 
-int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip) {
+uint gm::CallStackReader::readCallstack(array_view<uintptr> addresses, uint skip) {
     CallstackHelper& helper = CallstackHelper::instance();
 
     if (!helper.isInitialized()) {
         return 0;
     }
 
-    return helper.captureStackTrace(skip + 1, static_cast<int>(addresses.size()), reinterpret_cast<void**>(addresses.data()));
+    return helper.captureStackTrace(skip + 1, static_cast<uint>(addresses.size()), reinterpret_cast<void**>(addresses.data()));
 }
 
 bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records) {
@@ -185,15 +185,22 @@ bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresse
         helper.readSymbol(reinterpret_cast<void*>(addresses[index]), symbolInfoPtr, &imagehlpLine64);
 
         CallStackRecord& record = out_records[index];
+        record.address = addresses[index];
         record.symbol = string_view(static_cast<char*>(symbolInfoPtr->Name), symbolInfoPtr->NameLen);
-        record.filename = imagehlpLine64.FileName;
+        //record.filename = imagehlpLine64.FileName;
         record.line = imagehlpLine64.LineNumber;
 
-        // Disable for now, this makes "prettier" traces, but not necessarily more useful ones
-        //string_span filename(imagehlpLine64.FileName);
-        //auto const pos = find_last_of(filename, "/\\");
-        //if (pos != string_span::npos)
-        //	entry.filename = string_span(filename.begin() + pos + 1, filename.end());
+        // show only the last directory and file name
+        string_view filename(imagehlpLine64.FileName);
+        auto pos = filename.find_last_of("/\\");
+        if (pos != string_view::npos) {
+            auto parentPos = filename.substr(0, pos).find_last_of("/\\");
+            if (parentPos != string_view::npos) {
+                pos = parentPos;
+            }
+            filename = filename.substr(pos + 1);
+        }
+        record.filename = filename;
     }
 
     return true;

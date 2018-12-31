@@ -6,11 +6,11 @@
 
 #include <execinfo.h>
 
-int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, int skip) {
+int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, uint skip) {
     void* buffer;
 
-    int max = std::max<int>(0, addresses.size() - skip);
-    int count = backtrace(&buffer, max);
+    uint max = addresses.size() - std::min<uint>(addresses.size(), skip);
+    uint count = backtrace(&buffer, max);
     skip = std::min(skip, count);
 
     std::memcpy(addresses.data(), static_cast<uintptr*>(buffer) + skip, std::min(count, max));
@@ -25,6 +25,7 @@ bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresse
 
     for (auto index = 0; index != addresses.size(); ++index) {
         CallStackRecord& record = out_records[index];
+        record.address = address[index];
         record.symbol = string_view(symbols[index]);
     }
 
