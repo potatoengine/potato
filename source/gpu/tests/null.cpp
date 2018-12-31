@@ -1,7 +1,6 @@
 #include "doctest.h"
 
-#include "null_backend/null_device.h"
-#include "null_backend/null_factory.h"
+#include "null_backend/null_objects.h"
 
 DOCTEST_TEST_SUITE("[grimm][gpu] NullDevice") {
     DOCTEST_TEST_CASE("factory enumerates") {
@@ -28,5 +27,20 @@ DOCTEST_TEST_SUITE("[grimm][gpu] NullDevice") {
 
         auto device = factory.createDevice(0);
         DOCTEST_CHECK_NE(device, nullptr);
+    }
+
+    DOCTEST_TEST_CASE("device abides") {
+        using namespace gm;
+
+        NullDevice device;
+
+        auto swapChain = device.createSwapChain(nullptr);
+        DOCTEST_CHECK_NE(swapChain, nullptr);
+
+        auto descriptorHeap = device.createDescriptorHeap();
+        DOCTEST_CHECK_NE(descriptorHeap, nullptr);
+
+        auto pipelineState = device.createPipelineState();
+        DOCTEST_CHECK_NE(pipelineState, nullptr);
     }
 }
