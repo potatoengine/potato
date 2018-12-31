@@ -16,7 +16,7 @@ bool gm::VknFactory::isEnabled() const {
     return false;
 }
 
-void gm::VknFactory::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
+void gm::VknFactory::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
 }
 
 auto gm::VknFactory::createDevice(int index) -> box<GpuDevice> {

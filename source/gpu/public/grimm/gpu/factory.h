@@ -6,10 +6,13 @@
 #include "grimm/foundation/delegate.h"
 
 #include "_export.h"
-#include "device_info.h"
 
 namespace gm {
     class GpuDevice;
+
+    struct GpuDeviceInfo {
+        int index;
+    };
 
     class GpuDeviceFactory {
     public:
@@ -20,7 +23,7 @@ namespace gm {
         GpuDeviceFactory& operator=(GpuDeviceFactory&&) = delete;
 
         virtual bool isEnabled() const = 0;
-        virtual void enumerateDevices(delegate<void(DeviceInfo const&)> callback) = 0;
+        virtual void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) = 0;
         virtual box<GpuDevice> createDevice(int index) = 0;
     };
 

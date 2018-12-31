@@ -11,7 +11,7 @@ namespace gm {
         virtual ~VknFactory();
 
         bool isEnabled() const override;
-        void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
+        void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) override;
         box<GpuDevice> createDevice(int index) override;
     };
 } // namespace gm

@@ -2,8 +2,8 @@
 
 #include "null_objects.h"
 
-void gm::NullFactory::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
-    static DeviceInfo deviceInfo = {0};
+void gm::NullFactory::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
+    static GpuDeviceInfo deviceInfo = {0};
 
     callback(deviceInfo);
 }

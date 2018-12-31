@@ -16,7 +16,7 @@ namespace gm {
         D3d12Factory& operator=(D3d12Factory&&) = delete;
 
         bool isEnabled() const override;
-        void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
+        void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) override;
         box<GpuDevice> createDevice(int index) override;
 
     private:

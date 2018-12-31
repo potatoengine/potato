@@ -43,17 +43,7 @@ target_compile_options(gpu
         $<$<CXX_COMPILER_ID:MSVC>:/permissive->
 )
 
-target_sources(gpu PRIVATE
-    public/grimm/gpu/_export.h
-    public/grimm/gpu/command_list.h
-    public/grimm/gpu/descriptor_heap.h
-    public/grimm/gpu/device.h
-    public/grimm/gpu/device_info.h
-    public/grimm/gpu/factory.h
-    public/grimm/gpu/resource.h
-    public/grimm/gpu/swap_chain.h
-    public/grimm/gpu/transition.h
-)
+add_subdirectory(public/grimm/gpu)
 
 find_package(Vulkan)
 if(Vulkan_FOUND)

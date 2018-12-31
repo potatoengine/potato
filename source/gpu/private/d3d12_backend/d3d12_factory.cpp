@@ -25,12 +25,12 @@ bool gm::D3d12Factory::isEnabled() const {
     return true;
 }
 
-void gm::D3d12Factory::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
+void gm::D3d12Factory::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
     com_ptr<IDXGIAdapter1> adapter;
 
     int index = 0;
     while (_dxgiFactory->EnumAdapters1(index, out_ptr(adapter)) == S_OK) {
-        DeviceInfo info = {index};
+        GpuDeviceInfo info = {index};
         callback(info);
     }
 }
