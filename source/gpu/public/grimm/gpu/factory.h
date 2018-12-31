@@ -26,7 +26,7 @@ namespace gm {
 
     GM_GPU_API box<IGPUFactory> CreateNullGPUFactory();
 #if GM_GPU_ENABLE_VULKAN
-    GM_GPU_API box<IGPUDevice> CreateVulkanGPUFactory();
+    GM_GPU_API box<IGPUFactory> CreateVulkanGPUFactory();
 #endif
 #if GM_GPU_ENABLE_D3D12
     GM_GPU_API box<IGPUFactory> CreateD3d12GPUFactory();
