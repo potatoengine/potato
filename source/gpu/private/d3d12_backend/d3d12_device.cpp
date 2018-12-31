@@ -6,6 +6,7 @@
 #    include "com_ptr.h"
 #    include "d3d12_command_list.h"
 #    include "d3d12_descriptor_heap.h"
+#    include "d3d12_pipeline_state.h"
 #    include "d3d12_resource.h"
 #    include "d3d12_swap_chain.h"
 #    include "direct3d.h"
@@ -86,8 +87,8 @@ auto gm::D3d12Device::createDescriptorHeap() -> box<IDescriptorHeap> {
     return D3d12DescriptorHeap::createDescriptorHeap(_device.get());
 }
 
-auto gm::D3d12Device::createCommandList() -> box<ICommandList> {
-    return D3d12CommandList::createCommandList(_device.get());
+auto gm::D3d12Device::createCommandList(IPipelineState* pipelineState) -> box<ICommandList> {
+    return D3d12CommandList::createCommandList(_device.get(), pipelineState);
 }
 
 void gm::D3d12Device::createRenderTargetView(IGpuResource* renderTarget, uint64 cpuHandle) {
@@ -96,6 +97,10 @@ void gm::D3d12Device::createRenderTargetView(IGpuResource* renderTarget, uint64 
     auto d3d12Resource = static_cast<D3d12Resource*>(renderTarget);
     D3D12_CPU_DESCRIPTOR_HANDLE handle = {cpuHandle};
     _device->CreateRenderTargetView(d3d12Resource->get().get(), nullptr, handle);
+}
+
+auto gm::D3d12Device::createPipelineState() -> box<IPipelineState> {
+    return D3d12PipelineState::createGraphicsPipelineState(_device.get());
 }
 
 void gm::D3d12Device::execute(ICommandList* commandList) {

@@ -16,11 +16,11 @@ namespace gm {
         D3d12CommandList(D3d12CommandList&&) = delete;
         D3d12CommandList& operator=(D3d12CommandList&&) = delete;
 
-        static box<D3d12CommandList> createCommandList(ID3D12Device1* device);
+        static box<D3d12CommandList> createCommandList(ID3D12Device1* device, IPipelineState* pipelineState);
 
         void clearRenderTarget(uint64 handle) override;
         void resourceBarrier(IGpuResource* resource, GpuResourceState from, GpuResourceState to) override;
-        void reset() override;
+        void reset(IPipelineState* pipelineState = nullptr) override;
 
         com_ptr<ID3D12GraphicsCommandList> const& get() const { return _commands; }
 

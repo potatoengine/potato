@@ -6,6 +6,7 @@
 #    include "grimm/foundation/assert.h"
 #    include "grimm/foundation/logging.h"
 #    include "grimm/foundation/out_ptr.h"
+#    include "vkn_pipeline_state.h"
 #    include "vkn_swap_chain.h"
 #    include <array>
 
@@ -80,19 +81,28 @@ auto gm::VknDevice::createSwapChain(void* nativeWindow) -> box<ISwapChain> {
 }
 
 auto gm::VknDevice::createDescriptorHeap() -> box<IDescriptorHeap> {
+    GM_ASSERT(false, "Unsupported");
     return nullptr;
 }
 
-auto gm::VknDevice::createCommandList() -> box<ICommandList> {
+auto gm::VknDevice::createCommandList(IPipelineState* pipelineState) -> box<ICommandList> {
+    GM_ASSERT(false, "Unsupported");
     return nullptr;
 }
 
 void gm::VknDevice::createRenderTargetView(IGpuResource* renderTarget, uint64 cpuHandle) {
     GM_ASSERT(renderTarget != nullptr);
+    GM_ASSERT(false, "Unsupported");
+}
+
+auto gm::VknDevice::createPipelineState() -> box<IPipelineState> {
+    GM_ASSERT(false, "Unsupported");
+    return nullptr;
 }
 
 void gm::VknDevice::execute(ICommandList* commandList) {
     GM_ASSERT(commandList != nullptr);
+    GM_ASSERT(false, "Unsupported");
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL gm::VknDevice::_debugCallback(

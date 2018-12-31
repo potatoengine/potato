@@ -33,7 +33,9 @@ namespace gm {
 
         box<ISwapChain> createSwapChain(void* native_window) override;
         box<IDescriptorHeap> createDescriptorHeap() override;
-        box<ICommandList> createCommandList() override;
+        box<ICommandList> createCommandList(IPipelineState* pipelineState = nullptr) override;
+        box<IPipelineState> createPipelineState() override;
+
         void execute(ICommandList* commandList) override;
 
         void createRenderTargetView(IGpuResource* renderTarget, uint64 cpuHandle) override;

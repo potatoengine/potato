@@ -3,6 +3,7 @@
 #include "null_device.h"
 #include "command_list.h"
 #include "descriptor_heap.h"
+#include "pipeline_state.h"
 #include "resource.h"
 #include "swap_chain.h"
 
@@ -17,10 +18,14 @@ auto gm::NullDevice::createDescriptorHeap() -> box<IDescriptorHeap> {
     return nullptr;
 }
 
-auto gm::NullDevice::createCommandList() -> box<ICommandList> {
+auto gm::NullDevice::createCommandList(IPipelineState* pipelineState) -> box<ICommandList> {
     return nullptr;
 }
 
 void gm::NullDevice::createRenderTargetView(IGpuResource* renderTarget, uint64 cpuHandle) {}
+
+auto gm::NullDevice::createPipelineState() -> box<IPipelineState> {
+    return nullptr;
+}
 
 void gm::NullDevice::execute(ICommandList* commands) {}

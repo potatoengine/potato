@@ -5,6 +5,7 @@ target_sources(gpu PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/vkn_factory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vkn_swap_chain.h
     ${CMAKE_CURRENT_SOURCE_DIR}/vkn_swap_chain.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vkn_pipeline_state.h
     ${CMAKE_CURRENT_SOURCE_DIR}/vulkan.h
 )
 

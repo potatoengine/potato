@@ -7,6 +7,7 @@
 
 namespace gm {
     class IGpuResource;
+    class IPipelineState;
 
     class ICommandList {
     public:
@@ -19,6 +20,6 @@ namespace gm {
         virtual void clearRenderTarget(uint64 handle) = 0;
         virtual void resourceBarrier(IGpuResource* resource, GpuResourceState from, GpuResourceState to) = 0;
 
-        virtual void reset() = 0;
+        virtual void reset(IPipelineState* pipelineState = nullptr) = 0;
     };
 } // namespace gm

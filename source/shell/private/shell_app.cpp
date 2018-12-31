@@ -37,8 +37,16 @@ int gm::ShellApp::initialize() {
     }
 
 #if GM_GPU_ENABLE_D3D12
-    auto factory = CreateD3d12GPUFactory();
-    _device = factory->createDevice(0);
+    if (_device == nullptr) {
+        auto d3d12Factory = CreateD3d12GPUFactory();
+        _device = d3d12Factory->createDevice(0);
+    }
+#endif
+#if GM_GPU_ENABLE_VULKAN
+    if (_device == nullptr) {
+        auto vulkanFactory = CreateVulkanGPUFactory();
+        _device = vulkanFactory->createDevice(0);
+    }
 #endif
 
     if (_device == nullptr) {
