@@ -37,7 +37,7 @@ void gm::VknSwapChain::present() {
 
 void gm::VknSwapChain::resizeBuffers(int width, int height) {}
 
-auto gm::VknSwapChain::getBuffer(int index) -> box<IGpuResource> {
+auto gm::VknSwapChain::getBuffer(int index) -> box<GpuResource> {
     return nullptr;
 }
 

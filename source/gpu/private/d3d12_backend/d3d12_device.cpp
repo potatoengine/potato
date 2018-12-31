@@ -41,7 +41,7 @@ gm::D3d12Device::~D3d12Device() {
     }
 }
 
-auto gm::D3d12Device::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> box<IGPUDevice> {
+auto gm::D3d12Device::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> box<GpuDevice> {
     GM_ASSERT(factory != nullptr);
     GM_ASSERT(adapter != nullptr);
 
@@ -77,21 +77,21 @@ auto gm::D3d12Device::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGI
     return make_box<D3d12Device>(std::move(factory), std::move(adapter), std::move(device), std::move(graphicsQueue));
 }
 
-auto gm::D3d12Device::createSwapChain(void* nativeWindow) -> box<ISwapChain> {
+auto gm::D3d12Device::createSwapChain(void* nativeWindow) -> box<GpuSwapChain> {
     GM_ASSERT(nativeWindow != nullptr);
 
     return D3d12SwapChain::createSwapChain(_factory.get(), _graphicsQueue.get(), nativeWindow);
 }
 
-auto gm::D3d12Device::createDescriptorHeap() -> box<IDescriptorHeap> {
+auto gm::D3d12Device::createDescriptorHeap() -> box<GpuDescriptorHeap> {
     return D3d12DescriptorHeap::createDescriptorHeap(_device.get());
 }
 
-auto gm::D3d12Device::createCommandList(IPipelineState* pipelineState) -> box<ICommandList> {
+auto gm::D3d12Device::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
     return D3d12CommandList::createCommandList(_device.get(), pipelineState);
 }
 
-void gm::D3d12Device::createRenderTargetView(IGpuResource* renderTarget, uint64 cpuHandle) {
+void gm::D3d12Device::createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) {
     GM_ASSERT(renderTarget != nullptr);
 
     auto d3d12Resource = static_cast<D3d12Resource*>(renderTarget);
@@ -99,11 +99,11 @@ void gm::D3d12Device::createRenderTargetView(IGpuResource* renderTarget, uint64 
     _device->CreateRenderTargetView(d3d12Resource->get().get(), nullptr, handle);
 }
 
-auto gm::D3d12Device::createPipelineState() -> box<IPipelineState> {
+auto gm::D3d12Device::createPipelineState() -> box<GpuPipelineState> {
     return D3d12PipelineState::createGraphicsPipelineState(_device.get());
 }
 
-void gm::D3d12Device::execute(ICommandList* commandList) {
+void gm::D3d12Device::execute(GpuCommandList* commandList) {
     GM_ASSERT(commandList != nullptr);
 
     ID3D12GraphicsCommandList* graphicsList = static_cast<D3d12CommandList*>(commandList)->get().get();

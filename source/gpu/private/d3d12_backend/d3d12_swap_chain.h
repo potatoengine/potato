@@ -8,7 +8,7 @@
 #include "swap_chain.h"
 
 namespace gm {
-    class D3d12SwapChain : public ISwapChain {
+    class D3d12SwapChain : public GpuSwapChain {
     public:
         D3d12SwapChain(com_ptr<IDXGISwapChain1> swapChain);
         virtual ~D3d12SwapChain();
@@ -16,11 +16,11 @@ namespace gm {
         D3d12SwapChain(D3d12SwapChain&&) = delete;
         D3d12SwapChain& operator=(D3d12SwapChain&&) = delete;
 
-        static box<ISwapChain> createSwapChain(IDXGIFactory2* factory, ID3D12CommandQueue* graphicsQueue, void* nativeWindow);
+        static box<GpuSwapChain> createSwapChain(IDXGIFactory2* factory, ID3D12CommandQueue* graphicsQueue, void* nativeWindow);
 
         void present() override;
         void resizeBuffers(int width, int height) override;
-        box<IGpuResource> getBuffer(int index) override;
+        box<GpuResource> getBuffer(int index) override;
         int getCurrentBufferIndex() override;
 
     private:

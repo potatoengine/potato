@@ -3,12 +3,12 @@
 #pragma once
 
 namespace gm {
-    class IPipelineState {
+    class GpuPipelineState {
     public:
-        IPipelineState() = default;
-        virtual ~IPipelineState() = default;
+        GpuPipelineState() = default;
+        virtual ~GpuPipelineState() = default;
 
-        IPipelineState(IPipelineState&&) = delete;
-        IPipelineState& operator=(IPipelineState&&) = delete;
+        GpuPipelineState(GpuPipelineState&&) = delete;
+        GpuPipelineState& operator=(GpuPipelineState&&) = delete;
     };
 } // namespace gm

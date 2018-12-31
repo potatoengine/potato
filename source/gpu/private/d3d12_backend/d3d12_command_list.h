@@ -8,7 +8,7 @@
 #include "grimm/gpu/command_list.h"
 
 namespace gm {
-    class D3d12CommandList final : public ICommandList {
+    class D3d12CommandList final : public GpuCommandList {
     public:
         D3d12CommandList(com_ptr<ID3D12CommandAllocator> allocator, com_ptr<ID3D12GraphicsCommandList> commands);
         virtual ~D3d12CommandList();
@@ -16,11 +16,11 @@ namespace gm {
         D3d12CommandList(D3d12CommandList&&) = delete;
         D3d12CommandList& operator=(D3d12CommandList&&) = delete;
 
-        static box<D3d12CommandList> createCommandList(ID3D12Device1* device, IPipelineState* pipelineState);
+        static box<D3d12CommandList> createCommandList(ID3D12Device1* device, GpuPipelineState* pipelineState);
 
         void clearRenderTarget(uint64 handle) override;
-        void resourceBarrier(IGpuResource* resource, GpuResourceState from, GpuResourceState to) override;
-        void reset(IPipelineState* pipelineState = nullptr) override;
+        void resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) override;
+        void reset(GpuPipelineState* pipelineState = nullptr) override;
 
         com_ptr<ID3D12GraphicsCommandList> const& get() const { return _commands; }
 

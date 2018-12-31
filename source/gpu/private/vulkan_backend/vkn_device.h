@@ -17,7 +17,7 @@ namespace gm {
     class VkCommandList;
     class VkDescriptorHeap;
 
-    class VknDevice final : public IGPUDevice {
+    class VknDevice final : public GpuDevice {
     public:
         struct Context {
             vk::UniqueInstance instance;
@@ -29,16 +29,16 @@ namespace gm {
         VknDevice(Context context);
         virtual ~VknDevice();
 
-        static box<IGPUDevice> createDevice();
+        static box<GpuDevice> createDevice();
 
-        box<ISwapChain> createSwapChain(void* native_window) override;
-        box<IDescriptorHeap> createDescriptorHeap() override;
-        box<ICommandList> createCommandList(IPipelineState* pipelineState = nullptr) override;
-        box<IPipelineState> createPipelineState() override;
+        box<GpuSwapChain> createSwapChain(void* native_window) override;
+        box<GpuDescriptorHeap> createDescriptorHeap() override;
+        box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
+        box<GpuPipelineState> createPipelineState() override;
 
-        void execute(ICommandList* commandList) override;
+        void execute(GpuCommandList* commandList) override;
 
-        void createRenderTargetView(IGpuResource* renderTarget, uint64 cpuHandle) override;
+        void createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) override;
 
     private:
         static VKAPI_ATTR VkBool32 VKAPI_CALL _debugCallback(

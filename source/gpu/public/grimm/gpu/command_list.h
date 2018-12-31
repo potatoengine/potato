@@ -6,20 +6,20 @@
 #include "transition.h"
 
 namespace gm {
-    class IGpuResource;
-    class IPipelineState;
+    class GpuResource;
+    class GpuPipelineState;
 
-    class ICommandList {
+    class GpuCommandList {
     public:
-        ICommandList() = default;
-        virtual ~ICommandList() = default;
+        GpuCommandList() = default;
+        virtual ~GpuCommandList() = default;
 
-        ICommandList(ICommandList&&) = delete;
-        ICommandList& operator=(ICommandList&&) = delete;
+        GpuCommandList(GpuCommandList&&) = delete;
+        GpuCommandList& operator=(GpuCommandList&&) = delete;
 
         virtual void clearRenderTarget(uint64 handle) = 0;
-        virtual void resourceBarrier(IGpuResource* resource, GpuResourceState from, GpuResourceState to) = 0;
+        virtual void resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) = 0;
 
-        virtual void reset(IPipelineState* pipelineState = nullptr) = 0;
+        virtual void reset(GpuPipelineState* pipelineState = nullptr) = 0;
     };
 } // namespace gm

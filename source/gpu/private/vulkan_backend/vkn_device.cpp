@@ -14,7 +14,7 @@ gm::VknDevice::VknDevice(Context context) : _context(std::move(context)) {}
 
 gm::VknDevice::~VknDevice() = default;
 
-auto gm::VknDevice::createDevice() -> box<IGPUDevice> {
+auto gm::VknDevice::createDevice() -> box<GpuDevice> {
     vk::ApplicationInfo appInfo = {};
     appInfo.pApplicationName = "Grimm";
     appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1);
@@ -74,33 +74,33 @@ auto gm::VknDevice::createDevice() -> box<IGPUDevice> {
     return make_box<VknDevice>(std::move(context));
 }
 
-auto gm::VknDevice::createSwapChain(void* nativeWindow) -> box<ISwapChain> {
+auto gm::VknDevice::createSwapChain(void* nativeWindow) -> box<GpuSwapChain> {
     GM_ASSERT(nativeWindow != nullptr);
 
     return VknSwapChain::createSwapChain(_context.instance.get(), _context.device.get(), *_context.loader, nativeWindow);
 }
 
-auto gm::VknDevice::createDescriptorHeap() -> box<IDescriptorHeap> {
+auto gm::VknDevice::createDescriptorHeap() -> box<GpuDescriptorHeap> {
     GM_ASSERT(false, "Unsupported");
     return nullptr;
 }
 
-auto gm::VknDevice::createCommandList(IPipelineState* pipelineState) -> box<ICommandList> {
+auto gm::VknDevice::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
     GM_ASSERT(false, "Unsupported");
     return nullptr;
 }
 
-void gm::VknDevice::createRenderTargetView(IGpuResource* renderTarget, uint64 cpuHandle) {
+void gm::VknDevice::createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) {
     GM_ASSERT(renderTarget != nullptr);
     GM_ASSERT(false, "Unsupported");
 }
 
-auto gm::VknDevice::createPipelineState() -> box<IPipelineState> {
+auto gm::VknDevice::createPipelineState() -> box<GpuPipelineState> {
     GM_ASSERT(false, "Unsupported");
     return nullptr;
 }
 
-void gm::VknDevice::execute(ICommandList* commandList) {
+void gm::VknDevice::execute(GpuCommandList* commandList) {
     GM_ASSERT(commandList != nullptr);
     GM_ASSERT(false, "Unsupported");
 }

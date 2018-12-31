@@ -27,7 +27,7 @@ auto gm::D3d12PipelineState::createGraphicsPipelineState(ID3D12Device1* device) 
     return make_box<D3d12PipelineState>(std::move(state));
 }
 
-auto gm::D3d12PipelineState::toNative(IPipelineState* state) -> ID3D12PipelineState* {
+auto gm::D3d12PipelineState::toNative(GpuPipelineState* state) -> ID3D12PipelineState* {
     auto d3d12State = static_cast<D3d12PipelineState*>(state);
     return d3d12State != nullptr ? d3d12State->_state.get() : nullptr;
 }

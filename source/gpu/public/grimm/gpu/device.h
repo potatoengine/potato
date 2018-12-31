@@ -6,27 +6,27 @@
 #include "grimm/foundation/types.h"
 
 namespace gm {
-    class ISwapChain;
-    class IDescriptorHeap;
-    class IGpuResource;
-    class IPipelineState;
-    class ICommandList;
+    class GpuSwapChain;
+    class GpuDescriptorHeap;
+    class GpuResource;
+    class GpuPipelineState;
+    class GpuCommandList;
 
-    class IGPUDevice {
+    class GpuDevice {
     public:
-        IGPUDevice() = default;
-        virtual ~IGPUDevice() = default;
+        GpuDevice() = default;
+        virtual ~GpuDevice() = default;
 
-        IGPUDevice(IGPUDevice&&) = delete;
-        IGPUDevice& operator=(IGPUDevice&&) = delete;
+        GpuDevice(GpuDevice&&) = delete;
+        GpuDevice& operator=(GpuDevice&&) = delete;
 
-        virtual box<ISwapChain> createSwapChain(void* nativeWindow) = 0;
-        virtual box<IDescriptorHeap> createDescriptorHeap() = 0;
-        virtual box<ICommandList> createCommandList(IPipelineState* pipelineState = nullptr) = 0;
-        virtual box<IPipelineState> createPipelineState() = 0;
+        virtual box<GpuSwapChain> createSwapChain(void* nativeWindow) = 0;
+        virtual box<GpuDescriptorHeap> createDescriptorHeap() = 0;
+        virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
+        virtual box<GpuPipelineState> createPipelineState() = 0;
 
-        virtual void execute(ICommandList* commandList) = 0;
+        virtual void execute(GpuCommandList* commandList) = 0;
 
-        virtual void createRenderTargetView(IGpuResource* renderTarget, uint64 cpuHandle) = 0;
+        virtual void createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) = 0;
     };
 } // namespace gm

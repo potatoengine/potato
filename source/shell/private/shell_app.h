@@ -31,9 +31,9 @@ private:
 
 private:
     bool _running = true;
-    gm::box<gm::IGPUDevice> _device;
-    gm::box<gm::ISwapChain> _swapChain;
-    gm::box<gm::IDescriptorHeap> _rtvHeap;
-    gm::box<gm::ICommandList> _commandList;
+    gm::box<gm::GpuDevice> _device;
+    gm::box<gm::GpuSwapChain> _swapChain;
+    gm::box<gm::GpuDescriptorHeap> _rtvHeap;
+    gm::box<gm::GpuCommandList> _commandList;
     gm::unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
 };

@@ -8,20 +8,20 @@
 #include "grimm/gpu/descriptor_heap.h"
 
 namespace gm {
-    class D3d12DescriptorHeap final : public IDescriptorHeap {
+    class D3d12DescriptorHeap final : public GpuDescriptorHeap {
     public:
-        D3d12DescriptorHeap(com_ptr<ID3D12DescriptorHeap> heap, DescriptorHandle handle);
+        D3d12DescriptorHeap(com_ptr<ID3D12DescriptorHeap> heap, GpuDescriptorHandle handle);
         virtual ~D3d12DescriptorHeap();
 
         D3d12DescriptorHeap(D3d12DescriptorHeap&&) = delete;
         D3d12DescriptorHeap& operator=(D3d12DescriptorHeap&&) = delete;
 
-        static box<IDescriptorHeap> createDescriptorHeap(ID3D12Device1* device);
+        static box<GpuDescriptorHeap> createDescriptorHeap(ID3D12Device1* device);
 
-        DescriptorHandle getCpuHandle() const override { return _handle; }
+        GpuDescriptorHandle getCpuHandle() const override { return _handle; }
 
     private:
         com_ptr<ID3D12DescriptorHeap> _heap;
-        DescriptorHandle _handle = {0, 0};
+        GpuDescriptorHandle _handle = {0, 0};
     };
 } // namespace gm

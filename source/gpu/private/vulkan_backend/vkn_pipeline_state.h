@@ -5,7 +5,7 @@
 #include "grimm/gpu/pipeline_state.h"
 
 namespace gm {
-    class VknPipelineState : IPipelineState {
+    class VknPipelineState : GpuPipelineState {
     public:
         VknPipelineState() = default;
         virtual ~VknPipelineState() = default;

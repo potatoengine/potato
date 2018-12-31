@@ -15,7 +15,7 @@ gm::D3d12SwapChain::D3d12SwapChain(com_ptr<IDXGISwapChain1> swapChain) : _swapCh
 
 gm::D3d12SwapChain::~D3d12SwapChain() = default;
 
-auto gm::D3d12SwapChain::createSwapChain(IDXGIFactory2* factory, ID3D12CommandQueue* graphicsQueue, void* nativeWindow) -> box<ISwapChain> {
+auto gm::D3d12SwapChain::createSwapChain(IDXGIFactory2* factory, ID3D12CommandQueue* graphicsQueue, void* nativeWindow) -> box<GpuSwapChain> {
     DXGI_SWAP_CHAIN_DESC1 desc = {0};
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     desc.SampleDesc.Count = 1;
@@ -49,7 +49,7 @@ void gm::D3d12SwapChain::resizeBuffers(int width, int height) {
     _swapChain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 }
 
-auto gm::D3d12SwapChain::getBuffer(int index) -> box<IGpuResource> {
+auto gm::D3d12SwapChain::getBuffer(int index) -> box<GpuResource> {
     com_ptr<ID3D12Resource> buffer;
     _swapChain->GetBuffer(index, __uuidof(ID3D12Resource), out_ptr(buffer));
     if (buffer == nullptr) {

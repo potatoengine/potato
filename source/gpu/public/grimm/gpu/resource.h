@@ -3,12 +3,12 @@
 #pragma once
 
 namespace gm {
-    class IGpuResource {
+    class GpuResource {
     public:
-        IGpuResource() = default;
-        virtual ~IGpuResource() = default;
+        GpuResource() = default;
+        virtual ~GpuResource() = default;
 
-        IGpuResource(IGpuResource&&) = delete;
-        IGpuResource& operator=(IGpuResource&&) = delete;
+        GpuResource(GpuResource&&) = delete;
+        GpuResource& operator=(GpuResource&&) = delete;
     };
 } // namespace gm

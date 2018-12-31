@@ -8,7 +8,7 @@
 #include "grimm/gpu/resource.h"
 
 namespace gm {
-    class D3d12Resource final : public IGpuResource {
+    class D3d12Resource final : public GpuResource {
     public:
         explicit D3d12Resource(com_ptr<ID3D12Resource> resource);
         virtual ~D3d12Resource();

@@ -16,7 +16,7 @@ gm::D3d12CommandList::~D3d12CommandList() {
     _allocator.reset();
 }
 
-auto gm::D3d12CommandList::createCommandList(ID3D12Device1* device, IPipelineState* pipelineState) -> box<D3d12CommandList> {
+auto gm::D3d12CommandList::createCommandList(ID3D12Device1* device, GpuPipelineState* pipelineState) -> box<D3d12CommandList> {
     com_ptr<ID3D12CommandAllocator> allocator;
     HRESULT hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), out_ptr(allocator));
     if (allocator == nullptr) {
@@ -39,7 +39,7 @@ void gm::D3d12CommandList::clearRenderTarget(uint64 handle) {
     _commands->ClearRenderTargetView({handle}, rgba, 0, nullptr);
 }
 
-void gm::D3d12CommandList::resourceBarrier(IGpuResource* resource, GpuResourceState from, GpuResourceState to) {
+void gm::D3d12CommandList::resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) {
     GM_ASSERT(resource != nullptr);
 
     D3D12_RESOURCE_BARRIER barrier = {
@@ -52,7 +52,7 @@ void gm::D3d12CommandList::resourceBarrier(IGpuResource* resource, GpuResourceSt
     _commands->ResourceBarrier(1, &barrier);
 }
 
-void gm::D3d12CommandList::reset(IPipelineState* pipelineState) {
+void gm::D3d12CommandList::reset(GpuPipelineState* pipelineState) {
     _allocator->Reset();
     _commands->Reset(_allocator.get(), D3d12PipelineState::toNative(pipelineState));
 }

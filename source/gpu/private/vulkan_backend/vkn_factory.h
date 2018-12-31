@@ -6,12 +6,12 @@
 #include "grimm/gpu/factory.h"
 
 namespace gm {
-    class VknFactory final : public IGPUFactory {
+    class VknFactory final : public GpuDeviceFactory {
     public:
         virtual ~VknFactory();
 
         bool isEnabled() const override;
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
-        box<IGPUDevice> createDevice(int index) override;
+        box<GpuDevice> createDevice(int index) override;
     };
 } // namespace gm

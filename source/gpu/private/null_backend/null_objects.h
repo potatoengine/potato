@@ -13,49 +13,49 @@
 namespace gm {
     class NullDevice;
 
-    class NullFactory final : public IGPUFactory {
+    class NullFactory final : public GpuDeviceFactory {
     public:
         bool isEnabled() const override { return true; }
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
-        box<IGPUDevice> createDevice(int index) override;
+        box<GpuDevice> createDevice(int index) override;
     };
 
-    class NullDevice final : public IGPUDevice {
+    class NullDevice final : public GpuDevice {
     public:
-        box<ISwapChain> createSwapChain(void* native_window) override;
-        box<IDescriptorHeap> createDescriptorHeap() override;
-        box<ICommandList> createCommandList(IPipelineState* pipelineState = nullptr) override;
-        box<IPipelineState> createPipelineState() override;
+        box<GpuSwapChain> createSwapChain(void* native_window) override;
+        box<GpuDescriptorHeap> createDescriptorHeap() override;
+        box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
+        box<GpuPipelineState> createPipelineState() override;
 
-        void createRenderTargetView(IGpuResource* renderTarget, uint64 cpuHandle) override {}
+        void createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) override {}
 
-        void execute(ICommandList* commands) override {}
+        void execute(GpuCommandList* commands) override {}
     };
 
-    class NullSwapChain final : public ISwapChain {
+    class NullSwapChain final : public GpuSwapChain {
     public:
         void present() override {}
         void resizeBuffers(int width, int height) override {}
-        box<IGpuResource> getBuffer(int index) override;
+        box<GpuResource> getBuffer(int index) override;
         int getCurrentBufferIndex() override;
     };
 
-    class NullPipelineState final : public IPipelineState {
+    class NullPipelineState final : public GpuPipelineState {
     };
 
-    class NullResource final : public IGpuResource {
+    class NullResource final : public GpuResource {
     };
 
-    class NullDescriptorHeap final : public IDescriptorHeap {
+    class NullDescriptorHeap final : public GpuDescriptorHeap {
     public:
-        DescriptorHandle getCpuHandle() const override;
+        GpuDescriptorHandle getCpuHandle() const override;
     };
 
-    class NullCommandList final : public ICommandList {
+    class NullCommandList final : public GpuCommandList {
     public:
         void clearRenderTarget(uint64 handle) override {}
-        void resourceBarrier(IGpuResource* resource, GpuResourceState from, GpuResourceState to) override {}
+        void resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) override {}
 
-        void reset(IPipelineState* pipelineState = nullptr) override {}
+        void reset(GpuPipelineState* pipelineState = nullptr) override {}
     };
 } // namespace gm

@@ -7,7 +7,7 @@
 #include "grimm/gpu/factory.h"
 
 namespace gm {
-    class D3d12Factory final : public IGPUFactory {
+    class D3d12Factory final : public GpuDeviceFactory {
     public:
         D3d12Factory(com_ptr<IDXGIFactory2> dxgiFactory);
         virtual ~D3d12Factory();
@@ -17,7 +17,7 @@ namespace gm {
 
         bool isEnabled() const override;
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
-        box<IGPUDevice> createDevice(int index) override;
+        box<GpuDevice> createDevice(int index) override;
 
     private:
         com_ptr<IDXGIFactory2> _dxgiFactory;

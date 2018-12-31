@@ -7,7 +7,7 @@
 #include "vulkan.h"
 
 namespace gm {
-    class VknSwapChain final : public ISwapChain {
+    class VknSwapChain final : public GpuSwapChain {
     public:
         VknSwapChain(vk::UniqueHandle<vk::SurfaceKHR, vk::DispatchLoaderDynamic> surface, vk::UniqueHandle<vk::SwapchainKHR, vk::DispatchLoaderDynamic> swapchain);
         virtual ~VknSwapChain();
@@ -16,7 +16,7 @@ namespace gm {
 
         void present() override;
         void resizeBuffers(int width, int height) override;
-        box<IGpuResource> getBuffer(int index) override;
+        box<GpuResource> getBuffer(int index) override;
         int getCurrentBufferIndex() override;
 
     private:

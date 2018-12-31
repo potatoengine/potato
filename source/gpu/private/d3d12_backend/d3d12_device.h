@@ -8,7 +8,7 @@
 #include "grimm/gpu/device.h"
 
 namespace gm {
-    class D3d12Device final : public IGPUDevice {
+    class D3d12Device final : public GpuDevice {
     public:
         D3d12Device(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D12Device1> device, com_ptr<ID3D12CommandQueue> graphicsQueue);
         virtual ~D3d12Device();
@@ -16,16 +16,16 @@ namespace gm {
         D3d12Device(D3d12Device&&) = delete;
         D3d12Device& operator=(D3d12Device&&) = delete;
 
-        static box<IGPUDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
+        static box<GpuDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
-        box<ISwapChain> createSwapChain(void* native_window) override;
-        box<IDescriptorHeap> createDescriptorHeap() override;
-        box<ICommandList> createCommandList(IPipelineState* pipelineState = nullptr) override;
-        box<IPipelineState> createPipelineState() override;
+        box<GpuSwapChain> createSwapChain(void* native_window) override;
+        box<GpuDescriptorHeap> createDescriptorHeap() override;
+        box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
+        box<GpuPipelineState> createPipelineState() override;
 
-        void execute(ICommandList* commandList) override;
+        void execute(GpuCommandList* commandList) override;
 
-        void createRenderTargetView(IGpuResource* renderTarget, std::size_t cpuHandle) override;
+        void createRenderTargetView(GpuResource* renderTarget, std::size_t cpuHandle) override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;

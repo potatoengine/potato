@@ -15,7 +15,7 @@ gm::D3d12Factory::D3d12Factory(com_ptr<IDXGIFactory2> dxgiFactory)
 
 gm::D3d12Factory::~D3d12Factory() = default;
 
-auto gm::CreateD3d12GPUFactory() -> box<IGPUFactory> {
+auto gm::CreateD3d12GPUFactory() -> box<GpuDeviceFactory> {
     com_ptr<IDXGIFactory2> dxgiFactory;
     CreateDXGIFactory1(__uuidof(IDXGIFactory2), out_ptr(dxgiFactory));
     return make_box<D3d12Factory>(std::move(dxgiFactory));
@@ -35,7 +35,7 @@ void gm::D3d12Factory::enumerateDevices(delegate<void(DeviceInfo const&)> callba
     }
 }
 
-auto gm::D3d12Factory::createDevice(int index) -> box<IGPUDevice> {
+auto gm::D3d12Factory::createDevice(int index) -> box<GpuDevice> {
     com_ptr<IDXGIAdapter1> adapter;
 
     UINT targetIndex = 0;

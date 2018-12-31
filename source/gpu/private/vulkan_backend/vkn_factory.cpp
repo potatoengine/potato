@@ -8,7 +8,7 @@
 
 gm::VknFactory::~VknFactory() = default;
 
-auto gm::CreateVulkanGPUFactory() -> box<IGPUFactory> {
+auto gm::CreateVulkanGPUFactory() -> box<GpuDeviceFactory> {
     return make_box<VknFactory>();
 }
 
@@ -19,7 +19,7 @@ bool gm::VknFactory::isEnabled() const {
 void gm::VknFactory::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
 }
 
-auto gm::VknFactory::createDevice(int index) -> box<IGPUDevice> {
+auto gm::VknFactory::createDevice(int index) -> box<GpuDevice> {
     return VknDevice::createDevice();
 }
 
