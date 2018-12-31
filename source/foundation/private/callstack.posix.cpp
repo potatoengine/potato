@@ -25,7 +25,7 @@ bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresse
 
     for (auto index = 0; index != addresses.size(); ++index) {
         CallStackRecord& record = out_records[index];
-        record.address = address[index];
+        record.address = addresses[index];
         record.symbol = string_view(symbols[index]);
     }
 
