@@ -6,7 +6,7 @@
 
 #include <execinfo.h>
 
-int gm::CallStackReader::readCallstack(array_view<uintptr> addresses, uint skip) {
+uint gm::CallStackReader::readCallstack(array_view<uintptr> addresses, uint skip) {
     void* buffer;
 
     uint max = addresses.size() - std::min<uint>(addresses.size(), skip);
