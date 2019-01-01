@@ -9,8 +9,8 @@
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "--verbose"
     },
     {
       "name": "Debug-Windows",
@@ -21,8 +21,8 @@
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "--verbose"
     },
     {
       "name": "Linux-Debug",
@@ -47,7 +47,7 @@
       "remoteCopyBuildOutput": false,
       "cmakeCommandArgs": "-DCMAKE_CXX_COMPILER:PATH=clang++-7 -DCMAKE_C_COMPILER:PATH=clang-7 -DCMAKE_CXX_FLAGS:STRING=\"-stdlib=libc++ -Wall\"",
       "buildCommandArgs": "",
-      "ctestCommandArgs": "",
+      "ctestCommandArgs": "--verbose",
       "inheritEnvironments": [
         "linux_x64"
       ]
