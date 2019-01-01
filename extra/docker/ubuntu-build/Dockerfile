@@ -16,7 +16,7 @@ RUN apt-get -y --no-install-recommends install clang-7 libc++-7-dev libc++abi-7-
 RUN apt-get -y --no-install-recommends install clang-tidy-7 clang-format-7
 
 # Build dependencies for graphics/games - sadly SDL2 heavily bloats the image because it pulls in way too much crap
-RUN apt-get -y --no-install-recommends install vulkan-headers
+RUN apt-get -y --no-install-recommends install libvulkan-dev
 RUN apt-get -y --no-install-recommends install libsdl2-dev
 
 # Setup to run

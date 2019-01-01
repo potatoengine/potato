@@ -1,3 +1,2 @@
 deb http://ppa.launchpad.net/janisozaur/cmake-update-bionic/ubuntu bionic main
 deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main
-deb https://packages.lunarg.com/vulkan/1.1.92 bionic main
