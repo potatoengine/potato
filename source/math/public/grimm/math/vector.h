@@ -3,13 +3,10 @@
 #pragma once
 
 #include "common.h"
+#include "packed.h"
 
 namespace gm {
-    struct Vector4f {
-        float x = 0;
-        float y = 0;
-        float z = 0;
-        float w = 0;
-    };
+    // FIXME: make this a SIMD vector
+    using Vector4f = PackedVector4f;
     static_assert(sizeof(Vector4f) == sizeof(float) * 4);
 } // namespace gm
