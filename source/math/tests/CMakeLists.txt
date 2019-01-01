@@ -1,6 +1,7 @@
 add_executable(math_test
     main.cpp
     test_packed.cpp
+    test_swizzle.cpp
 )
 
 target_link_libraries(math_test PRIVATE

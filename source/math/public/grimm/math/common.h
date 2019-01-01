@@ -2,11 +2,14 @@
 
 #pragma once
 
-#include "common.h"
+#include "grimm/foundation/platform.h"
+#include <type_traits>
 
 #define GM_MATHCALL_CONVERSION GM_FORCEINLINE constexpr GM_VECTORCALL
 #define GM_MATHCALL_FRIEND GM_FORCEINLINE friend constexpr auto GM_VECTORCALL
 #define GM_MATHCALL GM_FORCEINLINE constexpr auto GM_VECTORCALL
 
 namespace gm {
+    template <typename T, int MinN>
+    constexpr bool is_vector_v = (std::is_same_v<void, std::void_t<typename T::value_type>> && (T::length >= MinN));
 } // namespace gm
