@@ -53,7 +53,7 @@ namespace gm {
 
     class NullCommandList final : public GpuCommandList {
     public:
-        void clearRenderTarget(uint64 handle) override {}
+        void clearRenderTarget(uint64 handle, PackedVector4f color) override {}
         void resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) override {}
 
         void reset(GpuPipelineState* pipelineState = nullptr) override {}
