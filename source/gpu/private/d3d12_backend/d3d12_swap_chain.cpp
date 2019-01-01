@@ -1,15 +1,13 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#if GM_GPU_ENABLE_D3D12
-
-#    include "d3d12_swap_chain.h"
-#    include "com_ptr.h"
-#    include "d3d12_resource.h"
-#    include "direct3d.h"
-#    include "grimm/foundation/box.h"
-#    include "grimm/foundation/logging.h"
-#    include "grimm/foundation/out_ptr.h"
-#    include <utility>
+#include "d3d12_swap_chain.h"
+#include "com_ptr.h"
+#include "d3d12_resource.h"
+#include "direct3d.h"
+#include "grimm/foundation/box.h"
+#include "grimm/foundation/logging.h"
+#include "grimm/foundation/out_ptr.h"
+#include <utility>
 
 gm::D3d12SwapChain::D3d12SwapChain(com_ptr<IDXGISwapChain1> swapChain) : _swapChain(std::move(swapChain)) {}
 
@@ -61,5 +59,3 @@ auto gm::D3d12SwapChain::getBuffer(int index) -> box<GpuResource> {
 int gm::D3d12SwapChain::getCurrentBufferIndex() {
     return _bufferIndex;
 }
-
-#endif

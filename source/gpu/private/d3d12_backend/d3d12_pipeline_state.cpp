@@ -1,10 +1,8 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#if GM_GPU_ENABLE_D3D12
-
-#    include "d3d12_pipeline_state.h"
-#    include "grimm/foundation/assert.h"
-#    include "grimm/foundation/out_ptr.h"
+#include "d3d12_pipeline_state.h"
+#include "grimm/foundation/assert.h"
+#include "grimm/foundation/out_ptr.h"
 
 gm::D3d12PipelineState::D3d12PipelineState(com_ptr<ID3D12PipelineState> state)
     : _state(std::move(state)) {
@@ -31,5 +29,3 @@ auto gm::D3d12PipelineState::toNative(GpuPipelineState* state) -> ID3D12Pipeline
     auto d3d12State = static_cast<D3d12PipelineState*>(state);
     return d3d12State != nullptr ? d3d12State->_state.get() : nullptr;
 }
-
-#endif

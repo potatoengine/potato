@@ -1,13 +1,11 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#if GM_GPU_ENABLE_D3D12
-
-#    include "d3d12_command_list.h"
-#    include "d3d12_pipeline_state.h"
-#    include "d3d12_resource.h"
-#    include "direct3d.h"
-#    include "grimm/foundation/assert.h"
-#    include "grimm/foundation/out_ptr.h"
+#include "d3d12_command_list.h"
+#include "d3d12_pipeline_state.h"
+#include "d3d12_resource.h"
+#include "direct3d.h"
+#include "grimm/foundation/assert.h"
+#include "grimm/foundation/out_ptr.h"
 
 gm::D3d12CommandList::D3d12CommandList(com_ptr<ID3D12CommandAllocator> allocator, com_ptr<ID3D12GraphicsCommandList> commands) : _allocator(std::move(allocator)), _commands(std::move(commands)) {}
 
@@ -68,5 +66,3 @@ D3D12_RESOURCE_STATES gm::D3d12CommandList::toD3d12State(GpuResourceState state)
         return D3D12_RESOURCE_STATE_COMMON;
     }
 }
-
-#endif

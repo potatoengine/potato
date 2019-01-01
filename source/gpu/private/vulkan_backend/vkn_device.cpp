@@ -1,14 +1,12 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#if GM_GPU_ENABLE_VULKAN
-
-#    include "vkn_device.h"
-#    include "grimm/foundation/assert.h"
-#    include "grimm/foundation/logging.h"
-#    include "grimm/foundation/out_ptr.h"
-#    include "vkn_pipeline_state.h"
-#    include "vkn_swap_chain.h"
-#    include <array>
+#include "vkn_device.h"
+#include "grimm/foundation/assert.h"
+#include "grimm/foundation/logging.h"
+#include "grimm/foundation/out_ptr.h"
+#include "vkn_pipeline_state.h"
+#include "vkn_swap_chain.h"
+#include <array>
 
 gm::VknDevice::VknDevice(Context context) : _context(std::move(context)) {}
 
@@ -31,9 +29,9 @@ auto gm::VknDevice::createDevice() -> box<GpuDevice> {
 
     vk::InstanceCreateInfo createInfo = {};
     createInfo.pApplicationInfo = &appInfo;
-    createInfo.enabledLayerCount = instanceLayers.size();
+    createInfo.enabledLayerCount = static_cast<uint32>(instanceLayers.size());
     createInfo.ppEnabledLayerNames = instanceLayers.data();
-    createInfo.enabledExtensionCount = instanceExtensions.size();
+    createInfo.enabledExtensionCount = static_cast<uint32>(instanceExtensions.size());
     createInfo.ppEnabledExtensionNames = instanceExtensions.data();
 
     auto [result, instance] = vk::createInstanceUnique(createInfo, nullptr);
@@ -58,7 +56,7 @@ auto gm::VknDevice::createDevice() -> box<GpuDevice> {
     auto deviceExtensions = std::array{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
     vk::DeviceCreateInfo deviceCreateInfo = {};
-    deviceCreateInfo.enabledExtensionCount = deviceExtensions.size();
+    deviceCreateInfo.enabledExtensionCount = static_cast<uint32>(deviceExtensions.size());
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
     auto [result2, device] = physicalDevice.createDeviceUnique(deviceCreateInfo, nullptr, loader);
@@ -118,5 +116,3 @@ VKAPI_ATTR VkBool32 VKAPI_CALL gm::VknDevice::_debugCallback(
     }
     return VK_FALSE;
 }
-
-#endif

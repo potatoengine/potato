@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "_export.h"
 #include "grimm/gpu/swap_chain.h"
 #include "vulkan.h"
 

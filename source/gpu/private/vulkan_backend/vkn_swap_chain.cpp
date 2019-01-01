@@ -1,9 +1,8 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#if GM_GPU_ENABLE_VULKAN
-
-#    include "vkn_swap_chain.h"
-#    include "grimm/gpu/resource.h"
+#include "vkn_swap_chain.h"
+#include "grimm/foundation/platform.h"
+#include "grimm/gpu/resource.h"
 
 gm::VknSwapChain::VknSwapChain(vk::UniqueHandle<vk::SurfaceKHR, vk::DispatchLoaderDynamic> surface, vk::UniqueHandle<vk::SwapchainKHR, vk::DispatchLoaderDynamic> swapchain)
     : _surface(std::move(surface)), _swapchain(std::move(swapchain)) {}
@@ -13,7 +12,7 @@ gm::VknSwapChain::~VknSwapChain() = default;
 auto gm::VknSwapChain::createSwapChain(vk::Instance instance, vk::Device device, vk::DispatchLoaderDynamic& loader, void* nativeWindow) -> box<VknSwapChain> {
     GM_ASSERT(nativeWindow != nullptr);
 
-#    if _WIN32
+#if GM_PLATFORM_WINDOWS
     VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
     surfaceCreateInfo.hwnd = static_cast<HWND>(nativeWindow);
@@ -22,7 +21,7 @@ auto gm::VknSwapChain::createSwapChain(vk::Instance instance, vk::Device device,
     VkSurfaceKHR surfaceTmp;
     VkResult result = vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surfaceTmp);
     vk::UniqueHandle<vk::SurfaceKHR, vk::DispatchLoaderDynamic> surface{surfaceTmp};
-#    endif
+#endif
 
     vk::SwapchainCreateInfoKHR swapchainCreateInfo = {};
     swapchainCreateInfo.surface = surface.get();
@@ -44,5 +43,3 @@ auto gm::VknSwapChain::getBuffer(int index) -> box<GpuResource> {
 int gm::VknSwapChain::getCurrentBufferIndex() {
     return 0;
 }
-
-#endif

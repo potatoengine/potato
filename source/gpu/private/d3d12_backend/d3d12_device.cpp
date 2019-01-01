@@ -1,18 +1,16 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#if GM_GPU_ENABLE_D3D12
-
-#    include "d3d12_device.h"
-#    include "com_ptr.h"
-#    include "d3d12_command_list.h"
-#    include "d3d12_descriptor_heap.h"
-#    include "d3d12_pipeline_state.h"
-#    include "d3d12_resource.h"
-#    include "d3d12_swap_chain.h"
-#    include "direct3d.h"
-#    include "grimm/foundation/assert.h"
-#    include "grimm/foundation/out_ptr.h"
-#    include <utility>
+#include "d3d12_device.h"
+#include "com_ptr.h"
+#include "d3d12_command_list.h"
+#include "d3d12_descriptor_heap.h"
+#include "d3d12_pipeline_state.h"
+#include "d3d12_resource.h"
+#include "d3d12_swap_chain.h"
+#include "direct3d.h"
+#include "grimm/foundation/assert.h"
+#include "grimm/foundation/out_ptr.h"
+#include <utility>
 
 gm::D3d12Device::D3d12Device(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D12Device1> device, com_ptr<ID3D12CommandQueue> graphicsQueue)
     : _factory(std::move(factory)), _adaptor(std::move(adapter)), _device(std::move(device)), _graphicsQueue(std::move(graphicsQueue)) {
@@ -119,5 +117,3 @@ void gm::D3d12Device::execute(GpuCommandList* commandList) {
 
     WaitForSingleObject(_fenceEvent.get(), INFINITE);
 }
-
-#endif

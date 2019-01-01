@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "_export.h"
+#include "grimm/gpu/_export.h"
 #include "grimm/gpu/factory.h"
 
 namespace gm {

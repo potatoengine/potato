@@ -1,10 +1,8 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#if GM_GPU_ENABLE_D3D12
-
-#    include "d3d12_descriptor_heap.h"
-#    include "direct3d.h"
-#    include "grimm/foundation/out_ptr.h"
+#include "d3d12_descriptor_heap.h"
+#include "direct3d.h"
+#include "grimm/foundation/out_ptr.h"
 
 gm::D3d12DescriptorHeap::D3d12DescriptorHeap(com_ptr<ID3D12DescriptorHeap> heap, GpuDescriptorHandle handle) : _heap(std::move(heap)), _handle(handle) {}
 
@@ -26,5 +24,3 @@ auto gm::D3d12DescriptorHeap::createDescriptorHeap(ID3D12Device1* device) -> box
     uint64 descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     return make_box<D3d12DescriptorHeap>(std::move(heap), GpuDescriptorHandle{handle.ptr, descriptorSize});
 }
-
-#endif

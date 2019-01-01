@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "_export.h"
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/descriptor_heap.h"
 #include "grimm/gpu/device.h"
