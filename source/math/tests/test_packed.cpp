@@ -1,5 +1,5 @@
-#include <iostream>
 #include "doctest.h"
+#include <iostream>
 
 #define GM_MATH_ENABLE_SWIZZLE
 #include "grimm/math/packed.h"
@@ -13,7 +13,7 @@ namespace gm {
         }
         return os << '}';
     }
-}
+} // namespace gm
 
 DOCTEST_TEST_SUITE("[grimm][math] PackedVector4f") {
     DOCTEST_TEST_CASE("initialization") {

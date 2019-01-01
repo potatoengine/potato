@@ -26,7 +26,7 @@
 
 #define _gm_MATH_COMMA ,
 #define _gm_MATH_BINARY_OP2(op, result_type, join_token) \
-    friend GM_MATHCALL operator op(PackedVector lhs, PackedVector rhs) -> result_type { \
+    friend GM_MATHCALL operator op(PackedVector lhs, PackedVector rhs)->result_type { \
         return result_type{lhs.m.x op rhs.m.x join_token lhs.m.y op rhs.m.y}; \
     }
 #define _gm_MATH_BINARY_OP3(op, result_type, join_token) \

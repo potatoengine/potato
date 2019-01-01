@@ -12,4 +12,4 @@ namespace gm {
         float w = 0;
     };
     static_assert(sizeof(Vector4f) == sizeof(float) * 4);
-}
+} // namespace gm
