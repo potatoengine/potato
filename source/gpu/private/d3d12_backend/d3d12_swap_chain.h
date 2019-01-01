@@ -5,7 +5,7 @@
 #include "com_ptr.h"
 #include "direct3d.h"
 #include "grimm/foundation/box.h"
-#include "swap_chain.h"
+#include "grimm/gpu/swap_chain.h"
 
 namespace gm {
     class D3d12SwapChain : public GpuSwapChain {
