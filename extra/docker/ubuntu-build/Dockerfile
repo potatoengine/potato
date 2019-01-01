@@ -10,16 +10,16 @@ COPY apt-sources-xenial.list /etc/apt/sources.list.d/
 RUN apt-key add /root/apt-public-keys.gpg && rm /root/apt-public-keys.gpg
 RUN apt-get update -y
 
+# Modernized build environment
+RUN apt-get -y --no-install-recommends install cmake ninja-build
+RUN apt-get -y --no-install-recommends install clang-7 libc++-7-dev libc++abi-7-dev
+RUN apt-get -y --no-install-recommends install clang-tidy-7 clang-format-7
+
 # Fake GL drivers because otherwise libsdl2 pulls in hundreds of MB
 COPY libgl1-mesa-dri.control /root
 RUN apt-get -y --no-install-recommends install equivs
 RUN equivs-build /root/libgl1-mesa-dri.control
 RUN dpkg -i /root/libgl1-mesa-dri_1.0_all.dpkg
-
-# Modernized build environment
-RUN apt-get -y --no-install-recommends install cmake ninja-build
-RUN apt-get -y --no-install-recommends install clang-7 libc++-7-dev libc++abi-7-dev
-RUN apt-get -y --no-install-recommends install clang-tidy-7 clang-format-7
 
 # Build dependencies for graphics/games
 RUN apt-get -y --no-install-recommends install libvulkan-dev
