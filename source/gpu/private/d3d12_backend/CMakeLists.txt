@@ -32,5 +32,5 @@ else()
 
     #set_source_files_properties(${GM_GPU_D3D12_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
     add_library(gpu_d3d12 INTERFACE)
-    target_sources(gpu INTERFACE ${GM_GPU_D3D12_SOURCES})
+    target_sources(gpu_d3d12 INTERFACE ${GM_GPU_D3D12_SOURCES})
 endif()
