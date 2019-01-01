@@ -41,7 +41,8 @@
       "remoteCopySourcesMethod": "rsync",
       "remoteCopySourcesExclusionList": [
         ".vs",
-        ".git"
+        ".git",
+        "build"
       ],
       "rsyncCommandArgs": "-t --delete --delete-excluded",
       "remoteCopyBuildOutput": false,
