@@ -43,7 +43,7 @@ namespace gm {
     void logFormattedLine(string_view file, int line, LogSeverity severity, string_view format, ParamsT const&... argv) {
         format_memory_buffer buffer;
         format_into(buffer, format, argv...);
-        // logLine(file, line, severity, {buffer.data(), buffer.size()});
+        logLine(file, line, severity, {buffer.data(), buffer.size()});
     }
 
 } // namespace gm
