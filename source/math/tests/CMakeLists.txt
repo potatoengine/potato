@@ -1,5 +1,6 @@
 add_executable(math_test
     main.cpp
+    test_constants.cpp
     test_packed.cpp
     test_swizzle.cpp
 )
