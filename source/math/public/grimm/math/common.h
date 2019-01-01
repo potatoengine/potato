@@ -5,6 +5,7 @@
 #include "common.h"
 
 #define GM_MATHCALL_CONVERSION GM_FORCEINLINE constexpr GM_VECTORCALL
+#define GM_MATHCALL_FRIEND GM_FORCEINLINE friend constexpr auto GM_VECTORCALL
 #define GM_MATHCALL GM_FORCEINLINE constexpr auto GM_VECTORCALL
 
 namespace gm {

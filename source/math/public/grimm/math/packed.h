@@ -8,15 +8,15 @@
 #if defined(GM_MATH_ENABLE_SWIZZLE)
 #    define _gm_MATH_SWIZZLE2(a, b) \
         GM_MATHCALL a##b() const->PackedVector<T, 2> { \
-            return {m.a, m.b}; \
+            return {this->m.a, this->m.b}; \
         }
 #    define _gm_MATH_SWIZZLE3(a, b, c) \
         GM_MATHCALL a##b##c() const->PackedVector<T, 3> { \
-            return {m.a, m.b, m.c}; \
+            return {this->m.a, this->m.b, this->m.c}; \
         }
 #    define _gm_MATH_SWIZZLE4(a, b, c, d) \
         GM_MATHCALL a##b##c##d() const->PackedVector<T, 4> { \
-            return {m.a, m.b, m.c, m.d}; \
+            return {this->m.a, this->m.b, this->m.c, this->m.d}; \
         }
 #else // defined(GM_MATH_ENABLE_SWIZZLE)
 #    define _gm_MATH_SWIZZLE2(a, b)
@@ -26,15 +26,15 @@
 
 #define _gm_MATH_COMMA ,
 #define _gm_MATH_BINARY_OP2(op, result_type, join_token) \
-    friend GM_MATHCALL operator op(PackedVector lhs, PackedVector rhs)->result_type { \
+    GM_MATHCALL_FRIEND operator op(PackedVector lhs, PackedVector rhs)->result_type { \
         return result_type{lhs.m.x op rhs.m.x join_token lhs.m.y op rhs.m.y}; \
     }
 #define _gm_MATH_BINARY_OP3(op, result_type, join_token) \
-    friend GM_MATHCALL operator op(PackedVector lhs, PackedVector rhs)->result_type { \
+    GM_MATHCALL_FRIEND operator op(PackedVector lhs, PackedVector rhs)->result_type { \
         return result_type{lhs.m.x op rhs.m.x join_token lhs.m.y op rhs.m.y join_token lhs.m.z op rhs.m.z}; \
     }
 #define _gm_MATH_BINARY_OP4(op, result_type, join_token) \
-    friend GM_MATHCALL operator op(PackedVector lhs, PackedVector rhs)->result_type { \
+    GM_MATHCALL_FRIEND operator op(PackedVector lhs, PackedVector rhs)->result_type { \
         return result_type{lhs.m.x op rhs.m.x join_token lhs.m.y op rhs.m.y join_token lhs.m.z op rhs.m.z join_token lhs.m.w op rhs.m.w}; \
     }
 

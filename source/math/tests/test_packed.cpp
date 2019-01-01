@@ -33,12 +33,12 @@ DOCTEST_TEST_SUITE("[grimm][math] PackedVector4f") {
         DOCTEST_CHECK_EQ(pv.m.z, 3.f);
         DOCTEST_CHECK_EQ(pv.m.w, 4.f);
 
-        PackedVector4f pv2{PackedVector3f{1.f, 2.f, 3.f}, 1.f};
+        PackedVector4f pv2{PackedVector3f{7.f, -7.f, 0.f}, -1.f};
 
-        DOCTEST_CHECK_EQ(pv.m.x, 1.f);
-        DOCTEST_CHECK_EQ(pv.m.y, 2.f);
-        DOCTEST_CHECK_EQ(pv.m.z, 3.f);
-        DOCTEST_CHECK_EQ(pv.m.w, 4.f);
+        DOCTEST_CHECK_EQ(pv2.m.x, 7.f);
+        DOCTEST_CHECK_EQ(pv2.m.y, -7.f);
+        DOCTEST_CHECK_EQ(pv2.m.z, 0.f);
+        DOCTEST_CHECK_EQ(pv2.m.w, -1.f);
     }
 
     DOCTEST_TEST_CASE("swizzle") {
