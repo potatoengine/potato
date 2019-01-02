@@ -19,7 +19,7 @@ jobs:
     displayName: Docker Pull
   - bash: |
       set -o xtrace
-      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/extra/ci/analyze.sh
+      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/extra/ci/analyze-fedora.sh
     displayName: Clang Format
 
 - job: Windows
