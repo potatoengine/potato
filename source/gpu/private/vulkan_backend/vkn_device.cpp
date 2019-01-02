@@ -23,9 +23,12 @@ auto gm::VknDevice::createDevice() -> box<GpuDevice> {
     auto instanceLayers = std::array{
         "VK_LAYER_LUNARG_standard_validation",
     };
-    auto instanceExtensions = std::array{
+    auto instanceExtensions = std::array {
         VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-        VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
+#if defined(GM_PLATFORM_WINDOWS)
+            VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+#endif
+    };
 
     vk::InstanceCreateInfo createInfo = {};
     createInfo.pApplicationInfo = &appInfo;

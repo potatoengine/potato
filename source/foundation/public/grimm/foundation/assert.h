@@ -35,17 +35,17 @@ namespace gm::_detail {
 #    define _gm_FORMAT_FAIL(condition_text, ...) \
         do { \
             ::gm::format_fixed_buffer<512> _gm_fail_buffer; \
-            ::gm::_detail::format_failure(_gm_fail_buffer, __VA_ARGS__); \
+            ::gm::_detail::format_failure(_gm_fail_buffer, ##__VA_ARGS__); \
             _gm_FAIL((condition_text), _gm_fail_buffer.c_str()); \
         } while (false)
 
 #    define GM_ASSERT(condition, ...) \
         do { \
             if (GM_UNLIKELY(!((condition)))) { \
-                _gm_FORMAT_FAIL(#condition, __VA_ARGS__); \
+                _gm_FORMAT_FAIL(#condition, ##__VA_ARGS__); \
             } \
         } while (false)
 
-#    define GM_UNREACHABLE(...) _gm_FAIL("unreachable code", __VA_ARGS__)
+#    define GM_UNREACHABLE(...) _gm_FAIL("unreachable code", ##__VA_ARGS__)
 
 #endif // _PREFAST_

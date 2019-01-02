@@ -21,6 +21,8 @@ auto gm::VknSwapChain::createSwapChain(vk::Instance instance, vk::Device device,
     VkSurfaceKHR surfaceTmp;
     VkResult result = vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surfaceTmp);
     vk::UniqueHandle<vk::SurfaceKHR, vk::DispatchLoaderDynamic> surface{surfaceTmp};
+#else
+    vk::UniqueHandle<vk::SurfaceKHR, vk::DispatchLoaderDynamic> surface;
 #endif
 
     vk::SwapchainCreateInfoKHR swapchainCreateInfo = {};
