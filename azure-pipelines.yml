@@ -15,11 +15,11 @@ jobs:
   steps:
   - bash: |
       set -o xtrace
-      docker pull seanmiddleditch/grimm-ubuntu-build:latest
+      docker pull seanmiddleditch/grimm-fedora-build:latest
     displayName: Docker Pull
   - bash: |
       set -o xtrace
-      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/analyze.sh
+      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/extra/ci/analyze.sh
     displayName: Clang Format
 
 - job: Windows
@@ -63,15 +63,15 @@ jobs:
   steps:
   - bash: |
       set -o xtrace
-      docker pull seanmiddleditch/grimm-ubuntu-build:latest
+      docker pull seanmiddleditch/grimm-fedora-build:latest
     displayName: Docker Pull
   - bash: |
       set -o xtrace
-      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/build-ubuntu.sh RelWithDebInfo
+      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/extra/ci/build-fedora.sh RelWithDebInfo
     displayName: Build (Release)
   - bash: |
       set -o xtrace
-      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-ubuntu-build:latest bash /source/extra/ci/build-ubuntu.sh Debug
+      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/extra/ci/build-fedora.sh Debug
     displayName: Build (Debug)
 
 - job: MacOS
