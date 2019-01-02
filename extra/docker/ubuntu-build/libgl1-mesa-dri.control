@@ -1,0 +1,6 @@
+Section: misc
+Priority: optional
+Standards-Version: 3.9.2
+
+Package: libgl1-mesa-dri
+Description: Fake GL DRI package for CI
