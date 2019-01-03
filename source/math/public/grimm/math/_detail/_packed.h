@@ -62,12 +62,12 @@ namespace gm::_detail {
 
     template <typename T, int N>
     struct PackedVectorBase {
-        static constexpr int length = N;
+        static constexpr int component_length = N;
 
         using value_type = T;
-        using packed_type = _detail::PackedVectorStruct<T, length>;
-        using array_type = T[length];
-        using const_array_type = T const[length];
+        using packed_type = _detail::PackedVectorStruct<T, component_length>;
+        using array_type = T[component_length];
+        using const_array_type = T const[component_length];
 
         template <int M>
         using vector_template = PackedVector<T, M>;

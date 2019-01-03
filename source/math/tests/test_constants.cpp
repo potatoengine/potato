@@ -1,24 +1,7 @@
 #include "doctest.h"
 #include "grimm/math/constants.h"
-#include <cmath>
+#include "expect_float.h"
 #include <iostream>
-
-namespace {
-    template <typename T>
-    struct ExpectFloat {
-        T value;
-
-        ExpectFloat(T v) : value(v) {}
-
-        friend bool operator==(T lhs, ExpectFloat rhs) {
-            // FIXME: calculate appropriate epsilon scale vs a minimum tolerance
-            // https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
-            return std::fabs(lhs - rhs.value) < (T)0.0001;
-        }
-
-        operator T() const { return value; }
-    };
-} // namespace
 
 DOCTEST_TEST_SUITE("[grimm][math] constants") {
     using namespace gm;

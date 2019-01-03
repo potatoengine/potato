@@ -8,7 +8,7 @@ namespace gm {
     template <typename T, int N>
     std::ostream& operator<<(std::ostream& os, gm::PackedVector<T, N> const& vec) {
         os << '{' << vec.u[0];
-        for (int i = 1; i < vec.length; ++i) {
+        for (int i = 1; i < vec.component_length; ++i) {
             os << ',' << vec.u[i];
         }
         return os << '}';
