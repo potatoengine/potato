@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <grimm/foundation/platform.h>
+#include "grimm/foundation/platform.h"
 
 #if !defined(GM_ARCH_INTEL)
 #    error "SSE can only be used on Intel architectures"
@@ -15,6 +15,8 @@
 #include <xmmintrin.h>
 
 #define _gm_SSE_MATHCALL GM_FORCEINLINE auto GM_VECTORCALL
+
+// SSE vector modeled on: http://www.codersnotes.com/notes/maths-lib-2016/
 
 namespace gm {
     class Vector4f {
