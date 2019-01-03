@@ -3,6 +3,7 @@ add_executable(math_test
     test_constants.cpp
     test_packed.cpp
     test_swizzle.cpp
+    test_vector.cpp
 )
 
 target_link_libraries(math_test PRIVATE

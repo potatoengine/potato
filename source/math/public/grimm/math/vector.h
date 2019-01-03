@@ -3,10 +3,8 @@
 #pragma once
 
 #include "common.h"
-#include "packed.h"
+#include "grimm/foundation/platform.h"
 
-namespace gm {
-    // FIXME: make this a SIMD vector
-    using Vector4f = PackedVector4f;
-    static_assert(sizeof(Vector4f) == sizeof(float) * 4);
-} // namespace gm
+#if defined(GM_ARCH_INTEL)
+#    include "_detail/_sse.h"
+#endif
