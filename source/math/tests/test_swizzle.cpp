@@ -2,8 +2,13 @@
 #include "stream_vector.h"
 
 #include "grimm/math/packed.h"
-#include "grimm/math/vector.h"
 #include "grimm/math/swizzle.h"
+#include "grimm/math/vector.h"
+
+template <typename T>
+using can_xyzw = decltype(gm::swizzle::xyzw(*(T*)0));
+template <typename T>
+using can_xyz = decltype(gm::swizzle::xyz(*(T*)0));
 
 DOCTEST_TEST_SUITE("[grimm][math] swizzle") {
     using namespace gm;
@@ -20,11 +25,11 @@ DOCTEST_TEST_SUITE("[grimm][math] swizzle") {
 
         Vector v{1.f, 2.f, 3.f, 4.f};
 
-        //DOCTEST_CHECK_EQ(xy(v), Vector{1.f, 2.f});
-        //DOCTEST_CHECK_EQ(yx(v), Vector{2.f, 1.f});
-        //DOCTEST_CHECK_EQ(yz(v), Vector{2.f, 3.f});
-        //DOCTEST_CHECK_EQ(zw(v), Vector{3.f, 4.f});
-        //DOCTEST_CHECK_EQ(wz(v), Vector{4.f, 3.f});
+        DOCTEST_CHECK_EQ(xy(v), Vector{1.f, 2.f, 3.f, 4.f});
+        DOCTEST_CHECK_EQ(yx(v), Vector{2.f, 1.f, 3.f, 4.f});
+        DOCTEST_CHECK_EQ(yz(v), Vector{2.f, 3.f, 3.f, 4.f});
+        DOCTEST_CHECK_EQ(zw(v), Vector{3.f, 4.f, 3.f, 4.f});
+        DOCTEST_CHECK_EQ(wz(v), Vector{4.f, 3.f, 3.f, 4.f});
     }
 
     DOCTEST_TEST_CASE("swizzle3") {
@@ -51,5 +56,26 @@ DOCTEST_TEST_SUITE("[grimm][math] swizzle") {
 
         DOCTEST_CHECK_EQ(xyzw(v), Vector{1.f, 2.f, 3.f, 4.f});
         DOCTEST_CHECK_EQ(wzyx(v), Vector{4.f, 3.f, 2.f, 1.f});
+    }
+
+    DOCTEST_TEST_CASE("swizzle2to4") {
+        PackedVector pv{1.f, 2.f};
+
+        DOCTEST_CHECK_EQ(xxxx(pv), PackedVector{1.f, 1.f, 1.f, 1.f});
+
+        // won't compile - guaranteed in static_asserts
+        //DOCTEST_CHECK_EQ(xyzw(pv), PackedVector{1.f, 1.f, 1.f, 1.f});
+
+        // illustrate that can_xyz[w] succeed when required
+        static_assert(is_detected_v<can_xyzw, PackedVector4f>);
+        static_assert(is_detected_v<can_xyz, PackedVector3f>);
+
+        // precondition needed to ensure that a two-component vector does not count as a three-component vector
+        static_assert(!is_vector_v<PackedVector2f, 3>);
+
+        // illustrate that they fail when expected
+        static_assert(!is_detected_v<can_xyzw, PackedVector3f>);
+        static_assert(!is_detected_v<can_xyzw, PackedVector2f>);
+        static_assert(!is_detected_v<can_xyz, PackedVector2f>);
     }
 }
