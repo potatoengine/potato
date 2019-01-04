@@ -74,3 +74,5 @@ namespace gm::swizzle {
 } // namespace gm::swizzle
 
 #undef _gm_MATH_SWIZZLE2
+#undef _gm_MATH_SWIZZLE3
+#undef _gm_MATH_SWIZZLE4
