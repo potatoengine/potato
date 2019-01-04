@@ -17,6 +17,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/out_ptr.h
     ${CMAKE_CURRENT_SOURCE_DIR}/platform_windows.h
     ${CMAKE_CURRENT_SOURCE_DIR}/platform.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_format.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_view.h
     ${CMAKE_CURRENT_SOURCE_DIR}/traits.h
