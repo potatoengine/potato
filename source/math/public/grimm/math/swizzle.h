@@ -19,42 +19,31 @@ namespace gm::swizzle::_detail {
         static constexpr int index = 3;
     };
 
-    constexpr int required_vector_components(int a, int b = 0, int c = 0, int d = 0) {
-        if (b > a)
-            a = b;
-        if (d > c)
-            c = d;
-        if (c > a)
-            a = c;
-        return a + 1;
+    constexpr int required_vector_components(int a, int b, int c = 0, int d = 0) {
+        int max = a;
+        if (b > max)
+            max = b;
+        if (c > max)
+            max = c;
+        if (d > max)
+            max = d;
+        return max + 1;
     }
 } // namespace gm::swizzle::_detail
 
 #define _gm_MATH_SWIZZLE2(a, b) \
     template <typename T> \
-    GM_MATHCALL a##b(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index)> && !has_shuffle_v<T>, typename T::template vector_template<2>> { \
-        return {value.u[_detail::a::index], value.u[_detail::b::index]}; \
-    } \
-    template <typename T> \
-    GM_MATHCALL a##b(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index)> && has_shuffle_v<T>, typename T::template vector_template<2>> { \
+    GM_MATHCALL a##b(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index)>, typename T::template vector_template<2>> { \
         return value.template shuffle<_detail::a::index, _detail::b::index>(); \
     }
 #define _gm_MATH_SWIZZLE3(a, b, c) \
     template <typename T> \
-    GM_MATHCALL a##b##c(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index, _detail::c::index)> && !has_shuffle_v<T>, typename T::template vector_template<3>> { \
-        return {value.u[_detail::a::index], value.u[_detail::b::index], value.u[_detail::c::index]}; \
-    } \
-    template <typename T> \
-    GM_MATHCALL a##b##c(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index, _detail::c::index)> && has_shuffle_v<T>, typename T::template vector_template<3>> { \
+    GM_MATHCALL a##b##c(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index, _detail::c::index)>, typename T::template vector_template<3>> { \
         return value.template shuffle<_detail::a::index, _detail::b::index, _detail::c::index>(); \
     }
 #define _gm_MATH_SWIZZLE4(a, b, c, d) \
     template <typename T> \
-    GM_MATHCALL a##b##c##d(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index, _detail::c::index, _detail::d::index)> && !has_shuffle_v<T>, typename T::template vector_template<4>> { \
-        return {value.u[_detail::a::index], value.u[_detail::b::index], value.u[_detail::c::index], value.u[_detail::d::index]}; \
-    } \
-    template <typename T> \
-    GM_MATHCALL a##b##c##d(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index, _detail::c::index, _detail::d::index)> && has_shuffle_v<T>, typename T::template vector_template<4>> { \
+    GM_MATHCALL a##b##c##d(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index, _detail::c::index, _detail::d::index)>, typename T::template vector_template<4>> { \
         return value.template shuffle<_detail::a::index, _detail::b::index, _detail::c::index, _detail::d::index>(); \
     }
 
@@ -70,6 +59,7 @@ namespace gm::swizzle {
     _gm_MATH_SWIZZLE3(y, z, w);
 
     _gm_MATH_SWIZZLE4(x, y, z, w);
+    _gm_MATH_SWIZZLE4(x, x, x, x);
     _gm_MATH_SWIZZLE4(w, z, y, x);
 } // namespace gm::swizzle
 
