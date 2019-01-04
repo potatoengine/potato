@@ -11,11 +11,11 @@ namespace gm::_detail {
     template <int N>
     struct _has_size {
         template <typename T>
-        using test = decltype(T::component_length >= N);
+        using test = char[T::component_length >= N];
     };
 }
 
 namespace gm {
-    template <typename T, int MinN>
+    template <typename T, int MinN = 0>
     constexpr bool is_vector_v = is_detected_v<_detail::_has_value_type, T> && is_detected_v<_detail::_has_size<MinN>::template test, T>;
 } // namespace gm::constants
