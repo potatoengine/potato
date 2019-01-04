@@ -16,6 +16,7 @@ target_compile_options(math
     PUBLIC
         $<$<CXX_COMPILER_ID:MSVC>:/std:c++17>
         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-std=c++17>
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse4.1>
 )
 # target_compile_features(math
 #     PUBLIC

@@ -1,17 +1,6 @@
 #include "doctest.h"
 #include "grimm/math/packed.h"
-#include <iostream>
-
-namespace gm {
-    template <typename T, int N>
-    std::ostream& operator<<(std::ostream& os, gm::PackedVector<T, N> const& vec) {
-        os << '{' << vec.u[0];
-        for (int i = 1; i < vec.component_length; ++i) {
-            os << ',' << vec.u[i];
-        }
-        return os << '}';
-    }
-} // namespace gm
+#include "stream_vector.h"
 
 DOCTEST_TEST_SUITE("[grimm][math] PackedVector4f") {
     DOCTEST_TEST_CASE("initialization") {
@@ -38,7 +27,7 @@ DOCTEST_TEST_SUITE("[grimm][math] PackedVector4f") {
         DOCTEST_CHECK_EQ(pv2.m.z, 0.f);
         DOCTEST_CHECK_EQ(pv2.m.w, -1.f);
     }
-    
+
     DOCTEST_TEST_CASE("equalities") {
         using namespace gm;
 

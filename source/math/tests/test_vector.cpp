@@ -1,17 +1,7 @@
 #include "doctest.h"
 #include "grimm/math/vector.h"
 #include "expect_float.h"
-#include <iostream>
-
-namespace gm {
-    std::ostream& operator<<(std::ostream& os, gm::Vector4f vec) {
-        os << '{' << vec[0];
-        for (int i = 1; i < vec.component_length; ++i) {
-            os << ',' << vec[i];
-        }
-        return os << '}';
-    }
-} // namespace gm
+#include "stream_vector.h"
 
 DOCTEST_TEST_SUITE("[grimm][math] Vector4f") {
     DOCTEST_TEST_CASE("initialization") {
