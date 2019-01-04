@@ -1,4 +1,6 @@
 add_executable(math_test
+    expect_float.h
+    stream_vector.h
     main.cpp
     test_constants.cpp
     test_packed.cpp
