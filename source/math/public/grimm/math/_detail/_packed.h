@@ -72,6 +72,15 @@ namespace gm::_detail {
         template <int M>
         using vector_template = PackedVector<T, M>;
 
+        template <int A, int B>
+        GM_MATHCALL shuffle() const { return vector_template<2>{u[A], u[B]}; }
+
+        template <int A, int B, int C>
+        GM_MATHCALL shuffle() const { return vector_template<3>{u[A], u[B], u[C]}; }
+
+        template <int A, int B, int C, int D>
+        GM_MATHCALL shuffle() const { return vector_template<4>{u[A], u[B], u[C], u[D]}; }
+
         /*implicit*/ GM_FORCEINLINE constexpr PackedVectorBase() : m() {}
         /*implicit*/ GM_FORCEINLINE constexpr PackedVectorBase(packed_type packed) : m(packed) {}
 
