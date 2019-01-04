@@ -3,22 +3,10 @@
 #pragma once
 
 #include "common.h"
+#include "grimm/foundation/preprocessor.h"
 #include "math_traits.h"
 
 namespace gm::swizzle::_detail {
-    struct x {
-        static constexpr int index = 0;
-    };
-    struct y {
-        static constexpr int index = 1;
-    };
-    struct z {
-        static constexpr int index = 2;
-    };
-    struct w {
-        static constexpr int index = 3;
-    };
-
     constexpr int required_vector_components(int a, int b, int c = 0, int d = 0) {
         int max = a;
         if (b > max)
@@ -31,38 +19,37 @@ namespace gm::swizzle::_detail {
     }
 } // namespace gm::swizzle::_detail
 
-#define _gm_MATH_SWIZZLE2(a, b) \
+namespace gm::swizzle::_detail::component {
+    static constexpr int x = 0;
+    static constexpr int y = 1;
+    static constexpr int z = 2;
+    static constexpr int w = 3;
+} // namespace gm::swizzle::_detail::component
+
+#define _gm_MATH_SWIZZLE_INDEX(xxx) ::gm::swizzle::_detail::component::xxx
+#define _gm_MATH_SWIZZLE_INDICES(...) GM_PP_MAP(_gm_MATH_SWIZZLE_INDEX, __VA_ARGS__)
+
+#define GM_DEFINE_SWIZZLE(...) \
     template <typename T> \
-    GM_MATHCALL a##b(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index)>, typename T::template vector_template<2>> { \
-        return value.template shuffle<_detail::a::index, _detail::b::index>(); \
-    }
-#define _gm_MATH_SWIZZLE3(a, b, c) \
-    template <typename T> \
-    GM_MATHCALL a##b##c(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index, _detail::c::index)>, typename T::template vector_template<3>> { \
-        return value.template shuffle<_detail::a::index, _detail::b::index, _detail::c::index>(); \
-    }
-#define _gm_MATH_SWIZZLE4(a, b, c, d) \
-    template <typename T> \
-    GM_MATHCALL a##b##c##d(T const& value)->std::enable_if_t<is_vector_v<T, _detail::required_vector_components(_detail::a::index, _detail::b::index, _detail::c::index, _detail::d::index)>, typename T::template vector_template<4>> { \
-        return value.template shuffle<_detail::a::index, _detail::b::index, _detail::c::index, _detail::d::index>(); \
+    GM_MATHCALL GM_PP_JOIN(__VA_ARGS__)(T const& value) \
+        ->std::enable_if_t< \
+            is_vector_v<T, _detail::required_vector_components(_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__))>, \
+            typename T::template vector_template<GM_PP_ARITY(__VA_ARGS__)>> { \
+        return value.template shuffle<_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__)>(); \
     }
 
 namespace gm::swizzle {
-    _gm_MATH_SWIZZLE2(x, y);
-    _gm_MATH_SWIZZLE2(y, x);
-    _gm_MATH_SWIZZLE2(y, z);
-    _gm_MATH_SWIZZLE2(z, w);
-    _gm_MATH_SWIZZLE2(w, z);
+    GM_DEFINE_SWIZZLE(x, y);
+    GM_DEFINE_SWIZZLE(y, x);
+    GM_DEFINE_SWIZZLE(y, z);
+    GM_DEFINE_SWIZZLE(z, w);
+    GM_DEFINE_SWIZZLE(w, z);
 
-    _gm_MATH_SWIZZLE3(x, y, z);
-    _gm_MATH_SWIZZLE3(z, y, x);
-    _gm_MATH_SWIZZLE3(y, z, w);
+    GM_DEFINE_SWIZZLE(x, y, z);
+    GM_DEFINE_SWIZZLE(z, y, x);
+    GM_DEFINE_SWIZZLE(y, z, w);
 
-    _gm_MATH_SWIZZLE4(x, y, z, w);
-    _gm_MATH_SWIZZLE4(x, x, x, x);
-    _gm_MATH_SWIZZLE4(w, z, y, x);
+    GM_DEFINE_SWIZZLE(x, y, z, w);
+    GM_DEFINE_SWIZZLE(x, x, x, x);
+    GM_DEFINE_SWIZZLE(w, z, y, x);
 } // namespace gm::swizzle
-
-#undef _gm_MATH_SWIZZLE2
-#undef _gm_MATH_SWIZZLE3
-#undef _gm_MATH_SWIZZLE4
