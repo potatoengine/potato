@@ -4,18 +4,20 @@
 
 #include "common.h"
 #include "grimm/foundation/preprocessor.h"
+#include <type_traits>
 
 namespace gm::swizzle::_detail {
-    constexpr int required_vector_components(int a, int b, int c = 0, int d = 0) {
-        int max = a;
-        if (b > max)
-            max = b;
-        if (c > max)
-            max = c;
-        if (d > max)
-            max = d;
-        return max + 1;
-    }
+    template <int... Integers>
+    constexpr int required_components_v = 0;
+
+    template <int First, int... Integers>
+    constexpr int required_components_v<First, Integers...> =
+        First + 1 > required_components_v<Integers...>
+            ? First + 1
+            : required_components_v<Integers...>;
+
+    template <int I>
+    constexpr int required_components_v<I> = I + 1;
 } // namespace gm::swizzle::_detail
 
 namespace gm::swizzle::_detail::component {
@@ -27,7 +29,7 @@ namespace gm::swizzle::_detail::component {
 
 #define _gm_MATH_SWIZZLE_INDEX(xxx) ::gm::swizzle::_detail::component::xxx
 #define _gm_MATH_SWIZZLE_INDICES(...) GM_PP_MAP(_gm_MATH_SWIZZLE_INDEX, __VA_ARGS__)
-#define _gm_MATH_SWIZZLE_MIN_LENGTH(...) ::gm::swizzle::_detail::required_vector_components(_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__))
+#define _gm_MATH_SWIZZLE_MIN_LENGTH(...) ::gm::swizzle::_detail::required_components_v<_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__)>
 
 #define GM_DEFINE_SWIZZLE(...) \
     template <typename T> \
