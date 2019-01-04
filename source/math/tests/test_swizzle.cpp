@@ -4,6 +4,7 @@
 #include "grimm/math/packed.h"
 #include "grimm/math/swizzle.h"
 #include "grimm/math/vector.h"
+#include "grimm/foundation/traits.h"
 
 template <typename T>
 using can_xyzw = decltype(gm::swizzle::xyzw(*(T*)0));
@@ -69,9 +70,6 @@ DOCTEST_TEST_SUITE("[grimm][math] swizzle") {
         // illustrate that can_xyz[w] succeed when required
         static_assert(is_detected_v<can_xyzw, PackedVector4f>);
         static_assert(is_detected_v<can_xyz, PackedVector3f>);
-
-        // precondition needed to ensure that a two-component vector does not count as a three-component vector
-        static_assert(!is_vector_v<PackedVector2f, 3>);
 
         // illustrate that they fail when expected
         static_assert(!is_detected_v<can_xyzw, PackedVector3f>);

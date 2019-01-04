@@ -4,7 +4,6 @@
 
 #include "common.h"
 #include "grimm/foundation/preprocessor.h"
-#include "math_traits.h"
 
 namespace gm::swizzle::_detail {
     constexpr int required_vector_components(int a, int b, int c = 0, int d = 0) {
@@ -28,12 +27,13 @@ namespace gm::swizzle::_detail::component {
 
 #define _gm_MATH_SWIZZLE_INDEX(xxx) ::gm::swizzle::_detail::component::xxx
 #define _gm_MATH_SWIZZLE_INDICES(...) GM_PP_MAP(_gm_MATH_SWIZZLE_INDEX, __VA_ARGS__)
+#define _gm_MATH_SWIZZLE_MIN_LENGTH(...) ::gm::swizzle::_detail::required_vector_components(_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__))
 
 #define GM_DEFINE_SWIZZLE(...) \
     template <typename T> \
-    GM_MATHCALL GM_PP_JOIN(__VA_ARGS__)(T const& value) \
-        ->std::enable_if_t< \
-            is_vector_v<T, _detail::required_vector_components(_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__))>, \
+    GM_MATHCALL GM_PP_JOIN(__VA_ARGS__)(T value) \
+        ->::std::enable_if_t< \
+            T::component_length >= _gm_MATH_SWIZZLE_MIN_LENGTH(__VA_ARGS__), \
             typename T::template vector_template<GM_PP_ARITY(__VA_ARGS__)>> { \
         return value.template shuffle<_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__)>(); \
     }
