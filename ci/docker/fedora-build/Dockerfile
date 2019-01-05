@@ -6,7 +6,7 @@ RUN dnf -y install which --setopt=install_weak_deps=False && \
     dnf -y install ninja-build --setopt=install_weak_deps=False && \
     dnf -y install libcxx-devel libcxxabi-devel --setopt=install_weak_deps=False && \
     dnf -y install clang --setopt=install_weak_deps=False && \
-    dnf -y install vulkan-devel --setopt=install_weak_deps=False && \
+    dnf -y install vulkan-headers vulkan-loader --setopt=install_weak_deps=False && \
     dnf -y install SDL2-devel SDL2-static --setopt=install_weak_deps=False && \
     dnf clean all
 
