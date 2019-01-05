@@ -16,7 +16,7 @@ namespace gm::swizzle::_detail::component {
 
 #define _gm_MATH_SWIZZLE_INDEX(xxx) ::gm::swizzle::_detail::component::xxx
 #define _gm_MATH_SWIZZLE_INDICES(...) GM_PP_MAP(_gm_MATH_SWIZZLE_INDEX, __VA_ARGS__)
-#define _gm_MATH_SWIZZLE_MIN_LENGTH(...) (::gm::reduce_v<::gm::max_f, _gm_MATH_SWIZZLE_INDICES(__VA_ARGS__)> + 1)
+#define _gm_MATH_SWIZZLE_MIN_LENGTH(...) (::gm::max_v<_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__)> + 1)
 
 #define GM_DEFINE_SWIZZLE(...) \
     template <typename T> \
