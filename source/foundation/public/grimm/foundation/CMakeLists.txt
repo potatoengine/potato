@@ -5,6 +5,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/assert.h
     ${CMAKE_CURRENT_SOURCE_DIR}/box.h
     ${CMAKE_CURRENT_SOURCE_DIR}/callstack.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/const_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/debug.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fnv1a.h

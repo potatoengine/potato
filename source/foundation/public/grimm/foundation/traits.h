@@ -42,6 +42,9 @@ namespace gm {
 
     template <template <class...> class Op, class... Args>
     constexpr bool is_detected_v = _detail::detector<void, Op, Args...>::value;
+
+    template <bool C, typename T = void>
+    using enable_if_t = typename std::enable_if_t<C, T>;
 } // namespace gm
 
 #if defined(GM_PLATFORM_WINDOWS)
