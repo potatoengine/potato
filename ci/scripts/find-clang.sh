@@ -1,14 +1,19 @@
+#/bin/sh
 CLANG_VERSION=7
 STDLIB=libc++
 
-CLANG_CC=`which clang-${CLANG_VERSION}`
-if [ -n "${CLANG_CC}"] ; then CLANG_CC=`which clang` ; fi
+set -o verbose
 
-CLANG_CXX=`which clang++-${CLANG_VERSION}`
-if [ -n "${CLANG_CXX}"] ; then CLANG_CXX=`which clang++` ; fi
+if [ -z "${CLANG_CC}" ] ; then
+    CLANG_CC=`which clang-${CLANG_VERSION} 2>/dev/null`
+    if [ -z "${CLANG_CC}" ] ; then CLANG_CC=`which clang` ; fi
+fi
 
-CLANG_FORMAT=`which clang-format-${CLANG_VERSION}`
-if [ -n "${CLANG_FORMAT}"] ; then CLANG_FORMAT=`which clang-format` ; fi
+if [ -z "${CLANG_CXX}" ] ; then
+    CLANG_CXX=`which clang++-${CLANG_VERSION} 2>/dev/null`
+    if [ -z "${CLANG_CXX}" ] ; then CLANG_CXX=`which clang++` ; fi
+fi
 
-CLANG_CXXFLAGS="-m64 -stdlib=${STDLIB}"
-CLANG_CCFLAGS="-m64"
+if [ -z "${CLANG_CXXFLAGS}" ] ; then CLANG_CXXFLAGS="-m64 -stdlib=${STDLIB}" ; fi
+
+if [ -z "${CLANG_CCFLAGS}" ] ; then CLANG_CCFLAGS="-m64" ; fi

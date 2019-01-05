@@ -1,24 +1,16 @@
 #/bin/bash
-CLANG_VERSION=7
-STDLIB=libc++
+DIR=`dirname "$0"`
 
-CLANG_PATH=`which clang-${CLANG_VERSION}`
-if [ -n "$CLANG_PATH"] ; then CLANG_PATH=`which clang` ; fi
+PYTHON=`which python3 2>/dev/null`
+if [ -z "${PYTHON}" ] ; then PYTHON=`which python` ; fi
 
-CLANGXX_PATH=`which clang++-${CLANG_VERSION}`
-if [ -n "$CLANGXX_PATH"] ; then CLANGXX_PATH=`which clang++` ; fi
-
-CLANG_FORMAT_PATH=`which clang-format-${CLANG_VERSION}`
-if [ -n "CLANG_FORMAT_PATH"] ; then CLANG_FORMAT_PATH=`which clang-format` ; fi
+CLANG_FORMAT=`which clang-format-${CLANG_VERSION} 2>/dev/null`
+if [ -z "${CLANG_FORMAT}" ] ; then CLANG_FORMAT=`which clang-format` ; fi
 
 set -o xtrace
 
-export CXX="${CLANGXX_PATH}"
-export CC="${CLANG_PATH}"
-export CXXFLAGS="-m64 -stdlib=${STDLIB}"
-
-cmake /source -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
+bash "${DIR}/generate.sh" Debug
 
 #find /source/source -name '*.cpp' | xargs -t clang-tidy-${CLANG_VERSION} -p /build -header-filter='/source/source/*'
 
-python /source/extra/ci/run-clang-format.py /source/source -r --clang-format-executable="${CLANG_FORMAT_PATH}" -e '*/debug.windows.h' -e 'external/'
+"${PYTHON}" /source/ci/scripts/run-clang-format.py /source/source -r --clang-format-executable="${CLANG_FORMAT}" -e '*/debug.windows.h' -e 'external/'

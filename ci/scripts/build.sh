@@ -1,13 +1,9 @@
 #/bin/bash
-build_type="${1:-Debug}"
+BUILD_TYPE="${1:-Debug}"
+DIR=`dirname "$0"`
 
 set -o xtrace
 
-. "$(dirname "$0")/find-clang.sh"
-export CXX="${CLANG_CXX}"
-export CC="${CLANG_CC}"
-export CXXFLAGS="${CLANG_CXXFLAGS}"
-export CCFLAGS="${CLANG_CCFLAGS}"
+bash "${DIR}/generate.sh" "${BUILD_TYPE}"
 
-cmake /source -G Ninja -DCMAKE_BUILD_TYPE:STRING="${build_type}"
 cmake --build . --parallel
