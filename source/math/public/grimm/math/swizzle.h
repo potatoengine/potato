@@ -3,8 +3,8 @@
 #pragma once
 
 #include "common.h"
-#include "grimm/foundation/preprocessor.h"
 #include "grimm/foundation/const_util.h"
+#include "grimm/foundation/preprocessor.h"
 #include <type_traits>
 
 namespace gm::swizzle::_detail::component {

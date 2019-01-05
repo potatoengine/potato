@@ -1,5 +1,5 @@
-#include <iostream>
 #include "grimm/foundation/traits.h"
+#include <iostream>
 
 namespace gm {
     template <typename T>

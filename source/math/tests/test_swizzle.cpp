@@ -1,10 +1,10 @@
 #include "doctest.h"
 #include "stream_vector.h"
 
+#include "grimm/foundation/traits.h"
 #include "grimm/math/packed.h"
 #include "grimm/math/swizzle.h"
 #include "grimm/math/vector.h"
-#include "grimm/foundation/traits.h"
 
 template <typename T>
 using can_xyzw = decltype(gm::swizzle::xyzw(*(T*)0));
