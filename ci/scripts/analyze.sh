@@ -13,4 +13,4 @@ bash "${DIR}/generate.sh" Debug
 
 #find /source/source -name '*.cpp' | xargs -t clang-tidy-${CLANG_VERSION} -p /build -header-filter='/source/source/*'
 
-"${PYTHON}" /source/ci/scripts/run-clang-format.py /source/source -r --clang-format-executable="${CLANG_FORMAT}" -e '*/debug.windows.h' -e 'external/'
+"${PYTHON}" "${DIR}/run-clang-format.py" /source/source -r --clang-format-executable="${CLANG_FORMAT}" -e '*/debug.windows.h' -e 'external/'
