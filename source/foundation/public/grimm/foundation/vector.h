@@ -8,6 +8,7 @@
 #include "iterator_range.h"
 #include "memory_util.h"
 #include "numeric_util.h"
+#include "traits.h"
 
 #include <initializer_list>
 #include <type_traits>
@@ -98,9 +99,9 @@ public:
     void shrink_to_fit();
 
     template <typename... ParamsT>
-    auto emplace(const_iterator pos, ParamsT&&... params) -> std::enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator>;
+    auto emplace(const_iterator pos, ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator>;
     template <typename... ParamsT>
-    auto emplace_back(ParamsT&&... params) -> std::enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator>;
+    auto emplace_back(ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator>;
 
     iterator insert(iterator pos, const_reference value) { return emplace(pos, value); }
     iterator insert(iterator pos, rvalue_reference value) { return emplace(pos, std::move(value)); }
@@ -278,7 +279,7 @@ void gm::vector<T, AllocatorT>::shrink_to_fit() {
 
 template <typename T, typename AllocatorT>
 template <typename... ParamsT>
-auto gm::vector<T, AllocatorT>::emplace(const_iterator pos, ParamsT&&... params) -> std::enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
+auto gm::vector<T, AllocatorT>::emplace(const_iterator pos, ParamsT&&... params) -> gm::enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
     if (_last == _sentinel) {
         auto const offset = pos - _first;
 
@@ -320,7 +321,7 @@ auto gm::vector<T, AllocatorT>::emplace(const_iterator pos, ParamsT&&... params)
 
 template <typename T, typename AllocatorT>
 template <typename... ParamsT>
-auto gm::vector<T, AllocatorT>::emplace_back(ParamsT&&... params) -> std::enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
+auto gm::vector<T, AllocatorT>::emplace_back(ParamsT&&... params) -> gm::enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
     if (_last == _sentinel) {
         auto const size = _last - _first;
 

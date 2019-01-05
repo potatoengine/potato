@@ -21,7 +21,7 @@ namespace gm {
 
 namespace gm {
     template <typename HashAlgorithm, typename T>
-    inline std::enable_if_t<is_contiguous<T>::value> hash_append(HashAlgorithm& hasher, T const& value) {
+    inline enable_if_t<is_contiguous<T>::value> hash_append(HashAlgorithm& hasher, T const& value) {
         hasher(&value, sizeof(value));
     }
 
@@ -53,12 +53,12 @@ namespace gm {
     //       likewise, ["a", "bc"] will hash the same as ["ab", "c"]
 
     template <typename HashAlgorithm, typename ValueT, typename AllocatorT>
-    inline std::enable_if_t<is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT, AllocatorT> const& container) {
+    inline enable_if_t<is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT, AllocatorT> const& container) {
         hasher(container.data(), container.size() * sizeof(ValueT));
     }
 
     template <typename HashAlgorithm, typename ValueT, typename AllocatorT>
-    inline std::enable_if_t<!is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT, AllocatorT> const& container) {
+    inline enable_if_t<!is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT, AllocatorT> const& container) {
         for (auto&& value : container)
             hash_append(hasher, value);
     }
