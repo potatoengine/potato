@@ -1,6 +1,6 @@
 #include "doctest.h"
-#include "grimm/math/constants.h"
 #include "expect_float.h"
+#include "grimm/math/constants.h"
 
 DOCTEST_TEST_SUITE("[grimm][math] constants") {
     using namespace gm;
