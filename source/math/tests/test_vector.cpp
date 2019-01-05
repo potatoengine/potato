@@ -1,6 +1,6 @@
 #include "doctest.h"
-#include "grimm/math/vector.h"
 #include "expect_float.h"
+#include "grimm/math/vector.h"
 #include "stream_vector.h"
 
 DOCTEST_TEST_SUITE("[grimm][math] Vector4f") {

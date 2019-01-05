@@ -34,7 +34,6 @@
         return result_type{lhs op rhs.m.x join_token lhs op rhs.m.y join_token lhs op rhs.m.z join_token lhs op rhs.m.w}; \
     }
 
-
 namespace gm::_detail {
     template <typename T, int N>
     struct PackedVectorStruct;

@@ -14,4 +14,4 @@ namespace gm::constants {
 
     template <typename T>
     constexpr T radiansToDegrees = T{180} / pi<T>;
-} // namespace gm
+} // namespace gm::constants

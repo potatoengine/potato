@@ -29,7 +29,9 @@ static_assert(GM_PP_IF(0)(42, 0) == 0);
 static_assert(GM_PP_IGNORE(2) + 2 == 2);
 static_assert((GM_PP_EXPAND(7, 2) + 2) == 4);
 
-#define GM_PP_SELECT(cond) GM_PP_IF(cond)(GM_PP_EXPAND, GM_PP_IGNORE)
+#define GM_PP_SELECT(cond) \
+    GM_PP_IF(cond) \
+    (GM_PP_EXPAND, GM_PP_IGNORE)
 
 static_assert(GM_PP_SELECT(1)(2) + 2 == 4);
 static_assert(GM_PP_SELECT(0)(2) + 2 == 2);
