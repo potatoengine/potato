@@ -5,11 +5,21 @@
 #include "typelist.h"
 #include <type_traits>
 
+namespace gm::_detail {
+    template <typename V, template <typename...> class C, typename... A>
+    struct detector : std::false_type {};
+
+    template <template <typename...> class C, typename... A>
+    struct detector<std::void_t<C<A...>>, C, A...> : std::true_type {};
+} // namespace gm::_detail
+
 namespace gm {
     template <typename T>
-    struct is_range;
+    struct is_range : std::false_type {};
+
     template <typename T>
-    struct is_contiguous;
+    struct is_contiguous : std::integral_constant<bool, std::is_integral_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>> {};
+
     template <typename F>
     struct signature;
     template <typename S>
@@ -23,17 +33,19 @@ namespace gm {
     constexpr bool is_contiguous_v = is_contiguous<T>::value;
     template <typename F>
     using signature_t = typename signature<F>::type;
-    template <typename S>
-    using function_params_t = typename function_params<S>::type;
-    template <typename S>
-    using function_result_t = typename function_result<S>::type;
+
+    template <typename R, typename... A>
+    struct function_params<R(A...)> { using type = gm::typelist<A...>; };
+
+    template <typename R, typename... A>
+    struct function_result<R(A...)> { using type = R; };
+
+    template <template <class...> class Op, class... Args>
+    constexpr bool is_detected_v = _detail::detector<void, Op, Args...>::value;
+
+    template <bool C, typename T = void>
+    using enable_if_t = typename std::enable_if_t<C, T>;
 } // namespace gm
-
-template <typename T>
-struct gm::is_range : std::false_type {};
-
-template <typename T>
-struct gm::is_contiguous : std::integral_constant<bool, std::is_integral_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>> {};
 
 #if defined(GM_PLATFORM_WINDOWS)
 template <typename R, typename... A>
@@ -60,8 +72,3 @@ struct gm::signature<R (*)(A...)> { using type = R(A...); };
 template <typename T, typename R, typename... A>
 struct gm::signature<R (T::*)(A...)> { using type = R(T&, A...); };
 #endif
-
-template <typename R, typename... A>
-struct gm::function_params<R(A...)> { using type = gm::typelist<A...>; };
-template <typename R, typename... A>
-struct gm::function_result<R(A...)> { using type = R; };

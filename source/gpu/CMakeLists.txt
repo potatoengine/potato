@@ -23,6 +23,7 @@ target_include_directories(gpu
 target_link_libraries(gpu
     PUBLIC
         grimm::foundation
+        grimm::math
     PRIVATE
         doctest
 )

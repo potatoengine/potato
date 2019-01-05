@@ -111,7 +111,7 @@ void gm::ShellApp::run() {
         int frameIndex = _swapChain->getCurrentBufferIndex();
         _commandList->reset();
         _commandList->resourceBarrier(_swapChain->getBuffer(frameIndex).get(), GpuResourceState::Present, GpuResourceState::RenderTarget);
-        _commandList->clearRenderTarget(handle + offset * frameIndex);
+        _commandList->clearRenderTarget(handle + offset * frameIndex, {1.f, 0.f, 0.f, 1.f});
         _commandList->resourceBarrier(_swapChain->getBuffer(frameIndex).get(), GpuResourceState::RenderTarget, GpuResourceState::Present);
         _device->execute(_commandList.get());
 

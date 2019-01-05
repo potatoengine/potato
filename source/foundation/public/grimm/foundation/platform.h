@@ -92,7 +92,7 @@
 #elif GM_COMPILER_CLANG || GM_COMPILER_GCC
 #    define GM_NOINLINE [[gnu::noinline]]
 #    define GM_NORETURN [[gnu::noreturn]]
-#    define GM_FORCEINLINE [[gnu::flatten]]
+#    define GM_FORCEINLINE [[gnu::always_inline]]
 #    define GM_LIKELY(x) __builtin_expect((x), 1)
 #    define GM_UNLIKELY(x) __builtin_expect((x), 0)
 #    define GM_ASSUME(x) __builtin_assume((x))

@@ -65,9 +65,9 @@ public:
 
     /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
     /// <param name="function"> The function to bind. </param>
-    template <typename Functor, typename = std::enable_if_t<std::is_invocable_v<Functor, ParamTypes...> && !std::is_same_v<std::decay_t<Functor>, delegate>>>
+    template <typename Functor, typename = enable_if_t<std::is_invocable_v<Functor, ParamTypes...> && !std::is_same_v<std::decay_t<Functor>, delegate>>>
     /*implicit*/ delegate(Functor&& function) { *this = std::forward<Functor>(function); }
-    template <typename Functor, typename = std::enable_if_t<std::is_invocable_v<Functor, ParamTypes...> && !std::is_same_v<std::decay_t<Functor>, delegate>>>
+    template <typename Functor, typename = enable_if_t<std::is_invocable_v<Functor, ParamTypes...> && !std::is_same_v<std::decay_t<Functor>, delegate>>>
     inline delegate& operator=(Functor&& function);
 
     /*implicit*/ delegate(std::nullptr_t) {}

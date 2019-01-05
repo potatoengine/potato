@@ -1,7 +1,15 @@
 ﻿{
+  "environments": [
+    {
+      "environment": "Clang 7",
+      "CC": "clang-7",
+      "CXX": "clang++-7",
+      "CXXFLAGS": "-stdlib=libc++ -Wall"
+    }
+  ],
   "configurations": [
     {
-      "name": "Release-Windows",
+      "name": "Windows (Release)",
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
       "inheritEnvironments": [
@@ -9,11 +17,10 @@
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "--verbose"
     },
     {
-      "name": "Debug-Windows",
+      "name": "Windows (Debug)",
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [
@@ -21,8 +28,7 @@
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "--verbose"
     },
     {
       "name": "Linux-Debug",
@@ -41,15 +47,15 @@
       "remoteCopySourcesMethod": "rsync",
       "remoteCopySourcesExclusionList": [
         ".vs",
-        ".git"
+        ".git",
+        "build"
       ],
       "rsyncCommandArgs": "-t --delete --delete-excluded",
       "remoteCopyBuildOutput": false,
-      "cmakeCommandArgs": "-DCMAKE_CXX_COMPILER:PATH=clang++-7 -DCMAKE_C_COMPILER:PATH=clang-7 -DCMAKE_CXX_FLAGS:STRING=\"-stdlib=libc++ -Wall\"",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": "",
+      "ctestCommandArgs": "--verbose",
       "inheritEnvironments": [
-        "linux_x64"
+        "linux_x64",
+        "Clang 7"
       ]
     }
   ]

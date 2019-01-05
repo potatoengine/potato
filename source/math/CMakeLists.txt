@@ -1,45 +1,45 @@
 cmake_minimum_required(VERSION 3.11)
-project(foundation VERSION 0.1 LANGUAGES CXX)
+project(math VERSION 0.1 LANGUAGES CXX)
 
-add_library(foundation)
-add_library(grimm::foundation ALIAS foundation)
+add_library(math OBJECT)
+add_library(grimm::math ALIAS math)
 
-set_target_properties(foundation PROPERTIES
+set_target_properties(math PROPERTIES
     LINKER_LANGUAGE CXX
-    DEFINE_SYMBOL GM_FRAMEWORK_EXPORTS
 )
 
 # CMake doesn't generate the correct command-line for clang-tidy (7.x) using
 # the cxx_std_17 so we instead must set these options manually. Since we're
 # only targeting MSC and Clang, this is a bit easier than it would be.
 #
-target_compile_options(foundation
+target_compile_options(math
     PUBLIC
         $<$<CXX_COMPILER_ID:MSVC>:/std:c++17>
         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-std=c++17>
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse4.1>
 )
-# target_compile_features(foundation
+# target_compile_features(math
 #     PUBLIC
 #         cxx_std_17
 # )
 
-target_include_directories(foundation
+target_include_directories(math
     PUBLIC
         $<INSTALL_INTERFACE:public>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/public/grimm/foundation
+        ${CMAKE_CURRENT_SOURCE_DIR}/public/grimm/math
         ${CMAKE_CURRENT_SOURCE_DIR}/private
 )
 
-target_link_libraries(foundation
+target_link_libraries(math
     PUBLIC
-        fmt
+        grimm::foundation
     PRIVATE
         doctest
 )
 
-target_compile_definitions(foundation
+target_compile_definitions(math
     PUBLIC
         $<$<PLATFORM_ID:Windows>:UNICODE>
         $<$<PLATFORM_ID:Windows>:_UNICODE>
@@ -48,7 +48,7 @@ target_compile_definitions(foundation
         DOCTEST_CONFIG_SUPER_FAST_ASSERTS
 )
 
-target_compile_options(foundation
+target_compile_options(math
     PUBLIC
         $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
         $<$<CXX_COMPILER_ID:MSVC>:/std:c++17>
@@ -57,6 +57,6 @@ target_compile_options(foundation
         $<$<CXX_COMPILER_ID:MSVC>:/permissive->
 )
 
-add_subdirectory(public/grimm/foundation)
+add_subdirectory(public/grimm/math)
 add_subdirectory(private)
 add_subdirectory(tests)

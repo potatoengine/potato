@@ -3,13 +3,13 @@
 #pragma once
 
 #include "memory.h"
-#include <type_traits>
+#include "traits.h"
 
 namespace gm {
     template <typename>
     class box;
     template <typename T, typename... Args>
-    auto make_box(Args&&... args) -> std::enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>>;
+    auto make_box(Args&&... args) -> enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>>;
 
     namespace _detail {
         template <typename>
@@ -56,7 +56,7 @@ public:
     template <typename U>
     box(box<U>&& src) : _ptr(src.release()) {}
     template <typename U>
-    std::enable_if_t<std::is_assignable_v<T*, U*>, box&> operator=(box<U>&& src) {
+    enable_if_t<std::is_assignable_v<T*, U*>, box&> operator=(box<U>&& src) {
         if (this != &src)
             reset(src.release());
         return *this;
@@ -134,6 +134,6 @@ void gm::box<T>::reset(pointer ptr) {
 /// <param name="args"> Parameters to pass to the constructor. </param>
 /// <returns> A box containing a new instance of the requested object. </returns>
 template <typename T, typename... Args>
-auto gm::make_box(Args&&... args) -> std::enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>> {
+auto gm::make_box(Args&&... args) -> enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>> {
     return box<T>(new T(std::forward<Args>(args)...));
 }
