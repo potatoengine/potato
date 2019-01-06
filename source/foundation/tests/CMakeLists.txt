@@ -1,6 +1,11 @@
 add_executable(foundation_test
     main.cpp
-    vector.cpp
+    test_callstack.cpp
+    test_delegate.cpp
+    test_fixed_string.cpp
+    test_span.cpp
+    test_uhash.cpp
+    test_vector.cpp
 )
 
 target_link_libraries(foundation_test PRIVATE

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "grimm/foundation/assert.h"
+#include "grimm/foundation/assertion.h"
 
 #define VULKAN_HPP_ASSERT(expr) GM_ASSERT((expr))
 

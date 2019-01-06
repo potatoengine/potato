@@ -149,25 +149,27 @@ namespace {
 
 } // anonymous namespace
 
-uint gm::CallStackReader::readCallstack(array_view<uintptr> addresses, uint skip) {
+auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
     CallstackHelper& helper = CallstackHelper::instance();
 
     if (!helper.isInitialized()) {
-        return 0;
+        return {};
     }
 
-    return helper.captureStackTrace(skip + 1, static_cast<uint>(addresses.size()), reinterpret_cast<void**>(addresses.data()));
+    uint count = helper.captureStackTrace(skip + 1, static_cast<uint>(addresses.size()), reinterpret_cast<void**>(addresses.data()));
+
+    return addresses.first(count);
 }
 
-bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records) {
+auto gm::callstack::resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
 #if !defined(NDEBUG)
     CallstackHelper& helper = CallstackHelper::instance();
 
     if (!helper.isInitialized()) {
-        return false;
+        return {};
     }
 
-    int const max = static_cast<int>(gm::min(addresses.size(), out_records.size()));
+    int const max = static_cast<int>(gm::min(addresses.size(), records.size()));
 
     int constexpr kMaxNameLen = 128;
 
@@ -184,7 +186,7 @@ bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresse
     for (auto index = 0; index != max; ++index) {
         helper.readSymbol(reinterpret_cast<void*>(addresses[index]), symbolInfoPtr, &imagehlpLine64);
 
-        CallStackRecord& record = out_records[index];
+        auto& record = records[index];
         record.address = addresses[index];
         record.symbol = string_view(static_cast<char*>(symbolInfoPtr->Name), symbolInfoPtr->NameLen);
         //record.filename = imagehlpLine64.FileName;
@@ -203,8 +205,8 @@ bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresse
         record.filename = filename;
     }
 
-    return true;
+    return records.first(max);
 #else
-    return false;
+    return {};
 #endif // !defined(NDEBUG)
 }

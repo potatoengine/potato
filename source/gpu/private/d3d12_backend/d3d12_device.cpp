@@ -8,7 +8,7 @@
 #include "d3d12_resource.h"
 #include "d3d12_swap_chain.h"
 #include "direct3d.h"
-#include "grimm/foundation/assert.h"
+#include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 #include <utility>
 

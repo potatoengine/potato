@@ -6,7 +6,7 @@
 
 #include <execinfo.h>
 
-uint gm::CallStackReader::readCallstack(array_view<uintptr> addresses, uint skip) {
+auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
     void* buffer;
 
     uint max = addresses.size() - std::min<uint>(addresses.size(), skip);
@@ -15,24 +15,26 @@ uint gm::CallStackReader::readCallstack(array_view<uintptr> addresses, uint skip
 
     std::memcpy(addresses.data(), static_cast<uintptr*>(buffer) + skip, std::min(count, max));
 
-    return count - skip;
+    return addresses.first(count - skip);
 }
 
-bool gm::CallStackReader::tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records) {
+auto gm::callstack::resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
 #if !defined(NDEBUG)
+    uint max = addresses.size() < records.size() ? addresses.size() : records.size();
+
     void* const addrs = const_cast<uintptr*>(addresses.data());
     char** symbols = backtrace_symbols(&addrs, addresses.size());
 
-    for (auto index = 0; index != addresses.size(); ++index) {
-        CallStackRecord& record = out_records[index];
+    for (auto index = 0; index != max; ++index) {
+        auto& record = records[index];
         record.address = addresses[index];
         record.symbol = string_view(symbols[index]);
     }
 
     free(symbols);
 
-    return true;
+    return records.first(max);
 #else
-    return false;
+    return {};
 #endif // !defined(NDEBUG)
 }

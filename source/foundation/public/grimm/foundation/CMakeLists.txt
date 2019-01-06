@@ -1,8 +1,7 @@
 target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_export.h
     ${CMAKE_CURRENT_SOURCE_DIR}/allocator.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/array_view.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/assert.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/assertion.h
     ${CMAKE_CURRENT_SOURCE_DIR}/box.h
     ${CMAKE_CURRENT_SOURCE_DIR}/callstack.h
     ${CMAKE_CURRENT_SOURCE_DIR}/const_util.h
@@ -19,6 +18,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/platform_windows.h
     ${CMAKE_CURRENT_SOURCE_DIR}/platform.h
     ${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/span.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_format.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_view.h
     ${CMAKE_CURRENT_SOURCE_DIR}/traits.h

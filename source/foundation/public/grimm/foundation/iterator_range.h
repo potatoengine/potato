@@ -8,16 +8,15 @@
 namespace gm {
     template <typename IteratorT, typename SentinelT = IteratorT>
     class iterator_range;
+
     template <typename IteratorT, typename SentinelT>
-    iterator_range<IteratorT, SentinelT> const& make_range(iterator_range<IteratorT, SentinelT> const& range);
+    iterator_range(std::pair<IteratorT, SentinelT> const&)->iterator_range<std::remove_cv_t<IteratorT>, std::remove_cv_t<SentinelT>>;
+
     template <typename IteratorT, typename SentinelT>
-    iterator_range<IteratorT, SentinelT> make_range(std::pair<IteratorT, SentinelT> const& range);
-    template <typename IteratorT, typename SentinelT>
-    iterator_range<IteratorT, SentinelT> make_range(std::pair<IteratorT, SentinelT>&& range);
-    template <typename IteratorT, typename SentinelT>
-    iterator_range<IteratorT, SentinelT> make_range(IteratorT iterator, SentinelT sentinel);
-    template <typename ContainerT, typename IteratorT = decltype(std::declval<ContainerT>().begin()), typename SentinelT = decltype(std::declval<ContainerT>().end())>
-    gm::iterator_range<IteratorT, SentinelT> make_range(ContainerT&& container);
+    iterator_range(std::pair<IteratorT, SentinelT> &&)->iterator_range<std::remove_cv_t<IteratorT>, std::remove_cv_t<SentinelT>>;
+
+    template <typename ContainerT>
+    iterator_range(ContainerT const& c)->iterator_range<decltype(c.begin()), decltype(c.end())>;
 } // namespace gm
 
 /// This is a range over two iterators (or an iterator and a sentinel).
@@ -50,6 +49,10 @@ public:
     /*implicit*/ iterator_range(std::pair<BeginT, EndT>&& range)
         : _begin(std::move(range.first)), _end(std::move(range.second)) {}
 
+    template <typename ContainerT>
+    /*implicit*/ iterator_range(ContainerT const& cont)
+        : _begin(cont.begin()), _end(cont.end()) {}
+
     template <typename = decltype(_begin[0])>
     decltype(auto) operator[](size_type index) const { return _begin[index]; }
 
@@ -73,29 +76,3 @@ public:
 
 template <typename IteratorT, typename SentinelT>
 struct gm::is_range<gm::iterator_range<IteratorT, SentinelT>> : std::true_type {};
-
-/// Helper function for make_range to be an identity function over iterator_ranges.
-template <typename IteratorT, typename SentinelT>
-gm::iterator_range<IteratorT, SentinelT> const& gm::make_range(iterator_range<IteratorT, SentinelT> const& range) {
-    return range;
-}
-
-template <typename IteratorT, typename SentinelT>
-gm::iterator_range<IteratorT, SentinelT> gm::make_range(std::pair<IteratorT, SentinelT> const& range) {
-    return iterator_range<IteratorT, SentinelT>(range);
-}
-
-template <typename IteratorT, typename SentinelT>
-gm::iterator_range<IteratorT, SentinelT> gm::make_range(std::pair<IteratorT, SentinelT>&& range) {
-    return iterator_range<IteratorT, SentinelT>(std::move(range));
-}
-
-template <typename IteratorT, typename SentinelT>
-gm::iterator_range<IteratorT, SentinelT> gm::make_range(IteratorT iterator, SentinelT sentinel) {
-    return iterator_range<IteratorT, SentinelT>(iterator, sentinel);
-}
-
-template <typename ContainerT, typename IteratorT, typename SentinelT>
-gm::iterator_range<IteratorT, SentinelT> gm::make_range(ContainerT&& container) {
-    return iterator_range<IteratorT, SentinelT>(container.begin(), container.end());
-}

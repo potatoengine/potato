@@ -1,6 +1,6 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
-#include "./assert.h"
+#include "assertion.h"
 #include "allocator.h"
 #include "callstack.h"
 #include "logging.h"
@@ -20,15 +20,14 @@ auto gm::fatal_error(char const* file, int line, char const* failedConditionText
     }
 
     format_memory_buffer buffer;
-    uintptr addresses[32];
-    CallStackRecord records[32];
-    uint count = CallStackReader::readCallstack(addresses);
-
-    auto recordsView = array_view{records, count};
+    std::array<uintptr, 64> addresses = {};
+    std::array<callstack::TraceRecord, 64> records = {};
+    auto stack = callstack::readTrace(addresses);
 
 #if !defined(NDEBUG)
-    if (CallStackReader::tryResolveCallstack(array_view{addresses, count}, recordsView)) {
-        for (auto const& record : recordsView) {
+    auto resolvedRecords = callstack::resolveTraceRecords(stack, records);
+    if (!resolvedRecords.empty()) {
+        for (auto const& record : resolvedRecords) {
             format_into(buffer, "[{:016X}] ({}:{}) {}\r\n", record.address, record.filename, record.line, record.symbol);
         }
     }

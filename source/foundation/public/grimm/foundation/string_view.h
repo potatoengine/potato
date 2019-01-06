@@ -5,6 +5,7 @@
 #include "numeric_util.h"
 #include "uhash.h"
 #include <cstring>
+#include <cstddef>
 #include <string_view>
 
 namespace gm {
@@ -16,5 +17,5 @@ namespace gm {
 
 template <typename HashAlgorithm>
 void gm::hash_append(HashAlgorithm& hasher, string_view const& string) {
-    hasher(string.begin(), string.size());
+    hasher({reinterpret_cast<std::byte const*>(string.data()), string.size()});
 }

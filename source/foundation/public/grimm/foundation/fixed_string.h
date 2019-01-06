@@ -13,6 +13,7 @@ namespace gm {
         using value_type = char;
         using pointer = char const*;
         using size_type = std::size_t;
+        static constexpr auto effective_capacity = Capacity - 1;
 
         fixed_string() = default;
         ~fixed_string() = default;
@@ -29,7 +30,7 @@ namespace gm {
         bool empty() const { return _size == 0; }
 
         size_type size() const { return _size; }
-        size_type capacity() const { return Capacity - 1; }
+        size_type capacity() const { return effective_capacity; }
 
         pointer data() const { return _buffer; }
         pointer c_str() const { return _buffer; }
@@ -64,15 +65,16 @@ namespace gm {
 
     template <std::size_t Capacity>
     auto fixed_string<Capacity>::operator=(string_view string) -> fixed_string& {
-        std::size_t size = std::min(Capacity - 1, string.size());
-        _size = size;
+        std::size_t newSize = effective_capacity < string.size() ? effective_capacity : string.size();
+        _size = newSize;
+
         if (string.data() >= _buffer && string.data() < _buffer + Capacity) {
-            std::memmove(_buffer, string.data(), size);
+            std::memmove(_buffer, string.data(), newSize);
         }
         else {
-            std::memcpy(_buffer, string.data(), size);
+            std::memcpy(_buffer, string.data(), newSize);
         }
-        _buffer[size] = '\0';
+        _buffer[newSize] = '\0';
         return *this;
     }
 
