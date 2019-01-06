@@ -1,18 +1,22 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "converter.h"
+#include "converter_app.h"
 #include "grimm/foundation/string_view.h"
+#include "converters/convert_hlsl.h"
+#include "converters/convert_copy.h"
 #include <iostream>
 
-gm::recon::Converter::Converter()
+gm::recon::ConverterApp::ConverterApp()
     : _programName("recon"), _sourceFolderPath("./resources"), _destinationFolderPath("./converted"), _cacheFolderPath("./cache") {}
-gm::recon::Converter::~Converter() = default;
+gm::recon::ConverterApp::~ConverterApp() = default;
 
-bool gm::recon::Converter::run(span<char const*> args) {
+bool gm::recon::ConverterApp::run(span<char const*> args) {
     if (!parseArguments(args)) {
         std::cerr << "Failed to parse arguments\n";
         return false;
     }
+
+    registerConverters();
 
     auto sources = collectSourceFiles();
 
@@ -45,7 +49,14 @@ bool gm::recon::Converter::run(span<char const*> args) {
     return true;
 }
 
-bool gm::recon::Converter::parseArguments(span<char const*> args) {
+void gm::recon::ConverterApp::registerConverters() {
+    _converters.push_back({[](std::filesystem::path const& path) { return path.extension() == ".hlsl"; },
+                           make_box<HlslConverter>()});
+    _converters.push_back({[](std::filesystem::path const& path) { return path.extension() == ".json"; },
+                           make_box<CopyConverter>()});
+}
+
+bool gm::recon::ConverterApp::parseArguments(span<char const*> args) {
     if (args.empty()) {
         return false;
     }
@@ -111,28 +122,23 @@ bool gm::recon::Converter::parseArguments(span<char const*> args) {
     return true;
 }
 
-bool gm::recon::Converter::convertFiles(vector<std::filesystem::path> files) {
+bool gm::recon::ConverterApp::convertFiles(vector<std::filesystem::path> files) {
     bool failed = false;
 
     for (auto const& path : files) {
         std::cout << path << '\n';
 
-        std::filesystem::path sourceAbsolutePath = _sourceFolderPath / path;
-        std::filesystem::path destAbsolutePath = _destinationFolderPath / path;
-
-        std::filesystem::path destParentAbsolutePath = destAbsolutePath.parent_path();
-
-        std::error_code rs;
-        if (!std::filesystem::is_directory(destParentAbsolutePath)) {
-            if (!std::filesystem::create_directories(destParentAbsolutePath, rs)) {
-                std::cerr << "Failed to create `" << destParentAbsolutePath << "': " << rs.message() << '\n';
-                // intentionally fall through so we still attempt the copy and get a copy error if fail
-            }
+        Converter* converter = findConverter(path);
+        if (converter == nullptr) {
+            failed = true;
+            std::cerr << "Converter not found for `" << path << "'\n";
+            continue;
         }
 
-        if (!std::filesystem::copy_file(sourceAbsolutePath, destAbsolutePath, rs)) {
+        Context context(path, _sourceFolderPath, _destinationFolderPath);
+        if (!converter->convert(context)) {
             failed = true;
-            std::cerr << "Failed to copy `" << sourceAbsolutePath << "' to `" << destAbsolutePath << "': " << rs.message() << '\n';
+            std::cerr << "Failed conversion for `" << path << "'\n";
             continue;
         }
     }
@@ -140,7 +146,17 @@ bool gm::recon::Converter::convertFiles(vector<std::filesystem::path> files) {
     return !failed;
 }
 
-auto gm::recon::Converter::collectSourceFiles() -> vector<std::filesystem::path> {
+auto gm::recon::ConverterApp::findConverter(path const& path) const -> Converter* {
+    for (auto const& mapping : _converters) {
+        if (mapping.predicate(path)) {
+            return mapping.conveter.get();
+        }
+    }
+
+    return nullptr;
+}
+
+auto gm::recon::ConverterApp::collectSourceFiles() -> vector<std::filesystem::path> {
 
     if (!std::filesystem::is_directory(_sourceFolderPath)) {
         std::cerr << "`" << _sourceFolderPath << "' does not exist or is not a directory\n";
