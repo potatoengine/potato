@@ -149,7 +149,7 @@ namespace {
 
 } // anonymous namespace
 
-auto gm::CallStackReader::readCallstack(span<uintptr> addresses, uint skip) -> span<uintptr> {
+auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
     CallstackHelper& helper = CallstackHelper::instance();
 
     if (!helper.isInitialized()) {
@@ -161,7 +161,7 @@ auto gm::CallStackReader::readCallstack(span<uintptr> addresses, uint skip) -> s
     return addresses.first(count);
 }
 
-auto gm::CallStackReader::tryResolveCallstack(span<uintptr const> addresses, span<CallStackRecord> records) -> span<CallStackRecord> {
+auto gm::callstack::resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
 #if !defined(NDEBUG)
     CallstackHelper& helper = CallstackHelper::instance();
 
@@ -186,7 +186,7 @@ auto gm::CallStackReader::tryResolveCallstack(span<uintptr const> addresses, spa
     for (auto index = 0; index != max; ++index) {
         helper.readSymbol(reinterpret_cast<void*>(addresses[index]), symbolInfoPtr, &imagehlpLine64);
 
-        CallStackRecord& record = records[index];
+        auto& record = records[index];
         record.address = addresses[index];
         record.symbol = string_view(static_cast<char*>(symbolInfoPtr->Name), symbolInfoPtr->NameLen);
         //record.filename = imagehlpLine64.FileName;

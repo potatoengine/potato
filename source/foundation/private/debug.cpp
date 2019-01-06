@@ -20,15 +20,14 @@ auto gm::fatal_error(char const* file, int line, char const* failedConditionText
     }
 
     format_memory_buffer buffer;
-    CallStackBuffer<> addresses = {};
-    CallStackRecord records[addresses.size()];
-    auto stack = CallStackReader::readCallstack(addresses);
-
-    auto recordsView = span{records, stack.size()};
+    std::array<uintptr, 64> addresses = {};
+    std::array<callstack::TraceRecord, 64> records = {};
+    auto stack = callstack::readTrace(addresses);
 
 #if !defined(NDEBUG)
-    if (CallStackReader::tryResolveCallstack(stack, recordsView)) {
-        for (auto const& record : recordsView) {
+    auto resolvedRecords = callstack::resolveTraceRecords(stack, records);
+    if (!resolvedRecords.empty()) {
+        for (auto const& record : resolvedRecords) {
             format_into(buffer, "[{:016X}] ({}:{}) {}\r\n", record.address, record.filename, record.line, record.symbol);
         }
     }

@@ -6,7 +6,7 @@
 
 #include <execinfo.h>
 
-auto gm::CallStackReader::readCallstack(span<uintptr> addresses, uint skip) -> span<uintptr> {
+auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
     void* buffer;
 
     uint max = addresses.size() - std::min<uint>(addresses.size(), skip);
@@ -18,13 +18,13 @@ auto gm::CallStackReader::readCallstack(span<uintptr> addresses, uint skip) -> s
     return addresses.first(count - skip);
 }
 
-auto gm::CallStackReader::tryResolveCallstack(span<uintptr const> addresses, span<CallStackRecord> records) -> span<CallStackRecord> {
+auto gm::callstack::resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
 #if !defined(NDEBUG)
     void* const addrs = const_cast<uintptr*>(addresses.data());
     char** symbols = backtrace_symbols(&addrs, addresses.size());
 
     for (auto index = 0; index != addresses.size(); ++index) {
-        CallStackRecord& record = out_records[index];
+        auto& record = out_records[index];
         record.address = addresses[index];
         record.symbol = string_view(symbols[index]);
     }

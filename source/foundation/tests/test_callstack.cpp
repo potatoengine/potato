@@ -2,12 +2,12 @@
 #include "doctest.h"
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::CallStackReader") {
-    using namespace gm;
+    using namespace gm::callstack;
 
     DOCTEST_TEST_CASE("read callstack") {
-        CallStackBuffer<> addresses = {};
+        std::array<uintptr, 1> addresses = {};
 
-        auto stack = CallStackReader::readCallstack(addresses);
+        auto stack = readTrace(addresses);
         DOCTEST_CHECK(!stack.empty());
     }
 }
