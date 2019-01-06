@@ -61,8 +61,7 @@ bool gm::recon::ConverterApp::parseArguments(span<char const*> args) {
         return false;
     }
 
-    [[maybe_unused]]
-    auto program = args.front();
+    [[maybe_unused]] auto program = args.front();
     args.pop_front();
 
     enum {
