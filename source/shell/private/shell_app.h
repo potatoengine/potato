@@ -1,3 +1,5 @@
+// Copyright (C) 2018 Sean Middleditch, all rights reserverd.
+
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/gpu/command_list.h"
