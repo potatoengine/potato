@@ -1,6 +1,7 @@
 add_executable(foundation_test
     main.cpp
     test_callstack.cpp
+    test_delegate.cpp
     test_span.cpp
     vector.cpp
 )

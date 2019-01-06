@@ -3,11 +3,14 @@
 #pragma once
 
 #include "assert.h"
-#include <type_traits>
+#include "traits.h"
 
 namespace gm {
     template <typename Signature>
     class delegate;
+
+    template <typename T>
+    delegate(T) -> delegate<signature_t<T>>;
 }
 
 namespace gm::_detail {
