@@ -5,7 +5,7 @@ add_executable(foundation_test
     test_fixed_string.cpp
     test_span.cpp
     test_uhash.cpp
-    vector.cpp
+    test_vector.cpp
 )
 
 target_link_libraries(foundation_test PRIVATE
