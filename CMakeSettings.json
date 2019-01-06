@@ -4,7 +4,7 @@
       "environment": "Clang 7",
       "CC": "clang-7",
       "CXX": "clang++-7",
-      "CXXFLAGS": "-stdlib=libc++ -Wall"
+      "CXXFLAGS": "-stdlib=libc++ -Wall -lc++fs"
     }
   ],
   "configurations": [

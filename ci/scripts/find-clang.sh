@@ -17,3 +17,5 @@ fi
 if [ -z "${CLANG_CXXFLAGS}" ] ; then CLANG_CXXFLAGS="-m64 -stdlib=${STDLIB}" ; fi
 
 if [ -z "${CLANG_CCFLAGS}" ] ; then CLANG_CCFLAGS="-m64" ; fi
+
+if [ -z "${CLANG_LDFLAGS}" ] ; then CLANG_LDFLAGS="-lc++fs" ; fi
