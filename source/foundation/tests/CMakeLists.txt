@@ -4,6 +4,7 @@ add_executable(foundation_test
     test_delegate.cpp
     test_fixed_string.cpp
     test_span.cpp
+    test_uhash.cpp
     vector.cpp
 )
 
