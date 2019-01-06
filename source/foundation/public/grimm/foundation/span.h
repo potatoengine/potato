@@ -33,6 +33,7 @@ public:
     using pointer = T*;
     using reference = T&;
     using size_type = std::size_t;
+    using index_type = size_type;
 
     span() = default; // #FIXME: figure out why this is needed even though I've inherited constructors
     /*implicit*/ template <typename U>
@@ -62,6 +63,11 @@ public:
 
     reference front() const noexcept  { return *_begin; }
     reference back() const noexcept  { return *(_end - 1); }
+
+    span first(size_type length) const noexcept { return span{_begin, length}; };
+    span last(size_type length) const noexcept { return span{_end - length, length}; };
+
+    span subspan(size_type offset, size_type count) const noexcept { return span{_begin + offset, count}; }
 
     void pop_front() noexcept { ++_begin; }
     void pop_back() noexcept  { --_end; }

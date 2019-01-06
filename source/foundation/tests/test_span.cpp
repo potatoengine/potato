@@ -15,7 +15,6 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::span") {
     DOCTEST_TEST_CASE("span array") {
         int a[] = {1, 3, 2, 5, 4};
         span av(a);
-        auto p = av.data();
 
         DOCTEST_CHECK(!av.empty());
         DOCTEST_CHECK_EQ(av.size(), 5);
@@ -32,5 +31,25 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::span") {
 
         DOCTEST_CHECK_EQ(av.size(), 3);
         DOCTEST_CHECK_EQ(av.back(), 5);
+    }
+
+    DOCTEST_TEST_CASE("span subspan") {
+        int a[] = {1, 3, 2, 5, 4};
+        span av(a);
+
+        span fv = av.first(3);
+
+        DOCTEST_CHECK_EQ(fv.size(), 3);
+        DOCTEST_CHECK_EQ(fv.front(), 1);
+
+        span lv = av.last(3);
+
+        DOCTEST_CHECK_EQ(lv.size(), 3);
+        DOCTEST_CHECK_EQ(lv.front(), 2);
+
+        span sv = av.subspan(2, 2);
+
+        DOCTEST_CHECK_EQ(sv.size(), 2);
+        DOCTEST_CHECK_EQ(sv.front(), 2);
     }
 }
