@@ -8,7 +8,7 @@ namespace {
         int next() { return ++r; }
         int add(int i) const { return r + i; }
     };
-}
+} // namespace
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::delegate") {
     using namespace gm;

@@ -13,7 +13,7 @@ namespace gm {
     iterator_range(std::pair<IteratorT, SentinelT> const&)->iterator_range<std::remove_cv_t<IteratorT>, std::remove_cv_t<SentinelT>>;
 
     template <typename IteratorT, typename SentinelT>
-    iterator_range(std::pair<IteratorT, SentinelT>&&)->iterator_range<std::remove_cv_t<IteratorT>, std::remove_cv_t<SentinelT>>;
+    iterator_range(std::pair<IteratorT, SentinelT> &&)->iterator_range<std::remove_cv_t<IteratorT>, std::remove_cv_t<SentinelT>>;
 
     template <typename ContainerT>
     iterator_range(ContainerT const& c)->iterator_range<decltype(c.begin()), decltype(c.end())>;
