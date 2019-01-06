@@ -5,6 +5,7 @@
 #include "traits.h"
 #include <initializer_list>
 #include <type_traits>
+#include <array>
 
 namespace gm {
     template <typename T, typename A>
@@ -36,16 +37,18 @@ public:
     using index_type = size_type;
 
     span() = default; // #FIXME: figure out why this is needed even though I've inherited constructors
-    /*implicit*/ template <typename U>
-    span(span<U> src) noexcept
+    template <typename U>
+    /*implicit*/ span(span<U> src) noexcept
         : _begin(src.begin()), _end(src.end()) {}
-    /*implicit*/ template <std::size_t N>
-    span(T (&src)[N]) noexcept
+    template <std::size_t N>
+    /*implicit*/ span(T (&src)[N]) noexcept
         : _begin(src), _end(src + N) {}
     /*implicit*/ span(T* begin, T* end) noexcept
         : _begin(begin), _end(end) {}
     /*implicit*/ span(std::initializer_list<T> src) noexcept
         : _begin(src.begin()), _end(src.end()) {}
+    template <std::size_t N>
+    /*implicit*/ span(std::array<T, N> src) noexcept : span(src.data(), N) {}
     explicit span(T* ptr, std::size_t size) noexcept
         : _begin(ptr), _end(ptr + size) {}
 

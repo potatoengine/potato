@@ -7,6 +7,7 @@
 #include "fixed_string.h"
 #include "platform.h"
 #include "types.h"
+#include <array>
 
 namespace gm {
     struct CallStackRecord {
@@ -16,8 +17,11 @@ namespace gm {
         int line = 0;
     };
 
+    template <std::size_t N = 32>
+    using CallStackBuffer = std::array<uintptr, N>;
+
     struct CallStackReader {
-        static uint readCallstack(span<uintptr> addresses, uint skip = 0);
-        static bool tryResolveCallstack(span<uintptr const> addresses, span<CallStackRecord> out_records);
+        static span<uintptr> readCallstack(span<uintptr> addresses, uint skip = 0);
+        static span<CallStackRecord> tryResolveCallstack(span<uintptr const> addresses, span<CallStackRecord> records);
     };
 } // namespace gm

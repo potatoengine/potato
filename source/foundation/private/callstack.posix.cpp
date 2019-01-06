@@ -6,7 +6,7 @@
 
 #include <execinfo.h>
 
-uint gm::CallStackReader::readCallstack(span<uintptr> addresses, uint skip) {
+auto gm::CallStackReader::readCallstack(span<uintptr> addresses, uint skip) -> span<uintptr> {
     void* buffer;
 
     uint max = addresses.size() - std::min<uint>(addresses.size(), skip);
@@ -15,10 +15,10 @@ uint gm::CallStackReader::readCallstack(span<uintptr> addresses, uint skip) {
 
     std::memcpy(addresses.data(), static_cast<uintptr*>(buffer) + skip, std::min(count, max));
 
-    return count - skip;
+    return addresses.first(count - skip);
 }
 
-bool gm::CallStackReader::tryResolveCallstack(span<uintptr const> addresses, span<CallStackRecord> out_records) {
+auto gm::CallStackReader::tryResolveCallstack(span<uintptr const> addresses, span<CallStackRecord> records) -> span<CallStackRecord> {
 #if !defined(NDEBUG)
     void* const addrs = const_cast<uintptr*>(addresses.data());
     char** symbols = backtrace_symbols(&addrs, addresses.size());
@@ -31,8 +31,8 @@ bool gm::CallStackReader::tryResolveCallstack(span<uintptr const> addresses, spa
 
     free(symbols);
 
-    return true;
+    return records.first(addresses);
 #else
-    return false;
+    return {};
 #endif // !defined(NDEBUG)
 }
