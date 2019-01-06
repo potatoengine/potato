@@ -1,5 +1,4 @@
 set(GM_GPU_D3D12_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/com_ptr.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_command_list.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_command_list.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_descriptor_heap.h
@@ -14,7 +13,6 @@ set(GM_GPU_D3D12_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_swap_chain.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_pipeline_state.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_pipeline_state.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/direct3d.h
 )
 
 target_compile_definitions(gpu PRIVATE VULKAN_HPP_NO_EXCEPTIONS)
