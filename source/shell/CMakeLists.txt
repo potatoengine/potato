@@ -22,9 +22,7 @@ target_link_libraries(shell PRIVATE
     SDL2main
 )
 
-if(WIN32)
-    gm_copy_library_import(SDL2::SDL2 shell)
-endif()
+gm_copy_library_import(SDL2::SDL2 shell)
 
 add_subdirectory(public/grimm/shell)
 add_subdirectory(private)

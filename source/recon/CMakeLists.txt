@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.11)
 project(recon VERSION 0.1 LANGUAGES CXX)
 
+include(gm_copy_library_import)
+
 add_executable(recon)
 
 target_include_directories(recon
@@ -19,3 +21,11 @@ target_link_libraries(recon PRIVATE
 add_subdirectory(public/grimm/recon)
 add_subdirectory(private)
 add_subdirectory(tests)
+
+get_target_property(GM_GPU_ENABLE_D3D12 gpu GM_GPU_ENABLE_D3D12)
+if(GM_GPU_ENABLE_D3D12)
+    find_package(dxc REQUIRED)
+    target_link_libraries(recon PRIVATE dxc::dxcompiler)
+endif(GM_GPU_ENABLE_D3D12)
+
+gm_copy_library_import(dxc::dxcompiler recon)

@@ -3,10 +3,9 @@
 #pragma once
 
 #include "grimm/recon/converter.h"
-#include "convert_copy.h"
 
 namespace gm::recon {
-    class HlslConverter : public CopyConverter {
+    class HlslConverter : public Converter {
     public:
         HlslConverter();
         ~HlslConverter();

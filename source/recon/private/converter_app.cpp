@@ -50,8 +50,10 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
 }
 
 void gm::recon::ConverterApp::registerConverters() {
+#if GM_GPU_ENABLE_D3D12
     _converters.push_back({[](std::filesystem::path const& path) { return path.extension() == ".hlsl"; },
                            make_box<HlslConverter>()});
+#endif
     _converters.push_back({[](std::filesystem::path const& path) { return path.extension() == ".json"; },
                            make_box<CopyConverter>()});
 }
