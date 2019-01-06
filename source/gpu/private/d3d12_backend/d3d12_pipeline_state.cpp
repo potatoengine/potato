@@ -1,7 +1,7 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
 #include "d3d12_pipeline_state.h"
-#include "grimm/foundation/assert.h"
+#include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 
 gm::D3d12PipelineState::D3d12PipelineState(com_ptr<ID3D12PipelineState> state)

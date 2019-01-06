@@ -19,6 +19,8 @@ namespace gm {
     span(std::initializer_list<T>)->span<T const>;
     template <typename T, std::size_t N>
     span(T (&src)[N])->span<T>;
+    template <typename T>
+    span(T*, std::size_t)->span<T>;
 
     template <typename HashAlgorithm, typename T>
     inline void hash_append(HashAlgorithm&, gm::span<T> const&) noexcept;
@@ -37,7 +39,7 @@ public:
     using size_type = std::size_t;
     using index_type = size_type;
 
-    span() = default; // #FIXME: figure out why this is needed even though I've inherited constructors
+    span() = default;
     template <typename U>
     /*implicit*/ span(span<U> src) noexcept
         : _begin(src.begin()), _end(src.end()) {}

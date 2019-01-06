@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "types.h"
 #include "span.h"
+#include "types.h"
 #include "platform.h"
 
 namespace gm {
@@ -12,7 +12,7 @@ namespace gm {
     public:
         using result_type = uint64;
 
-        inline void operator()(span<byte const> data) noexcept;
+        inline void operator()(gm::span<byte const> data) noexcept;
         explicit operator result_type() const noexcept { return _state; }
 
     private:

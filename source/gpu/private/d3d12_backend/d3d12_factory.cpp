@@ -3,7 +3,7 @@
 #include "d3d12_factory.h"
 #include "d3d12_device.h"
 #include "direct3d.h"
-#include "grimm/foundation/assert.h"
+#include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 
 gm::D3d12Factory::D3d12Factory(com_ptr<IDXGIFactory2> dxgiFactory)

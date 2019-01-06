@@ -4,7 +4,7 @@
 #include "d3d12_pipeline_state.h"
 #include "d3d12_resource.h"
 #include "direct3d.h"
-#include "grimm/foundation/assert.h"
+#include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 
 gm::D3d12CommandList::D3d12CommandList(com_ptr<ID3D12CommandAllocator> allocator, com_ptr<ID3D12GraphicsCommandList> commands) : _allocator(std::move(allocator)), _commands(std::move(commands)) {}

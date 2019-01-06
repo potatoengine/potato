@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "assert.h"
+#include "assertion.h"
 #include "traits.h"
 
 namespace gm {

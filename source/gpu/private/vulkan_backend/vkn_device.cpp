@@ -1,7 +1,7 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
 #include "vkn_device.h"
-#include "grimm/foundation/assert.h"
+#include "grimm/foundation/assertion.h"
 #include "grimm/foundation/logging.h"
 #include "grimm/foundation/out_ptr.h"
 #include "vkn_pipeline_state.h"
