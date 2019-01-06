@@ -1,5 +1,6 @@
 add_executable(foundation_test
     main.cpp
+    test_array_view.cpp
     vector.cpp
 )
 

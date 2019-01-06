@@ -13,6 +13,11 @@ namespace gm {
     template <typename T>
     struct array_view;
 
+    template <typename T>
+    array_view(std::initializer_list<T>) -> array_view<T const>;
+    template <typename T, std::size_t N>
+    array_view(T (&src)[N]) -> array_view<T>;
+
     template <typename HashAlgorithm, typename T>
     inline void hash_append(HashAlgorithm&, gm::array_view<T> const&);
 } // namespace gm
@@ -22,8 +27,10 @@ namespace gm {
 template <typename T>
 struct gm::array_view {
 public:
+    using value_type = T;
     using iterator = T*;
     using sentinel = T*;
+    using pointer = T*;
     using reference = T&;
     using size_type = std::size_t;
 
@@ -44,7 +51,7 @@ public:
     iterator begin() const { return _begin; }
     sentinel end() const { return _end; }
 
-    T* data() const { return _begin; }
+    pointer data() const { return _begin; }
 
     bool empty() const { return _begin == _end; }
     explicit operator bool() const { return _begin != _end; }
@@ -60,8 +67,8 @@ public:
     void pop_back() { --_end; }
 
 private:
-    T* _begin = nullptr;
-    T* _end = nullptr;
+    pointer _begin = nullptr;
+    pointer _end = nullptr;
 };
 
 template <typename HashAlgorithm, typename T>
