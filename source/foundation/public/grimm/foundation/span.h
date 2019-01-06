@@ -11,21 +11,21 @@ namespace gm {
     class vector;
 
     template <typename T>
-    struct array_view;
+    struct span;
 
     template <typename T>
-    array_view(std::initializer_list<T>) -> array_view<T const>;
+    span(std::initializer_list<T>) -> span<T const>;
     template <typename T, std::size_t N>
-    array_view(T (&src)[N]) -> array_view<T>;
+    span(T (&src)[N]) -> span<T>;
 
     template <typename HashAlgorithm, typename T>
-    inline void hash_append(HashAlgorithm&, gm::array_view<T> const&);
+    inline void hash_append(HashAlgorithm&, gm::span<T> const&) noexcept;
 } // namespace gm
 
 /// <summary> A non-owning slice of an array. </summary>
 /// <typeparam name="T"> Type of the elements in the array. </typeparam>
 template <typename T>
-struct gm::array_view {
+struct gm::span {
 public:
     using value_type = T;
     using iterator = T*;
@@ -34,37 +34,37 @@ public:
     using reference = T&;
     using size_type = std::size_t;
 
-    array_view() = default; // #FIXME: figure out why this is needed even though I've inherited constructors
+    span() = default; // #FIXME: figure out why this is needed even though I've inherited constructors
     /*implicit*/ template <typename U>
-    array_view(array_view<U> src)
+    span(span<U> src) noexcept
         : _begin(src.begin()), _end(src.end()) {}
     /*implicit*/ template <std::size_t N>
-    array_view(T (&src)[N])
+    span(T (&src)[N]) noexcept
         : _begin(src), _end(src + N) {}
-    /*implicit*/ array_view(T* begin, T* end)
+    /*implicit*/ span(T* begin, T* end) noexcept
         : _begin(begin), _end(end) {}
-    /*implicit*/ array_view(std::initializer_list<T> src)
+    /*implicit*/ span(std::initializer_list<T> src) noexcept
         : _begin(src.begin()), _end(src.end()) {}
-    explicit array_view(T* ptr, std::size_t size)
+    explicit span(T* ptr, std::size_t size) noexcept
         : _begin(ptr), _end(ptr + size) {}
 
-    iterator begin() const { return _begin; }
-    sentinel end() const { return _end; }
+    iterator begin() const noexcept  { return _begin; }
+    sentinel end() const noexcept  { return _end; }
 
-    pointer data() const { return _begin; }
+    pointer data() const noexcept  { return _begin; }
 
-    bool empty() const { return _begin == _end; }
-    explicit operator bool() const { return _begin != _end; }
+    bool empty() const noexcept  { return _begin == _end; }
+    explicit operator bool() const noexcept  { return _begin != _end; }
 
-    reference operator[](size_type index) const { return _begin[index]; }
+    reference operator[](size_type index) const noexcept  { return _begin[index]; }
 
-    size_type size() const { return static_cast<size_type>(_end - _begin); }
+    size_type size() const noexcept  { return static_cast<size_type>(_end - _begin); }
 
-    reference front() const { return *_begin; }
-    reference back() const { return *(_end - 1); }
+    reference front() const noexcept  { return *_begin; }
+    reference back() const noexcept  { return *(_end - 1); }
 
-    void pop_front() { ++_begin; }
-    void pop_back() { --_end; }
+    void pop_front() noexcept { ++_begin; }
+    void pop_back() noexcept  { --_end; }
 
 private:
     pointer _begin = nullptr;
@@ -72,7 +72,7 @@ private:
 };
 
 template <typename HashAlgorithm, typename T>
-void gm::hash_append(HashAlgorithm& hasher, gm::array_view<T> const& view) {
+void gm::hash_append(HashAlgorithm& hasher, gm::span<T> const& view) noexcept {
     if constexpr (gm::is_contiguous_v<T>) {
         hasher(view.data(), view.size() * sizeof(T));
     }

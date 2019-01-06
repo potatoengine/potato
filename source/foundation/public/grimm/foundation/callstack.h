@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "array_view.h"
+#include "span.h"
 #include "delegate.h"
 #include "fixed_string.h"
 #include "platform.h"
@@ -17,7 +17,7 @@ namespace gm {
     };
 
     struct CallStackReader {
-        static uint readCallstack(array_view<uintptr> addresses, uint skip = 0);
-        static bool tryResolveCallstack(array_view<uintptr const> addresses, array_view<CallStackRecord> out_records);
+        static uint readCallstack(span<uintptr> addresses, uint skip = 0);
+        static bool tryResolveCallstack(span<uintptr const> addresses, span<CallStackRecord> out_records);
     };
 } // namespace gm

@@ -24,10 +24,10 @@ auto gm::fatal_error(char const* file, int line, char const* failedConditionText
     CallStackRecord records[32];
     uint count = CallStackReader::readCallstack(addresses);
 
-    auto recordsView = array_view{records, count};
+    auto recordsView = span{records, count};
 
 #if !defined(NDEBUG)
-    if (CallStackReader::tryResolveCallstack(array_view{addresses, count}, recordsView)) {
+    if (CallStackReader::tryResolveCallstack(span{addresses, count}, recordsView)) {
         for (auto const& record : recordsView) {
             format_into(buffer, "[{:016X}] ({}:{}) {}\r\n", record.address, record.filename, record.line, record.symbol);
         }

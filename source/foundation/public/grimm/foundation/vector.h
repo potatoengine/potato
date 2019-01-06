@@ -3,7 +3,7 @@
 #pragma once
 
 #include "allocator.h"
-#include "array_view.h"
+#include "span.h"
 #include "assert.h"
 #include "iterator_range.h"
 #include "memory_util.h"
@@ -124,8 +124,8 @@ public:
     AllocatorT& get_allocator() { return *this; }
     AllocatorT const& get_allocator() const { return *this; }
 
-    operator array_view<T>() { return array_view<T>(_first, _last); }
-    operator array_view<T const>() const { return array_view<T const>(_first, _last); }
+    operator span<T>() { return span<T>(_first, _last); }
+    operator span<T const>() const { return span<T const>(_first, _last); }
 };
 
 template <typename T, typename AllocatorT>
