@@ -1,12 +1,4 @@
 ﻿{
-  "environments": [
-    {
-      "environment": "Clang 7",
-      "CC": "clang-7",
-      "CXX": "clang++-7",
-      "CXXFLAGS": "-stdlib=libc++ -Wall -lc++fs"
-    }
-  ],
   "configurations": [
     {
       "name": "Windows (Release Static)",
@@ -76,12 +68,25 @@
         ".git",
         "build"
       ],
+      "variables": [
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "clang++-7"
+        },
+        {
+          "name": "CMAKE_C_COMPILER",
+          "value": "clang-7"
+        },
+        {
+          "name": "CMAKE_CXX_FLAGS",
+          "value": "-stdlib=libc++ -Wall"
+        }
+      ],
       "rsyncCommandArgs": "-t --delete --delete-excluded",
       "remoteCopyBuildOutput": false,
       "ctestCommandArgs": "--verbose",
       "inheritEnvironments": [
-        "linux_x64",
-        "Clang 7"
+        "linux_x64"
       ]
     }
   ]
