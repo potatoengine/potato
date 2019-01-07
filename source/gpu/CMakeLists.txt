@@ -50,6 +50,8 @@ find_package(Vulkan)
 if(Vulkan_FOUND)
     set(GM_GPU_ENABLE_VULKAN TRUE)
     target_link_libraries(gpu PRIVATE Vulkan::Vulkan)
+else()
+    set(GM_GPU_ENABLE_VULKAN FALSE)
 endif(Vulkan_FOUND)
 
 find_library(D3D12_PATH d3d12)
@@ -57,6 +59,8 @@ find_library(DXGI_PATH dxgi)
 if(D3D12_PATH AND DXGI_PATH)
     set(GM_GPU_ENABLE_D3D12 TRUE)
     target_link_libraries(gpu PRIVATE ${D3D12_PATH} ${DXGI_PATH})
+else()
+    set(GM_GPU_ENABLE_D3D12 FALSE)
 endif(D3D12_PATH AND DXGI_PATH)
 
 set_target_properties(gpu PROPERTIES
