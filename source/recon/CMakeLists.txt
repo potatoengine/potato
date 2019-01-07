@@ -31,6 +31,5 @@ get_target_property(GM_GPU_ENABLE_D3D12 gpu GM_GPU_ENABLE_D3D12)
 if(GM_GPU_ENABLE_D3D12)
     find_package(dxc REQUIRED)
     target_link_libraries(recon PRIVATE dxc::dxcompiler)
+    gm_copy_library_import(dxc::dxcompiler recon)
 endif(GM_GPU_ENABLE_D3D12)
-
-gm_copy_library_import(dxc::dxcompiler recon)
