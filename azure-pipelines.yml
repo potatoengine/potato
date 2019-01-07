@@ -17,6 +17,8 @@ jobs:
       set -o xtrace
       curl -o SDL.zip https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
       unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
+      curl -o dxc.zip https://ci.appveyor.com/api/buildjobs/s3597u0bjjh0v87k/artifacts/build%2FRelease%2Fdxc-artifacts.zip
+      unzip dxc.zip -d "${BUILD_SOURCESDIRECTORY}/deps/dxc"
     displayName: Installing Dependencies
   - script: |
       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
@@ -24,10 +26,10 @@ jobs:
     displayName: Build Information
   - bash: |
       set -o xtrace
-      mkdir -p build/shared
-      cd build/shared
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=ON "${BUILD_SOURCESDIRECTORY}"
-    displayName: CMake Configure (Shared)
+      mkdir build
+      cd build
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DDXC_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/dxc" ..
+    displayName: CMake Configure
   - bash: |
       set -o xtrace
       cmake --build build/shared --config RelWithDebInfo --parallel
