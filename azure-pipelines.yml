@@ -15,9 +15,9 @@ jobs:
   steps:
   - bash: |
       set -o xtrace
-      curl -o SDL.zip https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+      curl -o SDL.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
       unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
-      curl -o dxc.zip https://ci.appveyor.com/api/buildjobs/s3597u0bjjh0v87k/artifacts/build%2FRelease%2Fdxc-artifacts.zip
+      curl -o dxc.zip -L https://ci.appveyor.com/api/buildjobs/s3597u0bjjh0v87k/artifacts/build%2FRelease%2Fdxc-artifacts.zip
       unzip dxc.zip -d "${BUILD_SOURCESDIRECTORY}/deps/dxc"
     displayName: Installing Dependencies
   - script: |
