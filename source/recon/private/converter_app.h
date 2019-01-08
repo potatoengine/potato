@@ -19,7 +19,7 @@ namespace gm::recon {
         ~ConverterApp();
 
         ConverterApp(ConverterApp const&) = delete;
-        auto operator=(ConverterApp const&) = delete;
+        ConverterApp& operator=(ConverterApp const&) = delete;
 
         bool run(span<char const*> args);
 

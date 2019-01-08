@@ -17,7 +17,7 @@ namespace gm::recon {
               _destinationFolderPath(std::move(destinationFolderPath)) {}
 
         Context(Context&&) = delete;
-        auto operator=(Context&&) = delete;
+        Context& operator=(Context&&) = delete;
 
         path const& sourceFilePath() const noexcept { return _sourceFilePath; }
         path const& sourceFolderPath() const noexcept { return _sourceFolderPath; }

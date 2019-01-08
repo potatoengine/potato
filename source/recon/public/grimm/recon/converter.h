@@ -11,7 +11,7 @@ namespace gm::recon {
         virtual ~Converter() = default;
 
         Converter(Converter&&) = delete;
-        auto operator=(Converter&&) = delete;
+        Converter& operator=(Converter&&) = delete;
 
         virtual bool convert(Context& ctx) = 0;
     };
