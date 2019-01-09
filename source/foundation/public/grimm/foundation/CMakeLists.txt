@@ -20,6 +20,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.h
     ${CMAKE_CURRENT_SOURCE_DIR}/span.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_format.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/string_writer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_view.h
     ${CMAKE_CURRENT_SOURCE_DIR}/traits.h
     ${CMAKE_CURRENT_SOURCE_DIR}/typelist.h
