@@ -31,32 +31,62 @@ public:
     constexpr string_view() = default;
     ~string_view() = default;
 
+    constexpr string_view(string_view const&) = default;
     /*implicit*/ constexpr string_view(std::string_view str) noexcept : _data(str.data()), _size(str.size()) {}
     /*implicit*/ constexpr string_view(pointer zstr) noexcept : _data(zstr), _size(zstr != nullptr ? traits::length(zstr) : 0) {}
     /*implicit*/ constexpr string_view(pointer data, size_type size) noexcept : _data(data), _size(size) {}
 
-    constexpr string_view(string_view const&) = default;
     constexpr string_view& operator=(string_view const&) = default;
+    constexpr string_view& operator=(std::string_view str) noexcept {
+        _data = str.data();
+        _size = str.size();
+        return *this;
+    }
+    constexpr string_view& operator=(pointer zstr) noexcept {
+        _data = zstr;
+        _size = zstr != nullptr ? traits::length(zstr) : 0;
+        return *this;
+    }
 
-    constexpr pointer data() const noexcept { return _data; }
-    constexpr size_type size() const noexcept { return _size; }
+    constexpr pointer data() const noexcept {
+        return _data;
+    }
+    constexpr size_type size() const noexcept {
+        return _size;
+    }
 
-    constexpr bool empty() const noexcept { return _size == 0; }
-    constexpr explicit operator bool() const noexcept { return _size != 0; }
+    constexpr bool empty() const noexcept {
+        return _size == 0;
+    }
+    constexpr explicit operator bool() const noexcept {
+        return _size != 0;
+    }
 
-    constexpr const_iterator begin() const noexcept { return _data; }
-    constexpr const_iterator end() const noexcept { return _data + _size; }
+    constexpr const_iterator begin() const noexcept {
+        return _data;
+    }
+    constexpr const_iterator end() const noexcept {
+        return _data + _size;
+    }
 
-    constexpr value_type front() const noexcept { return *_data; }
-    constexpr value_type back() const noexcept { return *(_data + _size - 1); }
+    constexpr value_type front() const noexcept {
+        return *_data;
+    }
+    constexpr value_type back() const noexcept {
+        return *(_data + _size - 1);
+    }
 
-    constexpr value_type operator[](size_type index) const noexcept { return _data[index]; }
+    constexpr value_type operator[](size_type index) const noexcept {
+        return _data[index];
+    }
 
     constexpr void pop_front() noexcept {
         ++_data;
         --_size;
     }
-    constexpr void pop_back() noexcept { --_size; }
+    constexpr void pop_back() noexcept {
+        --_size;
+    }
 
     constexpr void remove_prefix(size_type count) noexcept {
         _data += count;
@@ -66,8 +96,12 @@ public:
         _size -= count;
     }
 
-    constexpr string_view first(size_type count) const noexcept { return {_data, count}; }
-    constexpr string_view last(size_type count) const noexcept { return {_data + _size - count, count}; }
+    constexpr string_view first(size_type count) const noexcept {
+        return {_data, count};
+    }
+    constexpr string_view last(size_type count) const noexcept {
+        return {_data + _size - count, count};
+    }
 
     constexpr string_view substr(size_type offset, size_type count = npos) const noexcept {
         if (offset > _size) {
@@ -116,8 +150,12 @@ public:
         return npos;
     }
 
-    friend bool constexpr operator==(string_view lhs, string_view rhs) noexcept { return lhs.size() == rhs.size() && traits::compare(lhs.data(), rhs.data(), lhs.size()) == 0; }
-    friend bool constexpr operator!=(string_view lhs, string_view rhs) noexcept { return lhs.size() != rhs.size() || traits::compare(lhs.data(), rhs.data(), lhs.size()) != 0; }
+    friend bool constexpr operator==(string_view lhs, string_view rhs) noexcept {
+        return lhs.size() == rhs.size() && traits::compare(lhs.data(), rhs.data(), lhs.size()) == 0;
+    }
+    friend bool constexpr operator!=(string_view lhs, string_view rhs) noexcept {
+        return lhs.size() != rhs.size() || traits::compare(lhs.data(), rhs.data(), lhs.size()) != 0;
+    }
     friend bool constexpr operator<(string_view lhs, string_view rhs) noexcept {
         auto len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
         auto rs = traits::compare(lhs.data(), rhs.data(), len);
@@ -134,8 +172,8 @@ public:
         return {_data, _size};
     }
 
-    template <typename U = char>
-    friend auto& operator<<(std::basic_ostream<U>& os, string_view sv) {
+    template <typename T>
+    friend auto& operator<<(std::basic_ostream<char, T>& os, string_view sv) {
         os.write(sv._data, sv._size);
         return os;
     }

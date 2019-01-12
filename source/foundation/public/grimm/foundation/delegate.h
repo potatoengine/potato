@@ -64,8 +64,8 @@ namespace gm::_detail {
 
     template <typename F, typename R, typename... P>
     constexpr auto vtable_c = delegate_vtable_typed<R, P...>{
-        delegate_vtable_impl<F>::move,
-        delegate_vtable_impl<F>::destruct,
+        {delegate_vtable_impl<F>::move,
+         delegate_vtable_impl<F>::destruct},
         delegate_vtable_impl<F>::template call<R, P...>};
 
     class delegate_base {
