@@ -3,7 +3,10 @@ add_executable(foundation_test
     test_callstack.cpp
     test_delegate.cpp
     test_fixed_string.cpp
+    test_fixed_string_writer.cpp
     test_span.cpp
+    test_string_writer.cpp
+    test_string_view.cpp
     test_uhash.cpp
     test_vector.cpp
 )
@@ -15,6 +18,7 @@ target_link_libraries(foundation_test PRIVATE
 target_compile_definitions(foundation_test PRIVATE
     DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
     DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+    DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
 )
 
 add_test(NAME grimm_foundation COMMAND foundation_test)

@@ -49,7 +49,7 @@ jobs:
   - bash: |
       set -o xtrace
       cd build
-      ctest -C RelWithDebInfo -R grimm
+      ctest -C RelWithDebInfo -R grimm --verbose
     displayName: Run Tests
   - bash: |
       set -o xtrace
@@ -108,5 +108,5 @@ jobs:
   - script: |
       set -o xtrace
       cd build/RelWithDebInfo
-      ctest -R grimm
+      ctest -R grimm --verbose
     displayName: Run Tests

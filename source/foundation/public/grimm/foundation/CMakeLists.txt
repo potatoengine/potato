@@ -7,6 +7,8 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/const_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/debug.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string_writer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fnv1a.h
     ${CMAKE_CURRENT_SOURCE_DIR}/integral_range.h
     ${CMAKE_CURRENT_SOURCE_DIR}/iterator_range.h
@@ -19,6 +21,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.h
     ${CMAKE_CURRENT_SOURCE_DIR}/span.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_format.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/string_writer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_view.h
     ${CMAKE_CURRENT_SOURCE_DIR}/traits.h
     ${CMAKE_CURRENT_SOURCE_DIR}/typelist.h

@@ -7,3 +7,4 @@ set -o xtrace
 bash "${DIR}/generate.sh" "${BUILD_TYPE}"
 
 cmake --build . --parallel
+ctest -R grimm --verbose 

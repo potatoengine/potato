@@ -3,6 +3,7 @@
 #pragma once
 
 #include "string_view.h"
+#include <iosfwd>
 
 namespace gm {
     template <std::size_t Capacity>
@@ -25,8 +26,9 @@ namespace gm {
         inline fixed_string& operator=(string_view string);
 
         /*implicit*/ operator string_view() const { return {_buffer, _size}; }
+        /*implicit*/ operator std::string_view() const { return {_buffer, _size}; }
 
-        /*implicit*/ operator bool() const { return _size != 0; }
+        explicit operator bool() const { return _size != 0; }
         bool empty() const { return _size == 0; }
 
         size_type size() const { return _size; }
@@ -36,6 +38,12 @@ namespace gm {
         pointer c_str() const { return _buffer; }
 
         inline void clear();
+
+        template <typename U = char>
+        friend auto& operator<<(std::basic_ostream<U>& os, fixed_string const& fs) {
+            os.write(fs._buffer, fs._size);
+            return os;
+        }
 
     private:
         std::size_t _size = 0;
