@@ -18,8 +18,8 @@ namespace gm {
         using const_iterator = char const*;
         using size_type = std::size_t;
 
-        string_writer() { clear(); }
-        GM_FRAMEWORK_API ~string_writer();
+        string_writer() = default;
+        ~string_writer() { reset(); }
 
         explicit string_writer(size_type capacity) {
             reserve(capacity);
@@ -55,7 +55,7 @@ namespace gm {
         GM_FRAMEWORK_API void commit(span<char const> data);
 
         void clear() {
-            *_ptr = '\0';
+            *_ptr = 0;
             _size = 0;
         }
 
@@ -68,7 +68,7 @@ namespace gm {
         size_t _capacity = sizeof(_fixed);
         char* _ptr = _fixed;
         char _fixed[512] = {
-            '\0',
+            0,
         };
     };
 } // namespace gm

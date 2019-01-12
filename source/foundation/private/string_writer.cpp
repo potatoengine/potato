@@ -4,10 +4,6 @@
 
 #include "string_writer.h"
 
-gm::string_writer::~string_writer() {
-    reset();
-}
-
 void gm::string_writer::write(string_view str) {
     _grow(_size + str.size());
     std::memmove(_ptr + _size, str.data(), str.size());

@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "platform_windows.h"
 #include "string_format.h"
+#include "fixed_string_writer.h"
 
 namespace {
     struct DialogData {
@@ -19,7 +20,7 @@ namespace {
         if (OpenClipboard(nullptr) == TRUE) {
             EmptyClipboard();
 
-            gm::format_fixed_buffer<1024> buffer;
+            gm::fixed_string_writer<1024> buffer;
             gm::format_into(buffer, "ASSERTION FAILED: {}\r\n{}\r\n{}\r\n{}", data.condition, data.message, data.location, data.callstack);
 
             if (HANDLE handle = GlobalAlloc(GMEM_MOVEABLE, buffer.size() + 1)) {
@@ -84,7 +85,7 @@ namespace {
     GM_NOINLINE gm::error_action ShowAssertDialog(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText) {
         using namespace gm;
 
-        format_fixed_buffer<128> location_buffer;
+        fixed_string_writer<128> location_buffer;
         format_into(location_buffer, "{}({})", file, line);
 
         DialogData data;

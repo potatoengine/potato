@@ -19,6 +19,7 @@ auto gm::fatal_error(char const* file, int line, char const* failedConditionText
         spdlog::error("{}({}): {}", file, line, messageText);
     }
 
+    // FIXME: this can be invoked via memory exhaustion, what do?
     string_writer buffer;
     std::array<uintptr, 64> addresses = {};
     std::array<callstack::TraceRecord, 64> records = {};

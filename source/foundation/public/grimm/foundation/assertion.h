@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "platform.h"
 #include "string_format.h"
+#include "fixed_string_writer.h"
 
 #include <cstdlib>
 
@@ -34,7 +35,7 @@ namespace gm::_detail {
 
 #    define _gm_FORMAT_FAIL(condition_text, ...) \
         do { \
-            ::gm::format_fixed_buffer<512> _gm_fail_buffer; \
+            ::gm::fixed_string_writer<512> _gm_fail_buffer; \
             ::gm::_detail::format_failure(_gm_fail_buffer, ##__VA_ARGS__); \
             _gm_FAIL((condition_text), _gm_fail_buffer.c_str()); \
         } while (false)
