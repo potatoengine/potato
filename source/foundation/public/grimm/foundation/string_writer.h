@@ -12,10 +12,10 @@ namespace gm {
     class string_writer {
     public:
         using value_type = char;
-        using iterator = char*;
-        using pointer = char*;
-        using const_pointer = char const*;
-        using const_iterator = char const*;
+        using iterator = value_type*;
+        using pointer = value_type*;
+        using const_pointer = value_type const*;
+        using const_iterator = value_type const*;
         using size_type = std::size_t;
 
         string_writer() = default;
@@ -49,10 +49,10 @@ namespace gm {
         // for back_inserter/fmt support
         void push_back(value_type ch) { write(ch); }
 
-        GM_FRAMEWORK_API void reserve(size_type size);
+        GM_FRAMEWORK_API void reserve(size_type capacity);
 
-        GM_FRAMEWORK_API span<char> acquire(size_type size);
-        GM_FRAMEWORK_API void commit(span<char const> data);
+        GM_FRAMEWORK_API span<value_type> acquire(size_type size);
+        GM_FRAMEWORK_API void commit(span<value_type const> data);
 
         void clear() {
             *_ptr = 0;
@@ -64,10 +64,10 @@ namespace gm {
     private:
         void _grow(size_type requiredSize);
 
-        size_t _size = 0;
-        size_t _capacity = sizeof(_fixed);
-        char* _ptr = _fixed;
-        char _fixed[512] = {
+        size_type _size = 0;
+        size_type _capacity = sizeof(_fixed);
+        pointer _ptr = _fixed;
+        value_type _fixed[512] = {
             0,
         };
     };

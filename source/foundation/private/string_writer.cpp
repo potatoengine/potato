@@ -17,8 +17,22 @@ void gm::string_writer::write(value_type ch) {
     _ptr[_size] = '\0';
 }
 
-void gm::string_writer::reserve(size_type size) {
-    _grow(size);
+void gm::string_writer::reserve(size_type capacity) {
+    if (capacity >= _capacity) {
+        size_type newCapacity = capacity + 1;
+        GM_ASSERT(newCapacity > capacity, "overflow");
+
+        auto newBuffer = new value_type[newCapacity];
+
+        std::memcpy(newBuffer, _ptr, _size + 1 /*NUL*/);
+
+        if (_ptr != static_cast<char*>(_fixed)) {
+            delete[] _ptr;
+        }
+
+        _ptr = newBuffer;
+        _capacity = newCapacity;
+    }
 }
 
 auto gm::string_writer::acquire(size_type size) -> span<char> {
@@ -28,7 +42,7 @@ auto gm::string_writer::acquire(size_type size) -> span<char> {
 
 void gm::string_writer::commit(span<char const> data) {
     GM_ASSERT(data.data() == _ptr + _size, "commit() does not match acquire()d buffer");
-    GM_ASSERT(data.size() <= _capacity - 1  - _size, "commit() size exceeds acquired()d buffer");
+    GM_ASSERT(data.size() <= _capacity - 1 - _size, "commit() size exceeds acquired()d buffer");
 
     _size += data.size();
     _ptr[_size] = '\0';
@@ -54,7 +68,8 @@ void gm::string_writer::_grow(size_type requiredSize) {
 
         auto newBuffer = new value_type[newCapacity];
 
-        std::memcpy(newBuffer, _ptr, _size + 1/*NUL*/);
+        std::memcpy(newBuffer, _ptr, _size + 1 /*NUL*/);
+
         if (_ptr != static_cast<char*>(_fixed)) {
             delete[] _ptr;
         }
