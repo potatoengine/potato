@@ -5,9 +5,9 @@
 #include "d3d12_resource.h"
 #include "direct3d.h"
 #include "grimm/foundation/box.h"
-#include "grimm/foundation/logging.h"
 #include "grimm/foundation/out_ptr.h"
 #include <utility>
+#include <spdlog/spdlog.h>
 
 gm::D3d12SwapChain::D3d12SwapChain(com_ptr<IDXGISwapChain1> swapChain) : _swapChain(std::move(swapChain)) {}
 
@@ -29,7 +29,7 @@ auto gm::D3d12SwapChain::createSwapChain(IDXGIFactory2* factory, ID3D12CommandQu
     com_ptr<IDXGISwapChain1> swapChain;
     HRESULT hr = factory->CreateSwapChainForHwnd(graphicsQueue, window, &desc, nullptr, nullptr, out_ptr(swapChain));
     if (swapChain == nullptr) {
-        GM_LOG_DEBUG("CreateSwapChain: %s", static_cast<int>(hr));
+        SPDLOG_DEBUG("CreateSwapChain: %s", static_cast<int>(hr));
         return nullptr;
     }
 
