@@ -46,6 +46,6 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::fixed_string_writer") {
         sw.write("and some more text");
 
         DOCTEST_CHECK_EQ(sw.size(), sw.capacity());
-        DOCTEST_CHECK_EQ(sw, "initial textmore textyet more t");
+        DOCTEST_CHECK_EQ(sw.c_str(), "initial textmore textyet more t");
     }
 }
