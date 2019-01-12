@@ -67,7 +67,7 @@ public:
     }
 
     constexpr string_view first(size_type count) const noexcept { return {_data, count}; }
-    constexpr string_view last(size_type count) const noexcept { return {_data + _size - count, _size - count}; }
+    constexpr string_view last(size_type count) const noexcept { return {_data + _size - count, count}; }
 
     constexpr string_view substr(size_type offset, size_type count = npos) const noexcept {
         if (offset > _size) {
