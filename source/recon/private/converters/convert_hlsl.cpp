@@ -43,7 +43,7 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
     std::cout << "Compiling " << absoluteSourcePath << "':" << entry << '(' << profile << ")\n";
 
     com_ptr<IDxcOperationResult> result;
-    hr = compiler->Compile(blob.get(), ctx.sourceFilePath().c_str(), L"vertex_main", L"vs_6_0", nullptr, 0, nullptr, 0, nullptr, out_ptr(result));
+    hr = compiler->Compile(blob.get(), ctx.sourceFilePath().c_str(), entry, profile, nullptr, 0, nullptr, 0, nullptr, out_ptr(result));
     if (result.empty()) {
         std::cerr << "Failed to compile `" << absoluteSourcePath << "':" << entry << '(' << profile << ")\n";
         return false;
