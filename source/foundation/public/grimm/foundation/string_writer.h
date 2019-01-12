@@ -37,7 +37,7 @@ namespace gm {
         const_pointer data() const noexcept { return _ptr; }
 
         const_pointer c_str() const noexcept {
-            GM_ASSERT(*_ptr == '\0', "acquire() operation did not commit()");
+            GM_ASSERT(_ptr[_size] == '\0', "acquire() operation did not commit()");
             return _ptr;
         }
 
