@@ -14,10 +14,10 @@ function(gm_copy_library_import LIBRARY_TARGET DESTINATION_TARGET)
 
     get_filename_component(LIBRARY_FILENAME "${LIBRARY_PATH}" NAME)
 
-    add_custom_command(TARGET shell POST_BUILD
+    add_custom_command(TARGET "${DESTINATION_TARGET}" POST_BUILD
+        DEPENDS shell
         MAIN_DEPENDENCY "${LIBRARY_PATH}"
-        BYPRODUCTS "${LIBRARY_FILENAME}"
-        COMMENT "Copying ${LIBRARY_FILENAME} to $<DESTINATION_TARGET> output folder"
+        COMMENT "Copying ${LIBRARY_FILENAME} to ${DESTINATION_TARGET} output folder"
         COMMAND "${CMAKE_COMMAND}" -E copy "${LIBRARY_PATH}" "$<TARGET_FILE_DIR:${DESTINATION_TARGET}>/${LIBRARY_FILENAME}"
     )
 endfunction(gm_copy_library_import)
