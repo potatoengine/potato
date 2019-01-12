@@ -719,7 +719,7 @@ FMT_FUNC typename std::enable_if<sizeof(Double) == sizeof(uint64_t), bool>::type
     gen_digits_params params = process_specs(specs, 1, buf);
     const size_t size = 1;
     buf[0] = '0';
-    grisu2_prettify(params, size, 0, prettify_handler(buf, size));
+    grisu2_prettify(params, static_cast<int>(size), 0, prettify_handler(buf, size));
     return true;
   }
 
