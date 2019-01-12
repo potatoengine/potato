@@ -9,6 +9,5 @@ target_sources(foundation PRIVATE
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/debug.windows.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/debug.windows.h>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/debug.windows.rc>
-    ${CMAKE_CURRENT_SOURCE_DIR}/logging.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/string_format.cpp
 )
