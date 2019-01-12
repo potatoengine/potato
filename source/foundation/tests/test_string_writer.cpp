@@ -43,4 +43,23 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::string_writer") {
         DOCTEST_CHECK_EQ(sw.size(), 0);
         DOCTEST_CHECK_EQ(sw.c_str(), "");
     }
+
+    DOCTEST_TEST_CASE("request and commit") {
+        string_writer sw;
+
+        sw.write("initial text");
+
+        auto mem = sw.acquire(32);
+
+        DOCTEST_CHECK_GE(mem.size(), 32);
+        DOCTEST_CHECK_EQ((void*)mem.data(), (void*)(sw.data() + sw.size()));
+
+        std::memcpy(mem.data(), "data", 4);
+
+        sw.commit(mem.first(4));
+
+        sw.write("footer");
+
+        DOCTEST_CHECK_EQ(sw.c_str(), "initial textdatafooter");
+    }
 }

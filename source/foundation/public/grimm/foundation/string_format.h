@@ -24,34 +24,6 @@
 #include <fmt/format.h>
 
 namespace gm {
-    class format_memory_buffer {
-    public:
-        using value_type = char;
-        using size_type = size_t;
-
-        format_memory_buffer() = default;
-        ~format_memory_buffer();
-
-        format_memory_buffer(format_memory_buffer const&) = delete;
-        format_memory_buffer& operator=(format_memory_buffer const&) = delete;
-
-        value_type const* c_str() const { return _ptr; }
-        value_type const* data() const { return _ptr; }
-        size_type size() const { return _size; }
-        size_type capacity() const { return _capacity; }
-        operator string_view() const { return string_view(_ptr, _size); }
-
-        void push_back(value_type ch);
-
-    private:
-        size_t _size = 0;
-        size_t _capacity = sizeof(_buffer) - 1;
-        char* _ptr = _buffer;
-        char _buffer[512] = {
-            '\0',
-        };
-    };
-
     template <size_t Capacity>
     class format_fixed_buffer {
     public:
