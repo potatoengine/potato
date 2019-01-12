@@ -59,6 +59,14 @@ public:
     constexpr sentinel end() const noexcept { return _end; }
 
     constexpr pointer data() const noexcept { return _begin; }
+    auto data_bytes() const noexcept {
+        if constexpr (std::is_const_v<T>) {
+            return reinterpret_cast<std::byte const*>(_begin);
+        }
+        else {
+            return reinterpret_cast<std::byte*>(_begin);
+        }
+    }
 
     constexpr bool empty() const noexcept { return _begin == _end; }
     constexpr explicit operator bool() const noexcept { return _begin != _end; }
@@ -76,11 +84,13 @@ public:
 
     constexpr span subspan(size_type offset, size_type count) const noexcept { return span{_begin + offset, count}; }
 
-    span<std::byte const> as_bytes() const noexcept {
-        return {reinterpret_cast<std::byte const*>(_begin), static_cast<size_type>(_end - _begin)};
-    }
-    span<std::byte> as_writeable_bytes() const noexcept {
-        return {reinterpret_cast<std::byte*>(_begin), _end - _begin};
+    auto as_bytes() const noexcept {
+        if constexpr (std::is_const_v<T>) {
+            return span<std::byte const>{reinterpret_cast<std::byte const*>(_begin), static_cast<size_type>(_end - _begin)};
+        }
+        else {
+            return span<std::byte>{reinterpret_cast<std::byte*>(_begin), static_cast<size_type>(_end - _begin)};
+        }
     }
 
     constexpr void pop_front() noexcept { ++_begin; }
