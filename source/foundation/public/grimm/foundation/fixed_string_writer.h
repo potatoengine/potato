@@ -9,10 +9,10 @@ namespace gm {
     class fixed_string_writer {
     public:
         using value_type = char;
-        using iterator = char*;
-        using pointer = char*;
-        using const_pointer = char const*;
-        using const_iterator = char const*;
+        using iterator = value_type*;
+        using pointer = value_type*;
+        using const_pointer = value_type const*;
+        using const_iterator = value_type const*;
         using size_type = std::size_t;
 
         fixed_string_writer() = default;
@@ -55,8 +55,8 @@ namespace gm {
         }
 
     private:
-        size_t _size = 0;
-        char _buffer[512] = {
+        size_type _size = 0;
+        value_type _buffer[512] = {
             0,
         };
     };
