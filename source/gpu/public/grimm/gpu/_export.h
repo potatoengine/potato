@@ -6,7 +6,7 @@
 #    if defined(_WINDOWS)
 #        define GM_GPU_API __declspec(dllexport)
 #    else
-define GM_GPU_API [[gnu::visibility("default")]]
+#        define GM_GPU_API [[gnu::visibility("default")]]
 #    endif
 #else
 #    define GM_GPU_API
