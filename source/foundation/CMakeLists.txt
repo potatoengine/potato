@@ -35,6 +35,7 @@ target_include_directories(foundation
 target_link_libraries(foundation
     PUBLIC
         fmt
+        spdlog
     PRIVATE
         doctest
 )

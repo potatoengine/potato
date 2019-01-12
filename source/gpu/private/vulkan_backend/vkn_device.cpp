@@ -2,11 +2,11 @@
 
 #include "vkn_device.h"
 #include "grimm/foundation/assertion.h"
-#include "grimm/foundation/logging.h"
 #include "grimm/foundation/out_ptr.h"
 #include "vkn_pipeline_state.h"
 #include "vkn_swap_chain.h"
 #include <array>
+#include <spdlog/spdlog.h>
 
 gm::VknDevice::VknDevice(Context context) : _context(std::move(context)) {}
 
@@ -112,10 +112,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL gm::VknDevice::_debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData) {
     if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-        GM_LOG_ERROR("Vulkan [{}]: {}", pCallbackData->pMessageIdName, pCallbackData->pMessage);
+        SPDLOG_ERROR("Vulkan [{}]: {}", pCallbackData->pMessageIdName, pCallbackData->pMessage);
     }
     else {
-        GM_LOG_DEBUG("Vulkan [{}]: {}", pCallbackData->pMessageIdName, pCallbackData->pMessage);
+        SPDLOG_ERROR("Vulkan [{}]: {}", pCallbackData->pMessageIdName, pCallbackData->pMessage);
     }
     return VK_FALSE;
 }

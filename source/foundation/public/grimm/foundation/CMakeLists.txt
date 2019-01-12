@@ -10,7 +10,6 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/fnv1a.h
     ${CMAKE_CURRENT_SOURCE_DIR}/integral_range.h
     ${CMAKE_CURRENT_SOURCE_DIR}/iterator_range.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/logging.h
     ${CMAKE_CURRENT_SOURCE_DIR}/memory_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/memory.h
     ${CMAKE_CURRENT_SOURCE_DIR}/numeric_util.h

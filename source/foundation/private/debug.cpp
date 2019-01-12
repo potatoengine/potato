@@ -3,8 +3,8 @@
 #include "assertion.h"
 #include "allocator.h"
 #include "callstack.h"
-#include "logging.h"
 #include "string_format.h"
+#include <spdlog/spdlog.h>
 
 namespace gm::_detail {
     // platform-specific function that must be implemented
@@ -12,11 +12,10 @@ namespace gm::_detail {
 } // namespace gm::_detail
 
 auto gm::fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText) -> error_action {
-    logLine(file, line, LogSeverity::Error, "**ASSERTION FAILED**");
-    logFormattedLine(file, line, LogSeverity::Error, "{}({}): {}", file, line, failedConditionText);
+    spdlog::error("{}({}): ***ASSERTION FAILED*** {}", file, line, failedConditionText);
 
     if (messageText != nullptr && *messageText != '\0') {
-        logLine(file, line, LogSeverity::Error, messageText);
+        spdlog::error("{}({}): {}", file, line, messageText);
     }
 
     format_memory_buffer buffer;
@@ -39,7 +38,7 @@ auto gm::fatal_error(char const* file, int line, char const* failedConditionText
         }
     }
 
-    logFormattedLine(file, line, LogSeverity::Error, {buffer.data(), buffer.size()});
+    spdlog::error(buffer.c_str());
 
     return _detail::platform_fatal_error(file, line, failedConditionText, messageText, buffer.data());
 }
