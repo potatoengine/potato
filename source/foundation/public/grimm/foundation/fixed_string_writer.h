@@ -35,14 +35,14 @@ namespace gm {
         void write(string_view str) {
             size_type available = capacity() - _size;
             size_type writeLen = available < str.size() ? available : str.size();
-            std::memmove(_buffer, str.data(), writeLen);
+            std::memmove(_buffer + _size, str.data(), writeLen);
             _buffer[_size += writeLen] = 0;
         }
 
         void write(value_type ch) {
             if (_size < capacity()) {
-                _buffer[_size++] = ch;
-                _buffer[_size] = 0;
+                _buffer[_size] = ch;
+                _buffer[++_size] = 0;
             }
         }
 
