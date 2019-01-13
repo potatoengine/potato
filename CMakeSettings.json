@@ -17,7 +17,8 @@
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "ctestCommandArgs": "--verbose"
+      "ctestCommandArgs": "--verbose",
+      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON"
     },
     {
       "name": "Windows (Debug)",
@@ -28,7 +29,8 @@
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "ctestCommandArgs": "--verbose"
+      "ctestCommandArgs": "--verbose",
+      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON"
     },
     {
       "name": "Linux-Debug",
