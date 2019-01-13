@@ -9,87 +9,83 @@ trigger:
     - ci/
 
 jobs:
-#- job: Analyze
-#  pool:
-#    vmImage: 'ubuntu-16.04'
-#  steps:
-#  - bash: |
-#      set -o xtrace
-#      docker pull seanmiddleditch/grimm-fedora-build:latest
-#    displayName: Docker Pull
-#  - bash: |
-#      set -o xtrace
-#      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/ci/scripts/analyze.sh
-#    displayName: Clang Format
-#
-#- job: Windows
-#  dependsOn: Analyze
-#  pool:
-#    vmImage: 'vs2017-win2016'
-#  steps:
-#  - bash: |
-#      set -o xtrace
-#      curl -o SDL.zip https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
-#      unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
-#    displayName: Installing Dependencies
-#  - script: |
-#      "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
-#      cmake --version
-#    displayName: Build Information
-#  - bash: |
-#      set -o xtrace
-#      mkdir -p build/shared
-#      cd build/shared
-#      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=ON "${BUILD_SOURCESDIRECTORY}"
-#    displayName: CMake Configure (Shared)
-#  - bash: |
-#      set -o xtrace
-#      cmake --build build/shared --config RelWithDebInfo --parallel
-#    displayName: Build (Release)
-#  - bash: |
-#      set -o xtrace
-#      cd build/shared
-#      ctest -C RelWithDebInfo -R grimm --verbose
-#    displayName: Run Tests
-#  - bash: |
-#      set -o xtrace
-#      cmake --build build/shared --config Debug --parallel
-#    displayName: Build (Debug)
-#  - bash: |
-#      set -o xtrace
-#      mkdir -p build/static
-#      cd build/static
-#      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
-#    displayName: CMake Configure (Static)
-#  - bash: |
-#      set -o xtrace
-#      cmake --build build/static --config RelWithDebInfo --parallel
-#    displayName: Build (Release)
-#  - bash: |
-#      set -o xtrace
-#      cmake --build build/static --config Debug --parallel
-#    displayName: Build (Debug)
-#
-#- job: Linux
-#  dependsOn: Analyze
-#  pool:
-#    vmImage: 'ubuntu-16.04'
-#  steps:
-#  - bash: |
-#      set -o xtrace
-#      docker pull seanmiddleditch/grimm-fedora-build:latest
-#    displayName: Docker Pull
-#  - bash: |
-#      set -o xtrace
-#      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/ci/scripts/build.sh RelWithDebInfo
-#    displayName: Build (Release)
-#  - bash: |
-#      set -o xtrace
-#      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/ci/scripts/build.sh Debug
-#    displayName: Build (Debug)
+- job: Analyze
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - bash: |
+      set -o xtrace
+      docker pull seanmiddleditch/grimm-fedora-build:latest
+    displayName: Docker Pull
+
+- job: Windows
+  dependsOn: Analyze
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+  - bash: |
+      set -o xtrace
+      curl -o SDL.zip https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+      unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
+    displayName: Installing Dependencies
+  - script: |
+      "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+      cmake --version
+    displayName: Build Information
+  - bash: |
+      set -o xtrace
+      mkdir -p build/shared
+      cd build/shared
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=ON "${BUILD_SOURCESDIRECTORY}"
+    displayName: CMake Configure (Shared)
+  - bash: |
+      set -o xtrace
+      cmake --build build/shared --config RelWithDebInfo --parallel
+    displayName: Build (Release)
+  - bash: |
+      set -o xtrace
+      cd build/shared
+      ctest -C RelWithDebInfo -R grimm --verbose
+    displayName: Run Tests
+  - bash: |
+      set -o xtrace
+      cmake --build build/shared --config Debug --parallel
+    displayName: Build (Debug)
+  - bash: |
+      set -o xtrace
+      mkdir -p build/static
+      cd build/static
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
+    displayName: CMake Configure (Static)
+  - bash: |
+      set -o xtrace
+      cmake --build build/static --config RelWithDebInfo --parallel
+    displayName: Build (Release)
+  - bash: |
+      set -o xtrace
+      cmake --build build/static --config Debug --parallel
+    displayName: Build (Debug)
+
+- job: Linux
+  dependsOn: Analyze
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - bash: |
+      set -o xtrace
+      docker pull seanmiddleditch/grimm-fedora-build:latest
+    displayName: Docker Pull
+  - bash: |
+      set -o xtrace
+      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/ci/scripts/build.sh RelWithDebInfo
+    displayName: Build (Release)
+  - bash: |
+      set -o xtrace
+      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/ci/scripts/build.sh Debug
+    displayName: Build (Debug)
 
 - job: MacOS
-  #dependsOn: Analyze
+  dependsOn: Analyze
   pool:
     vmImage: 'macOS-10.13'
   steps:
