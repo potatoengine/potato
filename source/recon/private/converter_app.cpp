@@ -33,6 +33,23 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         return false;
     }
 
+    if (_config.sourceFolderPath.empty()) {
+        std::cerr << "Source directory must be specified.\n";
+        return false;
+    }
+    if (_config.destinationFolderPath.empty()) {
+        std::cerr << "Destination directory must be specified.\n";
+        return false;
+    }
+    if (_config.cacheFolderPath.empty()) {
+        std::cerr << "Cache directory must be specified.\n";
+        return false;
+    }
+
+    std::cout << "Source: " << _config.sourceFolderPath << "\n";
+    std::cout << "Destination: " << _config.destinationFolderPath << "\n";
+    std::cout << "Cache: " << _config.cacheFolderPath << "\n";
+
     if (!std::filesystem::is_directory(_config.destinationFolderPath)) {
         std::error_code rs;
         if (!std::filesystem::create_directories(_config.destinationFolderPath, rs)) {
@@ -72,7 +89,7 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::filesystem::path> files) 
     bool failed = false;
 
     for (auto const& path : files) {
-        std::cout << path << '\n';
+        std::cout << "Processing `" << path << "`\n";
 
         Converter* converter = findConverter(path);
         if (converter == nullptr) {
