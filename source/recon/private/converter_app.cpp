@@ -82,7 +82,6 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         return false;
     }
 
-    
     std::ofstream libraryWriteStream(libraryPath);
     if (!_library.serialize(libraryWriteStream)) {
         std::cerr << "Failed to write asset library `" << libraryPath << "'\n";
