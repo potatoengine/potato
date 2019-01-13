@@ -95,6 +95,7 @@ jobs:
   steps:
   - bash: |
       set -o xtrace
+      export HOMEBREW_NO_AUTO_UPDATE=1
       brew upgrade cmake
       brew install llvm
       brew install sdl2
