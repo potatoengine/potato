@@ -31,8 +31,23 @@ namespace gm {
 namespace gm::_detail {
     static constexpr size_t delegate_size_c = 3;
 
+
+#if defined(__cpp_lib_invoke)
+    using std::invoke;
+#else
+    template <typename Functor, typename... Args>
+    constexpr decltype(auto) invoke(Functor&& func, Args&&... args) noexcept(noexcept(func(std::forward<Args>(args)...))) {
+        return std::forward<Functor>(func)(std::forward<Args>(args)...);
+    }
+#endif
+    
+#if defined(__cpp_lib_is_invocable)
     template <typename Functor, typename... ParamTypes>
-    constexpr bool is_invocable_v = true;//std::is_invocable_v<Functor, ParamTypes...>;
+    constexpr bool is_invocable_v = std::is_invocable_v<Functor, ParamTypes...>;
+#else
+    template <typename Functor, typename... ParamTypes>
+    constexpr bool is_invocable_v = true; // FIXME: implement correctly? mostly only needed to improve diagnostics
+#endif
 
     struct delegate_vtable_base {
         using move_t = void (*)(void* dst, void* src);
@@ -57,10 +72,10 @@ namespace gm::_detail {
         static R call(void* obj, P&&... params) {
             F& f = *static_cast<F*>(obj);
             if constexpr (std::is_same_v<R, void>) {
-                std::invoke(std::forward<F>(f), std::forward<P>(params)...);
+                invoke(std::forward<F>(f), std::forward<P>(params)...);
             }
             else {
-                return std::invoke(std::forward<F>(f), std::forward<P>(params)...);
+                return invoke(std::forward<F>(f), std::forward<P>(params)...);
             }
         }
     };
