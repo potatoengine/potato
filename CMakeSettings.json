@@ -9,6 +9,18 @@
   ],
   "configurations": [
     {
+      "name": "Windows (Release Static)",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "ctestCommandArgs": "--verbose",
+      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=OFF"
+    },
+    {
       "name": "Windows (Release)",
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
@@ -19,6 +31,18 @@
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
       "ctestCommandArgs": "--verbose",
       "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON"
+    },
+    {
+      "name": "Windows (Debug Static)",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "ctestCommandArgs": "--verbose",
+      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=OFF"
     },
     {
       "name": "Windows (Debug)",
