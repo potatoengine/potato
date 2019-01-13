@@ -71,6 +71,14 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         return false;
     }
 
+    auto libraryPath = _config.destinationFolderPath / "library$.json";
+    std::ofstream libraryStream(libraryPath);
+    if (!_library.serialize(libraryStream)) {
+        std::cerr << "Failed to write asset library\n";
+        return false;
+    }
+    libraryStream.close();
+
     return true;
 }
 
@@ -91,6 +99,10 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::filesystem::path> files) 
     for (auto const& path : files) {
         std::cout << "Processing `" << path << "`\n";
 
+        auto assetPath = path.generic_string();
+        auto assetId = _library.pathToAssetId(string_view(assetPath));
+        auto record = _library.findRecord(assetId);
+
         Converter* converter = findConverter(path);
         if (converter == nullptr) {
             failed = true;
@@ -104,6 +116,12 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::filesystem::path> files) 
             std::cerr << "Failed conversion for `" << path << "'\n";
             continue;
         }
+
+        AssetRecord newRecord;
+        newRecord.assetId = assetId;
+        newRecord.path = string_view(assetPath);
+        newRecord.contentHash = 0;
+        _library.insertRecord(std::move(newRecord));
     }
 
     return !failed;

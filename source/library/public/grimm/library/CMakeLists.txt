@@ -1,5 +1,5 @@
 target_sources(library PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/asset_library.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/reader.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/writer.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset_record.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/common.h"
 )

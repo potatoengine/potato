@@ -36,6 +36,7 @@ target_include_directories(library
 target_link_libraries(library
     PUBLIC
         grimm::foundation
+        rapidjson
     PRIVATE
         doctest
 )

@@ -9,6 +9,7 @@
 #include "grimm/foundation/vector.h"
 #include "grimm/recon/converter.h"
 #include "grimm/recon/converter_config.h"
+#include "grimm/library/asset_library.h"
 #include <filesystem>
 
 namespace gm::recon {
@@ -40,5 +41,6 @@ namespace gm::recon {
         string_view _programName;
         vector<Mapping> _converters;
         ConverterConfig _config;
+        AssetLibrary _library;
     };
 } // namespace gm::recon
