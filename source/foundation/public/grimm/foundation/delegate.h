@@ -31,6 +31,9 @@ namespace gm {
 namespace gm::_detail {
     static constexpr size_t delegate_size_c = 3;
 
+    template <typename Functor, typename... ParamTypes>
+    constexpr bool is_invocable_v = true;//std::is_invocable_v<Functor, ParamTypes...>;
+
     struct delegate_vtable_base {
         using move_t = void (*)(void* dst, void* src);
         using destruct_t = void (*)(void* obj);
@@ -121,10 +124,10 @@ namespace gm::_detail {
 
         /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
         /// <param name="function"> The function to bind. </param>
-        template <typename Functor, typename = enable_if_t<std::is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
+        template <typename Functor, typename = enable_if_t<_detail::is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
         /*implicit*/ delegate_typed(Functor&& functor);
 
-        template <typename Functor, typename = enable_if_t<std::is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
+        template <typename Functor, typename = enable_if_t<_detail::is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
         delegate_typed& operator=(Functor&& functor);
 
     private:
