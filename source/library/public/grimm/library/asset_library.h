@@ -26,7 +26,7 @@ namespace gm {
         GM_LIBRARY_API bool insertRecord(AssetRecord record);
 
         GM_LIBRARY_API bool serialize(std::ostream& stream) const;
-        GM_LIBRARY_API bool deserialize(std::istream& stream) const;
+        GM_LIBRARY_API bool deserialize(std::istream& stream);
 
     private:
         struct HashAssetId {

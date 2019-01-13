@@ -6,6 +6,7 @@
 #include <iostream>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
+#include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
 
 gm::AssetLibrary::~AssetLibrary() = default;
@@ -51,6 +52,47 @@ bool gm::AssetLibrary::serialize(std::ostream& stream) const {
     return doc.Accept(writer);
 }
 
-bool gm::AssetLibrary::deserialize(std::istream& stream) const {
-    return false;
+bool gm::AssetLibrary::deserialize(std::istream& stream) {
+    rapidjson::IStreamWrapper inWrapper(stream);
+    rapidjson::Document doc;
+    doc.ParseStream(inWrapper);
+    if (doc.HasParseError()) {
+        return false;
+    }
+
+    if (!doc.IsObject()) {
+        return false;
+    }
+
+    auto root = doc.GetObject();
+
+    if (!root.HasMember("records")) {
+        return false;
+    }
+
+    auto& records = root[rapidjson::Value("records")];
+    if (!records.IsArray()) {
+        return false;
+    }
+
+    for (auto& record : records.GetArray()) {
+        if (!record.HasMember("id") || !record["id"].IsUint64()) {
+            continue;
+        }
+        if (!record.HasMember("path") || !record["path"].IsString()) {
+            continue;
+        }
+        if (!record.HasMember("contentHash") || !record["contentHash"].IsUint64()) {
+            continue;
+        }
+
+        AssetRecord newRecord;
+        newRecord.assetId = static_cast<AssetId>(record["id"].GetUint64());
+        newRecord.path = record["path"].GetString();
+        newRecord.contentHash = record["contentHash"].GetUint64();
+
+        insertRecord(std::move(newRecord));
+    }
+
+    return true;
 }

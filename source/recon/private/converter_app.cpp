@@ -26,6 +26,17 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
 
     registerConverters();
 
+    auto libraryPath = _config.destinationFolderPath / "library$.json";
+    if (std::filesystem::exists(libraryPath)) {
+        std::ifstream libraryReadStream(libraryPath);
+        if (!libraryReadStream) {
+            std::cerr << "Failed to open asset library `" << libraryPath << "'\n";
+        }
+        if (!_library.deserialize(libraryReadStream)) {
+            std::cerr << "Failed to load asset library `" << libraryPath << "'\n";
+        }
+    }
+
     auto sources = collectSourceFiles();
 
     if (sources.empty()) {
@@ -71,13 +82,13 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         return false;
     }
 
-    auto libraryPath = _config.destinationFolderPath / "library$.json";
-    std::ofstream libraryStream(libraryPath);
-    if (!_library.serialize(libraryStream)) {
-        std::cerr << "Failed to write asset library\n";
+    
+    std::ofstream libraryWriteStream(libraryPath);
+    if (!_library.serialize(libraryWriteStream)) {
+        std::cerr << "Failed to write asset library `" << libraryPath << "'\n";
         return false;
     }
-    libraryStream.close();
+    libraryWriteStream.close();
 
     return true;
 }
