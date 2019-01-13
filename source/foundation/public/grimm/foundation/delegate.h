@@ -31,7 +31,6 @@ namespace gm {
 namespace gm::_detail {
     static constexpr size_t delegate_size_c = 3;
 
-
 #if defined(__cpp_lib_invoke)
     using std::invoke;
 #else
@@ -40,7 +39,7 @@ namespace gm::_detail {
         return std::forward<Functor>(func)(std::forward<Args>(args)...);
     }
 #endif
-    
+
 #if defined(__cpp_lib_is_invocable)
     template <typename Functor, typename... ParamTypes>
     constexpr bool is_invocable_v = std::is_invocable_v<Functor, ParamTypes...>;
