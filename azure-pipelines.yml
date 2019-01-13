@@ -96,7 +96,7 @@ jobs:
   - bash: |
       set -o xtrace
       export HOMEBREW_NO_AUTO_UPDATE=1
-      brew install llvm
+      #brew install llvm
       brew install sdl2
     displayName: Installing Dependencies
   - bash: |
@@ -108,9 +108,9 @@ jobs:
     displayName: Build Information
   - bash: |
       set -o xtrace
-      export CXX=/usr/local/opt/llvm/bin/clang++ CC=/usr/local/opt/llvm/bin/clang
-      export LDFLAGS=-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib
-      export CXXFLAGS=-I/usr/local/opt/llvm/include
+      #export CXX=/usr/local/opt/llvm/bin/clang++ CC=/usr/local/opt/llvm/bin/clang
+      #export LDFLAGS=-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib
+      #export CXXFLAGS=-I/usr/local/opt/llvm/include
       mkdir -p build/RelWithDebInfo
       cd build/RelWithDebInfo
       cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
