@@ -8,6 +8,7 @@
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/vector.h"
 #include "grimm/recon/converter.h"
+#include "grimm/recon/converter_config.h"
 #include <filesystem>
 
 namespace gm::recon {
@@ -25,7 +26,6 @@ namespace gm::recon {
 
     private:
         void registerConverters();
-        bool parseArguments(span<char const*> args);
 
         vector<std::filesystem::path> collectSourceFiles();
         bool convertFiles(vector<std::filesystem::path> files);
@@ -39,8 +39,6 @@ namespace gm::recon {
 
         string_view _programName;
         vector<Mapping> _converters;
-        std::filesystem::path _sourceFolderPath;
-        std::filesystem::path _destinationFolderPath;
-        std::filesystem::path _cacheFolderPath;
+        ConverterConfig _config;
     };
 } // namespace gm::recon

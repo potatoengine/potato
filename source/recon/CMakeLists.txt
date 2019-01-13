@@ -3,9 +3,10 @@ project(recon VERSION 0.1 LANGUAGES CXX)
 
 include(gm_copy_library_import)
 
+add_library(recon_lib)
 add_executable(recon)
 
-target_include_directories(recon
+target_include_directories(recon_lib
     PUBLIC
         $<INSTALL_INTERFACE:public>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
@@ -13,15 +14,19 @@ target_include_directories(recon
         ${CMAKE_CURRENT_SOURCE_DIR}/private
 )
 
-target_link_libraries(recon PRIVATE
-    grimm::foundation
-    grimm::gpu
+target_link_libraries(recon_lib
+    PUBLIC
+        grimm::foundation
+        grimm::gpu
+    PRIVATE
+        rapidjson
 )
+target_link_libraries(recon PRIVATE recon_lib)
 
 get_target_property(GM_GPU_ENABLE_D3D12 gpu GM_GPU_ENABLE_D3D12)
 if(GM_GPU_ENABLE_D3D12)
     find_package(dxc REQUIRED)
-    target_link_libraries(recon PRIVATE dxc::dxcompiler)
+    target_link_libraries(recon_lib PRIVATE dxc::dxcompiler)
     gm_copy_library_import(dxc::dxcompiler recon)
 endif(GM_GPU_ENABLE_D3D12)
 
@@ -31,5 +36,5 @@ add_subdirectory(tests)
 
 find_package(Filesystem REQUIRED)
 if(LIBFS)
-    target_link_libraries(recon PUBLIC "${LIBFS}")
+    target_link_libraries(recon_lib PUBLIC "${LIBFS}")
 endif()
