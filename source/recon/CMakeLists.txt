@@ -3,8 +3,7 @@ project(recon VERSION 0.1 LANGUAGES CXX)
 
 include(gm_copy_library_import)
 
-add_library(recon_lib)
-add_executable(recon)
+add_library(recon_lib STATIC)
 
 target_include_directories(recon_lib
     PUBLIC
@@ -21,6 +20,8 @@ target_link_libraries(recon_lib
     PRIVATE
         rapidjson
 )
+
+add_executable(recon)
 target_link_libraries(recon PRIVATE recon_lib)
 
 get_target_property(GM_GPU_ENABLE_D3D12 gpu GM_GPU_ENABLE_D3D12)
