@@ -1,6 +1,8 @@
 target_sources(recon_lib PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/convert_copy.h"
     "${CMAKE_CURRENT_LIST_DIR}/convert_copy.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/convert_json.h"
+    "${CMAKE_CURRENT_LIST_DIR}/convert_json.cpp"
 )
 
 # FIXME just mark these as header-only once I can make that work

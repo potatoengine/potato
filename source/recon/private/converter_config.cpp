@@ -101,7 +101,9 @@ bool gm::recon::parseConfigFile(ConverterConfig& config, std::filesystem::path c
 
 bool gm::recon::parseConfigString(ConverterConfig& config, string_view json) {
     rapidjson::Document doc;
-    doc.Parse(json.data(), json.size());
+
+    doc.Parse<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag | rapidjson::kParseNanAndInfFlag>(json.data(), json.size());
+
     if (doc.HasParseError()) {
         std::cerr << "Failed to parse JSON: " << doc.GetParseError() << '\n';
         return false;

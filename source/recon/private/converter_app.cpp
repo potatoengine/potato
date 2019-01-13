@@ -4,6 +4,7 @@
 #include "grimm/foundation/string_view.h"
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"
+#include "converters/convert_json.h"
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include <iostream>
@@ -62,6 +63,8 @@ void gm::recon::ConverterApp::registerConverters() {
                            make_box<HlslConverter>()});
 #endif
     _converters.push_back({[](std::filesystem::path const& path) { return path.extension() == ".json"; },
+                           make_box<JsonConverter>()});
+    _converters.push_back({[](std::filesystem::path const& path) { return path.extension() == ".png"; },
                            make_box<CopyConverter>()});
 }
 

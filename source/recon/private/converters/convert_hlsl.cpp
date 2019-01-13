@@ -65,6 +65,15 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
     com_ptr<IDxcBlob> compiledBlob;
     result->GetResult(out_ptr(compiledBlob));
 
+    std::filesystem::path destParentAbsolutePath = destAbsolutePath.parent_path();
+    if (!std::filesystem::is_directory(destParentAbsolutePath)) {
+        std::error_code rs;
+        if (!std::filesystem::create_directories(destParentAbsolutePath, rs)) {
+            std::cerr << "Failed to create `" << destParentAbsolutePath << "': " << rs.message() << '\n';
+            // intentionally fall through so we still attempt the copy and get a copy error if fail
+        }
+    }
+
     std::ofstream compiledOutput(destAbsolutePath);
     if (!compiledOutput.is_open()) {
         std::cerr << "Cannot write `" << destAbsolutePath << '\n';
