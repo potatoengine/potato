@@ -38,22 +38,36 @@ jobs:
     displayName: Build Information
   - bash: |
       set -o xtrace
-      mkdir build
-      cd build
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" ..
-    displayName: CMake Configure
+      mkdir -p build/shared
+      cd build/shared
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=ON "${BUILD_SOURCESDIRECTORY}"
+    displayName: CMake Configure (Shared)
   - bash: |
       set -o xtrace
-      cmake --build build --config RelWithDebInfo --parallel
+      cmake --build build/shared --config RelWithDebInfo --parallel
     displayName: Build (Release)
   - bash: |
       set -o xtrace
-      cd build
+      cd build/shared
       ctest -C RelWithDebInfo -R grimm --verbose
     displayName: Run Tests
   - bash: |
       set -o xtrace
-      cmake --build build --config Debug --parallel
+      cmake --build build/shared --config Debug --parallel
+    displayName: Build (Debug)
+  - bash: |
+      set -o xtrace
+      mkdir -p build/static
+      cd build/static
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
+    displayName: CMake Configure (Static)
+  - bash: |
+      set -o xtrace
+      cmake --build build/static --config RelWithDebInfo --parallel
+    displayName: Build (Release)
+  - bash: |
+      set -o xtrace
+      cmake --build build/static --config Debug --parallel
     displayName: Build (Debug)
 
 - job: Linux
