@@ -33,7 +33,6 @@ namespace gm {
 
         constexpr pointer c_str() const noexcept { return _str; }
 
-        constexpr /*implicit*/ operator char const*() const noexcept { return _str; }
         constexpr /*implicit*/ operator string_view() const noexcept { return string_view{_str}; }
 
         constexpr zstring_view substr(size_type index) const noexcept { return _str + index; }
