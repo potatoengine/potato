@@ -1,5 +1,6 @@
 add_executable(filesystem_test
     main.cpp
+    test_null_backend.cpp
 )
 
 target_link_libraries(filesystem_test PRIVATE

@@ -4,19 +4,20 @@
 
 #include "_export.h"
 #include "grimm/foundation/zstring_view.h"
+#include "grimm/foundation/rc.h"
 
 namespace gm::fs {
-    class FileSystemBackend {
+    class Backend : public shared<Backend> {
     public:
-        virtual ~FileSystemBackend() {}
+        virtual ~Backend() = default;
 
-        FileSystemBackend(FileSystemBackend const&) = default;
-        FileSystemBackend& operator=(FileSystemBackend const&) = default;
+        Backend(Backend const&) = default;
+        Backend& operator=(Backend const&) = default;
 
         virtual bool fileExists(zstring_view path) const noexcept = 0;
         virtual bool directoryExists(zstring_view path) const noexcept = 0;
 
     protected:
-        FileSystemBackend() = default;
+        Backend() = default;
     };
 } // namespace gm::fs
