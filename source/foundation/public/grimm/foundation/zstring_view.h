@@ -35,6 +35,8 @@ namespace gm {
 
         constexpr /*implicit*/ operator string_view() const noexcept { return string_view{_str}; }
 
+        constexpr value_type operator[](size_type index) const noexcept { return _str[index]; }
+
         constexpr zstring_view substr(size_type index) const noexcept { return _str + index; }
 
         constexpr string_view substr(size_type index, size_type count) const noexcept { return {_str + index, count}; }
