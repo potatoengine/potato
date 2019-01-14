@@ -22,7 +22,7 @@ namespace gm {
 
         static constexpr size_type npos = ~size_type(0);
 
-        constexpr zstring_view() noexcept = default;
+        constexpr zstring_view() = default;
         constexpr zstring_view(pointer str) noexcept : _str(str) {}
         constexpr zstring_view(std::nullptr_t) noexcept {}
 
@@ -82,8 +82,8 @@ namespace gm {
 
         template <typename T>
         friend auto& operator<<(std::basic_ostream<value_type, T>& os, zstring_view sv) {
-            if (_str != nullptr) {
-                os << _str;
+            if (sv._str != nullptr) {
+                os << sv._str;
             }
             return os;
         }
