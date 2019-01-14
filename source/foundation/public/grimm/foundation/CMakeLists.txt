@@ -29,4 +29,5 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/types.h
     ${CMAKE_CURRENT_SOURCE_DIR}/uhash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/vector.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/zstring_view.h
 )

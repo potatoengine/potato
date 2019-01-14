@@ -10,6 +10,7 @@ add_executable(foundation_test
     test_string_view.cpp
     test_uhash.cpp
     test_vector.cpp
+    test_zstring_view.cpp
 )
 
 target_link_libraries(foundation_test PRIVATE
