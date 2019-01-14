@@ -29,7 +29,7 @@ namespace gm {
 
         inline void reset(pointer ptr = pointer{});
 
-        inline pointer release();
+        [[nodiscard]] inline pointer release();
 
         pointer get() const { return _ptr; }
         pointer operator->() const { return _ptr; }

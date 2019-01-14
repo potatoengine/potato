@@ -4,6 +4,7 @@ add_executable(foundation_test
     test_delegate.cpp
     test_fixed_string.cpp
     test_fixed_string_writer.cpp
+    test_rc.cpp
     test_span.cpp
     test_string_writer.cpp
     test_string_view.cpp

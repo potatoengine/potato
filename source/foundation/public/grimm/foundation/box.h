@@ -72,7 +72,7 @@ public:
     bool empty() const { return _ptr == nullptr; }
 
     inline void reset(pointer ptr = pointer{});
-    pointer release() {
+    [[nodiscard]] pointer release() {
         pointer tmp = _ptr;
         _ptr = nullptr;
         return tmp;
