@@ -1,5 +1,6 @@
 add_executable(filesystem_test
     main.cpp
+    test_path_util.cpp
     test_null_backend.cpp
 )
 
