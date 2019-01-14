@@ -6,6 +6,8 @@
 #include <atomic>
 
 namespace gm {
+    template <typename T>
+    class rc;
 
     template <typename Derived>
     class shared {
@@ -17,18 +19,22 @@ namespace gm {
         shared(shared&&) noexcept {}
         shared& operator=(shared&&) noexcept { return *this; }
 
+    protected:
+        shared() noexcept = default;
+
+        // explicitly not virtual, since nobody can delete via shared<T>
+        ~shared() = default;
+
+    private:
+        template <typename U>
+        friend class rc;
+
         void addRef() const noexcept { ++_refs; }
         void removeRef() const noexcept {
             if (--_refs == 0) {
                 delete static_cast<Derived const*>(this);
             }
         }
-
-    protected:
-        shared() noexcept = default;
-
-        // explicitly not virtual, since nobody can delete via shared<T>
-        ~shared() = default;
 
     private:
         mutable std::atomic<int> _refs = 1;
@@ -42,14 +48,22 @@ namespace gm {
 
         rc() = default;
         explicit rc(pointer ptr) : _ptr(ptr) {}
-        rc(std::nullptr_t) {}
         ~rc() { _removeRef(); }
 
         rc(rc const& rhs) : _ptr(rhs._ptr) { _addRef(); }
-        rc(rc&& rhs) : _ptr(rhs._ptr) { rhs._ptr = nullptr; }
+        rc(rc&& rhs) : _ptr(rhs.release()) {}
+        template <typename U>
+        /*implicit*/ rc(rc<U> const& rhs) : _ptr(rhs.get()) { _addRef(); }
+        template <typename U>
+        /*implicit*/ rc(rc<U>&& rhs) : _ptr(rhs.release()) {}
+        /*implicit*/ rc(std::nullptr_t) {}
 
         inline rc& operator=(rc const& rhs);
         inline rc& operator=(rc&& rhs);
+        template <typename U>
+        inline rc& operator=(rc<U> const& rhs);
+        template <typename U>
+        inline rc& operator=(rc<U>&& rhs);
         inline rc& operator=(std::nullptr_t);
 
         explicit operator bool() const { return _ptr != nullptr; }
@@ -96,11 +110,31 @@ namespace gm {
     }
 
     template <typename T>
+    template <typename U>
+    auto rc<T>::operator=(rc<U> const& rhs) -> rc& {
+        if (this != std::addressof(rhs)) {
+            _removeRef();
+            _ptr = rhs.get();
+            _addRef();
+        }
+        return *this;
+    }
+
+    template <typename T>
     auto rc<T>::operator=(rc&& rhs) -> rc& {
         if (this != std::addressof(rhs)) {
             _removeRef();
-            _ptr = rhs._ptr;
-            rhs._ptr = nullptr;
+            _ptr = rhs.release();
+        }
+        return *this;
+    }
+
+    template <typename T>
+    template <typename U>
+    auto rc<T>::operator=(rc<U>&& rhs) -> rc& {
+        if (this != std::addressof(rhs)) {
+            _removeRef();
+            _ptr = rhs.release();
         }
         return *this;
     }
