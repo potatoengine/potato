@@ -173,7 +173,7 @@ public:
     }
 
     template <typename T>
-    friend auto& operator<<(std::basic_ostream<char, T>& os, string_view sv) {
+    friend auto& operator<<(std::basic_ostream<value_type, T>& os, string_view sv) {
         os.write(sv._data, sv._size);
         return os;
     }
