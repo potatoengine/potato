@@ -22,7 +22,7 @@ namespace gm::fs::path {
     GM_FILESYSTEM_API string_view filename(string_view path) noexcept;
 
     // returns the basename of a path, e.g. foo/bar.txt -> bar
-    GM_FILESYSTEM_API string_view basename(string_view path) noexcept;
+    GM_FILESYSTEM_API string_view filebasename(string_view path) noexcept;
 
     // returns the parent of a path, e.g. foo/bar.txt -> foo
     // if the path is empty, returns the empty string

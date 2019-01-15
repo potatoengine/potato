@@ -48,7 +48,7 @@ gm::string_view gm::fs::path::filename(string_view path) noexcept {
 }
 
 // returns the basename of a path, e.g. foo/bar.txt -> bar
-gm::string_view gm::fs::path::basename(string_view path) noexcept {
+gm::string_view gm::fs::path::filebasename(string_view path) noexcept {
     auto ext = extension(path);
     auto pathWithoutExt = path.substr(0, path.size() - ext.size());
     auto pos = pathWithoutExt.find_last_of("/\\");

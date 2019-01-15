@@ -32,11 +32,11 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::path") {
         DOCTEST_CHECK_EQ(filename("/foo/bar"), "bar");
     }
 
-    DOCTEST_TEST_CASE("basename") {
-        DOCTEST_CHECK_EQ(basename(""), "");
-        DOCTEST_CHECK_EQ(basename("/foo/bar.txt"), "bar");
-        DOCTEST_CHECK_EQ(basename(".txt"), "");
-        DOCTEST_CHECK_EQ(basename("/foo/bar"), "bar");
+    DOCTEST_TEST_CASE("filebasename") {
+        DOCTEST_CHECK_EQ(filebasename(""), "");
+        DOCTEST_CHECK_EQ(filebasename("/foo/bar.txt"), "bar");
+        DOCTEST_CHECK_EQ(filebasename(".txt"), "");
+        DOCTEST_CHECK_EQ(filebasename("/foo/bar"), "bar");
     }
 
     DOCTEST_TEST_CASE("parent") {
