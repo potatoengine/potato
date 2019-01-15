@@ -77,4 +77,4 @@ namespace gm::fs {
     private:
         box<DirectoryIteratorBackend> _backend;
     };
-}
+} // namespace gm::fs

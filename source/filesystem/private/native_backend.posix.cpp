@@ -65,7 +65,7 @@ namespace {
             }
 
             return true;
-            
+
             //if (entry->d_type == DT_DIR && (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)) {
         }
 
