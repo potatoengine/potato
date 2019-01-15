@@ -5,6 +5,7 @@
 #include "_export.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/rc.h"
+#include "directory_iterator.h"
 #include <fstream>
 
 namespace gm::fs {
@@ -20,6 +21,8 @@ namespace gm::fs {
 
         virtual std::ifstream openRead(zstring_view path) const = 0;
         virtual std::ofstream openWrite(zstring_view path) = 0;
+
+        virtual DirectoryIterator recursiveEnumerate(zstring_view path) const = 0;
 
     protected:
         Backend() = default;

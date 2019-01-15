@@ -9,3 +9,5 @@ bool gm::fs::NullBackend::directoryExists(zstring_view path) const noexcept { re
 std::ifstream gm::fs::NullBackend::openRead(zstring_view path) const { return {}; }
 
 std::ofstream gm::fs::NullBackend::openWrite(zstring_view path) { return {}; }
+
+auto gm::fs::NullBackend::recursiveEnumerate(zstring_view path) const -> DirectoryIterator { return DirectoryIterator(nullptr); }

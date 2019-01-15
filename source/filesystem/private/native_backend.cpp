@@ -1,6 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "grimm/filesystem/native_backend.h"
+#include "grimm/filesystem/directory_iterator.h"
 
 auto gm::fs::NativeBackend::create() -> FileSystem {
     return FileSystem(rc<NativeBackend>(new NativeBackend));
