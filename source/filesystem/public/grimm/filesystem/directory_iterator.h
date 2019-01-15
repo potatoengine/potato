@@ -57,6 +57,7 @@ namespace gm::fs {
 
         DirectoryIterator& operator++() {
             _backend->next();
+            return *this;
         }
 
         iterator begin() noexcept { return iterator(*this); }
