@@ -5,3 +5,7 @@
 bool gm::fs::NullBackend::fileExists(zstring_view path) const noexcept { return false; }
 
 bool gm::fs::NullBackend::directoryExists(zstring_view path) const noexcept { return false; }
+
+std::ifstream gm::fs::NullBackend::openRead(zstring_view path) const { return {}; }
+
+std::ofstream gm::fs::NullBackend::openWrite(zstring_view path) { return {}; }

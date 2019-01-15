@@ -6,6 +6,7 @@
 #include "grimm/foundation/rc.h"
 #include "grimm/foundation/zstring_view.h"
 #include "backend.h"
+#include <fstream>
 
 namespace gm::fs {
     class Backend;
@@ -20,6 +21,9 @@ namespace gm::fs {
 
         bool fileExists(zstring_view path) const noexcept { return _impl->fileExists(path); }
         bool directoryExists(zstring_view path) const noexcept { return _impl->directoryExists(path); }
+
+        std::ifstream openRead(zstring_view path) const noexcept { return _impl->openRead(path); }
+        std::ofstream openWrite(zstring_view path) const noexcept { return _impl->openWrite(path); }
 
     private:
         static rc<Backend>& activeDefaultBackend();
