@@ -5,6 +5,7 @@
 #include "grimm/foundation/platform.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/foundation/string_writer.h"
+#include "grimm/foundation/span.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -33,26 +34,29 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
 
 namespace {
     struct PosixDirectoryIterator : public gm::fs::DirectoryIteratorBackend {
+        using Dir = gm::unique_resource<DIR*, &closedir>;
         struct State {
-            gm::unique_resource<DIR*, &closedir> dir;
+            Dir dir;
             struct dirent* entry = nullptr;
+            std::string path;
         };
 
-        PosixDirectoryIterator(zstring_view path) {
-            dir.reset(opendir(name.c_str());
+        PosixDirectoryIterator(gm::zstring_view path) {
+            Dir dir(opendir(name.c_str());
             auto entry = readdir(dir.get());
-            stack.emplace_back(std::move(dir), entry);
+            stack.emplace_back(std::move(dir), entry, path);
 
             // FIXME: skip . and ..
         }
 
         bool next() override {
             State& curr = stack.back();
+
             if (curr.entr->d_type == DT_DIR) {
-                            dir.reset(opendir(name.c_str());
-            auto entry = readdir(dir.get());
-            stack.emplace_back(std::move(dir), entry);
-            return true;
+                Dir dir(opendir(name.c_str());
+                auto entry = readdir(dir.get());
+                stack.emplace_back(std::move(dir), entry);
+                return true;
             }
 
             curr.entry = readdir(curr.dir.get());
@@ -63,6 +67,13 @@ namespace {
                 }
                 curr.entry = readdir(curr.dir.get());
             }
+
+            curr.path.clear();
+            for (auto const& st : span{stack.data(), stack.size() - 1}) {
+                curr.path += st.path;
+                curr.path += '/';
+            }
+            curr.path += entry->d_name;
 
             return true;
 
