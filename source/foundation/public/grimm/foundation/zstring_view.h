@@ -3,6 +3,7 @@
 #pragma once
 
 #include "string_view.h"
+#include <string_view>
 #include <iosfwd>
 
 namespace gm {
@@ -34,6 +35,7 @@ namespace gm {
         constexpr pointer c_str() const noexcept { return _str; }
 
         constexpr /*implicit*/ operator string_view() const noexcept { return string_view{_str}; }
+        constexpr /*implicit*/ operator std::string_view() const noexcept { return std::string_view{_str}; }
 
         constexpr value_type operator[](size_type index) const noexcept { return _str[index]; }
 
