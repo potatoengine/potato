@@ -52,10 +52,12 @@ auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb) c
         FileInfo info;
         info.path = writer.c_str();
         info.size = 0;
-        info.type = entry->d_type == DT_REG ? FileType::Regular :
-            entry->d_type == DT_DIR ? FileType::Directory :
-            entry->d_type == DT_LNK ? FileType::SymbolicLink :
-            FileType::Other;
+        info.type = entry->d_type == DT_REG ? FileType::Regular : entry->d_type == DT_DIR ? FileType::Directory : entry->d_type == DT_LNK ? FileType::SymbolicLink : FileType::Other;
+
+        struct stat st;
+        if (stat(writer.c_str(), &st) == 0) {
+            info.size = st.st_size;
+        }
 
         auto result = cb(info);
         if (result == EnumerateResult::Break) {

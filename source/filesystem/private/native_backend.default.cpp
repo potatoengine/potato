@@ -21,10 +21,7 @@ auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb) c
         FileInfo info;
         info.path = path.c_str();
         info.size = iter->file_size();
-        info.type = iter->is_regular_file() ? FileType::Regular :
-            iter->is_directory() ? FileType::Directory :
-            iter->is_symlink() ? FileType::SymbolicLink :
-            FileType::Other;
+        info.type = iter->is_regular_file() ? FileType::Regular : iter->is_directory() ? FileType::Directory : iter->is_symlink() ? FileType::SymbolicLink : FileType::Other;
 
         auto result = cb(info);
         if (result == EnumerateResult::Break) {
