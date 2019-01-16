@@ -1,7 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "grimm/filesystem/native_backend.h"
-#include "grimm/filesystem/directory_iterator.h"
 #include "grimm/foundation/platform.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/foundation/string_writer.h"
@@ -32,62 +31,44 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return (st.st_mode & S_IFDIR) != 0;
 }
 
-namespace {
-    struct PosixDirectoryIterator : public gm::fs::DirectoryIteratorBackend {
-        using Dir = gm::unique_resource<DIR*, &closedir>;
-        struct State {
-            Dir dir;
-            struct dirent* entry = nullptr;
-            std::string path;
-        };
+auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb) const -> EnumerateResult {
+    gm::unique_resource<DIR*, &closedir> dir(opendir(path.c_str()));
 
-        PosixDirectoryIterator(gm::zstring_view path) {
-            Dir dir(opendir(name.c_str());
-            auto entry = readdir(dir.get());
-            stack.emplace_back(std::move(dir), entry, path);
+    string_writer writer;
 
-            // FIXME: skip . and ..
+    for (struct dirent* entry = readdir(dir.get()); entry != nullptr; entry = readdir(dir.get())) {
+        // skip . and ..
+        if (entry->d_type == DT_DIR && (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)) {
+            continue;
         }
 
-        bool next() override {
-            State& curr = stack.back();
+        // FIXME: don't recopy bytes every iteration, and don't allocate a whole
+        // path per recursive entry
+        writer.clear();
+        writer.write(path);
+        writer.write('/');
+        writer.write(entry->d_name);
 
-            if (curr.entr->d_type == DT_DIR) {
-                Dir dir(opendir(name.c_str());
-                auto entry = readdir(dir.get());
-                stack.emplace_back(std::move(dir), entry);
-                return true;
-            }
+        FileInfo info;
+        info.path = writer.c_str();
+        info.size = 0;
+        info.type = entry->d_type == DT_REG ? FileType::Regular :
+            entry->d_type == DT_DIR ? FileType::Directory :
+            entry->d_type == DT_LNK ? FileType::SymbolicLink :
+            FileType::Other;
 
-            curr.entry = readdir(curr.dir.get());
-            while (curr.entry == nullptr) {
-                stack.pop_back();
-                if (stack.empty()) {
-                    return false;
-                }
-                curr.entry = readdir(curr.dir.get());
-            }
-
-            curr.path.clear();
-            for (auto const& st : span{stack.data(), stack.size() - 1}) {
-                curr.path += st.path;
-                curr.path += '/';
-            }
-            curr.path += entry->d_name;
-
-            return true;
-
-            //if (entry->d_type == DT_DIR && (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)) {
+        auto result = cb(info);
+        if (result == EnumerateResult::Break) {
+            return result;
         }
 
-        bool done() const noexcept override {
-            return stack.empty();
+        if (entry->d_type == DT_DIR && result == EnumerateResult::Recurse) {
+            auto recurse = enumerate(writer.c_str(), cb);
+            if (recurse == EnumerateResult::Break) {
+                return recurse;
+            }
         }
+    }
 
-        gm::vector<State> stack;
-    };
-} // namespace
-
-auto gm::fs::NativeBackend::recursiveEnumerate(zstring_view path) const -> DirectoryIterator {
-    return DirectoryIterator(make_box<PosixDirectoryIterator>(path));
+    return EnumerateResult::Continue;
 }

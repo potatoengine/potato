@@ -17,7 +17,7 @@ namespace gm::fs {
         GM_FILESYSTEM_API std::ifstream openRead(zstring_view path) const override;
         GM_FILESYSTEM_API std::ofstream openWrite(zstring_view path) override;
 
-        GM_FILESYSTEM_API DirectoryIterator recursiveEnumerate(zstring_view path) const override;
+        GM_FILESYSTEM_API EnumerateResult enumerate(zstring_view path, EnumerateCallback cb) const override;
 
     private:
         NullBackend() = default;

@@ -11,34 +11,32 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return std::filesystem::is_directory(std::string_view(path));
 }
 
-namespace {
-    struct DefaultDirectoryIterator : gm::fs::DirectoryIteratorBackend {
-        std::filesystem::recursive_directory_iterator iter;
-        std::string path;
+auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb) const -> EnumerateResult {
+    auto iter = std::filesystem::recursive_directory_iterator(path.c_str());
+    auto end = std::filesystem::recursive_directory_iterator();
 
-        DefaultDirectoryIterator(gm::zstring_view path) : iter(std::filesystem::recursive_directory_iterator(path.c_str())) {
-            next();
+    while (iter != end) {
+        std::string path = iter->path().generic_string().c_str();
+
+        FileInfo info;
+        info.path = path.c_str();
+        info.size = iter->file_size();
+        info.type = iter->is_regular_file() ? FileType::Regular :
+            iter->is_directory() ? FileType::Directory :
+            iter->is_symlink() ? FileType::SymbolicLink :
+            FileType::Other;
+
+        auto result = cb(info);
+        if (result == EnumerateResult::Break) {
+            return result;
         }
 
-        bool next() {
-            if (++iter == std::filesystem::recursive_directory_iterator()) {
-                return false;
-            }
-
-            path = std::move(iter->path().generic_string());
-            return true;
+        if (iter->is_directory() && result == EnumerateResult::Continue) {
+            iter.disable_recursion_pending();
         }
 
-        bool done() const noexcept {
-            return iter == std::filesystem::recursive_directory_iterator();
-        }
+        ++iter;
+    }
 
-        gm::zstring_view current() const noexcept {
-            return path.c_str();
-        }
-    };
-} // namespace
-
-auto gm::fs::NativeBackend::recursiveEnumerate(zstring_view path) const -> DirectoryIterator {
-    return DirectoryIterator(make_box<DefaultDirectoryIterator>(path));
+    return EnumerateResult::Continue;
 }
