@@ -1,6 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "grimm/filesystem/native_backend.h"
+#include "grimm/filesystem/path_util.h"
 #include "grimm/foundation/platform.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/foundation/string_writer.h"
@@ -73,4 +74,19 @@ auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb) c
     }
 
     return EnumerateResult::Continue;
+}
+
+bool gm::fs::NativeBackend::createDirectories(zstring_view path) {
+    std::string dir;
+
+    while (!path.empty() && strcmp(path.c_str(), "/") != 0 && !directoryExists(path)) {
+        if (mkdir(path.c_str(), S_IRWXU) != 0) {
+            return false;
+        }
+
+        dir = gm::fs::path::parent(path);
+        path = dir.c_str();
+    }
+
+    return true;
 }

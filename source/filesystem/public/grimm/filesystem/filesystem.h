@@ -29,6 +29,8 @@ namespace gm::fs {
 
         EnumerateResult enumerate(zstring_view path, EnumerateCallback cb) const { return _impl->enumerate(path, cb); }
 
+        bool createDirectories(zstring_view path) { return _impl->createDirectories(path); }
+
     private:
         static rc<Backend>& activeDefaultBackend();
 

@@ -37,3 +37,9 @@ auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb) c
 
     return EnumerateResult::Continue;
 }
+
+bool gm::fs::NativeBackend::createDirectories(zstring_view path) {
+    std::error_code ec;
+    std::filesystem::create_directories(path.c_str(), ec);
+    return ec == std::error_code();
+}
