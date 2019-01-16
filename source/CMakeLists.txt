@@ -1,4 +1,5 @@
 add_subdirectory(foundation)
+add_subdirectory(filesystem)
 add_subdirectory(math)
 add_subdirectory(gpu)
 add_subdirectory(shell)
