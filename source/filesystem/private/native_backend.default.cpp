@@ -43,3 +43,7 @@ bool gm::fs::NativeBackend::createDirectories(zstring_view path) {
     std::filesystem::create_directories(path.c_str(), ec);
     return ec == std::error_code();
 }
+
+bool gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) {
+    return std::filesystem::copy_file(from.c_str(), to.c_str());
+}

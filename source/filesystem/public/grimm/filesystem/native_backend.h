@@ -21,6 +21,8 @@ namespace gm::fs {
 
         GM_FILESYSTEM_API bool createDirectories(zstring_view path) override;
 
+        GM_FILESYSTEM_API bool copyFile(zstring_view from, zstring_view to) override;
+
     private:
         NativeBackend() = default;
 

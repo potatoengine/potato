@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <fcntl.h>
 
 #if !GM_PLATFORM_POSIX
 #    error "Invalid platform"
@@ -89,4 +90,27 @@ bool gm::fs::NativeBackend::createDirectories(zstring_view path) {
     }
 
     return true;
+}
+
+bool gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) {
+    gm::unique_resource<int, &close> inFile(open(from.c_str(), O_RDONLY));
+    gm::unique_resource<int, &close> outFile(open(to.c_str(), O_WRONLY | O_CREAT));
+
+    std::byte buffer[32768];
+
+    for (;;) {
+        ssize_t rs = read(inFile.get(), buffer, sizeof(buffer));
+        if (rs < 0) {
+            return false;
+        }
+
+        if (rs == 0) {
+            return true;
+        }
+
+        ssize_t rs2 = write(outFile.get(), buffer, rs);
+        if (rs2 != rs) {
+            return false;
+        }
+    }
 }

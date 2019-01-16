@@ -26,6 +26,8 @@ namespace gm::fs {
 
         virtual bool createDirectories(zstring_view path) = 0;
 
+        virtual bool copyFile(zstring_view from, zstring_view to) = 0;
+
     protected:
         Backend() = default;
     };

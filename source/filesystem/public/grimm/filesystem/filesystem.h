@@ -31,6 +31,8 @@ namespace gm::fs {
 
         bool createDirectories(zstring_view path) { return _impl->createDirectories(path); }
 
+        bool copyFile(zstring_view from, zstring_view to) { return _impl->copyFile(from, to); }
+
     private:
         static rc<Backend>& activeDefaultBackend();
 
