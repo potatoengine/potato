@@ -89,7 +89,7 @@ auto gm::D3d12Device::createCommandList(GpuPipelineState* pipelineState) -> box<
     return D3d12CommandList::createCommandList(_device.get(), pipelineState);
 }
 
-void gm::D3d12Device::createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) {
+void gm::D3d12Device::createRenderTargetView(GpuResource* renderTarget, gm::uint64 cpuHandle) {
     GM_ASSERT(renderTarget != nullptr);
 
     auto d3d12Resource = static_cast<D3d12Resource*>(renderTarget);

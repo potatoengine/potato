@@ -2,6 +2,7 @@
 
 #include "callstack.h"
 #include "platform.h"
+#include "types.h"
 
 #if !defined(GM_PLATFORM_WINDOWS)
 #    error "Unsupported platform"
@@ -27,7 +28,7 @@ namespace {
         CallstackHelper& operator=(CallstackHelper&&) = delete;
 
         bool isInitialized() const { return _initialized; }
-        uint captureStackTrace(uint skip, uint count, void** entries);
+        gm::uint captureStackTrace(gm::uint skip, gm::uint count, void** entries);
         void readSymbol(void* entry, PSYMBOL_INFO symInfo, PIMAGEHLP_LINE64 lineInfo);
 
         static CallstackHelper& instance();
@@ -121,7 +122,7 @@ namespace {
         FreeLibrary(_kernelLib);
     }
 
-    uint CallstackHelper::captureStackTrace(uint skip, uint count, void** entries) {
+    gm::uint CallstackHelper::captureStackTrace(gm::uint skip, gm::uint count, void** entries) {
         if (_captureStackBackTrace != nullptr) {
             return _captureStackBackTrace(skip + 1, count, entries, nullptr);
         }
@@ -149,7 +150,7 @@ namespace {
 
 } // anonymous namespace
 
-auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
+auto gm::callstack::readTrace(span<gm::uintptr> addresses, gm::uint skip) -> span<gm::uintptr> {
     CallstackHelper& helper = CallstackHelper::instance();
 
     if (!helper.isInitialized()) {
@@ -161,7 +162,7 @@ auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintpt
     return addresses.first(count);
 }
 
-auto gm::callstack::resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
+auto gm::callstack::resolveTraceRecords(span<gm::uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
 #if !defined(NDEBUG)
     CallstackHelper& helper = CallstackHelper::instance();
 

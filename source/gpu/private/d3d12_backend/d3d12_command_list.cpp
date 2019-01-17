@@ -4,6 +4,7 @@
 #include "d3d12_pipeline_state.h"
 #include "d3d12_resource.h"
 #include "direct3d.h"
+#include "grimm/foundation/types.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 
@@ -32,7 +33,7 @@ auto gm::D3d12CommandList::createCommandList(ID3D12Device1* device, GpuPipelineS
     return make_box<D3d12CommandList>(std::move(allocator), std::move(commands));
 }
 
-void gm::D3d12CommandList::clearRenderTarget(uint64 handle, PackedVector4f color) {
+void gm::D3d12CommandList::clearRenderTarget(gm::uint64 handle, PackedVector4f color) {
     _commands->ClearRenderTargetView({handle}, color, 0, nullptr);
 }
 
