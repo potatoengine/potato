@@ -22,7 +22,7 @@ namespace gm::fs {
         virtual std::ifstream openRead(zstring_view path) const = 0;
         virtual std::ofstream openWrite(zstring_view path) = 0;
 
-        virtual EnumerateResult enumerate(zstring_view path, EnumerateCallback cb) const = 0;
+        virtual EnumerateResult enumerate(zstring_view path, EnumerateCallback& cb, EnumerateOptions opts = EnumerateOptions::None) const = 0;
 
         virtual bool createDirectories(zstring_view path) = 0;
 

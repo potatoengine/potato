@@ -27,7 +27,7 @@ namespace gm::fs {
         std::ifstream openRead(zstring_view path) const noexcept { return _impl->openRead(path); }
         std::ofstream openWrite(zstring_view path) const noexcept { return _impl->openWrite(path); }
 
-        EnumerateResult enumerate(zstring_view path, EnumerateCallback cb) const { return _impl->enumerate(path, cb); }
+        EnumerateResult enumerate(zstring_view path, EnumerateCallback& cb, EnumerateOptions opts = EnumerateOptions::None) const { return _impl->enumerate(path, cb, opts); }
 
         bool createDirectories(zstring_view path) { return _impl->createDirectories(path); }
 

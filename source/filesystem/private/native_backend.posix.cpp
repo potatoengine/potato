@@ -33,7 +33,7 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return (st.st_mode & S_IFDIR) != 0;
 }
 
-auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb) const -> EnumerateResult {
+auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback& cb, EnumerateOptions opts) const -> EnumerateResult {
     gm::unique_resource<DIR*, &closedir> dir(opendir(path.c_str()));
 
     string_writer writer;
