@@ -18,7 +18,7 @@ namespace gm {
 
 class gm::string_view {
 public:
-    using value_type = char const;
+    using value_type = char;
     using iterator = char const*;
     using const_iterator = char const*;
     using pointer = char const*;
