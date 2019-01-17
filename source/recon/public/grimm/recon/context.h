@@ -2,30 +2,28 @@
 
 #pragma once
 
-#include <filesystem>
+#include "grimm/foundation/zstring_view.h"
 
 namespace gm::recon {
-    using path = std::filesystem::path;
-
     class Context {
     public:
-        Context(path sourceFilePath,
-                path const& sourceFolderPath,
-                path const& destinationFolderPath)
-            : _sourceFilePath(std::move(sourceFilePath)),
-              _sourceFolderPath(std::move(sourceFolderPath)),
-              _destinationFolderPath(std::move(destinationFolderPath)) {}
+        Context(zstring_view sourceFilePath,
+                zstring_view sourceFolderPath,
+                zstring_view destinationFolderPath)
+            : _sourceFilePath(sourceFilePath),
+              _sourceFolderPath(sourceFolderPath),
+              _destinationFolderPath(destinationFolderPath) {}
 
         Context(Context&&) = delete;
         Context& operator=(Context&&) = delete;
 
-        path const& sourceFilePath() const noexcept { return _sourceFilePath; }
-        path const& sourceFolderPath() const noexcept { return _sourceFolderPath; }
-        path const& destinationFolderPath() const noexcept { return _destinationFolderPath; }
+        auto sourceFilePath() const noexcept { return _sourceFilePath; }
+        auto sourceFolderPath() const noexcept { return _sourceFolderPath; }
+        auto destinationFolderPath() const noexcept { return _destinationFolderPath; }
 
     private:
-        path _sourceFilePath;
-        path const& _sourceFolderPath;
-        path const& _destinationFolderPath;
+        zstring_view _sourceFilePath;
+        zstring_view _sourceFolderPath;
+        zstring_view _destinationFolderPath;
     };
 } // namespace gm::recon

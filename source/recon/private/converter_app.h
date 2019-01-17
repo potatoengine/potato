@@ -6,11 +6,11 @@
 #include "grimm/foundation/delegate.h"
 #include "grimm/foundation/span.h"
 #include "grimm/foundation/string_view.h"
+#include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/vector.h"
 #include "grimm/recon/converter.h"
 #include "grimm/recon/converter_config.h"
 #include "grimm/library/asset_library.h"
-#include <filesystem>
 
 namespace gm::recon {
     class Converter;
@@ -28,13 +28,13 @@ namespace gm::recon {
     private:
         void registerConverters();
 
-        vector<std::filesystem::path> collectSourceFiles();
-        bool convertFiles(vector<std::filesystem::path> files);
+        vector<std::string> collectSourceFiles();
+        bool convertFiles(vector<std::string> const& files);
 
-        Converter* findConverter(path const& path) const;
+        Converter* findConverter(string_view path) const;
 
         struct Mapping {
-            delegate<bool(std::filesystem::path const&) const> predicate;
+            delegate<bool(string_view) const> predicate;
             box<Converter> conveter;
         };
 

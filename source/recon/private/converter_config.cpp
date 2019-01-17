@@ -2,6 +2,7 @@
 
 #include "grimm/recon/converter_config.h"
 #include "grimm/foundation/string_view.h"
+#include "grimm/foundation/zstring_view.h"
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include <iostream>
@@ -23,7 +24,7 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args) 
         ArgConfig,
     } argMode = ArgNone;
 
-    for (string_view arg : args) {
+    for (zstring_view arg : args) {
         if (!arg.empty() && arg.front() == '-') {
             if (argMode != ArgNone) {
                 std::cerr << "Unexpected option: " << arg << '\n';
@@ -55,19 +56,19 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args) 
             std::cerr << "Unexpected value: " << arg << '\n';
             return false;
         case ArgSourceFolder:
-            config.sourceFolderPath = std::filesystem::path(std::string_view(arg));
+            config.sourceFolderPath = arg;
             argMode = ArgNone;
             break;
         case ArgDestinationFolder:
-            config.destinationFolderPath = std::filesystem::path(std::string_view(arg));
+            config.destinationFolderPath = arg;
             argMode = ArgNone;
             break;
         case ArgCacheFolder:
-            config.cacheFolderPath = std::filesystem::path(std::string_view(arg));
+            config.cacheFolderPath = arg;
             argMode = ArgNone;
             break;
         case ArgConfig:
-            if (!parseConfigFile(config, std::string_view(arg))) {
+            if (!parseConfigFile(config, arg)) {
                 return false;
             }
             argMode = ArgNone;
@@ -83,8 +84,8 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args) 
     return true;
 }
 
-bool gm::recon::parseConfigFile(ConverterConfig& config, std::filesystem::path const& path) {
-    std::fstream file(path, std::ios_base::in);
+bool gm::recon::parseConfigFile(ConverterConfig& config, zstring_view path) {
+    std::fstream file(path.c_str(), std::ios_base::in);
     if (!file) {
         std::cerr << "Failed to open `" << path << "'\n";
         return false;
@@ -113,13 +114,13 @@ bool gm::recon::parseConfigString(ConverterConfig& config, string_view json) {
     }
 
     if (doc.HasMember("sourceDir")) {
-        config.sourceFolderPath = std::filesystem::path(doc["sourceDir"].GetString());
+        config.sourceFolderPath = doc["sourceDir"].GetString();
     }
     if (doc.HasMember("destDir")) {
-        config.destinationFolderPath = std::filesystem::path(doc["destDir"].GetString());
+        config.destinationFolderPath = doc["destDir"].GetString();
     }
     if (doc.HasMember("cacheDir")) {
-        config.cacheFolderPath = std::filesystem::path(doc["cacheDir"].GetString());
+        config.cacheFolderPath = doc["cacheDir"].GetString();
     }
     return true;
 }

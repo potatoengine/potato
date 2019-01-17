@@ -4,17 +4,18 @@
 
 #include "grimm/foundation/span.h"
 #include "grimm/foundation/string_view.h"
-#include <filesystem>
+#include "grimm/foundation/zstring_view.h"
+#include <string>
 
 namespace gm::recon {
     struct ConverterConfig {
-        std::filesystem::path configFilePath;
-        std::filesystem::path sourceFolderPath;
-        std::filesystem::path destinationFolderPath;
-        std::filesystem::path cacheFolderPath;
+        std::string configFilePath;
+        std::string sourceFolderPath;
+        std::string destinationFolderPath;
+        std::string cacheFolderPath;
     };
 
     bool parseArguments(ConverterConfig& config, span<char const*> args);
-    bool parseConfigFile(ConverterConfig& config, std::filesystem::path const& path);
+    bool parseConfigFile(ConverterConfig& config, zstring_view path);
     bool parseConfigString(ConverterConfig& config, string_view json);
 } // namespace gm::recon

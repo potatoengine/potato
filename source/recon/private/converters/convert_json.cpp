@@ -1,6 +1,8 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "convert_json.h"
+#include "grimm/filesystem/path_util.h"
+#include "grimm/filesystem/filesystem.h"
 #include <iostream>
 #include <fstream>
 #include <rapidjson/istreamwrapper.h>
@@ -14,16 +16,16 @@ gm::recon::JsonConverter::~JsonConverter() = default;
 
 bool gm::recon::JsonConverter::convert(Context& ctx) {
 
-    std::filesystem::path sourceAbsolutePath = ctx.sourceFolderPath() / ctx.sourceFilePath();
-    std::filesystem::path destAbsolutePath = ctx.destinationFolderPath() / ctx.sourceFilePath();
+    auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
+    auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 
-    std::filesystem::path destParentAbsolutePath = destAbsolutePath.parent_path();
+    std::string destParentAbsolutePath(fs::path::parent(std::string_view(destAbsolutePath)));
 
-    std::error_code rs;
+    fs::FileSystem fileSys;
 
-    if (!std::filesystem::is_directory(destParentAbsolutePath)) {
-        if (!std::filesystem::create_directories(destParentAbsolutePath, rs)) {
-            std::cerr << "Failed to create `" << destParentAbsolutePath << "': " << rs.message() << '\n';
+    if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
+        if (!fileSys.createDirectories(destParentAbsolutePath.c_str())) {
+            std::cerr << "Failed to create `" << destParentAbsolutePath << '\n';
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }

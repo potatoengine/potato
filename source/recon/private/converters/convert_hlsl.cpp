@@ -1,10 +1,12 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "convert_hlsl.h"
-#include "grimm/gpu/direct3d.h"
 #include "grimm/gpu/com_ptr.h"
+#include "grimm/gpu/direct3d.h"
 #include "grimm/foundation/out_ptr.h"
 #include "grimm/foundation/string_view.h"
+#include "grimm/filesystem/filesystem.h"
+#include "grimm/filesystem/path_util.h"
 #include <dxc/dxcapi.h>
 #include <iostream>
 #include <fstream>
@@ -21,10 +23,21 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
         return false;
     }
 
-    path absoluteSourcePath = ctx.sourceFolderPath() / ctx.sourceFilePath();
+    fs::FileSystem fs;
+
+    auto absoluteSourcePath = fs::path::join({string_view(ctx.sourceFolderPath()), ctx.sourceFilePath()});
+
+    constexpr int len = 4096;
+    wchar_t buffer[len];
+    int rs = MultiByteToWideChar(CP_UTF8, 0, absoluteSourcePath.data(), static_cast<int>(absoluteSourcePath.size()), buffer, len);
+    if (rs == 0 || rs >= len) {
+        std::cerr << "Failed to translate path `" << absoluteSourcePath << "' as ucs2\n";
+        return false;
+    }
+    buffer[rs] = 0;
 
     com_ptr<IDxcBlobEncoding> blob;
-    hr = library->CreateBlobFromFile(absoluteSourcePath.c_str(), nullptr, out_ptr(blob));
+    hr = library->CreateBlobFromFile(buffer, nullptr, out_ptr(blob));
     if (blob.empty()) {
         std::cerr << "Could not load `" << absoluteSourcePath << "' as dxc blob\n";
         return false;
@@ -43,7 +56,7 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
     std::cout << "Compiling " << absoluteSourcePath << "':" << entry << '(' << profile << ")\n";
 
     com_ptr<IDxcOperationResult> result;
-    hr = compiler->Compile(blob.get(), ctx.sourceFilePath().c_str(), entry, profile, nullptr, 0, nullptr, 0, nullptr, out_ptr(result));
+    hr = compiler->Compile(blob.get(), buffer, entry, profile, nullptr, 0, nullptr, 0, nullptr, out_ptr(result));
     if (result.empty()) {
         std::cerr << "Failed to compile `" << absoluteSourcePath << "':" << entry << '(' << profile << ")\n";
         return false;
@@ -57,24 +70,21 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
         return false;
     }
 
-    path destPath = ctx.sourceFilePath();
-    destPath.replace_extension(".vs_6_0.dxo");
-
-    path destAbsolutePath = ctx.destinationFolderPath() / destPath;
+    auto destPath = fs::path::changeExtension(ctx.sourceFilePath(), ".vs_6_0.dxo");
+    auto destAbsolutePath = fs::path::join({string_view(ctx.destinationFolderPath()), destPath.c_str()});
 
     com_ptr<IDxcBlob> compiledBlob;
     result->GetResult(out_ptr(compiledBlob));
 
-    std::filesystem::path destParentAbsolutePath = destAbsolutePath.parent_path();
-    if (!std::filesystem::is_directory(destParentAbsolutePath)) {
-        std::error_code rs;
-        if (!std::filesystem::create_directories(destParentAbsolutePath, rs)) {
-            std::cerr << "Failed to create `" << destParentAbsolutePath << "': " << rs.message() << '\n';
+    std::string destParentAbsolutePath(fs::path::parent(string_view(destAbsolutePath)));
+    if (!fs.directoryExists(destParentAbsolutePath.c_str())) {
+        if (!fs.createDirectories(destParentAbsolutePath.c_str())) {
+            std::cerr << "Failed to create `" << destParentAbsolutePath << "'\n";
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }
 
-    std::ofstream compiledOutput(destAbsolutePath);
+    std::ofstream compiledOutput(destAbsolutePath.c_str());
     if (!compiledOutput.is_open()) {
         std::cerr << "Cannot write `" << destAbsolutePath << '\n';
         return false;

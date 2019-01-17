@@ -2,6 +2,8 @@
 
 #include "converter_app.h"
 #include "grimm/foundation/string_view.h"
+#include "grimm/filesystem/path_util.h"
+#include "grimm/filesystem/filesystem.h"
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"
 #include "converters/convert_json.h"
@@ -20,14 +22,16 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     }
 
     if (!_config.configFilePath.empty()) {
-        if (!parseConfigFile(_config, _config.configFilePath)) {
+        if (!parseConfigFile(_config, _config.configFilePath.c_str())) {
         }
     }
 
     registerConverters();
 
-    auto libraryPath = _config.destinationFolderPath / "library$.json";
-    if (std::filesystem::exists(libraryPath)) {
+    fs::FileSystem fs;
+
+    auto libraryPath = fs::path::join({string_view(_config.destinationFolderPath), "library$.json"});
+    if (fs.fileExists(libraryPath.c_str())) {
         std::ifstream libraryReadStream(libraryPath);
         if (!libraryReadStream) {
             std::cerr << "Failed to open asset library `" << libraryPath << "'\n";
@@ -61,23 +65,21 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     std::cout << "Destination: " << _config.destinationFolderPath << "\n";
     std::cout << "Cache: " << _config.cacheFolderPath << "\n";
 
-    if (!std::filesystem::is_directory(_config.destinationFolderPath)) {
-        std::error_code rs;
-        if (!std::filesystem::create_directories(_config.destinationFolderPath, rs)) {
-            std::cerr << "Failed to create `" << _config.destinationFolderPath << "': " << rs.message() << '\n';
+    if (!fs.directoryExists(_config.destinationFolderPath.c_str())) {
+        if (!fs.createDirectories(_config.destinationFolderPath.c_str())) {
+            std::cerr << "Failed to create `" << _config.destinationFolderPath << "'\n";
             return false;
         }
     }
 
-    if (!std::filesystem::is_directory(_config.cacheFolderPath)) {
-        std::error_code rs;
-        if (!std::filesystem::create_directories(_config.cacheFolderPath, rs)) {
-            std::cerr << "Failed to create `" << _config.cacheFolderPath << "': " << rs.message() << '\n';
+    if (!fs.directoryExists(_config.cacheFolderPath.c_str())) {
+        if (!fs.createDirectories(_config.cacheFolderPath.c_str())) {
+            std::cerr << "Failed to create `" << _config.cacheFolderPath << "'\n";
             return false;
         }
     }
 
-    if (!convertFiles(std::move(sources))) {
+    if (!convertFiles(sources)) {
         std::cerr << "Conversion failed\n";
         return false;
     }
@@ -94,33 +96,36 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
 
 void gm::recon::ConverterApp::registerConverters() {
 #if GM_GPU_ENABLE_D3D12
-    _converters.push_back({[](std::filesystem::path const& path) { return path.extension() == ".hlsl"; },
+    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
                            make_box<HlslConverter>()});
 #endif
-    _converters.push_back({[](std::filesystem::path const& path) { return path.extension() == ".json"; },
+    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".json"; },
                            make_box<JsonConverter>()});
-    _converters.push_back({[](std::filesystem::path const& path) { return path.extension() == ".png"; },
+    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".png"; },
                            make_box<CopyConverter>()});
 }
 
-bool gm::recon::ConverterApp::convertFiles(vector<std::filesystem::path> files) {
+bool gm::recon::ConverterApp::convertFiles(vector<std::string> const& files) {
     bool failed = false;
 
     for (auto const& path : files) {
         std::cout << "Processing `" << path << "`\n";
 
-        auto assetPath = path.generic_string();
-        auto assetId = _library.pathToAssetId(string_view(assetPath));
+        auto assetId = _library.pathToAssetId(string_view(path));
         auto record = _library.findRecord(assetId);
 
-        Converter* converter = findConverter(path);
+        if (record != nullptr) {
+            std::cout << "Updating `" << path << "'\n";
+        }
+
+        Converter* converter = findConverter(string_view(path));
         if (converter == nullptr) {
             failed = true;
             std::cerr << "Converter not found for `" << path << "'\n";
             continue;
         }
 
-        Context context(path, _config.sourceFolderPath, _config.destinationFolderPath);
+        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str());
         if (!converter->convert(context)) {
             failed = true;
             std::cerr << "Failed conversion for `" << path << "'\n";
@@ -129,7 +134,7 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::filesystem::path> files) 
 
         AssetRecord newRecord;
         newRecord.assetId = assetId;
-        newRecord.path = string_view(assetPath);
+        newRecord.path = path.c_str();
         newRecord.contentHash = 0;
         _library.insertRecord(std::move(newRecord));
     }
@@ -137,7 +142,7 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::filesystem::path> files) 
     return !failed;
 }
 
-auto gm::recon::ConverterApp::findConverter(path const& path) const -> Converter* {
+auto gm::recon::ConverterApp::findConverter(string_view path) const -> Converter* {
     for (auto const& mapping : _converters) {
         if (mapping.predicate(path)) {
             return mapping.conveter.get();
@@ -147,20 +152,26 @@ auto gm::recon::ConverterApp::findConverter(path const& path) const -> Converter
     return nullptr;
 }
 
-auto gm::recon::ConverterApp::collectSourceFiles() -> vector<std::filesystem::path> {
+auto gm::recon::ConverterApp::collectSourceFiles() -> vector<std::string> {
+    fs::FileSystem fs;
 
-    if (!std::filesystem::is_directory(_config.sourceFolderPath)) {
+    if (!fs.directoryExists(_config.sourceFolderPath.c_str())) {
         std::cerr << "`" << _config.sourceFolderPath << "' does not exist or is not a directory\n";
         return {};
     }
 
-    vector<std::filesystem::path> files;
+    vector<std::string> files;
 
-    for (auto&& path : std::filesystem::recursive_directory_iterator(_config.sourceFolderPath)) {
-        if (path.is_regular_file()) {
-            files.push_back(std::filesystem::relative(std::move(path).path(), _config.sourceFolderPath));
+    auto cb = fs::EnumerateCallback([&files](fs::FileInfo const& info) -> fs::EnumerateResult {
+        if (info.type == fs::FileType::Regular) {
+            files.push_back(info.path);
         }
-    }
+        else if (info.type == fs::FileType::Directory) {
+            return fs::EnumerateResult::Recurse;
+        }
+        return fs::EnumerateResult::Continue;
+    });
+    fs.enumerate(_config.sourceFolderPath.c_str(), cb, fs::EnumerateOptions::None);
 
     return files;
 }
