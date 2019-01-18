@@ -66,7 +66,9 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
         }
     }
 
-    // openWrite
-    // null.createDirectories("/foo/bar"), Result::UnsupportedOperation);
-    // null.copyFile("/test.txt", "/out.txt"), Result::UnsupportedOperation);
+    // TODO:
+    // Figure out how to reliably test "write" operations on the native backend.
+    // - [ ] test openWrite
+    // - [ ] test createDirectories
+    // - [ ] test copyFile
 }
