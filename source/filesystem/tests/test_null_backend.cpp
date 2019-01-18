@@ -10,5 +10,15 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NullBackend") {
 
         DOCTEST_CHECK(!null.fileExists("/test.txt"));
         DOCTEST_CHECK(!null.directoryExists("/"));
+
+        DOCTEST_CHECK(!null.openRead("/test.txt").is_open());
+        DOCTEST_CHECK(!null.openWrite("/test.txt").is_open());
+
+        auto cb(EnumerateCallback{[](FileInfo const&) { return EnumerateResult::Continue; }});
+        DOCTEST_CHECK_EQ(null.enumerate("/", cb), EnumerateResult::Continue);
+
+        DOCTEST_CHECK_EQ(null.createDirectories("/foo/bar"), Result::UnsupportedOperation);
+
+        DOCTEST_CHECK_EQ(null.copyFile("/test.txt", "/out.txt"), Result::UnsupportedOperation);
     }
 }
