@@ -42,13 +42,13 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
 static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback& cb, gm::string_writer& writer) -> gm::fs::EnumerateResult {
     gm::unique_resource<DIR*, &closedir> dir(opendir(path.c_str()));
 
+    auto writerPos = writer.size();
+
     for (struct dirent* entry = readdir(dir.get()); entry != nullptr; entry = readdir(dir.get())) {
         // skip . and ..
         if (entry->d_type == DT_DIR && (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)) {
             continue;
         }
-
-        auto writerPos = writer.size();
 
         // FIXME: don't recopy bytes every iteration, and don't allocate a whole
         // path per recursive entry
