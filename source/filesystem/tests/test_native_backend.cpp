@@ -30,7 +30,7 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
     DOCTEST_TEST_CASE("openRead") {
         auto native = NativeBackend::create();
 
-        auto inFile = native.openRead("test.txt");
+        auto inFile = native.openRead("test.txt", FileOpenMode::Text);
         DOCTEST_CHECK(inFile.is_open());
 
         std::string text;
@@ -56,7 +56,7 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
         }});
         DOCTEST_CHECK_EQ(native.enumerate(".", cb), EnumerateResult::Continue);
 
-        DOCTEST_CHECK_EQ(entries.size(), expected.size());
+        DOCTEST_REQUIRE_EQ(entries.size(), expected.size());
 
         // platforms aren't necessarily going to return entries in the same order
         std::sort(entries.begin(), entries.end());

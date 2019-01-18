@@ -6,9 +6,9 @@ bool gm::fs::NullBackend::fileExists(zstring_view path) const noexcept { return 
 
 bool gm::fs::NullBackend::directoryExists(zstring_view path) const noexcept { return false; }
 
-std::ifstream gm::fs::NullBackend::openRead(zstring_view path) const { return {}; }
+std::ifstream gm::fs::NullBackend::openRead(zstring_view, FileOpenMode) const { return {}; }
 
-std::ofstream gm::fs::NullBackend::openWrite(zstring_view path) { return {}; }
+std::ofstream gm::fs::NullBackend::openWrite(zstring_view, FileOpenMode) { return {}; }
 
 auto gm::fs::NullBackend::enumerate(zstring_view, EnumerateCallback&, EnumerateOptions) const -> EnumerateResult { return EnumerateResult::Continue; }
 

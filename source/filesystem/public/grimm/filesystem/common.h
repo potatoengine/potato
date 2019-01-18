@@ -20,6 +20,11 @@ namespace gm::fs {
         Break,
     };
 
+    enum FileOpenMode {
+        Binary,
+        Text
+    };
+
     enum FileType {
         Regular,
         Directory,
