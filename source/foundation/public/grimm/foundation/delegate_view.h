@@ -45,9 +45,6 @@ namespace gm::_detail {
     constexpr bool is_invocable_v = true; // FIXME: implement correctly? mostly only needed to improve diagnostics
 #endif
 
-    template <typename R, typename... P>
-    using delegate_view_call_t = R (*)(void const* obj, P&&... params);
-
     template <typename F, typename R, typename... P>
     R delegate_view_thunk(void const* obj, P&&... params) {
         F const& f = *static_cast<F const*>(obj);
@@ -60,29 +57,49 @@ namespace gm::_detail {
     };
 
     template <typename ReturnType, typename... ParamTypes>
+    struct delegate_view_holder {
+        using call_t = ReturnType (*)(void const*, ParamTypes&&...);
+
+        delegate_view_holder() = delete;
+        template <typename Functor>
+        delegate_view_holder(Functor&& functor) {
+            using FunctorType = std::decay_t<Functor>;
+            _call = &_detail::delegate_view_thunk<FunctorType, ReturnType, ParamTypes...>;
+            _functor = &functor;
+        }
+
+        call_t _call = nullptr;
+        void const* _functor = nullptr;
+    };
+
+    template <typename ReturnType, typename... ParamTypes>
     class delegate_view_typed {
     protected:
-        using call_t = delegate_view_call_t<ReturnType, ParamTypes...>;
+        using holder_t = delegate_view_holder<ReturnType, ParamTypes...>;
 
     public:
-        delegate_view_typed() = delete;
-
         /// <summary> Construct a new delegate_view from a function object, such as a lambda or function pointer. </summary>
         /// <param name="function"> The function to bind. </param>
         template <typename Functor, typename = enable_if_t<_detail::is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_view_typed, std::decay_t<Functor>>>>
-        /*implicit*/ delegate_view_typed(Functor const& functor);
+        /*implicit*/ delegate_view_typed(Functor const& functor) : _holder(functor) {}
 
         template <typename Functor, typename = enable_if_t<_detail::is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_view_typed, std::decay_t<Functor>>>>
-        delegate_view_typed& operator=(Functor const& functor);
+        delegate_view_typed& operator=(Functor const& functor) {
+            _holder = holder_t(functor);
+            return *this;
+        }
+
+        template <typename... InParamTypes>
+        ReturnType operator()(InParamTypes&&... params) const {
+            return _holder._call(_holder._functor, std::forward<InParamTypes>(params)...);
+        }
 
     private:
         template <typename Functor>
         void assign(Functor const& functor);
 
     protected:
-        // we will overwrite this with an object with just a vtable - if we are nullptr, we have no real vtable
-        call_t _call = nullptr;
-        void const* _functor = nullptr;
+        holder_t _holder;
     };
 } // namespace gm::_detail
 
@@ -93,52 +110,10 @@ template <typename ReturnType, typename... ParamTypes>
 class gm::delegate_view<ReturnType(ParamTypes...)> : public _detail::delegate_view_typed<ReturnType, ParamTypes...> {
 public:
     using _detail::delegate_view_typed<ReturnType, ParamTypes...>::delegate_view_typed;
-
-    /// <summary> Invoke the bound delegate_view, which must not be empty. </summary>
-    /// <param name="params"> Function arguments. </param>
-    /// <returns> The return value of the bound function, if any. </returns>
-    inline ReturnType operator()(ParamTypes... params) const;
 };
 
 template <typename ReturnType, typename... ParamTypes>
 class gm::delegate_view<ReturnType(ParamTypes...) const> : public _detail::delegate_view_typed<ReturnType, ParamTypes...> {
 public:
     using _detail::delegate_view_typed<ReturnType, ParamTypes...>::delegate_view_typed;
-
-    /// <summary> Invoke the bound delegate_view, which must not be empty. </summary>
-    /// <param name="params"> Function arguments. </param>
-    /// <returns> The return value of the bound function, if any. </returns>
-    inline ReturnType operator()(ParamTypes... params) const;
 };
-
-template <typename ReturnType, typename... ParamTypes>
-template <typename Functor, typename>
-gm::_detail::delegate_view_typed<ReturnType, ParamTypes...>::delegate_view_typed(Functor const& functor) {
-    assign(functor);
-}
-
-template <typename ReturnType, typename... ParamTypes>
-template <typename Functor, typename>
-auto gm::_detail::delegate_view_typed<ReturnType, ParamTypes...>::operator=(Functor const& functor) -> delegate_view_typed& {
-    assign(functor);
-    return *this;
-}
-
-template <typename ReturnType, typename... ParamTypes>
-template <typename Functor>
-void gm::_detail::delegate_view_typed<ReturnType, ParamTypes...>::assign(Functor const& functor) {
-    using FunctorType = std::decay_t<Functor>;
-
-    this->_call = &_detail::delegate_view_thunk<FunctorType, ReturnType, ParamTypes...>;
-    this->_functor = &functor;
-}
-
-template <typename ReturnType, typename... ParamTypes>
-auto gm::delegate_view<ReturnType(ParamTypes...)>::operator()(ParamTypes... params) const -> ReturnType {
-    return this->_call(this->_functor, std::forward<ParamTypes>(params)...);
-}
-
-template <typename ReturnType, typename... ParamTypes>
-auto gm::delegate_view<ReturnType(ParamTypes...) const>::operator()(ParamTypes... params) const -> ReturnType {
-    return this->_call(this->_functor, std::forward<ParamTypes>(params)...);
-}
