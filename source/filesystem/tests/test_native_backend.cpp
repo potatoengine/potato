@@ -54,7 +54,7 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
             entries.push_back(info.path);
             return EnumerateResult::Recurse;
         }});
-        DOCTEST_CHECK_EQ(native.enumerate(".", cb), Result::Success);
+        DOCTEST_CHECK_EQ(native.enumerate(".", cb), EnumerateResult::Continue);
 
         std::sort(entries.begin(), entries.end());
 
