@@ -18,4 +18,5 @@ target_compile_definitions(filesystem_test PRIVATE
 add_test(
     NAME grimm_filesystem
     COMMAND filesystem_test
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fixtures")
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fixtures"
+)

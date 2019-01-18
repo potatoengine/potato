@@ -56,9 +56,14 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
         }});
         DOCTEST_CHECK_EQ(native.enumerate(".", cb), EnumerateResult::Continue);
 
+        DOCTEST_CHECK_EQ(entries.size(), expected.size());
+
+        // platforms aren't necessarily going to return entries in the same order
         std::sort(entries.begin(), entries.end());
 
-        DOCTEST_CHECK(std::equal(expected.begin(), expected.end(), entries.begin(), entries.end()));
+        for (typename decltype(entries)::size_type i = 0, e = entries.size(); i != e; ++i) {
+            DOCTEST_CHECK_EQ(entries[i], expected[i]);
+        }
     }
 
     // openWrite
