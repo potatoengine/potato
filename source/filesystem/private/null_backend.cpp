@@ -12,6 +12,6 @@ std::ofstream gm::fs::NullBackend::openWrite(zstring_view path) { return {}; }
 
 auto gm::fs::NullBackend::enumerate(zstring_view, EnumerateCallback&, EnumerateOptions) const -> EnumerateResult { return EnumerateResult::Continue; }
 
-bool gm::fs::NullBackend::createDirectories(zstring_view path) { return false; }
+auto gm::fs::NullBackend::createDirectories(zstring_view path) -> Result { return Result::UnsupportedOperation; }
 
-bool gm::fs::NullBackend::copyFile(zstring_view from, zstring_view to) { return false; }
+auto gm::fs::NullBackend::copyFile(zstring_view from, zstring_view to) -> Result { return Result::UnsupportedOperation; }

@@ -5,6 +5,15 @@
 #include "grimm/foundation/delegate.h"
 
 namespace gm::fs {
+    enum Result {
+        Success,
+        AccessDenied,
+        FileNotFound,
+        System,
+        UnsupportedOperation,
+        Unknown,
+    };
+
     enum EnumerateResult {
         Continue,
         Recurse,

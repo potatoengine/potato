@@ -19,9 +19,9 @@ namespace gm::fs {
 
         GM_FILESYSTEM_API EnumerateResult enumerate(zstring_view path, EnumerateCallback& cb, EnumerateOptions opts = EnumerateOptions::None) const override;
 
-        GM_FILESYSTEM_API bool createDirectories(zstring_view path) override;
+        GM_FILESYSTEM_API Result createDirectories(zstring_view path) override;
 
-        GM_FILESYSTEM_API bool copyFile(zstring_view from, zstring_view to) override;
+        GM_FILESYSTEM_API Result copyFile(zstring_view from, zstring_view to) override;
 
     private:
         NullBackend() = default;

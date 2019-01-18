@@ -17,6 +17,12 @@
 #    error "Invalid platform"
 #endif
 
+static auto errnoToResult(int error) noexcept -> gm::fs::Result {
+    switch (error) {
+    default: return gm::fs::Result::Unknown;
+    }
+}
+
 bool gm::fs::NativeBackend::fileExists(zstring_view path) const noexcept {
     struct stat st;
     if (::stat(path.c_str(), &st) != 0) {
@@ -77,22 +83,22 @@ auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback& cb, 
     return EnumerateResult::Continue;
 }
 
-bool gm::fs::NativeBackend::createDirectories(zstring_view path) {
+auto gm::fs::NativeBackend::createDirectories(zstring_view path) -> Result {
     std::string dir;
 
     while (!path.empty() && strcmp(path.c_str(), "/") != 0 && !directoryExists(path)) {
         if (mkdir(path.c_str(), S_IRWXU) != 0) {
-            return false;
+            return errnoToResult(errno);
         }
 
         dir = gm::fs::path::parent(path);
         path = dir.c_str();
     }
 
-    return true;
+    return Result::Success;
 }
 
-bool gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) {
+auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
     gm::unique_resource<int, &close> inFile(open(from.c_str(), O_RDONLY));
     gm::unique_resource<int, &close> outFile(open(to.c_str(), O_WRONLY | O_CREAT));
 
@@ -101,16 +107,16 @@ bool gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) {
     for (;;) {
         ssize_t rs = read(inFile.get(), buffer, sizeof(buffer));
         if (rs < 0) {
-            return false;
+            return errnoToResult(errno);
         }
 
         if (rs == 0) {
-            return true;
+            return Result::Success;
         }
 
         ssize_t rs2 = write(outFile.get(), buffer, rs);
         if (rs2 != rs) {
-            return false;
+            return errnoToResult(errno);
         }
     }
 }

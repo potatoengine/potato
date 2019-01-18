@@ -3,6 +3,14 @@
 #include "grimm/filesystem/native_backend.h"
 #include <filesystem>
 
+static auto errorCodeToResult(std::error_code ec) noexcept -> gm::fs::Result {
+    if (ec.category() == std::system_category()) {
+        // FIXME: translate error codes
+        return gm::fs::Result::System;
+    }
+    return gm::fs::Result::Unknown;
+}
+
 bool gm::fs::NativeBackend::fileExists(zstring_view path) const noexcept {
     return std::filesystem::is_regular_file(std::string_view(path));
 }
@@ -39,12 +47,14 @@ auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback& cb, 
     return EnumerateResult::Continue;
 }
 
-bool gm::fs::NativeBackend::createDirectories(zstring_view path) {
+auto gm::fs::NativeBackend::createDirectories(zstring_view path) -> Result {
     std::error_code ec;
     std::filesystem::create_directories(path.c_str(), ec);
-    return ec == std::error_code();
+    return errorCodeToResult(ec);
 }
 
-bool gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) {
-    return std::filesystem::copy_file(from.c_str(), to.c_str());
+auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
+    std::error_code ec;
+    std::filesystem::copy_file(from.c_str(), to.c_str(), ec);
+    return errorCodeToResult(ec);
 }
