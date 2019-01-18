@@ -1,6 +1,7 @@
 add_executable(filesystem_test
     main.cpp
     test_path_util.cpp
+    test_native_backend.cpp
     test_null_backend.cpp
 )
 
@@ -14,4 +15,8 @@ target_compile_definitions(filesystem_test PRIVATE
     DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
 )
 
-add_test(NAME grimm_filesystem COMMAND filesystem_test)
+add_test(
+    NAME grimm_filesystem
+    COMMAND filesystem_test
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fixtures"
+)

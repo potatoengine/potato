@@ -54,6 +54,8 @@ namespace gm {
         GM_FRAMEWORK_API span<value_type> acquire(size_type size);
         GM_FRAMEWORK_API void commit(span<value_type const> data);
 
+        GM_FRAMEWORK_API void resize(size_type newSize, value_type fill = ' ');
+
         void clear() {
             *_ptr = 0;
             _size = 0;

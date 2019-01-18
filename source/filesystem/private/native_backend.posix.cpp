@@ -17,12 +17,18 @@
 #    error "Invalid platform"
 #endif
 
+static auto errnoToResult(int error) noexcept -> gm::fs::Result {
+    switch (error) {
+    default: return gm::fs::Result::Unknown;
+    }
+}
+
 bool gm::fs::NativeBackend::fileExists(zstring_view path) const noexcept {
     struct stat st;
     if (::stat(path.c_str(), &st) != 0) {
         return false;
     }
-    return (st.st_mode & S_IFREG) != 0;
+    return S_ISREG(st.st_mode) != 0;
 }
 
 bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
@@ -30,13 +36,13 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
     if (::stat(path.c_str(), &st) != 0) {
         return false;
     }
-    return (st.st_mode & S_IFDIR) != 0;
+    return S_ISDIR(st.st_mode) != 0;
 }
 
-auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb) const -> EnumerateResult {
+static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback& cb, gm::string_writer& writer) -> gm::fs::EnumerateResult {
     gm::unique_resource<DIR*, &closedir> dir(opendir(path.c_str()));
 
-    string_writer writer;
+    auto writerPos = writer.size();
 
     for (struct dirent* entry = readdir(dir.get()); entry != nullptr; entry = readdir(dir.get())) {
         // skip . and ..
@@ -46,15 +52,16 @@ auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb) c
 
         // FIXME: don't recopy bytes every iteration, and don't allocate a whole
         // path per recursive entry
-        writer.clear();
-        writer.write(path);
-        writer.write('/');
+        writer.resize(writerPos);
+        if (!writer.empty()) {
+            writer.write('/');
+        }
         writer.write(entry->d_name);
 
-        FileInfo info;
+        gm::fs::FileInfo info;
         info.path = writer.c_str();
         info.size = 0;
-        info.type = entry->d_type == DT_REG ? FileType::Regular : entry->d_type == DT_DIR ? FileType::Directory : entry->d_type == DT_LNK ? FileType::SymbolicLink : FileType::Other;
+        info.type = entry->d_type == DT_REG ? gm::fs::FileType::Regular : entry->d_type == DT_DIR ? gm::fs::FileType::Directory : entry->d_type == DT_LNK ? gm::fs::FileType::SymbolicLink : gm::fs::FileType::Other;
 
         struct stat st;
         if (stat(writer.c_str(), &st) == 0) {
@@ -62,37 +69,47 @@ auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb) c
         }
 
         auto result = cb(info);
-        if (result == EnumerateResult::Break) {
+        if (result == gm::fs::EnumerateResult::Break) {
             return result;
         }
 
-        if (entry->d_type == DT_DIR && result == EnumerateResult::Recurse) {
-            auto recurse = enumerate(writer.c_str(), cb);
-            if (recurse == EnumerateResult::Break) {
+        if (entry->d_type == DT_DIR && result == gm::fs::EnumerateResult::Recurse) {
+            auto recurse = enumerateWorker(writer.c_str(), cb, writer);
+            if (recurse == gm::fs::EnumerateResult::Break) {
                 return recurse;
             }
         }
     }
 
-    return EnumerateResult::Continue;
+    return gm::fs::EnumerateResult::Continue;
 }
 
-bool gm::fs::NativeBackend::createDirectories(zstring_view path) {
+auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback& cb, EnumerateOptions opts) const -> EnumerateResult {
+    string_writer writer;
+
+    if ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath) {
+        writer.write(path);
+    }
+
+    return enumerateWorker(path, cb, writer);
+}
+
+auto gm::fs::NativeBackend::createDirectories(zstring_view path) -> Result {
     std::string dir;
 
     while (!path.empty() && strcmp(path.c_str(), "/") != 0 && !directoryExists(path)) {
         if (mkdir(path.c_str(), S_IRWXU) != 0) {
-            return false;
+            return errnoToResult(errno);
         }
 
         dir = gm::fs::path::parent(path);
         path = dir.c_str();
     }
 
-    return true;
+    return Result::Success;
 }
 
-bool gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) {
+auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
     gm::unique_resource<int, &close> inFile(open(from.c_str(), O_RDONLY));
     gm::unique_resource<int, &close> outFile(open(to.c_str(), O_WRONLY | O_CREAT));
 
@@ -101,16 +118,16 @@ bool gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) {
     for (;;) {
         ssize_t rs = read(inFile.get(), buffer, sizeof(buffer));
         if (rs < 0) {
-            return false;
+            return errnoToResult(errno);
         }
 
         if (rs == 0) {
-            return true;
+            return Result::Success;
         }
 
         ssize_t rs2 = write(outFile.get(), buffer, rs);
         if (rs2 != rs) {
-            return false;
+            return errnoToResult(errno);
         }
     }
 }

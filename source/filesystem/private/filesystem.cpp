@@ -4,7 +4,7 @@
 #include "grimm/filesystem/native_backend.h"
 #include "grimm/filesystem/filesystem.h"
 
-gm::fs::FileSystem::FileSystem() : _impl(std::move(activeDefaultBackend())) {}
+gm::fs::FileSystem::FileSystem() : _impl(activeDefaultBackend()) {}
 gm::fs::FileSystem::FileSystem(rc<Backend> backend) : _impl(std::move(backend)) {}
 
 gm::fs::FileSystem::~FileSystem() = default;

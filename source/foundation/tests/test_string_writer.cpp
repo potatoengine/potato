@@ -62,4 +62,22 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::string_writer") {
 
         DOCTEST_CHECK_EQ(sw.c_str(), "initial textdatafooter");
     }
+
+    DOCTEST_TEST_CASE("resize") {
+        string_writer sw;
+
+        sw.write("initial text");
+
+        sw.resize(4);
+        DOCTEST_CHECK_EQ(sw.c_str(), "init");
+
+        sw.resize(6);
+        DOCTEST_CHECK_EQ(sw.c_str(), "init  ");
+
+        sw.resize(8, 'x');
+        DOCTEST_CHECK_EQ(sw.c_str(), "init  xx");
+
+        sw.write("yy");
+        DOCTEST_CHECK_EQ(sw.c_str(), "init  xxyy");
+    }
 }

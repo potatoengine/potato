@@ -5,10 +5,24 @@
 #include "grimm/foundation/delegate.h"
 
 namespace gm::fs {
+    enum Result {
+        Success,
+        AccessDenied,
+        FileNotFound,
+        System,
+        UnsupportedOperation,
+        Unknown,
+    };
+
     enum EnumerateResult {
         Continue,
         Recurse,
         Break,
+    };
+
+    enum FileOpenMode {
+        Binary,
+        Text
     };
 
     enum FileType {
@@ -24,5 +38,16 @@ namespace gm::fs {
         FileType type = FileType::Regular;
     };
 
-    using EnumerateCallback = gm::delegate<EnumerateResult(FileInfo const&)>&;
+    enum class EnumerateOptions {
+        None = 0,
+        FullPath = 1 << 0,
+    };
+    inline constexpr EnumerateOptions operator|(EnumerateOptions lhs, EnumerateOptions rhs) noexcept {
+        return EnumerateOptions(std::underlying_type_t<EnumerateOptions>(lhs) | std::underlying_type_t<EnumerateOptions>(rhs));
+    }
+    inline constexpr EnumerateOptions operator&(EnumerateOptions lhs, EnumerateOptions rhs) noexcept {
+        return EnumerateOptions(std::underlying_type_t<EnumerateOptions>(lhs) & std::underlying_type_t<EnumerateOptions>(rhs));
+    }
+
+    using EnumerateCallback = gm::delegate<EnumerateResult(FileInfo const&)>;
 } // namespace gm::fs

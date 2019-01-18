@@ -24,14 +24,14 @@ namespace gm::fs {
         bool fileExists(zstring_view path) const noexcept { return _impl->fileExists(path); }
         bool directoryExists(zstring_view path) const noexcept { return _impl->directoryExists(path); }
 
-        std::ifstream openRead(zstring_view path) const noexcept { return _impl->openRead(path); }
-        std::ofstream openWrite(zstring_view path) const noexcept { return _impl->openWrite(path); }
+        std::ifstream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept { return _impl->openRead(path, mode); }
+        std::ofstream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept { return _impl->openWrite(path, mode); }
 
-        EnumerateResult enumerate(zstring_view path, EnumerateCallback cb) const { return _impl->enumerate(path, cb); }
+        EnumerateResult enumerate(zstring_view path, EnumerateCallback& cb, EnumerateOptions opts = EnumerateOptions::None) const { return _impl->enumerate(path, cb, opts); }
 
-        bool createDirectories(zstring_view path) { return _impl->createDirectories(path); }
+        [[nodiscard]] Result createDirectories(zstring_view path) { return _impl->createDirectories(path); }
 
-        bool copyFile(zstring_view from, zstring_view to) { return _impl->copyFile(from, to); }
+        [[nodiscard]] Result copyFile(zstring_view from, zstring_view to) { return _impl->copyFile(from, to); }
 
     private:
         static rc<Backend>& activeDefaultBackend();

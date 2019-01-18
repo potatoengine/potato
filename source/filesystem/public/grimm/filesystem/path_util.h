@@ -4,6 +4,7 @@
 
 #include "_export.h"
 #include "grimm/foundation/zstring_view.h"
+#include <initializer_list>
 
 namespace gm::fs::path {
     static constexpr std::size_t maxPathLength = 4096;
@@ -42,4 +43,11 @@ namespace gm::fs::path {
     // duplicate slashes or dots are condensed, e.g. /foo//bar..txt -> /foo/bar.txt
     // leading or trailing dots in components are stripped, e.g. /.foo/bar. -> /foo/bar
     GM_FILESYSTEM_API std::string normalize(string_view path);
+
+    // joins path components together
+    // adds a / between each component, e.g. foo/, bar -> foo//bar
+    // result is not normalized
+    // empty components are ignored, e.g. "", bar -> bar
+    GM_FILESYSTEM_API std::string join(std::initializer_list<string_view> components);
+
 } // namespace gm::fs::path

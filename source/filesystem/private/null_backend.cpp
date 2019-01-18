@@ -6,12 +6,12 @@ bool gm::fs::NullBackend::fileExists(zstring_view path) const noexcept { return 
 
 bool gm::fs::NullBackend::directoryExists(zstring_view path) const noexcept { return false; }
 
-std::ifstream gm::fs::NullBackend::openRead(zstring_view path) const { return {}; }
+std::ifstream gm::fs::NullBackend::openRead(zstring_view, FileOpenMode) const { return {}; }
 
-std::ofstream gm::fs::NullBackend::openWrite(zstring_view path) { return {}; }
+std::ofstream gm::fs::NullBackend::openWrite(zstring_view, FileOpenMode) { return {}; }
 
-auto gm::fs::NullBackend::enumerate(zstring_view path, EnumerateCallback cb) const -> EnumerateResult { return EnumerateResult::Continue; }
+auto gm::fs::NullBackend::enumerate(zstring_view, EnumerateCallback&, EnumerateOptions) const -> EnumerateResult { return EnumerateResult::Continue; }
 
-bool gm::fs::NullBackend::createDirectories(zstring_view path) { return false; }
+auto gm::fs::NullBackend::createDirectories(zstring_view path) -> Result { return Result::UnsupportedOperation; }
 
-bool gm::fs::NullBackend::copyFile(zstring_view from, zstring_view to) { return false; }
+auto gm::fs::NullBackend::copyFile(zstring_view from, zstring_view to) -> Result { return Result::UnsupportedOperation; }

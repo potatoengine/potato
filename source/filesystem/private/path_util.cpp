@@ -200,3 +200,27 @@ std::string gm::fs::path::normalize(string_view path) {
 
     return result;
 }
+
+std::string gm::fs::path::join(std::initializer_list<string_view> components) {
+    std::size_t size = 0;
+
+    for (auto sv : components) {
+        // path separator
+        if (!sv.empty() && size != 0) {
+            ++size;
+        }
+        size += sv.size();
+    }
+
+    std::string result;
+    result.reserve(size);
+
+    for (auto sv : components) {
+        if (!sv.empty() && !result.empty()) {
+            result.append("/", 1);
+        }
+        result.append(sv.data(), sv.size());
+    }
+
+    return result;
+}

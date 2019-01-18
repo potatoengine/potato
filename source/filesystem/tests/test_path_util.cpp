@@ -78,4 +78,13 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::path") {
         DOCTEST_CHECK_EQ(normalize("/foo./bar.txt"), "/foo/bar.txt");
         DOCTEST_CHECK_EQ(normalize("foo.//.bar..txt./."), "/foo/bar.txt");
     }
+
+    DOCTEST_TEST_CASE("join") {
+        DOCTEST_CHECK_EQ(join({"/foo", "bar.txt"}), "/foo/bar.txt");
+        DOCTEST_CHECK_EQ(join({"/foo", "/bar", "baz.txt"}), "/foo//bar/baz.txt");
+        DOCTEST_CHECK_EQ(join({"/foo", "", "/bar.txt"}), "/foo//bar.txt");
+        DOCTEST_CHECK_EQ(join({"", "foo", "/bar.txt"}), "foo//bar.txt");
+        DOCTEST_CHECK_EQ(join({"foo", "bar", ""}), "foo/bar");
+        DOCTEST_CHECK_EQ(join({}), "");
+    }
 }

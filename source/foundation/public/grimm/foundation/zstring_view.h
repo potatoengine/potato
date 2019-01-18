@@ -9,8 +9,8 @@
 namespace gm {
     class zstring_view {
     public:
-        using value_type = char const;
-        using pointer = value_type*;
+        using value_type = char;
+        using pointer = char const*;
         using size_type = std::size_t;
         using const_iterator = pointer;
 
