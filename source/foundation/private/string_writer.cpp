@@ -58,6 +58,16 @@ void gm::string_writer::reset() {
     *_ptr = '\0';
 }
 
+void gm::string_writer::resize(size_type newSize, value_type fill) {
+    if (_size < newSize) {
+        _grow(newSize);
+        std::memset(_ptr + _size, fill, newSize - _size);
+        _size = newSize;
+    }
+    _size = newSize;
+    _ptr[_size] = 0;
+}
+
 void gm::string_writer::_grow(size_type requiredSize) {
     // >= to account for NUL byte
     if (requiredSize >= _capacity) {
