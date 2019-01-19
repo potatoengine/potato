@@ -3,6 +3,8 @@
 #pragma once
 
 #include "grimm/foundation/zstring_view.h"
+#include "grimm/foundation/vector.h"
+#include <string>
 
 namespace gm::recon {
     class Context {

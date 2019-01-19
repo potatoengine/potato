@@ -4,6 +4,7 @@
 #include "grimm/foundation/string_view.h"
 #include "grimm/filesystem/path_util.h"
 #include "grimm/filesystem/filesystem.h"
+#include "grimm/library/asset_hashes.h"
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"
 #include "converters/convert_json.h"
@@ -39,6 +40,7 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         if (!_library.deserialize(libraryReadStream)) {
             std::cerr << "Failed to load asset library `" << libraryPath << "'\n";
         }
+        std::cout << "Loaded asset library `" << libraryPath << "'\n";
     }
 
     auto sources = collectSourceFiles();
@@ -114,9 +116,8 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::string> const& files) {
         auto assetId = _library.pathToAssetId(string_view(path));
         auto record = _library.findRecord(assetId);
 
-        if (record != nullptr) {
-            std::cout << "Updating `" << path << "'\n";
-        }
+        auto osPath = fs::path::join({_config.sourceFolderPath.c_str(), path.c_str()});
+        auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
 
         Converter* converter = findConverter(string_view(path));
         if (converter == nullptr) {
@@ -125,21 +126,38 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::string> const& files) {
             continue;
         }
 
+        bool upToDate = record != nullptr && isUpToDate(*record, contentHash, *converter);
+        if (upToDate) {
+            std::cout << "Asset `" << path << "' is up-to-date\n";
+            continue;
+        }
+
+        std::cout << "Asset `" << path << "' requires import (" << converter->name() << ")\n";
+
+        AssetImportRecord newRecord;
+        newRecord.assetId = assetId;
+        newRecord.path = path.c_str();
+        newRecord.contentHash = contentHash;
+        newRecord.category = AssetCategory::Source;
+        newRecord.importerName = converter->name();
+        newRecord.importerRevision = converter->revision();
+        _library.insertRecord(std::move(newRecord));
+
         Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str());
         if (!converter->convert(context)) {
             failed = true;
             std::cerr << "Failed conversion for `" << path << "'\n";
             continue;
         }
-
-        AssetRecord newRecord;
-        newRecord.assetId = assetId;
-        newRecord.path = path.c_str();
-        newRecord.contentHash = 0;
-        _library.insertRecord(std::move(newRecord));
     }
 
     return !failed;
+}
+
+bool gm::recon::ConverterApp::isUpToDate(AssetImportRecord const& record, gm::uint64 contentHash, Converter const& converter) const noexcept {
+    return record.contentHash == contentHash &&
+           string_view(record.importerName) == converter.name() &&
+           record.importerRevision == converter.revision();
 }
 
 auto gm::recon::ConverterApp::findConverter(string_view path) const -> Converter* {
@@ -162,7 +180,7 @@ auto gm::recon::ConverterApp::collectSourceFiles() -> vector<std::string> {
 
     vector<std::string> files;
 
-    auto cb = fs::EnumerateCallback([&files](fs::FileInfo const& info) -> fs::EnumerateResult {
+    auto cb = [&files](fs::FileInfo const& info) -> fs::EnumerateResult {
         if (info.type == fs::FileType::Regular) {
             files.push_back(info.path);
         }
@@ -170,7 +188,7 @@ auto gm::recon::ConverterApp::collectSourceFiles() -> vector<std::string> {
             return fs::EnumerateResult::Recurse;
         }
         return fs::EnumerateResult::Continue;
-    });
+    };
     fs.enumerate(_config.sourceFolderPath.c_str(), cb, fs::EnumerateOptions::None);
 
     return files;

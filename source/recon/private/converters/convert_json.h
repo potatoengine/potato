@@ -11,5 +11,8 @@ namespace gm::recon {
         ~JsonConverter();
 
         bool convert(Context& ctx) override;
+
+        string_view name() const noexcept override { return "json"; }
+        uint64 revision() const noexcept override { return 0; }
     };
 } // namespace gm::recon

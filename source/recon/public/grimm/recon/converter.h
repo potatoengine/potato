@@ -14,5 +14,8 @@ namespace gm::recon {
         Converter& operator=(Converter&&) = delete;
 
         virtual bool convert(Context& ctx) = 0;
+
+        virtual string_view name() const noexcept = 0;
+        virtual uint64 revision() const noexcept = 0;
     };
 } // namespace gm::recon

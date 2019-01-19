@@ -21,9 +21,9 @@ namespace gm {
         GM_LIBRARY_API auto pathToAssetId(string_view path) const -> AssetId;
         GM_LIBRARY_API auto assetIdToPath(AssetId assetId) const -> string_view;
 
-        GM_LIBRARY_API AssetRecord const* findRecord(AssetId assetId) const;
+        GM_LIBRARY_API AssetImportRecord const* findRecord(AssetId assetId) const;
 
-        GM_LIBRARY_API bool insertRecord(AssetRecord record);
+        GM_LIBRARY_API bool insertRecord(AssetImportRecord record);
 
         GM_LIBRARY_API bool serialize(std::ostream& stream) const;
         GM_LIBRARY_API bool deserialize(std::istream& stream);
@@ -33,6 +33,6 @@ namespace gm {
             constexpr uint64 operator()(AssetId assetId) const noexcept { return static_cast<uint64>(assetId); }
         };
 
-        std::unordered_map<AssetId, AssetRecord, HashAssetId> _assets;
+        std::unordered_map<AssetId, AssetImportRecord, HashAssetId> _assets;
     };
 } // namespace gm

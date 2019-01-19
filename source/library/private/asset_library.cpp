@@ -22,12 +22,12 @@ auto gm::AssetLibrary::assetIdToPath(AssetId assetId) const -> string_view {
     return record != nullptr ? string_view(record->path) : string_view{};
 }
 
-auto gm::AssetLibrary::findRecord(AssetId assetId) const -> AssetRecord const* {
+auto gm::AssetLibrary::findRecord(AssetId assetId) const -> AssetImportRecord const* {
     auto it = _assets.find(assetId);
     return it != _assets.end() ? &it->second : nullptr;
 }
 
-bool gm::AssetLibrary::insertRecord(AssetRecord record) {
+bool gm::AssetLibrary::insertRecord(AssetImportRecord record) {
     _assets[record.assetId] = std::move(record);
     return true;
 }
@@ -43,6 +43,10 @@ bool gm::AssetLibrary::serialize(std::ostream& stream) const {
         recObj.AddMember("id", rapidjson::Value(static_cast<uint64>(record.assetId)), doc.GetAllocator());
         recObj.AddMember("path", rapidjson::Value(rapidjson::StringRef(record.path.data(), record.path.size())), doc.GetAllocator());
         recObj.AddMember("contentHash", rapidjson::Value(record.contentHash), doc.GetAllocator());
+        auto catName = assetCategoryName(record.category);
+        recObj.AddMember("category", rapidjson::Value(rapidjson::StringRef(catName.data(), catName.size())), doc.GetAllocator());
+        recObj.AddMember("importerName", rapidjson::Value(rapidjson::StringRef(record.importerName.data(), record.importerName.size())), doc.GetAllocator());
+        recObj.AddMember("importerRevision", rapidjson::Value(record.importerRevision), doc.GetAllocator());
         array.PushBack(recObj, doc.GetAllocator());
     }
     root.AddMember("records", array, doc.GetAllocator());
@@ -85,11 +89,23 @@ bool gm::AssetLibrary::deserialize(std::istream& stream) {
         if (!record.HasMember("contentHash") || !record["contentHash"].IsUint64()) {
             continue;
         }
+        if (!record.HasMember("category") || !record["category"].IsString()) {
+            continue;
+        }
+        if (!record.HasMember("importerName") || !record["importerName"].IsString()) {
+            continue;
+        }
+        if (!record.HasMember("importerRevision") || !record["importerRevision"].IsUint64()) {
+            continue;
+        }
 
-        AssetRecord newRecord;
+        AssetImportRecord newRecord;
         newRecord.assetId = static_cast<AssetId>(record["id"].GetUint64());
         newRecord.path = record["path"].GetString();
         newRecord.contentHash = record["contentHash"].GetUint64();
+        newRecord.category = assetCategoryFromName(record["category"].GetString());
+        newRecord.importerName = record["importerName"].GetString();
+        newRecord.importerRevision = record["importerRevision"].GetUint64();
 
         insertRecord(std::move(newRecord));
     }

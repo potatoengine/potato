@@ -11,5 +11,8 @@ namespace gm::recon {
         ~CopyConverter();
 
         bool convert(Context& ctx) override;
+
+        string_view name() const noexcept override { return "copy"; }
+        uint64 revision() const noexcept override { return 0; }
     };
 } // namespace gm::recon

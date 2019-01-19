@@ -11,6 +11,7 @@
 #include "grimm/recon/converter.h"
 #include "grimm/recon/converter_config.h"
 #include "grimm/library/asset_library.h"
+#include "grimm/library/asset_hashes.h"
 
 namespace gm::recon {
     class Converter;
@@ -31,6 +32,8 @@ namespace gm::recon {
         vector<std::string> collectSourceFiles();
         bool convertFiles(vector<std::string> const& files);
 
+        bool isUpToDate(AssetImportRecord const& record, uint64 contentHash, Converter const& converter) const noexcept;
+
         Converter* findConverter(string_view path) const;
 
         struct Mapping {
@@ -42,5 +45,6 @@ namespace gm::recon {
         vector<Mapping> _converters;
         ConverterConfig _config;
         AssetLibrary _library;
+        AssetHashes _hashes;
     };
 } // namespace gm::recon
