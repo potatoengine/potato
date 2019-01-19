@@ -1,20 +1,12 @@
 #include "grimm/foundation/delegate_view.h"
 #include "doctest.h"
 
-namespace {
-    struct Test {
-        int& r;
-
-        int next() { return ++r; }
-        int add(int i) const { return r + i; }
-    };
-} // namespace
-
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::delegate_view") {
     using namespace gm;
 
     DOCTEST_TEST_CASE("lambda delegate_view") {
-        delegate_view d = +[](int i) { return i * 2; };
+        int (*f)(int) = [](int i) { return i * 2; };
+        delegate_view d = f;
 
         DOCTEST_CHECK_EQ(d(0), 0);
         DOCTEST_CHECK_EQ(d(-1), -2);
@@ -22,18 +14,19 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::delegate_view") {
     }
 
     DOCTEST_TEST_CASE("delegate_view reassignment") {
-        int i1 = 1;
-        Test t1{i1};
+        int i1 = 2;
+        auto f1 = [&i1](int i) { return i1 += i; };
+        static_assert(is_invocable_v<decltype(f1), int>);
 
-        int i2 = 1;
-        Test t2{i2};
+        int i2 = 2;
+        auto f2 = [&i2](int i) { return i2 *= i; };
 
-        delegate_view<int(Test&)> d = delegate_view(&Test::next);
-        d(t1);
-        DOCTEST_CHECK_EQ(i1, 2);
+        delegate_view<int(int)> d(f1);
+        d(2);
+        DOCTEST_CHECK_EQ(i1, 4);
 
-        d = delegate_view(&Test::next);
-        d(t2);
-        DOCTEST_CHECK_EQ(i2, 2);
+        d = f2;
+        d(4);
+        DOCTEST_CHECK_EQ(i2, 8);
     }
 }
