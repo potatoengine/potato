@@ -26,9 +26,9 @@ jobs:
     displayName: Build Information
   - bash: |
       set -o xtrace
-      mkdir build
-      cd build
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DDXC_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/dxc" ..
+      mkdir -p build/shared
+      cd build/shared
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DDXC_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/dxc" "${BUILD_SOURCESDIRECTORY}"
     displayName: CMake Configure
   - bash: |
       set -o xtrace
