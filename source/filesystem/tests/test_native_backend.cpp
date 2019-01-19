@@ -50,10 +50,10 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
 
         vector<std::string> entries;
 
-        auto cb(EnumerateCallback{[&entries](FileInfo const& info) {
+        auto cb = [&entries](FileInfo const& info) {
             entries.push_back(info.path);
             return EnumerateResult::Recurse;
-        }});
+        };
         DOCTEST_CHECK_EQ(native.enumerate(".", cb), EnumerateResult::Continue);
 
         DOCTEST_REQUIRE_EQ(entries.size(), expected.size());
