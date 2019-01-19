@@ -36,8 +36,3 @@ endif(GM_GPU_ENABLE_D3D12)
 add_subdirectory(public/grimm/recon)
 add_subdirectory(private)
 add_subdirectory(tests)
-
-find_package(Filesystem REQUIRED)
-if(LIBFS)
-    target_link_libraries(recon_lib PUBLIC "${LIBFS}")
-endif()
