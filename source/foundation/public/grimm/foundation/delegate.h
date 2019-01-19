@@ -56,9 +56,9 @@ namespace gm::_detail {
         destruct_t destruct = nullptr;
     };
 
-    template <typename R, typename... P>
+    template <typename R, bool C, typename... P>
     struct delegate_vtable_typed : delegate_vtable_base {
-        using call_t = R (*)(void* obj, P&&... params);
+        using call_t = R (*)(std::conditional_t<C, void const*, void*> obj, P&&... params);
 
         call_t call = nullptr;
     };
@@ -68,9 +68,9 @@ namespace gm::_detail {
         static void move(void* dst, void* src) { new (dst) F(std::move(*static_cast<F*>(src))); }
         static void destruct(void* obj) { static_cast<F*>(obj)->~F(); }
         template <typename R, typename... P>
-        static R call(void* obj, P&&... params) {
+        static R call(std::conditional_t<std::is_const_v<F>, void const*, void*> obj, P&&... params) {
             F& f = *static_cast<F*>(obj);
-            if constexpr (std::is_same_v<R, void>) {
+            if constexpr (std::is_void_v<R>) {
                 invoke(std::forward<F>(f), std::forward<P>(params)...);
             }
             else {
@@ -79,11 +79,11 @@ namespace gm::_detail {
         }
     };
 
-    template <typename F, typename R, typename... P>
-    constexpr auto vtable_c = delegate_vtable_typed<R, P...>{
-        {delegate_vtable_impl<F>::move,
-         delegate_vtable_impl<F>::destruct},
-        delegate_vtable_impl<F>::template call<R, P...>};
+    template <typename F, typename R, bool C, typename... P>
+    constexpr auto vtable_c = delegate_vtable_typed<R, C, P...>{
+        {&delegate_vtable_impl<F>::move,
+         &delegate_vtable_impl<F>::destruct},
+        &delegate_vtable_impl<F>::template call<R, P...>};
 
     class delegate_base {
     protected:
@@ -127,10 +127,10 @@ namespace gm::_detail {
         storage_t _storage;
     };
 
-    template <typename ReturnType, typename... ParamTypes>
+    template <typename ReturnType, bool Const, typename... ParamTypes>
     class delegate_typed : public delegate_base {
     protected:
-        using vtable_c = _detail::delegate_vtable_typed<ReturnType, ParamTypes...>;
+        using vtable_c = _detail::delegate_vtable_typed<ReturnType, Const, ParamTypes...>;
         using storage_t = typename delegate_base::storage_t;
 
     public:
@@ -139,7 +139,7 @@ namespace gm::_detail {
         /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
         /// <param name="function"> The function to bind. </param>
         template <typename Functor, typename = enable_if_t<_detail::is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
-        /*implicit*/ delegate_typed(Functor&& functor);
+        /*implicit*/ delegate_typed(Functor&& functor) { assign(std::forward<Functor>(functor)); }
 
         template <typename Functor, typename = enable_if_t<_detail::is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
         delegate_typed& operator=(Functor&& functor);
@@ -150,16 +150,13 @@ namespace gm::_detail {
     };
 } // namespace gm::_detail
 
-/// <summary> Wrapper for a function object, analogous to std::function. </summary>
-/// <typeparam name="ReturnType"> Type of the return type. </typeparam>
-/// <typeparam name="ParamTypes"> Type of the parameter types. </typeparam>
 template <typename ReturnType, typename... ParamTypes>
-class gm::delegate<ReturnType(ParamTypes...)> : public _detail::delegate_typed<ReturnType, ParamTypes...> {
-    using vtable_c = _detail::delegate_vtable_typed<ReturnType, ParamTypes...>;
-    using storage_t = typename _detail::delegate_typed<ReturnType, ParamTypes...>::storage_t;
+class gm::delegate<ReturnType(ParamTypes...)> : public _detail::delegate_typed<ReturnType, false, ParamTypes...> {
+    using vtable_c = _detail::delegate_vtable_typed<ReturnType, false, ParamTypes...>;
+    using storage_t = typename _detail::delegate_typed<ReturnType, false, ParamTypes...>::storage_t;
 
 public:
-    using _detail::delegate_typed<ReturnType, ParamTypes...>::delegate_typed;
+    using _detail::delegate_typed<ReturnType, false, ParamTypes...>::delegate_typed;
 
     template <typename ClassType>
     delegate(ClassType& object, ReturnType (ClassType::*method)(ParamTypes...))
@@ -173,19 +170,16 @@ public:
     delegate(ClassType* object, ReturnType (ClassType::*method)(ParamTypes...))
         : delegate([object, method](ParamTypes&&... params) { return (object->*method)(std::forward<ParamTypes>(params)...); }) {}
 
-    /// <summary> Invoke the bound delegate, which must not be empty. </summary>
-    /// <param name="params"> Function arguments. </param>
-    /// <returns> The return value of the bound function, if any. </returns>
     inline ReturnType operator()(ParamTypes... params);
 };
 
 template <typename ReturnType, typename... ParamTypes>
-class gm::delegate<ReturnType(ParamTypes...) const> : public _detail::delegate_typed<ReturnType, ParamTypes...> {
-    using vtable_c = _detail::delegate_vtable_typed<ReturnType, ParamTypes...>;
-    using storage_t = typename _detail::delegate_typed<ReturnType, ParamTypes...>::storage_t;
+class gm::delegate<ReturnType(ParamTypes...) const> : public _detail::delegate_typed<ReturnType, true, ParamTypes...> {
+    using vtable_c = _detail::delegate_vtable_typed<ReturnType, true, ParamTypes...>;
+    using storage_t = typename _detail::delegate_typed<ReturnType, true, ParamTypes...>::storage_t;
 
 public:
-    using _detail::delegate_typed<ReturnType, ParamTypes...>::delegate_typed;
+    using _detail::delegate_typed<ReturnType, true, ParamTypes...>::delegate_typed;
 
     template <typename ClassType>
     delegate(ClassType const& object, ReturnType (ClassType::*method)(ParamTypes...) const)
@@ -195,9 +189,6 @@ public:
     delegate(ClassType const* object, ReturnType (ClassType::*method)(ParamTypes...) const)
         : delegate([object, method](ParamTypes&&... params) { return (object->*method)(std::forward<ParamTypes>(params)...); }) {}
 
-    /// <summary> Invoke the bound delegate, which must not be empty. </summary>
-    /// <param name="params"> Function arguments. </param>
-    /// <returns> The return value of the bound function, if any. </returns>
     inline ReturnType operator()(ParamTypes... params) const;
 };
 
@@ -235,16 +226,9 @@ void gm::_detail::delegate_base::reset(std::nullptr_t) {
         _vtable = nullptr;
     }
 }
-
-template <typename ReturnType, typename... ParamTypes>
+template <typename ReturnType, bool Const, typename... ParamTypes>
 template <typename Functor, typename>
-gm::_detail::delegate_typed<ReturnType, ParamTypes...>::delegate_typed(Functor&& functor) {
-    assign(std::forward<Functor>(functor));
-}
-
-template <typename ReturnType, typename... ParamTypes>
-template <typename Functor, typename>
-auto gm::_detail::delegate_typed<ReturnType, ParamTypes...>::operator=(Functor&& functor) -> delegate_typed& {
+auto gm::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::operator=(Functor&& functor) -> delegate_typed& {
     if (this->_vtable != nullptr) {
         this->_vtable->destruct(&this->_storage);
     }
@@ -253,15 +237,20 @@ auto gm::_detail::delegate_typed<ReturnType, ParamTypes...>::operator=(Functor&&
     return *this;
 }
 
-template <typename ReturnType, typename... ParamTypes>
+template <typename ReturnType, bool Const, typename... ParamTypes>
 template <typename Functor>
-void gm::_detail::delegate_typed<ReturnType, ParamTypes...>::assign(Functor&& functor) {
+void gm::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::assign(Functor&& functor) {
     using FunctorType = std::decay_t<Functor>;
 
     static_assert(alignof(FunctorType) <= alignof(storage_t), "Alignment of the functor given to delegate is too strict");
     static_assert(sizeof(FunctorType) <= sizeof(storage_t), "Size of the functor given to delegate is too wide");
 
-    this->_vtable = &_detail::vtable_c<FunctorType, ReturnType, ParamTypes...>;
+    if constexpr (Const) {
+        this->_vtable = &_detail::vtable_c<FunctorType const, ReturnType, true, ParamTypes...>;
+    }
+    else {
+        this->_vtable = &_detail::vtable_c<FunctorType, ReturnType, false, ParamTypes...>;
+    }
     new (&this->_storage) FunctorType(std::forward<Functor>(functor));
 }
 
