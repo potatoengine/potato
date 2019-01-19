@@ -32,6 +32,12 @@ namespace gm::fs {
         Other
     };
 
+    struct FileStat {
+        std::size_t size = 0;
+        uint64 mtime = 0;
+        FileType type = FileType::Regular;
+    };
+
     struct FileInfo {
         zstring_view path;
         std::size_t size = 0;

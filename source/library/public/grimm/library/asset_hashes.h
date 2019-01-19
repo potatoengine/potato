@@ -25,6 +25,9 @@ namespace gm {
 
         GM_LIBRARY_API uint64 hashAssetAtPath(zstring_view path);
 
+        GM_LIBRARY_API bool serialize(std::ostream& stream) const;
+        GM_LIBRARY_API bool deserialize(std::istream& stream);
+
     private:
         fs::FileSystem _fileSystem;
         std::unordered_map<std::string, HashRecord> _hashes;

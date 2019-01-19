@@ -43,6 +43,18 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         std::cout << "Loaded asset library `" << libraryPath << "'\n";
     }
 
+    auto hashCachePath = fs::path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
+    if (fs.fileExists(hashCachePath.c_str())) {
+        std::ifstream hashesReadStream(hashCachePath);
+        if (!hashesReadStream) {
+            std::cerr << "Failed to open hash cache `" << hashCachePath << "'\n";
+        }
+        if (!_hashes.deserialize(hashesReadStream)) {
+            std::cerr << "Failed to load hash cache `" << hashCachePath << "'\n";
+        }
+        std::cout << "Loaded hash cache `" << hashCachePath << "'\n";
+    }
+
     auto sources = collectSourceFiles();
 
     if (sources.empty()) {
@@ -85,6 +97,13 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         std::cerr << "Conversion failed\n";
         return false;
     }
+
+    std::ofstream hashesWriteStream(hashCachePath);
+    if (!_hashes.serialize(hashesWriteStream)) {
+        std::cerr << "Failed to write hash cache `" << hashCachePath << "'\n";
+        return false;
+    }
+    hashesWriteStream.close();
 
     std::ofstream libraryWriteStream(libraryPath);
     if (!_library.serialize(libraryWriteStream)) {

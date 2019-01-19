@@ -14,6 +14,8 @@ namespace gm::fs {
         GM_FILESYSTEM_API bool fileExists(zstring_view path) const noexcept override;
         GM_FILESYSTEM_API bool directoryExists(zstring_view path) const noexcept override;
 
+        GM_FILESYSTEM_API Result fileStat(zstring_view path, FileStat& outInfo) const override;
+
         GM_FILESYSTEM_API std::ifstream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const override;
         GM_FILESYSTEM_API std::ofstream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) override;
 

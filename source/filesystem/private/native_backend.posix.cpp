@@ -39,6 +39,18 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return S_ISDIR(st.st_mode) != 0;
 }
 
+auto gm::fs::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const -> Result {
+    struct stat st;
+    if (stat(path.c_str(), &st) != 0) {
+        return errnoToResult(errno);
+    }
+
+    outInfo.size = st.st_size;
+    outInfo.mtime = st.st_mtime;
+    outInfo.type = S_ISREG(st.st_mode) ? FileType::Regular : S_ISDIR(st.st_mode) ? FileType::Directory : S_ISLNK(st.st_mode) ? FileType::SymbolicLink : FileType::Other;
+    return Result::Success;
+}
+
 static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback cb, gm::string_writer& writer) -> gm::fs::EnumerateResult {
     gm::unique_resource<DIR*, &closedir> dir(opendir(path.c_str()));
 

@@ -6,6 +6,8 @@ bool gm::fs::NullBackend::fileExists(zstring_view path) const noexcept { return 
 
 bool gm::fs::NullBackend::directoryExists(zstring_view path) const noexcept { return false; }
 
+auto gm::fs::NullBackend::fileStat(zstring_view path, FileStat& outInfo) const -> Result { return Result::UnsupportedOperation; }
+
 std::ifstream gm::fs::NullBackend::openRead(zstring_view, FileOpenMode) const { return {}; }
 
 std::ofstream gm::fs::NullBackend::openWrite(zstring_view, FileOpenMode) { return {}; }

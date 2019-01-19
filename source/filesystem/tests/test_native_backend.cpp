@@ -66,6 +66,17 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
         }
     }
 
+    DOCTEST_TEST_CASE("stat") {
+        auto native = NativeBackend::create();
+
+        FileStat stat;
+        auto rs = native.fileStat("test.txt", stat);
+        DOCTEST_CHECK_EQ(rs, Result::Success);
+        DOCTEST_CHECK_EQ(stat.type, FileType::Regular);
+
+        // note: can't test size (Windows/UNIX line endings!) or mtime (git)
+    }
+
     // TODO:
     // Figure out how to reliably test "write" operations on the native backend.
     // - [ ] test openWrite

@@ -19,6 +19,8 @@ namespace gm::fs {
         virtual bool fileExists(zstring_view path) const noexcept = 0;
         virtual bool directoryExists(zstring_view path) const noexcept = 0;
 
+        virtual Result fileStat(zstring_view path, FileStat& outInfo) const = 0;
+
         virtual std::ifstream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const = 0;
         virtual std::ofstream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) = 0;
 

@@ -24,6 +24,8 @@ namespace gm::fs {
         bool fileExists(zstring_view path) const noexcept { return _impl->fileExists(path); }
         bool directoryExists(zstring_view path) const noexcept { return _impl->directoryExists(path); }
 
+        [[nodiscard]] Result fileStat(zstring_view path, FileStat& outInfo) const { return _impl->fileStat(path, outInfo); }
+
         std::ifstream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept { return _impl->openRead(path, mode); }
         std::ofstream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept { return _impl->openWrite(path, mode); }
 
