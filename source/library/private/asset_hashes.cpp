@@ -9,7 +9,7 @@ auto gm::AssetHashes::hashAssetContent(span<gm::byte const> contents) noexcept -
     return static_cast<uint64>(hasher);
 }
 
-auto gm::AssetHashes::hashAssetStream(std::ifstream& stream) -> gm::uint64 {
+auto gm::AssetHashes::hashAssetStream(std::istream& stream) -> gm::uint64 {
     auto hasher = fnv1a();
     char buffer[32768];
     while (stream) {

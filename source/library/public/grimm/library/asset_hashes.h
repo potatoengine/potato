@@ -7,7 +7,7 @@
 #include "grimm/foundation/types.h"
 #include "grimm/filesystem/filesystem.h"
 #include <string>
-#include <fstream>
+#include <iosfwd>
 #include <unordered_map>
 
 namespace gm {
@@ -21,7 +21,7 @@ namespace gm {
     class AssetHashes {
     public:
         static GM_LIBRARY_API uint64 hashAssetContent(span<byte const> contents) noexcept;
-        static GM_LIBRARY_API uint64 hashAssetStream(std::ifstream& stream);
+        static GM_LIBRARY_API uint64 hashAssetStream(std::istream& stream);
 
         GM_LIBRARY_API uint64 hashAssetAtPath(zstring_view path);
 
