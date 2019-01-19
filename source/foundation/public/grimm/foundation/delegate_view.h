@@ -17,10 +17,10 @@ namespace gm::_detail {
     R delegate_view_thunk(void const* obj, P&&... params) {
         F const& f = *static_cast<F const*>(obj);
         if constexpr (std::is_void_v<R>) {
-            invoke(f, std::forward<P>(params)...);
+            f(std::forward<P>(params)...);
         }
         else {
-            return invoke(f, std::forward<P>(params)...);
+            return f(std::forward<P>(params)...);
         }
     };
 
@@ -46,15 +46,18 @@ class gm::delegate_view<ReturnType(ParamTypes...)> {
 private:
     using holder_t = _detail::delegate_view_holder<ReturnType, ParamTypes...>;
 
+    template <typename Functor>
+    static constexpr bool is_compatible_v = is_invocable_v<Functor, ParamTypes...> && !std::is_member_function_pointer_v<Functor> && !std::is_base_of_v<delegate_view, std::decay_t<Functor>>;
+
 public:
     delegate_view() = delete;
     delegate_view(delegate_view const&) = default;
     delegate_view& operator=(delegate_view const&) = default;
 
-    template <typename Functor, typename = enable_if_t<is_invocable_v<Functor, ParamTypes...> && !std::is_member_function_pointer_v<Functor> && !std::is_base_of_v<delegate_view, std::decay_t<Functor>>>>
+    template <typename Functor, typename = enable_if_t<is_compatible_v<Functor>>>
     /*implicit*/ delegate_view(Functor&& functor) : _holder(std::forward<Functor>(functor)) {}
 
-    template <typename Functor, typename = enable_if_t<is_invocable_v<Functor, ParamTypes...> && !std::is_member_function_pointer_v<Functor> && !std::is_base_of_v<delegate_view, std::decay_t<Functor>>>>
+    template <typename Functor, typename = enable_if_t<is_compatible_v<Functor>>>
     delegate_view& operator=(Functor&& functor) {
         _holder = holder_t(std::forward<Functor>(functor));
         return *this;
