@@ -31,23 +31,6 @@ namespace gm {
 namespace gm::_detail {
     static constexpr size_t delegate_size_c = 3;
 
-#if defined(__cpp_lib_invoke)
-    using std::invoke;
-#else
-    template <typename Functor, typename... Args>
-    constexpr decltype(auto) invoke(Functor&& func, Args&&... args) noexcept(noexcept(func(std::forward<Args>(args)...))) {
-        return std::forward<Functor>(func)(std::forward<Args>(args)...);
-    }
-#endif
-
-#if defined(__cpp_lib_is_invocable)
-    template <typename Functor, typename... ParamTypes>
-    constexpr bool is_invocable_v = std::is_invocable_v<Functor, ParamTypes...>;
-#else
-    template <typename Functor, typename... ParamTypes>
-    constexpr bool is_invocable_v = true; // FIXME: implement correctly? mostly only needed to improve diagnostics
-#endif
-
     struct delegate_vtable_base {
         using move_t = void (*)(void* dst, void* src);
         using destruct_t = void (*)(void* obj);
@@ -138,10 +121,10 @@ namespace gm::_detail {
 
         /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
         /// <param name="function"> The function to bind. </param>
-        template <typename Functor, typename = enable_if_t<_detail::is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
+        template <typename Functor, typename = enable_if_t<is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
         /*implicit*/ delegate_typed(Functor&& functor) { assign(std::forward<Functor>(functor)); }
 
-        template <typename Functor, typename = enable_if_t<_detail::is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
+        template <typename Functor, typename = enable_if_t<is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
         delegate_typed& operator=(Functor&& functor);
 
     private:
