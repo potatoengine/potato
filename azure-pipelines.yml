@@ -47,7 +47,7 @@ jobs:
       set -o xtrace
       mkdir -p build/static
       cd build/static
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DDXC_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/dxc" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
     displayName: CMake Configure (Static)
   - bash: |
       set -o xtrace
