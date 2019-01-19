@@ -33,7 +33,7 @@ jobs:
   - bash: |
       set -o xtrace
       cmake --build build/shared --config RelWithDebInfo --parallel
-    displayName: Build (Release)
+    displayName: Build (Release Shared)
   - bash: |
       set -o xtrace
       cd build/shared
@@ -42,7 +42,7 @@ jobs:
   - bash: |
       set -o xtrace
       cmake --build build/shared --config Debug --parallel
-    displayName: Build (Debug)
+    displayName: Build (Debug Shared)
   - bash: |
       set -o xtrace
       mkdir -p build/static
@@ -52,11 +52,11 @@ jobs:
   - bash: |
       set -o xtrace
       cmake --build build/static --config RelWithDebInfo --parallel
-    displayName: Build (Release)
+    displayName: Build (Release Static)
   - bash: |
       set -o xtrace
       cmake --build build/static --config Debug --parallel
-    displayName: Build (Debug)
+    displayName: Build (Debug Static)
 
 - job: Linux
   pool:
