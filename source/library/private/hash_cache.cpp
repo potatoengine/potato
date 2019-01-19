@@ -1,19 +1,19 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/library/asset_hashes.h"
+#include "grimm/library/hash_cache.h"
 #include "grimm/foundation/fnv1a.h"
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
 
-auto gm::AssetHashes::hashAssetContent(span<gm::byte const> contents) noexcept -> gm::uint64 {
+auto gm::HashCache::hashAssetContent(span<gm::byte const> contents) noexcept -> gm::uint64 {
     auto hasher = fnv1a();
     hasher(contents);
     return static_cast<uint64>(hasher);
 }
 
-auto gm::AssetHashes::hashAssetStream(std::istream& stream) -> gm::uint64 {
+auto gm::HashCache::hashAssetStream(std::istream& stream) -> gm::uint64 {
     auto hasher = fnv1a();
     char buffer[32768];
     while (stream) {
@@ -24,7 +24,7 @@ auto gm::AssetHashes::hashAssetStream(std::istream& stream) -> gm::uint64 {
     return static_cast<uint64>(hasher);
 }
 
-auto gm::AssetHashes::hashAssetAtPath(zstring_view path) -> gm::uint64 {
+auto gm::HashCache::hashAssetAtPath(zstring_view path) -> gm::uint64 {
     fs::FileStat stat;
     auto rs = _fileSystem.fileStat(path, stat);
     if (rs != fs::Result::Success) {
@@ -50,7 +50,7 @@ auto gm::AssetHashes::hashAssetAtPath(zstring_view path) -> gm::uint64 {
     return hash;
 }
 
-bool gm::AssetHashes::serialize(std::ostream& stream) const {
+bool gm::HashCache::serialize(std::ostream& stream) const {
     rapidjson::Document doc;
     doc.SetObject();
     auto root = doc.GetObject();
@@ -68,7 +68,7 @@ bool gm::AssetHashes::serialize(std::ostream& stream) const {
     return doc.Accept(writer);
 }
 
-bool gm::AssetHashes::deserialize(std::istream& stream) {
+bool gm::HashCache::deserialize(std::istream& stream) {
     rapidjson::IStreamWrapper inWrapper(stream);
     rapidjson::Document doc;
     doc.ParseStream(inWrapper);

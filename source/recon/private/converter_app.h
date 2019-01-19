@@ -11,7 +11,7 @@
 #include "grimm/recon/converter.h"
 #include "grimm/recon/converter_config.h"
 #include "grimm/library/asset_library.h"
-#include "grimm/library/asset_hashes.h"
+#include "grimm/library/hash_cache.h"
 
 namespace gm::recon {
     class Converter;
@@ -45,6 +45,6 @@ namespace gm::recon {
         vector<Mapping> _converters;
         ConverterConfig _config;
         AssetLibrary _library;
-        AssetHashes _hashes;
+        HashCache _hashes;
     };
 } // namespace gm::recon
