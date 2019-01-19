@@ -19,7 +19,7 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return std::filesystem::is_directory(std::string_view(path));
 }
 
-auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback& cb, EnumerateOptions opts) const -> EnumerateResult {
+auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
     auto iter = std::filesystem::recursive_directory_iterator(path.c_str());
     auto end = std::filesystem::recursive_directory_iterator();
 

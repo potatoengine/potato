@@ -39,7 +39,7 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return S_ISDIR(st.st_mode) != 0;
 }
 
-static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback& cb, gm::string_writer& writer) -> gm::fs::EnumerateResult {
+static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback cb, gm::string_writer& writer) -> gm::fs::EnumerateResult {
     gm::unique_resource<DIR*, &closedir> dir(opendir(path.c_str()));
 
     auto writerPos = writer.size();
@@ -84,7 +84,7 @@ static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback& cb
     return gm::fs::EnumerateResult::Continue;
 }
 
-auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback& cb, EnumerateOptions opts) const -> EnumerateResult {
+auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
     string_writer writer;
 
     if ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath) {

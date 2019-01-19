@@ -10,7 +10,7 @@ std::ifstream gm::fs::NullBackend::openRead(zstring_view, FileOpenMode) const { 
 
 std::ofstream gm::fs::NullBackend::openWrite(zstring_view, FileOpenMode) { return {}; }
 
-auto gm::fs::NullBackend::enumerate(zstring_view, EnumerateCallback&, EnumerateOptions) const -> EnumerateResult { return EnumerateResult::Continue; }
+auto gm::fs::NullBackend::enumerate(zstring_view, EnumerateCallback, EnumerateOptions) const -> EnumerateResult { return EnumerateResult::Continue; }
 
 auto gm::fs::NullBackend::createDirectories(zstring_view path) -> Result { return Result::UnsupportedOperation; }
 

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "grimm/foundation/delegate.h"
+#include "grimm/foundation/delegate_ref.h"
 
 namespace gm::fs {
     enum Result {
@@ -49,5 +49,5 @@ namespace gm::fs {
         return EnumerateOptions(std::underlying_type_t<EnumerateOptions>(lhs) & std::underlying_type_t<EnumerateOptions>(rhs));
     }
 
-    using EnumerateCallback = gm::delegate<EnumerateResult(FileInfo const&)>;
+    using EnumerateCallback = gm::delegate_ref<EnumerateResult(FileInfo const&)>;
 } // namespace gm::fs
