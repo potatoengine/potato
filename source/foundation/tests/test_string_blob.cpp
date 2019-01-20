@@ -1,4 +1,4 @@
-#include "grimm/foundation/string.h"
+#include "grimm/foundation/string_blob.h"
 #include "doctest.h"
 #include <ostream>
 

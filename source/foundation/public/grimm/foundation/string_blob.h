@@ -4,6 +4,7 @@
 
 #include "allocator.h"
 #include "string_view.h"
+#include "zstring_view.h"
 
 namespace gm {
     class string;
@@ -28,7 +29,7 @@ public:
     string() = default;
     ~string() { reset(); }
 
-    string(string const&) = delete;
+    explicit string(string const& str) { assign(str.data(), str.size()); }
     string(string&& rhs) : _data(rhs._data), _size(rhs._size) {
         _data = _empty;
         _size = 0;
@@ -36,6 +37,7 @@ public:
     explicit string(std::string str) { assign(str.data(), str.size()); }
     explicit string(const_pointer zstr) { assign(zstr); }
     explicit string(const_pointer data, size_type size) { assign(data, size); }
+    explicit string(zstring_view view) { assign(view.c_str()); }
     explicit string(string_view view) { assign(view.data(), view.size()); }
 
     string& operator=(string const&) = delete;
@@ -163,9 +165,13 @@ public:
         return {_data, _size};
     }
 
+    /*implicit*/ operator zstring_view() const noexcept {
+        return {_data};
+    }
+
     template <typename T>
-    friend auto& operator<<(std::basic_ostream<value_type, T>& os, string sv) {
-        os.write(sv._data, sv._size);
+    friend auto& operator<<(std::basic_ostream<value_type, T>& os, string const& str) {
+        os.write(str._data, str._size);
         return os;
     }
 

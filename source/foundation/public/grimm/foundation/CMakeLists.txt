@@ -22,7 +22,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.h
     ${CMAKE_CURRENT_SOURCE_DIR}/rc.h
     ${CMAKE_CURRENT_SOURCE_DIR}/span.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/string.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/string_blob.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_format.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_writer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_view.h
