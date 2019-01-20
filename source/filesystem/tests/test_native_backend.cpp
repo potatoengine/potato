@@ -1,7 +1,9 @@
 #include "grimm/foundation/vector.h"
 #include "grimm/filesystem/native_backend.h"
+#include "grimm/filesystem/stream.h"
 #include "doctest.h"
 #include <string>
+#include <iostream>
 #include <algorithm>
 
 DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
@@ -31,12 +33,14 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
         auto native = NativeBackend::create();
 
         auto inFile = native.openRead("test.txt", FileOpenMode::Text);
-        DOCTEST_CHECK(inFile.is_open());
+        DOCTEST_CHECK(inFile.isOpen());
 
-        std::string text;
-        std::getline(inFile, text);
+        byte buffer[1024];
+        span<byte> bspan(buffer);
+        inFile.read(bspan);
+        string_view text(reinterpret_cast<char*>(buffer), bspan.size());
 
-        DOCTEST_CHECK_EQ(text, "This is a test.");
+        DOCTEST_CHECK_EQ(text.first(15), "This is a test.");
     }
 
     DOCTEST_TEST_CASE("enumerate") {

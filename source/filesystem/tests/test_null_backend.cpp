@@ -1,4 +1,5 @@
 #include "grimm/filesystem/null_backend.h"
+#include "grimm/filesystem/stream.h"
 #include "doctest.h"
 
 DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NullBackend") {
@@ -11,8 +12,8 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NullBackend") {
         DOCTEST_CHECK(!null.fileExists("/test.txt"));
         DOCTEST_CHECK(!null.directoryExists("/"));
 
-        DOCTEST_CHECK(!null.openRead("/test.txt").is_open());
-        DOCTEST_CHECK(!null.openWrite("/test.txt").is_open());
+        DOCTEST_CHECK(!null.openRead("/test.txt").isOpen());
+        DOCTEST_CHECK(!null.openWrite("/test.txt").isOpen());
 
         auto cb(EnumerateCallback{[](FileInfo const&) { return EnumerateResult::Continue; }});
         DOCTEST_CHECK_EQ(null.enumerate("/", cb), EnumerateResult::Continue);

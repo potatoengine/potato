@@ -8,10 +8,10 @@
 #include "grimm/foundation/delegate.h"
 #include "common.h"
 #include "backend.h"
-#include <fstream>
 
 namespace gm::fs {
     class Backend;
+    class Stream;
 
     class FileSystem {
     public:
@@ -26,8 +26,8 @@ namespace gm::fs {
 
         [[nodiscard]] Result fileStat(zstring_view path, FileStat& outInfo) const { return _impl->fileStat(path, outInfo); }
 
-        std::ifstream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept { return _impl->openRead(path, mode); }
-        std::ofstream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept { return _impl->openWrite(path, mode); }
+        GM_FILESYSTEM_API Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept;
+        GM_FILESYSTEM_API Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept;
 
         EnumerateResult enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts = EnumerateOptions::None) const { return _impl->enumerate(path, cb, opts); }
 

@@ -11,6 +11,7 @@ namespace gm::fs {
         AccessDenied,
         FileNotFound,
         System,
+        InvalidArgument,
         UnsupportedOperation,
         Unknown,
     };

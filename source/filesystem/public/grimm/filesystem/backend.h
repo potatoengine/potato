@@ -6,9 +6,11 @@
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/rc.h"
 #include "common.h"
-#include <fstream>
 
 namespace gm::fs {
+    class Stream;
+    class Stream;
+
     class Backend : public shared<Backend> {
     public:
         virtual ~Backend() = default;
@@ -21,8 +23,8 @@ namespace gm::fs {
 
         virtual Result fileStat(zstring_view path, FileStat& outInfo) const = 0;
 
-        virtual std::ifstream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const = 0;
-        virtual std::ofstream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) = 0;
+        virtual Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const = 0;
+        virtual Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) = 0;
 
         virtual EnumerateResult enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts = EnumerateOptions::None) const = 0;
 
