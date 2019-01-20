@@ -9,7 +9,7 @@
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
 
-static constexpr gm::uint64 libraryRevision = 2;
+static constexpr gm::uint64 libraryRevision = 3;
 
 gm::AssetLibrary::~AssetLibrary() = default;
 
@@ -60,6 +60,15 @@ bool gm::AssetLibrary::serialize(std::ostream& stream) const {
             outputs.PushBack(outputObj, doc.GetAllocator());
         }
         recObj.AddMember("outputs", outputs, doc.GetAllocator());
+
+        auto sourceDeps = rapidjson::Value(rapidjson::kArrayType);
+        for (auto const& dep : record.sourceDependencies) {
+            auto depObj = rapidjson::Value(rapidjson::kObjectType);
+            depObj.AddMember("path", rapidjson::Value(rapidjson::StringRef(dep.path.data(), dep.path.size())), doc.GetAllocator());
+            depObj.AddMember("hash", rapidjson::Value(dep.contentHash), doc.GetAllocator());
+            sourceDeps.PushBack(depObj, doc.GetAllocator());
+        }
+        recObj.AddMember("sourceDeps", sourceDeps, doc.GetAllocator());
 
         array.PushBack(recObj, doc.GetAllocator());
     }
@@ -146,6 +155,27 @@ bool gm::AssetLibrary::deserialize(std::istream& stream) {
             }
 
             newRecord.outputs.push_back(AssetOutputRecord{
+                pathIt->value.GetString(),
+                hashIt->value.GetUint64()});
+        }
+
+        for (auto const& output : record["sourceDeps"].GetArray()) {
+            if (!output.IsObject()) {
+                continue;
+            }
+
+            auto pathIt = output.FindMember("path");
+            auto hashIt = output.FindMember("hash");
+
+            if (pathIt == output.MemberEnd() || !pathIt->value.IsString()) {
+                continue;
+            }
+
+            if (hashIt == output.MemberEnd() || !hashIt->value.IsUint64()) {
+                continue;
+            }
+
+            newRecord.sourceDependencies.push_back(AssetDependencyRecord{
                 pathIt->value.GetString(),
                 hashIt->value.GetUint64()});
         }

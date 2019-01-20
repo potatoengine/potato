@@ -28,16 +28,15 @@ namespace gm::recon {
         void addOutput(zstring_view path);
         void addOutputDependency(zstring_view from, zstring_view on, AssetDependencyType type);
 
-        span<std::string const> outputs() const noexcept {
-            return span{_outputs.data(), _outputs.size()};
-        }
+        span<std::string const> sourceDependencies() const noexcept { return span{_sourceDependencies.data(), _sourceDependencies.size()}; }
+        span<std::string const> outputs() const noexcept { return span{_outputs.data(), _outputs.size()}; }
 
     private:
         zstring_view _sourceFilePath;
         zstring_view _sourceFolderPath;
         zstring_view _destinationFolderPath;
 
-        vector<AssetDependencyRecord> _dependencies;
+        vector<std::string> _sourceDependencies;
         vector<std::string> _outputs;
     };
 } // namespace gm::recon

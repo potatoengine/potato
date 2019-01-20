@@ -35,6 +35,7 @@ namespace gm::recon {
         bool deleteUnusedFiles(vector<std::string> const& files, bool dryRun = true);
 
         bool isUpToDate(AssetImportRecord const& record, uint64 contentHash, Converter const& converter) const noexcept;
+        bool isUpToDate(span<AssetDependencyRecord const> records);
 
         Converter* findConverter(string_view path) const;
 

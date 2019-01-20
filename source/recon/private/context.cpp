@@ -3,6 +3,7 @@
 #include "grimm/recon/context.h"
 
 void gm::recon::Context::addSourceDependency(zstring_view path) {
+    _sourceDependencies.push_back(std::string(path));
 }
 
 void gm::recon::Context::addOutput(zstring_view path) {

@@ -94,9 +94,9 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         }
     }
 
-    if (!convertFiles(sources)) {
+    bool success = convertFiles(sources);
+    if (!success) {
         std::cerr << "Conversion failed\n";
-        return false;
     }
 
     std::ofstream hashesWriteStream = _fileSystem.openWrite(hashCachePath.c_str(), fs::FileOpenMode::Text);
@@ -113,7 +113,9 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     }
     libraryWriteStream.close();
 
-    deleteUnusedFiles(_outputs, !_config.deleteStale);
+    if (success) {
+        deleteUnusedFiles(_outputs, !_config.deleteStale);
+    }
 
     return true;
 }
@@ -148,7 +150,7 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::string> const& files) {
             continue;
         }
 
-        bool upToDate = record != nullptr && isUpToDate(*record, contentHash, *converter);
+        bool upToDate = record != nullptr && isUpToDate(*record, contentHash, *converter) && isUpToDate(record->sourceDependencies);
         if (upToDate) {
             std::cout << "Asset `" << path << "' is up-to-date\n";
             for (auto const& rec : record->outputs) {
@@ -175,6 +177,14 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::string> const& files) {
         newRecord.category = AssetCategory::Source;
         newRecord.importerName = converter->name();
         newRecord.importerRevision = converter->revision();
+
+        for (std::string const& sourceDepPath : context.sourceDependencies()) {
+            auto osPath = fs::path::join({_config.sourceFolderPath.c_str(), sourceDepPath.c_str()});
+            auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
+            newRecord.sourceDependencies.push_back(AssetDependencyRecord{
+                sourceDepPath,
+                contentHash});
+        }
 
         for (std::string const& outputPath : context.outputs()) {
             auto osPath = fs::path::join({_config.destinationFolderPath.c_str(), outputPath.c_str()});
@@ -222,6 +232,17 @@ bool gm::recon::ConverterApp::isUpToDate(AssetImportRecord const& record, gm::ui
     return record.contentHash == contentHash &&
            string_view(record.importerName) == converter.name() &&
            record.importerRevision == converter.revision();
+}
+
+bool gm::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> records) {
+    for (auto const& rec : records) {
+        auto osPath = fs::path::join({_config.sourceFolderPath.c_str(), rec.path.c_str()});
+        auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
+        if (contentHash != rec.contentHash) {
+            return false;
+        }
+    }
+    return true;
 }
 
 auto gm::recon::ConverterApp::findConverter(string_view path) const -> Converter* {
