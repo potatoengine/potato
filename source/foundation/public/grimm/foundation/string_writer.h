@@ -43,8 +43,9 @@ namespace gm {
 
         /*implicit*/ operator string_view() const noexcept { return {_ptr, _size}; }
 
-        GM_FRAMEWORK_API void write(string_view str);
         GM_FRAMEWORK_API void write(value_type ch);
+        GM_FRAMEWORK_API void write(const_pointer data, size_type length);
+        void write(string_view str) { write(str.data(), str.size()); }
 
         // for back_inserter/fmt support
         void push_back(value_type ch) { write(ch); }

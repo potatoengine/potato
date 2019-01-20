@@ -4,16 +4,16 @@
 
 #include "string_writer.h"
 
-void gm::string_writer::write(string_view str) {
-    _grow(_size + str.size());
-    std::memmove(_ptr + _size, str.data(), str.size());
-    _size += str.size();
-    _ptr[_size] = '\0';
-}
-
 void gm::string_writer::write(value_type ch) {
     _grow(_size + 1);
     _ptr[_size++] = ch;
+    _ptr[_size] = '\0';
+}
+
+void gm::string_writer::write(const_pointer data, size_type length) {
+    _grow(_size + length);
+    std::memmove(_ptr + _size, data, length);
+    _size += length;
     _ptr[_size] = '\0';
 }
 
