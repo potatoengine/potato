@@ -10,7 +10,7 @@ namespace gm {
     /// <summary> The standard default allocator. </summary>
     struct default_allocator {
         [[nodiscard]] void* allocate(size_t size, size_t align = alignof(double)) {
-            GM_ASSERT(align <= sizeof(double), "Default allocator only supports alignment of up to that of a double");
+            GM_ASSERT(align <= alignof(double), "Default allocator only supports alignment of up to that of a double");
             return GM_DEFAULT_ALLOC(size, align);
         }
 
