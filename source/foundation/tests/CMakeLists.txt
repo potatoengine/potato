@@ -8,6 +8,7 @@ add_executable(foundation_test
     test_fixed_string_writer.cpp
     test_rc.cpp
     test_span.cpp
+    test_string_blob.cpp
     test_string_writer.cpp
     test_string_view.cpp
     test_uhash.cpp

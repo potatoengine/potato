@@ -19,7 +19,7 @@ namespace {
               _folder(folder) {}
 
         HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override {
-            std::string absolutePath = gm::fs::path::join({_folder, pFileName});
+            gm::string absolutePath = gm::fs::path::join({_folder, pFileName});
 
             std::cout << "Including `" << absolutePath << "'\n";
 
@@ -55,7 +55,7 @@ namespace {
         gm::recon::Context& _ctx;
         gm::string_view _folder;
         gm::vector<gm::vector<char>> _shaders;
-    };
+    }; // namespace
 } // namespace
 
 gm::recon::HlslConverter::HlslConverter() = default;
@@ -100,7 +100,8 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
     auto destPath = fs::path::changeExtension(ctx.sourceFilePath(), ".vs_6_0.dxo");
     auto destAbsolutePath = fs::path::join({string_view(ctx.destinationFolderPath()), destPath.c_str()});
 
-    std::string destParentAbsolutePath(fs::path::parent(string_view(destAbsolutePath)));
+    string destParentAbsolutePath(fs::path::parent(destAbsolutePath));
+
     if (!fs.directoryExists(destParentAbsolutePath.c_str())) {
         if (!fs.createDirectories(destParentAbsolutePath.c_str())) {
             std::cerr << "Failed to create `" << destParentAbsolutePath << "'\n";

@@ -13,7 +13,7 @@ bool gm::recon::CopyConverter::convert(Context& ctx) {
     auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 
-    std::string destParentAbsolutePath(fs::path::parent(string_view(destAbsolutePath)));
+    string destParentAbsolutePath(fs::path::parent(string_view(destAbsolutePath)));
 
     fs::FileSystem fileSys;
 

@@ -4,7 +4,11 @@
 
 #include "_export.h"
 #include "grimm/foundation/span.h"
+#include "grimm/foundation/string_blob.h"
+#include "grimm/foundation/zstring_view.h"
+#include "grimm/foundation/box.h"
 #include "grimm/foundation/types.h"
+#include "grimm/foundation/uhash.h"
 #include "grimm/filesystem/filesystem.h"
 #include <string>
 #include <iosfwd>
@@ -26,13 +30,13 @@ namespace gm {
 
     private:
         struct HashRecord {
-            std::string osPath;
+            string osPath;
             uint64 hash = 0;
             uint64 mtime = 0;
             uint64 size = 0;
         };
 
         fs::FileSystem _fileSystem;
-        std::unordered_map<std::string, HashRecord> _hashes;
+        std::unordered_map<zstring_view, box<HashRecord>, uhash<>> _hashes;
     };
 } // namespace gm

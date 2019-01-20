@@ -132,10 +132,10 @@ bool gm::AssetLibrary::deserialize(std::istream& stream) {
 
         AssetImportRecord newRecord;
         newRecord.assetId = static_cast<AssetId>(record["id"].GetUint64());
-        newRecord.path = record["path"].GetString();
+        newRecord.path = string(record["path"].GetString());
         newRecord.contentHash = record["contentHash"].GetUint64();
         newRecord.category = assetCategoryFromName(record["category"].GetString());
-        newRecord.importerName = record["importerName"].GetString();
+        newRecord.importerName = string(record["importerName"].GetString());
         newRecord.importerRevision = record["importerRevision"].GetUint64();
 
         for (auto const& output : record["outputs"].GetArray()) {
@@ -155,7 +155,7 @@ bool gm::AssetLibrary::deserialize(std::istream& stream) {
             }
 
             newRecord.outputs.push_back(AssetOutputRecord{
-                pathIt->value.GetString(),
+                string(pathIt->value.GetString()),
                 hashIt->value.GetUint64()});
         }
 
@@ -176,7 +176,7 @@ bool gm::AssetLibrary::deserialize(std::istream& stream) {
             }
 
             newRecord.sourceDependencies.push_back(AssetDependencyRecord{
-                pathIt->value.GetString(),
+                string(pathIt->value.GetString()),
                 hashIt->value.GetUint64()});
         }
 

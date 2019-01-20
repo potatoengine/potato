@@ -3,11 +3,13 @@
 #pragma once
 
 #include "_export.h"
+#include "grimm/foundation/string_blob.h"
 #include "grimm/foundation/zstring_view.h"
+#include "grimm/foundation/types.h"
 #include <initializer_list>
 
 namespace gm::fs::path {
-    static constexpr std::size_t maxPathLength = 4096;
+    static constexpr uint32 maxPathLength = 4096;
 
     // returns extension, including dot, e.g. foo.txt -> .txt
     // only the last extension is returned, e.g. foo.txt.gz -> .gz
@@ -17,7 +19,7 @@ namespace gm::fs::path {
     // replaces any existing extension with the requested one
     // extension must include the dot, e.g. .txt
     // if the path has no extension, adds the provided one, e.g. -> foo/bar -> foo/bar.txt
-    GM_FILESYSTEM_API std::string changeExtension(string_view path, string_view extension);
+    GM_FILESYSTEM_API string changeExtension(string_view path, string_view extension);
 
     // returns the filename of a path, e.g. foo/bar.txt -> bar.txt
     GM_FILESYSTEM_API string_view filename(string_view path) noexcept;
@@ -42,12 +44,12 @@ namespace gm::fs::path {
     // trailing slash is stripped, e.g. /foo/ -> /foo
     // duplicate slashes or dots are condensed, e.g. /foo//bar..txt -> /foo/bar.txt
     // leading or trailing dots in components are stripped, e.g. /.foo/bar. -> /foo/bar
-    GM_FILESYSTEM_API std::string normalize(string_view path);
+    GM_FILESYSTEM_API string normalize(string_view path);
 
     // joins path components together
     // adds a / between each component, e.g. foo/, bar -> foo//bar
     // result is not normalized
     // empty components are ignored, e.g. "", bar -> bar
-    GM_FILESYSTEM_API std::string join(std::initializer_list<string_view> components);
+    GM_FILESYSTEM_API string join(std::initializer_list<string_view> components);
 
 } // namespace gm::fs::path

@@ -73,7 +73,6 @@ namespace gm {
 struct gm::default_hash {
     using result_type = typename fnv1a::result_type;
 
-    template <typename T>
     inline void operator()(span<byte const> data) noexcept {
         _fnva1.operator()(data);
     }
