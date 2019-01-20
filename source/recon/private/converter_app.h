@@ -32,6 +32,7 @@ namespace gm::recon {
 
         vector<std::string> collectSourceFiles();
         bool convertFiles(vector<std::string> const& files);
+        bool deleteUnusedFiles(vector<std::string> const& files, bool dryRun = true);
 
         bool isUpToDate(AssetImportRecord const& record, uint64 contentHash, Converter const& converter) const noexcept;
 
@@ -44,6 +45,7 @@ namespace gm::recon {
 
         string_view _programName;
         vector<Mapping> _converters;
+        vector<std::string> _outputs;
         ConverterConfig _config;
         fs::FileSystem _fileSystem;
         AssetLibrary _library;

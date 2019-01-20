@@ -13,6 +13,7 @@ namespace gm::recon {
         std::string sourceFolderPath;
         std::string destinationFolderPath;
         std::string cacheFolderPath;
+        bool deleteStale = false;
     };
 
     bool parseArguments(ConverterConfig& config, span<char const*> args);

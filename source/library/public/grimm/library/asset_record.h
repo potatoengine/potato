@@ -29,6 +29,11 @@ namespace gm {
         AssetDependencyType dependencyType;
     };
 
+    struct AssetOutputRecord {
+        std::string path;
+        uint64 contentHash = 0;
+    };
+
     struct AssetImportRecord {
         AssetId assetId = AssetId::Invalid;
         std::string path;
@@ -38,5 +43,6 @@ namespace gm {
         AssetCategory category = AssetCategory::Source;
 
         vector<AssetDependencyRecord> dependencies;
+        vector<AssetOutputRecord> outputs;
     };
 } // namespace gm

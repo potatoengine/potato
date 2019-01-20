@@ -12,6 +12,7 @@
 #include <rapidjson/document.h>
 #include <iostream>
 #include <fstream>
+#include <set>
 
 gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {}
 gm::recon::ConverterApp::~ConverterApp() = default;
@@ -30,6 +31,7 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     registerConverters();
 
     auto libraryPath = fs::path::join({string_view(_config.destinationFolderPath), "library$.json"});
+    _outputs.push_back("library$.json");
     if (_fileSystem.fileExists(libraryPath.c_str())) {
         std::ifstream libraryReadStream = _fileSystem.openRead(libraryPath.c_str(), fs::FileOpenMode::Text);
         if (!libraryReadStream) {
@@ -42,6 +44,7 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     }
 
     auto hashCachePath = fs::path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
+    _outputs.push_back("hashes$.json");
     if (_fileSystem.fileExists(hashCachePath.c_str())) {
         std::ifstream hashesReadStream = _fileSystem.openRead(hashCachePath.c_str(), fs::FileOpenMode::Text);
         if (!hashesReadStream) {
@@ -110,6 +113,8 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     }
     libraryWriteStream.close();
 
+    deleteUnusedFiles(_outputs, !_config.deleteStale);
+
     return true;
 }
 
@@ -146,10 +151,22 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::string> const& files) {
         bool upToDate = record != nullptr && isUpToDate(*record, contentHash, *converter);
         if (upToDate) {
             std::cout << "Asset `" << path << "' is up-to-date\n";
+            for (auto const& rec : record->outputs) {
+                _outputs.push_back(rec.path);
+            }
             continue;
         }
 
         std::cout << "Asset `" << path << "' requires import (" << converter->name() << ")\n";
+
+        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str());
+        if (!converter->convert(context)) {
+            failed = true;
+            std::cerr << "Failed conversion for `" << path << "'\n";
+            continue;
+        }
+
+        _outputs.insert(_outputs.end(), context.outputs().begin(), context.outputs().end());
 
         AssetImportRecord newRecord;
         newRecord.assetId = assetId;
@@ -158,17 +175,47 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::string> const& files) {
         newRecord.category = AssetCategory::Source;
         newRecord.importerName = converter->name();
         newRecord.importerRevision = converter->revision();
-        _library.insertRecord(std::move(newRecord));
 
-        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str());
-        if (!converter->convert(context)) {
-            failed = true;
-            std::cerr << "Failed conversion for `" << path << "'\n";
-            continue;
+        for (std::string const& outputPath : context.outputs()) {
+            auto osPath = fs::path::join({_config.destinationFolderPath.c_str(), outputPath.c_str()});
+            auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
+            newRecord.outputs.push_back(AssetOutputRecord{
+                outputPath,
+                contentHash});
         }
+
+        _library.insertRecord(std::move(newRecord));
     }
 
     return !failed;
+}
+
+bool gm::recon::ConverterApp::deleteUnusedFiles(vector<std::string> const& files, bool dryRun) {
+    std::set<std::string> keepFiles(files.begin(), files.end());
+    std::set<std::string> foundFiles;
+    auto cb = [&foundFiles](fs::FileInfo const& info) {
+        if (info.type == fs::FileType::Regular) {
+            foundFiles.insert(info.path.c_str());
+        }
+        return fs::EnumerateResult::Recurse;
+    };
+    _fileSystem.enumerate(_config.destinationFolderPath.c_str(), cb);
+
+    vector<std::string> deleteFiles;
+    std::set_difference(foundFiles.begin(), foundFiles.end(), keepFiles.begin(), keepFiles.end(), std::back_inserter(deleteFiles));
+
+    for (std::string const& deletePath : deleteFiles) {
+        std::cout << "Stale output file `" << deletePath << "'\n";
+        if (!dryRun) {
+            std::string osPath = fs::path::join({_config.destinationFolderPath.c_str(), deletePath.c_str()});
+            auto rs = _fileSystem.remove(osPath.c_str());
+            if (rs != fs::Result::Success) {
+                std::cerr << "Failed to remove `" << osPath << "'\n";
+            }
+        }
+    }
+
+    return true;
 }
 
 bool gm::recon::ConverterApp::isUpToDate(AssetImportRecord const& record, gm::uint64 contentHash, Converter const& converter) const noexcept {

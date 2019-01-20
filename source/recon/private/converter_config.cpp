@@ -44,6 +44,9 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args) 
             else if (name == "config") {
                 argMode = ArgConfig;
             }
+            else if (name == "delete") {
+                config.deleteStale = true;
+            }
             else {
                 std::cerr << "Unknown option: " << arg << '\n';
                 return false;
@@ -121,6 +124,9 @@ bool gm::recon::parseConfigString(ConverterConfig& config, string_view json) {
     }
     if (doc.HasMember("cacheDir")) {
         config.cacheFolderPath = doc["cacheDir"].GetString();
+    }
+    if (doc.HasMember("deleteStale")) {
+        config.deleteStale = doc["deleteStale"].GetBool();
     }
     return true;
 }

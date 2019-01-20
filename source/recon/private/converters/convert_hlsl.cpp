@@ -90,6 +90,8 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
         return false;
     }
 
+    ctx.addOutput(destPath.c_str());
+
     compiledOutput.write((char*)compiledBlob->GetBufferPointer(), compiledBlob->GetBufferSize());
     compiledOutput.close();
 

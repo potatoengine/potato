@@ -9,6 +9,8 @@
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
 
+static constexpr gm::uint64 libraryRevision = 2;
+
 gm::AssetLibrary::~AssetLibrary() = default;
 
 auto gm::AssetLibrary::pathToAssetId(string_view path) const -> AssetId {
@@ -37,6 +39,8 @@ bool gm::AssetLibrary::serialize(std::ostream& stream) const {
     doc.SetObject();
     auto root = doc.GetObject();
 
+    root.AddMember("revision", rapidjson::Value(libraryRevision), doc.GetAllocator());
+
     auto array = rapidjson::Value(rapidjson::kArrayType);
     for (auto const& [assetId, record] : _assets) {
         auto recObj = rapidjson::Value(rapidjson::kObjectType);
@@ -47,6 +51,16 @@ bool gm::AssetLibrary::serialize(std::ostream& stream) const {
         recObj.AddMember("category", rapidjson::Value(rapidjson::StringRef(catName.data(), catName.size())), doc.GetAllocator());
         recObj.AddMember("importerName", rapidjson::Value(rapidjson::StringRef(record.importerName.data(), record.importerName.size())), doc.GetAllocator());
         recObj.AddMember("importerRevision", rapidjson::Value(record.importerRevision), doc.GetAllocator());
+
+        auto outputs = rapidjson::Value(rapidjson::kArrayType);
+        for (auto const& output : record.outputs) {
+            auto outputObj = rapidjson::Value(rapidjson::kObjectType);
+            outputObj.AddMember("path", rapidjson::Value(rapidjson::StringRef(output.path.data(), output.path.size())), doc.GetAllocator());
+            outputObj.AddMember("hash", rapidjson::Value(output.contentHash), doc.GetAllocator());
+            outputs.PushBack(outputObj, doc.GetAllocator());
+        }
+        recObj.AddMember("outputs", outputs, doc.GetAllocator());
+
         array.PushBack(recObj, doc.GetAllocator());
     }
     root.AddMember("records", array, doc.GetAllocator());
@@ -69,6 +83,10 @@ bool gm::AssetLibrary::deserialize(std::istream& stream) {
     }
 
     auto root = doc.GetObject();
+
+    if (!root.HasMember("revision") || !root["revision"].IsUint64() || root["revision"].GetUint64() != libraryRevision) {
+        return false;
+    }
 
     if (!root.HasMember("records")) {
         return false;
@@ -99,6 +117,10 @@ bool gm::AssetLibrary::deserialize(std::istream& stream) {
             continue;
         }
 
+        if (!record.HasMember("outputs") || !record["outputs"].IsArray()) {
+            continue;
+        }
+
         AssetImportRecord newRecord;
         newRecord.assetId = static_cast<AssetId>(record["id"].GetUint64());
         newRecord.path = record["path"].GetString();
@@ -106,6 +128,27 @@ bool gm::AssetLibrary::deserialize(std::istream& stream) {
         newRecord.category = assetCategoryFromName(record["category"].GetString());
         newRecord.importerName = record["importerName"].GetString();
         newRecord.importerRevision = record["importerRevision"].GetUint64();
+
+        for (auto const& output : record["outputs"].GetArray()) {
+            if (!output.IsObject()) {
+                continue;
+            }
+
+            auto pathIt = output.FindMember("path");
+            auto hashIt = output.FindMember("hash");
+
+            if (pathIt == output.MemberEnd() || !pathIt->value.IsString()) {
+                continue;
+            }
+
+            if (hashIt == output.MemberEnd() || !hashIt->value.IsUint64()) {
+                continue;
+            }
+
+            newRecord.outputs.push_back(AssetOutputRecord{
+                pathIt->value.GetString(),
+                hashIt->value.GetUint64()});
+        }
 
         insertRecord(std::move(newRecord));
     }

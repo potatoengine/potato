@@ -24,6 +24,9 @@ bool gm::recon::CopyConverter::convert(Context& ctx) {
         }
     }
 
+    // output has same name as input
+    ctx.addOutput(ctx.sourceFilePath());
+
     if (fileSys.copyFile(sourceAbsolutePath.c_str(), destParentAbsolutePath.c_str())) {
         std::cerr << "Failed to coy `" << sourceAbsolutePath << "' to `" << destAbsolutePath << '\n';
         return false;

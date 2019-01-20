@@ -62,6 +62,9 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
 
     outFile.close();
 
+    // output has same name as input
+    ctx.addOutput(ctx.sourceFilePath());
+
     std::cout << "Minified `" << sourceAbsolutePath << "' to `" << destAbsolutePath << "'\n";
 
     return true;

@@ -1,4 +1,5 @@
 target_sources(recon_lib PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/context.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/converter_app.h"
     "${CMAKE_CURRENT_LIST_DIR}/converter_app.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/converter_config.cpp"
