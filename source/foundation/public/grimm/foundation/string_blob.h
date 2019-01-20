@@ -142,6 +142,10 @@ public:
     friend bool operator==(string const& lhs, string rhs) noexcept {
         return lhs.size() == rhs.size() && traits::compare(lhs.data(), rhs.data(), lhs.size()) == 0;
     }
+    friend bool operator==(string const& lhs, const_pointer rhs) noexcept {
+        auto rhsSize = rhs != nullptr ? traits::length(rhs) : 0;
+        return lhs.size() == rhsSize && traits::compare(lhs.data(), rhs, rhsSize) == 0;
+    }
     friend bool operator!=(string const& lhs, string const& rhs) noexcept {
         return lhs.size() != rhs.size() || traits::compare(lhs.data(), rhs.data(), lhs.size()) != 0;
     }
