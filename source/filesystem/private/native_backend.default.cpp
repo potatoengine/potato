@@ -75,7 +75,9 @@ auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Resu
 
 auto gm::fs::NativeBackend::remove(zstring_view path) -> Result {
     std::error_code ec;
-    std::filesystem::remove(path.c_str(), ec);
+    if (!std::filesystem::remove(path.c_str(), ec)) {
+        return Result::FileNotFound;
+    }
     return errorCodeToResult(ec);
 }
 
