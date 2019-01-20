@@ -92,6 +92,11 @@ namespace gm {
             return os;
         }
 
+        friend constexpr bool operator==(zstring_view lhs, zstring_view rhs) noexcept {
+            size_type lhsSize = lhs.size();
+            size_type rhsSize = rhs.size();
+            return lhsSize == rhsSize && traits::compare(lhs._str, rhs._str, lhsSize) == 0;
+        }
         friend constexpr bool operator==(zstring_view lhs, pointer rhs) noexcept {
             size_type lhsSize = lhs.size();
             size_type rhsSize = rhs != nullptr ? traits::length(rhs) : 0;
@@ -102,4 +107,9 @@ namespace gm {
     private:
         pointer _str = nullptr;
     };
+
+    template <typename HashAlgorithm>
+    void hash_append(HashAlgorithm& hasher, zstring_view string) {
+        hasher(span<char const>(string.data(), string.size()).as_bytes());
+    }
 } // namespace gm
