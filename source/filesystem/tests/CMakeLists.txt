@@ -3,6 +3,7 @@ add_executable(filesystem_test
     test_path_util.cpp
     test_native_backend.cpp
     test_null_backend.cpp
+    test_stream.cpp
 )
 
 target_link_libraries(filesystem_test PRIVATE

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "grimm/foundation/delegate_ref.h"
+#include "grimm/foundation/zstring_view.h"
 
 namespace gm::fs {
     enum Result {
@@ -30,6 +31,12 @@ namespace gm::fs {
         Directory,
         SymbolicLink,
         Other
+    };
+
+    enum SeekPosition {
+        Begin,
+        End,
+        Current
     };
 
     struct FileStat {
