@@ -2,6 +2,7 @@
 
 #include "grimm/filesystem/path_util.h"
 #include "grimm/foundation/assertion.h"
+#include "grimm/foundation/string_writer.h"
 
 // returns extension, including dot, e.g. foo.txt -> .txt
 // only the last extension is returned, e.g. foo.txt.gz -> .gz
@@ -22,7 +23,7 @@ gm::string_view gm::fs::path::extension(string_view path) noexcept {
 }
 
 // extension must include the dot, e.g. .txt
-std::string gm::fs::path::changeExtension(string_view path, string_view extension) {
+auto gm::fs::path::changeExtension(string_view path, string_view extension) -> string {
 
     GM_ASSERT(extension.empty() || extension.front() == '.');
 
@@ -31,11 +32,11 @@ std::string gm::fs::path::changeExtension(string_view path, string_view extensio
         pos = path.size();
     }
 
-    std::string result;
-    result.resize(pos + extension.size());
-    std::memcpy(result.data(), path.data(), pos);
-    std::memcpy(result.data() + pos, extension.data(), extension.size());
-    return result;
+    string_writer result;
+    result.reserve(pos + extension.size());
+    result.write(path.data(), pos);
+    result.write(extension.data(), extension.size());
+    return string(result);
 }
 
 // returns the filename of a path, e.g. foo/bar.txt -> bar.txt
@@ -134,12 +135,12 @@ bool gm::fs::path::isNormalized(string_view path) noexcept {
     return true;
 }
 
-std::string gm::fs::path::normalize(string_view path) {
+auto gm::fs::path::normalize(string_view path) -> string {
     if (path.empty()) {
-        return "/";
+        return string("/");
     }
 
-    std::string result;
+    string_writer result;
     result.reserve(path.size());
 
     enum {
@@ -158,7 +159,7 @@ std::string gm::fs::path::normalize(string_view path) {
                 mode = Dot;
             }
             else {
-                result.push_back(ch);
+                result.write(ch);
             }
             break;
         case Slash:
@@ -171,8 +172,8 @@ std::string gm::fs::path::normalize(string_view path) {
                 break;
             }
             else {
-                result.push_back('/');
-                result.push_back(ch);
+                result.write('/');
+                result.write(ch);
                 mode = Component;
             }
             break;
@@ -186,8 +187,8 @@ std::string gm::fs::path::normalize(string_view path) {
                 mode = Slash;
             }
             else {
-                result.push_back('.');
-                result.push_back(ch);
+                result.write('.');
+                result.write(ch);
                 mode = Component;
             }
             break;
@@ -195,13 +196,13 @@ std::string gm::fs::path::normalize(string_view path) {
     }
 
     if (result.empty()) {
-        result.push_back('/');
+        result.write('/');
     }
 
-    return result;
+    return string(result);
 }
 
-std::string gm::fs::path::join(std::initializer_list<string_view> components) {
+auto gm::fs::path::join(std::initializer_list<string_view> components) -> string {
     std::size_t size = 0;
 
     for (auto sv : components) {
@@ -212,15 +213,15 @@ std::string gm::fs::path::join(std::initializer_list<string_view> components) {
         size += sv.size();
     }
 
-    std::string result;
+    string_writer result;
     result.reserve(size);
 
     for (auto sv : components) {
         if (!sv.empty() && !result.empty()) {
-            result.append("/", 1);
+            result.write('/');
         }
-        result.append(sv.data(), sv.size());
+        result.write(sv.data(), sv.size());
     }
 
-    return result;
+    return string(result);
 }
