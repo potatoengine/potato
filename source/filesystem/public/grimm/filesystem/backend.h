@@ -30,6 +30,9 @@ namespace gm::fs {
 
         virtual Result copyFile(zstring_view from, zstring_view to) = 0;
 
+        virtual Result remove(zstring_view path) = 0;
+        virtual Result removeRecursive(zstring_view path) = 0;
+
     protected:
         Backend() = default;
     };

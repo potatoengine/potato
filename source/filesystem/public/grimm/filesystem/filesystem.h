@@ -35,6 +35,9 @@ namespace gm::fs {
 
         [[nodiscard]] Result copyFile(zstring_view from, zstring_view to) { return _impl->copyFile(from, to); }
 
+        [[nodiscard]] Result remove(zstring_view path) { return _impl->remove(path); }
+        [[nodiscard]] Result removeRecursive(zstring_view path) { return _impl->removeRecursive(path); }
+
     private:
         static rc<Backend>& activeDefaultBackend();
 

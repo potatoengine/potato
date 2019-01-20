@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <ftw.h>
 
 #if !GM_PLATFORM_POSIX
 #    error "Invalid platform"
@@ -19,6 +20,7 @@
 
 static auto errnoToResult(int error) noexcept -> gm::fs::Result {
     switch (error) {
+    case 0: return gm::fs::Result::Success;
     default: return gm::fs::Result::Unknown;
     }
 }
@@ -142,4 +144,22 @@ auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Resu
             return errnoToResult(errno);
         }
     }
+}
+
+auto gm::fs::NativeBackend::remove(zstring_view path) -> Result {
+    if (::remove(path.c_str()) != 0) {
+        return errnoToResult(errno);
+    }
+    return Result::Success;
+}
+
+auto gm::fs::NativeBackend::removeRecursive(zstring_view path) -> Result {
+    auto cb = [](char const* path, struct stat const* st, int flags, struct FTW* ftw) {
+        return ::remove(path);
+    };
+    int rs = nftw(path.c_str(), cb, 64, FTW_DEPTH | FTW_PHYS);
+    if (rs != 0) {
+        return errnoToResult(errno);
+    }
+    return Result::Success;
 }

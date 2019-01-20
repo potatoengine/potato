@@ -72,3 +72,15 @@ auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Resu
     std::filesystem::copy_file(from.c_str(), to.c_str(), ec);
     return errorCodeToResult(ec);
 }
+
+auto gm::fs::NativeBackend::remove(zstring_view path) -> Result {
+    std::error_code ec;
+    std::filesystem::remove(path.c_str(), ec);
+    return errorCodeToResult(ec);
+}
+
+auto gm::fs::NativeBackend::removeRecursive(zstring_view path) -> Result {
+    std::error_code ec;
+    std::filesystem::remove_all(path.c_str(), ec);
+    return errorCodeToResult(ec);
+}

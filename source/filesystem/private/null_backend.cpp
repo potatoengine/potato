@@ -17,3 +17,7 @@ auto gm::fs::NullBackend::enumerate(zstring_view, EnumerateCallback, EnumerateOp
 auto gm::fs::NullBackend::createDirectories(zstring_view path) -> Result { return Result::UnsupportedOperation; }
 
 auto gm::fs::NullBackend::copyFile(zstring_view from, zstring_view to) -> Result { return Result::UnsupportedOperation; }
+
+auto gm::fs::NullBackend::remove(zstring_view path) -> Result { return Result::UnsupportedOperation; }
+
+auto gm::fs::NullBackend::removeRecursive(zstring_view path) -> Result { return Result::UnsupportedOperation; }

@@ -25,6 +25,9 @@ namespace gm::fs {
 
         GM_FILESYSTEM_API Result copyFile(zstring_view from, zstring_view to) override;
 
+        GM_FILESYSTEM_API Result remove(zstring_view path) override;
+        GM_FILESYSTEM_API Result removeRecursive(zstring_view path) override;
+
     private:
         NativeBackend() = default;
 
