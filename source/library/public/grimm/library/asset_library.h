@@ -10,6 +10,11 @@
 #include <iosfwd>
 
 namespace gm {
+    namespace fs {
+        class Stream;
+        class Stream;
+    } // namespace fs
+
     class AssetLibrary {
     public:
         AssetLibrary() = default;
@@ -25,8 +30,8 @@ namespace gm {
 
         GM_LIBRARY_API bool insertRecord(AssetImportRecord record);
 
-        GM_LIBRARY_API bool serialize(std::ostream& stream) const;
-        GM_LIBRARY_API bool deserialize(std::istream& stream);
+        GM_LIBRARY_API bool serialize(fs::Stream& stream) const;
+        GM_LIBRARY_API bool deserialize(fs::Stream& stream);
 
     private:
         struct HashAssetId {

@@ -6,6 +6,7 @@
 #include "grimm/foundation/out_ptr.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/filesystem/filesystem.h"
+#include "grimm/filesystem/stream.h"
 #include "grimm/filesystem/path_util.h"
 #include <d3dcompiler.h>
 #include <iostream>
@@ -30,14 +31,11 @@ namespace {
                 return E_FAIL;
             }
 
-            stream.seekg(0, std::ios::end);
-            auto tell = stream.tellg();
-            stream.seekg(0, std::ios::beg);
+            gm::vector<gm::byte> bytes;
+            bytes.resize(stream.remaining());
 
-            gm::vector<char> bytes;
-            bytes.resize(tell);
-
-            stream.read(bytes.data(), bytes.size());
+            auto read = gm::span{bytes.data(), bytes.size()};
+            stream.read(read);
 
             *ppData = bytes.data();
             *pBytes = static_cast<UINT>(bytes.size());
@@ -54,7 +52,7 @@ namespace {
         gm::fs::FileSystem& _fileSystem;
         gm::recon::Context& _ctx;
         gm::string_view _folder;
-        gm::vector<gm::vector<char>> _shaders;
+        gm::vector<gm::vector<gm::byte>> _shaders;
     }; // namespace
 } // namespace
 
@@ -72,14 +70,11 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
         return false;
     }
 
-    stream.seekg(0, std::ios::end);
-    auto tell = stream.tellg();
-    stream.seekg(0, std::ios::beg);
+    gm::vector<gm::byte> bytes;
+    bytes.resize(stream.remaining());
 
-    gm::vector<char> bytes;
-    bytes.resize(tell);
-
-    stream.read(bytes.data(), bytes.size());
+    auto read = gm::span(bytes.data(), bytes.size());
+    stream.read(read);
 
     zstring_view const entry = "vertex_main";
     zstring_view const target = "vs_5_1";
@@ -110,14 +105,14 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
     }
 
     auto compiledOutput = fs.openWrite(destAbsolutePath.c_str(), gm::fs::FileOpenMode::Binary);
-    if (!compiledOutput.is_open()) {
+    if (!compiledOutput.isOpen()) {
         std::cerr << "Cannot write `" << destAbsolutePath << '\n';
         return false;
     }
 
     ctx.addOutput(destPath.c_str());
 
-    compiledOutput.write((char*)blob->GetBufferPointer(), blob->GetBufferSize());
+    compiledOutput.write({(gm::byte const*)blob->GetBufferPointer(), blob->GetBufferSize()});
     compiledOutput.close();
 
     return true;

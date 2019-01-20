@@ -4,15 +4,15 @@
 #include "grimm/foundation/string_view.h"
 #include "grimm/filesystem/path_util.h"
 #include "grimm/filesystem/filesystem.h"
+#include "grimm/filesystem/stream.h"
 #include "grimm/library/hash_cache.h"
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"
 #include "converters/convert_json.h"
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
-#include <iostream>
-#include <fstream>
 #include <set>
+#include <iostream>
 
 gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {}
 gm::recon::ConverterApp::~ConverterApp() = default;
@@ -33,7 +33,7 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     auto libraryPath = fs::path::join({string_view(_config.destinationFolderPath), "library$.json"});
     _outputs.push_back("library$.json");
     if (_fileSystem.fileExists(libraryPath.c_str())) {
-        std::ifstream libraryReadStream = _fileSystem.openRead(libraryPath.c_str(), fs::FileOpenMode::Text);
+        auto libraryReadStream = _fileSystem.openRead(libraryPath.c_str(), fs::FileOpenMode::Text);
         if (!libraryReadStream) {
             std::cerr << "Failed to open asset library `" << libraryPath << "'\n";
         }
@@ -46,7 +46,7 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     auto hashCachePath = fs::path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
     _outputs.push_back("hashes$.json");
     if (_fileSystem.fileExists(hashCachePath.c_str())) {
-        std::ifstream hashesReadStream = _fileSystem.openRead(hashCachePath.c_str(), fs::FileOpenMode::Text);
+        auto hashesReadStream = _fileSystem.openRead(hashCachePath.c_str(), fs::FileOpenMode::Text);
         if (!hashesReadStream) {
             std::cerr << "Failed to open hash cache `" << hashCachePath << "'\n";
         }
@@ -99,14 +99,14 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         std::cerr << "Conversion failed\n";
     }
 
-    std::ofstream hashesWriteStream = _fileSystem.openWrite(hashCachePath.c_str(), fs::FileOpenMode::Text);
+    auto hashesWriteStream = _fileSystem.openWrite(hashCachePath.c_str(), fs::FileOpenMode::Text);
     if (!_hashes.serialize(hashesWriteStream)) {
         std::cerr << "Failed to write hash cache `" << hashCachePath << "'\n";
         return false;
     }
     hashesWriteStream.close();
 
-    std::ofstream libraryWriteStream = _fileSystem.openWrite(libraryPath.c_str(), fs::FileOpenMode::Text);
+    auto libraryWriteStream = _fileSystem.openWrite(libraryPath.c_str(), fs::FileOpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
         std::cerr << "Failed to write asset library `" << libraryPath << "'\n";
         return false;

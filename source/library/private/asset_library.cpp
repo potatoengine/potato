@@ -3,11 +3,9 @@
 #include "_export.h"
 #include "grimm/library/asset_library.h"
 #include "grimm/foundation/fnv1a.h"
-#include <iostream>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/ostreamwrapper.h>
+#include "stream_json.h"
 
 static constexpr gm::uint64 libraryRevision = 3;
 
@@ -34,7 +32,7 @@ bool gm::AssetLibrary::insertRecord(AssetImportRecord record) {
     return true;
 }
 
-bool gm::AssetLibrary::serialize(std::ostream& stream) const {
+bool gm::AssetLibrary::serialize(fs::Stream& stream) const {
     rapidjson::Document doc;
     doc.SetObject();
     auto root = doc.GetObject();
@@ -74,13 +72,13 @@ bool gm::AssetLibrary::serialize(std::ostream& stream) const {
     }
     root.AddMember("records", array, doc.GetAllocator());
 
-    rapidjson::OStreamWrapper outWrapper(stream);
+    RapidJsonStreamWrapper outWrapper(stream);
     rapidjson::Writer writer(outWrapper);
     return doc.Accept(writer);
 }
 
-bool gm::AssetLibrary::deserialize(std::istream& stream) {
-    rapidjson::IStreamWrapper inWrapper(stream);
+bool gm::AssetLibrary::deserialize(fs::Stream& stream) {
+    RapidJsonStreamWrapper inWrapper(stream);
     rapidjson::Document doc;
     doc.ParseStream(inWrapper);
     if (doc.HasParseError()) {

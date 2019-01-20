@@ -4,8 +4,7 @@
 #include "grimm/foundation/fnv1a.h"
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/ostreamwrapper.h>
+#include "stream_json.h"
 
 auto gm::HashCache::hashAssetContent(span<gm::byte const> contents) noexcept -> gm::uint64 {
     auto hasher = fnv1a();
@@ -13,13 +12,13 @@ auto gm::HashCache::hashAssetContent(span<gm::byte const> contents) noexcept -> 
     return static_cast<uint64>(hasher);
 }
 
-auto gm::HashCache::hashAssetStream(std::istream& stream) -> gm::uint64 {
+auto gm::HashCache::hashAssetStream(fs::Stream& stream) -> gm::uint64 {
     auto hasher = fnv1a();
-    char buffer[32768];
+    gm::byte buffer[32768];
     while (stream) {
-        stream.read(buffer, sizeof(buffer));
-        auto count = stream.gcount();
-        hasher(span(reinterpret_cast<byte const*>(buffer), count));
+        span<gm::byte> read(buffer, sizeof(buffer));
+        stream.read(read);
+        hasher(read);
     }
     return static_cast<uint64>(hasher);
 }
@@ -51,7 +50,7 @@ auto gm::HashCache::hashAssetAtPath(zstring_view path) -> gm::uint64 {
     return hash;
 }
 
-bool gm::HashCache::serialize(std::ostream& stream) const {
+bool gm::HashCache::serialize(fs::Stream& stream) const {
     rapidjson::Document doc;
     doc.SetObject();
     auto root = doc.GetObject();
@@ -64,13 +63,13 @@ bool gm::HashCache::serialize(std::ostream& stream) const {
         root.AddMember(rapidjson::StringRef(key.data(), key.size()), obj, doc.GetAllocator());
     }
 
-    rapidjson::OStreamWrapper outWrapper(stream);
+    RapidJsonStreamWrapper outWrapper(stream);
     rapidjson::Writer writer(outWrapper);
     return doc.Accept(writer);
 }
 
-bool gm::HashCache::deserialize(std::istream& stream) {
-    rapidjson::IStreamWrapper inWrapper(stream);
+bool gm::HashCache::deserialize(fs::Stream& stream) {
+    RapidJsonStreamWrapper inWrapper(stream);
     rapidjson::Document doc;
     doc.ParseStream(inWrapper);
     if (doc.HasParseError()) {
