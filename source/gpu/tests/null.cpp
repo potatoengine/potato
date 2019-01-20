@@ -41,7 +41,8 @@ DOCTEST_TEST_SUITE("[grimm][gpu] NullDevice") {
         auto descriptorHeap = device->createDescriptorHeap();
         DOCTEST_CHECK_NE(descriptorHeap, nullptr);
 
-        auto pipelineState = device->createPipelineState();
+        GpuPipelineStateDesc desc;
+        auto pipelineState = device->createPipelineState(desc);
         DOCTEST_CHECK_NE(pipelineState, nullptr);
     }
 }

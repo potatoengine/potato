@@ -96,7 +96,7 @@ void gm::VknDevice::createRenderTargetView(GpuResource* renderTarget, gm::uint64
     GM_ASSERT(false, "Unsupported");
 }
 
-auto gm::VknDevice::createPipelineState() -> box<GpuPipelineState> {
+auto gm::VknDevice::createPipelineState(GpuPipelineStateDesc const&) -> box<GpuPipelineState> {
     GM_ASSERT(false, "Unsupported");
     return nullptr;
 }

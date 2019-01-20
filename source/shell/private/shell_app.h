@@ -2,10 +2,12 @@
 
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/unique_resource.h"
+#include "grimm/filesystem/filesystem.h"
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/descriptor_heap.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/swap_chain.h"
+#include "grimm/gpu/pipeline_state.h"
 
 #include <SDL.h>
 
@@ -33,9 +35,11 @@ private:
 
 private:
     bool _running = true;
-    gm::box<gm::GpuDevice> _device;
-    gm::box<gm::GpuSwapChain> _swapChain;
-    gm::box<gm::GpuDescriptorHeap> _rtvHeap;
-    gm::box<gm::GpuCommandList> _commandList;
-    gm::unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
+    fs::FileSystem _fileSystem;
+    box<GpuDevice> _device;
+    box<GpuSwapChain> _swapChain;
+    box<GpuDescriptorHeap> _rtvHeap;
+    box<GpuCommandList> _commandList;
+    box<GpuPipelineState> _pipelineState;
+    unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
 };

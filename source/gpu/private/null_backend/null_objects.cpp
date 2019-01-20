@@ -28,7 +28,7 @@ auto gm::NullDevice::createCommandList(GpuPipelineState* pipelineState) -> box<G
     return make_box<NullCommandList>();
 }
 
-auto gm::NullDevice::createPipelineState() -> box<GpuPipelineState> {
+auto gm::NullDevice::createPipelineState(GpuPipelineStateDesc const&) -> box<GpuPipelineState> {
     return make_box<NullPipelineState>();
 }
 

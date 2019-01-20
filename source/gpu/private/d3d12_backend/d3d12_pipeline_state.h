@@ -13,7 +13,7 @@ namespace gm {
         explicit D3d12PipelineState(com_ptr<ID3D12PipelineState> state);
         virtual ~D3d12PipelineState();
 
-        static box<D3d12PipelineState> createGraphicsPipelineState(ID3D12Device1* device);
+        static box<D3d12PipelineState> createGraphicsPipelineState(GpuPipelineStateDesc const& desc, ID3D12Device1* device);
 
         static ID3D12PipelineState* toNative(GpuPipelineState* state);
 

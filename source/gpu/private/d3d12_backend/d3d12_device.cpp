@@ -97,8 +97,8 @@ void gm::D3d12Device::createRenderTargetView(GpuResource* renderTarget, gm::uint
     _device->CreateRenderTargetView(d3d12Resource->get().get(), nullptr, handle);
 }
 
-auto gm::D3d12Device::createPipelineState() -> box<GpuPipelineState> {
-    return D3d12PipelineState::createGraphicsPipelineState(_device.get());
+auto gm::D3d12Device::createPipelineState(GpuPipelineStateDesc const& desc) -> box<GpuPipelineState> {
+    return D3d12PipelineState::createGraphicsPipelineState(desc, _device.get());
 }
 
 void gm::D3d12Device::execute(GpuCommandList* commandList) {

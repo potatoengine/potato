@@ -17,6 +17,7 @@ target_include_directories(shell
 
 target_link_libraries(shell PRIVATE
     grimm::foundation
+    grimm::filesystem
     grimm::gpu
     SDL2
     SDL2main

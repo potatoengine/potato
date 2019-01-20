@@ -12,6 +12,8 @@ namespace gm {
     class GpuPipelineState;
     class GpuCommandList;
 
+    struct GpuPipelineStateDesc;
+
     class GpuDevice {
     public:
         GpuDevice() = default;
@@ -23,7 +25,7 @@ namespace gm {
         virtual box<GpuSwapChain> createSwapChain(void* nativeWindow) = 0;
         virtual box<GpuDescriptorHeap> createDescriptorHeap() = 0;
         virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
-        virtual box<GpuPipelineState> createPipelineState() = 0;
+        virtual box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) = 0;
 
         virtual void execute(GpuCommandList* commandList) = 0;
 

@@ -86,6 +86,22 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
+    auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_6_0.dxo");
+    stream.seekg(0, std::ios::end);
+    auto size = stream.tellg();
+    stream.seekg(0, std::ios::beg);
+
+    GpuPipelineStateDesc pipelineDesc;
+    pipelineDesc.vertShader.resize(size);
+
+    stream.read(reinterpret_cast<char*>(pipelineDesc.vertShader.data()), pipelineDesc.vertShader.size());
+
+    _pipelineState = _device->createPipelineState(pipelineDesc);
+    if (_pipelineState == nullptr) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create pipeline state", _window.get());
+        return 1;
+    }
+
     return 0;
 }
 

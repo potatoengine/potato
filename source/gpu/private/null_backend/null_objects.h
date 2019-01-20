@@ -25,7 +25,7 @@ namespace gm {
         box<GpuSwapChain> createSwapChain(void* native_window) override;
         box<GpuDescriptorHeap> createDescriptorHeap() override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
-        box<GpuPipelineState> createPipelineState() override;
+        box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
 
         void createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) override {}
 
