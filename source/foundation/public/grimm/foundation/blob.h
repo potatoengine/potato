@@ -15,7 +15,7 @@ namespace gm {
         using const_pointer_chars = char const*;
         using size_type = std::size_t;
 
-        static constexpr size_type alignment = 32;
+        static constexpr size_type alignment = alignof(double);
 
         blob() = default;
         explicit blob(size_type size) : _size(size) {
