@@ -8,6 +8,7 @@
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/vector.h"
+#include "grimm/filesystem/filesystem.h"
 #include "grimm/recon/converter.h"
 #include "grimm/recon/converter_config.h"
 #include "grimm/library/asset_library.h"
@@ -44,6 +45,7 @@ namespace gm::recon {
         string_view _programName;
         vector<Mapping> _converters;
         ConverterConfig _config;
+        fs::FileSystem _fileSystem;
         AssetLibrary _library;
         HashCache _hashes;
     };

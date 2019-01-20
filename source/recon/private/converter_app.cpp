@@ -13,7 +13,7 @@
 #include <iostream>
 #include <fstream>
 
-gm::recon::ConverterApp::ConverterApp() : _programName("recon") {}
+gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {}
 gm::recon::ConverterApp::~ConverterApp() = default;
 
 bool gm::recon::ConverterApp::run(span<char const*> args) {
@@ -29,11 +29,9 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
 
     registerConverters();
 
-    fs::FileSystem fs;
-
     auto libraryPath = fs::path::join({string_view(_config.destinationFolderPath), "library$.json"});
-    if (fs.fileExists(libraryPath.c_str())) {
-        std::ifstream libraryReadStream(libraryPath);
+    if (_fileSystem.fileExists(libraryPath.c_str())) {
+        std::ifstream libraryReadStream = _fileSystem.openRead(libraryPath.c_str(), fs::FileOpenMode::Text);
         if (!libraryReadStream) {
             std::cerr << "Failed to open asset library `" << libraryPath << "'\n";
         }
@@ -44,8 +42,8 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     }
 
     auto hashCachePath = fs::path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
-    if (fs.fileExists(hashCachePath.c_str())) {
-        std::ifstream hashesReadStream(hashCachePath);
+    if (_fileSystem.fileExists(hashCachePath.c_str())) {
+        std::ifstream hashesReadStream = _fileSystem.openRead(hashCachePath.c_str(), fs::FileOpenMode::Text);
         if (!hashesReadStream) {
             std::cerr << "Failed to open hash cache `" << hashCachePath << "'\n";
         }
@@ -79,15 +77,15 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     std::cout << "Destination: " << _config.destinationFolderPath << "\n";
     std::cout << "Cache: " << _config.cacheFolderPath << "\n";
 
-    if (!fs.directoryExists(_config.destinationFolderPath.c_str())) {
-        if (!fs.createDirectories(_config.destinationFolderPath.c_str())) {
+    if (!_fileSystem.directoryExists(_config.destinationFolderPath.c_str())) {
+        if (!_fileSystem.createDirectories(_config.destinationFolderPath.c_str())) {
             std::cerr << "Failed to create `" << _config.destinationFolderPath << "'\n";
             return false;
         }
     }
 
-    if (!fs.directoryExists(_config.cacheFolderPath.c_str())) {
-        if (!fs.createDirectories(_config.cacheFolderPath.c_str())) {
+    if (!_fileSystem.directoryExists(_config.cacheFolderPath.c_str())) {
+        if (!_fileSystem.createDirectories(_config.cacheFolderPath.c_str())) {
             std::cerr << "Failed to create `" << _config.cacheFolderPath << "'\n";
             return false;
         }
@@ -98,14 +96,14 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         return false;
     }
 
-    std::ofstream hashesWriteStream(hashCachePath);
+    std::ofstream hashesWriteStream = _fileSystem.openWrite(hashCachePath.c_str(), fs::FileOpenMode::Text);
     if (!_hashes.serialize(hashesWriteStream)) {
         std::cerr << "Failed to write hash cache `" << hashCachePath << "'\n";
         return false;
     }
     hashesWriteStream.close();
 
-    std::ofstream libraryWriteStream(libraryPath);
+    std::ofstream libraryWriteStream = _fileSystem.openWrite(libraryPath.c_str(), fs::FileOpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
         std::cerr << "Failed to write asset library `" << libraryPath << "'\n";
         return false;
@@ -190,9 +188,7 @@ auto gm::recon::ConverterApp::findConverter(string_view path) const -> Converter
 }
 
 auto gm::recon::ConverterApp::collectSourceFiles() -> vector<std::string> {
-    fs::FileSystem fs;
-
-    if (!fs.directoryExists(_config.sourceFolderPath.c_str())) {
+    if (!_fileSystem.directoryExists(_config.sourceFolderPath.c_str())) {
         std::cerr << "`" << _config.sourceFolderPath << "' does not exist or is not a directory\n";
         return {};
     }
@@ -208,7 +204,7 @@ auto gm::recon::ConverterApp::collectSourceFiles() -> vector<std::string> {
         }
         return fs::EnumerateResult::Continue;
     };
-    fs.enumerate(_config.sourceFolderPath.c_str(), cb, fs::EnumerateOptions::None);
+    _fileSystem.enumerate(_config.sourceFolderPath.c_str(), cb, fs::EnumerateOptions::None);
 
     return files;
 }
