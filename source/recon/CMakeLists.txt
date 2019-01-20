@@ -28,9 +28,7 @@ target_link_libraries(recon PRIVATE recon_lib)
 
 get_target_property(GM_GPU_ENABLE_D3D12 gpu GM_GPU_ENABLE_D3D12)
 if(GM_GPU_ENABLE_D3D12)
-    find_package(dxc REQUIRED)
-    target_link_libraries(recon_lib PRIVATE dxc::dxcompiler)
-    gm_copy_library_import(dxc::dxcompiler recon)
+    target_link_libraries(recon_lib PRIVATE d3dcompiler)
 endif(GM_GPU_ENABLE_D3D12)
 
 add_subdirectory(public/grimm/recon)
