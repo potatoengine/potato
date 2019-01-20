@@ -143,7 +143,7 @@ gm::vector<T, AllocatorT>::vector(std::initializer_list<T> initial, AllocatorT c
 
 template <typename T, typename AllocatorT>
 gm::vector<T, AllocatorT>::vector(vector&& src)
-    : _first(src._first), _last(src._last), _sentinel(src._sentinel), AllocatorT(src) {
+    : AllocatorT(src), _first(src._first), _last(src._last), _sentinel(src._sentinel) {
     src._sentinel = src._last = src._first = nullptr;
 }
 

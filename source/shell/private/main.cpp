@@ -1,3 +1,5 @@
+// Copyright (C) 2018 Sean Middleditch, all rights reserverd.
+
 #include "shell_app.h"
 
 int main(int argc, char* argv[]) {

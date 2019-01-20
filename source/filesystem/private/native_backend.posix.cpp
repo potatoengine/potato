@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <ftw.h>
 
 #if !GM_PLATFORM_POSIX
 #    error "Invalid platform"
@@ -19,6 +20,7 @@
 
 static auto errnoToResult(int error) noexcept -> gm::fs::Result {
     switch (error) {
+    case 0: return gm::fs::Result::Success;
     default: return gm::fs::Result::Unknown;
     }
 }
@@ -39,7 +41,19 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return S_ISDIR(st.st_mode) != 0;
 }
 
-static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback& cb, gm::string_writer& writer) -> gm::fs::EnumerateResult {
+auto gm::fs::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const -> Result {
+    struct stat st;
+    if (stat(path.c_str(), &st) != 0) {
+        return errnoToResult(errno);
+    }
+
+    outInfo.size = st.st_size;
+    outInfo.mtime = st.st_mtime;
+    outInfo.type = S_ISREG(st.st_mode) ? FileType::Regular : S_ISDIR(st.st_mode) ? FileType::Directory : S_ISLNK(st.st_mode) ? FileType::SymbolicLink : FileType::Other;
+    return Result::Success;
+}
+
+static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback cb, gm::string_writer& writer) -> gm::fs::EnumerateResult {
     gm::unique_resource<DIR*, &closedir> dir(opendir(path.c_str()));
 
     auto writerPos = writer.size();
@@ -84,7 +98,7 @@ static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback& cb
     return gm::fs::EnumerateResult::Continue;
 }
 
-auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback& cb, EnumerateOptions opts) const -> EnumerateResult {
+auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
     string_writer writer;
 
     if ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath) {
@@ -130,4 +144,22 @@ auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Resu
             return errnoToResult(errno);
         }
     }
+}
+
+auto gm::fs::NativeBackend::remove(zstring_view path) -> Result {
+    if (::remove(path.c_str()) != 0) {
+        return errnoToResult(errno);
+    }
+    return Result::Success;
+}
+
+auto gm::fs::NativeBackend::removeRecursive(zstring_view path) -> Result {
+    auto cb = [](char const* path, struct stat const* st, int flags, struct FTW* ftw) {
+        return ::remove(path);
+    };
+    int rs = nftw(path.c_str(), cb, 64, FTW_DEPTH | FTW_PHYS);
+    if (rs != 0) {
+        return errnoToResult(errno);
+    }
+    return Result::Success;
 }

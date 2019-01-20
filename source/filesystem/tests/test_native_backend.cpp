@@ -50,10 +50,10 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
 
         vector<std::string> entries;
 
-        auto cb(EnumerateCallback{[&entries](FileInfo const& info) {
+        auto cb = [&entries](FileInfo const& info) {
             entries.push_back(info.path);
             return EnumerateResult::Recurse;
-        }});
+        };
         DOCTEST_CHECK_EQ(native.enumerate(".", cb), EnumerateResult::Continue);
 
         DOCTEST_REQUIRE_EQ(entries.size(), expected.size());
@@ -64,6 +64,17 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
         for (typename decltype(entries)::size_type i = 0, e = entries.size(); i != e; ++i) {
             DOCTEST_CHECK_EQ(entries[i], expected[i]);
         }
+    }
+
+    DOCTEST_TEST_CASE("stat") {
+        auto native = NativeBackend::create();
+
+        FileStat stat;
+        auto rs = native.fileStat("test.txt", stat);
+        DOCTEST_CHECK_EQ(rs, Result::Success);
+        DOCTEST_CHECK_EQ(stat.type, FileType::Regular);
+
+        // note: can't test size (Windows/UNIX line endings!) or mtime (git)
     }
 
     // TODO:

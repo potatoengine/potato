@@ -33,7 +33,7 @@ namespace gm {
 
         pointer get() const { return _ptr; }
         pointer operator->() const { return _ptr; }
-        reference operator*() const { return _ptr; }
+        reference operator*() const { return *_ptr; }
 
         friend bool operator==(com_ptr const& lhs, com_ptr const& rhs) { return lhs.get() == rhs.get(); }
         friend bool operator!=(com_ptr const& lhs, com_ptr const& rhs) { return lhs.get() != rhs.get(); }

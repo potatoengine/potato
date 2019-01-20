@@ -91,7 +91,7 @@ auto gm::VknDevice::createCommandList(GpuPipelineState* pipelineState) -> box<Gp
     return nullptr;
 }
 
-void gm::VknDevice::createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) {
+void gm::VknDevice::createRenderTargetView(GpuResource* renderTarget, gm::uint64 cpuHandle) {
     GM_ASSERT(renderTarget != nullptr);
     GM_ASSERT(false, "Unsupported");
 }

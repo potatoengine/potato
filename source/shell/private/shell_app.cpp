@@ -1,3 +1,5 @@
+// Copyright (C) 2018 Sean Middleditch, all rights reserverd.
+
 #include "shell_app.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/platform.h"

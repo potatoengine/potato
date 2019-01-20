@@ -27,5 +27,3 @@ namespace gm {
         using byte = std::byte;
     } // namespace types
 } // namespace gm
-
-using namespace gm::types;
