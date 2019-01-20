@@ -19,7 +19,7 @@ namespace {
               _folder(folder) {}
 
         HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override {
-            gm::string absolutePath = gm::fs::path::join_folder, pFileName});
+            gm::string absolutePath = gm::fs::path::join({_folder, pFileName});
 
             std::cout << "Including `" << absolutePath << "'\n";
 
@@ -55,7 +55,7 @@ namespace {
         gm::recon::Context& _ctx;
         gm::string_view _folder;
         gm::vector<gm::vector<char>> _shaders;
-    };
+    }; // namespace
 } // namespace
 
 gm::recon::HlslConverter::HlslConverter() = default;
