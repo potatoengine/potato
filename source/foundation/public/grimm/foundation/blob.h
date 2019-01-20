@@ -19,7 +19,7 @@ namespace gm {
 
         blob() = default;
         explicit blob(size_type size) : _size(size) {
-            _data = default_allocator{}.allocate(size, 32);
+            _data = default_allocator{}.allocate(size, alignment);
         }
 
         blob(blob&& rhs) : _data(rhs._data), _size(rhs._size) {
@@ -47,7 +47,7 @@ namespace gm {
         explicit operator bool() const noexcept { return _size != 0; }
 
         void reset() {
-            default_allocator{}.deallocate(_data, _size, 32);
+            default_allocator{}.deallocate(_data, _size, alignment);
             _data = nullptr;
             _size = 0;
         }
