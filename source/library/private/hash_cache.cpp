@@ -31,10 +31,10 @@ auto gm::HashCache::hashAssetAtPath(zstring_view path) -> gm::uint64 {
         return 0;
     }
 
-    auto it = _hashes.find(path.c_str());
+    auto it = _hashes.find(path);
     if (it != _hashes.end()) {
-        if (rs == fs::Result::Success && stat.size == it->second.size && stat.mtime == it->second.mtime) {
-            return it->second.hash;
+        if (rs == fs::Result::Success && stat.size == it->second->size && stat.mtime == it->second->mtime) {
+            return it->second->hash;
         }
     }
 
@@ -42,11 +42,12 @@ auto gm::HashCache::hashAssetAtPath(zstring_view path) -> gm::uint64 {
     auto hash = hashAssetStream(fstream);
 
     // update the hash
-    _hashes[std::string(path.c_str())] = HashRecord{
-        std::string(path.c_str()),
-        hash,
-        stat.mtime,
-        stat.size};
+    auto rec = make_box<HashRecord>();
+    rec->osPath = string(path);
+    rec->hash = hash;
+    rec->mtime = stat.mtime;
+    rec->size = stat.size;
+    _hashes[rec->osPath] = std::move(rec);
     return hash;
 }
 
@@ -57,9 +58,9 @@ bool gm::HashCache::serialize(std::ostream& stream) const {
 
     for (auto const& [key, value] : _hashes) {
         auto obj = rapidjson::Value(rapidjson::kObjectType);
-        obj.AddMember("hash", rapidjson::Value(value.hash), doc.GetAllocator());
-        obj.AddMember("mtime", rapidjson::Value(value.mtime), doc.GetAllocator());
-        obj.AddMember("size", rapidjson::Value(value.size), doc.GetAllocator());
+        obj.AddMember("hash", rapidjson::Value(value->hash), doc.GetAllocator());
+        obj.AddMember("mtime", rapidjson::Value(value->mtime), doc.GetAllocator());
+        obj.AddMember("size", rapidjson::Value(value->size), doc.GetAllocator());
         root.AddMember(rapidjson::StringRef(key.data(), key.size()), obj, doc.GetAllocator());
     }
 
@@ -104,13 +105,15 @@ bool gm::HashCache::deserialize(std::istream& stream) {
         uint64 mtime = mtimeIt->value.GetUint64();
         uint64 size = sizeIt->value.GetUint64();
 
-        std::string path = member.name.GetString();
+        string path(member.name.GetString());
 
-        _hashes[path] = HashRecord{
-            path,
-            hash,
-            mtime,
-            size};
+        auto rec = make_box<HashRecord>();
+        rec->osPath = string(path);
+        rec->hash = hash;
+        rec->mtime = mtime;
+        rec->size = size;
+        _hashes[rec->osPath] = std::move(rec);
+        return hash;
     }
 
     return true;

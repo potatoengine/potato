@@ -4,6 +4,7 @@
 
 #include "_export.h"
 #include "common.h"
+#include "grimm/foundation/string_blob.h"
 #include "grimm/foundation/vector.h"
 
 namespace gm {
@@ -24,19 +25,19 @@ namespace gm {
     GM_LIBRARY_API span<string_view const> assetDependencyTypeNames() noexcept;
 
     struct AssetDependencyRecord {
-        std::string path;
+        string path;
         uint64 contentHash = 0;
     };
 
     struct AssetOutputRecord {
-        std::string path;
+        string path;
         uint64 contentHash = 0;
     };
 
     struct AssetImportRecord {
         AssetId assetId = AssetId::Invalid;
-        std::string path;
-        std::string importerName;
+        string path;
+        string importerName;
         uint64 contentHash = 0;
         uint64 importerRevision = 0;
         AssetCategory category = AssetCategory::Source;
