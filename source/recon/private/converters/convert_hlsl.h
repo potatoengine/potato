@@ -13,6 +13,6 @@ namespace gm::recon {
         bool convert(Context& ctx) override;
 
         string_view name() const noexcept override { return "hlsl"; }
-        uint64 revision() const noexcept override { return 0; }
+        uint64 revision() const noexcept override { return 2; }
     };
 } // namespace gm::recon

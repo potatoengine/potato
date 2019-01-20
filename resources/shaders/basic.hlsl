@@ -1,6 +1,9 @@
+#include "common.hlsli"
+
 float4x4 WorldViewProjection;
 
-float4 vertex_main(float4 inputPosition : POSITION) : POSITION {
+float4 vertex_main(float4 inputPosition
+                   : POSITION) : POSITION {
     return mul(inputPosition, WorldViewProjection);
 }
 
