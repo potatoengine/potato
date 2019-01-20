@@ -139,13 +139,13 @@ public:
         return npos;
     }
 
-    friend bool operator==(string lhs, string rhs) noexcept {
+    friend bool operator==(string const& lhs, string rhs) noexcept {
         return lhs.size() == rhs.size() && traits::compare(lhs.data(), rhs.data(), lhs.size()) == 0;
     }
-    friend bool operator!=(string lhs, string rhs) noexcept {
+    friend bool operator!=(string const& lhs, string const& rhs) noexcept {
         return lhs.size() != rhs.size() || traits::compare(lhs.data(), rhs.data(), lhs.size()) != 0;
     }
-    friend bool operator<(string lhs, string rhs) noexcept {
+    friend bool operator<(string const& lhs, string const& rhs) noexcept {
         auto len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
         auto rs = traits::compare(lhs.data(), rhs.data(), len);
         if (rs < 0) {
