@@ -19,7 +19,7 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
     auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 
-    std::string destParentAbsolutePath(fs::path::parent(std::string_view(destAbsolutePath)));
+    string destParentAbsolutePath(fs::path::parent(destAbsolutePath));
 
     fs::FileSystem fileSys;
 

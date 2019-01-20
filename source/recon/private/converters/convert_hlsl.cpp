@@ -27,7 +27,7 @@ namespace {
             }
             buffer[rs] = 0;
 
-            std::string absolutePath = gm::fs::path::join({_ctx.sourceFolderPath().c_str(), buffer});
+            gm::string absolutePath = gm::fs::path::join({_ctx.sourceFolderPath().c_str(), buffer});
 
             std::cout << "Including `" << absolutePath << "'\n";
 
@@ -154,7 +154,7 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
     com_ptr<IDxcBlob> compiledBlob;
     result->GetResult(out_ptr(compiledBlob));
 
-    std::string destParentAbsolutePath(fs::path::parent(string_view(destAbsolutePath)));
+    string destParentAbsolutePath(fs::path::parent(string_view(destAbsolutePath)));
     if (!fs.directoryExists(destParentAbsolutePath.c_str())) {
         if (!fs.createDirectories(destParentAbsolutePath.c_str())) {
             std::cerr << "Failed to create `" << destParentAbsolutePath << "'\n";

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "grimm/foundation/string_blob.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/vector.h"
 #include "grimm/library/asset_record.h"
@@ -28,15 +29,15 @@ namespace gm::recon {
         void addOutput(zstring_view path);
         void addOutputDependency(zstring_view from, zstring_view on, AssetDependencyType type);
 
-        span<std::string const> sourceDependencies() const noexcept { return span{_sourceDependencies.data(), _sourceDependencies.size()}; }
-        span<std::string const> outputs() const noexcept { return span{_outputs.data(), _outputs.size()}; }
+        span<string const> sourceDependencies() const noexcept { return span{_sourceDependencies.data(), _sourceDependencies.size()}; }
+        span<string const> outputs() const noexcept { return span{_outputs.data(), _outputs.size()}; }
 
     private:
         zstring_view _sourceFilePath;
         zstring_view _sourceFolderPath;
         zstring_view _destinationFolderPath;
 
-        vector<std::string> _sourceDependencies;
-        vector<std::string> _outputs;
+        vector<string> _sourceDependencies;
+        vector<string> _outputs;
     };
 } // namespace gm::recon

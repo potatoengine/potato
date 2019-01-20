@@ -131,7 +131,7 @@ void gm::recon::ConverterApp::registerConverters() {
                            make_box<CopyConverter>()});
 }
 
-bool gm::recon::ConverterApp::convertFiles(vector<std::string> const& files) {
+bool gm::recon::ConverterApp::convertFiles(vector<string> const& files) {
     bool failed = false;
 
     for (auto const& path : files) {
@@ -168,29 +168,32 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::string> const& files) {
             continue;
         }
 
-        _outputs.insert(_outputs.end(), context.outputs().begin(), context.outputs().end());
+        // range insert won't work - explicit copy fails
+        for (auto const& output : context.outputs()) {
+            _outputs.push_back(string(output));
+        }
 
         AssetImportRecord newRecord;
         newRecord.assetId = assetId;
-        newRecord.path = path.c_str();
+        newRecord.path = string(path);
         newRecord.contentHash = contentHash;
         newRecord.category = AssetCategory::Source;
-        newRecord.importerName = converter->name();
+        newRecord.importerName = string(converter->name());
         newRecord.importerRevision = converter->revision();
 
-        for (std::string const& sourceDepPath : context.sourceDependencies()) {
+        for (auto const& sourceDepPath : context.sourceDependencies()) {
             auto osPath = fs::path::join({_config.sourceFolderPath.c_str(), sourceDepPath.c_str()});
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
             newRecord.sourceDependencies.push_back(AssetDependencyRecord{
-                sourceDepPath,
+                string(sourceDepPath),
                 contentHash});
         }
 
-        for (std::string const& outputPath : context.outputs()) {
+        for (auto const& outputPath : context.outputs()) {
             auto osPath = fs::path::join({_config.destinationFolderPath.c_str(), outputPath.c_str()});
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
             newRecord.outputs.push_back(AssetOutputRecord{
-                outputPath,
+                string(outputPath),
                 contentHash});
         }
 
@@ -200,24 +203,24 @@ bool gm::recon::ConverterApp::convertFiles(vector<std::string> const& files) {
     return !failed;
 }
 
-bool gm::recon::ConverterApp::deleteUnusedFiles(vector<std::string> const& files, bool dryRun) {
-    std::set<std::string> keepFiles(files.begin(), files.end());
-    std::set<std::string> foundFiles;
+bool gm::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, bool dryRun) {
+    std::set<string> keepFiles(files.begin(), files.end());
+    std::set<string> foundFiles;
     auto cb = [&foundFiles](fs::FileInfo const& info) {
         if (info.type == fs::FileType::Regular) {
-            foundFiles.insert(info.path.c_str());
+            foundFiles.insert(string(info.path));
         }
         return fs::EnumerateResult::Recurse;
     };
     _fileSystem.enumerate(_config.destinationFolderPath.c_str(), cb);
 
-    vector<std::string> deleteFiles;
+    vector<string> deleteFiles;
     std::set_difference(foundFiles.begin(), foundFiles.end(), keepFiles.begin(), keepFiles.end(), std::back_inserter(deleteFiles));
 
-    for (std::string const& deletePath : deleteFiles) {
+    for (auto const& deletePath : deleteFiles) {
         std::cout << "Stale output file `" << deletePath << "'\n";
         if (!dryRun) {
-            std::string osPath = fs::path::join({_config.destinationFolderPath.c_str(), deletePath.c_str()});
+            string osPath = fs::path::join({_config.destinationFolderPath.c_str(), deletePath.c_str()});
             auto rs = _fileSystem.remove(osPath.c_str());
             if (rs != fs::Result::Success) {
                 std::cerr << "Failed to remove `" << osPath << "'\n";
@@ -255,13 +258,13 @@ auto gm::recon::ConverterApp::findConverter(string_view path) const -> Converter
     return nullptr;
 }
 
-auto gm::recon::ConverterApp::collectSourceFiles() -> vector<std::string> {
+auto gm::recon::ConverterApp::collectSourceFiles() -> vector<string> {
     if (!_fileSystem.directoryExists(_config.sourceFolderPath.c_str())) {
         std::cerr << "`" << _config.sourceFolderPath << "' does not exist or is not a directory\n";
         return {};
     }
 
-    vector<std::string> files;
+    vector<string> files;
 
     auto cb = [&files](fs::FileInfo const& info) -> fs::EnumerateResult {
         if (info.type == fs::FileType::Regular) {

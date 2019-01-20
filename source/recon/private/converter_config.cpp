@@ -59,15 +59,15 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args) 
             std::cerr << "Unexpected value: " << arg << '\n';
             return false;
         case ArgSourceFolder:
-            config.sourceFolderPath = arg;
+            config.sourceFolderPath = string(arg);
             argMode = ArgNone;
             break;
         case ArgDestinationFolder:
-            config.destinationFolderPath = arg;
+            config.destinationFolderPath = string(arg);
             argMode = ArgNone;
             break;
         case ArgCacheFolder:
-            config.cacheFolderPath = arg;
+            config.cacheFolderPath = string(arg);
             argMode = ArgNone;
             break;
         case ArgConfig:
@@ -117,13 +117,13 @@ bool gm::recon::parseConfigString(ConverterConfig& config, string_view json) {
     }
 
     if (doc.HasMember("sourceDir")) {
-        config.sourceFolderPath = doc["sourceDir"].GetString();
+        config.sourceFolderPath = string(doc["sourceDir"].GetString());
     }
     if (doc.HasMember("destDir")) {
-        config.destinationFolderPath = doc["destDir"].GetString();
+        config.destinationFolderPath = string(doc["destDir"].GetString());
     }
     if (doc.HasMember("cacheDir")) {
-        config.cacheFolderPath = doc["cacheDir"].GetString();
+        config.cacheFolderPath = string(doc["cacheDir"].GetString());
     }
     if (doc.HasMember("deleteStale")) {
         config.deleteStale = doc["deleteStale"].GetBool();

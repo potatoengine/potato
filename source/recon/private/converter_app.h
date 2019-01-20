@@ -5,6 +5,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/delegate.h"
 #include "grimm/foundation/span.h"
+#include "grimm/foundation/string_blob.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/vector.h"
@@ -30,9 +31,9 @@ namespace gm::recon {
     private:
         void registerConverters();
 
-        vector<std::string> collectSourceFiles();
-        bool convertFiles(vector<std::string> const& files);
-        bool deleteUnusedFiles(vector<std::string> const& files, bool dryRun = true);
+        vector<string> collectSourceFiles();
+        bool convertFiles(vector<string> const& files);
+        bool deleteUnusedFiles(vector<string> const& files, bool dryRun = true);
 
         bool isUpToDate(AssetImportRecord const& record, uint64 contentHash, Converter const& converter) const noexcept;
         bool isUpToDate(span<AssetDependencyRecord const> records);
@@ -46,7 +47,7 @@ namespace gm::recon {
 
         string_view _programName;
         vector<Mapping> _converters;
-        vector<std::string> _outputs;
+        vector<string> _outputs;
         ConverterConfig _config;
         fs::FileSystem _fileSystem;
         AssetLibrary _library;
