@@ -31,4 +31,7 @@ namespace gm {
 #if GM_GPU_ENABLE_D3D12
     GM_GPU_API box<GpuDeviceFactory> CreateD3d12GPUFactory();
 #endif
+#if GM_GPU_ENABLE_D3D11
+    GM_GPU_API box<GpuDeviceFactory> CreateGPUFactoryD3D11();
+#endif
 } // namespace gm
