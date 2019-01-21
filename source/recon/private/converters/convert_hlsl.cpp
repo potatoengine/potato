@@ -32,8 +32,8 @@ namespace {
                 return E_FAIL;
             }
 
-            gm::blob shader;
-            if (gm::fs::readBlob(stream, shader) != gm::fs::Result::Success) {
+            gm::string shader;
+            if (gm::fs::readText(stream, shader) != gm::fs::Result::Success) {
                 return E_FAIL;
             }
 
@@ -52,7 +52,7 @@ namespace {
         gm::fs::FileSystem& _fileSystem;
         gm::recon::Context& _ctx;
         gm::string_view _folder;
-        gm::vector<gm::blob> _shaders;
+        gm::vector<gm::string> _shaders;
     }; // namespace
 } // namespace
 
@@ -70,8 +70,8 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
         return false;
     }
 
-    blob shader;
-    if (fs::readBlob(stream, shader) != fs::Result::Success) {
+    string shader;
+    if (fs::readText(stream, shader) != fs::Result::Success) {
         std::cerr << "Failed to read `" << absoluteSourcePath << "'\n";
         return false;
     }
