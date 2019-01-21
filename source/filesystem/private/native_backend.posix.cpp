@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <ftw.h>
+#include <errno.h>
 
 #if !GM_PLATFORM_POSIX
 #    error "Invalid platform"

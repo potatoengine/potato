@@ -16,8 +16,8 @@ namespace gm::fs {
 
         GM_FILESYSTEM_API Result fileStat(zstring_view path, FileStat& outInfo) const override;
 
-        GM_FILESYSTEM_API std::ifstream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const override;
-        GM_FILESYSTEM_API std::ofstream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) override;
+        GM_FILESYSTEM_API Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const override;
+        GM_FILESYSTEM_API Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) override;
 
         GM_FILESYSTEM_API EnumerateResult enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts = EnumerateOptions::None) const override;
 

@@ -1,4 +1,5 @@
 #include "grimm/foundation/string_blob.h"
+#include "grimm/foundation/allocator.h"
 #include "doctest.h"
 #include <ostream>
 
@@ -19,6 +20,19 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::string") {
         DOCTEST_CHECK(!s.empty());
         DOCTEST_CHECK_EQ(s.size(), s.size());
         DOCTEST_CHECK_EQ(s.c_str(), ss.c_str());
+    }
+
+    DOCTEST_TEST_CASE("move constructor") {
+        string s("wrong");
+        string s2("correct");
+
+        s = std::move(s2);
+
+        DOCTEST_CHECK(!s.empty());
+        DOCTEST_CHECK_EQ(s.size(), s.size());
+        DOCTEST_CHECK_EQ(s.c_str(), "correct");
+
+        DOCTEST_CHECK(s2.empty());
     }
 
     DOCTEST_TEST_CASE("literal initialization") {
@@ -63,5 +77,15 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::string") {
         DOCTEST_CHECK_EQ(s.find_last_of("ih"), 5);
         DOCTEST_CHECK_EQ(s.find_last_of("zh"), 1);
         DOCTEST_CHECK_EQ(s.find_last_of("fz"), string::npos);
+    }
+
+    DOCTEST_TEST_CASE("take_ownership") {
+        char* cs = (char*)string_allocator{}.allocate(12);
+        std::memcpy(cs, "hello world", 12);
+
+        string s = string::take_ownership(cs, 11);
+        DOCTEST_CHECK_EQ(s.c_str(), "hello world");
+
+        s.reset();
     }
 }

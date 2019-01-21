@@ -10,8 +10,7 @@
 #include "grimm/foundation/types.h"
 #include "grimm/foundation/uhash.h"
 #include "grimm/filesystem/filesystem.h"
-#include <string>
-#include <iosfwd>
+#include "grimm/filesystem/stream.h"
 #include <unordered_map>
 
 namespace gm {
@@ -21,12 +20,12 @@ namespace gm {
         HashCache(fs::FileSystem fileSystem) : _fileSystem(std::move(fileSystem)) {}
 
         static GM_LIBRARY_API uint64 hashAssetContent(span<byte const> contents) noexcept;
-        static GM_LIBRARY_API uint64 hashAssetStream(std::istream& stream);
+        static GM_LIBRARY_API uint64 hashAssetStream(fs::Stream& stream);
 
         GM_LIBRARY_API uint64 hashAssetAtPath(zstring_view path);
 
-        GM_LIBRARY_API bool serialize(std::ostream& stream) const;
-        GM_LIBRARY_API bool deserialize(std::istream& stream);
+        GM_LIBRARY_API bool serialize(fs::Stream& stream) const;
+        GM_LIBRARY_API bool deserialize(fs::Stream& stream);
 
     private:
         struct HashRecord {

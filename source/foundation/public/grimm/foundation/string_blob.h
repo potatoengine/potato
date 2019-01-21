@@ -27,34 +27,43 @@ public:
     static constexpr size_type npos = ~size_type{0};
 
     string() = default;
-    ~string() { reset(); }
+    ~string() { _free(_data, _size); }
 
-    explicit string(string const& str) { assign(str.data(), str.size()); }
+    explicit string(string const& str) : _data(_copy(str._data, str._size)), _size(str._size) {}
     string(string&& rhs) : _data(rhs._data), _size(rhs._size) {
-        _data = _empty;
-        _size = 0;
+        rhs._data = nullptr;
+        rhs._size = 0;
     }
-    explicit string(std::string str) { assign(str.data(), str.size()); }
-    explicit string(const_pointer zstr) { assign(zstr); }
-    explicit string(const_pointer data, size_type size) { assign(data, size); }
-    explicit string(zstring_view view) { assign(view.c_str()); }
-    explicit string(string_view view) { assign(view.data(), view.size()); }
+    explicit string(std::string str) : _data(_copy(str.data(), str.size())), _size(str.size()) {}
+    explicit string(const_pointer zstr) : _size(zstr != nullptr ? traits::length(zstr) : 0) { _data = _copy(zstr, _size); }
+    explicit string(const_pointer data, size_type size) : _data(_copy(data, size)), _size(size) {}
+    explicit string(zstring_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
+    explicit string(string_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
+
+    static string take_ownership(pointer str, size_type length) {
+        string s;
+        s._data = str;
+        s._size = length;
+        return s;
+    }
 
     string& operator=(string const&) = delete;
 
     string& operator=(string&& rhs) noexcept {
         if (this != &rhs) {
-            reset();
+            _free(_data, _size);
             _size = rhs._size;
             _data = rhs.release();
         }
         return *this;
     }
 
-    const_pointer c_str() const noexcept { return _data; }
+    const_pointer c_str() const noexcept {
+        return _data != nullptr ? _data : _empty;
+    }
 
     const_pointer data() const noexcept {
-        return _data;
+        return _data != nullptr ? _data : _empty;
     }
     size_type size() const noexcept {
         return _size;
@@ -185,14 +194,10 @@ public:
         tmp.swap(*this);
 
         if (length != 0) {
-            _data = static_cast<pointer>(string_allocator{}.allocate(length + 1 /*NUL*/));
-            std::memmove(_data, str, length);
-            _data[length] = 0;
+            _data = _copy(str, length);
             _size = length;
         }
-        else {
-            reset();
-        }
+
         return *this;
     }
 
@@ -204,23 +209,19 @@ public:
         if (zstr != nullptr) {
             assign(zstr, traits::length(zstr));
         }
-        else {
-            reset();
-        }
+
         return *this;
     }
 
     void reset() {
-        if (_data != _empty) {
-            string_allocator{}.deallocate(_data, _size + 1 /*NUL*/);
-        }
-        _data = _empty;
+        _free(_data, _size);
+        _data = nullptr;
         _size = 0;
     }
 
     [[nodiscard]] pointer release() noexcept {
         pointer tmp = _data;
-        _data = _empty;
+        _data = nullptr;
         _size = 0;
         return tmp;
     }
@@ -236,9 +237,27 @@ public:
     }
 
 private:
+    static pointer _copy(const_pointer str, size_type length) {
+        if (length != 0) {
+            pointer p = static_cast<pointer>(string_allocator{}.allocate(length + 1 /*NUL*/));
+            std::memmove(p, str, length);
+            p[length] = 0;
+            return p;
+        }
+        else {
+            return nullptr;
+        }
+    }
+
+    static void _free(pointer data, size_type length) {
+        if (data != nullptr) {
+            string_allocator{}.deallocate(data, length + 1 /*NUL*/);
+        }
+    }
+
     inline static value_type _empty[] = "";
 
-    pointer _data = _empty;
+    pointer _data = nullptr;
     size_type _size = 0;
 };
 

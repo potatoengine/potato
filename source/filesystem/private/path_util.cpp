@@ -223,5 +223,5 @@ auto gm::fs::path::join(std::initializer_list<string_view> components) -> string
         result.write(sv.data(), sv.size());
     }
 
-    return string(result);
+    return std::move(result).to_string();
 }

@@ -1,6 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "grimm/filesystem/null_backend.h"
+#include "grimm/filesystem/stream.h"
 
 bool gm::fs::NullBackend::fileExists(zstring_view path) const noexcept { return false; }
 
@@ -8,9 +9,9 @@ bool gm::fs::NullBackend::directoryExists(zstring_view path) const noexcept { re
 
 auto gm::fs::NullBackend::fileStat(zstring_view path, FileStat& outInfo) const -> Result { return Result::UnsupportedOperation; }
 
-std::ifstream gm::fs::NullBackend::openRead(zstring_view, FileOpenMode) const { return {}; }
+auto gm::fs::NullBackend::openRead(zstring_view, FileOpenMode) const -> Stream { return {}; }
 
-std::ofstream gm::fs::NullBackend::openWrite(zstring_view, FileOpenMode) { return {}; }
+auto gm::fs::NullBackend::openWrite(zstring_view, FileOpenMode) -> Stream { return {}; }
 
 auto gm::fs::NullBackend::enumerate(zstring_view, EnumerateCallback, EnumerateOptions) const -> EnumerateResult { return EnumerateResult::Continue; }
 

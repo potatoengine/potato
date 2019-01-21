@@ -9,6 +9,8 @@
 #include "grimm/foundation/span.h"
 
 namespace gm {
+    class string;
+
     class string_writer {
     public:
         using value_type = char;
@@ -64,8 +66,12 @@ namespace gm {
 
         GM_FRAMEWORK_API void reset();
 
+        GM_FRAMEWORK_API string to_string() const&;
+        GM_FRAMEWORK_API string to_string() &&;
+
     private:
-        void _grow(size_type requiredSize);
+        void
+        _grow(size_type requiredSize);
 
         size_type _size = 0;
         size_type _capacity = sizeof(_fixed);
