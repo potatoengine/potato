@@ -19,13 +19,11 @@ namespace gm {
         static box<GpuDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
         box<GpuSwapChain> createSwapChain(void* native_window) override;
-        box<GpuDescriptorHeap> createDescriptorHeap() override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
 
         void execute(GpuCommandList* commandList) override;
 
-        void createRenderTargetView(GpuResource* renderTarget, std::size_t cpuHandle) override;
         box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
 
     private:

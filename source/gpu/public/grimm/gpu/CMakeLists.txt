@@ -2,7 +2,6 @@ target_sources(gpu PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_export.h
     ${CMAKE_CURRENT_SOURCE_DIR}/command_list.h
     ${CMAKE_CURRENT_SOURCE_DIR}/com_ptr.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/descriptor_heap.h
     ${CMAKE_CURRENT_SOURCE_DIR}/device.h
     ${CMAKE_CURRENT_SOURCE_DIR}/factory.h
     ${CMAKE_CURRENT_SOURCE_DIR}/pipeline_state.h

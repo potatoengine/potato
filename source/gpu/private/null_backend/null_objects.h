@@ -3,7 +3,6 @@
 #pragma once
 
 #include "command_list.h"
-#include "descriptor_heap.h"
 #include "device.h"
 #include "factory.h"
 #include "pipeline_state.h"
@@ -24,11 +23,9 @@ namespace gm {
     class NullDevice final : public GpuDevice {
     public:
         box<GpuSwapChain> createSwapChain(void* native_window) override;
-        box<GpuDescriptorHeap> createDescriptorHeap() override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
 
-        void createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) override {}
         box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
 
         void execute(GpuCommandList* commands) override {}
@@ -49,11 +46,6 @@ namespace gm {
     };
 
     class NullResource final : public GpuResource {
-    };
-
-    class NullDescriptorHeap final : public GpuDescriptorHeap {
-    public:
-        GpuDescriptorHandle getCpuHandle() const override;
     };
 
     class NullCommandList final : public GpuCommandList {

@@ -7,7 +7,6 @@
 #include "grimm/foundation/vector.h"
 #include "grimm/filesystem/stream.h"
 #include "grimm/filesystem/stream_util.h"
-#include "grimm/gpu/descriptor_heap.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/factory.h"
 #include "grimm/gpu/resource.h"

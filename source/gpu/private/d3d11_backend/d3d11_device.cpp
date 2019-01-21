@@ -10,7 +10,6 @@
 #include "d3d11_platform.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
-#include "grimm/gpu/descriptor_heap.h"
 #include <utility>
 
 gm::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context)
@@ -58,16 +57,8 @@ auto gm::DeviceD3D11::createSwapChain(void* nativeWindow) -> box<GpuSwapChain> {
     return SwapChainD3D11::createSwapChain(_factory.get(), _device.get(), nativeWindow);
 }
 
-auto gm::DeviceD3D11::createDescriptorHeap() -> box<GpuDescriptorHeap> {
-    return nullptr;
-}
-
 auto gm::DeviceD3D11::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
-}
-
-void gm::DeviceD3D11::createRenderTargetView(GpuResource* renderTarget, gm::uint64 cpuHandle) {
-    GM_UNREACHABLE("unsupported");
 }
 
 auto gm::DeviceD3D11::createRenderTargetView(GpuResource* renderTarget) -> box<GpuResourceView> {

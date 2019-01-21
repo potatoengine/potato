@@ -4,7 +4,6 @@
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/gpu/command_list.h"
-#include "grimm/gpu/descriptor_heap.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/swap_chain.h"
 #include "grimm/gpu/pipeline_state.h"
