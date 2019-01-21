@@ -47,12 +47,6 @@ int gm::ShellApp::initialize() {
         _device = d3d12Factory->createDevice(0);
     }
 #endif
-#if GM_GPU_ENABLE_VULKAN
-    if (_device == nullptr) {
-        auto vulkanFactory = CreateVulkanGPUFactory();
-        _device = vulkanFactory->createDevice(0);
-    }
-#endif
 
     if (_device == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not find device", _window.get());

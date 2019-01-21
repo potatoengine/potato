@@ -15,8 +15,6 @@ set(GM_GPU_D3D12_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d12_pipeline_state.cpp
 )
 
-target_compile_definitions(gpu PRIVATE VULKAN_HPP_NO_EXCEPTIONS)
-
 if(GM_GPU_ENABLE_D3D12)
     message(STATUS "ENABLED Direct3D 12 support")
     target_sources(gpu PRIVATE ${GM_GPU_D3D12_SOURCES})

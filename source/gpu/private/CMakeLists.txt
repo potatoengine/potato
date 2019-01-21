@@ -1,3 +1,2 @@
 add_subdirectory(null_backend)
-add_subdirectory(vulkan_backend)
 add_subdirectory(d3d12_backend)
