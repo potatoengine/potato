@@ -91,7 +91,7 @@ int gm::ShellApp::initialize() {
     GpuPipelineStateDesc pipelineDesc;
 
     auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_6_0.dxo");
-    if (fs::readBlob(stream, pipelineDesc.vertShader) != fs::Result::Success) {
+    if (fs::readBlob(stream, pipelineDesc.vertShader) != fs::Result{}) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open shader", _window.get());
         return 1;
     }
