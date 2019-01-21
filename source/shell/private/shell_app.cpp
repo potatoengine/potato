@@ -47,12 +47,10 @@ int gm::ShellApp::initialize() {
         _device = factory->createDevice(0);
     }
 #endif
-#if GM_GPU_ENABLE_D3D12
     if (_device == nullptr) {
-        auto d3d12Factory = CreateD3d12GPUFactory();
-        _device = d3d12Factory->createDevice(0);
+        auto factory = CreateNullGPUFactory();
+        _device = factory->createDevice(0);
     }
-#endif
 
     if (_device == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not find device", _window.get());

@@ -2,13 +2,13 @@
 
 #include "convert_hlsl.h"
 #include "grimm/gpu/com_ptr.h"
-#include "grimm/gpu/direct3d.h"
 #include "grimm/foundation/out_ptr.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
 #include "grimm/filesystem/stream_util.h"
 #include "grimm/filesystem/path_util.h"
+#include <d3d11.h>
 #include <d3dcompiler.h>
 #include <iostream>
 #include <fstream>

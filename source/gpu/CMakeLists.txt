@@ -46,15 +46,7 @@ target_compile_options(gpu
 
 add_subdirectory(public/grimm/gpu)
 
-find_library(D3D12_PATH d3d12)
 find_library(DXGI_PATH dxgi)
-if(D3D12_PATH AND DXGI_PATH)
-    set(GM_GPU_ENABLE_D3D12 TRUE)
-    target_link_libraries(gpu PRIVATE ${D3D12_PATH} ${DXGI_PATH})
-else()
-    set(GM_GPU_ENABLE_D3D12 FALSE)
-endif(D3D12_PATH AND DXGI_PATH)
-
 find_library(D3D11_PATH d3d11)
 if(D3D11_PATH AND DXGI_PATH)
     set(GM_GPU_ENABLE_D3D11 TRUE)
@@ -64,7 +56,6 @@ else()
 endif(D3D11_PATH AND DXGI_PATH)
 
 set_target_properties(gpu PROPERTIES
-    GM_GPU_ENABLE_D3D12 ${GM_GPU_ENABLE_D3D12}
     GM_GPU_ENABLE_D3D11 ${GM_GPU_ENABLE_D3D11}
 )
 
