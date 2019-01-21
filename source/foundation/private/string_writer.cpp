@@ -3,6 +3,7 @@
 // Logging system is designed to minimize the overhead esp. in debug scenarios (Where we most likely want logging), could probably be better.
 
 #include "string_writer.h"
+#include "string_blob.h"
 
 void gm::string_writer::write(value_type ch) {
     _grow(_size + 1);
@@ -56,6 +57,26 @@ void gm::string_writer::reset() {
     }
     _size = 0;
     *_ptr = '\0';
+}
+
+auto gm::string_writer::to_string() const& -> string {
+    return string(_ptr, _size);
+}
+
+auto gm::string_writer::to_string() && -> string {
+    if (_ptr != _fixed && _size == _capacity - 1 /*NUL*/) {
+        string s = string::take_ownership(_ptr, _size);
+        _size = 0;
+        _capacity = sizeof(_fixed);
+        _ptr = _fixed;
+        *_ptr = 0;
+        return s;
+    }
+    else {
+        string s(_ptr, _size);
+        reset();
+        return s;
+    }
 }
 
 void gm::string_writer::resize(size_type newSize, value_type fill) {

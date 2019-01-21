@@ -1,4 +1,5 @@
 #include "grimm/foundation/string_writer.h"
+#include "grimm/foundation/string_blob.h"
 #include "doctest.h"
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::string_writer") {
@@ -79,5 +80,21 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::string_writer") {
 
         sw.write("yy");
         DOCTEST_CHECK_EQ(sw.c_str(), "init  xxyy");
+    }
+
+    DOCTEST_TEST_CASE("to_string") {
+        string_writer sw;
+
+        sw.write("some text here");
+
+        string s = sw.to_string();
+
+        DOCTEST_CHECK_EQ(sw.c_str(), "some text here");
+        DOCTEST_CHECK_EQ(s.c_str(), "some text here");
+
+        s = std::move(sw).to_string();
+
+        DOCTEST_CHECK(sw.empty());
+        DOCTEST_CHECK_EQ(s.c_str(), "some text here");
     }
 }
