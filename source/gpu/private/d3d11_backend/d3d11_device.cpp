@@ -117,9 +117,9 @@ auto gm::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size) -> box<GpuB
 void gm::DeviceD3D11::execute(GpuCommandList* commandList) {
     GM_ASSERT(commandList != nullptr);
 
-    com_ptr<ID3D11DeviceContext> const& deferred = static_cast<CommandListD3D11*>(commandList)->deviceContext();
-    com_ptr<ID3D11CommandList> commands;
-    deferred->FinishCommandList(FALSE, out_ptr(commands));
+    auto deferred = static_cast<CommandListD3D11*>(commandList);
 
-    _context->ExecuteCommandList(commands.get(), TRUE);
+    GM_ASSERT(deferred->commandList(), "Command list is still open");
+
+    _context->ExecuteCommandList(deferred->commandList().get(), TRUE);
 }

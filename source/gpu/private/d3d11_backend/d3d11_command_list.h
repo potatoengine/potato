@@ -18,11 +18,14 @@ namespace gm {
 
         static box<CommandListD3D11> createCommandList(ID3D11Device* device, GpuPipelineState* pipelineState);
 
+        void setPipelineState(GpuPipelineState* state) override;
+
         void bindRenderTarget(uint32 index, GpuResourceView* view) override;
         void bindBuffer(uint32 slot, GpuResourceView* view) override;
 
         void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override;
 
+        void finish() override;
         void clear(GpuPipelineState* pipelineState = nullptr) override;
 
         span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override;
@@ -30,6 +33,7 @@ namespace gm {
         void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override;
 
         com_ptr<ID3D11DeviceContext> const& deviceContext() const { return _context; }
+        com_ptr<ID3D11CommandList> const& commandList() const { return _commands; }
 
     private:
         static constexpr uint32 maxRenderTargetBindings = 4;
@@ -37,5 +41,6 @@ namespace gm {
         com_ptr<ID3D11DeviceContext> _context;
         com_ptr<ID3D11RenderTargetView> _rtv[maxRenderTargetBindings];
         com_ptr<ID3D11DepthStencilView> _dsv;
+        com_ptr<ID3D11CommandList> _commands;
     };
 } // namespace gm

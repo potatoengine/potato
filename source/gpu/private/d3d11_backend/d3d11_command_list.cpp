@@ -24,6 +24,17 @@ auto gm::CommandListD3D11::createCommandList(ID3D11Device* device, GpuPipelineSt
     return make_box<CommandListD3D11>(std::move(context));
 }
 
+void gm::CommandListD3D11::setPipelineState(GpuPipelineState* state) {
+    GM_ASSERT(state != nullptr);
+
+    auto pipelineState = static_cast<PipelineStateD3D11*>(state);
+
+    _context->IASetInputLayout(pipelineState->inputLayout().get());
+    _context->RSSetState(pipelineState->rasterState().get());
+    _context->OMSetBlendState(pipelineState->blendState().get(), nullptr, ~UINT(0));
+    _context->OMSetDepthStencilState(pipelineState->depthStencilState().get(), 0);
+}
+
 void gm::CommandListD3D11::bindRenderTarget(gm::uint32 index, GpuResourceView* view) {
     GM_ASSERT(index < maxRenderTargetBindings);
 
@@ -47,8 +58,17 @@ void gm::CommandListD3D11::clearRenderTarget(GpuResourceView* view, PackedVector
     _context->ClearRenderTargetView(static_cast<ID3D11RenderTargetView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), color);
 }
 
+void gm::CommandListD3D11::finish() {
+    _context->OMSetRenderTargets(maxRenderTargetBindings, reinterpret_cast<ID3D11RenderTargetView**>(&_rtv), _dsv.get());
+    _context->FinishCommandList(FALSE, out_ptr(_commands));
+}
+
 void gm::CommandListD3D11::clear(GpuPipelineState* pipelineState) {
     _context->ClearState();
+    _commands.reset();
+    if (pipelineState != nullptr) {
+        setPipelineState(pipelineState);
+    }
 }
 
 auto gm::CommandListD3D11::map(GpuBuffer* resource, gm::uint64 size, gm::uint64 offset) -> span<gm::byte> {

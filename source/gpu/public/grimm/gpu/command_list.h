@@ -21,11 +21,14 @@ namespace gm {
         GpuCommandList(GpuCommandList&&) = delete;
         GpuCommandList& operator=(GpuCommandList&&) = delete;
 
+        virtual void setPipelineState(GpuPipelineState* state) = 0;
+
         virtual void bindRenderTarget(uint32 index, GpuResourceView* view) = 0;
         virtual void bindBuffer(uint32 slot, GpuResourceView* view) = 0;
 
         virtual void clearRenderTarget(GpuResourceView* view, PackedVector4f color) = 0;
 
+        virtual void finish() = 0;
         virtual void clear(GpuPipelineState* pipelineState = nullptr) = 0;
 
         virtual span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) = 0;

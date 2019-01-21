@@ -122,7 +122,9 @@ void gm::ShellApp::run() {
         }
 
         _commandList->clear();
+        _commandList->setPipelineState(_pipelineState.get());
         _commandList->clearRenderTarget(_rtv.get(), {1.f, 0.f, 0.f, 1.f});
+        _commandList->finish();
         _device->execute(_commandList.get());
 
         _swapChain->present();

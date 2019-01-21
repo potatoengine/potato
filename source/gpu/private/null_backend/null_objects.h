@@ -60,8 +60,11 @@ namespace gm {
 
     class NullCommandList final : public GpuCommandList {
     public:
+        void setPipelineState(GpuPipelineState* state) override {}
+
         void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override {}
 
+        void finish() override {}
         void clear(GpuPipelineState* pipelineState = nullptr) override {}
 
         span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override { return {}; }

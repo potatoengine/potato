@@ -15,10 +15,10 @@ namespace gm {
 
         static box<PipelineStateD3D11> createGraphicsPipelineState(GpuPipelineStateDesc const& desc, ID3D11Device* device);
 
-        com_ptr<ID3D11RasterizerState> const& getRasterState() const noexcept { return _rasterState; }
-        com_ptr<ID3D11DepthStencilState> const& getDepthStencilState() const noexcept { return _depthStencilState; }
-        com_ptr<ID3D11BlendState> const& getBlendState() const noexcept { return _blendState; }
-        com_ptr<ID3D11InputLayout> const& getInputLayout() const noexcept { return _inputLayout; }
+        com_ptr<ID3D11RasterizerState> const& rasterState() const noexcept { return _rasterState; }
+        com_ptr<ID3D11DepthStencilState> const& depthStencilState() const noexcept { return _depthStencilState; }
+        com_ptr<ID3D11BlendState> const& blendState() const noexcept { return _blendState; }
+        com_ptr<ID3D11InputLayout> const& inputLayout() const noexcept { return _inputLayout; }
 
         void apply(ID3D11DeviceContext* context) const;
 
