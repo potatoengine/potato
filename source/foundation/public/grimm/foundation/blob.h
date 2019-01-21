@@ -31,6 +31,12 @@ namespace gm {
             default_allocator{}.deallocate(_data, _size, 32);
         }
 
+        blob& operator=(blob&& rhs) noexcept {
+            _size = rhs._size;
+            _data = rhs.release();
+            return *this;
+        }
+
         pointer data() noexcept { return _data; }
         const_pointer data() const noexcept { return _data; }
 
