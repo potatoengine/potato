@@ -76,6 +76,7 @@ auto gm::DeviceD3D11::createRenderTargetView(GpuResource* renderTarget) -> box<G
     auto d3d11Resource = static_cast<ResourceD3D11*>(renderTarget);
 
     D3D11_RENDER_TARGET_VIEW_DESC desc = {};
+    desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
     com_ptr<ID3D11RenderTargetView> view;
