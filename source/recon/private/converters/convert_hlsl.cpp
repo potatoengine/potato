@@ -79,7 +79,7 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
     stream.close();
 
     zstring_view const entry = "vertex_main";
-    zstring_view const target = "vs_5_1";
+    zstring_view const target = "vs_5_0";
 
     std::cout << "Compiling `" << absoluteSourcePath << "':" << entry << '(' << target << ")\n";
 
