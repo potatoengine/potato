@@ -22,6 +22,9 @@ namespace gm {
 
         void bindRenderTarget(uint32 index, GpuResourceView* view) override;
         void bindBuffer(uint32 slot, GpuResourceView* view) override;
+        void setPrimitiveTopology(PrimitiveTopology topology) override;
+
+        void draw(uint32 vertexCount, uint32 firstVertex = 0) override;
 
         void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override;
 

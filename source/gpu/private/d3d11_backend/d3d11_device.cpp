@@ -85,8 +85,14 @@ auto gm::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<GpuRe
 
     auto buffer = static_cast<BufferD3D11*>(resource);
 
+    D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
+    desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+    desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    desc.Buffer.NumElements = 0;
+    desc.Buffer.ElementWidth = static_cast<UINT32>(buffer->size()) / (sizeof(float) * 4);
+
     com_ptr<ID3D11ShaderResourceView> view;
-    HRESULT hr = _device->CreateShaderResourceView(buffer->buffer().get(), nullptr, out_ptr(view));
+    HRESULT hr = _device->CreateShaderResourceView(buffer->buffer().get(), &desc, out_ptr(view));
     if (!SUCCEEDED(hr)) {
         return nullptr;
     }

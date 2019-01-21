@@ -84,6 +84,7 @@ int gm::ShellApp::initialize() {
 
     _vbo = _device->createBuffer(BufferType::Vertex, sizeof(triangle));
     _commandList->update(_vbo.get(), span{triangle, 3}.as_bytes(), 0);
+    _srv = _device->createShaderResourceView(_vbo.get());
 
     GpuPipelineStateDesc pipelineDesc;
 
@@ -123,7 +124,10 @@ void gm::ShellApp::run() {
 
         _commandList->clear();
         _commandList->setPipelineState(_pipelineState.get());
+        _commandList->bindBuffer(0, _srv.get());
+        _commandList->setPrimitiveTopology(PrimitiveTopology::Triangles);
         _commandList->clearRenderTarget(_rtv.get(), {1.f, 0.f, 0.f, 1.f});
+        _commandList->draw(3);
         _commandList->finish();
         _device->execute(_commandList.get());
 

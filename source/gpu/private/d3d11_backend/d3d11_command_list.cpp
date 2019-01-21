@@ -50,6 +50,24 @@ void gm::CommandListD3D11::bindRenderTarget(gm::uint32 index, GpuResourceView* v
 }
 
 void gm::CommandListD3D11::bindBuffer(gm::uint32 slot, GpuResourceView* view) {
+    GM_ASSERT(view != nullptr);
+
+    auto buffer = static_cast<ResourceViewD3D11*>(view);
+    ID3D11ShaderResourceView* srv = static_cast<ID3D11ShaderResourceView*>(buffer->getView().get());
+
+    _context->VSSetShaderResources(0, 1, &srv);
+}
+
+void gm::CommandListD3D11::setPrimitiveTopology(PrimitiveTopology topology) {
+    D3D11_PRIMITIVE_TOPOLOGY primitive;
+    switch (topology) {
+    case PrimitiveTopology::Triangles: primitive = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
+    }
+    _context->IASetPrimitiveTopology(primitive);
+}
+
+void gm::CommandListD3D11::draw(gm::uint32 vertexCount, gm::uint32 firstVertex) {
+    _context->Draw(vertexCount, firstVertex);
 }
 
 void gm::CommandListD3D11::clearRenderTarget(GpuResourceView* view, PackedVector4f color) {

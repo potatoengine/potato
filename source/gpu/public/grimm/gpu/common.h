@@ -15,4 +15,8 @@ namespace gm {
         Index,
         Vertex,
     };
+
+    enum class PrimitiveTopology {
+        Triangles,
+    };
 } // namespace gm

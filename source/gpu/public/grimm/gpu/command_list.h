@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "common.h"
 #include "grimm/foundation/span.h"
 #include "grimm/foundation/types.h"
 #include "grimm/math/packed.h"
@@ -25,6 +26,9 @@ namespace gm {
 
         virtual void bindRenderTarget(uint32 index, GpuResourceView* view) = 0;
         virtual void bindBuffer(uint32 slot, GpuResourceView* view) = 0;
+        virtual void setPrimitiveTopology(PrimitiveTopology topology) = 0;
+
+        virtual void draw(uint32 vertexCount, uint32 firstVertex = 0) = 0;
 
         virtual void clearRenderTarget(GpuResourceView* view, PackedVector4f color) = 0;
 
