@@ -31,8 +31,8 @@ public:
 
     explicit string(string const& str) { assign(str.data(), str.size()); }
     string(string&& rhs) : _data(rhs._data), _size(rhs._size) {
-        _data = _empty;
-        _size = 0;
+        rhs._data = _empty;
+        rhs._size = 0;
     }
     explicit string(std::string str) { assign(str.data(), str.size()); }
     explicit string(const_pointer zstr) { assign(zstr); }

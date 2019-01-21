@@ -21,6 +21,19 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::string") {
         DOCTEST_CHECK_EQ(s.c_str(), ss.c_str());
     }
 
+    DOCTEST_TEST_CASE("move constructor") {
+        string s("wrong");
+        string s2("correct");
+
+        s = std::move(s2);
+
+        DOCTEST_CHECK(!s.empty());
+        DOCTEST_CHECK_EQ(s.size(), s.size());
+        DOCTEST_CHECK_EQ(s.c_str(), "correct");
+
+        DOCTEST_CHECK(s2.empty());
+    }
+
     DOCTEST_TEST_CASE("literal initialization") {
         string s("this is a test");
 
