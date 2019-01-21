@@ -21,10 +21,12 @@ namespace gm {
         box<GpuSwapChain> createSwapChain(void* native_window) override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
+        box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
 
         void execute(GpuCommandList* commandList) override;
 
         box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
+        box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;

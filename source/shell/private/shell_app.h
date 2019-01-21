@@ -7,6 +7,7 @@
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/swap_chain.h"
 #include "grimm/gpu/pipeline_state.h"
+#include "grimm/gpu/buffer.h"
 #include "grimm/gpu/resource_view.h"
 
 #include <SDL.h>
@@ -38,7 +39,9 @@ private:
     fs::FileSystem _fileSystem;
     box<GpuDevice> _device;
     box<GpuSwapChain> _swapChain;
+    box<GpuBuffer> _vbo;
     box<GpuResourceView> _rtv;
+    box<GpuResourceView> _srv;
     box<GpuCommandList> _commandList;
     box<GpuPipelineState> _pipelineState;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;

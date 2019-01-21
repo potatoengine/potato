@@ -11,14 +11,24 @@
 #include "grimm/gpu/factory.h"
 #include "grimm/gpu/resource.h"
 #include "grimm/gpu/swap_chain.h"
+#include "grimm/math/packed.h"
 
 #include <SDL.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
 
+static constexpr gm::PackedVector4f triangle[] = {
+    {0, 0, 0, 1},
+    {1, 1, 0, 1},
+    {1, 0, 0, 1},
+};
+
 gm::ShellApp::~ShellApp() {
     _commandList.reset();
     _rtv.reset();
+    _pipelineState.reset();
+    _srv.reset();
+    _vbo.reset();
     _swapChain.reset();
     _window.reset();
 
@@ -71,6 +81,9 @@ int gm::ShellApp::initialize() {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create command list", _window.get());
         return 1;
     }
+
+    _vbo = _device->createBuffer(BufferType::Vertex, sizeof(triangle));
+    _commandList->update(_vbo.get(), span{triangle, 3}.as_bytes(), 0);
 
     GpuPipelineStateDesc pipelineDesc;
 

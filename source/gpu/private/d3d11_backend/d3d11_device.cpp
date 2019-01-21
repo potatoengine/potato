@@ -4,6 +4,7 @@
 #include "com_ptr.h"
 #include "d3d11_command_list.h"
 #include "d3d11_pipeline_state.h"
+#include "d3d11_buffer.h"
 #include "d3d11_resource.h"
 #include "d3d11_resource_view.h"
 #include "d3d11_swap_chain.h"
@@ -43,7 +44,7 @@ auto gm::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGI
 
     com_ptr<ID3D11Device> device;
     com_ptr<ID3D11DeviceContext> context;
-    D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, levels, 1, D3D11_SDK_VERSION, out_ptr(device), nullptr, out_ptr(context));
+    D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_DEBUG, levels, 1, D3D11_SDK_VERSION, out_ptr(device), nullptr, out_ptr(context));
     if (device == nullptr || context == nullptr) {
         return nullptr;
     }
@@ -71,13 +72,46 @@ auto gm::DeviceD3D11::createRenderTargetView(GpuResource* renderTarget) -> box<G
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
     com_ptr<ID3D11RenderTargetView> view;
-    _device->CreateRenderTargetView(d3d11Resource->get().get(), &desc, out_ptr(view));
+    HRESULT hr = _device->CreateRenderTargetView(d3d11Resource->get().get(), &desc, out_ptr(view));
+    if (!SUCCEEDED(hr)) {
+        return nullptr;
+    }
 
-    return make_box<ResourceViewD3D11>(ResourceViewD3D11::Type::RTV, com_ptr<ID3D11View>(view.release()));
+    return make_box<ResourceViewD3D11>(ViewType::RTV, view.as<ID3D11View>());
+}
+
+auto gm::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
+    GM_ASSERT(resource != nullptr);
+
+    auto buffer = static_cast<BufferD3D11*>(resource);
+
+    com_ptr<ID3D11ShaderResourceView> view;
+    HRESULT hr = _device->CreateShaderResourceView(buffer->buffer().get(), nullptr, out_ptr(view));
+    if (!SUCCEEDED(hr)) {
+        return nullptr;
+    }
+
+    return make_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
 }
 
 auto gm::DeviceD3D11::createPipelineState(GpuPipelineStateDesc const& desc) -> box<GpuPipelineState> {
     return PipelineStateD3D11::createGraphicsPipelineState(desc, _device.get());
+}
+
+auto gm::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size) -> box<GpuBuffer> {
+    D3D11_BUFFER_DESC desc = {};
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.ByteWidth = static_cast<UINT>(size);
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    desc.BindFlags = D3D11_BIND_INDEX_BUFFER | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_VERTEX_BUFFER;
+
+    com_ptr<ID3D11Buffer> buffer;
+    HRESULT hr = _device->CreateBuffer(&desc, nullptr, out_ptr(buffer));
+    if (!SUCCEEDED(hr)) {
+        return nullptr;
+    }
+
+    return make_box<BufferD3D11>(type, size, std::move(buffer));
 }
 
 void gm::DeviceD3D11::execute(GpuCommandList* commandList) {

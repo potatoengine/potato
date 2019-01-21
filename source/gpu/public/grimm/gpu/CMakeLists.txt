@@ -1,8 +1,9 @@
 target_sources(gpu PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_export.h
     ${CMAKE_CURRENT_SOURCE_DIR}/buffer.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/command_list.h
     ${CMAKE_CURRENT_SOURCE_DIR}/com_ptr.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/command_list.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/common.h
     ${CMAKE_CURRENT_SOURCE_DIR}/device.h
     ${CMAKE_CURRENT_SOURCE_DIR}/factory.h
     ${CMAKE_CURRENT_SOURCE_DIR}/pipeline_state.h

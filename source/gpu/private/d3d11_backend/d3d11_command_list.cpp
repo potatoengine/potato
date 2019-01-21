@@ -24,6 +24,23 @@ auto gm::CommandListD3D11::createCommandList(ID3D11Device* device, GpuPipelineSt
     return make_box<CommandListD3D11>(std::move(context));
 }
 
+void gm::CommandListD3D11::bindRenderTarget(gm::uint32 index, GpuResourceView* view) {
+    GM_ASSERT(index < maxRenderTargetBindings);
+
+    if (view == nullptr) {
+        _rtv[index].reset();
+        return;
+    }
+
+    auto rtv = static_cast<ResourceViewD3D11*>(view);
+    GM_ASSERT(rtv->type() == ViewType::RTV);
+
+    _rtv[index] = rtv->getView().as<ID3D11RenderTargetView>();
+}
+
+void gm::CommandListD3D11::bindBuffer(gm::uint32 slot, GpuResourceView* view) {
+}
+
 void gm::CommandListD3D11::clearRenderTarget(GpuResourceView* view, PackedVector4f color) {
     GM_ASSERT(view != nullptr);
 
@@ -41,11 +58,12 @@ auto gm::CommandListD3D11::map(GpuBuffer* resource, gm::uint64 size, gm::uint64 
 
     auto buffer = static_cast<BufferD3D11*>(resource);
     ID3D11Buffer* d3dBuffer = buffer->buffer().get();
+    GM_ASSERT(d3dBuffer != nullptr);
 
     D3D11_MAPPED_SUBRESOURCE sub = {};
 
     GM_ASSERT(offset < buffer->size());
-    GM_ASSERT(size < buffer->size() - offset);
+    GM_ASSERT(size <= buffer->size() - offset);
 
     bool writeAll = offset == 0 && size == buffer->size();
 

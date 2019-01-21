@@ -26,20 +26,22 @@ namespace gm {
         box<GpuSwapChain> createSwapChain(void* native_window) override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
+        box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
 
         box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
+        box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
 
         void execute(GpuCommandList* commands) override {}
     };
 
     class NullResourceView final : public GpuResourceView {
     public:
-        NullResourceView(Type type) : _type(type) {}
+        NullResourceView(ViewType type) : _type(type) {}
 
-        Type type() const override { return _type; }
+        ViewType type() const override { return _type; }
 
     private:
-        Type _type;
+        ViewType _type;
     };
 
     class NullSwapChain final : public GpuSwapChain {
@@ -65,16 +67,19 @@ namespace gm {
         span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override { return {}; }
         void unmap(GpuBuffer* resource, span<byte const> data) override {}
         void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override {}
+
+        void bindRenderTarget(uint32 index, GpuResourceView* view) override {}
+        void bindBuffer(uint32 slot, GpuResourceView* view) override {}
     };
 
     class NullBuffer final : public GpuBuffer {
     public:
-        NullBuffer(Type type) : _type(type) {}
+        NullBuffer(BufferType type) : _type(type) {}
 
-        Type type() const noexcept override { return _type; }
+        BufferType type() const noexcept override { return _type; }
         uint64 size() const noexcept override { return 0; }
 
     private:
-        Type _type;
+        BufferType _type;
     };
 } // namespace gm

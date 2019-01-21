@@ -29,7 +29,15 @@ auto gm::NullDevice::createPipelineState(GpuPipelineStateDesc const&) -> box<Gpu
 }
 
 auto gm::NullDevice::createRenderTargetView(GpuResource* renderTarget) -> box<GpuResourceView> {
-    return make_box<NullResourceView>(GpuResourceView::Type::RTV);
+    return make_box<NullResourceView>(ViewType::RTV);
+}
+
+auto gm::NullDevice::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
+    return make_box<NullResourceView>(ViewType::SRV);
+}
+
+auto gm::NullDevice::createBuffer(BufferType type, gm::uint64 size) -> box<GpuBuffer> {
+    return make_box<NullBuffer>(type);
 }
 
 auto gm::NullSwapChain::getBuffer(int index) -> box<GpuResource> {

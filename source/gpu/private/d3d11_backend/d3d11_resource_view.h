@@ -10,17 +10,17 @@
 namespace gm {
     class ResourceViewD3D11 final : public GpuResourceView {
     public:
-        explicit ResourceViewD3D11(Type type, com_ptr<ID3D11View> view);
+        explicit ResourceViewD3D11(ViewType type, com_ptr<ID3D11View> view);
         virtual ~ResourceViewD3D11();
 
         ResourceViewD3D11(ResourceViewD3D11&&) = delete;
         ResourceViewD3D11& operator=(ResourceViewD3D11&&) = delete;
 
-        Type type() const override { return _type; }
+        ViewType type() const override { return _type; }
         com_ptr<ID3D11View> const& getView() const { return _view; }
 
     private:
-        Type _type;
+        ViewType _type;
         com_ptr<ID3D11View> _view;
     };
 } // namespace gm
