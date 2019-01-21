@@ -40,6 +40,13 @@ public:
     explicit string(zstring_view view) { assign(view.c_str()); }
     explicit string(string_view view) { assign(view.data(), view.size()); }
 
+    static string take_ownership(pointer str, size_type length) {
+        string s;
+        s._data = str != nullptr ? str : _empty;
+        s._size = length;
+        return s;
+    }
+
     string& operator=(string const&) = delete;
 
     string& operator=(string&& rhs) noexcept {
