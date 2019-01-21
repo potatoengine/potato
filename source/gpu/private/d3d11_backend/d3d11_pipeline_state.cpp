@@ -5,14 +5,12 @@
 #include "grimm/foundation/out_ptr.h"
 #include "grimm/math/packed.h"
 
-gm::PipelineStateD3D11::PipelineStateD3D11(com_ptr<ID3D11RasterizerState> rasterState, com_ptr<ID3D11DepthStencilState> depthStencilState, com_ptr<ID3D11BlendState> blendState, com_ptr<ID3D11InputLayout> inputLayout)
-    : _rasterState(std::move(rasterState)),
-      _depthStencilState(std::move(depthStencilState)),
-      _blendState(std::move(blendState)),
-      _inputLayout(std::move(inputLayout)) {
-    GM_ASSERT(_rasterState != nullptr);
-    GM_ASSERT(_depthStencilState != nullptr);
-    GM_ASSERT(_blendState != nullptr);
+gm::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {
+    GM_ASSERT(_params.rasterState != nullptr);
+    GM_ASSERT(_params.depthStencilState != nullptr);
+    GM_ASSERT(_params.blendState != nullptr);
+    GM_ASSERT(_params.inputLayout != nullptr);
+    GM_ASSERT(_params.vertShader != nullptr);
 }
 
 gm::PipelineStateD3D11::~PipelineStateD3D11() = default;
@@ -22,9 +20,10 @@ auto gm::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineStateDesc co
 
     D3D11_RASTERIZER_DESC rasterDesc = {};
     rasterDesc.FillMode = D3D11_FILL_SOLID;
-    rasterDesc.CullMode = D3D11_CULL_BACK;
+    rasterDesc.CullMode = D3D11_CULL_NONE;
 
     D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+    depthStencilDesc.DepthEnable = false;
 
     D3D11_BLEND_DESC blendDesc = {};
     blendDesc.AlphaToCoverageEnable = false;
@@ -39,32 +38,37 @@ auto gm::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineStateDesc co
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
     D3D11_INPUT_ELEMENT_DESC layout = {};
-    layout.AlignedByteOffset = 0;
+    layout.SemanticName = "POSITION";
+    layout.SemanticIndex = 0;
     layout.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     layout.InputSlot = 0;
-    layout.SemanticName = "POSITION";
+    layout.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+    layout.InstanceDataStepRate = 0;
+    layout.AlignedByteOffset = 0;
 
-    com_ptr<ID3D11RasterizerState> rasterState;
-    com_ptr<ID3D11DepthStencilState> depthStencilState;
-    com_ptr<ID3D11BlendState> blendState;
-    com_ptr<ID3D11InputLayout> inputLayout;
+    PipelineStateParamsD3D11 params;
 
-    HRESULT hr = device->CreateRasterizerState(&rasterDesc, out_ptr(rasterState));
+    HRESULT hr = device->CreateRasterizerState(&rasterDesc, out_ptr(params.rasterState));
     if (!SUCCEEDED(hr)) {
         return nullptr;
     }
 
-    hr = device->CreateDepthStencilState(&depthStencilDesc, out_ptr(depthStencilState));
+    hr = device->CreateDepthStencilState(&depthStencilDesc, out_ptr(params.depthStencilState));
     if (!SUCCEEDED(hr)) {
         return nullptr;
     }
 
-    hr = device->CreateBlendState(&blendDesc, out_ptr(blendState));
+    hr = device->CreateBlendState(&blendDesc, out_ptr(params.blendState));
     if (!SUCCEEDED(hr)) {
         return nullptr;
     }
 
-    hr = device->CreateInputLayout(&layout, 1, desc.vertShader.data(), desc.vertShader.size(), out_ptr(inputLayout));
+    hr = device->CreateInputLayout(&layout, 1, desc.vertShader.data(), desc.vertShader.size(), out_ptr(params.inputLayout));
+    if (!SUCCEEDED(hr)) {
+        return nullptr;
+    }
+
+    hr = device->CreateVertexShader(desc.vertShader.data(), desc.vertShader.size(), nullptr, out_ptr(params.vertShader));
     if (!SUCCEEDED(hr)) {
         return nullptr;
     }
@@ -79,16 +83,5 @@ auto gm::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineStateDesc co
     //pipeDesc.VS.pShaderBytecode = desc.vertShader.data();
     //pipeDesc.VS.BytecodeLength = desc.vertShader.size();
 
-    return make_box<PipelineStateD3D11>(std::move(rasterState), std::move(depthStencilState), std::move(blendState), std::move(inputLayout));
-}
-
-void gm::PipelineStateD3D11::apply(ID3D11DeviceContext* context) const {
-    GM_ASSERT(context != nullptr);
-
-    context->IASetInputLayout(_inputLayout.get());
-    context->RSSetState(_rasterState.get());
-    context->OMSetDepthStencilState(_depthStencilState.get(), 0);
-
-    PackedVector4f blend{0, 0, 0, 0};
-    context->OMSetBlendState(_blendState.get(), blend, 0);
+    return make_box<PipelineStateD3D11>(std::move(params));
 }

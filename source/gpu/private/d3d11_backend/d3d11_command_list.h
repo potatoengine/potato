@@ -21,7 +21,9 @@ namespace gm {
         void setPipelineState(GpuPipelineState* state) override;
 
         void bindRenderTarget(uint32 index, GpuResourceView* view) override;
-        void bindBuffer(uint32 slot, GpuResourceView* view) override;
+        void bindBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override;
+        void bindShaderResource(uint32 slot, GpuResourceView* view) override;
+
         void setPrimitiveTopology(PrimitiveTopology topology) override;
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override;
@@ -39,11 +41,14 @@ namespace gm {
         com_ptr<ID3D11CommandList> const& commandList() const { return _commands; }
 
     private:
+        void _flushBindings();
+
         static constexpr uint32 maxRenderTargetBindings = 4;
 
         com_ptr<ID3D11DeviceContext> _context;
         com_ptr<ID3D11RenderTargetView> _rtv[maxRenderTargetBindings];
         com_ptr<ID3D11DepthStencilView> _dsv;
         com_ptr<ID3D11CommandList> _commands;
+        bool _bindingsDirty = false;
     };
 } // namespace gm

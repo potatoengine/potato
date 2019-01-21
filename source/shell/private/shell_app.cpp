@@ -123,10 +123,10 @@ void gm::ShellApp::run() {
         }
 
         _commandList->clear();
-        _commandList->setPipelineState(_pipelineState.get());
-        _commandList->bindBuffer(0, _srv.get());
-        _commandList->setPrimitiveTopology(PrimitiveTopology::Triangles);
         _commandList->clearRenderTarget(_rtv.get(), {1.f, 0.f, 0.f, 1.f});
+        _commandList->setPipelineState(_pipelineState.get());
+        _commandList->bindBuffer(0, _vbo.get(), sizeof(PackedVector4f));
+        _commandList->setPrimitiveTopology(PrimitiveTopology::Triangles);
         _commandList->draw(3);
         _commandList->finish();
         _device->execute(_commandList.get());

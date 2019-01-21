@@ -31,8 +31,10 @@ void gm::CommandListD3D11::setPipelineState(GpuPipelineState* state) {
 
     _context->IASetInputLayout(pipelineState->inputLayout().get());
     _context->RSSetState(pipelineState->rasterState().get());
+    _context->VSSetShader(pipelineState->vertexShader().get(), nullptr, 0);
     _context->OMSetBlendState(pipelineState->blendState().get(), nullptr, ~UINT(0));
     _context->OMSetDepthStencilState(pipelineState->depthStencilState().get(), 0);
+    _bindingsDirty = true;
 }
 
 void gm::CommandListD3D11::bindRenderTarget(gm::uint32 index, GpuResourceView* view) {
@@ -47,9 +49,23 @@ void gm::CommandListD3D11::bindRenderTarget(gm::uint32 index, GpuResourceView* v
     GM_ASSERT(rtv->type() == ViewType::RTV);
 
     _rtv[index] = rtv->getView().as<ID3D11RenderTargetView>();
+
+    _bindingsDirty = true;
 }
 
-void gm::CommandListD3D11::bindBuffer(gm::uint32 slot, GpuResourceView* view) {
+void gm::CommandListD3D11::bindBuffer(gm::uint32 slot, GpuBuffer* buffer, gm::uint64 stride, gm::uint64 offset) {
+    GM_ASSERT(buffer != nullptr);
+    GM_ASSERT(buffer->type() == BufferType::Vertex);
+
+    auto d3dBuffer = static_cast<BufferD3D11*>(buffer);
+    ID3D11Buffer* d3d11Buffer = static_cast<ID3D11Buffer*>(d3dBuffer->buffer().get());
+
+    UINT d3dStride = static_cast<UINT>(stride);
+    UINT d3dOffset = static_cast<UINT>(offset);
+    _context->IASetVertexBuffers(slot, 1, &d3d11Buffer, &d3dStride, &d3dOffset);
+}
+
+void gm::CommandListD3D11::bindShaderResource(gm::uint32 slot, GpuResourceView* view) {
     GM_ASSERT(view != nullptr);
 
     auto buffer = static_cast<ResourceViewD3D11*>(view);
@@ -67,6 +83,7 @@ void gm::CommandListD3D11::setPrimitiveTopology(PrimitiveTopology topology) {
 }
 
 void gm::CommandListD3D11::draw(gm::uint32 vertexCount, gm::uint32 firstVertex) {
+    _flushBindings();
     _context->Draw(vertexCount, firstVertex);
 }
 
@@ -77,7 +94,6 @@ void gm::CommandListD3D11::clearRenderTarget(GpuResourceView* view, PackedVector
 }
 
 void gm::CommandListD3D11::finish() {
-    _context->OMSetRenderTargets(maxRenderTargetBindings, reinterpret_cast<ID3D11RenderTargetView**>(&_rtv), _dsv.get());
     _context->FinishCommandList(FALSE, out_ptr(_commands));
 }
 
@@ -127,4 +143,11 @@ void gm::CommandListD3D11::update(GpuBuffer* buffer, span<gm::byte const> data, 
     auto target = map(buffer, data.size(), offset);
     std::memcpy(target.data(), data.data(), data.size());
     unmap(buffer, target);
+}
+
+void gm::CommandListD3D11::_flushBindings() {
+    if (_bindingsDirty) {
+        _bindingsDirty = false;
+        _context->OMSetRenderTargets(maxRenderTargetBindings, reinterpret_cast<ID3D11RenderTargetView**>(&_rtv), _dsv.get());
+    }
 }

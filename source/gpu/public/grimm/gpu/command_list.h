@@ -25,7 +25,8 @@ namespace gm {
         virtual void setPipelineState(GpuPipelineState* state) = 0;
 
         virtual void bindRenderTarget(uint32 index, GpuResourceView* view) = 0;
-        virtual void bindBuffer(uint32 slot, GpuResourceView* view) = 0;
+        virtual void bindBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) = 0;
+        virtual void bindShaderResource(uint32 slot, GpuResourceView* view) = 0;
         virtual void setPrimitiveTopology(PrimitiveTopology topology) = 0;
 
         virtual void draw(uint32 vertexCount, uint32 firstVertex = 0) = 0;

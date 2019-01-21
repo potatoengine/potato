@@ -74,7 +74,8 @@ namespace gm {
         void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override {}
 
         void bindRenderTarget(uint32 index, GpuResourceView* view) override {}
-        void bindBuffer(uint32 slot, GpuResourceView* view) override {}
+        void bindBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override {}
+        void bindShaderResource(uint32 slot, GpuResourceView* view) override {}
         void setPrimitiveTopology(PrimitiveTopology topology) override {}
     };
 
