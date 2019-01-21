@@ -19,10 +19,13 @@ namespace gm {
         static box<CommandListD3D11> createCommandList(ID3D11Device* device, GpuPipelineState* pipelineState);
 
         void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override;
-        void resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) override;
-        void reset(GpuPipelineState* pipelineState = nullptr) override;
+        void clear(GpuPipelineState* pipelineState = nullptr) override;
 
-        com_ptr<ID3D11DeviceContext> const& getDeviceContext() const { return _context; }
+        span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override;
+        void unmap(GpuBuffer* resource, span<byte const> data) override;
+        void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override;
+
+        com_ptr<ID3D11DeviceContext> const& deviceContext() const { return _context; }
 
     private:
         com_ptr<ID3D11DeviceContext> _context;

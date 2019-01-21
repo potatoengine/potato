@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "grimm/foundation/span.h"
 #include "grimm/foundation/types.h"
 #include "grimm/math/packed.h"
 #include "transition.h"
@@ -10,6 +11,7 @@ namespace gm {
     class GpuResource;
     class GpuPipelineState;
     class GpuResourceView;
+    class GpuBuffer;
 
     class GpuCommandList {
     public:
@@ -20,8 +22,11 @@ namespace gm {
         GpuCommandList& operator=(GpuCommandList&&) = delete;
 
         virtual void clearRenderTarget(GpuResourceView* view, PackedVector4f color) = 0;
-        virtual void resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) = 0;
 
-        virtual void reset(GpuPipelineState* pipelineState = nullptr) = 0;
+        virtual void clear(GpuPipelineState* pipelineState = nullptr) = 0;
+
+        virtual span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) = 0;
+        virtual void unmap(GpuBuffer* resource, span<byte const> data) = 0;
+        virtual void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) = 0;
     };
 } // namespace gm

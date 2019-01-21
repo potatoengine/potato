@@ -108,10 +108,8 @@ void gm::ShellApp::run() {
             }
         }
 
-        _commandList->reset();
-        _commandList->resourceBarrier(_swapChain->getBuffer(0).get(), GpuResourceState::Present, GpuResourceState::RenderTarget);
+        _commandList->clear();
         _commandList->clearRenderTarget(_rtv.get(), {1.f, 0.f, 0.f, 1.f});
-        _commandList->resourceBarrier(_swapChain->getBuffer(0).get(), GpuResourceState::RenderTarget, GpuResourceState::Present);
         _device->execute(_commandList.get());
 
         _swapChain->present();

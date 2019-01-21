@@ -83,7 +83,7 @@ auto gm::DeviceD3D11::createPipelineState(GpuPipelineStateDesc const& desc) -> b
 void gm::DeviceD3D11::execute(GpuCommandList* commandList) {
     GM_ASSERT(commandList != nullptr);
 
-    com_ptr<ID3D11DeviceContext> const& deferred = static_cast<CommandListD3D11*>(commandList)->getDeviceContext();
+    com_ptr<ID3D11DeviceContext> const& deferred = static_cast<CommandListD3D11*>(commandList)->deviceContext();
     com_ptr<ID3D11CommandList> commands;
     deferred->FinishCommandList(FALSE, out_ptr(commands));
 

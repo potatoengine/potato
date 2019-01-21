@@ -1,4 +1,6 @@
 set(GM_GPU_D3D11_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_buffer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_buffer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_command_list.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_command_list.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_device.h

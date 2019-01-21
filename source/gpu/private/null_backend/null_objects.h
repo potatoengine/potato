@@ -9,6 +9,7 @@
 #include "resource.h"
 #include "swap_chain.h"
 #include "resource_view.h"
+#include "buffer.h"
 
 namespace gm {
     class NullDevice;
@@ -32,6 +33,13 @@ namespace gm {
     };
 
     class NullResourceView final : public GpuResourceView {
+    public:
+        NullResourceView(Type type) : _type(type) {}
+
+        Type type() const override { return _type; }
+
+    private:
+        Type _type;
     };
 
     class NullSwapChain final : public GpuSwapChain {
@@ -51,8 +59,22 @@ namespace gm {
     class NullCommandList final : public GpuCommandList {
     public:
         void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override {}
-        void resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) override {}
 
-        void reset(GpuPipelineState* pipelineState = nullptr) override {}
+        void clear(GpuPipelineState* pipelineState = nullptr) override {}
+
+        span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override { return {}; }
+        void unmap(GpuBuffer* resource, span<byte const> data) override {}
+        void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override {}
+    };
+
+    class NullBuffer final : public GpuBuffer {
+    public:
+        NullBuffer(Type type) : _type(type) {}
+
+        Type type() const noexcept override { return _type; }
+        uint64 size() const noexcept override { return 0; }
+
+    private:
+        Type _type;
     };
 } // namespace gm
