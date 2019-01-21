@@ -86,10 +86,10 @@ public:
 
     auto as_bytes() const noexcept {
         if constexpr (std::is_const_v<T>) {
-            return span<std::byte const>{reinterpret_cast<std::byte const*>(_begin), static_cast<size_type>(_end - _begin)};
+            return span<std::byte const>{reinterpret_cast<std::byte const*>(_begin), static_cast<size_type>(_end - _begin) * sizeof(T)};
         }
         else {
-            return span<std::byte>{reinterpret_cast<std::byte*>(_begin), static_cast<size_type>(_end - _begin)};
+            return span<std::byte>{reinterpret_cast<std::byte*>(_begin), static_cast<size_type>(_end - _begin) * sizeof(T)};
         }
     }
 
