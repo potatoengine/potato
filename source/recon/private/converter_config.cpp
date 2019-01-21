@@ -3,12 +3,15 @@
 #include "grimm/recon/converter_config.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/zstring_view.h"
+#include "grimm/foundation/blob.h"
+#include "grimm/filesystem/filesystem.h"
+#include "grimm/filesystem/stream_util.h"
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include <iostream>
 #include <fstream>
 
-bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args) {
+bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem) {
     if (args.empty()) {
         return false;
     }
@@ -71,7 +74,7 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args) 
             argMode = ArgNone;
             break;
         case ArgConfig:
-            if (!parseConfigFile(config, arg)) {
+            if (!parseConfigFile(config, fileSystem, arg)) {
                 return false;
             }
             argMode = ArgNone;
@@ -87,29 +90,29 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args) 
     return true;
 }
 
-bool gm::recon::parseConfigFile(ConverterConfig& config, zstring_view path) {
-    std::fstream file(path.c_str(), std::ios_base::in);
-    if (!file) {
+bool gm::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path) {
+    auto stream = fileSystem.openRead(path, fs::FileOpenMode::Text);
+    if (!stream) {
         std::cerr << "Failed to open `" << path << "'\n";
         return false;
     }
 
-    std::string text;
-    file.seekg(0, std::ios::end);
-    text.resize(file.tellg());
-    file.seekg(0, std::ios::beg);
-    file.read(text.data(), text.size());
+    blob text;
+    if (fs::readBlob(stream, text) != fs::Result::Success) {
+        std::cerr << "Failed to read `" << path << "'\n";
+        return false;
+    }
 
-    return parseConfigString(config, std::string_view(text));
+    return parseConfigString(config, {text.data_chars(), text.size()}, path);
 }
 
-bool gm::recon::parseConfigString(ConverterConfig& config, string_view json) {
+bool gm::recon::parseConfigString(ConverterConfig& config, string_view json, zstring_view filename) {
     rapidjson::Document doc;
 
     doc.Parse<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag | rapidjson::kParseNanAndInfFlag>(json.data(), json.size());
 
     if (doc.HasParseError()) {
-        std::cerr << "Failed to parse JSON: " << doc.GetParseError() << '\n';
+        std::cerr << "Failed to parse file `" << filename << "': " << doc.GetParseError() << '\n';
         return false;
     }
     if (!doc.IsObject()) {

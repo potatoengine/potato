@@ -18,14 +18,9 @@ gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSy
 gm::recon::ConverterApp::~ConverterApp() = default;
 
 bool gm::recon::ConverterApp::run(span<char const*> args) {
-    if (!parseArguments(_config, args)) {
+    if (!parseArguments(_config, args, _fileSystem)) {
         std::cerr << "Failed to parse arguments\n";
         return false;
-    }
-
-    if (!_config.configFilePath.empty()) {
-        if (!parseConfigFile(_config, _config.configFilePath.c_str())) {
-        }
     }
 
     registerConverters();

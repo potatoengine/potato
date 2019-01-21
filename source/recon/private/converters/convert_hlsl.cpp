@@ -7,6 +7,7 @@
 #include "grimm/foundation/string_view.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
+#include "grimm/filesystem/stream_util.h"
 #include "grimm/filesystem/path_util.h"
 #include <d3dcompiler.h>
 #include <iostream>
@@ -31,16 +32,15 @@ namespace {
                 return E_FAIL;
             }
 
-            gm::vector<gm::byte> bytes;
-            bytes.resize(stream.remaining());
+            gm::blob shader;
+            if (gm::fs::readBlob(stream, shader) != gm::fs::Result::Success) {
+                return E_FAIL;
+            }
 
-            auto read = gm::span{bytes.data(), bytes.size()};
-            stream.read(read);
+            *ppData = shader.data();
+            *pBytes = static_cast<UINT>(shader.size());
 
-            *ppData = bytes.data();
-            *pBytes = static_cast<UINT>(bytes.size());
-
-            _shaders.push_back(std::move(bytes));
+            _shaders.push_back(std::move(shader));
 
             return S_OK;
         }
@@ -52,7 +52,7 @@ namespace {
         gm::fs::FileSystem& _fileSystem;
         gm::recon::Context& _ctx;
         gm::string_view _folder;
-        gm::vector<gm::vector<gm::byte>> _shaders;
+        gm::vector<gm::blob> _shaders;
     }; // namespace
 } // namespace
 
@@ -70,22 +70,24 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
         return false;
     }
 
-    gm::vector<gm::byte> bytes;
-    bytes.resize(stream.remaining());
+    blob shader;
+    if (fs::readBlob(stream, shader) != fs::Result::Success) {
+        std::cerr << "Failed to read `" << absoluteSourcePath << "'\n";
+        return false;
+    }
 
-    auto read = gm::span(bytes.data(), bytes.size());
-    stream.read(read);
+    stream.close();
 
     zstring_view const entry = "vertex_main";
     zstring_view const target = "vs_5_1";
 
-    std::cout << "Compiling " << absoluteSourcePath << "':" << entry << '(' << target << ")\n";
+    std::cout << "Compiling `" << absoluteSourcePath << "':" << entry << '(' << target << ")\n";
 
     ReconIncludeHandler includeHandler(fs, ctx, gm::fs::path::parent(absoluteSourcePath.c_str()));
 
     com_ptr<ID3DBlob> blob;
     com_ptr<ID3DBlob> errors;
-    HRESULT hr = D3DCompile2(bytes.data(), bytes.size(), ctx.sourceFilePath().c_str(), nullptr, &includeHandler, entry.c_str(), target.c_str(), D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS, 0, 0, nullptr, 0, out_ptr(blob), out_ptr(errors));
+    HRESULT hr = D3DCompile2(shader.data(), shader.size(), ctx.sourceFilePath().c_str(), nullptr, &includeHandler, entry.c_str(), target.c_str(), D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS, 0, 0, nullptr, 0, out_ptr(blob), out_ptr(errors));
     if (!SUCCEEDED(hr)) {
         std::cerr << "Compilation failed for `" << absoluteSourcePath << "':" << entry << '(' << target << ")\n"
                   << string_view((char*)errors->GetBufferPointer(), errors->GetBufferSize()) << '\n';

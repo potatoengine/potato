@@ -8,16 +8,19 @@
 #include "grimm/foundation/zstring_view.h"
 #include <string>
 
+namespace gm::fs {
+    class FileSystem;
+}
+
 namespace gm::recon {
     struct ConverterConfig {
-        string configFilePath;
         string sourceFolderPath;
         string destinationFolderPath;
         string cacheFolderPath;
         bool deleteStale = false;
     };
 
-    bool parseArguments(ConverterConfig& config, span<char const*> args);
-    bool parseConfigFile(ConverterConfig& config, zstring_view path);
-    bool parseConfigString(ConverterConfig& config, string_view json);
+    bool parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem);
+    bool parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path);
+    bool parseConfigString(ConverterConfig& config, string_view json, zstring_view filename);
 } // namespace gm::recon

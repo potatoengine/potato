@@ -1,5 +1,6 @@
 #include "grimm/recon/converter_config.h"
 #include "grimm/foundation/string_view.h"
+#include "grimm/filesystem/filesystem.h"
 #include "doctest.h"
 
 DOCTEST_TEST_SUITE("[grimm][recon] ConverterConfig") {
@@ -9,8 +10,9 @@ DOCTEST_TEST_SUITE("[grimm][recon] ConverterConfig") {
     DOCTEST_TEST_CASE("args") {
         char const* args[] = {"/bin/test/", "-source", "ABC", "-dest", "DEF", "-cache", "GHI"};
         ConverterConfig config;
+        fs::FileSystem fs;
 
-        bool ok = parseArguments(config, args);
+        bool ok = parseArguments(config, args, fs);
         DOCTEST_CHECK(ok);
 
         DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");
@@ -22,7 +24,7 @@ DOCTEST_TEST_SUITE("[grimm][recon] ConverterConfig") {
         string_view json = R"--({"sourceDir":"ABC","destDir":"DEF","cacheDir":"GHI"})--";
         ConverterConfig config;
 
-        bool ok = parseConfigString(config, json);
+        bool ok = parseConfigString(config, json, "test.json");
         DOCTEST_CHECK(ok);
 
         DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");
