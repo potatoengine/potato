@@ -5,6 +5,8 @@
 #include "grimm/foundation/platform.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/foundation/vector.h"
+#include "grimm/filesystem/stream.h"
+#include "grimm/filesystem/stream_util.h"
 #include "grimm/gpu/descriptor_heap.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/factory.h"
@@ -86,15 +88,13 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_6_0.dxo");
-    stream.seekg(0, std::ios::end);
-    auto size = stream.tellg();
-    stream.seekg(0, std::ios::beg);
-
     GpuPipelineStateDesc pipelineDesc;
-    pipelineDesc.vertShader.resize(size);
 
-    stream.read(reinterpret_cast<char*>(pipelineDesc.vertShader.data()), pipelineDesc.vertShader.size());
+    auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_6_0.dxo");
+    if (fs::readBlob(stream, pipelineDesc.vertShader) != fs::Result::Success) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open shader", _window.get());
+        return 1;
+    }
 
     _pipelineState = _device->createPipelineState(pipelineDesc);
     if (_pipelineState == nullptr) {

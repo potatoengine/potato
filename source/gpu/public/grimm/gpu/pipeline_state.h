@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "grimm/foundation/vector.h"
+#include "grimm/foundation/blob.h"
 #include "grimm/foundation/types.h"
 
 namespace gm {
     struct GpuPipelineStateDesc {
-        vector<gm::byte> vertShader;
+        blob vertShader;
     };
 
     class GpuPipelineState {
