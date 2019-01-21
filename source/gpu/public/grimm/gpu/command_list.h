@@ -9,6 +9,7 @@
 namespace gm {
     class GpuResource;
     class GpuPipelineState;
+    class GpuResourceView;
 
     class GpuCommandList {
     public:
@@ -18,7 +19,7 @@ namespace gm {
         GpuCommandList(GpuCommandList&&) = delete;
         GpuCommandList& operator=(GpuCommandList&&) = delete;
 
-        virtual void clearRenderTarget(uint64 handle, PackedVector4f color) = 0;
+        virtual void clearRenderTarget(GpuResourceView* view, PackedVector4f color) = 0;
         virtual void resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) = 0;
 
         virtual void reset(GpuPipelineState* pipelineState = nullptr) = 0;

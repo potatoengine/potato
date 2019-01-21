@@ -5,6 +5,7 @@
 #include "d3d11_command_list.h"
 #include "d3d11_pipeline_state.h"
 #include "d3d11_resource.h"
+#include "d3d11_resource_view.h"
 #include "d3d11_swap_chain.h"
 #include "d3d11_platform.h"
 #include "grimm/foundation/assertion.h"
@@ -43,7 +44,7 @@ auto gm::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGI
 
     com_ptr<ID3D11Device> device;
     com_ptr<ID3D11DeviceContext> context;
-    D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_DEBUGGABLE, levels, 1, D3D11_SDK_VERSION, out_ptr(device), nullptr, out_ptr(context));
+    D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, levels, 1, D3D11_SDK_VERSION, out_ptr(device), nullptr, out_ptr(context));
     if (device == nullptr || context == nullptr) {
         return nullptr;
     }
@@ -79,6 +80,8 @@ auto gm::DeviceD3D11::createRenderTargetView(GpuResource* renderTarget) -> box<G
 
     com_ptr<ID3D11RenderTargetView> view;
     _device->CreateRenderTargetView(d3d11Resource->get().get(), &desc, out_ptr(view));
+
+    return make_box<ResourceViewD3D11>(ResourceViewD3D11::Type::RTV, com_ptr<ID3D11View>(view.release()));
 }
 
 auto gm::DeviceD3D11::createPipelineState(GpuPipelineStateDesc const& desc) -> box<GpuPipelineState> {

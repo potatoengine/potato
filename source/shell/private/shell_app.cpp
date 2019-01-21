@@ -19,7 +19,7 @@
 
 gm::ShellApp::~ShellApp() {
     _commandList.reset();
-    _rtvHeap.reset();
+    _rtv.reset();
     _swapChain.reset();
     _window.reset();
 
@@ -41,6 +41,12 @@ int gm::ShellApp::initialize() {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not get window info", _window.get());
     }
 
+#if GM_GPU_ENABLE_D3D11
+    if (_device == nullptr) {
+        auto factory = CreateGPUFactoryD3D11();
+        _device = factory->createDevice(0);
+    }
+#endif
 #if GM_GPU_ENABLE_D3D12
     if (_device == nullptr) {
         auto d3d12Factory = CreateD3d12GPUFactory();
@@ -61,20 +67,7 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _rtvHeap = _device->createDescriptorHeap();
-    if (_rtvHeap == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create descriptor heap", _window.get());
-        return 1;
-    }
-
-    auto [handle, offset] = _rtvHeap->getCpuHandle();
-
-    for (int n = 0; n < 2; n++) {
-        auto buffer = _swapChain->getBuffer(n);
-
-        _device->createRenderTargetView(buffer.get(), handle);
-        handle += offset;
-    }
+    _rtv = _device->createRenderTargetView(_swapChain->getBuffer(0).get());
 
     _commandList = _device->createCommandList();
     if (_commandList == nullptr) {
@@ -118,13 +111,10 @@ void gm::ShellApp::run() {
             }
         }
 
-        auto [handle, offset] = _rtvHeap->getCpuHandle();
-
-        int frameIndex = _swapChain->getCurrentBufferIndex();
         _commandList->reset();
-        _commandList->resourceBarrier(_swapChain->getBuffer(frameIndex).get(), GpuResourceState::Present, GpuResourceState::RenderTarget);
-        _commandList->clearRenderTarget(handle + offset * frameIndex, {1.f, 0.f, 0.f, 1.f});
-        _commandList->resourceBarrier(_swapChain->getBuffer(frameIndex).get(), GpuResourceState::RenderTarget, GpuResourceState::Present);
+        _commandList->resourceBarrier(_swapChain->getBuffer(0).get(), GpuResourceState::Present, GpuResourceState::RenderTarget);
+        _commandList->clearRenderTarget(_rtv.get(), {1.f, 0.f, 0.f, 1.f});
+        _commandList->resourceBarrier(_swapChain->getBuffer(0).get(), GpuResourceState::RenderTarget, GpuResourceState::Present);
         _device->execute(_commandList.get());
 
         _swapChain->present();

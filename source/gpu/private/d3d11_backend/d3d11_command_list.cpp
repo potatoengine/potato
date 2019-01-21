@@ -3,6 +3,7 @@
 #include "d3d11_command_list.h"
 #include "d3d11_pipeline_state.h"
 #include "d3d11_resource.h"
+#include "d3d11_resource_view.h"
 #include "d3d11_platform.h"
 #include "grimm/foundation/types.h"
 #include "grimm/foundation/assertion.h"
@@ -22,8 +23,10 @@ auto gm::CommandListD3D11::createCommandList(ID3D11Device* device, GpuPipelineSt
     return make_box<CommandListD3D11>(std::move(context));
 }
 
-void gm::CommandListD3D11::clearRenderTarget(gm::uint64 handle, PackedVector4f color) {
-    _context->ClearRenderTargetView(nullptr, color);
+void gm::CommandListD3D11::clearRenderTarget(GpuResourceView* view, PackedVector4f color) {
+    GM_ASSERT(view != nullptr);
+
+    _context->ClearRenderTargetView(static_cast<ID3D11RenderTargetView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), color);
 }
 
 void gm::CommandListD3D11::resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) {

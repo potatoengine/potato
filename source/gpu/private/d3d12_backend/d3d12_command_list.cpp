@@ -33,7 +33,8 @@ auto gm::D3d12CommandList::createCommandList(ID3D12Device1* device, GpuPipelineS
     return make_box<D3d12CommandList>(std::move(allocator), std::move(commands));
 }
 
-void gm::D3d12CommandList::clearRenderTarget(gm::uint64 handle, PackedVector4f color) {
+void gm::D3d12CommandList::clearRenderTarget(GpuResourceView* view, PackedVector4f color) {
+    uint64 handle = reinterpret_cast<uint64>(view);
     _commands->ClearRenderTargetView({handle}, color, 0, nullptr);
 }
 

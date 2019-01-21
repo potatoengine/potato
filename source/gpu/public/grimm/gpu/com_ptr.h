@@ -3,6 +3,7 @@
 #pragma once
 
 #include <utility>
+#include <type_traits>
 
 namespace gm {
 
@@ -13,12 +14,20 @@ namespace gm {
         using reference = T&;
 
         com_ptr() = default;
-        explicit com_ptr(pointer ptr) : _ptr(ptr) {}
-        com_ptr(std::nullptr_t) {}
         ~com_ptr() { _decRef(); }
 
+        explicit com_ptr(T* ptr) : _ptr(ptr) {}
+        template <typename U>
+        explicit com_ptr(std::enable_if_t<std::is_assignable_v<pointer, U*>, U*> ptr) : _ptr(ptr) {}
+        com_ptr(std::nullptr_t) {}
+
         com_ptr(com_ptr const& rhs) : _ptr(rhs._ptr) { _addRef(); }
+        template <typename U>
+        com_ptr(std::enable_if_t<std::is_assignable_v<pointer, U*>, com_ptr<U> const&> rhs) : _ptr(rhs.get()) { _addRef(); }
+
         com_ptr(com_ptr&& rhs) : _ptr(rhs._ptr) { rhs._ptr = nullptr; }
+        template <typename U>
+        com_ptr(std::enable_if_t<std::is_assignable_v<pointer, U*>, com_ptr<U>&&> rhs) : _ptr(rhs.release()) {}
 
         inline com_ptr& operator=(com_ptr const& rhs);
         inline com_ptr& operator=(com_ptr&& rhs);

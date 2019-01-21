@@ -18,7 +18,7 @@ namespace gm {
 
         static box<CommandListD3D11> createCommandList(ID3D11Device* device, GpuPipelineState* pipelineState);
 
-        void clearRenderTarget(uint64 handle, PackedVector4f color) override;
+        void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override;
         void resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) override;
         void reset(GpuPipelineState* pipelineState = nullptr) override;
 

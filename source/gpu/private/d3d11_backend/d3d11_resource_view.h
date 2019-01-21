@@ -1,14 +1,14 @@
-// Copyright (C) 2018 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
 #include "com_ptr.h"
 #include "d3d11_platform.h"
 #include "grimm/foundation/box.h"
-#include "grimm/gpu/resource.h"
+#include "grimm/gpu/resource_view.h"
 
 namespace gm {
-    class ResourceViewD3D11 final : public GpuResource {
+    class ResourceViewD3D11 final : public GpuResourceView {
     public:
         enum class Type {
             RTV,
