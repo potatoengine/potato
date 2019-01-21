@@ -11,6 +11,7 @@ namespace gm {
     class GpuResource;
     class GpuPipelineState;
     class GpuCommandList;
+    class GpuResourceView;
 
     struct GpuPipelineStateDesc;
 
@@ -30,5 +31,6 @@ namespace gm {
         virtual void execute(GpuCommandList* commandList) = 0;
 
         virtual void createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) = 0;
+        virtual box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) = 0;
     };
 } // namespace gm

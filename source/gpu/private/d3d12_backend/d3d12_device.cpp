@@ -8,6 +8,7 @@
 #include "d3d12_resource.h"
 #include "d3d12_swap_chain.h"
 #include "direct3d.h"
+#include "resource_view.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 #include <utility>
@@ -95,6 +96,10 @@ void gm::D3d12Device::createRenderTargetView(GpuResource* renderTarget, gm::uint
     auto d3d12Resource = static_cast<D3d12Resource*>(renderTarget);
     D3D12_CPU_DESCRIPTOR_HANDLE handle = {cpuHandle};
     _device->CreateRenderTargetView(d3d12Resource->get().get(), nullptr, handle);
+}
+auto gm::D3d12Device::createRenderTargetView(GpuResource* renderTarget) -> box<GpuResourceView> {
+    GM_UNREACHABLE("unimplemented");
+    return nullptr;
 }
 
 auto gm::D3d12Device::createPipelineState(GpuPipelineStateDesc const& desc) -> box<GpuPipelineState> {

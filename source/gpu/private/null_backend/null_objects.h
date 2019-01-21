@@ -9,6 +9,7 @@
 #include "pipeline_state.h"
 #include "resource.h"
 #include "swap_chain.h"
+#include "resource_view.h"
 
 namespace gm {
     class NullDevice;
@@ -28,8 +29,12 @@ namespace gm {
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
 
         void createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) override {}
+        box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
 
         void execute(GpuCommandList* commands) override {}
+    };
+
+    class NullResourceView final : public GpuResourceView {
     };
 
     class NullSwapChain final : public GpuSwapChain {

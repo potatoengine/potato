@@ -26,6 +26,7 @@ namespace gm {
         void execute(GpuCommandList* commandList) override;
 
         void createRenderTargetView(GpuResource* renderTarget, std::size_t cpuHandle) override;
+        box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;

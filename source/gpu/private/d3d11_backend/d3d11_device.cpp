@@ -66,6 +66,10 @@ auto gm::DeviceD3D11::createCommandList(GpuPipelineState* pipelineState) -> box<
 }
 
 void gm::DeviceD3D11::createRenderTargetView(GpuResource* renderTarget, gm::uint64 cpuHandle) {
+    GM_UNREACHABLE("unsupported");
+}
+
+auto gm::DeviceD3D11::createRenderTargetView(GpuResource* renderTarget) -> box<GpuResourceView> {
     GM_ASSERT(renderTarget != nullptr);
 
     auto d3d11Resource = static_cast<ResourceD3D11*>(renderTarget);
