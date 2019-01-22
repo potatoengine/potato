@@ -125,7 +125,7 @@ void gm::ShellApp::run() {
             case SDL_QUIT:
                 return;
             case SDL_WINDOWEVENT:
-                switch (ev.window.type) {
+                switch (ev.window.event) {
                 case SDL_WINDOWEVENT_CLOSE:
                     onWindowClosed();
                     break;
@@ -168,5 +168,8 @@ void gm::ShellApp::onWindowClosed() {
 void gm::ShellApp::onWindowSizeChanged() {
     int width, height;
     SDL_GetWindowSize(_window.get(), &width, &height);
+    _rtv.reset();
+    _commandList->clear();
     _swapChain->resizeBuffers(width, height);
+    _rtv = _device->createRenderTargetView(_swapChain->getBuffer(0).get());
 }

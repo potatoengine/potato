@@ -162,5 +162,9 @@ void gm::gpu::d3d11::CommandListD3D11::_flushBindings() {
     if (_bindingsDirty) {
         _bindingsDirty = false;
         _context->OMSetRenderTargets(maxRenderTargetBindings, reinterpret_cast<ID3D11RenderTargetView**>(&_rtv), _dsv.get());
+        for (auto& view : _rtv) {
+            view.reset();
+        }
+        _dsv.reset();
     }
 }

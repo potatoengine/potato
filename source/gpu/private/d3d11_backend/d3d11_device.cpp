@@ -127,5 +127,5 @@ void gm::gpu::d3d11::DeviceD3D11::execute(CommandList* commandList) {
 
     GM_ASSERT(deferred->commandList(), "Command list is still open");
 
-    _context->ExecuteCommandList(deferred->commandList().get(), TRUE);
+    _context->ExecuteCommandList(deferred->commandList().get(), FALSE);
 }
