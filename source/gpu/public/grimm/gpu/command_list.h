@@ -23,7 +23,7 @@ namespace gm::gpu {
         virtual void setPipelineState(PipelineState* state) = 0;
 
         virtual void bindRenderTarget(uint32 index, ResourceView* view) = 0;
-        virtual void bindBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) = 0;
+        virtual void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) = 0;
         virtual void bindShaderResource(uint32 slot, ResourceView* view) = 0;
         virtual void setPrimitiveTopology(PrimitiveTopology topology) = 0;
         virtual void setViewport(Viewport const& viewport) = 0;

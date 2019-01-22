@@ -71,7 +71,7 @@ namespace gm::gpu::null {
         void update(Buffer* resource, span<byte const> data, uint64 offset = 0) override {}
 
         void bindRenderTarget(uint32 index, ResourceView* view) override {}
-        void bindBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override {}
+        void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override {}
         void bindShaderResource(uint32 slot, ResourceView* view) override {}
         void setPrimitiveTopology(PrimitiveTopology topology) override {}
         void setViewport(Viewport const& viewport) override {}

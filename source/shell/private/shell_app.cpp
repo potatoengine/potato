@@ -146,7 +146,7 @@ void gm::ShellApp::run() {
         _commandList->clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
         _commandList->setPipelineState(_pipelineState.get());
         _commandList->bindRenderTarget(0, _rtv.get());
-        _commandList->bindBuffer(0, _vbo.get(), sizeof(PackedVector3f) * 2);
+        _commandList->bindVertexBuffer(0, _vbo.get(), sizeof(PackedVector3f) * 2);
         _commandList->setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
         _commandList->setViewport(viewport);
         _commandList->draw(3);

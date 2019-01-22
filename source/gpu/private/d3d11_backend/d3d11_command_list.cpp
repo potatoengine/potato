@@ -55,7 +55,7 @@ void gm::gpu::d3d11::CommandListD3D11::bindRenderTarget(gm::uint32 index, Resour
     _bindingsDirty = true;
 }
 
-void gm::gpu::d3d11::CommandListD3D11::bindBuffer(gm::uint32 slot, Buffer* buffer, gm::uint64 stride, gm::uint64 offset) {
+void gm::gpu::d3d11::CommandListD3D11::bindVertexBuffer(gm::uint32 slot, Buffer* buffer, gm::uint64 stride, gm::uint64 offset) {
     GM_ASSERT(buffer != nullptr);
     GM_ASSERT(buffer->type() == BufferType::Vertex);
 

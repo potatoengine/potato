@@ -21,7 +21,7 @@ namespace gm::gpu::d3d11 {
         void setPipelineState(PipelineState* state) override;
 
         void bindRenderTarget(uint32 index, ResourceView* view) override;
-        void bindBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override;
+        void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override;
         void bindShaderResource(uint32 slot, ResourceView* view) override;
 
         void setPrimitiveTopology(PrimitiveTopology topology) override;
