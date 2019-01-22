@@ -58,7 +58,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> box<Gpu
     return SwapChainD3D11::createSwapChain(_factory.get(), _device.get(), nativeWindow);
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createCommandList(GpuPipelineState* pipelineState) -> box<CommandList> {
+auto gm::gpu::d3d11::DeviceD3D11::createCommandList(PipelineState* pipelineState) -> box<CommandList> {
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
 }
 
@@ -100,7 +100,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Buffer* resource) -> 
     return make_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createPipelineState(GpuPipelineStateDesc const& desc) -> box<GpuPipelineState> {
+auto gm::gpu::d3d11::DeviceD3D11::createPipelineState(PipelineStateDesc const& desc) -> box<PipelineState> {
     return PipelineStateD3D11::createGraphicsPipelineState(desc, _device.get());
 }
 

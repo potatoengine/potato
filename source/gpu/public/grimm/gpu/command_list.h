@@ -11,7 +11,7 @@ namespace gm::gpu {
     class Buffer;
     class GpuResource;
     class GpuResourceView;
-    class GpuPipelineState;
+    class PipelineState;
 
     class CommandList {
     public:
@@ -21,7 +21,7 @@ namespace gm::gpu {
         CommandList(CommandList&&) = delete;
         CommandList& operator=(CommandList&&) = delete;
 
-        virtual void setPipelineState(GpuPipelineState* state) = 0;
+        virtual void setPipelineState(PipelineState* state) = 0;
 
         virtual void bindRenderTarget(uint32 index, GpuResourceView* view) = 0;
         virtual void bindBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) = 0;
@@ -34,7 +34,7 @@ namespace gm::gpu {
         virtual void clearRenderTarget(GpuResourceView* view, PackedVector4f color) = 0;
 
         virtual void finish() = 0;
-        virtual void clear(GpuPipelineState* pipelineState = nullptr) = 0;
+        virtual void clear(PipelineState* pipelineState = nullptr) = 0;
 
         virtual span<byte> map(Buffer* resource, uint64 size, uint64 offset = 0) = 0;
         virtual void unmap(Buffer* resource, span<byte const> data) = 0;

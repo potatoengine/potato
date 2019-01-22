@@ -3,23 +3,14 @@
 #pragma once
 
 #include "common.h"
-#include "grimm/foundation/blob.h"
-#include "grimm/foundation/span.h"
-#include "grimm/foundation/types.h"
 
 namespace gm::gpu {
-    struct GpuPipelineStateDesc {
-        blob vertShader;
-        blob pixelShader;
-        span<InputLayoutElement const> inputLayout;
-    };
-
-    class GpuPipelineState {
+    class PipelineState {
     public:
-        GpuPipelineState() = default;
-        virtual ~GpuPipelineState() = default;
+        PipelineState() = default;
+        virtual ~PipelineState() = default;
 
-        GpuPipelineState(GpuPipelineState&&) = delete;
-        GpuPipelineState& operator=(GpuPipelineState&&) = delete;
+        PipelineState(PipelineState&&) = delete;
+        PipelineState& operator=(PipelineState&&) = delete;
     };
 } // namespace gm::gpu

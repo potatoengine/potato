@@ -16,9 +16,9 @@ namespace gm::gpu::d3d11 {
         CommandListD3D11(CommandListD3D11&&) = delete;
         CommandListD3D11& operator=(CommandListD3D11&&) = delete;
 
-        static box<CommandListD3D11> createCommandList(ID3D11Device* device, GpuPipelineState* pipelineState);
+        static box<CommandListD3D11> createCommandList(ID3D11Device* device, PipelineState* pipelineState);
 
-        void setPipelineState(GpuPipelineState* state) override;
+        void setPipelineState(PipelineState* state) override;
 
         void bindRenderTarget(uint32 index, GpuResourceView* view) override;
         void bindBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override;
@@ -32,7 +32,7 @@ namespace gm::gpu::d3d11 {
         void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override;
 
         void finish() override;
-        void clear(GpuPipelineState* pipelineState = nullptr) override;
+        void clear(PipelineState* pipelineState = nullptr) override;
 
         span<byte> map(Buffer* resource, uint64 size, uint64 offset = 0) override;
         void unmap(Buffer* resource, span<byte const> data) override;

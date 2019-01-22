@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "grimm/foundation/blob.h"
+#include "grimm/foundation/span.h"
 #include "grimm/foundation/types.h"
 
 namespace gm::gpu {
@@ -48,6 +50,12 @@ namespace gm::gpu {
 
     struct DeviceInfo {
         int index;
+    };
+
+    struct PipelineStateDesc {
+        blob vertShader;
+        blob pixelShader;
+        span<InputLayoutElement const> inputLayout;
     };
 
 } // namespace gm::gpu

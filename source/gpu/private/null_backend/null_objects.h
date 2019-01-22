@@ -25,8 +25,8 @@ namespace gm::gpu::null {
     class DeviceNull final : public Device {
     public:
         box<GpuSwapChain> createSwapChain(void* native_window) override;
-        box<CommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
-        box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
+        box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
+        box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;
 
         box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
@@ -53,7 +53,7 @@ namespace gm::gpu::null {
         int getCurrentBufferIndex() override;
     };
 
-    class PipelineStateNull final : public GpuPipelineState {
+    class PipelineStateNull final : public PipelineState {
     };
 
     class ResourceNull final : public GpuResource {
@@ -61,14 +61,14 @@ namespace gm::gpu::null {
 
     class CommandListNull final : public CommandList {
     public:
-        void setPipelineState(GpuPipelineState* state) override {}
+        void setPipelineState(PipelineState* state) override {}
 
         void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override {}
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override {}
 
         void finish() override {}
-        void clear(GpuPipelineState* pipelineState = nullptr) override {}
+        void clear(PipelineState* pipelineState = nullptr) override {}
 
         span<byte> map(Buffer* resource, uint64 size, uint64 offset = 0) override { return {}; }
         void unmap(Buffer* resource, span<byte const> data) override {}

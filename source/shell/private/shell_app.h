@@ -43,6 +43,6 @@ private:
     box<gpu::GpuResourceView> _rtv;
     box<gpu::GpuResourceView> _srv;
     box<gpu::CommandList> _commandList;
-    box<gpu::GpuPipelineState> _pipelineState;
+    box<gpu::PipelineState> _pipelineState;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
 };

@@ -14,7 +14,7 @@ gm::gpu::d3d11::CommandListD3D11::CommandListD3D11(com_ptr<ID3D11DeviceContext> 
 
 gm::gpu::d3d11::CommandListD3D11::~CommandListD3D11() = default;
 
-auto gm::gpu::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, GpuPipelineState* pipelineState) -> box<CommandListD3D11> {
+auto gm::gpu::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, PipelineState* pipelineState) -> box<CommandListD3D11> {
     com_ptr<ID3D11DeviceContext> context;
     HRESULT hr = device->CreateDeferredContext(0, out_ptr(context));
     if (context == nullptr) {
@@ -24,7 +24,7 @@ auto gm::gpu::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, G
     return make_box<CommandListD3D11>(std::move(context));
 }
 
-void gm::gpu::d3d11::CommandListD3D11::setPipelineState(GpuPipelineState* state) {
+void gm::gpu::d3d11::CommandListD3D11::setPipelineState(PipelineState* state) {
     GM_ASSERT(state != nullptr);
 
     auto pipelineState = static_cast<PipelineStateD3D11*>(state);
@@ -111,7 +111,7 @@ void gm::gpu::d3d11::CommandListD3D11::finish() {
     _context->FinishCommandList(FALSE, out_ptr(_commands));
 }
 
-void gm::gpu::d3d11::CommandListD3D11::clear(GpuPipelineState* pipelineState) {
+void gm::gpu::d3d11::CommandListD3D11::clear(PipelineState* pipelineState) {
     _context->ClearState();
     _commands.reset();
     if (pipelineState != nullptr) {

@@ -15,7 +15,7 @@ gm::gpu::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 
 
 gm::gpu::d3d11::PipelineStateD3D11::~PipelineStateD3D11() = default;
 
-auto gm::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineStateDesc const& desc, ID3D11Device* device) -> box<PipelineStateD3D11> {
+auto gm::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(PipelineStateDesc const& desc, ID3D11Device* device) -> box<PipelineStateD3D11> {
     GM_ASSERT(device != nullptr);
 
     D3D11_RASTERIZER_DESC rasterDesc = {};

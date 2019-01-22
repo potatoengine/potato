@@ -35,7 +35,7 @@ DOCTEST_TEST_SUITE("[grimm][gpu] DeviceNull") {
         auto swapChain = device->createSwapChain(nullptr);
         DOCTEST_CHECK_NE(swapChain, nullptr);
 
-        GpuPipelineStateDesc desc;
+        PipelineStateDesc desc;
         auto pipelineState = device->createPipelineState(desc);
         DOCTEST_CHECK_NE(pipelineState, nullptr);
     }

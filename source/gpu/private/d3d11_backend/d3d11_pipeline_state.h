@@ -17,12 +17,12 @@ namespace gm::gpu::d3d11 {
         com_ptr<ID3D11PixelShader> pixelShader;
     };
 
-    class PipelineStateD3D11 : public GpuPipelineState {
+    class PipelineStateD3D11 : public PipelineState {
     public:
         explicit PipelineStateD3D11(PipelineStateParamsD3D11 params);
         virtual ~PipelineStateD3D11();
 
-        static box<PipelineStateD3D11> createGraphicsPipelineState(GpuPipelineStateDesc const& desc, ID3D11Device* device);
+        static box<PipelineStateD3D11> createGraphicsPipelineState(PipelineStateDesc const& desc, ID3D11Device* device);
 
         PipelineStateParamsD3D11 const& params() const noexcept { return _params; }
 

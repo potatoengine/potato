@@ -89,7 +89,7 @@ int gm::ShellApp::initialize() {
     _commandList->update(_vbo.get(), span{triangle, 6}.as_bytes(), 0);
     _srv = _device->createShaderResourceView(_vbo.get());
 
-    gpu::GpuPipelineStateDesc pipelineDesc;
+    gpu::PipelineStateDesc pipelineDesc;
 
     auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_5_0.cbo");
     if (fs::readBlob(stream, pipelineDesc.vertShader) != fs::Result{}) {
