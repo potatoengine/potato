@@ -9,7 +9,7 @@
 #include "_export.h"
 
 namespace gm::gpu {
-    class GpuDevice;
+    class Device;
 
     class GpuDeviceFactory {
     public:
@@ -21,7 +21,7 @@ namespace gm::gpu {
 
         virtual bool isEnabled() const = 0;
         virtual void enumerateDevices(delegate<void(DeviceInfo const&)> callback) = 0;
-        virtual box<GpuDevice> createDevice(int index) = 0;
+        virtual box<Device> createDevice(int index) = 0;
     };
 
     GM_GPU_API box<GpuDeviceFactory> CreateNullGPUFactory();

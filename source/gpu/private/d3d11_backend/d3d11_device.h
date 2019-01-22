@@ -8,7 +8,7 @@
 #include "grimm/gpu/device.h"
 
 namespace gm::gpu::d3d11 {
-    class DeviceD3D11 final : public GpuDevice {
+    class DeviceD3D11 final : public Device {
     public:
         DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context);
         virtual ~DeviceD3D11();
@@ -16,7 +16,7 @@ namespace gm::gpu::d3d11 {
         DeviceD3D11(DeviceD3D11&&) = delete;
         DeviceD3D11& operator=(DeviceD3D11&&) = delete;
 
-        static box<GpuDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
+        static box<Device> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
         box<GpuSwapChain> createSwapChain(void* native_window) override;
         box<CommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;

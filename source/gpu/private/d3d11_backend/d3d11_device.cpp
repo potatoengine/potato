@@ -36,7 +36,7 @@ gm::gpu::d3d11::DeviceD3D11::~DeviceD3D11() {
     }
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> box<GpuDevice> {
+auto gm::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> box<Device> {
     GM_ASSERT(factory != nullptr);
     GM_ASSERT(adapter != nullptr);
 

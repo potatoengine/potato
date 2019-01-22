@@ -37,7 +37,7 @@ private:
 private:
     bool _running = true;
     fs::FileSystem _fileSystem;
-    box<gpu::GpuDevice> _device;
+    box<gpu::Device> _device;
     box<gpu::GpuSwapChain> _swapChain;
     box<gpu::Buffer> _vbo;
     box<gpu::GpuResourceView> _rtv;

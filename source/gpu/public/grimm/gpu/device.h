@@ -16,13 +16,13 @@ namespace gm::gpu {
 
     struct GpuPipelineStateDesc;
 
-    class GpuDevice {
+    class Device {
     public:
-        GpuDevice() = default;
-        virtual ~GpuDevice() = default;
+        Device() = default;
+        virtual ~Device() = default;
 
-        GpuDevice(GpuDevice&&) = delete;
-        GpuDevice& operator=(GpuDevice&&) = delete;
+        Device(Device&&) = delete;
+        Device& operator=(Device&&) = delete;
 
         virtual box<GpuSwapChain> createSwapChain(void* nativeWindow) = 0;
         virtual box<CommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;

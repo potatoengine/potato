@@ -8,7 +8,7 @@ void gm::gpu::null::FactoryNull::enumerateDevices(delegate<void(DeviceInfo const
     callback(deviceInfo);
 }
 
-auto gm::gpu::null::FactoryNull::createDevice(int index) -> box<GpuDevice> {
+auto gm::gpu::null::FactoryNull::createDevice(int index) -> box<Device> {
     return make_box<DeviceNull>();
 }
 
