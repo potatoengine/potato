@@ -5,7 +5,6 @@
 #include "d3d11_command_list.h"
 #include "d3d11_pipeline_state.h"
 #include "d3d11_buffer.h"
-#include "d3d11_resource.h"
 #include "d3d11_resource_view.h"
 #include "d3d11_swap_chain.h"
 #include "d3d11_platform.h"

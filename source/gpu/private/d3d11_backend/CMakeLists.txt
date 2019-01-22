@@ -7,8 +7,6 @@ set(GM_GPU_D3D11_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_factory.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_factory.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_resource.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_resource.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_resource_view.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_resource_view.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_swap_chain.h

@@ -10,7 +10,6 @@ namespace gm::gpu {
     class Buffer;
     class CommandList;
     class PipelineState;
-    class Resource;
     class ResourceView;
     class SwapChain;
     class Texture;

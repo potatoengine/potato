@@ -6,9 +6,7 @@
 #include "device.h"
 #include "factory.h"
 #include "pipeline_state.h"
-#include "resource.h"
 #include "swap_chain.h"
-#include "resource.h"
 #include "resource_view.h"
 #include "buffer.h"
 #include "texture.h"
@@ -55,9 +53,6 @@ namespace gm::gpu::null {
     };
 
     class PipelineStateNull final : public PipelineState {
-    };
-
-    class ResourceNull final : public Resource {
     };
 
     class CommandListNull final : public CommandList {

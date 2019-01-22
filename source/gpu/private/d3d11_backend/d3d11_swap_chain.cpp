@@ -1,7 +1,6 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
 #include "d3d11_swap_chain.h"
-#include "d3d11_resource.h"
 #include "d3d11_texture.h"
 #include "com_ptr.h"
 #include "d3d11_platform.h"
