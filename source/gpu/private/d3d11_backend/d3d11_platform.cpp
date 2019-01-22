@@ -2,7 +2,7 @@
 
 #include "d3d11_platform.h"
 
-auto gm::toNative(Semantic semantic) noexcept -> zstring_view {
+auto gm::gpu::d3d11::toNative(Semantic semantic) noexcept -> zstring_view {
     switch (semantic) {
     case Semantic::Position: return "POSITION";
     case Semantic::Color: return "COLOR";
@@ -10,7 +10,7 @@ auto gm::toNative(Semantic semantic) noexcept -> zstring_view {
     }
 }
 
-auto gm::toNative(Format format) noexcept -> DXGI_FORMAT {
+auto gm::gpu::d3d11::toNative(Format format) noexcept -> DXGI_FORMAT {
     switch (format) {
     case Format::R32G32B32A32Float: return DXGI_FORMAT_R32G32B32A32_FLOAT;
     case Format::R32G32B32Float: return DXGI_FORMAT_R32G32B32_FLOAT;

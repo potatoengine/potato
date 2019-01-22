@@ -4,6 +4,6 @@
 #include "com_ptr.h"
 #include "d3d11_platform.h"
 
-gm::ResourceD3D11::ResourceD3D11(com_ptr<ID3D11Resource> resource) : _resource(std::move(resource)) {}
+gm::gpu::d3d11::ResourceD3D11::ResourceD3D11(com_ptr<ID3D11Resource> resource) : _resource(std::move(resource)) {}
 
-gm::ResourceD3D11::~ResourceD3D11() = default;
+gm::gpu::d3d11::ResourceD3D11::~ResourceD3D11() = default;

@@ -6,8 +6,8 @@
 #include "d3d11_platform.h"
 #include "grimm/gpu/factory.h"
 
-namespace gm {
-    class FactoryD3D11 final : public gpu::GpuDeviceFactory {
+namespace gm::gpu::d3d11 {
+    class FactoryD3D11 final : public GpuDeviceFactory {
     public:
         FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory);
         virtual ~FactoryD3D11();
@@ -17,9 +17,9 @@ namespace gm {
 
         bool isEnabled() const override;
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
-        box<gpu::GpuDevice> createDevice(int index) override;
+        box<GpuDevice> createDevice(int index) override;
 
     private:
         com_ptr<IDXGIFactory2> _dxgiFactory;
     };
-} // namespace gm
+} // namespace gm::gpu::d3d11

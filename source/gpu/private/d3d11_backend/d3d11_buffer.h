@@ -6,7 +6,7 @@
 #include "d3d11_platform.h"
 #include "grimm/gpu/buffer.h"
 
-namespace gm {
+namespace gm::gpu::d3d11 {
     class BufferD3D11 final : public GpuBuffer {
     public:
         BufferD3D11(BufferType type, uint64 size, com_ptr<ID3D11Buffer> buffer);
@@ -22,4 +22,4 @@ namespace gm {
         uint64 _size;
         com_ptr<ID3D11Buffer> _buffer;
     };
-} // namespace gm
+} // namespace gm::gpu::d3d11

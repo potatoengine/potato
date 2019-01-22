@@ -7,7 +7,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/gpu/swap_chain.h"
 
-namespace gm {
+namespace gm::gpu::d3d11 {
     class SwapChainD3D11 : public GpuSwapChain {
     public:
         SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain);
@@ -27,4 +27,4 @@ namespace gm {
         com_ptr<IDXGISwapChain1> _swapChain;
         int _bufferIndex = 0;
     };
-} // namespace gm
+} // namespace gm::gpu::d3d11

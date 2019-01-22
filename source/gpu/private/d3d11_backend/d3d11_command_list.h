@@ -7,7 +7,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/gpu/command_list.h"
 
-namespace gm {
+namespace gm::gpu::d3d11 {
     class CommandListD3D11 final : public GpuCommandList {
     public:
         CommandListD3D11(com_ptr<ID3D11DeviceContext> context);
@@ -52,4 +52,4 @@ namespace gm {
         com_ptr<ID3D11CommandList> _commands;
         bool _bindingsDirty = false;
     };
-} // namespace gm
+} // namespace gm::gpu::d3d11

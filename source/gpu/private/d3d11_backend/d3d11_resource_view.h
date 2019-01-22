@@ -7,7 +7,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/gpu/resource_view.h"
 
-namespace gm {
+namespace gm::gpu::d3d11 {
     class ResourceViewD3D11 final : public GpuResourceView {
     public:
         explicit ResourceViewD3D11(ViewType type, com_ptr<ID3D11View> view);
@@ -23,4 +23,4 @@ namespace gm {
         ViewType _type;
         com_ptr<ID3D11View> _view;
     };
-} // namespace gm
+} // namespace gm::gpu::d3d11

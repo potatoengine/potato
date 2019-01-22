@@ -7,7 +7,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/gpu/resource.h"
 
-namespace gm {
+namespace gm::gpu::d3d11 {
     class ResourceD3D11 final : public GpuResource {
     public:
         explicit ResourceD3D11(com_ptr<ID3D11Resource> resource);
@@ -21,4 +21,4 @@ namespace gm {
     private:
         com_ptr<ID3D11Resource> _resource;
     };
-} // namespace gm
+} // namespace gm::gpu::d3d11

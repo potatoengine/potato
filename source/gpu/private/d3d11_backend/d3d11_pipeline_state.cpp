@@ -5,7 +5,7 @@
 #include "grimm/foundation/out_ptr.h"
 #include "grimm/math/packed.h"
 
-gm::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {
+gm::gpu::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {
     GM_ASSERT(_params.rasterState != nullptr);
     GM_ASSERT(_params.depthStencilState != nullptr);
     GM_ASSERT(_params.blendState != nullptr);
@@ -13,9 +13,9 @@ gm::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _p
     GM_ASSERT(_params.vertShader != nullptr);
 }
 
-gm::PipelineStateD3D11::~PipelineStateD3D11() = default;
+gm::gpu::d3d11::PipelineStateD3D11::~PipelineStateD3D11() = default;
 
-auto gm::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineStateDesc const& desc, ID3D11Device* device) -> box<PipelineStateD3D11> {
+auto gm::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineStateDesc const& desc, ID3D11Device* device) -> box<PipelineStateD3D11> {
     GM_ASSERT(device != nullptr);
 
     D3D11_RASTERIZER_DESC rasterDesc = {};
