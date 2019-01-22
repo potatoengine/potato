@@ -2,48 +2,48 @@
 
 #include "null_objects.h"
 
-void gm::NullFactory::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
+void gm::FactoryNull::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
     static GpuDeviceInfo deviceInfo = {0};
 
     callback(deviceInfo);
 }
 
-auto gm::NullFactory::createDevice(int index) -> box<GpuDevice> {
-    return make_box<NullDevice>();
+auto gm::FactoryNull::createDevice(int index) -> box<GpuDevice> {
+    return make_box<DeviceNull>();
 }
 
 GM_GPU_API auto gm::CreateNullGPUFactory() -> box<GpuDeviceFactory> {
-    return make_box<NullFactory>();
+    return make_box<FactoryNull>();
 }
 
-auto gm::NullDevice::createSwapChain(void* native_window) -> box<GpuSwapChain> {
-    return make_box<NullSwapChain>();
+auto gm::DeviceNull::createSwapChain(void* native_window) -> box<GpuSwapChain> {
+    return make_box<SwapChainNull>();
 }
 
-auto gm::NullDevice::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
-    return make_box<NullCommandList>();
+auto gm::DeviceNull::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
+    return make_box<CommandListNull>();
 }
 
-auto gm::NullDevice::createPipelineState(GpuPipelineStateDesc const&) -> box<GpuPipelineState> {
-    return make_box<NullPipelineState>();
+auto gm::DeviceNull::createPipelineState(GpuPipelineStateDesc const&) -> box<GpuPipelineState> {
+    return make_box<PipelineStateNull>();
 }
 
-auto gm::NullDevice::createRenderTargetView(GpuResource* renderTarget) -> box<GpuResourceView> {
-    return make_box<NullResourceView>(ViewType::RTV);
+auto gm::DeviceNull::createRenderTargetView(GpuResource* renderTarget) -> box<GpuResourceView> {
+    return make_box<ResourceViewNull>(ViewType::RTV);
 }
 
-auto gm::NullDevice::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
-    return make_box<NullResourceView>(ViewType::SRV);
+auto gm::DeviceNull::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
+    return make_box<ResourceViewNull>(ViewType::SRV);
 }
 
-auto gm::NullDevice::createBuffer(BufferType type, gm::uint64 size) -> box<GpuBuffer> {
-    return make_box<NullBuffer>(type);
+auto gm::DeviceNull::createBuffer(BufferType type, gm::uint64 size) -> box<GpuBuffer> {
+    return make_box<BufferNull>(type);
 }
 
-auto gm::NullSwapChain::getBuffer(int index) -> box<GpuResource> {
-    return make_box<NullResource>();
+auto gm::SwapChainNull::getBuffer(int index) -> box<GpuResource> {
+    return make_box<ResourceNull>();
 }
 
-int gm::NullSwapChain::getCurrentBufferIndex() {
+int gm::SwapChainNull::getCurrentBufferIndex() {
     return 0;
 }

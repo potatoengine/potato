@@ -12,16 +12,16 @@
 #include "buffer.h"
 
 namespace gm {
-    class NullDevice;
+    class DeviceNull;
 
-    class NullFactory final : public GpuDeviceFactory {
+    class FactoryNull final : public GpuDeviceFactory {
     public:
         bool isEnabled() const override { return true; }
         void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) override;
         box<GpuDevice> createDevice(int index) override;
     };
 
-    class NullDevice final : public GpuDevice {
+    class DeviceNull final : public GpuDevice {
     public:
         box<GpuSwapChain> createSwapChain(void* native_window) override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
@@ -34,9 +34,9 @@ namespace gm {
         void execute(GpuCommandList* commands) override {}
     };
 
-    class NullResourceView final : public GpuResourceView {
+    class ResourceViewNull final : public GpuResourceView {
     public:
-        NullResourceView(ViewType type) : _type(type) {}
+        ResourceViewNull(ViewType type) : _type(type) {}
 
         ViewType type() const override { return _type; }
 
@@ -44,7 +44,7 @@ namespace gm {
         ViewType _type;
     };
 
-    class NullSwapChain final : public GpuSwapChain {
+    class SwapChainNull final : public GpuSwapChain {
     public:
         void present() override {}
         void resizeBuffers(int width, int height) override {}
@@ -52,13 +52,13 @@ namespace gm {
         int getCurrentBufferIndex() override;
     };
 
-    class NullPipelineState final : public GpuPipelineState {
+    class PipelineStateNull final : public GpuPipelineState {
     };
 
-    class NullResource final : public GpuResource {
+    class ResourceNull final : public GpuResource {
     };
 
-    class NullCommandList final : public GpuCommandList {
+    class CommandListNull final : public GpuCommandList {
     public:
         void setPipelineState(GpuPipelineState* state) override {}
 
@@ -80,9 +80,9 @@ namespace gm {
         void setViewport(Viewport const& viewport) override {}
     };
 
-    class NullBuffer final : public GpuBuffer {
+    class BufferNull final : public GpuBuffer {
     public:
-        NullBuffer(BufferType type) : _type(type) {}
+        BufferNull(BufferType type) : _type(type) {}
 
         BufferType type() const noexcept override { return _type; }
         uint64 size() const noexcept override { return 0; }

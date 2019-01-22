@@ -2,7 +2,7 @@
 
 #include "null_backend/null_objects.h"
 
-DOCTEST_TEST_SUITE("[grimm][gpu] NullDevice") {
+DOCTEST_TEST_SUITE("[grimm][gpu] DeviceNull") {
     DOCTEST_TEST_CASE("factory enumerates") {
         using namespace gm;
 
