@@ -7,7 +7,7 @@ DOCTEST_TEST_SUITE("[grimm][gpu] DeviceNull") {
     using namespace gm::gpu;
 
     DOCTEST_TEST_CASE("factory enumerates") {
-        auto factory = CreateNullGPUFactory();
+        auto factory = CreateFactoryNull();
 
         DOCTEST_CHECK(factory->isEnabled());
 
@@ -22,14 +22,14 @@ DOCTEST_TEST_SUITE("[grimm][gpu] DeviceNull") {
     }
 
     DOCTEST_TEST_CASE("factory abides") {
-        auto factory = CreateNullGPUFactory();
+        auto factory = CreateFactoryNull();
 
         auto device = factory->createDevice(0);
         DOCTEST_CHECK_NE(device, nullptr);
     }
 
     DOCTEST_TEST_CASE("device abides") {
-        auto factory = CreateNullGPUFactory();
+        auto factory = CreateFactoryNull();
         auto device = factory->createDevice(0);
 
         auto swapChain = device->createSwapChain(nullptr);

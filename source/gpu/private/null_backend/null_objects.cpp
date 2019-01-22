@@ -12,7 +12,7 @@ auto gm::gpu::null::FactoryNull::createDevice(int index) -> box<Device> {
     return make_box<DeviceNull>();
 }
 
-GM_GPU_API auto gm::gpu::CreateNullGPUFactory() -> box<GpuDeviceFactory> {
+GM_GPU_API auto gm::gpu::CreateFactoryNull() -> box<Factory> {
     return make_box<null::FactoryNull>();
 }
 

@@ -55,12 +55,12 @@ int gm::ShellApp::initialize() {
 
 #if GM_GPU_ENABLE_D3D11
     if (_device == nullptr) {
-        auto factory = gpu::CreateGPUFactoryD3D11();
+        auto factory = gpu::CreateFactoryD3D11();
         _device = factory->createDevice(0);
     }
 #endif
     if (_device == nullptr) {
-        auto factory = gpu::CreateNullGPUFactory();
+        auto factory = gpu::CreateFactoryNull();
         _device = factory->createDevice(0);
     }
 

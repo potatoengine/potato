@@ -7,7 +7,7 @@
 #include "grimm/gpu/factory.h"
 
 namespace gm::gpu::d3d11 {
-    class FactoryD3D11 final : public GpuDeviceFactory {
+    class FactoryD3D11 final : public Factory {
     public:
         FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory);
         virtual ~FactoryD3D11();
