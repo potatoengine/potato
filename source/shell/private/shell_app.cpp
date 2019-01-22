@@ -5,19 +5,33 @@
 #include "grimm/foundation/platform.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/foundation/vector.h"
-#include "grimm/gpu/descriptor_heap.h"
+#include "grimm/filesystem/stream.h"
+#include "grimm/filesystem/stream_util.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/factory.h"
 #include "grimm/gpu/resource.h"
 #include "grimm/gpu/swap_chain.h"
+#include "grimm/math/packed.h"
 
 #include <SDL.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
 
+static constexpr gm::PackedVector3f triangle[] = {
+    {-0.8f, -0.8f, 0},
+    {1, 0, 0},
+    {0.8f, -0.8f, 0},
+    {0, 1, 0},
+    {0, +0.8f, 0},
+    {0, 0, 1},
+};
+
 gm::ShellApp::~ShellApp() {
     _commandList.reset();
-    _rtvHeap.reset();
+    _rtv.reset();
+    _pipelineState.reset();
+    _srv.reset();
+    _vbo.reset();
     _swapChain.reset();
     _window.reset();
 
@@ -39,18 +53,16 @@ int gm::ShellApp::initialize() {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not get window info", _window.get());
     }
 
-#if GM_GPU_ENABLE_D3D12
+#if GM_GPU_ENABLE_D3D11
     if (_device == nullptr) {
-        auto d3d12Factory = CreateD3d12GPUFactory();
-        _device = d3d12Factory->createDevice(0);
+        auto factory = CreateGPUFactoryD3D11();
+        _device = factory->createDevice(0);
     }
 #endif
-#if GM_GPU_ENABLE_VULKAN
     if (_device == nullptr) {
-        auto vulkanFactory = CreateVulkanGPUFactory();
-        _device = vulkanFactory->createDevice(0);
+        auto factory = CreateNullGPUFactory();
+        _device = factory->createDevice(0);
     }
-#endif
 
     if (_device == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not find device", _window.get());
@@ -65,20 +77,7 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _rtvHeap = _device->createDescriptorHeap();
-    if (_rtvHeap == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create descriptor heap", _window.get());
-        return 1;
-    }
-
-    auto [handle, offset] = _rtvHeap->getCpuHandle();
-
-    for (int n = 0; n < 2; n++) {
-        auto buffer = _swapChain->getBuffer(n);
-
-        _device->createRenderTargetView(buffer.get(), handle);
-        handle += offset;
-    }
+    _rtv = _device->createRenderTargetView(_swapChain->getBuffer(0).get());
 
     _commandList = _device->createCommandList();
     if (_commandList == nullptr) {
@@ -86,10 +85,39 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
+    _vbo = _device->createBuffer(BufferType::Vertex, sizeof(triangle));
+    _commandList->update(_vbo.get(), span{triangle, 6}.as_bytes(), 0);
+    _srv = _device->createShaderResourceView(_vbo.get());
+
+    GpuPipelineStateDesc pipelineDesc;
+
+    auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_5_0.cbo");
+    if (fs::readBlob(stream, pipelineDesc.vertShader) != fs::Result{}) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open vertex shader", _window.get());
+        return 1;
+    }
+    stream = _fileSystem.openRead("build/resources/shaders/basic.ps_5_0.cbo");
+    if (fs::readBlob(stream, pipelineDesc.pixelShader) != fs::Result{}) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open pixel shader", _window.get());
+        return 1;
+    }
+
+    InputLayoutElement layout[2] = {
+        {Format::R32G32B32Float, Semantic::Position, 0, 0},
+        {Format::R32G32B32Float, Semantic::Color, 0, 0},
+    };
+    pipelineDesc.inputLayout = layout;
+    _pipelineState = _device->createPipelineState(pipelineDesc);
+    if (_pipelineState == nullptr) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create pipeline state", _window.get());
+        return 1;
+    }
+
     return 0;
 }
 
 void gm::ShellApp::run() {
+
     while (isRunning()) {
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
@@ -108,13 +136,21 @@ void gm::ShellApp::run() {
             }
         }
 
-        auto [handle, offset] = _rtvHeap->getCpuHandle();
+        Viewport viewport;
+        int width, height;
+        SDL_GetWindowSize(_window.get(), &width, &height);
+        viewport.width = static_cast<float>(width);
+        viewport.height = static_cast<float>(height);
 
-        int frameIndex = _swapChain->getCurrentBufferIndex();
-        _commandList->reset();
-        _commandList->resourceBarrier(_swapChain->getBuffer(frameIndex).get(), GpuResourceState::Present, GpuResourceState::RenderTarget);
-        _commandList->clearRenderTarget(handle + offset * frameIndex, {1.f, 0.f, 0.f, 1.f});
-        _commandList->resourceBarrier(_swapChain->getBuffer(frameIndex).get(), GpuResourceState::RenderTarget, GpuResourceState::Present);
+        _commandList->clear();
+        _commandList->clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
+        _commandList->setPipelineState(_pipelineState.get());
+        _commandList->bindRenderTarget(0, _rtv.get());
+        _commandList->bindBuffer(0, _vbo.get(), sizeof(PackedVector3f) * 2);
+        _commandList->setPrimitiveTopology(PrimitiveTopology::Triangles);
+        _commandList->setViewport(viewport);
+        _commandList->draw(3);
+        _commandList->finish();
         _device->execute(_commandList.get());
 
         _swapChain->present();

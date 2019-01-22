@@ -26,10 +26,10 @@ target_link_libraries(recon_lib
 add_executable(recon)
 target_link_libraries(recon PRIVATE recon_lib)
 
-get_target_property(GM_GPU_ENABLE_D3D12 gpu GM_GPU_ENABLE_D3D12)
-if(GM_GPU_ENABLE_D3D12)
+get_target_property(GM_GPU_ENABLE_D3D11 gpu GM_GPU_ENABLE_D3D11)
+if(GM_GPU_ENABLE_D3D11)
     target_link_libraries(recon_lib PRIVATE d3dcompiler)
-endif(GM_GPU_ENABLE_D3D12)
+endif(GM_GPU_ENABLE_D3D11)
 
 add_subdirectory(public/grimm/recon)
 add_subdirectory(private)

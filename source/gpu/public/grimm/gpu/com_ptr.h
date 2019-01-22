@@ -3,6 +3,7 @@
 #pragma once
 
 #include <utility>
+#include <type_traits>
 
 namespace gm {
 
@@ -13,12 +14,22 @@ namespace gm {
         using reference = T&;
 
         com_ptr() = default;
-        explicit com_ptr(pointer ptr) : _ptr(ptr) {}
-        com_ptr(std::nullptr_t) {}
         ~com_ptr() { _decRef(); }
+
+        explicit com_ptr(T* ptr) : _ptr(ptr) {}
+        com_ptr(std::nullptr_t) {}
 
         com_ptr(com_ptr const& rhs) : _ptr(rhs._ptr) { _addRef(); }
         com_ptr(com_ptr&& rhs) : _ptr(rhs._ptr) { rhs._ptr = nullptr; }
+
+        template <typename To>
+        com_ptr<To> as() const noexcept {
+            To* ptr = static_cast<To*>(_ptr);
+            if (_ptr != nullptr) {
+                _addRef();
+            }
+            return com_ptr<To>(ptr);
+        }
 
         inline com_ptr& operator=(com_ptr const& rhs);
         inline com_ptr& operator=(com_ptr&& rhs);
@@ -43,11 +54,11 @@ namespace gm {
         friend bool operator!=(std::nullptr_t, com_ptr const& rhs) { return nullptr != rhs.get(); }
 
     private:
-        void _addRef() {
+        void _addRef() const {
             if (_ptr != nullptr)
                 _ptr->AddRef();
         }
-        void _decRef() {
+        void _decRef() const {
             if (_ptr != nullptr)
                 _ptr->Release();
         }

@@ -3,20 +3,20 @@
 #pragma once
 
 #include "com_ptr.h"
-#include "direct3d.h"
+#include "d3d11_platform.h"
 #include "grimm/foundation/box.h"
 #include "grimm/gpu/swap_chain.h"
 
 namespace gm {
-    class D3d12SwapChain : public GpuSwapChain {
+    class SwapChainD3D11 : public GpuSwapChain {
     public:
-        D3d12SwapChain(com_ptr<IDXGISwapChain1> swapChain);
-        virtual ~D3d12SwapChain();
+        SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain);
+        virtual ~SwapChainD3D11();
 
-        D3d12SwapChain(D3d12SwapChain&&) = delete;
-        D3d12SwapChain& operator=(D3d12SwapChain&&) = delete;
+        SwapChainD3D11(SwapChainD3D11&&) = delete;
+        SwapChainD3D11& operator=(SwapChainD3D11&&) = delete;
 
-        static box<GpuSwapChain> createSwapChain(IDXGIFactory2* factory, ID3D12CommandQueue* graphicsQueue, void* nativeWindow);
+        static box<GpuSwapChain> createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow);
 
         void present() override;
         void resizeBuffers(int width, int height) override;

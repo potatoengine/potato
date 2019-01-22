@@ -2,13 +2,14 @@
 
 #include "convert_hlsl.h"
 #include "grimm/gpu/com_ptr.h"
-#include "grimm/gpu/direct3d.h"
 #include "grimm/foundation/out_ptr.h"
 #include "grimm/foundation/string_view.h"
+#include "grimm/foundation/string_writer.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
 #include "grimm/filesystem/stream_util.h"
 #include "grimm/filesystem/path_util.h"
+#include <d3d11.h>
 #include <d3dcompiler.h>
 #include <iostream>
 #include <fstream>
@@ -32,8 +33,8 @@ namespace {
                 return E_FAIL;
             }
 
-            gm::blob shader;
-            if (gm::fs::readBlob(stream, shader) != gm::fs::Result::Success) {
+            gm::string shader;
+            if (gm::fs::readText(stream, shader) != gm::fs::Result::Success) {
                 return E_FAIL;
             }
 
@@ -52,7 +53,7 @@ namespace {
         gm::fs::FileSystem& _fileSystem;
         gm::recon::Context& _ctx;
         gm::string_view _folder;
-        gm::vector<gm::blob> _shaders;
+        gm::vector<gm::string> _shaders;
     }; // namespace
 } // namespace
 
@@ -70,43 +71,52 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
         return false;
     }
 
-    blob shader;
-    if (fs::readBlob(stream, shader) != fs::Result::Success) {
+    string shader;
+    if (fs::readText(stream, shader) != fs::Result::Success) {
         std::cerr << "Failed to read `" << absoluteSourcePath << "'\n";
         return false;
     }
 
     stream.close();
 
-    zstring_view const entry = "vertex_main";
-    zstring_view const target = "vs_5_1";
+    bool success = compile(ctx, fs, absoluteSourcePath, shader, "vertex_main", "vs_5_0");
+    success = compile(ctx, fs, absoluteSourcePath, shader, "pixel_main", "ps_5_0") && success;
 
-    std::cout << "Compiling `" << absoluteSourcePath << "':" << entry << '(' << target << ")\n";
+    return success;
+}
 
-    ReconIncludeHandler includeHandler(fs, ctx, gm::fs::path::parent(absoluteSourcePath.c_str()));
+bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName) {
+    std::cout << "Compiling `" << ctx.sourceFilePath() << "':" << entryName << '(' << targetProfileName << ")\n";
+
+    ReconIncludeHandler includeHandler(fileSys, ctx, gm::fs::path::parent(absoluteSourcePath));
 
     com_ptr<ID3DBlob> blob;
     com_ptr<ID3DBlob> errors;
-    HRESULT hr = D3DCompile2(shader.data(), shader.size(), ctx.sourceFilePath().c_str(), nullptr, &includeHandler, entry.c_str(), target.c_str(), D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS, 0, 0, nullptr, 0, out_ptr(blob), out_ptr(errors));
+    HRESULT hr = D3DCompile2(source.data(), source.size(), ctx.sourceFilePath().c_str(), nullptr, &includeHandler, entryName.c_str(), targetProfileName.c_str(), D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS, 0, 0, nullptr, 0, out_ptr(blob), out_ptr(errors));
     if (!SUCCEEDED(hr)) {
-        std::cerr << "Compilation failed for `" << absoluteSourcePath << "':" << entry << '(' << target << ")\n"
+        std::cerr << "Compilation failed for `" << ctx.sourceFilePath() << "':" << entryName << '(' << targetProfileName << ")\n"
                   << string_view((char*)errors->GetBufferPointer(), errors->GetBufferSize()) << '\n';
         return false;
     }
 
-    auto destPath = fs::path::changeExtension(ctx.sourceFilePath(), ".vs_6_0.dxo");
+    string_writer ext;
+    ext.write('.');
+    ext.write(targetProfileName);
+    ext.write(".cbo");
+
+    auto destPath = fs::path::changeExtension(ctx.sourceFilePath(), ext.c_str());
     auto destAbsolutePath = fs::path::join({string_view(ctx.destinationFolderPath()), destPath.c_str()});
 
     string destParentAbsolutePath(fs::path::parent(destAbsolutePath));
 
-    if (!fs.directoryExists(destParentAbsolutePath.c_str())) {
-        if (!fs.createDirectories(destParentAbsolutePath.c_str())) {
+    if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
+        if (!fileSys.createDirectories(destParentAbsolutePath.c_str())) {
             std::cerr << "Failed to create `" << destParentAbsolutePath << "'\n";
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }
 
-    auto compiledOutput = fs.openWrite(destAbsolutePath.c_str(), gm::fs::FileOpenMode::Binary);
+    auto compiledOutput = fileSys.openWrite(destAbsolutePath.c_str(), gm::fs::FileOpenMode::Binary);
     if (!compiledOutput.isOpen()) {
         std::cerr << "Cannot write `" << destAbsolutePath << '\n';
         return false;

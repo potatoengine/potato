@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "grimm/foundation/rc.h"
+#include "grimm/foundation/box.h"
 #include "grimm/foundation/types.h"
 #include "common.h"
 
@@ -12,9 +12,13 @@ namespace gm::fs {
         using size_type = uint64;
         using difference_type = int64;
 
-        class Backend : public shared<Backend> {
+        class Backend {
         public:
+            Backend() = default;
             virtual ~Backend() = default;
+
+            Backend(Backend const&) = delete;
+            Backend& operator=(Backend const&) = delete;
 
             virtual bool isOpen() const noexcept = 0;
             virtual bool isEof() const noexcept = 0;
@@ -32,8 +36,17 @@ namespace gm::fs {
         };
 
         Stream() = default;
-        Stream(rc<Backend> impl) noexcept : _impl(std::move(impl)) {}
+        Stream(box<Backend> impl) noexcept : _impl(std::move(impl)) {}
         Stream(std::nullptr_t) noexcept {}
+
+        Stream& operator=(box<Backend> impl) noexcept {
+            _impl = std::move(impl);
+            return *this;
+        }
+        Stream& operator=(std::nullptr_t) noexcept {
+            _impl.reset();
+            return *this;
+        }
 
         bool isOpen() const noexcept { return _impl != nullptr && _impl->isOpen(); }
         bool isEof() const noexcept { return _impl == nullptr || _impl->isEof(); }
@@ -54,6 +67,6 @@ namespace gm::fs {
         void close() { _impl.reset(); }
 
     private:
-        rc<Backend> _impl;
+        box<Backend> _impl;
     };
 } // namespace gm::fs

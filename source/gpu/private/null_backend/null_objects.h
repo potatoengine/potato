@@ -3,12 +3,13 @@
 #pragma once
 
 #include "command_list.h"
-#include "descriptor_heap.h"
 #include "device.h"
 #include "factory.h"
 #include "pipeline_state.h"
 #include "resource.h"
 #include "swap_chain.h"
+#include "resource_view.h"
+#include "buffer.h"
 
 namespace gm {
     class NullDevice;
@@ -23,13 +24,24 @@ namespace gm {
     class NullDevice final : public GpuDevice {
     public:
         box<GpuSwapChain> createSwapChain(void* native_window) override;
-        box<GpuDescriptorHeap> createDescriptorHeap() override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
-        box<GpuPipelineState> createPipelineState() override;
+        box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
+        box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
 
-        void createRenderTargetView(GpuResource* renderTarget, uint64 cpuHandle) override {}
+        box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
+        box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
 
         void execute(GpuCommandList* commands) override {}
+    };
+
+    class NullResourceView final : public GpuResourceView {
+    public:
+        NullResourceView(ViewType type) : _type(type) {}
+
+        ViewType type() const override { return _type; }
+
+    private:
+        ViewType _type;
     };
 
     class NullSwapChain final : public GpuSwapChain {
@@ -46,16 +58,36 @@ namespace gm {
     class NullResource final : public GpuResource {
     };
 
-    class NullDescriptorHeap final : public GpuDescriptorHeap {
-    public:
-        GpuDescriptorHandle getCpuHandle() const override;
-    };
-
     class NullCommandList final : public GpuCommandList {
     public:
-        void clearRenderTarget(uint64 handle, PackedVector4f color) override {}
-        void resourceBarrier(GpuResource* resource, GpuResourceState from, GpuResourceState to) override {}
+        void setPipelineState(GpuPipelineState* state) override {}
 
-        void reset(GpuPipelineState* pipelineState = nullptr) override {}
+        void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override {}
+
+        void draw(uint32 vertexCount, uint32 firstVertex = 0) override {}
+
+        void finish() override {}
+        void clear(GpuPipelineState* pipelineState = nullptr) override {}
+
+        span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override { return {}; }
+        void unmap(GpuBuffer* resource, span<byte const> data) override {}
+        void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override {}
+
+        void bindRenderTarget(uint32 index, GpuResourceView* view) override {}
+        void bindBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override {}
+        void bindShaderResource(uint32 slot, GpuResourceView* view) override {}
+        void setPrimitiveTopology(PrimitiveTopology topology) override {}
+        void setViewport(Viewport const& viewport) override {}
+    };
+
+    class NullBuffer final : public GpuBuffer {
+    public:
+        NullBuffer(BufferType type) : _type(type) {}
+
+        BufferType type() const noexcept override { return _type; }
+        uint64 size() const noexcept override { return 0; }
+
+    private:
+        BufferType _type;
     };
 } // namespace gm

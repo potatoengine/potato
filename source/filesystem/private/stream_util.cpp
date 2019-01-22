@@ -27,11 +27,11 @@ auto gm::fs::readText(Stream& stream, string& out) -> Result {
     auto uncommitted = writer.acquire(size);
     auto bytes = uncommitted.as_bytes();
 
-    return stream.read(bytes);
+    auto rs = stream.read(bytes);
 
     writer.commit(uncommitted.first(bytes.size()));
 
     out = std::move(writer).to_string();
 
-    return Result::Success;
+    return rs;
 }

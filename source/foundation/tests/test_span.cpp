@@ -52,4 +52,14 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::span") {
         DOCTEST_CHECK_EQ(sv.size(), 2);
         DOCTEST_CHECK_EQ(sv.front(), 2);
     }
+
+    DOCTEST_TEST_CASE("span as_bytes") {
+        int a[] = {1, 3, 2, 5, 4};
+        span av(a);
+
+        span bv = av.as_bytes();
+
+        DOCTEST_CHECK_EQ(bv.data(), (void*)a);
+        DOCTEST_CHECK_EQ(bv.size(), sizeof(a));
+    }
 }

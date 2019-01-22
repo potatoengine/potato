@@ -116,7 +116,7 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
 }
 
 void gm::recon::ConverterApp::registerConverters() {
-#if GM_GPU_ENABLE_D3D12
+#if GM_GPU_ENABLE_D3D11
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
                            make_box<HlslConverter>()});
 #endif

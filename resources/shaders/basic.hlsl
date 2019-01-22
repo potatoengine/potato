@@ -2,13 +2,21 @@
 
 //float4x4 WorldViewProjection;
 
-float4 vertex_main(float4 inputPosition
-                   : POSITION) : POSITION {
+struct VS_Output {
+    float4 position : SV_Position;
+    float3 color : COLOR;
+};
+
+VS_Output vertex_main(float3 inputPosition
+                      : POSITION, float3 inputColor
+                      : COLOR) {
     //return mul(inputPosition, WorldViewProjection);
-    return inputPosition;
+    VS_Output output;
+    output.position = float4(inputPosition, 1);
+    output.color = inputColor;
+    return output;
 }
 
-float4 pixel_main(float4 inputPosition
-                  : POSITION) : COLOR0 {
-    return float4(inputPosition.xyz, 1);
+float4 pixel_main(VS_Output input) : SV_Target {
+    return float4(input.color, 1);
 }

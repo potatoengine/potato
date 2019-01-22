@@ -15,9 +15,12 @@ auto gm::HashCache::hashAssetContent(span<gm::byte const> contents) noexcept -> 
 auto gm::HashCache::hashAssetStream(fs::Stream& stream) -> gm::uint64 {
     auto hasher = fnv1a();
     gm::byte buffer[32768];
-    while (stream) {
+    while (!stream.isEof()) {
         span<gm::byte> read(buffer, sizeof(buffer));
         stream.read(read);
+        if (read.empty()) {
+            break;
+        }
         hasher(read);
     }
     return static_cast<uint64>(hasher);
