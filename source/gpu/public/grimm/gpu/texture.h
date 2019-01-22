@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace gm {
+namespace gm::gpu {
     class GpuTexture {
     public:
         GpuTexture() = default;
@@ -11,4 +11,4 @@ namespace gm {
         GpuTexture(GpuTexture&&) = delete;
         GpuTexture& operator=(GpuTexture&&) = delete;
     };
-} // namespace gm
+} // namespace gm::gpu

@@ -7,11 +7,11 @@
 #include "grimm/foundation/types.h"
 #include "grimm/math/packed.h"
 
-namespace gm {
-    class GpuResource;
-    class GpuPipelineState;
-    class GpuResourceView;
+namespace gm::gpu {
     class GpuBuffer;
+    class GpuResource;
+    class GpuResourceView;
+    class GpuPipelineState;
 
     class GpuCommandList {
     public:
@@ -40,4 +40,4 @@ namespace gm {
         virtual void unmap(GpuBuffer* resource, span<byte const> data) = 0;
         virtual void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) = 0;
     };
-} // namespace gm
+} // namespace gm::gpu

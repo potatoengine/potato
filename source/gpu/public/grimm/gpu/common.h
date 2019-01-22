@@ -4,7 +4,7 @@
 
 #include "grimm/foundation/types.h"
 
-namespace gm {
+namespace gm::gpu {
     enum class Format {
         R32G32B32A32Float,
         R32G32B32Float,
@@ -50,4 +50,4 @@ namespace gm {
         int index;
     };
 
-} // namespace gm
+} // namespace gm::gpu

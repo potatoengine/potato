@@ -39,10 +39,10 @@ private:
     fs::FileSystem _fileSystem;
     box<gpu::GpuDevice> _device;
     box<gpu::GpuSwapChain> _swapChain;
-    box<GpuBuffer> _vbo;
-    box<GpuResourceView> _rtv;
-    box<GpuResourceView> _srv;
-    box<GpuCommandList> _commandList;
-    box<GpuPipelineState> _pipelineState;
+    box<gpu::GpuBuffer> _vbo;
+    box<gpu::GpuResourceView> _rtv;
+    box<gpu::GpuResourceView> _srv;
+    box<gpu::GpuCommandList> _commandList;
+    box<gpu::GpuPipelineState> _pipelineState;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
 };

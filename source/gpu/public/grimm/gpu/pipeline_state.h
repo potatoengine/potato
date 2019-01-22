@@ -7,7 +7,7 @@
 #include "grimm/foundation/span.h"
 #include "grimm/foundation/types.h"
 
-namespace gm {
+namespace gm::gpu {
     struct GpuPipelineStateDesc {
         blob vertShader;
         blob pixelShader;
@@ -22,4 +22,4 @@ namespace gm {
         GpuPipelineState(GpuPipelineState&&) = delete;
         GpuPipelineState& operator=(GpuPipelineState&&) = delete;
     };
-} // namespace gm
+} // namespace gm::gpu

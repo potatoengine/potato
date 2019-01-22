@@ -6,19 +6,15 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/types.h"
 
-namespace gm {
-    class GpuDescriptorHeap;
-    class GpuPipelineState;
-    class GpuCommandList;
-    class GpuResourceView;
+namespace gm::gpu {
     class GpuBuffer;
+    class GpuCommandList;
+    class GpuPipelineState;
+    class GpuResource;
+    class GpuResourceView;
+    class GpuSwapChain;
 
     struct GpuPipelineStateDesc;
-} // namespace gm
-
-namespace gm::gpu {
-    class GpuResource;
-    class GpuSwapChain;
 
     class GpuDevice {
     public:

@@ -85,11 +85,11 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _vbo = _device->createBuffer(BufferType::Vertex, sizeof(triangle));
+    _vbo = _device->createBuffer(gpu::BufferType::Vertex, sizeof(triangle));
     _commandList->update(_vbo.get(), span{triangle, 6}.as_bytes(), 0);
     _srv = _device->createShaderResourceView(_vbo.get());
 
-    GpuPipelineStateDesc pipelineDesc;
+    gpu::GpuPipelineStateDesc pipelineDesc;
 
     auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_5_0.cbo");
     if (fs::readBlob(stream, pipelineDesc.vertShader) != fs::Result{}) {
@@ -102,9 +102,9 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    InputLayoutElement layout[2] = {
-        {Format::R32G32B32Float, Semantic::Position, 0, 0},
-        {Format::R32G32B32Float, Semantic::Color, 0, 0},
+    gpu::InputLayoutElement layout[2] = {
+        {gpu::Format::R32G32B32Float, gpu::Semantic::Position, 0, 0},
+        {gpu::Format::R32G32B32Float, gpu::Semantic::Color, 0, 0},
     };
     pipelineDesc.inputLayout = layout;
     _pipelineState = _device->createPipelineState(pipelineDesc);
@@ -136,7 +136,7 @@ void gm::ShellApp::run() {
             }
         }
 
-        Viewport viewport;
+        gpu::Viewport viewport;
         int width, height;
         SDL_GetWindowSize(_window.get(), &width, &height);
         viewport.width = static_cast<float>(width);
@@ -147,7 +147,7 @@ void gm::ShellApp::run() {
         _commandList->setPipelineState(_pipelineState.get());
         _commandList->bindRenderTarget(0, _rtv.get());
         _commandList->bindBuffer(0, _vbo.get(), sizeof(PackedVector3f) * 2);
-        _commandList->setPrimitiveTopology(PrimitiveTopology::Triangles);
+        _commandList->setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
         _commandList->setViewport(viewport);
         _commandList->draw(3);
         _commandList->finish();
