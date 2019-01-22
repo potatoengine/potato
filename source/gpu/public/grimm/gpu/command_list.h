@@ -6,7 +6,6 @@
 #include "grimm/foundation/span.h"
 #include "grimm/foundation/types.h"
 #include "grimm/math/packed.h"
-#include "transition.h"
 
 namespace gm {
     class GpuResource;
