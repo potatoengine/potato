@@ -10,7 +10,7 @@ namespace gm::gpu {
     class Buffer;
     class CommandList;
     class PipelineState;
-    class GpuResource;
+    class Resource;
     class GpuResourceView;
     class GpuSwapChain;
 
@@ -31,7 +31,7 @@ namespace gm::gpu {
 
         virtual void execute(CommandList* commandList) = 0;
 
-        virtual box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) = 0;
+        virtual box<GpuResourceView> createRenderTargetView(Resource* renderTarget) = 0;
         virtual box<GpuResourceView> createShaderResourceView(Buffer* resource) = 0;
     };
 } // namespace gm::gpu

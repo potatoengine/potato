@@ -62,7 +62,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createCommandList(PipelineState* pipelineState
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(GpuResource* renderTarget) -> box<GpuResourceView> {
+auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(Resource* renderTarget) -> box<GpuResourceView> {
     GM_ASSERT(renderTarget != nullptr);
 
     auto d3d11Resource = static_cast<ResourceD3D11*>(renderTarget);

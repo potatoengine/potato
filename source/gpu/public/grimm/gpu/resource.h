@@ -3,12 +3,12 @@
 #pragma once
 
 namespace gm::gpu {
-    class GpuResource {
+    class Resource {
     public:
-        GpuResource() = default;
-        virtual ~GpuResource() = default;
+        Resource() = default;
+        virtual ~Resource() = default;
 
-        GpuResource(GpuResource&&) = delete;
-        GpuResource& operator=(GpuResource&&) = delete;
+        Resource(Resource&&) = delete;
+        Resource& operator=(Resource&&) = delete;
     };
 } // namespace gm::gpu

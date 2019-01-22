@@ -8,7 +8,7 @@
 #include "grimm/gpu/resource.h"
 
 namespace gm::gpu::d3d11 {
-    class ResourceD3D11 final : public GpuResource {
+    class ResourceD3D11 final : public Resource {
     public:
         explicit ResourceD3D11(com_ptr<ID3D11Resource> resource);
         virtual ~ResourceD3D11();

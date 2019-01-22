@@ -25,7 +25,7 @@ namespace gm::gpu::d3d11 {
 
         void execute(CommandList* commandList) override;
 
-        box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
+        box<GpuResourceView> createRenderTargetView(Resource* renderTarget) override;
         box<GpuResourceView> createShaderResourceView(Buffer* resource) override;
 
     private:
