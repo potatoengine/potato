@@ -19,11 +19,11 @@ namespace gm::gpu::d3d11 {
         static box<GpuDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
         box<GpuSwapChain> createSwapChain(void* native_window) override;
-        box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
+        box<CommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;
 
-        void execute(GpuCommandList* commandList) override;
+        void execute(CommandList* commandList) override;
 
         box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
         box<GpuResourceView> createShaderResourceView(Buffer* resource) override;

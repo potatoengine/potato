@@ -20,7 +20,7 @@ auto gm::gpu::null::DeviceNull::createSwapChain(void* native_window) -> box<GpuS
     return make_box<SwapChainNull>();
 }
 
-auto gm::gpu::null::DeviceNull::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
+auto gm::gpu::null::DeviceNull::createCommandList(GpuPipelineState* pipelineState) -> box<CommandList> {
     return make_box<CommandListNull>();
 }
 

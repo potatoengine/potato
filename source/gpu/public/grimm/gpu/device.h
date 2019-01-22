@@ -8,7 +8,7 @@
 
 namespace gm::gpu {
     class Buffer;
-    class GpuCommandList;
+    class CommandList;
     class GpuPipelineState;
     class GpuResource;
     class GpuResourceView;
@@ -25,11 +25,11 @@ namespace gm::gpu {
         GpuDevice& operator=(GpuDevice&&) = delete;
 
         virtual box<GpuSwapChain> createSwapChain(void* nativeWindow) = 0;
-        virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
+        virtual box<CommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
         virtual box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) = 0;
         virtual box<Buffer> createBuffer(BufferType type, uint64 size) = 0;
 
-        virtual void execute(GpuCommandList* commandList) = 0;
+        virtual void execute(CommandList* commandList) = 0;
 
         virtual box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) = 0;
         virtual box<GpuResourceView> createShaderResourceView(Buffer* resource) = 0;

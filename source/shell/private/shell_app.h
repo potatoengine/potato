@@ -42,7 +42,7 @@ private:
     box<gpu::Buffer> _vbo;
     box<gpu::GpuResourceView> _rtv;
     box<gpu::GpuResourceView> _srv;
-    box<gpu::GpuCommandList> _commandList;
+    box<gpu::CommandList> _commandList;
     box<gpu::GpuPipelineState> _pipelineState;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
 };

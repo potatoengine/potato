@@ -13,13 +13,13 @@ namespace gm::gpu {
     class GpuResourceView;
     class GpuPipelineState;
 
-    class GpuCommandList {
+    class CommandList {
     public:
-        GpuCommandList() = default;
-        virtual ~GpuCommandList() = default;
+        CommandList() = default;
+        virtual ~CommandList() = default;
 
-        GpuCommandList(GpuCommandList&&) = delete;
-        GpuCommandList& operator=(GpuCommandList&&) = delete;
+        CommandList(CommandList&&) = delete;
+        CommandList& operator=(CommandList&&) = delete;
 
         virtual void setPipelineState(GpuPipelineState* state) = 0;
 

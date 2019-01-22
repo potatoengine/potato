@@ -25,14 +25,14 @@ namespace gm::gpu::null {
     class DeviceNull final : public GpuDevice {
     public:
         box<GpuSwapChain> createSwapChain(void* native_window) override;
-        box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
+        box<CommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;
 
         box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
         box<GpuResourceView> createShaderResourceView(Buffer* resource) override;
 
-        void execute(GpuCommandList* commands) override {}
+        void execute(CommandList* commands) override {}
     };
 
     class ResourceViewNull final : public GpuResourceView {
@@ -59,7 +59,7 @@ namespace gm::gpu::null {
     class ResourceNull final : public GpuResource {
     };
 
-    class CommandListNull final : public GpuCommandList {
+    class CommandListNull final : public CommandList {
     public:
         void setPipelineState(GpuPipelineState* state) override {}
 

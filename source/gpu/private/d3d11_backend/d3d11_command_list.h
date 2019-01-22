@@ -8,7 +8,7 @@
 #include "grimm/gpu/command_list.h"
 
 namespace gm::gpu::d3d11 {
-    class CommandListD3D11 final : public GpuCommandList {
+    class CommandListD3D11 final : public CommandList {
     public:
         CommandListD3D11(com_ptr<ID3D11DeviceContext> context);
         virtual ~CommandListD3D11();

@@ -58,7 +58,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> box<Gpu
     return SwapChainD3D11::createSwapChain(_factory.get(), _device.get(), nativeWindow);
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
+auto gm::gpu::d3d11::DeviceD3D11::createCommandList(GpuPipelineState* pipelineState) -> box<CommandList> {
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
 }
 
@@ -120,7 +120,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size)
     return make_box<BufferD3D11>(type, size, std::move(buffer));
 }
 
-void gm::gpu::d3d11::DeviceD3D11::execute(GpuCommandList* commandList) {
+void gm::gpu::d3d11::DeviceD3D11::execute(CommandList* commandList) {
     GM_ASSERT(commandList != nullptr);
 
     auto deferred = static_cast<CommandListD3D11*>(commandList);
