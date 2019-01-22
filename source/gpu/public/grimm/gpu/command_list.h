@@ -10,7 +10,7 @@
 namespace gm::gpu {
     class Buffer;
     class Resource;
-    class GpuResourceView;
+    class ResourceView;
     class PipelineState;
 
     class CommandList {
@@ -23,15 +23,15 @@ namespace gm::gpu {
 
         virtual void setPipelineState(PipelineState* state) = 0;
 
-        virtual void bindRenderTarget(uint32 index, GpuResourceView* view) = 0;
+        virtual void bindRenderTarget(uint32 index, ResourceView* view) = 0;
         virtual void bindBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) = 0;
-        virtual void bindShaderResource(uint32 slot, GpuResourceView* view) = 0;
+        virtual void bindShaderResource(uint32 slot, ResourceView* view) = 0;
         virtual void setPrimitiveTopology(PrimitiveTopology topology) = 0;
         virtual void setViewport(Viewport const& viewport) = 0;
 
         virtual void draw(uint32 vertexCount, uint32 firstVertex = 0) = 0;
 
-        virtual void clearRenderTarget(GpuResourceView* view, PackedVector4f color) = 0;
+        virtual void clearRenderTarget(ResourceView* view, PackedVector4f color) = 0;
 
         virtual void finish() = 0;
         virtual void clear(PipelineState* pipelineState = nullptr) = 0;

@@ -40,8 +40,8 @@ private:
     box<gpu::Device> _device;
     box<gpu::GpuSwapChain> _swapChain;
     box<gpu::Buffer> _vbo;
-    box<gpu::GpuResourceView> _rtv;
-    box<gpu::GpuResourceView> _srv;
+    box<gpu::ResourceView> _rtv;
+    box<gpu::ResourceView> _srv;
     box<gpu::CommandList> _commandList;
     box<gpu::PipelineState> _pipelineState;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;

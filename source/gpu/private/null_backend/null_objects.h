@@ -29,13 +29,13 @@ namespace gm::gpu::null {
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;
 
-        box<GpuResourceView> createRenderTargetView(Resource* renderTarget) override;
-        box<GpuResourceView> createShaderResourceView(Buffer* resource) override;
+        box<ResourceView> createRenderTargetView(Resource* renderTarget) override;
+        box<ResourceView> createShaderResourceView(Buffer* resource) override;
 
         void execute(CommandList* commands) override {}
     };
 
-    class ResourceViewNull final : public GpuResourceView {
+    class ResourceViewNull final : public ResourceView {
     public:
         ResourceViewNull(ViewType type) : _type(type) {}
 
@@ -63,7 +63,7 @@ namespace gm::gpu::null {
     public:
         void setPipelineState(PipelineState* state) override {}
 
-        void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override {}
+        void clearRenderTarget(ResourceView* view, PackedVector4f color) override {}
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override {}
 
@@ -74,9 +74,9 @@ namespace gm::gpu::null {
         void unmap(Buffer* resource, span<byte const> data) override {}
         void update(Buffer* resource, span<byte const> data, uint64 offset = 0) override {}
 
-        void bindRenderTarget(uint32 index, GpuResourceView* view) override {}
+        void bindRenderTarget(uint32 index, ResourceView* view) override {}
         void bindBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override {}
-        void bindShaderResource(uint32 slot, GpuResourceView* view) override {}
+        void bindShaderResource(uint32 slot, ResourceView* view) override {}
         void setPrimitiveTopology(PrimitiveTopology topology) override {}
         void setViewport(Viewport const& viewport) override {}
     };

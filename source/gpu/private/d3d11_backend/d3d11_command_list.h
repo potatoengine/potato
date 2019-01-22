@@ -20,16 +20,16 @@ namespace gm::gpu::d3d11 {
 
         void setPipelineState(PipelineState* state) override;
 
-        void bindRenderTarget(uint32 index, GpuResourceView* view) override;
+        void bindRenderTarget(uint32 index, ResourceView* view) override;
         void bindBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override;
-        void bindShaderResource(uint32 slot, GpuResourceView* view) override;
+        void bindShaderResource(uint32 slot, ResourceView* view) override;
 
         void setPrimitiveTopology(PrimitiveTopology topology) override;
         void setViewport(Viewport const& viewport) override;
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override;
 
-        void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override;
+        void clearRenderTarget(ResourceView* view, PackedVector4f color) override;
 
         void finish() override;
         void clear(PipelineState* pipelineState = nullptr) override;

@@ -40,7 +40,7 @@ void gm::gpu::d3d11::CommandListD3D11::setPipelineState(PipelineState* state) {
     _bindingsDirty = true;
 }
 
-void gm::gpu::d3d11::CommandListD3D11::bindRenderTarget(gm::uint32 index, GpuResourceView* view) {
+void gm::gpu::d3d11::CommandListD3D11::bindRenderTarget(gm::uint32 index, ResourceView* view) {
     GM_ASSERT(index < maxRenderTargetBindings);
 
     if (view == nullptr) {
@@ -68,7 +68,7 @@ void gm::gpu::d3d11::CommandListD3D11::bindBuffer(gm::uint32 slot, Buffer* buffe
     _context->IASetVertexBuffers(slot, 1, &d3d11Buffer, &d3dStride, &d3dOffset);
 }
 
-void gm::gpu::d3d11::CommandListD3D11::bindShaderResource(gm::uint32 slot, GpuResourceView* view) {
+void gm::gpu::d3d11::CommandListD3D11::bindShaderResource(gm::uint32 slot, ResourceView* view) {
     GM_ASSERT(view != nullptr);
 
     auto buffer = static_cast<ResourceViewD3D11*>(view);
@@ -101,7 +101,7 @@ void gm::gpu::d3d11::CommandListD3D11::draw(gm::uint32 vertexCount, gm::uint32 f
     _context->Draw(vertexCount, firstVertex);
 }
 
-void gm::gpu::d3d11::CommandListD3D11::clearRenderTarget(GpuResourceView* view, PackedVector4f color) {
+void gm::gpu::d3d11::CommandListD3D11::clearRenderTarget(ResourceView* view, PackedVector4f color) {
     GM_ASSERT(view != nullptr);
 
     _context->ClearRenderTargetView(static_cast<ID3D11RenderTargetView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), color);

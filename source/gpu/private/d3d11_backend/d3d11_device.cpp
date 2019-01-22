@@ -62,7 +62,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createCommandList(PipelineState* pipelineState
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(Resource* renderTarget) -> box<GpuResourceView> {
+auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(Resource* renderTarget) -> box<ResourceView> {
     GM_ASSERT(renderTarget != nullptr);
 
     auto d3d11Resource = static_cast<ResourceD3D11*>(renderTarget);
@@ -80,7 +80,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(Resource* renderTarget)
     return make_box<ResourceViewD3D11>(ViewType::RTV, view.as<ID3D11View>());
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Buffer* resource) -> box<GpuResourceView> {
+auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Buffer* resource) -> box<ResourceView> {
     GM_ASSERT(resource != nullptr);
 
     auto buffer = static_cast<BufferD3D11*>(resource);

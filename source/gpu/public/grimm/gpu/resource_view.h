@@ -5,13 +5,13 @@
 #include "common.h"
 
 namespace gm::gpu {
-    class GpuResourceView {
+    class ResourceView {
     public:
-        GpuResourceView() = default;
-        virtual ~GpuResourceView() = default;
+        ResourceView() = default;
+        virtual ~ResourceView() = default;
 
-        GpuResourceView(GpuResourceView&&) = delete;
-        GpuResourceView& operator=(GpuResourceView&&) = delete;
+        ResourceView(ResourceView&&) = delete;
+        ResourceView& operator=(ResourceView&&) = delete;
 
         virtual ViewType type() const = 0;
     };

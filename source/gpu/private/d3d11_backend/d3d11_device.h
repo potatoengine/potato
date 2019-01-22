@@ -25,8 +25,8 @@ namespace gm::gpu::d3d11 {
 
         void execute(CommandList* commandList) override;
 
-        box<GpuResourceView> createRenderTargetView(Resource* renderTarget) override;
-        box<GpuResourceView> createShaderResourceView(Buffer* resource) override;
+        box<ResourceView> createRenderTargetView(Resource* renderTarget) override;
+        box<ResourceView> createShaderResourceView(Buffer* resource) override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;
