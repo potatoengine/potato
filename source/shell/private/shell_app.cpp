@@ -17,10 +17,13 @@
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
 
-static constexpr gm::PackedVector4f triangle[] = {
-    {0, 0, 0, 1},
-    {1, 1, 0, 1},
-    {1, 0, 0, 1},
+static constexpr gm::PackedVector3f triangle[] = {
+    {-0.8f, -0.8f, 0},
+    {1, 0, 0},
+    {0.8f, -0.8f, 0},
+    {0, 1, 0},
+    {0, +0.8f, 0},
+    {0, 0, 1},
 };
 
 gm::ShellApp::~ShellApp() {
@@ -83,7 +86,7 @@ int gm::ShellApp::initialize() {
     }
 
     _vbo = _device->createBuffer(BufferType::Vertex, sizeof(triangle));
-    _commandList->update(_vbo.get(), span{triangle, 3}.as_bytes(), 0);
+    _commandList->update(_vbo.get(), span{triangle, 6}.as_bytes(), 0);
     _srv = _device->createShaderResourceView(_vbo.get());
 
     GpuPipelineStateDesc pipelineDesc;
@@ -99,6 +102,11 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
+    InputLayoutElement layout[2] = {
+        {Format::R32G32B32Float, Semantic::Position, 0, 0},
+        {Format::R32G32B32Float, Semantic::Color, 0, 0},
+    };
+    pipelineDesc.inputLayout = layout;
     _pipelineState = _device->createPipelineState(pipelineDesc);
     if (_pipelineState == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create pipeline state", _window.get());
@@ -135,10 +143,10 @@ void gm::ShellApp::run() {
         viewport.height = static_cast<float>(height);
 
         _commandList->clear();
-        _commandList->clearRenderTarget(_rtv.get(), {1.f, 0.f, 0.f, 1.f});
+        _commandList->clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
         _commandList->setPipelineState(_pipelineState.get());
         _commandList->bindRenderTarget(0, _rtv.get());
-        _commandList->bindBuffer(0, _vbo.get(), sizeof(PackedVector4f));
+        _commandList->bindBuffer(0, _vbo.get(), sizeof(PackedVector3f) * 2);
         _commandList->setPrimitiveTopology(PrimitiveTopology::Triangles);
         _commandList->setViewport(viewport);
         _commandList->draw(3);

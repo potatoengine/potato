@@ -2,7 +2,27 @@
 
 #pragma once
 
+#include "grimm/foundation/types.h"
+
 namespace gm {
+    enum class Format {
+        R32G32B32A32Float,
+        R32G32B32Float,
+        R8G8B8A8UnsignedNormalized,
+    };
+
+    enum class Semantic {
+        Position,
+        Color
+    };
+
+    struct InputLayoutElement {
+        Format format = Format::R32G32B32A32Float;
+        Semantic semantic = Semantic::Position;
+        uint32 semanticIndex = 0;
+        uint32 slot = 0;
+    };
+
     enum class ViewType {
         RTV,
         UAV,

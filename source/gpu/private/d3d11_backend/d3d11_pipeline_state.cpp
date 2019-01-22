@@ -37,14 +37,21 @@ auto gm::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineStateDesc co
     blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
-    D3D11_INPUT_ELEMENT_DESC layout = {};
-    layout.SemanticName = "POSITION";
-    layout.SemanticIndex = 0;
-    layout.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-    layout.InputSlot = 0;
-    layout.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-    layout.InstanceDataStepRate = 0;
-    layout.AlignedByteOffset = 0;
+    D3D11_INPUT_ELEMENT_DESC layout[maxInputLayoutElements] = {};
+    uint32 layoutIndex = 0;
+
+    GM_ASSERT(desc.inputLayout.size() <= maxInputLayoutElements);
+
+    for (InputLayoutElement const& element : desc.inputLayout) {
+        D3D11_INPUT_ELEMENT_DESC& elemDesc = layout[layoutIndex++];
+        elemDesc.SemanticName = toNative(element.semantic).c_str();
+        elemDesc.SemanticIndex = element.semanticIndex;
+        elemDesc.InputSlot = element.slot;
+        elemDesc.Format = toNative(element.format);
+        elemDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+        elemDesc.InstanceDataStepRate = 0;
+        elemDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+    }
 
     PipelineStateParamsD3D11 params;
 
@@ -63,7 +70,7 @@ auto gm::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineStateDesc co
         return nullptr;
     }
 
-    hr = device->CreateInputLayout(&layout, 1, desc.vertShader.data(), desc.vertShader.size(), out_ptr(params.inputLayout));
+    hr = device->CreateInputLayout(layout, layoutIndex, desc.vertShader.data(), desc.vertShader.size(), out_ptr(params.inputLayout));
     if (!SUCCEEDED(hr)) {
         return nullptr;
     }

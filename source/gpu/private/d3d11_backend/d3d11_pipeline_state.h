@@ -27,6 +27,8 @@ namespace gm {
         PipelineStateParamsD3D11 const& params() const noexcept { return _params; }
 
     private:
+        static constexpr uint32 maxInputLayoutElements = 32;
+
         PipelineStateParamsD3D11 _params;
     };
 } // namespace gm

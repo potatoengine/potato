@@ -13,6 +13,8 @@ set(GM_GPU_D3D11_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_resource_view.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_swap_chain.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_swap_chain.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_platform.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_platform.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_pipeline_state.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_pipeline_state.cpp
 )
