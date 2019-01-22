@@ -3,12 +3,12 @@
 #pragma once
 
 namespace gm::gpu {
-    class GpuTexture {
+    class Texture {
     public:
-        GpuTexture() = default;
-        virtual ~GpuTexture() = default;
+        Texture() = default;
+        virtual ~Texture() = default;
 
-        GpuTexture(GpuTexture&&) = delete;
-        GpuTexture& operator=(GpuTexture&&) = delete;
+        Texture(Texture&&) = delete;
+        Texture& operator=(Texture&&) = delete;
     };
 } // namespace gm::gpu
