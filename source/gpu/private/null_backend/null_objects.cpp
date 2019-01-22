@@ -8,7 +8,7 @@ void gm::FactoryNull::enumerateDevices(delegate<void(DeviceInfo const&)> callbac
     callback(deviceInfo);
 }
 
-auto gm::FactoryNull::createDevice(int index) -> box<GpuDevice> {
+auto gm::FactoryNull::createDevice(int index) -> box<gpu::GpuDevice> {
     return make_box<DeviceNull>();
 }
 

@@ -8,7 +8,7 @@
 #include "grimm/gpu/device.h"
 
 namespace gm {
-    class DeviceD3D11 final : public GpuDevice {
+    class DeviceD3D11 final : public gpu::GpuDevice {
     public:
         DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context);
         virtual ~DeviceD3D11();

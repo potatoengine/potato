@@ -8,11 +8,9 @@
 
 #include "_export.h"
 
-namespace gm {
-    class GpuDevice;
-}
-
 namespace gm::gpu {
+    class GpuDevice;
+
     class GpuDeviceFactory {
     public:
         GpuDeviceFactory() = default;

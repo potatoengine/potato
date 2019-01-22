@@ -35,7 +35,7 @@ void gm::FactoryD3D11::enumerateDevices(delegate<void(DeviceInfo const&)> callba
     }
 }
 
-auto gm::FactoryD3D11::createDevice(int index) -> box<GpuDevice> {
+auto gm::FactoryD3D11::createDevice(int index) -> box<gpu::GpuDevice> {
     com_ptr<IDXGIAdapter1> adapter;
 
     UINT targetIndex = 0;

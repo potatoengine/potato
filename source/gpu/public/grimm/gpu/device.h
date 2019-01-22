@@ -16,7 +16,9 @@ namespace gm {
     class GpuBuffer;
 
     struct GpuPipelineStateDesc;
+} // namespace gm
 
+namespace gm::gpu {
     class GpuDevice {
     public:
         GpuDevice() = default;
@@ -35,4 +37,4 @@ namespace gm {
         virtual box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) = 0;
         virtual box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
     };
-} // namespace gm
+} // namespace gm::gpu

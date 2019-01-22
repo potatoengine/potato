@@ -18,10 +18,10 @@ namespace gm {
     public:
         bool isEnabled() const override { return true; }
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
-        box<GpuDevice> createDevice(int index) override;
+        box<gpu::GpuDevice> createDevice(int index) override;
     };
 
-    class DeviceNull final : public GpuDevice {
+    class DeviceNull final : public gpu::GpuDevice {
     public:
         box<GpuSwapChain> createSwapChain(void* native_window) override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
