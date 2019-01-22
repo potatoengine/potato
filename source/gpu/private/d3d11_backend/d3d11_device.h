@@ -7,8 +7,8 @@
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/gpu/device.h"
 
-namespace gm {
-    class DeviceD3D11 final : public GpuDevice {
+namespace gm::gpu::d3d11 {
+    class DeviceD3D11 final : public Device {
     public:
         DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context);
         virtual ~DeviceD3D11();
@@ -16,17 +16,17 @@ namespace gm {
         DeviceD3D11(DeviceD3D11&&) = delete;
         DeviceD3D11& operator=(DeviceD3D11&&) = delete;
 
-        static box<GpuDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
+        static box<Device> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
-        box<GpuSwapChain> createSwapChain(void* native_window) override;
-        box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
-        box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
-        box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
+        box<SwapChain> createSwapChain(void* native_window) override;
+        box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
+        box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
+        box<Buffer> createBuffer(BufferType type, uint64 size) override;
 
-        void execute(GpuCommandList* commandList) override;
+        void execute(CommandList* commandList) override;
 
-        box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
-        box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
+        box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
+        box<ResourceView> createShaderResourceView(Buffer* resource) override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;
@@ -34,4 +34,4 @@ namespace gm {
         com_ptr<ID3D11Device> _device;
         com_ptr<ID3D11DeviceContext> _context;
     };
-} // namespace gm
+} // namespace gm::gpu::d3d11

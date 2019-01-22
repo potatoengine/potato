@@ -2,13 +2,19 @@
 
 #pragma once
 
-namespace gm {
-    class GpuTexture {
-    public:
-        GpuTexture() = default;
-        virtual ~GpuTexture() = default;
+#include "common.h"
+#include "grimm/math/packed.h"
 
-        GpuTexture(GpuTexture&&) = delete;
-        GpuTexture& operator=(GpuTexture&&) = delete;
+namespace gm::gpu {
+    class Texture {
+    public:
+        Texture() = default;
+        virtual ~Texture() = default;
+
+        Texture(Texture&&) = delete;
+        Texture& operator=(Texture&&) = delete;
+
+        virtual TextureType type() const noexcept = 0;
+        virtual PackedVector3f dimensions() const noexcept = 0;
     };
-} // namespace gm
+} // namespace gm::gpu

@@ -2,9 +2,11 @@
 
 #pragma once
 
+#include "grimm/foundation/blob.h"
+#include "grimm/foundation/span.h"
 #include "grimm/foundation/types.h"
 
-namespace gm {
+namespace gm::gpu {
     enum class Format {
         R32G32B32A32Float,
         R32G32B32Float,
@@ -36,6 +38,12 @@ namespace gm {
         Vertex,
     };
 
+    enum class TextureType {
+        Texture2D,
+        Texture3D,
+        DepthStencil,
+    };
+
     enum class PrimitiveTopology {
         Triangles,
     };
@@ -45,4 +53,15 @@ namespace gm {
         float minDepth = 0, maxDepth = 1;
         float leftX = 0, topY = 1;
     };
-} // namespace gm
+
+    struct DeviceInfo {
+        int index;
+    };
+
+    struct PipelineStateDesc {
+        blob vertShader;
+        blob pixelShader;
+        span<InputLayoutElement const> inputLayout;
+    };
+
+} // namespace gm::gpu

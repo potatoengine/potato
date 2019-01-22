@@ -8,7 +8,7 @@
 #include <d3d11.h>
 #include <dxgi1_2.h>
 
-namespace gm {
+namespace gm::gpu::d3d11 {
     extern zstring_view toNative(Semantic semantic) noexcept;
     extern DXGI_FORMAT toNative(Format format) noexcept;
-} // namespace gm
+} // namespace gm::gpu::d3d11

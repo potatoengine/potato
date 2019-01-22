@@ -4,20 +4,20 @@
 
 #include "grimm/foundation/box.h"
 
-namespace gm {
-    class GpuResource;
+namespace gm::gpu {
+    class Texture;
 
-    class GpuSwapChain {
+    class SwapChain {
     public:
-        GpuSwapChain() = default;
-        virtual ~GpuSwapChain() = default;
+        SwapChain() = default;
+        virtual ~SwapChain() = default;
 
-        GpuSwapChain(GpuSwapChain&&) = delete;
-        GpuSwapChain& operator=(GpuSwapChain&&) = delete;
+        SwapChain(SwapChain&&) = delete;
+        SwapChain& operator=(SwapChain&&) = delete;
 
         virtual void present() = 0;
         virtual void resizeBuffers(int width, int height) = 0;
-        virtual box<GpuResource> getBuffer(int index) = 0;
+        virtual box<Texture> getBuffer(int index) = 0;
         virtual int getCurrentBufferIndex() = 0;
     };
-} // namespace gm
+} // namespace gm::gpu

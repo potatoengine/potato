@@ -6,16 +6,16 @@
 #include "grimm/foundation/types.h"
 #include "grimm/foundation/span.h"
 
-namespace gm {
-    class GpuBuffer {
+namespace gm::gpu {
+    class Buffer {
     public:
-        GpuBuffer() = default;
-        virtual ~GpuBuffer() = default;
+        Buffer() = default;
+        virtual ~Buffer() = default;
 
-        GpuBuffer(GpuBuffer&&) = delete;
-        GpuBuffer& operator=(GpuBuffer&&) = delete;
+        Buffer(Buffer&&) = delete;
+        Buffer& operator=(Buffer&&) = delete;
 
         virtual BufferType type() const noexcept = 0;
         virtual uint64 size() const noexcept = 0;
     };
-} // namespace gm
+} // namespace gm::gpu

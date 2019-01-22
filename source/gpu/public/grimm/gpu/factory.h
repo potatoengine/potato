@@ -2,33 +2,30 @@
 
 #pragma once
 
+#include "common.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/delegate.h"
 
 #include "_export.h"
 
-namespace gm {
-    class GpuDevice;
+namespace gm::gpu {
+    class Device;
 
-    struct GpuDeviceInfo {
-        int index;
-    };
-
-    class GpuDeviceFactory {
+    class Factory {
     public:
-        GpuDeviceFactory() = default;
-        virtual ~GpuDeviceFactory() = default;
+        Factory() = default;
+        virtual ~Factory() = default;
 
-        GpuDeviceFactory(GpuDeviceFactory&&) = delete;
-        GpuDeviceFactory& operator=(GpuDeviceFactory&&) = delete;
+        Factory(Factory&&) = delete;
+        Factory& operator=(Factory&&) = delete;
 
         virtual bool isEnabled() const = 0;
-        virtual void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) = 0;
-        virtual box<GpuDevice> createDevice(int index) = 0;
+        virtual void enumerateDevices(delegate<void(DeviceInfo const&)> callback) = 0;
+        virtual box<Device> createDevice(int index) = 0;
     };
 
-    GM_GPU_API box<GpuDeviceFactory> CreateNullGPUFactory();
+    GM_GPU_API box<Factory> CreateFactoryNull();
 #if GM_GPU_ENABLE_D3D11
-    GM_GPU_API box<GpuDeviceFactory> CreateGPUFactoryD3D11();
+    GM_GPU_API box<Factory> CreateFactoryD3D11();
 #endif
-} // namespace gm
+} // namespace gm::gpu

@@ -6,33 +6,32 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/types.h"
 
-namespace gm {
-    class GpuSwapChain;
-    class GpuDescriptorHeap;
-    class GpuResource;
-    class GpuPipelineState;
-    class GpuCommandList;
-    class GpuResourceView;
-    class GpuBuffer;
+namespace gm::gpu {
+    class Buffer;
+    class CommandList;
+    class PipelineState;
+    class ResourceView;
+    class SwapChain;
+    class Texture;
 
-    struct GpuPipelineStateDesc;
+    struct PipelineStateDesc;
 
-    class GpuDevice {
+    class Device {
     public:
-        GpuDevice() = default;
-        virtual ~GpuDevice() = default;
+        Device() = default;
+        virtual ~Device() = default;
 
-        GpuDevice(GpuDevice&&) = delete;
-        GpuDevice& operator=(GpuDevice&&) = delete;
+        Device(Device&&) = delete;
+        Device& operator=(Device&&) = delete;
 
-        virtual box<GpuSwapChain> createSwapChain(void* nativeWindow) = 0;
-        virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
-        virtual box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) = 0;
-        virtual box<GpuBuffer> createBuffer(BufferType type, uint64 size) = 0;
+        virtual box<SwapChain> createSwapChain(void* nativeWindow) = 0;
+        virtual box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) = 0;
+        virtual box<PipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
+        virtual box<Buffer> createBuffer(BufferType type, uint64 size) = 0;
 
-        virtual void execute(GpuCommandList* commandList) = 0;
+        virtual void execute(CommandList* commandList) = 0;
 
-        virtual box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) = 0;
-        virtual box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
+        virtual box<ResourceView> createRenderTargetView(Texture* renderTarget) = 0;
+        virtual box<ResourceView> createShaderResourceView(Buffer* resource) = 0;
     };
-} // namespace gm
+} // namespace gm::gpu

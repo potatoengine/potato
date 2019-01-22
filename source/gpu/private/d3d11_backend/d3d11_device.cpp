@@ -5,15 +5,15 @@
 #include "d3d11_command_list.h"
 #include "d3d11_pipeline_state.h"
 #include "d3d11_buffer.h"
-#include "d3d11_resource.h"
 #include "d3d11_resource_view.h"
 #include "d3d11_swap_chain.h"
 #include "d3d11_platform.h"
+#include "d3d11_texture.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 #include <utility>
 
-gm::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context)
+gm::gpu::d3d11::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context)
     : _factory(std::move(factory)), _adaptor(std::move(adapter)), _device(std::move(device)), _context(std::move(context)) {
     GM_ASSERT(_factory != nullptr);
     GM_ASSERT(_adaptor != nullptr);
@@ -21,7 +21,7 @@ gm::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapte
     GM_ASSERT(_context != nullptr);
 }
 
-gm::DeviceD3D11::~DeviceD3D11() {
+gm::gpu::d3d11::DeviceD3D11::~DeviceD3D11() {
     _context.reset();
 
     com_ptr<ID3D11Debug> debug;
@@ -36,7 +36,7 @@ gm::DeviceD3D11::~DeviceD3D11() {
     }
 }
 
-auto gm::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> box<GpuDevice> {
+auto gm::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> box<Device> {
     GM_ASSERT(factory != nullptr);
     GM_ASSERT(adapter != nullptr);
 
@@ -52,20 +52,20 @@ auto gm::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGI
     return make_box<DeviceD3D11>(std::move(factory), std::move(adapter), std::move(device), std::move(context));
 }
 
-auto gm::DeviceD3D11::createSwapChain(void* nativeWindow) -> box<GpuSwapChain> {
+auto gm::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> box<SwapChain> {
     GM_ASSERT(nativeWindow != nullptr);
 
     return SwapChainD3D11::createSwapChain(_factory.get(), _device.get(), nativeWindow);
 }
 
-auto gm::DeviceD3D11::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
+auto gm::gpu::d3d11::DeviceD3D11::createCommandList(PipelineState* pipelineState) -> box<CommandList> {
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
 }
 
-auto gm::DeviceD3D11::createRenderTargetView(GpuResource* renderTarget) -> box<GpuResourceView> {
+auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(Texture* renderTarget) -> box<ResourceView> {
     GM_ASSERT(renderTarget != nullptr);
 
-    auto d3d11Resource = static_cast<ResourceD3D11*>(renderTarget);
+    auto d3d11Resource = static_cast<TextureD3D11*>(renderTarget);
 
     D3D11_RENDER_TARGET_VIEW_DESC desc = {};
     desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
@@ -80,7 +80,7 @@ auto gm::DeviceD3D11::createRenderTargetView(GpuResource* renderTarget) -> box<G
     return make_box<ResourceViewD3D11>(ViewType::RTV, view.as<ID3D11View>());
 }
 
-auto gm::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
+auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Buffer* resource) -> box<ResourceView> {
     GM_ASSERT(resource != nullptr);
 
     auto buffer = static_cast<BufferD3D11*>(resource);
@@ -100,11 +100,11 @@ auto gm::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<GpuRe
     return make_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
 }
 
-auto gm::DeviceD3D11::createPipelineState(GpuPipelineStateDesc const& desc) -> box<GpuPipelineState> {
+auto gm::gpu::d3d11::DeviceD3D11::createPipelineState(PipelineStateDesc const& desc) -> box<PipelineState> {
     return PipelineStateD3D11::createGraphicsPipelineState(desc, _device.get());
 }
 
-auto gm::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size) -> box<GpuBuffer> {
+auto gm::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size) -> box<Buffer> {
     D3D11_BUFFER_DESC desc = {};
     desc.Usage = D3D11_USAGE_DYNAMIC;
     desc.ByteWidth = static_cast<UINT>(size);
@@ -120,12 +120,12 @@ auto gm::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size) -> box<GpuB
     return make_box<BufferD3D11>(type, size, std::move(buffer));
 }
 
-void gm::DeviceD3D11::execute(GpuCommandList* commandList) {
+void gm::gpu::d3d11::DeviceD3D11::execute(CommandList* commandList) {
     GM_ASSERT(commandList != nullptr);
 
     auto deferred = static_cast<CommandListD3D11*>(commandList);
 
     GM_ASSERT(deferred->commandList(), "Command list is still open");
 
-    _context->ExecuteCommandList(deferred->commandList().get(), TRUE);
+    _context->ExecuteCommandList(deferred->commandList().get(), FALSE);
 }

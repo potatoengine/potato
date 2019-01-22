@@ -6,37 +6,37 @@
 #include "device.h"
 #include "factory.h"
 #include "pipeline_state.h"
-#include "resource.h"
 #include "swap_chain.h"
 #include "resource_view.h"
 #include "buffer.h"
+#include "texture.h"
 
-namespace gm {
-    class NullDevice;
+namespace gm::gpu::null {
+    class DeviceNull;
 
-    class NullFactory final : public GpuDeviceFactory {
+    class FactoryNull final : public Factory {
     public:
         bool isEnabled() const override { return true; }
-        void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) override;
-        box<GpuDevice> createDevice(int index) override;
+        void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
+        box<Device> createDevice(int index) override;
     };
 
-    class NullDevice final : public GpuDevice {
+    class DeviceNull final : public Device {
     public:
-        box<GpuSwapChain> createSwapChain(void* native_window) override;
-        box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
-        box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
-        box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
+        box<SwapChain> createSwapChain(void* native_window) override;
+        box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
+        box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
+        box<Buffer> createBuffer(BufferType type, uint64 size) override;
 
-        box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
-        box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
+        box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
+        box<ResourceView> createShaderResourceView(Buffer* resource) override;
 
-        void execute(GpuCommandList* commands) override {}
+        void execute(CommandList* commands) override {}
     };
 
-    class NullResourceView final : public GpuResourceView {
+    class ResourceViewNull final : public ResourceView {
     public:
-        NullResourceView(ViewType type) : _type(type) {}
+        ResourceViewNull(ViewType type) : _type(type) {}
 
         ViewType type() const override { return _type; }
 
@@ -44,45 +44,42 @@ namespace gm {
         ViewType _type;
     };
 
-    class NullSwapChain final : public GpuSwapChain {
+    class SwapChainNull final : public SwapChain {
     public:
         void present() override {}
         void resizeBuffers(int width, int height) override {}
-        box<GpuResource> getBuffer(int index) override;
+        box<Texture> getBuffer(int index) override;
         int getCurrentBufferIndex() override;
     };
 
-    class NullPipelineState final : public GpuPipelineState {
+    class PipelineStateNull final : public PipelineState {
     };
 
-    class NullResource final : public GpuResource {
-    };
-
-    class NullCommandList final : public GpuCommandList {
+    class CommandListNull final : public CommandList {
     public:
-        void setPipelineState(GpuPipelineState* state) override {}
+        void setPipelineState(PipelineState* state) override {}
 
-        void clearRenderTarget(GpuResourceView* view, PackedVector4f color) override {}
+        void clearRenderTarget(ResourceView* view, PackedVector4f color) override {}
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override {}
 
         void finish() override {}
-        void clear(GpuPipelineState* pipelineState = nullptr) override {}
+        void clear(PipelineState* pipelineState = nullptr) override {}
 
-        span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override { return {}; }
-        void unmap(GpuBuffer* resource, span<byte const> data) override {}
-        void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override {}
+        span<byte> map(Buffer* resource, uint64 size, uint64 offset = 0) override { return {}; }
+        void unmap(Buffer* resource, span<byte const> data) override {}
+        void update(Buffer* resource, span<byte const> data, uint64 offset = 0) override {}
 
-        void bindRenderTarget(uint32 index, GpuResourceView* view) override {}
-        void bindBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override {}
-        void bindShaderResource(uint32 slot, GpuResourceView* view) override {}
+        void bindRenderTarget(uint32 index, ResourceView* view) override {}
+        void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override {}
+        void bindShaderResource(uint32 slot, ResourceView* view) override {}
         void setPrimitiveTopology(PrimitiveTopology topology) override {}
         void setViewport(Viewport const& viewport) override {}
     };
 
-    class NullBuffer final : public GpuBuffer {
+    class BufferNull final : public Buffer {
     public:
-        NullBuffer(BufferType type) : _type(type) {}
+        BufferNull(BufferType type) : _type(type) {}
 
         BufferType type() const noexcept override { return _type; }
         uint64 size() const noexcept override { return 0; }
@@ -90,4 +87,10 @@ namespace gm {
     private:
         BufferType _type;
     };
-} // namespace gm
+
+    class TextureNull final : public Texture {
+    public:
+        TextureType type() const noexcept override { return TextureType::Texture2D; }
+        PackedVector3f dimensions() const noexcept { return {0, 0, 0}; }
+    };
+} // namespace gm::gpu::null

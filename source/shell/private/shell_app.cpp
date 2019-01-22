@@ -9,8 +9,8 @@
 #include "grimm/filesystem/stream_util.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/factory.h"
-#include "grimm/gpu/resource.h"
 #include "grimm/gpu/swap_chain.h"
+#include "grimm/gpu/texture.h"
 #include "grimm/math/packed.h"
 
 #include <SDL.h>
@@ -55,12 +55,12 @@ int gm::ShellApp::initialize() {
 
 #if GM_GPU_ENABLE_D3D11
     if (_device == nullptr) {
-        auto factory = CreateGPUFactoryD3D11();
+        auto factory = gpu::CreateFactoryD3D11();
         _device = factory->createDevice(0);
     }
 #endif
     if (_device == nullptr) {
-        auto factory = CreateNullGPUFactory();
+        auto factory = gpu::CreateFactoryNull();
         _device = factory->createDevice(0);
     }
 
@@ -85,11 +85,11 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _vbo = _device->createBuffer(BufferType::Vertex, sizeof(triangle));
+    _vbo = _device->createBuffer(gpu::BufferType::Vertex, sizeof(triangle));
     _commandList->update(_vbo.get(), span{triangle, 6}.as_bytes(), 0);
     _srv = _device->createShaderResourceView(_vbo.get());
 
-    GpuPipelineStateDesc pipelineDesc;
+    gpu::PipelineStateDesc pipelineDesc;
 
     auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_5_0.cbo");
     if (fs::readBlob(stream, pipelineDesc.vertShader) != fs::Result{}) {
@@ -102,9 +102,9 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    InputLayoutElement layout[2] = {
-        {Format::R32G32B32Float, Semantic::Position, 0, 0},
-        {Format::R32G32B32Float, Semantic::Color, 0, 0},
+    gpu::InputLayoutElement layout[2] = {
+        {gpu::Format::R32G32B32Float, gpu::Semantic::Position, 0, 0},
+        {gpu::Format::R32G32B32Float, gpu::Semantic::Color, 0, 0},
     };
     pipelineDesc.inputLayout = layout;
     _pipelineState = _device->createPipelineState(pipelineDesc);
@@ -125,7 +125,7 @@ void gm::ShellApp::run() {
             case SDL_QUIT:
                 return;
             case SDL_WINDOWEVENT:
-                switch (ev.window.type) {
+                switch (ev.window.event) {
                 case SDL_WINDOWEVENT_CLOSE:
                     onWindowClosed();
                     break;
@@ -136,7 +136,7 @@ void gm::ShellApp::run() {
             }
         }
 
-        Viewport viewport;
+        gpu::Viewport viewport;
         int width, height;
         SDL_GetWindowSize(_window.get(), &width, &height);
         viewport.width = static_cast<float>(width);
@@ -146,8 +146,8 @@ void gm::ShellApp::run() {
         _commandList->clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
         _commandList->setPipelineState(_pipelineState.get());
         _commandList->bindRenderTarget(0, _rtv.get());
-        _commandList->bindBuffer(0, _vbo.get(), sizeof(PackedVector3f) * 2);
-        _commandList->setPrimitiveTopology(PrimitiveTopology::Triangles);
+        _commandList->bindVertexBuffer(0, _vbo.get(), sizeof(PackedVector3f) * 2);
+        _commandList->setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
         _commandList->setViewport(viewport);
         _commandList->draw(3);
         _commandList->finish();
@@ -168,5 +168,8 @@ void gm::ShellApp::onWindowClosed() {
 void gm::ShellApp::onWindowSizeChanged() {
     int width, height;
     SDL_GetWindowSize(_window.get(), &width, &height);
+    _rtv.reset();
+    _commandList->clear();
     _swapChain->resizeBuffers(width, height);
+    _rtv = _device->createRenderTargetView(_swapChain->getBuffer(0).get());
 }

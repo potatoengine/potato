@@ -37,12 +37,12 @@ private:
 private:
     bool _running = true;
     fs::FileSystem _fileSystem;
-    box<GpuDevice> _device;
-    box<GpuSwapChain> _swapChain;
-    box<GpuBuffer> _vbo;
-    box<GpuResourceView> _rtv;
-    box<GpuResourceView> _srv;
-    box<GpuCommandList> _commandList;
-    box<GpuPipelineState> _pipelineState;
+    box<gpu::Device> _device;
+    box<gpu::SwapChain> _swapChain;
+    box<gpu::Buffer> _vbo;
+    box<gpu::ResourceView> _rtv;
+    box<gpu::ResourceView> _srv;
+    box<gpu::CommandList> _commandList;
+    box<gpu::PipelineState> _pipelineState;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
 };

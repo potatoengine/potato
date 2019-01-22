@@ -4,15 +4,15 @@
 
 #include "common.h"
 
-namespace gm {
-    class GpuResourceView {
+namespace gm::gpu {
+    class ResourceView {
     public:
-        GpuResourceView() = default;
-        virtual ~GpuResourceView() = default;
+        ResourceView() = default;
+        virtual ~ResourceView() = default;
 
-        GpuResourceView(GpuResourceView&&) = delete;
-        GpuResourceView& operator=(GpuResourceView&&) = delete;
+        ResourceView(ResourceView&&) = delete;
+        ResourceView& operator=(ResourceView&&) = delete;
 
         virtual ViewType type() const = 0;
     };
-} // namespace gm
+} // namespace gm::gpu
