@@ -11,17 +11,17 @@
 #include "resource_view.h"
 #include "buffer.h"
 
-namespace gm {
+namespace gm::gpu::null {
     class DeviceNull;
 
-    class FactoryNull final : public gpu::GpuDeviceFactory {
+    class FactoryNull final : public GpuDeviceFactory {
     public:
         bool isEnabled() const override { return true; }
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
-        box<gpu::GpuDevice> createDevice(int index) override;
+        box<GpuDevice> createDevice(int index) override;
     };
 
-    class DeviceNull final : public gpu::GpuDevice {
+    class DeviceNull final : public GpuDevice {
     public:
         box<GpuSwapChain> createSwapChain(void* native_window) override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
@@ -90,4 +90,4 @@ namespace gm {
     private:
         BufferType _type;
     };
-} // namespace gm
+} // namespace gm::gpu::null
