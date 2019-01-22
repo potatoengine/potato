@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace gm {
+namespace gm::gpu {
     class GpuResource {
     public:
         GpuResource() = default;
@@ -11,4 +11,4 @@ namespace gm {
         GpuResource(GpuResource&&) = delete;
         GpuResource& operator=(GpuResource&&) = delete;
     };
-} // namespace gm
+} // namespace gm::gpu

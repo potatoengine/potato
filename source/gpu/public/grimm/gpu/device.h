@@ -8,7 +8,6 @@
 
 namespace gm {
     class GpuDescriptorHeap;
-    class GpuResource;
     class GpuPipelineState;
     class GpuCommandList;
     class GpuResourceView;
@@ -18,6 +17,7 @@ namespace gm {
 } // namespace gm
 
 namespace gm::gpu {
+    class GpuResource;
     class GpuSwapChain;
 
     class GpuDevice {

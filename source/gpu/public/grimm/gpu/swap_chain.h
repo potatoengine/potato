@@ -4,11 +4,8 @@
 
 #include "grimm/foundation/box.h"
 
-namespace gm {
-    class GpuResource;
-}
-
 namespace gm::gpu {
+    class GpuResource;
 
     class GpuSwapChain {
     public:
