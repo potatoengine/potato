@@ -2,8 +2,8 @@
 
 #include "null_objects.h"
 
-void gm::FactoryNull::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
-    static GpuDeviceInfo deviceInfo = {0};
+void gm::FactoryNull::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
+    static DeviceInfo deviceInfo = {0};
 
     callback(deviceInfo);
 }
@@ -12,7 +12,7 @@ auto gm::FactoryNull::createDevice(int index) -> box<GpuDevice> {
     return make_box<DeviceNull>();
 }
 
-GM_GPU_API auto gm::CreateNullGPUFactory() -> box<GpuDeviceFactory> {
+GM_GPU_API auto gm::gpu::CreateNullGPUFactory() -> box<gpu::GpuDeviceFactory> {
     return make_box<FactoryNull>();
 }
 

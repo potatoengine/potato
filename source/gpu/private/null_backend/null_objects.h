@@ -14,10 +14,10 @@
 namespace gm {
     class DeviceNull;
 
-    class FactoryNull final : public GpuDeviceFactory {
+    class FactoryNull final : public gpu::GpuDeviceFactory {
     public:
         bool isEnabled() const override { return true; }
-        void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) override;
+        void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
         box<GpuDevice> createDevice(int index) override;
     };
 

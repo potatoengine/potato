@@ -45,4 +45,9 @@ namespace gm {
         float minDepth = 0, maxDepth = 1;
         float leftX = 0, topY = 1;
     };
+
+    struct DeviceInfo {
+        int index;
+    };
+
 } // namespace gm

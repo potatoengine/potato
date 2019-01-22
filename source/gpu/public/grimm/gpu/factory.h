@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "common.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/delegate.h"
 
@@ -9,11 +10,9 @@
 
 namespace gm {
     class GpuDevice;
+}
 
-    struct GpuDeviceInfo {
-        int index;
-    };
-
+namespace gm::gpu {
     class GpuDeviceFactory {
     public:
         GpuDeviceFactory() = default;
@@ -23,7 +22,7 @@ namespace gm {
         GpuDeviceFactory& operator=(GpuDeviceFactory&&) = delete;
 
         virtual bool isEnabled() const = 0;
-        virtual void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) = 0;
+        virtual void enumerateDevices(delegate<void(DeviceInfo const&)> callback) = 0;
         virtual box<GpuDevice> createDevice(int index) = 0;
     };
 
@@ -31,4 +30,4 @@ namespace gm {
 #if GM_GPU_ENABLE_D3D11
     GM_GPU_API box<GpuDeviceFactory> CreateGPUFactoryD3D11();
 #endif
-} // namespace gm
+} // namespace gm::gpu

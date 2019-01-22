@@ -3,9 +3,10 @@
 #include "null_backend/null_objects.h"
 
 DOCTEST_TEST_SUITE("[grimm][gpu] DeviceNull") {
-    DOCTEST_TEST_CASE("factory enumerates") {
-        using namespace gm;
+    using namespace gm;
+    using namespace gm::gpu;
 
+    DOCTEST_TEST_CASE("factory enumerates") {
         auto factory = CreateNullGPUFactory();
 
         DOCTEST_CHECK(factory->isEnabled());
@@ -21,8 +22,6 @@ DOCTEST_TEST_SUITE("[grimm][gpu] DeviceNull") {
     }
 
     DOCTEST_TEST_CASE("factory abides") {
-        using namespace gm;
-
         auto factory = CreateNullGPUFactory();
 
         auto device = factory->createDevice(0);
@@ -30,8 +29,6 @@ DOCTEST_TEST_SUITE("[grimm][gpu] DeviceNull") {
     }
 
     DOCTEST_TEST_CASE("device abides") {
-        using namespace gm;
-
         auto factory = CreateNullGPUFactory();
         auto device = factory->createDevice(0);
 
