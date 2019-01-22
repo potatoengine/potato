@@ -7,7 +7,7 @@
 #include "grimm/foundation/types.h"
 
 namespace gm::gpu {
-    class GpuBuffer;
+    class Buffer;
     class GpuCommandList;
     class GpuPipelineState;
     class GpuResource;
@@ -27,11 +27,11 @@ namespace gm::gpu {
         virtual box<GpuSwapChain> createSwapChain(void* nativeWindow) = 0;
         virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
         virtual box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) = 0;
-        virtual box<GpuBuffer> createBuffer(BufferType type, uint64 size) = 0;
+        virtual box<Buffer> createBuffer(BufferType type, uint64 size) = 0;
 
         virtual void execute(GpuCommandList* commandList) = 0;
 
         virtual box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) = 0;
-        virtual box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
+        virtual box<GpuResourceView> createShaderResourceView(Buffer* resource) = 0;
     };
 } // namespace gm::gpu

@@ -32,11 +32,11 @@ auto gm::gpu::null::DeviceNull::createRenderTargetView(GpuResource* renderTarget
     return make_box<ResourceViewNull>(ViewType::RTV);
 }
 
-auto gm::gpu::null::DeviceNull::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
+auto gm::gpu::null::DeviceNull::createShaderResourceView(Buffer* resource) -> box<GpuResourceView> {
     return make_box<ResourceViewNull>(ViewType::SRV);
 }
 
-auto gm::gpu::null::DeviceNull::createBuffer(BufferType type, gm::uint64 size) -> box<GpuBuffer> {
+auto gm::gpu::null::DeviceNull::createBuffer(BufferType type, gm::uint64 size) -> box<Buffer> {
     return make_box<BufferNull>(type);
 }
 

@@ -39,7 +39,7 @@ private:
     fs::FileSystem _fileSystem;
     box<gpu::GpuDevice> _device;
     box<gpu::GpuSwapChain> _swapChain;
-    box<gpu::GpuBuffer> _vbo;
+    box<gpu::Buffer> _vbo;
     box<gpu::GpuResourceView> _rtv;
     box<gpu::GpuResourceView> _srv;
     box<gpu::GpuCommandList> _commandList;

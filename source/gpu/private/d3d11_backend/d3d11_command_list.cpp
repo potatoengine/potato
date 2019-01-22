@@ -56,7 +56,7 @@ void gm::gpu::d3d11::CommandListD3D11::bindRenderTarget(gm::uint32 index, GpuRes
     _bindingsDirty = true;
 }
 
-void gm::gpu::d3d11::CommandListD3D11::bindBuffer(gm::uint32 slot, GpuBuffer* buffer, gm::uint64 stride, gm::uint64 offset) {
+void gm::gpu::d3d11::CommandListD3D11::bindBuffer(gm::uint32 slot, Buffer* buffer, gm::uint64 stride, gm::uint64 offset) {
     GM_ASSERT(buffer != nullptr);
     GM_ASSERT(buffer->type() == BufferType::Vertex);
 
@@ -119,7 +119,7 @@ void gm::gpu::d3d11::CommandListD3D11::clear(GpuPipelineState* pipelineState) {
     }
 }
 
-auto gm::gpu::d3d11::CommandListD3D11::map(GpuBuffer* resource, gm::uint64 size, gm::uint64 offset) -> span<gm::byte> {
+auto gm::gpu::d3d11::CommandListD3D11::map(Buffer* resource, gm::uint64 size, gm::uint64 offset) -> span<gm::byte> {
     if (resource == nullptr) {
         return {};
     }
@@ -139,7 +139,7 @@ auto gm::gpu::d3d11::CommandListD3D11::map(GpuBuffer* resource, gm::uint64 size,
     return {static_cast<gm::byte*>(sub.pData) + offset, size};
 }
 
-void gm::gpu::d3d11::CommandListD3D11::unmap(GpuBuffer* buffer, span<gm::byte const> data) {
+void gm::gpu::d3d11::CommandListD3D11::unmap(Buffer* buffer, span<gm::byte const> data) {
     if (buffer == nullptr) {
         return;
     }
@@ -149,7 +149,7 @@ void gm::gpu::d3d11::CommandListD3D11::unmap(GpuBuffer* buffer, span<gm::byte co
     _context->Unmap(d3dBuffer, 0);
 }
 
-void gm::gpu::d3d11::CommandListD3D11::update(GpuBuffer* buffer, span<gm::byte const> data, gm::uint64 offset) {
+void gm::gpu::d3d11::CommandListD3D11::update(Buffer* buffer, span<gm::byte const> data, gm::uint64 offset) {
     if (buffer == nullptr) {
         return;
     }

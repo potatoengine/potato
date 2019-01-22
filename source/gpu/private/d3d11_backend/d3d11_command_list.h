@@ -21,7 +21,7 @@ namespace gm::gpu::d3d11 {
         void setPipelineState(GpuPipelineState* state) override;
 
         void bindRenderTarget(uint32 index, GpuResourceView* view) override;
-        void bindBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override;
+        void bindBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override;
         void bindShaderResource(uint32 slot, GpuResourceView* view) override;
 
         void setPrimitiveTopology(PrimitiveTopology topology) override;
@@ -34,9 +34,9 @@ namespace gm::gpu::d3d11 {
         void finish() override;
         void clear(GpuPipelineState* pipelineState = nullptr) override;
 
-        span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override;
-        void unmap(GpuBuffer* resource, span<byte const> data) override;
-        void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override;
+        span<byte> map(Buffer* resource, uint64 size, uint64 offset = 0) override;
+        void unmap(Buffer* resource, span<byte const> data) override;
+        void update(Buffer* resource, span<byte const> data, uint64 offset = 0) override;
 
         com_ptr<ID3D11DeviceContext> const& deviceContext() const { return _context; }
         com_ptr<ID3D11CommandList> const& commandList() const { return _commands; }

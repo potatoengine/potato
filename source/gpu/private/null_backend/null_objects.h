@@ -27,10 +27,10 @@ namespace gm::gpu::null {
         box<GpuSwapChain> createSwapChain(void* native_window) override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
-        box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
+        box<Buffer> createBuffer(BufferType type, uint64 size) override;
 
         box<GpuResourceView> createRenderTargetView(GpuResource* renderTarget) override;
-        box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
+        box<GpuResourceView> createShaderResourceView(Buffer* resource) override;
 
         void execute(GpuCommandList* commands) override {}
     };
@@ -70,18 +70,18 @@ namespace gm::gpu::null {
         void finish() override {}
         void clear(GpuPipelineState* pipelineState = nullptr) override {}
 
-        span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override { return {}; }
-        void unmap(GpuBuffer* resource, span<byte const> data) override {}
-        void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override {}
+        span<byte> map(Buffer* resource, uint64 size, uint64 offset = 0) override { return {}; }
+        void unmap(Buffer* resource, span<byte const> data) override {}
+        void update(Buffer* resource, span<byte const> data, uint64 offset = 0) override {}
 
         void bindRenderTarget(uint32 index, GpuResourceView* view) override {}
-        void bindBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override {}
+        void bindBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override {}
         void bindShaderResource(uint32 slot, GpuResourceView* view) override {}
         void setPrimitiveTopology(PrimitiveTopology topology) override {}
         void setViewport(Viewport const& viewport) override {}
     };
 
-    class BufferNull final : public GpuBuffer {
+    class BufferNull final : public Buffer {
     public:
         BufferNull(BufferType type) : _type(type) {}
 

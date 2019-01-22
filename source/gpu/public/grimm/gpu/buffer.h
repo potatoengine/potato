@@ -7,13 +7,13 @@
 #include "grimm/foundation/span.h"
 
 namespace gm::gpu {
-    class GpuBuffer {
+    class Buffer {
     public:
-        GpuBuffer() = default;
-        virtual ~GpuBuffer() = default;
+        Buffer() = default;
+        virtual ~Buffer() = default;
 
-        GpuBuffer(GpuBuffer&&) = delete;
-        GpuBuffer& operator=(GpuBuffer&&) = delete;
+        Buffer(Buffer&&) = delete;
+        Buffer& operator=(Buffer&&) = delete;
 
         virtual BufferType type() const noexcept = 0;
         virtual uint64 size() const noexcept = 0;

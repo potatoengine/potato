@@ -80,7 +80,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(GpuResource* renderTarg
     return make_box<ResourceViewD3D11>(ViewType::RTV, view.as<ID3D11View>());
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
+auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Buffer* resource) -> box<GpuResourceView> {
     GM_ASSERT(resource != nullptr);
 
     auto buffer = static_cast<BufferD3D11*>(resource);
@@ -104,7 +104,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createPipelineState(GpuPipelineStateDesc const
     return PipelineStateD3D11::createGraphicsPipelineState(desc, _device.get());
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size) -> box<GpuBuffer> {
+auto gm::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size) -> box<Buffer> {
     D3D11_BUFFER_DESC desc = {};
     desc.Usage = D3D11_USAGE_DYNAMIC;
     desc.ByteWidth = static_cast<UINT>(size);
