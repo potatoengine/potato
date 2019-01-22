@@ -24,7 +24,7 @@ namespace gm::gpu::null {
 
     class DeviceNull final : public Device {
     public:
-        box<GpuSwapChain> createSwapChain(void* native_window) override;
+        box<SwapChain> createSwapChain(void* native_window) override;
         box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;
@@ -45,7 +45,7 @@ namespace gm::gpu::null {
         ViewType _type;
     };
 
-    class SwapChainNull final : public GpuSwapChain {
+    class SwapChainNull final : public SwapChain {
     public:
         void present() override {}
         void resizeBuffers(int width, int height) override {}

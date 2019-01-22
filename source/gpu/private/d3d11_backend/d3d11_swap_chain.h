@@ -8,7 +8,7 @@
 #include "grimm/gpu/swap_chain.h"
 
 namespace gm::gpu::d3d11 {
-    class SwapChainD3D11 : public GpuSwapChain {
+    class SwapChainD3D11 : public SwapChain {
     public:
         SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain);
         virtual ~SwapChainD3D11();
@@ -16,7 +16,7 @@ namespace gm::gpu::d3d11 {
         SwapChainD3D11(SwapChainD3D11&&) = delete;
         SwapChainD3D11& operator=(SwapChainD3D11&&) = delete;
 
-        static box<GpuSwapChain> createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow);
+        static box<SwapChain> createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow);
 
         void present() override;
         void resizeBuffers(int width, int height) override;

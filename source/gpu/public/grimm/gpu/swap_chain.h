@@ -7,13 +7,13 @@
 namespace gm::gpu {
     class Resource;
 
-    class GpuSwapChain {
+    class SwapChain {
     public:
-        GpuSwapChain() = default;
-        virtual ~GpuSwapChain() = default;
+        SwapChain() = default;
+        virtual ~SwapChain() = default;
 
-        GpuSwapChain(GpuSwapChain&&) = delete;
-        GpuSwapChain& operator=(GpuSwapChain&&) = delete;
+        SwapChain(SwapChain&&) = delete;
+        SwapChain& operator=(SwapChain&&) = delete;
 
         virtual void present() = 0;
         virtual void resizeBuffers(int width, int height) = 0;
