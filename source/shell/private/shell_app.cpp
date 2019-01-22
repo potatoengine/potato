@@ -88,9 +88,14 @@ int gm::ShellApp::initialize() {
 
     GpuPipelineStateDesc pipelineDesc;
 
-    auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_6_0.dxo");
+    auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_5_0.cbo");
     if (fs::readBlob(stream, pipelineDesc.vertShader) != fs::Result{}) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open shader", _window.get());
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open vertex shader", _window.get());
+        return 1;
+    }
+    stream = _fileSystem.openRead("build/resources/shaders/basic.ps_5_0.cbo");
+    if (fs::readBlob(stream, pipelineDesc.pixelShader) != fs::Result{}) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open pixel shader", _window.get());
         return 1;
     }
 

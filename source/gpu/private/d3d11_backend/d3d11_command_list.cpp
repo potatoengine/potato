@@ -29,11 +29,14 @@ void gm::CommandListD3D11::setPipelineState(GpuPipelineState* state) {
 
     auto pipelineState = static_cast<PipelineStateD3D11*>(state);
 
-    _context->IASetInputLayout(pipelineState->inputLayout().get());
-    _context->RSSetState(pipelineState->rasterState().get());
-    _context->VSSetShader(pipelineState->vertexShader().get(), nullptr, 0);
-    _context->OMSetBlendState(pipelineState->blendState().get(), nullptr, ~UINT(0));
-    _context->OMSetDepthStencilState(pipelineState->depthStencilState().get(), 0);
+    auto const& params = pipelineState->params();
+
+    _context->IASetInputLayout(params.inputLayout.get());
+    _context->RSSetState(params.rasterState.get());
+    _context->VSSetShader(params.vertShader.get(), nullptr, 0);
+    _context->PSSetShader(params.pixelShader.get(), nullptr, 0);
+    _context->OMSetBlendState(params.blendState.get(), nullptr, ~UINT(0));
+    _context->OMSetDepthStencilState(params.depthStencilState.get(), 0);
     _bindingsDirty = true;
 }
 

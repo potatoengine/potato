@@ -14,6 +14,7 @@ namespace gm {
         com_ptr<ID3D11BlendState> blendState;
         com_ptr<ID3D11InputLayout> inputLayout;
         com_ptr<ID3D11VertexShader> vertShader;
+        com_ptr<ID3D11PixelShader> pixelShader;
     };
 
     class PipelineStateD3D11 : public GpuPipelineState {
@@ -23,11 +24,7 @@ namespace gm {
 
         static box<PipelineStateD3D11> createGraphicsPipelineState(GpuPipelineStateDesc const& desc, ID3D11Device* device);
 
-        com_ptr<ID3D11RasterizerState> const& rasterState() const noexcept { return _params.rasterState; }
-        com_ptr<ID3D11DepthStencilState> const& depthStencilState() const noexcept { return _params.depthStencilState; }
-        com_ptr<ID3D11BlendState> const& blendState() const noexcept { return _params.blendState; }
-        com_ptr<ID3D11InputLayout> const& inputLayout() const noexcept { return _params.inputLayout; }
-        com_ptr<ID3D11VertexShader> const& vertexShader() const noexcept { return _params.vertShader; }
+        PipelineStateParamsD3D11 const& params() const noexcept { return _params; }
 
     private:
         PipelineStateParamsD3D11 _params;

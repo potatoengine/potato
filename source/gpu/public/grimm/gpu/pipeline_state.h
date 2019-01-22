@@ -8,6 +8,7 @@
 namespace gm {
     struct GpuPipelineStateDesc {
         blob vertShader;
+        blob pixelShader;
     };
 
     class GpuPipelineState {

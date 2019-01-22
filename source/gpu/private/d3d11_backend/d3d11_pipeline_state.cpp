@@ -73,15 +73,10 @@ auto gm::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineStateDesc co
         return nullptr;
     }
 
-    //pipeDesc.PrimitiveTopologyType = D3D11_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    //pipeDesc.InputLayout.NumElements = 1;
-    //pipeDesc.InputLayout.pInputElementDescs = &layout;
-    //pipeDesc.NumRenderTargets = 1;
-    //pipeDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-    //pipeDesc.SampleDesc.Count = 1;
-    //pipeDesc.SampleDesc.Quality = 0;
-    //pipeDesc.VS.pShaderBytecode = desc.vertShader.data();
-    //pipeDesc.VS.BytecodeLength = desc.vertShader.size();
+    hr = device->CreatePixelShader(desc.pixelShader.data(), desc.pixelShader.size(), nullptr, out_ptr(params.pixelShader));
+    if (!SUCCEEDED(hr)) {
+        return nullptr;
+    }
 
     return make_box<PipelineStateD3D11>(std::move(params));
 }
