@@ -89,5 +89,8 @@ namespace gm::gpu::null {
     };
 
     class TextureNull final : public Texture {
+    public:
+        TextureType type() const noexcept override { return TextureType::Texture2D; }
+        PackedVector3f dimensions() const noexcept { return {0, 0, 0}; }
     };
 } // namespace gm::gpu::null

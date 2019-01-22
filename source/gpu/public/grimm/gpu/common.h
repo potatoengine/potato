@@ -38,6 +38,12 @@ namespace gm::gpu {
         Vertex,
     };
 
+    enum class TextureType {
+        Texture2D,
+        Texture3D,
+        DepthStencil,
+    };
+
     enum class PrimitiveTopology {
         Triangles,
     };

@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "common.h"
+#include "grimm/math/packed.h"
+
 namespace gm::gpu {
     class Texture {
     public:
@@ -10,5 +13,8 @@ namespace gm::gpu {
 
         Texture(Texture&&) = delete;
         Texture& operator=(Texture&&) = delete;
+
+        virtual TextureType type() const noexcept = 0;
+        virtual PackedVector3f dimensions() const noexcept = 0;
     };
 } // namespace gm::gpu

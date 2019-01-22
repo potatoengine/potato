@@ -16,6 +16,9 @@ namespace gm::gpu::d3d11 {
         TextureD3D11(TextureD3D11&&) = delete;
         TextureD3D11& operator=(TextureD3D11&&) = delete;
 
+        TextureType type() const noexcept override;
+        PackedVector3f dimensions() const noexcept;
+
         com_ptr<ID3D11Resource> const& get() const { return _texture; }
 
     private:
