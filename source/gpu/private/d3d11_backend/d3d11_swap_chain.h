@@ -20,7 +20,7 @@ namespace gm::gpu::d3d11 {
 
         void present() override;
         void resizeBuffers(int width, int height) override;
-        box<Resource> getBuffer(int index) override;
+        box<Texture> getBuffer(int index) override;
         int getCurrentBufferIndex() override;
 
     private:

@@ -13,6 +13,7 @@ namespace gm::gpu {
     class Resource;
     class ResourceView;
     class SwapChain;
+    class Texture;
 
     struct PipelineStateDesc;
 
@@ -31,7 +32,7 @@ namespace gm::gpu {
 
         virtual void execute(CommandList* commandList) = 0;
 
-        virtual box<ResourceView> createRenderTargetView(Resource* renderTarget) = 0;
+        virtual box<ResourceView> createRenderTargetView(Texture* renderTarget) = 0;
         virtual box<ResourceView> createShaderResourceView(Buffer* resource) = 0;
     };
 } // namespace gm::gpu

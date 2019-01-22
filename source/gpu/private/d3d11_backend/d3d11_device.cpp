@@ -9,6 +9,7 @@
 #include "d3d11_resource_view.h"
 #include "d3d11_swap_chain.h"
 #include "d3d11_platform.h"
+#include "d3d11_texture.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 #include <utility>
@@ -62,10 +63,10 @@ auto gm::gpu::d3d11::DeviceD3D11::createCommandList(PipelineState* pipelineState
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(Resource* renderTarget) -> box<ResourceView> {
+auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(Texture* renderTarget) -> box<ResourceView> {
     GM_ASSERT(renderTarget != nullptr);
 
-    auto d3d11Resource = static_cast<ResourceD3D11*>(renderTarget);
+    auto d3d11Resource = static_cast<TextureD3D11*>(renderTarget);
 
     D3D11_RENDER_TARGET_VIEW_DESC desc = {};
     desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;

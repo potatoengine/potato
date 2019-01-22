@@ -11,6 +11,7 @@
 #include "grimm/gpu/factory.h"
 #include "grimm/gpu/resource.h"
 #include "grimm/gpu/swap_chain.h"
+#include "grimm/gpu/texture.h"
 #include "grimm/math/packed.h"
 
 #include <SDL.h>

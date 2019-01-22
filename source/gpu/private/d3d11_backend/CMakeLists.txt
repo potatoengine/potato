@@ -17,6 +17,8 @@ set(GM_GPU_D3D11_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_platform.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_pipeline_state.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_pipeline_state.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_texture.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_texture.cpp
 )
 
 if(GM_GPU_ENABLE_D3D11)

@@ -2,6 +2,7 @@
 
 #include "d3d11_swap_chain.h"
 #include "d3d11_resource.h"
+#include "d3d11_texture.h"
 #include "com_ptr.h"
 #include "d3d11_platform.h"
 #include "grimm/foundation/box.h"
@@ -47,13 +48,13 @@ void gm::gpu::d3d11::SwapChainD3D11::resizeBuffers(int width, int height) {
     _swapChain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 }
 
-auto gm::gpu::d3d11::SwapChainD3D11::getBuffer(int index) -> box<Resource> {
+auto gm::gpu::d3d11::SwapChainD3D11::getBuffer(int index) -> box<Texture> {
     com_ptr<ID3D11Resource> buffer;
     _swapChain->GetBuffer(index, __uuidof(ID3D11Resource), out_ptr(buffer));
     if (buffer == nullptr) {
         return nullptr;
     }
-    return make_box<ResourceD3D11>(std::move(buffer));
+    return make_box<TextureD3D11>(std::move(buffer));
 }
 
 int gm::gpu::d3d11::SwapChainD3D11::getCurrentBufferIndex() {

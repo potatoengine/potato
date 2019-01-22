@@ -11,6 +11,7 @@
 #include "resource.h"
 #include "resource_view.h"
 #include "buffer.h"
+#include "texture.h"
 
 namespace gm::gpu::null {
     class DeviceNull;
@@ -29,7 +30,7 @@ namespace gm::gpu::null {
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;
 
-        box<ResourceView> createRenderTargetView(Resource* renderTarget) override;
+        box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
         box<ResourceView> createShaderResourceView(Buffer* resource) override;
 
         void execute(CommandList* commands) override {}
@@ -49,7 +50,7 @@ namespace gm::gpu::null {
     public:
         void present() override {}
         void resizeBuffers(int width, int height) override {}
-        box<Resource> getBuffer(int index) override;
+        box<Texture> getBuffer(int index) override;
         int getCurrentBufferIndex() override;
     };
 
@@ -90,5 +91,8 @@ namespace gm::gpu::null {
 
     private:
         BufferType _type;
+    };
+
+    class TextureNull final : public Texture {
     };
 } // namespace gm::gpu::null
