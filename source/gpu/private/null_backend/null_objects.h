@@ -8,6 +8,7 @@
 #include "pipeline_state.h"
 #include "resource.h"
 #include "swap_chain.h"
+#include "resource.h"
 #include "resource_view.h"
 #include "buffer.h"
 

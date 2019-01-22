@@ -7,7 +7,6 @@
 #include "grimm/foundation/types.h"
 
 namespace gm {
-    class GpuSwapChain;
     class GpuDescriptorHeap;
     class GpuResource;
     class GpuPipelineState;
@@ -19,6 +18,8 @@ namespace gm {
 } // namespace gm
 
 namespace gm::gpu {
+    class GpuSwapChain;
+
     class GpuDevice {
     public:
         GpuDevice() = default;

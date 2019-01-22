@@ -6,6 +6,9 @@
 
 namespace gm {
     class GpuResource;
+}
+
+namespace gm::gpu {
 
     class GpuSwapChain {
     public:
@@ -20,4 +23,4 @@ namespace gm {
         virtual box<GpuResource> getBuffer(int index) = 0;
         virtual int getCurrentBufferIndex() = 0;
     };
-} // namespace gm
+} // namespace gm::gpu
