@@ -109,6 +109,7 @@ int gm::ShellApp::initialize() {
 }
 
 void gm::ShellApp::run() {
+
     while (isRunning()) {
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
@@ -127,11 +128,19 @@ void gm::ShellApp::run() {
             }
         }
 
+        Viewport viewport;
+        int width, height;
+        SDL_GetWindowSize(_window.get(), &width, &height);
+        viewport.width = static_cast<float>(width);
+        viewport.height = static_cast<float>(height);
+
         _commandList->clear();
         _commandList->clearRenderTarget(_rtv.get(), {1.f, 0.f, 0.f, 1.f});
         _commandList->setPipelineState(_pipelineState.get());
+        _commandList->bindRenderTarget(0, _rtv.get());
         _commandList->bindBuffer(0, _vbo.get(), sizeof(PackedVector4f));
         _commandList->setPrimitiveTopology(PrimitiveTopology::Triangles);
+        _commandList->setViewport(viewport);
         _commandList->draw(3);
         _commandList->finish();
         _device->execute(_commandList.get());

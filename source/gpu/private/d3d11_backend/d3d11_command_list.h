@@ -25,6 +25,7 @@ namespace gm {
         void bindShaderResource(uint32 slot, GpuResourceView* view) override;
 
         void setPrimitiveTopology(PrimitiveTopology topology) override;
+        void setViewport(Viewport const& viewport) override;
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override;
 

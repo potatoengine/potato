@@ -85,6 +85,17 @@ void gm::CommandListD3D11::setPrimitiveTopology(PrimitiveTopology topology) {
     _context->IASetPrimitiveTopology(primitive);
 }
 
+void gm::CommandListD3D11::setViewport(Viewport const& viewport) {
+    D3D11_VIEWPORT d3d11Viewport;
+    d3d11Viewport.TopLeftX = viewport.leftX;
+    d3d11Viewport.TopLeftY = viewport.topY;
+    d3d11Viewport.Width = viewport.width;
+    d3d11Viewport.Height = viewport.height;
+    d3d11Viewport.MinDepth = viewport.minDepth;
+    d3d11Viewport.MaxDepth = viewport.maxDepth;
+    _context->RSSetViewports(1, &d3d11Viewport);
+}
+
 void gm::CommandListD3D11::draw(gm::uint32 vertexCount, gm::uint32 firstVertex) {
     _flushBindings();
     _context->Draw(vertexCount, firstVertex);

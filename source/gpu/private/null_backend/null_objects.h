@@ -77,6 +77,7 @@ namespace gm {
         void bindBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override {}
         void bindShaderResource(uint32 slot, GpuResourceView* view) override {}
         void setPrimitiveTopology(PrimitiveTopology topology) override {}
+        void setViewport(Viewport const& viewport) override {}
     };
 
     class NullBuffer final : public GpuBuffer {
