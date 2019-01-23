@@ -64,11 +64,17 @@ void gm::gui::DrawImgui::draw(ImDrawData const& data, gpu::CommandList& commandL
     auto indices = commandList.map(_indexBuffer.get(), bufferSize);
     auto vertices = commandList.map(_vertexBuffer.get(), bufferSize);
 
+    uint32 indexOffset = 0;
+    uint32 vertexOffset = 0;
+
     for (int listIndex = 0; listIndex != data.CmdListsCount; ++listIndex) {
         auto const& list = *data.CmdLists[listIndex];
 
-        std::memcpy(indices.data(), list.IdxBuffer.Data, list.IdxBuffer.Size * sizeof(ImDrawIdx));
-        std::memcpy(indices.data(), list.VtxBuffer.Data, list.VtxBuffer.Size * sizeof(ImDrawVert));
+        std::memcpy(indices.data() + indexOffset, list.IdxBuffer.Data, list.IdxBuffer.Size * sizeof(ImDrawIdx));
+        std::memcpy(vertices.data() + vertexOffset, list.VtxBuffer.Data, list.VtxBuffer.Size * sizeof(ImDrawVert));
+
+        indexOffset += list.IdxBuffer.Size * sizeof(ImDrawIdx);
+        vertexOffset += list.VtxBuffer.Size * sizeof(ImDrawVert);
     }
 
     commandList.unmap(_indexBuffer.get(), indices);
@@ -86,23 +92,25 @@ void gm::gui::DrawImgui::draw(ImDrawData const& data, gpu::CommandList& commandL
     };
 
     auto constants = commandList.map(_constantBuffer.get(), sizeof(mvp));
-    std::memcpy(constants.data(), mvp, constants.size());
+    std::memcpy(constants.data(), mvp, constants.size_bytes());
     commandList.unmap(_constantBuffer.get(), constants);
 
     commandList.bindIndexBuffer(_indexBuffer.get(), gpu::IndexType::Unsigned16, 0);
     commandList.bindVertexBuffer(0, _vertexBuffer.get(), sizeof(ImDrawVert));
     commandList.bindConstantBuffer(0, _constantBuffer.get(), gpu::ShaderStage::Vertex);
-    commandList.bindShaderResource(0, _srv.get(), gpu::ShaderStage::Pixel);
     commandList.bindSampler(0, _sampler.get(), gpu::ShaderStage::Pixel);
 
     gpu::Viewport viewport;
-    viewport.height = data.DisplaySize.x;
-    viewport.width = data.DisplaySize.y;
-    viewport.leftX = data.DisplayPos.x;
-    viewport.topY = data.DisplayPos.y;
+    viewport.width = data.DisplaySize.x;
+    viewport.height = data.DisplaySize.y;
+    viewport.leftX = 0;
+    viewport.topY = 0;
+    viewport.minDepth = 0;
+    viewport.maxDepth = 1;
     commandList.setViewport(viewport);
 
-    uint32 indexOffset = 0;
+    indexOffset = 0;
+    vertexOffset = 0;
 
     for (int listIndex = 0; listIndex != data.CmdListsCount; ++listIndex) {
         auto const& list = *data.CmdLists[listIndex];
@@ -115,8 +123,12 @@ void gm::gui::DrawImgui::draw(ImDrawData const& data, gpu::CommandList& commandL
                 continue;
             }
 
-            commandList.drawIndexed(cmd.ElemCount, indexOffset);
+            // FIXME: different texture per cmd
+            commandList.bindShaderResource(0, _srv.get(), gpu::ShaderStage::Pixel);
+            commandList.drawIndexed(cmd.ElemCount, indexOffset, vertexOffset);
             indexOffset += cmd.ElemCount;
         }
+
+        vertexOffset += list.VtxBuffer.Size;
     }
 }

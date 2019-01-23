@@ -29,6 +29,8 @@ static constexpr gm::PackedVector3f triangle[] = {
 };
 
 gm::ShellApp::~ShellApp() {
+    _drawImgui.releaseResources();
+
     _commandList.reset();
     _rtv.reset();
     _pipelineState.reset();

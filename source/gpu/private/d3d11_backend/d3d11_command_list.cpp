@@ -104,7 +104,7 @@ void gm::gpu::d3d11::CommandListD3D11::bindShaderResource(gm::uint32 slot, Resou
         _context->VSSetShaderResources(0, 1, &srv);
     }
     if ((uint32(stage) & uint32(ShaderStage::Pixel)) != 0) {
-        _context->VSSetShaderResources(0, 1, &srv);
+        _context->PSSetShaderResources(0, 1, &srv);
     }
 }
 

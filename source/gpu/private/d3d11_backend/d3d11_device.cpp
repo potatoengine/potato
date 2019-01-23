@@ -112,6 +112,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Texture* texture) -> 
     case TextureType::Texture2D:
         desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         desc.Texture2D.MipLevels = 1;
+        desc.Texture2D.MostDetailedMip = 0;
         break;
     }
 
@@ -150,7 +151,9 @@ auto gm::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size)
 }
 
 auto gm::gpu::d3d11::DeviceD3D11::createTexture2D(gm::uint32 width, gm::uint32 height, Format format, span<gm::byte const> data) -> box<Texture> {
-    GM_ASSERT(data.empty() || data.size() == width * height * toByteSize(format));
+    auto bytesPerPixel = toByteSize(format);
+
+    GM_ASSERT(data.empty() || data.size() == width * height * bytesPerPixel);
 
     D3D11_TEXTURE2D_DESC desc = {};
     desc.Format = toNative(format);
@@ -158,13 +161,15 @@ auto gm::gpu::d3d11::DeviceD3D11::createTexture2D(gm::uint32 width, gm::uint32 h
     desc.Height = height;
     desc.MipLevels = 1;
     desc.ArraySize = 1;
+    desc.CPUAccessFlags = 0;
+    desc.Usage = D3D11_USAGE_IMMUTABLE;
     desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
     desc.SampleDesc.Count = 1;
     desc.SampleDesc.Quality = 0;
 
     D3D11_SUBRESOURCE_DATA init = {};
     init.pSysMem = data.data();
-    init.SysMemPitch = width * toByteSize(format);
+    init.SysMemPitch = width * bytesPerPixel;
 
     com_ptr<ID3D11Texture2D> texture;
     HRESULT hr = _device->CreateTexture2D(&desc, data.empty() ? nullptr : &init, out_ptr(texture));
@@ -177,14 +182,14 @@ auto gm::gpu::d3d11::DeviceD3D11::createTexture2D(gm::uint32 width, gm::uint32 h
 
 auto gm::gpu::d3d11::DeviceD3D11::createSampler() -> box<Sampler> {
     D3D11_SAMPLER_DESC desc = {};
-    desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-    desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-    desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
     desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-    desc.Filter = D3D11_FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR;
+    desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
     desc.MaxAnisotropy = 1;
-    desc.MaxLOD = 1;
-    desc.MinLOD = 1;
+    desc.MaxLOD = 0;
+    desc.MinLOD = 0;
 
     com_ptr<ID3D11SamplerState> sampler;
     HRESULT hr = _device->CreateSamplerState(&desc, out_ptr(sampler));
