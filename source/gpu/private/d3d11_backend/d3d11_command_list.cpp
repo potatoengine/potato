@@ -5,6 +5,8 @@
 #include "d3d11_resource_view.h"
 #include "d3d11_buffer.h"
 #include "d3d11_platform.h"
+#include "d3d11_texture.h"
+#include "d3d11_sampler.h"
 #include "grimm/foundation/types.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
@@ -36,7 +38,6 @@ void gm::gpu::d3d11::CommandListD3D11::setPipelineState(PipelineState* state) {
     _context->PSSetShader(params.pixelShader.get(), nullptr, 0);
     _context->OMSetBlendState(params.blendState.get(), nullptr, ~UINT(0));
     _context->OMSetDepthStencilState(params.depthStencilState.get(), 0);
-    _bindingsDirty = true;
 }
 
 void gm::gpu::d3d11::CommandListD3D11::bindRenderTarget(gm::uint32 index, ResourceView* view) {
@@ -55,6 +56,17 @@ void gm::gpu::d3d11::CommandListD3D11::bindRenderTarget(gm::uint32 index, Resour
     _bindingsDirty = true;
 }
 
+void gm::gpu::d3d11::CommandListD3D11::bindIndexBuffer(Buffer* buffer, IndexType indexType, gm::uint32 offset) {
+    GM_ASSERT(buffer != nullptr);
+    GM_ASSERT(buffer->type() == BufferType::Index);
+
+    auto d3dBuffer = static_cast<BufferD3D11*>(buffer);
+    ID3D11Buffer* d3d11Buffer = static_cast<ID3D11Buffer*>(d3dBuffer->buffer().get());
+
+    UINT d3dOffset = static_cast<UINT>(offset);
+    _context->IASetIndexBuffer(d3d11Buffer, toNative(indexType), d3dOffset);
+}
+
 void gm::gpu::d3d11::CommandListD3D11::bindVertexBuffer(gm::uint32 slot, Buffer* buffer, gm::uint64 stride, gm::uint64 offset) {
     GM_ASSERT(buffer != nullptr);
     GM_ASSERT(buffer->type() == BufferType::Vertex);
@@ -67,13 +79,47 @@ void gm::gpu::d3d11::CommandListD3D11::bindVertexBuffer(gm::uint32 slot, Buffer*
     _context->IASetVertexBuffers(slot, 1, &d3d11Buffer, &d3dStride, &d3dOffset);
 }
 
-void gm::gpu::d3d11::CommandListD3D11::bindShaderResource(gm::uint32 slot, ResourceView* view) {
+void gm::gpu::d3d11::CommandListD3D11::bindConstantBuffer(gm::uint32 slot, Buffer* buffer, ShaderStage stage) {
+    GM_ASSERT(buffer != nullptr);
+    GM_ASSERT(buffer->type() == BufferType::Constant);
+
+    auto d3dBuffer = static_cast<BufferD3D11*>(buffer);
+    ID3D11Buffer* d3d11Buffer = static_cast<ID3D11Buffer*>(d3dBuffer->buffer().get());
+
+    if ((uint32(stage) & uint32(ShaderStage::Vertex)) != 0) {
+        _context->VSSetConstantBuffers(slot, 1, &d3d11Buffer);
+    }
+    if ((uint32(stage) & uint32(ShaderStage::Pixel)) != 0) {
+        _context->PSSetConstantBuffers(slot, 1, &d3d11Buffer);
+    }
+}
+
+void gm::gpu::d3d11::CommandListD3D11::bindShaderResource(gm::uint32 slot, ResourceView* view, ShaderStage stage) {
     GM_ASSERT(view != nullptr);
 
     auto buffer = static_cast<ResourceViewD3D11*>(view);
     ID3D11ShaderResourceView* srv = static_cast<ID3D11ShaderResourceView*>(buffer->getView().get());
 
-    _context->VSSetShaderResources(0, 1, &srv);
+    if ((uint32(stage) & uint32(ShaderStage::Vertex)) != 0) {
+        _context->VSSetShaderResources(0, 1, &srv);
+    }
+    if ((uint32(stage) & uint32(ShaderStage::Pixel)) != 0) {
+        _context->VSSetShaderResources(0, 1, &srv);
+    }
+}
+
+void gm::gpu::d3d11::CommandListD3D11::bindSampler(gm::uint32 slot, Sampler* sampler, ShaderStage stage) {
+    GM_ASSERT(sampler != nullptr);
+
+    auto d3dSampler = static_cast<SamplerD3D11*>(sampler);
+    ID3D11SamplerState* nativeSampler = static_cast<ID3D11SamplerState*>(d3dSampler->get().get());
+
+    if ((uint32(stage) & uint32(ShaderStage::Vertex)) != 0) {
+        _context->VSSetSamplers(slot, 1, &nativeSampler);
+    }
+    if ((uint32(stage) & uint32(ShaderStage::Pixel)) != 0) {
+        _context->PSSetSamplers(slot, 1, &nativeSampler);
+    }
 }
 
 void gm::gpu::d3d11::CommandListD3D11::setPrimitiveTopology(PrimitiveTopology topology) {
@@ -98,6 +144,11 @@ void gm::gpu::d3d11::CommandListD3D11::setViewport(Viewport const& viewport) {
 void gm::gpu::d3d11::CommandListD3D11::draw(gm::uint32 vertexCount, gm::uint32 firstVertex) {
     _flushBindings();
     _context->Draw(vertexCount, firstVertex);
+}
+
+void gm::gpu::d3d11::CommandListD3D11::drawIndexed(gm::uint32 indexCount, gm::uint32 firstIndex, gm::uint32 baseIndex) {
+    _flushBindings();
+    _context->DrawIndexed(indexCount, firstIndex, baseIndex);
 }
 
 void gm::gpu::d3d11::CommandListD3D11::clearRenderTarget(ResourceView* view, PackedVector4f color) {

@@ -22,11 +22,14 @@ namespace gm::gpu::d3d11 {
         box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;
+        box<Texture> createTexture2D(uint32 width, uint32 height, Format format, span<byte const> data) override;
+        box<Sampler> createSampler() override;
 
         void execute(CommandList* commandList) override;
 
         box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
         box<ResourceView> createShaderResourceView(Buffer* resource) override;
+        box<ResourceView> createShaderResourceView(Texture* texture) override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;

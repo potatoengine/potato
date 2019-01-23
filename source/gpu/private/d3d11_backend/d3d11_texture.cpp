@@ -21,6 +21,20 @@ auto gm::gpu::d3d11::TextureD3D11::type() const noexcept -> TextureType {
     return TextureType::Texture2D;
 }
 
+auto gm::gpu::d3d11::TextureD3D11::format() const noexcept -> Format {
+    return fromNative(nativeFormat());
+}
+
+DXGI_FORMAT gm::gpu::d3d11::TextureD3D11::nativeFormat() const noexcept {
+    com_ptr<ID3D11Texture2D> texture2D;
+    if (SUCCEEDED(_texture->QueryInterface(__uuidof(ID3D11Texture2D), out_ptr(texture2D)))) {
+        D3D11_TEXTURE2D_DESC desc;
+        texture2D->GetDesc(&desc);
+        return desc.Format;
+    }
+    return DXGI_FORMAT_UNKNOWN;
+}
+
 auto gm::gpu::d3d11::TextureD3D11::dimensions() const noexcept -> PackedVector3f {
     com_ptr<ID3D11Texture2D> texture2D;
     if (SUCCEEDED(_texture->QueryInterface(__uuidof(ID3D11Texture2D), out_ptr(texture2D)))) {

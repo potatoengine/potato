@@ -11,6 +11,7 @@ namespace gm::gpu {
     class CommandList;
     class PipelineState;
     class ResourceView;
+    class Sampler;
     class SwapChain;
     class Texture;
 
@@ -28,10 +29,13 @@ namespace gm::gpu {
         virtual box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) = 0;
         virtual box<PipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
         virtual box<Buffer> createBuffer(BufferType type, uint64 size) = 0;
+        virtual box<Texture> createTexture2D(uint32 width, uint32 height, Format format, span<byte const> data) = 0;
+        virtual box<Sampler> createSampler() = 0;
 
         virtual void execute(CommandList* commandList) = 0;
 
         virtual box<ResourceView> createRenderTargetView(Texture* renderTarget) = 0;
         virtual box<ResourceView> createShaderResourceView(Buffer* resource) = 0;
+        virtual box<ResourceView> createShaderResourceView(Texture* texture) = 0;
     };
 } // namespace gm::gpu

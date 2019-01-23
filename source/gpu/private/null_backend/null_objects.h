@@ -10,6 +10,7 @@
 #include "resource_view.h"
 #include "buffer.h"
 #include "texture.h"
+#include "sampler.h"
 
 namespace gm::gpu::null {
     class DeviceNull;
@@ -27,9 +28,12 @@ namespace gm::gpu::null {
         box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;
+        box<Texture> createTexture2D(uint32 width, uint32 height, Format format, span<byte const> data) override;
+        box<Sampler> createSampler() override;
 
         box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
         box<ResourceView> createShaderResourceView(Buffer* resource) override;
+        box<ResourceView> createShaderResourceView(Texture* texture) override;
 
         void execute(CommandList* commands) override {}
     };
@@ -62,6 +66,7 @@ namespace gm::gpu::null {
         void clearRenderTarget(ResourceView* view, PackedVector4f color) override {}
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override {}
+        void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) {}
 
         void finish() override {}
         void clear(PipelineState* pipelineState = nullptr) override {}
@@ -71,8 +76,11 @@ namespace gm::gpu::null {
         void update(Buffer* resource, span<byte const> data, uint64 offset = 0) override {}
 
         void bindRenderTarget(uint32 index, ResourceView* view) override {}
+        void bindIndexBuffer(Buffer* buffer, IndexType indexType, uint32 offset = 0) override {}
         void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override {}
-        void bindShaderResource(uint32 slot, ResourceView* view) override {}
+        void bindConstantBuffer(uint32 slot, Buffer* buffer, ShaderStage stage) override {}
+        void bindShaderResource(uint32 slot, ResourceView* view, ShaderStage stage) override {}
+        void bindSampler(uint32 slot, Sampler* sampler, ShaderStage stage) override {}
         void setPrimitiveTopology(PrimitiveTopology topology) override {}
         void setViewport(Viewport const& viewport) override {}
     };
@@ -91,6 +99,10 @@ namespace gm::gpu::null {
     class TextureNull final : public Texture {
     public:
         TextureType type() const noexcept override { return TextureType::Texture2D; }
+        Format format() const noexcept { return Format::Unknown; }
         PackedVector3f dimensions() const noexcept { return {0, 0, 0}; }
+    };
+
+    class SamplerNull final : public Sampler {
     };
 } // namespace gm::gpu::null

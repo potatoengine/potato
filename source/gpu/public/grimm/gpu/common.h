@@ -8,18 +8,21 @@
 
 namespace gm::gpu {
     enum class Format {
+        Unknown,
         R32G32B32A32Float,
         R32G32B32Float,
+        R32G32Float,
         R8G8B8A8UnsignedNormalized,
     };
 
     enum class Semantic {
         Position,
-        Color
+        Color,
+        TexCoord
     };
 
     struct InputLayoutElement {
-        Format format = Format::R32G32B32A32Float;
+        Format format = Format::Unknown;
         Semantic semantic = Semantic::Position;
         uint32 semanticIndex = 0;
         uint32 slot = 0;
@@ -36,6 +39,17 @@ namespace gm::gpu {
         Constant,
         Index,
         Vertex,
+    };
+
+    enum class IndexType {
+        Unsigned16,
+        Unsigned32
+    };
+
+    enum class ShaderStage {
+        Vertex = 1 << 0,
+        Pixel = 1 << 1,
+        All = Vertex | Pixel
     };
 
     enum class TextureType {

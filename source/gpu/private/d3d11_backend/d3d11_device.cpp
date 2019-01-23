@@ -9,6 +9,7 @@
 #include "d3d11_swap_chain.h"
 #include "d3d11_platform.h"
 #include "d3d11_texture.h"
+#include "d3d11_sampler.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 #include <utility>
@@ -100,6 +101,29 @@ auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Buffer* resource) -> 
     return make_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
 }
 
+auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Texture* texture) -> box<ResourceView> {
+    GM_ASSERT(texture != nullptr);
+
+    auto d3dTexture = static_cast<TextureD3D11*>(texture);
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
+    desc.Format = toNative(texture->format());
+    switch (texture->type()) {
+    case TextureType::Texture2D:
+        desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        desc.Texture2D.MipLevels = 1;
+        break;
+    }
+
+    com_ptr<ID3D11ShaderResourceView> view;
+    HRESULT hr = _device->CreateShaderResourceView(d3dTexture->get().get(), &desc, out_ptr(view));
+    if (!SUCCEEDED(hr)) {
+        return nullptr;
+    }
+
+    return make_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
+}
+
 auto gm::gpu::d3d11::DeviceD3D11::createPipelineState(PipelineStateDesc const& desc) -> box<PipelineState> {
     return PipelineStateD3D11::createGraphicsPipelineState(desc, _device.get());
 }
@@ -109,7 +133,12 @@ auto gm::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size)
     desc.Usage = D3D11_USAGE_DYNAMIC;
     desc.ByteWidth = static_cast<UINT>(size);
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    desc.BindFlags = D3D11_BIND_INDEX_BUFFER | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_VERTEX_BUFFER;
+    switch (type) {
+    case BufferType::Index: desc.BindFlags = D3D11_BIND_INDEX_BUFFER; break;
+    case BufferType::Vertex: desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; break;
+    case BufferType::Constant: desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER; break;
+    default: desc.BindFlags = D3D11_BIND_SHADER_RESOURCE; break;
+    }
 
     com_ptr<ID3D11Buffer> buffer;
     HRESULT hr = _device->CreateBuffer(&desc, nullptr, out_ptr(buffer));
@@ -118,6 +147,52 @@ auto gm::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size)
     }
 
     return make_box<BufferD3D11>(type, size, std::move(buffer));
+}
+
+auto gm::gpu::d3d11::DeviceD3D11::createTexture2D(gm::uint32 width, gm::uint32 height, Format format, span<gm::byte const> data) -> box<Texture> {
+    GM_ASSERT(data.empty() || data.size() == width * height * toByteSize(format));
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Format = toNative(format);
+    desc.Width = width;
+    desc.Height = height;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+
+    D3D11_SUBRESOURCE_DATA init = {};
+    init.pSysMem = data.data();
+    init.SysMemPitch = width * toByteSize(format);
+
+    com_ptr<ID3D11Texture2D> texture;
+    HRESULT hr = _device->CreateTexture2D(&desc, data.empty() ? nullptr : &init, out_ptr(texture));
+    if (!SUCCEEDED(hr)) {
+        return nullptr;
+    }
+
+    return make_box<TextureD3D11>(std::move(texture).as<ID3D11Resource>());
+}
+
+auto gm::gpu::d3d11::DeviceD3D11::createSampler() -> box<Sampler> {
+    D3D11_SAMPLER_DESC desc = {};
+    desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+    desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+    desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+    desc.Filter = D3D11_FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR;
+    desc.MaxAnisotropy = 1;
+    desc.MaxLOD = 1;
+    desc.MinLOD = 1;
+
+    com_ptr<ID3D11SamplerState> sampler;
+    HRESULT hr = _device->CreateSamplerState(&desc, out_ptr(sampler));
+    if (!SUCCEEDED(hr)) {
+        return nullptr;
+    }
+
+    return make_box<SamplerD3D11>(std::move(sampler));
 }
 
 void gm::gpu::d3d11::DeviceD3D11::execute(CommandList* commandList) {
