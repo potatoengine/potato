@@ -19,8 +19,10 @@ target_link_libraries(shell PRIVATE
     grimm::foundation
     grimm::filesystem
     grimm::gpu
+    grimm::grui
     SDL2
     SDL2main
+    imgui
 )
 
 gm_copy_library_import(SDL2::SDL2 shell)

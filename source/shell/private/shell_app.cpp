@@ -12,10 +12,12 @@
 #include "grimm/gpu/swap_chain.h"
 #include "grimm/gpu/texture.h"
 #include "grimm/math/packed.h"
+#include "grimm/grui/grui.h"
 
 #include <SDL.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
+#include <imgui.h>
 
 static constexpr gm::PackedVector3f triangle[] = {
     {-0.8f, -0.8f, 0},
@@ -30,7 +32,6 @@ gm::ShellApp::~ShellApp() {
     _commandList.reset();
     _rtv.reset();
     _pipelineState.reset();
-    _srv.reset();
     _vbo.reset();
     _swapChain.reset();
     _window.reset();
@@ -87,7 +88,6 @@ int gm::ShellApp::initialize() {
 
     _vbo = _device->createBuffer(gpu::BufferType::Vertex, sizeof(triangle));
     _commandList->update(_vbo.get(), span{triangle, 6}.as_bytes(), 0);
-    _srv = _device->createShaderResourceView(_vbo.get());
 
     gpu::PipelineStateDesc pipelineDesc;
 
@@ -113,11 +113,25 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
+    blob imguiVertShader, imguiPixelShader;
+    stream = _fileSystem.openRead("build/resources/shaders/imgui.vs_5_0.cbo");
+    if (fs::readBlob(stream, imguiVertShader) != fs::Result{}) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open imgui vertex shader", _window.get());
+        return 1;
+    }
+    stream = _fileSystem.openRead("build/resources/shaders/imgui.ps_5_0.cbo");
+    if (fs::readBlob(stream, imguiPixelShader) != fs::Result{}) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open imgui pixel shader", _window.get());
+        return 1;
+    }
+
+    ImGui::CreateContext();
+    _drawImgui.createResources(*_device, ImGui::GetIO(), std::move(imguiVertShader), std::move(imguiPixelShader));
+
     return 0;
 }
 
 void gm::ShellApp::run() {
-
     while (isRunning()) {
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
@@ -142,6 +156,13 @@ void gm::ShellApp::run() {
         viewport.width = static_cast<float>(width);
         viewport.height = static_cast<float>(height);
 
+        auto& imguiIO = ImGui::GetIO();
+        imguiIO.DisplaySize.x = viewport.width;
+        imguiIO.DisplaySize.y = viewport.height;
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
+        ImGui::Render();
+
         _commandList->clear();
         _commandList->clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
         _commandList->setPipelineState(_pipelineState.get());
@@ -150,6 +171,9 @@ void gm::ShellApp::run() {
         _commandList->setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
         _commandList->setViewport(viewport);
         _commandList->draw(3);
+
+        _drawImgui.draw(*ImGui::GetDrawData(), *_commandList);
+
         _commandList->finish();
         _device->execute(_commandList.get());
 

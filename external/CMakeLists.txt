@@ -19,6 +19,7 @@ add_library(imgui)
 target_include_directories(imgui PUBLIC imgui-1.67)
 target_sources(imgui PRIVATE
     imgui-1.67/imgui.cpp
+    imgui-1.67/imgui_demo.cpp
     imgui-1.67/imgui_draw.cpp
     imgui-1.67/imgui_widgets.cpp
 )
