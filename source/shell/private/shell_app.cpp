@@ -134,6 +134,8 @@ int gm::ShellApp::initialize() {
 }
 
 void gm::ShellApp::run() {
+    auto& imguiIO = ImGui::GetIO();
+
     while (isRunning()) {
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
@@ -149,6 +151,26 @@ void gm::ShellApp::run() {
                     onWindowSizeChanged();
                     break;
                 }
+            case SDL_MOUSEMOTION: {
+                int x, y;
+                SDL_GetMouseState(&x, &y);
+                imguiIO.MousePos = {(float)x, (float)y};
+                break;
+            }
+            case SDL_MOUSEBUTTONDOWN: {
+                int x, y;
+                SDL_GetMouseState(&x, &y);
+                imguiIO.MouseDown[0] = true;
+                imguiIO.MouseClickedPos[0] = {(float)x, (float)y};
+                break;
+            }
+            case SDL_MOUSEBUTTONUP: {
+                int x, y;
+                SDL_GetMouseState(&x, &y);
+                imguiIO.MouseDown[0] = false;
+                imguiIO.MouseClickedPos[0] = {(float)x, (float)y};
+                break;
+            }
             }
         }
 
@@ -158,7 +180,6 @@ void gm::ShellApp::run() {
         viewport.width = static_cast<float>(width);
         viewport.height = static_cast<float>(height);
 
-        auto& imguiIO = ImGui::GetIO();
         imguiIO.DisplaySize.x = viewport.width;
         imguiIO.DisplaySize.y = viewport.height;
         ImGui::NewFrame();
