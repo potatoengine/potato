@@ -25,6 +25,9 @@ public:
 
     inline unique_resource& operator=(rvalue_reference obj);
 
+    bool empty() const { return _object == Default; }
+    explicit operator bool() const { return _object != Default; }
+
     friend bool operator==(unique_resource const& lhs, T const& rhs) { return lhs._object == rhs; }
     friend bool operator!=(unique_resource const& lhs, T const& rhs) { return lhs._object != rhs; }
 
@@ -48,7 +51,7 @@ auto gm::unique_resource<T, D, Default>::operator=(unique_resource&& src) -> gm:
 
 template <typename T, auto D, auto Default>
 auto gm::unique_resource<T, D, Default>::operator=(rvalue_reference obj) -> gm::unique_resource<T, D, Default>& {
-    if (std::addressof(obj) != std::addressof(_object)) {
+    if (obj != _object) {
         D(_object);
         _object = std::move(obj);
     }
@@ -57,8 +60,10 @@ auto gm::unique_resource<T, D, Default>::operator=(rvalue_reference obj) -> gm::
 
 template <typename T, auto D, auto Default>
 void gm::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
-    D(_object);
-    _object = std::forward<T>(obj);
+    if (obj != _object) {
+        D(_object);
+        _object = std::forward<T>(obj);
+    }
 }
 
 template <typename T, auto D, auto Default>

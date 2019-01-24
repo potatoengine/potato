@@ -73,8 +73,8 @@ namespace gm::gpu {
     };
 
     struct PipelineStateDesc {
-        blob vertShader;
-        blob pixelShader;
+        span<byte const> vertShader;
+        span<byte const> pixelShader;
         span<InputLayoutElement const> inputLayout;
     };
 

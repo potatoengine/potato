@@ -40,6 +40,7 @@ target_link_libraries(grui
         imgui
     PRIVATE
         doctest
+        SDL2
 )
 
 target_compile_definitions(grui
