@@ -25,7 +25,7 @@ namespace gm::gpu {
     };
 
     GM_GPU_API box<Factory> CreateFactoryNull();
-#if GM_GPU_ENABLE_D3D11
+#if defined(GM_GPU_ENABLE_D3D11)
     GM_GPU_API box<Factory> CreateFactoryD3D11();
 #endif
 } // namespace gm::gpu
