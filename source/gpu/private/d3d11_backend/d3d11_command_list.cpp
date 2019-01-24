@@ -141,6 +141,15 @@ void gm::gpu::d3d11::CommandListD3D11::setViewport(Viewport const& viewport) {
     _context->RSSetViewports(1, &d3d11Viewport);
 }
 
+void gm::gpu::d3d11::CommandListD3D11::setClipRect(Rect rect) {
+    D3D11_RECT clipRect;
+    clipRect.left = static_cast<LONG>(rect.left);
+    clipRect.top = static_cast<LONG>(rect.top);
+    clipRect.right = static_cast<LONG>(rect.right);
+    clipRect.bottom = static_cast<LONG>(rect.bottom);
+    _context->RSSetScissorRects(1, &clipRect);
+}
+
 void gm::gpu::d3d11::CommandListD3D11::draw(gm::uint32 vertexCount, gm::uint32 firstVertex) {
     _flushBindings();
     _context->Draw(vertexCount, firstVertex);
@@ -163,6 +172,7 @@ void gm::gpu::d3d11::CommandListD3D11::finish() {
 
 void gm::gpu::d3d11::CommandListD3D11::clear(PipelineState* pipelineState) {
     _context->ClearState();
+    _context->RSSetScissorRects(0, nullptr);
     _commands.reset();
     if (pipelineState != nullptr) {
         setPipelineState(pipelineState);

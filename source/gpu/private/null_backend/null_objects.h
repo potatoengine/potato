@@ -83,6 +83,7 @@ namespace gm::gpu::null {
         void bindSampler(uint32 slot, Sampler* sampler, ShaderStage stage) override {}
         void setPrimitiveTopology(PrimitiveTopology topology) override {}
         void setViewport(Viewport const& viewport) override {}
+        void setClipRect(Rect rect) override {}
     };
 
     class BufferNull final : public Buffer {

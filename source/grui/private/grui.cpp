@@ -36,6 +36,7 @@ bool gm::gui::DrawImgui::createResources(gpu::Device& device) {
     };
 
     gpu::PipelineStateDesc desc;
+    desc.enableScissor = true;
     desc.vertShader = _vertShaderBlob;
     desc.pixelShader = _pixelShaderBlob;
     desc.inputLayout = layout;
@@ -204,6 +205,8 @@ void gm::gui::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& command
     indexOffset = 0;
     vertexOffset = 0;
 
+    ImVec2 pos = data.DisplayPos;
+
     for (int listIndex = 0; listIndex != data.CmdListsCount; ++listIndex) {
         auto const& list = *data.CmdLists[listIndex];
 
@@ -215,9 +218,17 @@ void gm::gui::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& command
                 continue;
             }
 
+            gpu::Rect scissor;
+            scissor.left = (uint32)cmd.ClipRect.x - (uint32)pos.x;
+            scissor.top = (uint32)cmd.ClipRect.y - (uint32)pos.y;
+            scissor.right = (uint32)cmd.ClipRect.z - (uint32)pos.x;
+            scissor.bottom = (uint32)cmd.ClipRect.w - (uint32)pos.y;
+            commandList.setClipRect(scissor);
+
             // FIXME: different texture per cmd
             commandList.bindShaderResource(0, _srv.get(), gpu::ShaderStage::Pixel);
             commandList.drawIndexed(cmd.ElemCount, indexOffset, vertexOffset);
+
             indexOffset += cmd.ElemCount;
         }
 

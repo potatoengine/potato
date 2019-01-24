@@ -26,6 +26,7 @@ namespace gm::gpu::d3d11 {
         void bindConstantBuffer(uint32 slot, Buffer* buffer, ShaderStage stage) override;
         void bindShaderResource(uint32 slot, ResourceView* view, ShaderStage stage) override;
         void bindSampler(uint32 slot, Sampler* sampler, ShaderStage stage) override;
+        void setClipRect(Rect rect) override;
 
         void setPrimitiveTopology(PrimitiveTopology topology) override;
         void setViewport(Viewport const& viewport) override;

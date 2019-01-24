@@ -62,10 +62,14 @@ namespace gm::gpu {
         Triangles,
     };
 
+    struct Rect {
+        uint32 left = 0, top = 0, right = 0, bottom = 0;
+    };
+
     struct Viewport {
-        float width = 800, height = 600;
-        float minDepth = 0, maxDepth = 1;
         float leftX = 0, topY = 1;
+        float width = 0, height = 0;
+        float minDepth = 0, maxDepth = 1;
     };
 
     struct DeviceInfo {
@@ -73,6 +77,7 @@ namespace gm::gpu {
     };
 
     struct PipelineStateDesc {
+        bool enableScissor = false;
         span<byte const> vertShader;
         span<byte const> pixelShader;
         span<InputLayoutElement const> inputLayout;

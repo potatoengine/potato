@@ -32,6 +32,7 @@ namespace gm::gpu {
         virtual void bindSampler(uint32 slot, Sampler* sampler, ShaderStage stage) = 0;
         virtual void setPrimitiveTopology(PrimitiveTopology topology) = 0;
         virtual void setViewport(Viewport const& viewport) = 0;
+        virtual void setClipRect(Rect rect) = 0;
 
         virtual void draw(uint32 vertexCount, uint32 firstVertex = 0) = 0;
         virtual void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) = 0;
