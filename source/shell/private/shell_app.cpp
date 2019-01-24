@@ -14,6 +14,8 @@
 #include "grimm/math/packed.h"
 #include "grimm/grui/grui.h"
 
+#include <fmt/chrono.h>
+#include <chrono>
 #include <SDL.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
@@ -139,6 +141,11 @@ int gm::ShellApp::initialize() {
 void gm::ShellApp::run() {
     auto& imguiIO = ImGui::GetIO();
 
+    std::chrono::high_resolution_clock clock;
+
+    auto now = clock.now();
+    auto duration = now - now;
+
     while (isRunning()) {
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
@@ -168,7 +175,27 @@ void gm::ShellApp::run() {
         imguiIO.DisplaySize.x = viewport.width;
         imguiIO.DisplaySize.y = viewport.height;
         _drawImgui.beginFrame();
-        ImGui::ShowDemoWindow();
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("Grimm")) {
+                if (ImGui::MenuItem("Quit")) {
+                    return;
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+
+        if (ImGui::Begin("Statistics")) {
+            auto micro = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
+
+            fixed_string_writer<128> buffer;
+            format_into(buffer, u8"{}µs", micro);
+            ImGui::LabelText("Frametime", buffer.c_str());
+            buffer.clear();
+            format_into(buffer, "{}", 1000000.0 / micro);
+            ImGui::LabelText("FPS", buffer.c_str());
+        }
+        ImGui::End();
 
         _commandList->clear();
         _commandList->clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
@@ -185,6 +212,10 @@ void gm::ShellApp::run() {
         _device->execute(_commandList.get());
 
         _swapChain->present();
+
+        auto endFrame = clock.now();
+        duration = endFrame - now;
+        now = endFrame;
     }
 }
 
