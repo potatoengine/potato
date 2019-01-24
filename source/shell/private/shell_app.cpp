@@ -12,7 +12,7 @@
 #include "grimm/gpu/swap_chain.h"
 #include "grimm/gpu/texture.h"
 #include "grimm/math/packed.h"
-#include "grimm/grui/grui.h"
+#include "grimm/imgrui/imgrui.h"
 
 #include <fmt/chrono.h>
 #include <chrono>

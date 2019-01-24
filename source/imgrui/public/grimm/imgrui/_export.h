@@ -4,10 +4,10 @@
 
 #if defined(GM_GRUI_EXPORTS)
 #    if defined(_WINDOWS)
-#        define GM_GRUI_API __declspec(dllexport)
+#        define GM_IMGRUI_API __declspec(dllexport)
 #    else
-#        define GM_GRUI_API [[gnu::visibility("default")]]
+#        define GM_IMGRUI_API [[gnu::visibility("default")]]
 #    endif
 #else
-#    define GM_GRUI_API
+#    define GM_IMGRUI_API
 #endif
