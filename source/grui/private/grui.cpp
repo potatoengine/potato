@@ -247,6 +247,7 @@ void gm::gui::DrawImgui::_ensureContext() {
     auto& io = ImGui::GetIO();
 
     io.BackendPlatformName = "grimm::grui";
+    io.IniFilename = nullptr;
 
     io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
