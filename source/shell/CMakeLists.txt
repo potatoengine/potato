@@ -19,6 +19,7 @@ target_link_libraries(shell PRIVATE
     grimm::foundation
     grimm::filesystem
     grimm::gpu
+    grimm::imgrui
     SDL2
     SDL2main
 )

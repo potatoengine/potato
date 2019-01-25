@@ -8,18 +8,21 @@
 
 namespace gm::gpu {
     enum class Format {
+        Unknown,
         R32G32B32A32Float,
         R32G32B32Float,
+        R32G32Float,
         R8G8B8A8UnsignedNormalized,
     };
 
     enum class Semantic {
         Position,
-        Color
+        Color,
+        TexCoord
     };
 
     struct InputLayoutElement {
-        Format format = Format::R32G32B32A32Float;
+        Format format = Format::Unknown;
         Semantic semantic = Semantic::Position;
         uint32 semanticIndex = 0;
         uint32 slot = 0;
@@ -38,6 +41,17 @@ namespace gm::gpu {
         Vertex,
     };
 
+    enum class IndexType {
+        Unsigned16,
+        Unsigned32
+    };
+
+    enum class ShaderStage {
+        Vertex = 1 << 0,
+        Pixel = 1 << 1,
+        All = Vertex | Pixel
+    };
+
     enum class TextureType {
         Texture2D,
         Texture3D,
@@ -48,10 +62,14 @@ namespace gm::gpu {
         Triangles,
     };
 
+    struct Rect {
+        uint32 left = 0, top = 0, right = 0, bottom = 0;
+    };
+
     struct Viewport {
-        float width = 800, height = 600;
-        float minDepth = 0, maxDepth = 1;
         float leftX = 0, topY = 1;
+        float width = 0, height = 0;
+        float minDepth = 0, maxDepth = 1;
     };
 
     struct DeviceInfo {
@@ -59,8 +77,9 @@ namespace gm::gpu {
     };
 
     struct PipelineStateDesc {
-        blob vertShader;
-        blob pixelShader;
+        bool enableScissor = false;
+        span<byte const> vertShader;
+        span<byte const> pixelShader;
         span<InputLayoutElement const> inputLayout;
     };
 

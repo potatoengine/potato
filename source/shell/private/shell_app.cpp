@@ -12,10 +12,14 @@
 #include "grimm/gpu/swap_chain.h"
 #include "grimm/gpu/texture.h"
 #include "grimm/math/packed.h"
+#include "grimm/imgrui/imgrui.h"
 
+#include <fmt/chrono.h>
+#include <chrono>
 #include <SDL.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
+#include <imgui.h>
 
 static constexpr gm::PackedVector3f triangle[] = {
     {-0.8f, -0.8f, 0},
@@ -27,10 +31,11 @@ static constexpr gm::PackedVector3f triangle[] = {
 };
 
 gm::ShellApp::~ShellApp() {
+    _drawImgui.releaseResources();
+
     _commandList.reset();
     _rtv.reset();
     _pipelineState.reset();
-    _srv.reset();
     _vbo.reset();
     _swapChain.reset();
     _window.reset();
@@ -87,17 +92,17 @@ int gm::ShellApp::initialize() {
 
     _vbo = _device->createBuffer(gpu::BufferType::Vertex, sizeof(triangle));
     _commandList->update(_vbo.get(), span{triangle, 6}.as_bytes(), 0);
-    _srv = _device->createShaderResourceView(_vbo.get());
 
     gpu::PipelineStateDesc pipelineDesc;
 
+    blob basicVertShader, basicPixelShader;
     auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_5_0.cbo");
-    if (fs::readBlob(stream, pipelineDesc.vertShader) != fs::Result{}) {
+    if (fs::readBlob(stream, basicVertShader) != fs::Result{}) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open vertex shader", _window.get());
         return 1;
     }
     stream = _fileSystem.openRead("build/resources/shaders/basic.ps_5_0.cbo");
-    if (fs::readBlob(stream, pipelineDesc.pixelShader) != fs::Result{}) {
+    if (fs::readBlob(stream, basicPixelShader) != fs::Result{}) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open pixel shader", _window.get());
         return 1;
     }
@@ -106,6 +111,8 @@ int gm::ShellApp::initialize() {
         {gpu::Format::R32G32B32Float, gpu::Semantic::Position, 0, 0},
         {gpu::Format::R32G32B32Float, gpu::Semantic::Color, 0, 0},
     };
+    pipelineDesc.vertShader = basicVertShader;
+    pipelineDesc.pixelShader = basicPixelShader;
     pipelineDesc.inputLayout = layout;
     _pipelineState = _device->createPipelineState(pipelineDesc);
     if (_pipelineState == nullptr) {
@@ -113,10 +120,31 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
+    blob imguiVertShader, imguiPixelShader;
+    stream = _fileSystem.openRead("build/resources/shaders/imgui.vs_5_0.cbo");
+    if (fs::readBlob(stream, imguiVertShader) != fs::Result{}) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open imgui vertex shader", _window.get());
+        return 1;
+    }
+    stream = _fileSystem.openRead("build/resources/shaders/imgui.ps_5_0.cbo");
+    if (fs::readBlob(stream, imguiPixelShader) != fs::Result{}) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open imgui pixel shader", _window.get());
+        return 1;
+    }
+
+    _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
+    _drawImgui.createResources(*_device);
+
     return 0;
 }
 
 void gm::ShellApp::run() {
+    auto& imguiIO = ImGui::GetIO();
+
+    std::chrono::high_resolution_clock clock;
+
+    auto now = clock.now();
+    auto duration = now - now;
 
     while (isRunning()) {
         SDL_Event ev;
@@ -133,7 +161,9 @@ void gm::ShellApp::run() {
                     onWindowSizeChanged();
                     break;
                 }
+                break;
             }
+            _drawImgui.handleEvent(ev);
         }
 
         gpu::Viewport viewport;
@@ -141,6 +171,31 @@ void gm::ShellApp::run() {
         SDL_GetWindowSize(_window.get(), &width, &height);
         viewport.width = static_cast<float>(width);
         viewport.height = static_cast<float>(height);
+
+        imguiIO.DisplaySize.x = viewport.width;
+        imguiIO.DisplaySize.y = viewport.height;
+        _drawImgui.beginFrame();
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("Grimm")) {
+                if (ImGui::MenuItem("Quit")) {
+                    return;
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+
+        if (ImGui::Begin("Statistics")) {
+            auto micro = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
+
+            fixed_string_writer<128> buffer;
+            format_into(buffer, "{}us", micro);
+            ImGui::LabelText("Frametime", buffer.c_str());
+            buffer.clear();
+            format_into(buffer, "{}", 1000000.0 / micro);
+            ImGui::LabelText("FPS", buffer.c_str());
+        }
+        ImGui::End();
 
         _commandList->clear();
         _commandList->clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
@@ -150,10 +205,17 @@ void gm::ShellApp::run() {
         _commandList->setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
         _commandList->setViewport(viewport);
         _commandList->draw(3);
+
+        _drawImgui.endFrame(*_device, *_commandList);
+
         _commandList->finish();
         _device->execute(_commandList.get());
 
         _swapChain->present();
+
+        auto endFrame = clock.now();
+        duration = endFrame - now;
+        now = endFrame;
     }
 }
 

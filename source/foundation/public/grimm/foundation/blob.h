@@ -3,6 +3,7 @@
 #pragma once
 
 #include "allocator.h"
+#include "span.h"
 
 namespace gm {
     class blob {
@@ -64,6 +65,9 @@ namespace gm {
             _size = 0;
             return tmp;
         }
+
+        /*implicit*/ operator span<byte>() noexcept { return {reinterpret_cast<pointer_bytes>(_data), _size}; }
+        /*implicit*/ operator span<byte const>() const noexcept { return {reinterpret_cast<const_pointer_bytes>(_data), _size}; }
 
     private:
         pointer _data = nullptr;

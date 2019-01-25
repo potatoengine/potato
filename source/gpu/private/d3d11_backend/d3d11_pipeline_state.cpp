@@ -21,6 +21,8 @@ auto gm::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(PipelineSta
     D3D11_RASTERIZER_DESC rasterDesc = {};
     rasterDesc.FillMode = D3D11_FILL_SOLID;
     rasterDesc.CullMode = D3D11_CULL_NONE;
+    rasterDesc.ScissorEnable = desc.enableScissor;
+    rasterDesc.DepthClipEnable = true;
 
     D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
     depthStencilDesc.DepthEnable = false;
@@ -29,12 +31,12 @@ auto gm::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(PipelineSta
     blendDesc.AlphaToCoverageEnable = false;
     blendDesc.IndependentBlendEnable = false;
     blendDesc.RenderTarget[0].BlendEnable = true;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
     blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
     blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_COLOR;
-    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_COLOR;
-    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
     D3D11_INPUT_ELEMENT_DESC layout[maxInputLayoutElements] = {};

@@ -6,7 +6,8 @@ auto gm::gpu::d3d11::toNative(Semantic semantic) noexcept -> zstring_view {
     switch (semantic) {
     case Semantic::Position: return "POSITION";
     case Semantic::Color: return "COLOR";
-    default: return "UNKNOWN";
+    case Semantic::TexCoord: return "TEXCOORD";
+    default: GM_UNREACHABLE("Unknown Semantic"); return "UNKNOWN";
     }
 }
 
@@ -14,7 +15,36 @@ auto gm::gpu::d3d11::toNative(Format format) noexcept -> DXGI_FORMAT {
     switch (format) {
     case Format::R32G32B32A32Float: return DXGI_FORMAT_R32G32B32A32_FLOAT;
     case Format::R32G32B32Float: return DXGI_FORMAT_R32G32B32_FLOAT;
+    case Format::R32G32Float: return DXGI_FORMAT_R32G32_FLOAT;
     case Format::R8G8B8A8UnsignedNormalized: return DXGI_FORMAT_R8G8B8A8_UNORM;
-    default: return DXGI_FORMAT_UNKNOWN;
+    default: GM_UNREACHABLE("Unknown Format"); return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
+auto gm::gpu::d3d11::fromNative(DXGI_FORMAT format) noexcept -> Format {
+    switch (format) {
+    case DXGI_FORMAT_R32G32B32A32_FLOAT: return Format::R32G32B32A32Float;
+    case DXGI_FORMAT_R32G32B32_FLOAT: return Format::R32G32B32Float;
+    case DXGI_FORMAT_R32G32_FLOAT: return Format::R32G32Float;
+    case DXGI_FORMAT_R8G8B8A8_UNORM: return Format::R8G8B8A8UnsignedNormalized;
+    default: return Format::Unknown;
+    }
+}
+
+auto gm::gpu::d3d11::toByteSize(Format format) noexcept -> gm::uint32 {
+    switch (format) {
+    case Format::R32G32B32A32Float: return 16;
+    case Format::R32G32B32Float: return 12;
+    case Format::R32G32Float: return 8;
+    case Format::R8G8B8A8UnsignedNormalized: return 4;
+    default: GM_UNREACHABLE("Unknown Format"); return 0;
+    }
+}
+
+auto gm::gpu::d3d11::toNative(IndexType type) noexcept -> DXGI_FORMAT {
+    switch (type) {
+    case IndexType::Unsigned16: return DXGI_FORMAT_R16_UINT;
+    case IndexType::Unsigned32: return DXGI_FORMAT_R32_UINT;
+    default: GM_UNREACHABLE("Unknown IndexType"); return DXGI_FORMAT_UNKNOWN;
     }
 }

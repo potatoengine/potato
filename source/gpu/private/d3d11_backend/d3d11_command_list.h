@@ -21,13 +21,18 @@ namespace gm::gpu::d3d11 {
         void setPipelineState(PipelineState* state) override;
 
         void bindRenderTarget(uint32 index, ResourceView* view) override;
+        void bindIndexBuffer(Buffer* buffer, IndexType indexType, uint32 offset = 0) override;
         void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override;
-        void bindShaderResource(uint32 slot, ResourceView* view) override;
+        void bindConstantBuffer(uint32 slot, Buffer* buffer, ShaderStage stage) override;
+        void bindShaderResource(uint32 slot, ResourceView* view, ShaderStage stage) override;
+        void bindSampler(uint32 slot, Sampler* sampler, ShaderStage stage) override;
+        void setClipRect(Rect rect) override;
 
         void setPrimitiveTopology(PrimitiveTopology topology) override;
         void setViewport(Viewport const& viewport) override;
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override;
+        void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) override;
 
         void clearRenderTarget(ResourceView* view, PackedVector4f color) override;
 

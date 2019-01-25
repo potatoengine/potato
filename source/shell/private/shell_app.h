@@ -9,6 +9,7 @@
 #include "grimm/gpu/pipeline_state.h"
 #include "grimm/gpu/buffer.h"
 #include "grimm/gpu/resource_view.h"
+#include "grimm/imgrui/imgrui.h"
 
 #include <SDL.h>
 
@@ -41,8 +42,8 @@ private:
     box<gpu::SwapChain> _swapChain;
     box<gpu::Buffer> _vbo;
     box<gpu::ResourceView> _rtv;
-    box<gpu::ResourceView> _srv;
     box<gpu::CommandList> _commandList;
     box<gpu::PipelineState> _pipelineState;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
+    imgrui::DrawImgui _drawImgui;
 };
