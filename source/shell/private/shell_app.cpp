@@ -189,7 +189,7 @@ void gm::ShellApp::run() {
             auto micro = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
 
             fixed_string_writer<128> buffer;
-            format_into(buffer, u8"{}µs", micro);
+            format_into(buffer, "{}us", micro);
             ImGui::LabelText("Frametime", buffer.c_str());
             buffer.clear();
             format_into(buffer, "{}", 1000000.0 / micro);
