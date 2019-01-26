@@ -3,11 +3,12 @@
 #pragma once
 
 #include "grimm/foundation/box.h"
+#include "grimm/foundation/rc.h"
 
 namespace gm::gpu {
     class Texture;
 
-    class SwapChain {
+    class SwapChain : public shared<SwapChain> {
     public:
         SwapChain() = default;
         virtual ~SwapChain() = default;

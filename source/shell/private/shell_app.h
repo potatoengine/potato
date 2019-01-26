@@ -39,7 +39,7 @@ private:
     bool _running = true;
     fs::FileSystem _fileSystem;
     rc<gpu::Device> _device;
-    box<gpu::SwapChain> _swapChain;
+    rc<gpu::SwapChain> _swapChain;
     box<gpu::Buffer> _vbo;
     box<gpu::ResourceView> _rtv;
     box<gpu::CommandList> _commandList;

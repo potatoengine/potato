@@ -26,7 +26,7 @@ namespace gm::gpu {
         Device(Device&&) = delete;
         Device& operator=(Device&&) = delete;
 
-        virtual box<SwapChain> createSwapChain(void* nativeWindow) = 0;
+        virtual rc<SwapChain> createSwapChain(void* nativeWindow) = 0;
         virtual box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) = 0;
         virtual box<PipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
         virtual box<Buffer> createBuffer(BufferType type, uint64 size) = 0;

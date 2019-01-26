@@ -18,7 +18,7 @@ namespace gm::gpu::d3d11 {
 
         static rc<Device> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
-        box<SwapChain> createSwapChain(void* native_window) override;
+        rc<SwapChain> createSwapChain(void* native_window) override;
         box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;

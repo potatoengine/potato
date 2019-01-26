@@ -16,8 +16,8 @@ GM_GPU_API auto gm::gpu::CreateFactoryNull() -> box<Factory> {
     return make_box<null::FactoryNull>();
 }
 
-auto gm::gpu::null::DeviceNull::createSwapChain(void* native_window) -> box<SwapChain> {
-    return make_box<SwapChainNull>();
+auto gm::gpu::null::DeviceNull::createSwapChain(void* native_window) -> rc<SwapChain> {
+    return make_shared<SwapChainNull>();
 }
 
 auto gm::gpu::null::DeviceNull::createCommandList(PipelineState* pipelineState) -> box<CommandList> {
