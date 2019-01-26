@@ -5,6 +5,7 @@
 #include "common.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/types.h"
+#include "grimm/foundation/rc.h"
 
 namespace gm::gpu {
     class Buffer;
@@ -17,7 +18,7 @@ namespace gm::gpu {
 
     struct PipelineStateDesc;
 
-    class Device {
+    class Device : public shared<Device> {
     public:
         Device() = default;
         virtual ~Device() = default;

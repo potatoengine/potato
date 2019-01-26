@@ -37,7 +37,7 @@ gm::gpu::d3d11::DeviceD3D11::~DeviceD3D11() {
     }
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> box<Device> {
+auto gm::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> rc<Device> {
     GM_ASSERT(factory != nullptr);
     GM_ASSERT(adapter != nullptr);
 
@@ -50,7 +50,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, c
         return nullptr;
     }
 
-    return make_box<DeviceD3D11>(std::move(factory), std::move(adapter), std::move(device), std::move(context));
+    return make_shared<DeviceD3D11>(std::move(factory), std::move(adapter), std::move(device), std::move(context));
 }
 
 auto gm::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> box<SwapChain> {

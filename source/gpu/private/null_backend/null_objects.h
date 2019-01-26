@@ -19,7 +19,7 @@ namespace gm::gpu::null {
     public:
         bool isEnabled() const override { return true; }
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
-        box<Device> createDevice(int index) override;
+        rc<Device> createDevice(int index) override;
     };
 
     class DeviceNull final : public Device {

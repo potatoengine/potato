@@ -5,6 +5,7 @@
 #include "common.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/delegate.h"
+#include "grimm/foundation/rc.h"
 
 #include "_export.h"
 
@@ -21,7 +22,7 @@ namespace gm::gpu {
 
         virtual bool isEnabled() const = 0;
         virtual void enumerateDevices(delegate<void(DeviceInfo const&)> callback) = 0;
-        virtual box<Device> createDevice(int index) = 0;
+        virtual rc<Device> createDevice(int index) = 0;
     };
 
     GM_GPU_API box<Factory> CreateFactoryNull();
