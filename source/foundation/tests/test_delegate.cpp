@@ -43,6 +43,14 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::delegate") {
         DOCTEST_CHECK_EQ(delegate(test, &Test::add)(4), 7);
     }
 
+    DOCTEST_TEST_CASE("void delegate") {
+        int i = 0;
+        delegate<void()> d = [&i] { i = 1; };
+
+        d();
+        DOCTEST_CHECK_EQ(i, 1);
+    }
+
     DOCTEST_TEST_CASE("delegate reassignment") {
         int i1 = 1;
         Test t1{i1};
