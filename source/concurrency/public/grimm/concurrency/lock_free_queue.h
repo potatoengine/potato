@@ -33,8 +33,8 @@ namespace gm {
         LockFreeQueue& operator=(LockFreeQueue const&) = delete;
 
         template <typename InsertT>
-        inline [[nodiscard]] bool tryEnque(InsertT&& value);
-        inline [[nodiscard]] bool tryDeque(T& out);
+        [[nodiscard]] inline bool tryEnque(InsertT&& value);
+        [[nodiscard]] inline bool tryDeque(T& out);
     };
 
     template <typename T, std::size_t Size, std::size_t CacheLineWidth>

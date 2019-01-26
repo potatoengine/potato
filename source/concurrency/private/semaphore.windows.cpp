@@ -7,7 +7,7 @@
 #include <grimm/foundation/platform_windows.h>
 #include <limits>
 
-gm::Semaphore::Semaphore(int initial) : _handle(CreateSemaphoreW(nullptr, initial, std::numeric_limits<LONG>::max(), nullptr)) {
+gm::Semaphore::Semaphore(int initial) : _counter(initial), _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {
 }
 
 gm::Semaphore::~Semaphore() {

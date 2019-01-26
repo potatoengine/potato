@@ -87,6 +87,7 @@ namespace gm {
         new (&_buffer[(_start + _size) & mask]) T(std::forward<InsertT>(value));
         ++_size;
 
+        lock.unlock();
         _condition.notify_one();
         return true;
     }

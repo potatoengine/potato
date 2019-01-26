@@ -52,8 +52,7 @@ target_compile_definitions(foundation
 target_compile_options(foundation
     PUBLIC
         $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
-        $<$<CXX_COMPILER_ID:MSVC>:/std:c++17>
-        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-std=c++17>
+        $<$<CXX_COMPILER_ID:MSVC>:/wd4141> # __forceinline inline warns, but GCC requires [[always_inline]] inline
     PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/permissive->
 )

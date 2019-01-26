@@ -20,9 +20,12 @@ target_include_directories(grimm_concurrency
         ${CMAKE_CURRENT_SOURCE_DIR}/private
 )
 
+find_package(Threads REQUIRED)
+
 target_link_libraries(grimm_concurrency
     PUBLIC
         grimm::foundation
+        Threads::Threads
     PRIVATE
         doctest
 )

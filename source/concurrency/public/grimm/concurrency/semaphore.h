@@ -16,9 +16,9 @@ namespace gm {
         Semaphore(Semaphore const&) = delete;
         Semaphore& operator=(Semaphore const&) = delete;
 
-        GM_FORCEINLINE void signal(int count = 1);
-        GM_FORCEINLINE [[nodiscard]] bool tryWait();
-        GM_FORCEINLINE void wait();
+        GM_FORCEINLINE inline void signal(int count = 1);
+        GM_FORCEINLINE [[nodiscard]] inline bool tryWait();
+        GM_FORCEINLINE inline void wait();
 
     private:
         GM_CONCURRENCY_API void _signal(int n);

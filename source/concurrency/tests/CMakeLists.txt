@@ -3,6 +3,7 @@ add_executable(test_grimm_concurrency
     test_concurrent_queue.cpp
     test_lock_free_queue.cpp
     test_semaphore.cpp
+    test_thread_util.cpp
 )
 
 target_link_libraries(test_grimm_concurrency PRIVATE
@@ -21,3 +22,7 @@ target_compile_definitions(test_grimm_concurrency PRIVATE
 )
 
 add_test(NAME test_grimm_concurrency COMMAND test_grimm_concurrency)
+
+# because concurrency tests can deadlock (which is a test failure)
+set_tests_properties(test_grimm_concurrency PROPERTIES TIMEOUT 10) 
+

@@ -7,5 +7,5 @@ target_sources(grimm_concurrency PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/task.h
     ${CMAKE_CURRENT_SOURCE_DIR}/task_system.h
     ${CMAKE_CURRENT_SOURCE_DIR}/task_worker.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/thread.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/thread_util.h
 )

@@ -1,10 +1,10 @@
 // Copyright (C) 2016,2019 Sean Middleditch, all rights reserverd.
 
-#include "thread.h"
+#include "thread_util.h"
 #include <grimm/foundation/platform_windows.h>
 
 // https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
-void gm::Thread::_applyDebugName() {
+void gm::setCurrentThreadName(zstring_view name) {
     constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
 
 #pragma pack(push, 8)
@@ -18,8 +18,8 @@ void gm::Thread::_applyDebugName() {
 
     THREADNAME_INFO info;
     info.dwType = 0x1000;
-    info.szName = _name.c_str();
-    info.dwThreadID = GetThreadId(_thread.native_handle());
+    info.szName = name.c_str();
+    info.dwThreadID = GetCurrentThreadId();
     info.dwFlags = 0;
 
 #pragma warning(push)
