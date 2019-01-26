@@ -17,7 +17,7 @@ namespace gm {
         Semaphore& operator=(Semaphore const&) = delete;
 
         GM_FORCEINLINE void signal(int count = 1);
-        GM_FORCEINLINE bool tryWait();
+        GM_FORCEINLINE [[nodiscard]] bool tryWait();
         GM_FORCEINLINE void wait();
 
     private:
@@ -36,8 +36,9 @@ namespace gm {
 
         // awaken up to `count` of the waiting threads
         int const awaken = /*min(waiting,count)*/ waiting < count ? waiting : count;
-        if (awaken > 0)
+        if (awaken > 0) {
             _signal(awaken);
+        }
     }
 
     bool Semaphore::tryWait() {
@@ -47,8 +48,9 @@ namespace gm {
     }
 
     void Semaphore::wait() {
-        if (!tryWait())
+        if (!tryWait()) {
             _wait();
+        }
     }
 
 } // namespace gm

@@ -1,5 +1,8 @@
 add_executable(test_grimm_concurrency
     main.cpp
+    test_concurrent_queue.cpp
+    test_lock_free_queue.cpp
+    test_semaphore.cpp
 )
 
 target_link_libraries(test_grimm_concurrency PRIVATE

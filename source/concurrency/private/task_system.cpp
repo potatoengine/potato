@@ -9,14 +9,14 @@
 
 gm::Tasks::~Tasks() {
     // signal all workers to close
-    TaskQueue::getInstance().close();
+    _queue->close();
 
     // this will wait for all the workers to complete
     _workers.clear();
 }
 
 void gm::Tasks::createWorkers(int numWorkers) {
-    TaskQueue& queue = TaskQueue::getInstance();
+    TaskQueue& queue = *_queue;
 
     _workers.reserve(numWorkers);
     string_writer writer;
@@ -29,4 +29,28 @@ void gm::Tasks::createWorkers(int numWorkers) {
 
 int gm::Tasks::getHardwareConcurrencyLevel() const {
     return std::thread::hardware_concurrency();
+}
+
+bool gm::Tasks::work() {
+    if (_semaphore.tryWait()) {
+        rc<Task> task;
+        if (_queue->tryDeque(task)) {
+            task->execute();
+            return true;
+        }
+    }
+
+    // no work was available
+    return false;
+}
+
+void gm::Tasks::workOrBlock() {
+    if (!isClosed()) {
+        _semaphore.wait();
+
+        rc<Task> task;
+        if (_queue->tryDeque(task)) {
+            task->execute();
+        }
+    }
 }

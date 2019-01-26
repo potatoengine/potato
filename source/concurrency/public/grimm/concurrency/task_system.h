@@ -3,9 +3,10 @@
 #pragma once
 
 #include "_export.h"
-#include "task_queue.h"
+#include "concurrent_queue.h"
 #include "task_worker.h"
 #include <grimm/foundation/vector.h>
+#include <grimm/foundation/box.h>
 
 namespace gm {
 
@@ -21,7 +22,13 @@ namespace gm {
 
         GM_CONCURRENCY_API int getHardwareConcurrencyLevel() const;
 
+        GM_CONCURRENCY_API bool work();
+        GM_CONCURRENCY_API void workOrBlock();
+
+        TaskQueue& queue() noexcept { return *_queue; }
+
     private: // members
+        box<TaskQueue> _queue;
         vector<TaskWorker> _workers;
     };
 

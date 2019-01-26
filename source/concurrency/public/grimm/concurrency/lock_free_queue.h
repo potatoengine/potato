@@ -33,8 +33,8 @@ namespace gm {
         LockFreeQueue& operator=(LockFreeQueue const&) = delete;
 
         template <typename InsertT>
-        inline bool tryEnque(InsertT&& value);
-        inline bool tryDeque(T& out);
+        inline [[nodiscard]] bool tryEnque(InsertT&& value);
+        inline [[nodiscard]] bool tryDeque(T& out);
     };
 
     template <typename T, std::size_t Size, std::size_t CacheLineWidth>
@@ -53,8 +53,9 @@ namespace gm {
         std::int32_t delta = id - target;
 
         while (!(delta == 0 && _enque.compare_exchange_weak(target, target + 1, std::memory_order_relaxed))) {
-            if (delta < 0)
+            if (delta < 0) {
                 return false;
+            }
 
             target = _enque.load(std::memory_order_relaxed);
             id = _sequence[target & kBufferMask].load(std::memory_order_acquire);
@@ -73,8 +74,9 @@ namespace gm {
         std::int32_t delta = id - (target + 1);
 
         while (!(delta == 0 && _deque.compare_exchange_weak(target, target + 1, std::memory_order_relaxed))) {
-            if (delta < 0)
+            if (delta < 0) {
                 return false;
+            }
 
             target = _deque.load(std::memory_order_relaxed);
             id = _sequence[target & kBufferMask].load(std::memory_order_acquire);

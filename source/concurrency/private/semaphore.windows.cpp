@@ -3,24 +3,19 @@
 // Inspired by the technique in the "LightweightSemaphore" at
 //   https://github.com/preshing/cpp11-on-multicore
 
-#include "fast_semaphore.h"
+#include "semaphore.h"
+#include <grimm/foundation/platform_windows.h>
 #include <limits>
-#include <semaphore.h>
 
-gm::Semaphore::Semaphore(int initial) {
-    _handle = new sem_t;
-    sem_init(static_cast<sem_t*>(_handle), false, initial);
+gm::Semaphore::Semaphore(int initial) : _handle(CreateSemaphoreW(nullptr, initial, std::numeric_limits<LONG>::max(), nullptr)) {
 }
 
 gm::Semaphore::~Semaphore() {
-    sem_destroy(static_cast<sem_t*>(_handle));
-    delete static_cast<sem_t*>(_handle);
+    CloseHandle(_handle);
 }
 
 void gm::Semaphore::_signal(int n) {
-    while (n-- > 0) {
-        sem_post(static_cast<sem_t*>(_handle));
-    }
+    ReleaseSemaphore(_handle, n, nullptr);
 }
 
 void gm::Semaphore::_wait() {
@@ -42,6 +37,6 @@ void gm::Semaphore::_wait() {
     // we will now "consume" the item whether it's available or not. if there was no available item (e.g.,
     // the counter was non-positive) then we block.
     if (_counter.fetch_sub(1, std::memory_order_acquire) <= 0) {
-        sem_wait(static_cast<sem_t*>(_handle));
+        WaitForSingleObject(_handle, INFINITE);
     }
 }

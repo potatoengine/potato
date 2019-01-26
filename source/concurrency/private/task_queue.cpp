@@ -2,22 +2,14 @@
 
 #include "task_queue.h"
 #include "lock_free_queue.h"
-#include "fast_semaphore.h"
+#include "semaphore.h"
 #include "thread.h"
-
-gm::box<gm::TaskQueue> gm::TaskQueue::_instance;
 
 gm::TaskQueue::TaskQueue() : _queue(make_box<LockFreeQueue<rc<Task>>>()) {
 }
 
 gm::TaskQueue::~TaskQueue() {
     close();
-}
-
-auto gm::TaskQueue::getInstance() -> TaskQueue& {
-    if (!_instance)
-        _instance = make_box<TaskQueue>();
-    return *_instance;
 }
 
 void gm::TaskQueue::enque(rc<Task> task) {

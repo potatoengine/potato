@@ -7,9 +7,6 @@
 #include <atomic>
 
 namespace gm {
-
-    class TaskQueue;
-
     class Task : public shared<Task> {
     public:
         inline void schedule();

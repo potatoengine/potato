@@ -9,13 +9,14 @@
 namespace gm {
 
     class Spinlock {
-        std::atomic<std::thread::id> _owner = std::thread::id();
-
     public:
         inline void lock();
-        inline bool tryLock();
-        inline bool isLocked() const;
+        inline [[nodiscard]] bool tryLock();
+        inline [[nodiscard]] bool isLocked() const;
         inline void unlock();
+
+    private:
+        std::atomic<std::thread::id> _owner = std::thread::id();
     };
 
     class SpinlockGuard {
@@ -34,8 +35,9 @@ namespace gm {
         // FIXME - exponential backoff should be added
         std::thread::id expected{};
         auto const desired = std::this_thread::get_id();
-        while (!_owner.compare_exchange_weak(expected, desired, std::memory_order_acquire))
+        while (!_owner.compare_exchange_weak(expected, desired, std::memory_order_acquire)) {
             expected = std::thread::id();
+        }
     }
 
     bool Spinlock::tryLock() {
