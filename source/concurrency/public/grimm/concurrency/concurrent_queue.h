@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <grimm/foundation/assertion.h>
 #include <grimm/foundation/box.h>
 #include <grimm/foundation/types.h>
 #include <atomic>
@@ -10,12 +11,10 @@
 #include <condition_variable>
 
 namespace gm {
-    template <typename T, uint32 Size = 1024>
+    template <typename T>
     class ConcurrentQueue {
-        static_assert((Size & (Size - 1)) == 0, "Size must be a power of 2");
-
     public:
-        ConcurrentQueue();
+        explicit ConcurrentQueue(uint32 capacity = 1024);
         ~ConcurrentQueue();
 
         ConcurrentQueue(ConcurrentQueue const&) = delete;
@@ -36,28 +35,30 @@ namespace gm {
         void _grow();
 
         using storage = std::aligned_storage_t<sizeof(T), alignof(T)>;
-        static constexpr uint32 mask = Size - 1;
 
         std::mutex _lock;
         std::condition_variable _condition;
         bool _closed = false;
         uint32 _start = 0;
         uint32 _size = 0;
+        uint32 _mask = 0;
         storage* _buffer = nullptr;
     };
 
-    template <typename T, uint32 Size>
-    ConcurrentQueue<T, Size>::ConcurrentQueue() : _buffer(new storage[Size]) {}
+    template <typename T>
+    ConcurrentQueue<T>::ConcurrentQueue(uint32 capacity) : _mask(capacity - 1), _buffer(new storage[capacity]) {
+        GM_ASSERT((capacity & _mask) == 0, "ConcurrentQueue capacity must be a power-of-two");
+    }
 
-    template <typename T, uint32 Size>
-    ConcurrentQueue<T, Size>::~ConcurrentQueue() {
+    template <typename T>
+    ConcurrentQueue<T>::~ConcurrentQueue() {
         close();
         waitUntilEmpty();
         delete[] _buffer;
     }
 
-    template <typename T, uint32 Size>
-    void ConcurrentQueue<T, Size>::waitUntilEmpty() {
+    template <typename T>
+    void ConcurrentQueue<T>::waitUntilEmpty() {
         for (;;) {
             {
                 std::unique_lock lock(_lock);
@@ -71,20 +72,20 @@ namespace gm {
         }
     }
 
-    template <typename T, uint32 Size>
+    template <typename T>
     template <typename InsertT>
-    bool ConcurrentQueue<T, Size>::tryEnque(InsertT&& value) {
+    bool ConcurrentQueue<T>::tryEnque(InsertT&& value) {
         std::unique_lock lock(_lock);
 
         if (_closed) {
             return false;
         }
 
-        if (_size == mask + 1) {
+        if (_size - 1 == _mask) {
             return false;
         }
 
-        new (&_buffer[(_start + _size) & mask]) T(std::forward<InsertT>(value));
+        new (&_buffer[(_start + _size) & _mask]) T(std::forward<InsertT>(value));
         ++_size;
 
         lock.unlock();
@@ -92,12 +93,12 @@ namespace gm {
         return true;
     }
 
-    template <typename T, uint32 Size>
-    bool ConcurrentQueue<T, Size>::tryDeque(T& out) {
+    template <typename T>
+    bool ConcurrentQueue<T>::tryDeque(T& out) {
         std::unique_lock lock(_lock);
 
         if (_size != 0) {
-            out = reinterpret_cast<T&&>(_buffer[(_start + _size - 1) & mask]);
+            out = reinterpret_cast<T&&>(_buffer[_start & _mask]);
             ++_start;
             --_size;
             return true;
@@ -106,23 +107,23 @@ namespace gm {
         return false;
     }
 
-    template <typename T, uint32 Size>
+    template <typename T>
     template <typename InsertT>
-    void ConcurrentQueue<T, Size>::enqueWait(InsertT&& value) {
+    void ConcurrentQueue<T>::enqueWait(InsertT&& value) {
         while (!tryEnque(std::forward<InsertT>(value))) {
             std::this_thread::yield();
         }
     }
 
-    template <typename T, uint32 Size>
-    bool ConcurrentQueue<T, Size>::dequeWait(T& out) {
+    template <typename T>
+    bool ConcurrentQueue<T>::dequeWait(T& out) {
         std::unique_lock lock(_lock);
         for (;;) {
             _condition.wait(lock, [this] { return _size != 0 || _closed; });
 
             // check for spurious wakeup
             if (_size != 0) {
-                out = reinterpret_cast<T&&>(_buffer[(_start + _size - 1) & mask]);
+                out = reinterpret_cast<T&&>(_buffer[_start & _mask]);
                 ++_start;
                 --_size;
                 return true;
@@ -134,8 +135,8 @@ namespace gm {
         }
     }
 
-    template <typename T, uint32 Size>
-    void ConcurrentQueue<T, Size>::close() {
+    template <typename T>
+    void ConcurrentQueue<T>::close() {
         std::unique_lock lock(_lock);
 
         _closed = true;

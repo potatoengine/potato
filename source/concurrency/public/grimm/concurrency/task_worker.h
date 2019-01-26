@@ -3,26 +3,35 @@
 #pragma once
 
 #include "_export.h"
-#include "thread.h"
-#include <grimm/foundation/string_blob.h>
+#include "thread_util.h"
+#include "concurrent_queue.h"
+#include <grimm/foundation/zstring_view.h>
+#include <grimm/foundation/delegate.h>
+#include <thread>
 
 namespace gm {
-
-    class TaskQueue;
+    using Task = delegate<void()>;
+    using TaskQueue = ConcurrentQueue<Task>;
 
     class TaskWorker {
     public:
-        GM_CONCURRENCY_API explicit TaskWorker(TaskQueue& queue, string name);
+        GM_CONCURRENCY_API explicit TaskWorker(TaskQueue& queue, zstring_view name);
         GM_CONCURRENCY_API ~TaskWorker();
 
         TaskWorker(TaskWorker&&) = default;
         TaskWorker& operator=(TaskWorker&&) = default;
 
+        SmallThreadId smallThreadId() const noexcept { return _threadId; }
+
+        void detach() { _thread.detach(); }
+        void join() { _thread.join(); }
+
     private:
         int _threadMain();
 
         TaskQueue& _queue;
-        Thread _thread;
+        SmallThreadId _threadId;
+        std::thread _thread;
     };
 
 } // namespace gm

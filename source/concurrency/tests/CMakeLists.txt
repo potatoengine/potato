@@ -3,6 +3,7 @@ add_executable(test_grimm_concurrency
     test_concurrent_queue.cpp
     test_lock_free_queue.cpp
     test_semaphore.cpp
+    test_task_worker.cpp
     test_thread_util.cpp
 )
 
