@@ -24,11 +24,6 @@
 #include <fmt/format.h>
 
 namespace gm {
-    template <typename... Args>
-    constexpr decltype(auto) format(string_view format, Args const&... args) {
-        return ::fmt::vformat(::fmt::string_view(format.data(), format.size()), ::fmt::make_format_args(args...));
-    }
-
     template <typename Buffer, typename... Args>
     constexpr decltype(auto) format_into(Buffer& buffer, string_view format, Args const&... args) {
         return ::fmt::format_to(std::back_inserter(buffer), ::fmt::string_view(format.data(), format.size()), args...);
