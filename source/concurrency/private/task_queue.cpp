@@ -2,7 +2,7 @@
 
 #include "task_queue.h"
 #include "lock_free_queue.h"
-#include "semaphore.h"
+#include "fast_semaphore.h"
 #include "thread.h"
 
 gm::box<gm::TaskQueue> gm::TaskQueue::_instance;

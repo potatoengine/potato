@@ -19,7 +19,6 @@ namespace gm {
         GM_FORCEINLINE void signal(int count = 1);
         GM_FORCEINLINE bool tryWait();
         GM_FORCEINLINE void wait();
-        GM_CONCURRENCY_API static int wait(Semaphore& sema1, Semaphore& sema2);
 
     private:
         GM_CONCURRENCY_API void _signal(int n);

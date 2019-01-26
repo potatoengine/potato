@@ -2,10 +2,10 @@
 
 #include "task_system.h"
 #include "thread.h"
-#include <grimm/foundation/platform_windows.h>
 #include <grimm/foundation/string_blob.h>
 #include <grimm/foundation/string_writer.h>
 #include <grimm/foundation/string_format.h>
+#include <thread>
 
 gm::Tasks::~Tasks() {
     // signal all workers to close
@@ -28,12 +28,5 @@ void gm::Tasks::createWorkers(int numWorkers) {
 }
 
 int gm::Tasks::getHardwareConcurrencyLevel() const {
-#if defined(GM_PLATFORM_WINDOWS)
-    SYSTEM_INFO winSysInfo;
-    GetSystemInfo(&winSysInfo);
-
-    return winSysInfo.dwNumberOfProcessors;
-#else
-#    error "Unsupported platform"
-#endif
+    return std::thread::hardware_concurrency();
 }

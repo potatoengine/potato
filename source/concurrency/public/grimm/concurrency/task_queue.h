@@ -5,7 +5,7 @@
 #include "_export.h"
 #include "task.h"
 #include "lock_free_queue.h"
-#include "semaphore.h"
+#include "fast_semaphore.h"
 #include <grimm/foundation/box.h>
 #include <grimm/foundation/rc.h>
 #include <grimm/foundation/vector.h>

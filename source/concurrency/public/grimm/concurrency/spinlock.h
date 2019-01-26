@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <gmdebug/Assert.h>
+#include <grimm/foundation/assertion.h>
 #include <atomic>
 #include <thread>
 
