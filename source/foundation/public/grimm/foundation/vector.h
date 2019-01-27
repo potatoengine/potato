@@ -52,8 +52,10 @@ public:
         : AllocatorT(allocator) {}
 
     template <typename IteratorT, typename SentinelT>
-    inline vector(IteratorT begin, SentinelT end, AllocatorT const& allocator = AllocatorT{});
-    inline vector(std::initializer_list<T> initial, AllocatorT const& allocator = AllocatorT{});
+    inline explicit vector(IteratorT begin, SentinelT end, AllocatorT const& allocator = AllocatorT{});
+    inline explicit vector(std::initializer_list<T> initial, AllocatorT const& allocator = AllocatorT{});
+    inline explicit vector(size_type size, const_reference initial, AllocatorT const& allocator = AllocatorT{});
+    inline explicit vector(size_type size, AllocatorT const& allocator = AllocatorT{});
 
     vector(vector const&) = delete;
     vector& operator=(vector const&) = delete;
@@ -139,6 +141,16 @@ template <typename T, typename AllocatorT>
 gm::vector<T, AllocatorT>::vector(std::initializer_list<T> initial, AllocatorT const& allocator)
     : AllocatorT(allocator) {
     insert(_first, initial.begin(), initial.end());
+}
+
+template <typename T, typename AllocatorT>
+gm::vector<T, AllocatorT>::vector(size_type size, const_reference initial, AllocatorT const& allocator) : vector(allocator) {
+    resize(size, initial);
+}
+
+template <typename T, typename AllocatorT>
+gm::vector<T, AllocatorT>::vector(size_type size, AllocatorT const& allocator) : vector(allocator) {
+    resize(size);
 }
 
 template <typename T, typename AllocatorT>

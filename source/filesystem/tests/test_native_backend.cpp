@@ -44,7 +44,7 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
     }
 
     DOCTEST_TEST_CASE("enumerate") {
-        vector<std::string> const expected = {
+        vector<std::string> const expected{
             "parent",
             "parent/child",
             "parent/child/hello.txt",
