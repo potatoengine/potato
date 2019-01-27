@@ -24,6 +24,9 @@ namespace gm {
 
     template <typename HashAlgorithm, typename T>
     inline void hash_append(HashAlgorithm&, gm::span<T> const&) noexcept;
+
+    template <typename T>
+    using view = span<T const>;
 } // namespace gm
 
 /// <summary> A non-owning slice of an array. </summary>
