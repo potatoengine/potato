@@ -66,7 +66,7 @@ namespace gm::gpu::null {
         void clearRenderTarget(ResourceView* view, PackedVector4f color) override {}
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override {}
-        void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) {}
+        void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) override {}
 
         void finish() override {}
         void clear(PipelineState* pipelineState = nullptr) override {}
@@ -100,8 +100,8 @@ namespace gm::gpu::null {
     class TextureNull final : public Texture {
     public:
         TextureType type() const noexcept override { return TextureType::Texture2D; }
-        Format format() const noexcept { return Format::Unknown; }
-        PackedVector3f dimensions() const noexcept { return {0, 0, 0}; }
+        Format format() const noexcept override { return Format::Unknown; }
+        PackedVector3f dimensions() const noexcept override { return {0, 0, 0}; }
     };
 
     class SamplerNull final : public Sampler {
