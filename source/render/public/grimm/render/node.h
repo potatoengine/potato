@@ -4,6 +4,7 @@
 
 #include "_export.h"
 #include "grimm/foundation/box.h"
+#include "grimm/foundation/vector.h"
 
 namespace gm::gpu {
     class CommandList;
@@ -11,19 +12,18 @@ namespace gm::gpu {
 } // namespace gm::gpu
 
 namespace gm {
-    class Camera;
     class Model;
 
     class Node {
     public:
-        GM_RENDER_API explicit Node(box<Camera> camera);
         GM_RENDER_API explicit Node(box<Model> model);
         GM_RENDER_API ~Node();
 
         GM_RENDER_API void render(gpu::CommandList& commandList, gpu::Device& device);
+        GM_RENDER_API void addChild(box<Node> child);
 
     private:
-        box<Camera> _camera;
         box<Model> _model;
+        vector<box<Node>> _children;
     };
 } // namespace gm
