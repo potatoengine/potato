@@ -24,10 +24,10 @@ namespace {
     };
 } // namespace
 
-gm::Semaphore::Semaphore(int initial) : _counter(initial), _handle(new SemaphoreImplementation) {
+gm::concurrency::Semaphore::Semaphore(int initial) : _counter(initial), _handle(new SemaphoreImplementation) {
 }
 
-gm::Semaphore::~Semaphore() {
+gm::concurrency::Semaphore::~Semaphore() {
     delete static_cast<SemaphoreImplementation*>(_handle);
 }
 
