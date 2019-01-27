@@ -4,6 +4,7 @@
 
 DOCTEST_TEST_SUITE("[grimm][concurrency] LockFreeQueue") {
     using namespace gm;
+    using namespace gm::concurrency;
 
     DOCTEST_TEST_CASE("default") {
         LockFreeQueue<int> queue;

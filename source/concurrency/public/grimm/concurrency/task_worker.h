@@ -9,7 +9,7 @@
 #include <grimm/foundation/delegate.h>
 #include <thread>
 
-namespace gm {
+namespace gm::concurrency {
     using Task = delegate<void()>;
     using TaskQueue = ConcurrentQueue<Task>;
 
@@ -34,4 +34,4 @@ namespace gm {
         std::thread _thread;
     };
 
-} // namespace gm
+} // namespace gm::concurrency

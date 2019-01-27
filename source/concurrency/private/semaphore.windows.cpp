@@ -7,18 +7,18 @@
 #include <grimm/foundation/platform_windows.h>
 #include <limits>
 
-gm::Semaphore::Semaphore(int initial) : _counter(initial), _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {
+gm::concurrency::Semaphore::Semaphore(int initial) : _counter(initial), _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {
 }
 
-gm::Semaphore::~Semaphore() {
+gm::concurrency::Semaphore::~Semaphore() {
     CloseHandle(_handle);
 }
 
-void gm::Semaphore::_signal(int n) {
+void gm::concurrency::Semaphore::_signal(int n) {
     ReleaseSemaphore(_handle, n, nullptr);
 }
 
-void gm::Semaphore::_wait() {
+void gm::concurrency::Semaphore::_wait() {
     constexpr int kMaxSpin = 10000;
 
     // keep spinning for a while since OS sychronization is expensive

@@ -8,6 +8,6 @@
 
 #include <pthread.h>
 
-void gm::setCurrentThreadName(zstring_view name) {
+void gm::concurrency::setCurrentThreadName(zstring_view name) {
     pthread_setname_np(pthread_self(), name.c_str());
 }

@@ -7,7 +7,7 @@
 #include <grimm/foundation/platform.h>
 #include <atomic>
 
-namespace gm {
+namespace gm::concurrency {
     class Semaphore {
     public:
         GM_CONCURRENCY_API Semaphore(int initial = 0);
@@ -53,4 +53,4 @@ namespace gm {
         }
     }
 
-} // namespace gm
+} // namespace gm::concurrency

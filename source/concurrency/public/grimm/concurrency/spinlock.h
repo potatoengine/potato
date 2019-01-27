@@ -6,8 +6,7 @@
 #include <atomic>
 #include <thread>
 
-namespace gm {
-
+namespace gm::concurrency {
     class Spinlock {
     public:
         inline void lock();
@@ -58,4 +57,4 @@ namespace gm {
         _owner.store(std::thread::id(), std::memory_order_release);
     }
 
-} // namespace gm
+} // namespace gm::concurrency

@@ -31,7 +31,7 @@ gm::Semaphore::~Semaphore() {
     delete static_cast<SemaphoreImplementation*>(_handle);
 }
 
-void gm::Semaphore::_signal(int n) {
+void gm::concurrency::Semaphore::_signal(int n) {
     auto sema = static_cast<SemaphoreImplementation*>(_handle);
 
     {
@@ -47,7 +47,7 @@ void gm::Semaphore::_signal(int n) {
     }
 }
 
-void gm::Semaphore::_wait() {
+void gm::concurrency::Semaphore::_wait() {
     if (_counter.fetch_sub(1, std::memory_order_acquire) <= 0) {
         auto sema = static_cast<SemaphoreImplementation*>(_handle);
         std::unique_lock lock(sema->lock);

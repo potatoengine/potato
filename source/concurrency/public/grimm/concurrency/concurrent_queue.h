@@ -10,7 +10,7 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace gm {
+namespace gm::concurrency {
     template <typename T>
     class ConcurrentQueue {
     public:
@@ -143,4 +143,4 @@ namespace gm {
         _condition.notify_all();
     }
 
-} // namespace gm
+} // namespace gm::concurrency

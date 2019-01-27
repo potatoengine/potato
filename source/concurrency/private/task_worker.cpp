@@ -4,7 +4,7 @@
 #include "semaphore.h"
 #include "thread_util.h"
 
-gm::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _queue(queue) {
+gm::concurrency::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _queue(queue) {
     // just to make sure this is called at least once on the main thread...
     auto _ = currentSmallThreadId();
 
@@ -22,13 +22,13 @@ gm::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _q
     sem.wait();
 }
 
-gm::TaskWorker::~TaskWorker() {
+gm::concurrency::TaskWorker::~TaskWorker() {
     if (_thread.joinable()) {
         _thread.join();
     }
 }
 
-int gm::TaskWorker::_threadMain() {
+int gm::concurrency::TaskWorker::_threadMain() {
     Task task;
     while (_queue.dequeWait(task)) {
         task();

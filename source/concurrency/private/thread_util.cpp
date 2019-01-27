@@ -5,7 +5,7 @@
 #include <atomic>
 #include <limits>
 
-auto gm::currentSmallThreadId() noexcept -> SmallThreadId {
+auto gm::concurrency::currentSmallThreadId() noexcept -> SmallThreadId {
     static std::atomic<SmallThreadId> nextThreadId = 0;
     static thread_local SmallThreadId currentThreadId = nextThreadId++;
 

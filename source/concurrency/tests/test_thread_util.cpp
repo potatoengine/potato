@@ -4,6 +4,7 @@
 
 DOCTEST_TEST_SUITE("[grimm][concurrency] thread_util") {
     using namespace gm;
+    using namespace gm::concurrency;
 
     DOCTEST_TEST_CASE("setCurrentThreadName") {
         // basically just making sure we're not crashing

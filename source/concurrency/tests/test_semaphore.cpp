@@ -4,6 +4,7 @@
 
 DOCTEST_TEST_SUITE("[grimm][concurrency] Semaphore") {
     using namespace gm;
+    using namespace gm::concurrency;
 
     DOCTEST_TEST_CASE("default") {
         Semaphore sem(0);

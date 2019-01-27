@@ -6,7 +6,7 @@
 #include <grimm/foundation/types.h>
 #include <grimm/foundation/zstring_view.h>
 
-namespace gm {
+namespace gm::concurrency {
 
     using SmallThreadId = uint16;
 
@@ -14,4 +14,4 @@ namespace gm {
 
     GM_CONCURRENCY_API void setCurrentThreadName(zstring_view name);
 
-} // namespace gm
+} // namespace gm::concurrency

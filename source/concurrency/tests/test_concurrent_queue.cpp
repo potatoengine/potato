@@ -4,6 +4,7 @@
 
 DOCTEST_TEST_SUITE("[grimm][concurrency] ConcurrentQueue") {
     using namespace gm;
+    using namespace gm::concurrency;
 
     DOCTEST_TEST_CASE("default") {
         ConcurrentQueue<int> queue;
