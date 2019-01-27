@@ -365,13 +365,13 @@ auto gm::vector<T, AllocatorT>::insert(const_iterator pos, IteratorT begin, Sent
         T* tmp = gm::allocate<T>(get_allocator(), new_capacity);
 
         // insert new elements
-        gm::unitialized_move_n(begin, count, tmp + offset);
+        gm::unitialized_copy_n(begin, count, tmp + offset);
 
         // move over elements before insertion point
-        gm::unitialized_move_n(_first, offset, tmp);
+        gm::unitialized_copy_n(_first, offset, tmp);
 
         // move over elements after insertion point
-        gm::unitialized_move_n(_first + offset, _last - _first - offset, tmp + offset + count);
+        gm::unitialized_copy_n(_first + offset, _last - _first - offset, tmp + offset + count);
 
         auto const new_size = _last - _first + count;
 
