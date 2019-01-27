@@ -22,6 +22,9 @@ namespace gm {
         explicit blob(size_type size) : _size(size) {
             _data = default_allocator{}.allocate(size, alignment);
         }
+        explicit blob(view<byte> data) : blob(data.size()) {
+            std::memcpy(_data, data.data(), _size);
+        }
 
         blob(blob&& rhs) : _data(rhs._data), _size(rhs._size) {
             rhs._data = nullptr;
