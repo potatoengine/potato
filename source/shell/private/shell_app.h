@@ -10,6 +10,8 @@
 #include "grimm/gpu/buffer.h"
 #include "grimm/gpu/resource_view.h"
 #include "grimm/imgrui/imgrui.h"
+#include "grimm/render/renderer.h"
+#include "grimm/render/node.h"
 
 #include <SDL.h>
 
@@ -19,7 +21,7 @@ namespace gm {
 
 class gm::ShellApp {
 public:
-    ShellApp() = default;
+    ShellApp();
     ~ShellApp();
 
     ShellApp(ShellApp const&) = delete;
@@ -40,10 +42,10 @@ private:
     fs::FileSystem _fileSystem;
     rc<gpu::Device> _device;
     rc<gpu::SwapChain> _swapChain;
-    box<gpu::Buffer> _vbo;
-    box<gpu::ResourceView> _rtv;
     box<gpu::CommandList> _commandList;
-    box<gpu::PipelineState> _pipelineState;
+    box<Renderer> _renderer;
+    box<Camera> _camera;
+    box<Node> _root;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     imgrui::DrawImgui _drawImgui;
 };

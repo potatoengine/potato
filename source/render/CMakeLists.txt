@@ -25,6 +25,7 @@ target_link_libraries(grimm_render
         grimm::foundation
         grimm::math
         grimm::gpu
+        grimm::concurrency
     PRIVATE
         doctest
 )

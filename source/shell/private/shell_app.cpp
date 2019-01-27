@@ -12,6 +12,10 @@
 #include "grimm/gpu/swap_chain.h"
 #include "grimm/gpu/texture.h"
 #include "grimm/math/packed.h"
+#include "grimm/render/camera.h"
+#include "grimm/render/node.h"
+#include "grimm/render/model.h"
+#include "grimm/render/material.h"
 #include "grimm/imgrui/imgrui.h"
 
 #include <fmt/chrono.h>
@@ -21,22 +25,14 @@
 #include <SDL_syswm.h>
 #include <imgui.h>
 
-static constexpr gm::PackedVector3f triangle[] = {
-    {-0.8f, -0.8f, 0},
-    {1, 0, 0},
-    {0.8f, -0.8f, 0},
-    {0, 1, 0},
-    {0, +0.8f, 0},
-    {0, 0, 1},
-};
+gm::ShellApp::ShellApp() = default;
 
 gm::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
 
     _commandList.reset();
-    _rtv.reset();
-    _pipelineState.reset();
-    _vbo.reset();
+    _root.reset();
+    _camera.reset();
     _swapChain.reset();
     _window.reset();
 
@@ -74,6 +70,8 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
+    _renderer = make_box<Renderer>(_device);
+
 #if GM_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
 #endif
@@ -82,18 +80,13 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _rtv = _device->createRenderTargetView(_swapChain->getBuffer(0).get());
+    _camera = make_box<Camera>(_swapChain);
 
     _commandList = _device->createCommandList();
     if (_commandList == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create command list", _window.get());
         return 1;
     }
-
-    _vbo = _device->createBuffer(gpu::BufferType::Vertex, sizeof(triangle));
-    _commandList->update(_vbo.get(), span{triangle, 6}.as_bytes(), 0);
-
-    gpu::PipelineStateDesc pipelineDesc;
 
     blob basicVertShader, basicPixelShader;
     auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_5_0.cbo");
@@ -107,18 +100,9 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    gpu::InputLayoutElement layout[2] = {
-        {gpu::Format::R32G32B32Float, gpu::Semantic::Position, 0, 0},
-        {gpu::Format::R32G32B32Float, gpu::Semantic::Color, 0, 0},
-    };
-    pipelineDesc.vertShader = basicVertShader;
-    pipelineDesc.pixelShader = basicPixelShader;
-    pipelineDesc.inputLayout = layout;
-    _pipelineState = _device->createPipelineState(pipelineDesc);
-    if (_pipelineState == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create pipeline state", _window.get());
-        return 1;
-    }
+    auto material = make_shared<Material>(std::move(basicVertShader), std::move(basicPixelShader));
+    auto model = make_box<Model>(std::move(material));
+    _root = make_box<Node>(std::move(model));
 
     blob imguiVertShader, imguiPixelShader;
     stream = _fileSystem.openRead("build/resources/shaders/imgui.vs_5_0.cbo");
@@ -197,21 +181,12 @@ void gm::ShellApp::run() {
         }
         ImGui::End();
 
-        _commandList->clear();
-        _commandList->clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
-        _commandList->setPipelineState(_pipelineState.get());
-        _commandList->bindRenderTarget(0, _rtv.get());
-        _commandList->bindVertexBuffer(0, _vbo.get(), sizeof(PackedVector3f) * 2);
-        _commandList->setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
-        _commandList->setViewport(viewport);
-        _commandList->draw(3);
+        _camera->beginFrame(*_commandList, *_device);
+        _root->render(*_commandList, *_device);
 
         _drawImgui.endFrame(*_device, *_commandList);
 
-        _commandList->finish();
-        _device->execute(_commandList.get());
-
-        _swapChain->present();
+        _camera->endFrame(*_commandList, *_device);
 
         auto endFrame = clock.now();
         duration = endFrame - now;
@@ -230,8 +205,8 @@ void gm::ShellApp::onWindowClosed() {
 void gm::ShellApp::onWindowSizeChanged() {
     int width, height;
     SDL_GetWindowSize(_window.get(), &width, &height);
-    _rtv.reset();
+    _camera->resetSwapChain(nullptr);
     _commandList->clear();
     _swapChain->resizeBuffers(width, height);
-    _rtv = _device->createRenderTargetView(_swapChain->getBuffer(0).get());
+    _camera->resetSwapChain(_swapChain);
 }

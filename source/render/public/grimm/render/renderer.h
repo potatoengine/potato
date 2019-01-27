@@ -3,8 +3,10 @@
 #pragma once
 
 #include "_export.h"
+#include "render_task.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/rc.h"
+#include "grimm/concurrency/concurrent_queue.h"
 #include <thread>
 #include <atomic>
 
@@ -16,17 +18,17 @@ namespace gm::gpu {
 namespace gm {
     class Renderer {
     public:
-        explicit GM_RENDER_API Renderer(rc<gpu::Device> device);
-        GM_RENDER_API ~Renderer();
+        GM_RENDER_API explicit Renderer(rc<gpu::Device> device);
+        virtual ~Renderer();
 
         Renderer(Renderer const&) = delete;
         Renderer& operator=(Renderer const&) = delete;
 
-        GM_RENDER_API void bindSwapChain(rc<gpu::SwapChain> swapChain);
-
     private:
-        struct Backend;
+        void _renderMain();
 
-        box<Backend> _backend;
+        rc<gpu::Device> _device;
+        std::thread _renderThread;
+        concurrency::ConcurrentQueue<RenderTask> _taskQueue;
     };
 } // namespace gm
