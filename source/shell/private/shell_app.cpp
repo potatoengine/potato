@@ -9,9 +9,11 @@
 #include "grimm/filesystem/stream_util.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/factory.h"
+#include "grimm/gpu/command_list.h"
 #include "grimm/gpu/swap_chain.h"
 #include "grimm/gpu/texture.h"
 #include "grimm/math/packed.h"
+#include "grimm/render/renderer.h"
 #include "grimm/render/camera.h"
 #include "grimm/render/node.h"
 #include "grimm/render/model.h"
@@ -174,10 +176,10 @@ void gm::ShellApp::run() {
 
             fixed_string_writer<128> buffer;
             format_into(buffer, "{}us", micro);
-            ImGui::LabelText("Frametime", buffer.c_str());
+            ImGui::LabelText("Frametime", "%s", buffer.c_str());
             buffer.clear();
             format_into(buffer, "{}", 1000000.0 / micro);
-            ImGui::LabelText("FPS", buffer.c_str());
+            ImGui::LabelText("FPS", "%s", buffer.c_str());
         }
         ImGui::End();
 

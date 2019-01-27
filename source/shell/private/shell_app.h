@@ -3,21 +3,22 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/filesystem/filesystem.h"
-#include "grimm/gpu/command_list.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/swap_chain.h"
-#include "grimm/gpu/pipeline_state.h"
-#include "grimm/gpu/buffer.h"
-#include "grimm/gpu/resource_view.h"
 #include "grimm/imgrui/imgrui.h"
-#include "grimm/render/renderer.h"
-#include "grimm/render/node.h"
 
 #include <SDL.h>
 
 namespace gm {
     class ShellApp;
-}
+    class Renderer;
+    class Camera;
+    class Node;
+} // namespace gm
+
+namespace gm::gpu {
+    class CommandList;
+    class Device;
+    class SwapChain;
+} // namespace gm::gpu
 
 class gm::ShellApp {
 public:
