@@ -5,7 +5,7 @@ include(gm_copy_library_import)
 
 find_package(SDL2 REQUIRED)
 
-add_executable(shell)
+add_executable(shell WIN32)
 
 target_include_directories(shell
     PUBLIC

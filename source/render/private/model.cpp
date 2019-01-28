@@ -8,12 +8,13 @@
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/command_list.h"
 
+static const float z = -5;
 static const gm::PackedVector3f triangle[] = {
-    {-0.5f, -0.5f, 0},
+    {-0.5f, -0.5f, z},
     {1, 0, 0},
-    {0.5f, -0.5f, 0},
+    {0.5f, -0.5f, z},
     {0, 1, 0},
-    {0, +0.5f, 0},
+    {0, +0.5f, z},
     {0, 0, 1},
 };
 

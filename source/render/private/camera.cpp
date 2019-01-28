@@ -13,9 +13,10 @@
 #include "grimm/math/constants.h"
 
 namespace {
-    struct CameraData alignas(16) {
-        float modelView[16];
-        gm::PackedVector4f viewProjection[4];
+    struct alignas(16) CameraData {
+        float worldViewProjection[16];
+        float worldView[16];
+        float viewProjection[16];
     };
 } // namespace
 
@@ -39,25 +40,29 @@ void gm::Camera::beginFrame(RenderContext& ctx) {
         _cameraDataBuffer = ctx.device.createBuffer(gpu::BufferType::Constant, sizeof(CameraData));
     }
 
-    gpu::Viewport viewport;
     auto dimensions = _backBuffer->dimensions();
+
+    gpu::Viewport viewport;
     viewport.width = dimensions.m.x;
     viewport.height = dimensions.m.y;
+    viewport.minDepth = 0;
+    viewport.maxDepth = 1;
 
-    float farZ = 1.f;
-    float nearZ = 0.f;
-    float a = 1.f / (farZ - nearZ);
-    float b = a * nearZ;
+    float farZ = 4000.f;
+    float nearZ = 2.f;
+    float aspect = viewport.width / viewport.height;
+    float fovY = constants::degreesToRadians<float> * 75.f;
 
     CameraData data;
-    Matrix4f modelView;
-    modelView = modelView * rotationXY(static_cast<float>(std::fmod(ctx.frameTime, 2.0 * constants::pi<double>)));
-    modelView.alignedStore(data.modelView);
+    Matrix4f worldView;
+    worldView *= rotationXY(static_cast<float>(std::fmod(ctx.frameTime, 2.0 * constants::pi<double>)));
+    worldView.alignedStore(data.worldView);
 
-    data.viewProjection[0] = {.5f * viewport.width, 0, 0, 0};
-    data.viewProjection[1] = {0, .5f * viewport.height, 0, 0};
-    data.viewProjection[2] = {0, 0, a, 0};
-    data.viewProjection[3] = {0, 0, b, 1};
+    Matrix4f viewProjection = projection(aspect, fovY, nearZ, farZ);
+    viewProjection.alignedStore(data.viewProjection);
+
+    auto modelViewProjection = worldView * viewProjection;
+    modelViewProjection.alignedStore(data.worldViewProjection);
 
     ctx.commandList.update(_cameraDataBuffer.get(), span{&data, 1}.as_bytes());
 
