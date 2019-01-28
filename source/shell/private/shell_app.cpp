@@ -15,6 +15,7 @@
 #include "grimm/math/packed.h"
 #include "grimm/render/renderer.h"
 #include "grimm/render/camera.h"
+#include "grimm/render/context.h"
 #include "grimm/render/node.h"
 #include "grimm/render/model.h"
 #include "grimm/render/material.h"
@@ -178,12 +179,13 @@ void gm::ShellApp::run() {
         ImGui::End();
 
         _renderer->beginFrame();
-        _camera->beginFrame(_renderer->commandList(), *_device);
-        _root->render(_renderer->commandList(), *_device);
+        auto ctx = _renderer->context();
+        _camera->beginFrame(ctx);
+        _root->render(ctx);
 
         _drawImgui.endFrame(*_device, _renderer->commandList());
 
-        _camera->endFrame(_renderer->commandList(), *_device);
+        _camera->endFrame(ctx);
         _renderer->endFrame();
         _swapChain->present();
 

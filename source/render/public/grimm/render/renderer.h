@@ -18,6 +18,8 @@ namespace gm::gpu {
 } // namespace gm::gpu
 
 namespace gm {
+    class RenderContext;
+
     class Renderer {
     public:
         GM_RENDER_API explicit Renderer(rc<gpu::Device> device);
@@ -29,6 +31,8 @@ namespace gm {
         GM_RENDER_API void beginFrame();
         GM_RENDER_API void endFrame();
 
+        GM_RENDER_API RenderContext context();
+
         gpu::CommandList& commandList() const noexcept { return *_commandList; }
 
     private:
@@ -36,7 +40,7 @@ namespace gm {
 
         rc<gpu::Device> _device;
         box<gpu::CommandList> _commandList;
-        box<gpu::Buffer> _frameBufferConstants;
+        box<gpu::Buffer> _frameDataBuffer;
         std::thread _renderThread;
         concurrency::ConcurrentQueue<RenderTask> _taskQueue;
         uint32 _frameCounter = 0;

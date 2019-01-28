@@ -2,6 +2,7 @@
 
 #include "renderer.h"
 #include "render_task.h"
+#include "context.h"
 #include <grimm/gpu/buffer.h>
 #include <grimm/gpu/command_list.h>
 #include <grimm/gpu/device.h>
@@ -33,8 +34,8 @@ void gm::Renderer::_renderMain() {
 }
 
 void gm::Renderer::beginFrame() {
-    if (_frameBufferConstants == nullptr) {
-        _frameBufferConstants = _device->createBuffer(gpu::BufferType::Constant, sizeof(FrameData));
+    if (_frameDataBuffer == nullptr) {
+        _frameDataBuffer = _device->createBuffer(gpu::BufferType::Constant, sizeof(FrameData));
     }
 
     uint64 nowNanoseconds = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -50,11 +51,18 @@ void gm::Renderer::beginFrame() {
     _frameTimestamp = now;
 
     _commandList->clear();
-    _commandList->update(_frameBufferConstants.get(), view<byte>{reinterpret_cast<byte*>(&frame), sizeof(frame)});
-    _commandList->bindConstantBuffer(0, _frameBufferConstants.get(), gpu::ShaderStage::All);
+    _commandList->update(_frameDataBuffer.get(), view<byte>{reinterpret_cast<byte*>(&frame), sizeof(frame)});
+    _commandList->bindConstantBuffer(0, _frameDataBuffer.get(), gpu::ShaderStage::All);
 }
 
 void gm::Renderer::endFrame() {
     _commandList->finish();
     _device->execute(_commandList.get());
+}
+
+auto gm::Renderer::context() -> RenderContext {
+    return RenderContext{
+        _frameTimestamp,
+        *_commandList,
+        *_device};
 }

@@ -16,6 +16,8 @@ namespace gm::gpu {
 } // namespace gm::gpu
 
 namespace gm {
+    class RenderContext;
+
     struct MeshBuffer {
         uint32 size = 0;
         uint32 offset = 0;
@@ -34,8 +36,8 @@ namespace gm {
         GM_RENDER_API ~Mesh();
 
         GM_RENDER_API void populateLayout(span<gpu::InputLayoutElement>& inputLayout) const noexcept;
-        GM_RENDER_API void updateVertexBuffers(gpu::CommandList& commandList, gpu::Device& device);
-        GM_RENDER_API void bindVertexBuffers(gpu::CommandList& commandList, gpu::Device& device);
+        GM_RENDER_API void updateVertexBuffers(RenderContext& ctx);
+        GM_RENDER_API void bindVertexBuffers(RenderContext& ctx);
 
     private:
         box<gpu::Buffer> _vbo;

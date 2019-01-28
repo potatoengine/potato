@@ -14,12 +14,12 @@ void gm::Node::addChild(box<Node> child) {
     _children.push_back(std::move(child));
 }
 
-void gm::Node::render(gpu::CommandList& commandList, gpu::Device& device) {
+void gm::Node::render(RenderContext& ctx) {
     if (_model != nullptr) {
-        _model->render(commandList, device);
+        _model->render(ctx);
     }
 
     for (auto& node : _children) {
-        node->render(commandList, device);
+        node->render(ctx);
     }
 }

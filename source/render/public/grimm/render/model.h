@@ -15,13 +15,14 @@ namespace gm::gpu {
 namespace gm {
     class Material;
     class Mesh;
+    class RenderContext;
 
     class Model {
     public:
         GM_RENDER_API explicit Model(rc<Material> material);
         GM_RENDER_API ~Model();
 
-        GM_RENDER_API void render(gpu::CommandList& commandList, gpu::Device& device);
+        GM_RENDER_API void render(RenderContext& ctx);
 
     private:
         rc<Material> _material;

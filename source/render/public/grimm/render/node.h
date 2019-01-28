@@ -13,13 +13,14 @@ namespace gm::gpu {
 
 namespace gm {
     class Model;
+    class RenderContext;
 
     class Node {
     public:
         GM_RENDER_API explicit Node(box<Model> model);
         GM_RENDER_API ~Node();
 
-        GM_RENDER_API void render(gpu::CommandList& commandList, gpu::Device& device);
+        GM_RENDER_API void render(RenderContext& ctx);
         GM_RENDER_API void addChild(box<Node> child);
 
     private:

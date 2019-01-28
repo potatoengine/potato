@@ -1,6 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "mesh.h"
+#include "context.h"
 #include "grimm/gpu/buffer.h"
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/device.h"
@@ -26,15 +27,15 @@ void gm::Mesh::populateLayout(span<gpu::InputLayoutElement>& inputLayout) const 
     inputLayout = inputLayout.first(size);
 }
 
-void gm::Mesh::updateVertexBuffers(gpu::CommandList& commandList, gpu::Device& device) {
+void gm::Mesh::updateVertexBuffers(RenderContext& ctx) {
     if (_vbo == nullptr) {
-        _vbo = device.createBuffer(gpu::BufferType::Vertex, _data.size());
-        commandList.update(_vbo.get(), _data, 0);
+        _vbo = ctx.device.createBuffer(gpu::BufferType::Vertex, _data.size());
+        ctx.commandList.update(_vbo.get(), _data, 0);
     }
 }
 
-void gm::Mesh::bindVertexBuffers(gpu::CommandList& commandList, gpu::Device& device) {
+void gm::Mesh::bindVertexBuffers(RenderContext& ctx) {
     for (int i = 0; i != _buffers.size(); ++i) {
-        commandList.bindVertexBuffer(i, _vbo.get(), _buffers[i].stride, _buffers[i].offset);
+        ctx.commandList.bindVertexBuffer(i, _vbo.get(), _buffers[i].stride, _buffers[i].offset);
     }
 }

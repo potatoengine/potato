@@ -3,16 +3,17 @@
 #include "model.h"
 #include "material.h"
 #include "mesh.h"
+#include "context.h"
 #include "grimm/gpu/buffer.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/command_list.h"
 
-static constexpr gm::PackedVector3f triangle[] = {
-    {-0.8f, -0.8f, 0},
+static const gm::PackedVector3f triangle[] = {
+    {-0.5f, -0.5f, 0},
     {1, 0, 0},
-    {0.8f, -0.8f, 0},
+    {0.5f, -0.5f, 0},
     {0, 1, 0},
-    {0, +0.8f, 0},
+    {0, +0.5f, 0},
     {0, 0, 1},
 };
 
@@ -30,11 +31,11 @@ gm::Model::Model(rc<Material> material) : _material(std::move(material)) {
 
 gm::Model::~Model() = default;
 
-void gm::Model::render(gpu::CommandList& commandList, gpu::Device& device) {
-    _mesh->updateVertexBuffers(commandList, device);
+void gm::Model::render(RenderContext& ctx) {
+    _mesh->updateVertexBuffers(ctx);
 
-    _material->bindMaterialToRender(commandList, device);
-    _mesh->bindVertexBuffers(commandList, device);
-    commandList.setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
-    commandList.draw(3);
+    _material->bindMaterialToRender(ctx);
+    _mesh->bindVertexBuffers(ctx);
+    ctx.commandList.setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
+    ctx.commandList.draw(3);
 }

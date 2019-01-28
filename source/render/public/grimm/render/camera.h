@@ -8,6 +8,7 @@
 #include "grimm/gpu/swap_chain.h"
 
 namespace gm::gpu {
+    class Buffer;
     class CommandList;
     class Device;
     class ResourceView;
@@ -15,6 +16,8 @@ namespace gm::gpu {
 } // namespace gm::gpu
 
 namespace gm {
+    class RenderContext;
+
     class Camera {
     public:
         GM_RENDER_API explicit Camera(rc<gpu::SwapChain> swapChain = nullptr);
@@ -22,11 +25,12 @@ namespace gm {
 
         GM_RENDER_API void resetSwapChain(rc<gpu::SwapChain> swapChain);
 
-        GM_RENDER_API void beginFrame(gpu::CommandList& commandList, gpu::Device& device);
-        GM_RENDER_API void endFrame(gpu::CommandList& commandList, gpu::Device& device);
+        GM_RENDER_API void beginFrame(RenderContext& ctx);
+        GM_RENDER_API void endFrame(RenderContext& ctx);
 
     private:
         rc<gpu::SwapChain> _swapChain;
+        box<gpu::Buffer> _cameraDataBuffer;
         box<gpu::Texture> _backBuffer;
         box<gpu::ResourceView> _rtv;
     };

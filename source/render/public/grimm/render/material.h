@@ -14,12 +14,14 @@ namespace gm::gpu {
 } // namespace gm::gpu
 
 namespace gm {
+    class RenderContext;
+
     class Material : public shared<Material> {
     public:
         GM_RENDER_API explicit Material(blob vertexShader, blob pixelShader);
         GM_RENDER_API ~Material();
 
-        GM_RENDER_API void bindMaterialToRender(gpu::CommandList& commandList, gpu::Device& device);
+        GM_RENDER_API void bindMaterialToRender(RenderContext& ctx);
 
     private:
         box<gpu::PipelineState> _state;
