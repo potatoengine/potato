@@ -12,4 +12,8 @@ namespace gm {
     static constexpr struct {
     } vec_broadcast;
     using vec_broadcast_t = decltype(vec_broadcast);
+
+    static constexpr struct {
+    } noinit;
+    using noinit_t = decltype(noinit);
 } // namespace gm

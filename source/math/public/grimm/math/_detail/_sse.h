@@ -11,12 +11,15 @@
 
 #include <cmath>
 #include <cstdint>
+#include <limits>
 
 #include <pmmintrin.h>
 #include <xmmintrin.h>
+#include <smmintrin.h>
 
 #define _gm_SSE_MATHCALL GM_FORCEINLINE auto GM_VECTORCALL
 #define _gm_SSE_MATHCALL_FRIEND GM_FORCEINLINE friend auto GM_VECTORCALL
+#define _gm_SSE_MATHCALL_STATIC GM_FORCEINLINE static auto GM_VECTORCALL
 #if GM_COMPILER_MICROSOFT
 #    define _gm_SSE_MATHCONSTRUCTOR GM_FORCEINLINE
 #else
@@ -36,43 +39,57 @@ namespace gm {
         template <int N>
         using vector_template = Vector4f;
 
-        _gm_SSE_MATHCONSTRUCTOR Vector4f() : v(_mm_set1_ps(0.f)) {}
-        explicit _gm_SSE_MATHCONSTRUCTOR Vector4f(const value_type* p) : v(_mm_set_ps(p[2], p[2], p[1], p[0])) {}
-        explicit _gm_SSE_MATHCONSTRUCTOR Vector4f(value_type x, value_type y, value_type z, value_type w) : v(_mm_set_ps(w, z, y, x)) {}
-        explicit _gm_SSE_MATHCONSTRUCTOR Vector4f(vec_broadcast_t, value_type value) : v(_mm_set1_ps(value)) {}
+        _gm_SSE_MATHCONSTRUCTOR Vector4f() noexcept : v(_mm_set1_ps(0.f)) {}
+        /*implicit*/ _gm_SSE_MATHCONSTRUCTOR Vector4f(noinit_t) noexcept {}
+        /*implicit*/ _gm_SSE_MATHCONSTRUCTOR Vector4f(value_type x, value_type y, value_type z, value_type w) noexcept : v(_mm_set_ps(w, z, y, x)) {}
+        /*implicit*/ _gm_SSE_MATHCONSTRUCTOR Vector4f(vec_broadcast_t, value_type value) noexcept : v(_mm_set1_ps(value)) {}
         /*implicit*/ Vector4f(__m128 vec) : v(vec) {}
 
+        _gm_SSE_MATHCALL_STATIC unalignedLoad(const value_type* unaligned) noexcept->Vector4f {
+            return _mm_loadu_ps(unaligned);
+        }
+        _gm_SSE_MATHCALL_STATIC alignedLoad(const value_type* aligned) noexcept->Vector4f {
+            return _mm_load_ps(aligned);
+        }
+
+        _gm_SSE_MATHCALL unalignedStore(value_type* unaligned) noexcept->void {
+            _mm_storeu_ps(unaligned, v);
+        }
+        _gm_SSE_MATHCALL alignedStore(value_type* aligned) noexcept->void {
+            _mm_store_ps(aligned, v);
+        }
+
         template <int X = 0, int Y = 1, int Z = 2, int W = 3>
-        _gm_SSE_MATHCALL shuffle() const { return _mm_shuffle_ps(v, v, _MM_SHUFFLE(W, Z, Y, X)); }
+        _gm_SSE_MATHCALL shuffle() const noexcept { return _mm_shuffle_ps(v, v, _MM_SHUFFLE(W, Z, Y, X)); }
 
-        _gm_SSE_MATHCALL x() const->value_type { return _mm_cvtss_f32(v); }
-        _gm_SSE_MATHCALL y() const->value_type { return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1))); }
-        _gm_SSE_MATHCALL z() const->value_type { return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 2, 2, 2))); }
-        _gm_SSE_MATHCALL w() const->value_type { return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 3, 3, 3))); }
+        _gm_SSE_MATHCALL x() const noexcept->value_type { return _mm_cvtss_f32(v); }
+        _gm_SSE_MATHCALL y() const noexcept->value_type { return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1))); }
+        _gm_SSE_MATHCALL z() const noexcept->value_type { return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 2, 2, 2))); }
+        _gm_SSE_MATHCALL w() const noexcept->value_type { return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 3, 3, 3))); }
 
-        _gm_SSE_MATHCALL wzyx() const->Vector4f { return _mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 1, 2, 3)); }
+        _gm_SSE_MATHCALL wzyx() const noexcept->Vector4f { return _mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 1, 2, 3)); }
 
-        _gm_SSE_MATHCALL_FRIEND operator+(Vector4f lhs, Vector4f rhs)->Vector4f { return _mm_add_ps(lhs.v, rhs.v); }
-        _gm_SSE_MATHCALL_FRIEND operator-(Vector4f lhs, Vector4f rhs)->Vector4f { return _mm_sub_ps(lhs.v, rhs.v); }
-        _gm_SSE_MATHCALL_FRIEND operator*(Vector4f lhs, Vector4f rhs)->Vector4f { return _mm_mul_ps(lhs.v, rhs.v); }
-        _gm_SSE_MATHCALL_FRIEND operator/(Vector4f lhs, Vector4f rhs)->Vector4f { return _mm_div_ps(lhs.v, rhs.v); }
+        _gm_SSE_MATHCALL_FRIEND operator+(Vector4f lhs, Vector4f rhs) noexcept->Vector4f { return _mm_add_ps(lhs.v, rhs.v); }
+        _gm_SSE_MATHCALL_FRIEND operator-(Vector4f lhs, Vector4f rhs) noexcept->Vector4f { return _mm_sub_ps(lhs.v, rhs.v); }
+        _gm_SSE_MATHCALL_FRIEND operator*(Vector4f lhs, Vector4f rhs) noexcept->Vector4f { return _mm_mul_ps(lhs.v, rhs.v); }
+        _gm_SSE_MATHCALL_FRIEND operator/(Vector4f lhs, Vector4f rhs) noexcept->Vector4f { return _mm_div_ps(lhs.v, rhs.v); }
 
-        _gm_SSE_MATHCALL_FRIEND operator+(Vector4f lhs, value_type rhs)->Vector4f { return _mm_add_ps(lhs.v, _mm_set1_ps(rhs)); }
-        _gm_SSE_MATHCALL_FRIEND operator-(Vector4f lhs, value_type rhs)->Vector4f { return _mm_sub_ps(lhs.v, _mm_set1_ps(rhs)); }
-        _gm_SSE_MATHCALL_FRIEND operator*(Vector4f lhs, value_type rhs)->Vector4f { return _mm_mul_ps(lhs.v, _mm_set1_ps(rhs)); }
-        _gm_SSE_MATHCALL_FRIEND operator/(Vector4f lhs, value_type rhs)->Vector4f { return _mm_div_ps(lhs.v, _mm_set1_ps(rhs)); }
+        _gm_SSE_MATHCALL_FRIEND operator+(Vector4f lhs, value_type rhs) noexcept->Vector4f { return _mm_add_ps(lhs.v, _mm_set1_ps(rhs)); }
+        _gm_SSE_MATHCALL_FRIEND operator-(Vector4f lhs, value_type rhs) noexcept->Vector4f { return _mm_sub_ps(lhs.v, _mm_set1_ps(rhs)); }
+        _gm_SSE_MATHCALL_FRIEND operator*(Vector4f lhs, value_type rhs) noexcept->Vector4f { return _mm_mul_ps(lhs.v, _mm_set1_ps(rhs)); }
+        _gm_SSE_MATHCALL_FRIEND operator/(Vector4f lhs, value_type rhs) noexcept->Vector4f { return _mm_div_ps(lhs.v, _mm_set1_ps(rhs)); }
 
-        _gm_SSE_MATHCALL_FRIEND operator+(value_type lhs, Vector4f rhs)->Vector4f { return _mm_add_ps(_mm_set1_ps(lhs), rhs.v); }
-        _gm_SSE_MATHCALL_FRIEND operator-(value_type lhs, Vector4f rhs)->Vector4f { return _mm_sub_ps(_mm_set1_ps(lhs), rhs.v); }
-        _gm_SSE_MATHCALL_FRIEND operator*(value_type lhs, Vector4f rhs)->Vector4f { return _mm_mul_ps(_mm_set1_ps(lhs), rhs.v); }
-        _gm_SSE_MATHCALL_FRIEND operator/(value_type lhs, Vector4f rhs)->Vector4f { return _mm_div_ps(_mm_set1_ps(lhs), rhs.v); }
+        _gm_SSE_MATHCALL_FRIEND operator+(value_type lhs, Vector4f rhs) noexcept->Vector4f { return _mm_add_ps(_mm_set1_ps(lhs), rhs.v); }
+        _gm_SSE_MATHCALL_FRIEND operator-(value_type lhs, Vector4f rhs) noexcept->Vector4f { return _mm_sub_ps(_mm_set1_ps(lhs), rhs.v); }
+        _gm_SSE_MATHCALL_FRIEND operator*(value_type lhs, Vector4f rhs) noexcept->Vector4f { return _mm_mul_ps(_mm_set1_ps(lhs), rhs.v); }
+        _gm_SSE_MATHCALL_FRIEND operator/(value_type lhs, Vector4f rhs) noexcept->Vector4f { return _mm_div_ps(_mm_set1_ps(lhs), rhs.v); }
 
-        _gm_SSE_MATHCALL_FRIEND operator-(Vector4f vec)->Vector4f { return _mm_sub_ps(_mm_setzero_ps(), vec.v); }
+        _gm_SSE_MATHCALL_FRIEND operator-(Vector4f vec) noexcept->Vector4f { return _mm_sub_ps(_mm_setzero_ps(), vec.v); }
 
-        _gm_SSE_MATHCALL_FRIEND operator==(Vector4f lhs, Vector4f rhs)->bool {
+        _gm_SSE_MATHCALL_FRIEND operator==(Vector4f lhs, Vector4f rhs) noexcept->bool {
             return (_mm_movemask_ps(_mm_cmpeq_ps(lhs.v, rhs.v)) & 15) == 15;
         }
-        _gm_SSE_MATHCALL_FRIEND operator!=(Vector4f lhs, Vector4f rhs)->bool {
+        _gm_SSE_MATHCALL_FRIEND operator!=(Vector4f lhs, Vector4f rhs) noexcept->bool {
             return (_mm_movemask_ps(_mm_cmpeq_ps(lhs.v, rhs.v)) & 15) != 15;
         }
 
@@ -82,34 +99,178 @@ namespace gm {
             return a[index];
         }
 
-        _gm_SSE_MATHCALL_FRIEND min(Vector4f lhs, Vector4f rhs)->Vector4f { return _mm_min_ps(lhs.v, rhs.v); }
-        _gm_SSE_MATHCALL_FRIEND max(Vector4f lhs, Vector4f rhs)->Vector4f { return _mm_max_ps(lhs.v, rhs.v); }
+        _gm_SSE_MATHCALL_FRIEND min(Vector4f lhs, Vector4f rhs) noexcept->Vector4f { return _mm_min_ps(lhs.v, rhs.v); }
+        _gm_SSE_MATHCALL_FRIEND max(Vector4f lhs, Vector4f rhs) noexcept->Vector4f { return _mm_max_ps(lhs.v, rhs.v); }
 
-        _gm_SSE_MATHCALL_FRIEND abs(Vector4f vec)->Vector4f {
+        _gm_SSE_MATHCALL_FRIEND abs(Vector4f vec) noexcept->Vector4f {
             auto signBits = _mm_set_ps(0x80000000, 0x80000000, 0x80000000, 0x80000000);
             return _mm_andnot_ps(signBits, vec.v);
         }
 
-        _gm_SSE_MATHCALL_FRIEND clamp(Vector4f t, Vector4f a, Vector4f b)->Vector4f { return min(max(t, a), b); }
-        _gm_SSE_MATHCALL_FRIEND horizontalAdd(Vector4f vec)->value_type {
+        _gm_SSE_MATHCALL_FRIEND clamp(Vector4f t, Vector4f a, Vector4f b) noexcept->Vector4f { return min(max(t, a), b); }
+        _gm_SSE_MATHCALL_FRIEND horizontalAdd(Vector4f vec) noexcept->value_type {
             __m128 t = _mm_hadd_ps(vec.v, vec.v);
             return _mm_cvtss_f32(_mm_hadd_ps(t, t));
         }
-        _gm_SSE_MATHCALL_FRIEND dot(Vector4f lhs, Vector4f rhs)->value_type { return horizontalAdd(lhs * rhs); }
-        _gm_SSE_MATHCALL_FRIEND squareLength(Vector4f vec)->value_type { return dot(vec, vec); }
-        _gm_SSE_MATHCALL_FRIEND length(Vector4f vec)->value_type { return std::sqrt(dot(vec, vec)); }
-        _gm_SSE_MATHCALL_FRIEND reciprocal(Vector4f vec)->Vector4f { return _mm_rcp_ps(vec.v); }
-        _gm_SSE_MATHCALL_FRIEND normalize(Vector4f vec)->Vector4f { return vec * reciprocal(Vector4f{vec_broadcast, length(vec)}); }
-        _gm_SSE_MATHCALL_FRIEND lerp(Vector4f a, Vector4f b, value_type t)->Vector4f { return a + (b - a) * t; }
+        _gm_SSE_MATHCALL_FRIEND dot(Vector4f lhs, Vector4f rhs) noexcept->value_type { return horizontalAdd(lhs * rhs); }
+        _gm_SSE_MATHCALL_FRIEND squareLength(Vector4f vec) noexcept->value_type { return dot(vec, vec); }
+        _gm_SSE_MATHCALL_FRIEND length(Vector4f vec) noexcept->value_type { return std::sqrt(dot(vec, vec)); }
+        _gm_SSE_MATHCALL_FRIEND reciprocal(Vector4f vec) noexcept->Vector4f { return _mm_rcp_ps(vec.v); }
+        _gm_SSE_MATHCALL_FRIEND normalize(Vector4f vec) noexcept->Vector4f { return vec * reciprocal(Vector4f{vec_broadcast, length(vec)}); }
+        _gm_SSE_MATHCALL_FRIEND lerp(Vector4f a, Vector4f b, value_type t) noexcept->Vector4f { return a + (b - a) * t; }
 
     public:
         __m128 v;
     };
 
+    class Matrix4f {
+    public:
+        static constexpr int component_length = 4;
+
+        using value_type = Vector4f;
+        using component_type = typename Vector4f::value_type;
+        using const_array_type = value_type const[component_length];
+
+        _gm_SSE_MATHCONSTRUCTOR Matrix4f() noexcept : c{{1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f}, {0.f, 0.f, 1.f, 0.f}, {0.f, 0.f, 0.f, 1.f}} {}
+        /*implicit*/ _gm_SSE_MATHCONSTRUCTOR Matrix4f(noinit_t) noexcept {}
+        /*implicit*/ _gm_SSE_MATHCONSTRUCTOR Matrix4f(value_type c0, value_type c1, value_type c2, value_type c3) noexcept : c{c0, c1, c2, c3} {}
+
+        _gm_SSE_MATHCALL_STATIC unalignedLoad(const component_type* unaligned) noexcept->Matrix4f {
+            return {
+                _mm_loadu_ps(unaligned + 0),
+                _mm_loadu_ps(unaligned + 4),
+                _mm_loadu_ps(unaligned + 8),
+                _mm_loadu_ps(unaligned + 12)};
+        }
+        _gm_SSE_MATHCALL_STATIC alignedLoad(const component_type* aligned) noexcept->Matrix4f {
+            return {
+                _mm_load_ps(aligned + 0),
+                _mm_load_ps(aligned + 4),
+                _mm_load_ps(aligned + 8),
+                _mm_load_ps(aligned + 12)};
+        }
+
+        _gm_SSE_MATHCALL unalignedStore(component_type* unaligned) noexcept->void {
+            _mm_storeu_ps(unaligned + 0, c[0].v);
+            _mm_storeu_ps(unaligned + 4, c[1].v);
+            _mm_storeu_ps(unaligned + 8, c[2].v);
+            _mm_storeu_ps(unaligned + 12, c[3].v);
+        }
+        _gm_SSE_MATHCALL alignedStore(component_type* aligned) noexcept {
+            _mm_store_ps(aligned + 0, c[0].v);
+            _mm_store_ps(aligned + 4, c[1].v);
+            _mm_store_ps(aligned + 8, c[2].v);
+            _mm_store_ps(aligned + 12, c[3].v);
+        }
+
+        _gm_SSE_MATHCALL_FRIEND transpose(Matrix4f mat) noexcept {
+            auto t0 = _mm_unpacklo_ps(mat.c[0].v, mat.c[1].v);
+            auto t1 = _mm_unpacklo_ps(mat.c[2].v, mat.c[3].v);
+            auto t2 = _mm_unpackhi_ps(mat.c[0].v, mat.c[1].v);
+            auto t3 = _mm_unpackhi_ps(mat.c[2].v, mat.c[3].v);
+            return Matrix4f(
+                _mm_movelh_ps(t0, t1),
+                _mm_movehl_ps(t1, t0),
+                _mm_movelh_ps(t2, t3),
+                _mm_movehl_ps(t3, t2));
+        }
+
+        // from https://lxjk.github.io/2017/09/03/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained.html
+        _gm_SSE_MATHCALL_FRIEND transformInverseUnscaled(Matrix4f mat) noexcept {
+            Matrix4f res{noinit};
+
+            // transpose 3x3, we know m03 = m13 = m23 = 0
+            __m128 t0 = _mm_movelh_ps(mat.c[0].v, mat.c[1].v); // 00, 01, 10, 11
+            __m128 t1 = _mm_movehl_ps(mat.c[0].v, mat.c[1].v); // 02, 03, 12, 13
+            res.c[0].v = _mm_shuffle_ps(t0, mat.c[2].v, _MM_SHUFFLE(0, 2, 0, 3)); // 00, 10, 20, 23(=0)
+            res.c[1].v = _mm_shuffle_ps(t0, mat.c[2].v, _MM_SHUFFLE(1, 3, 1, 3)); // 01, 11, 21, 23(=0)
+            res.c[2].v = _mm_shuffle_ps(t1, mat.c[2].v, _MM_SHUFFLE(0, 2, 2, 3)); // 02, 12, 22, 23(=0)
+
+            // last line
+            res.c[3].v = _mm_mul_ps(res.c[0].v, _mm_shuffle_ps(mat.c[3].v, mat.c[3].v, _MM_SHUFFLE(0, 0, 0, 0)));
+            res.c[3].v = _mm_add_ps(res.c[3].v, _mm_mul_ps(res.c[1].v, _mm_shuffle_ps(mat.c[3].v, mat.c[3].v, _MM_SHUFFLE(1, 2, 2, 2))));
+            res.c[3].v = _mm_add_ps(res.c[3].v, _mm_mul_ps(res.c[2].v, _mm_shuffle_ps(mat.c[3].v, mat.c[3].v, _MM_SHUFFLE(2, 2, 2, 2))));
+            res.c[3].v = _mm_sub_ps(_mm_setr_ps(0.f, 0.f, 0.f, 1.f), res.c[3].v);
+
+            return res;
+        }
+
+        _gm_SSE_MATHCALL_FRIEND transformInverse(Matrix4f mat) noexcept {
+            Matrix4f res{noinit};
+
+            // transpose 3x3, we know m03 = m13 = m23 = 0
+            __m128 t0 = _mm_movelh_ps(mat.c[0].v, mat.c[1].v); // 00, 01, 10, 11
+            __m128 t1 = _mm_movehl_ps(mat.c[0].v, mat.c[1].v); // 02, 03, 12, 13
+            res.c[0].v = _mm_shuffle_ps(t0, mat.c[2].v, _MM_SHUFFLE(0, 2, 0, 3)); // 00, 10, 20, 23(=0)
+            res.c[1].v = _mm_shuffle_ps(t0, mat.c[2].v, _MM_SHUFFLE(1, 3, 1, 3)); // 01, 11, 21, 23(=0)
+            res.c[2].v = _mm_shuffle_ps(t1, mat.c[2].v, _MM_SHUFFLE(0, 2, 2, 3)); // 02, 12, 22, 23(=0)
+
+            // (SizeSqr(c[0]), SizeSqr(c[1]), SizeSqr(c[2]), 0)
+            __m128 sizeSqr;
+            sizeSqr = _mm_mul_ps(res.c[0].v, res.c[0].v);
+            sizeSqr = _mm_add_ps(sizeSqr, _mm_mul_ps(res.c[1].v, res.c[1].v));
+            sizeSqr = _mm_add_ps(sizeSqr, _mm_mul_ps(res.c[2].v, res.c[2].v));
+
+            // optional test to avoid divide by 0
+            __m128 one = _mm_set1_ps(1.f);
+            // for each component, if(sizeSqr < SMALL_NUMBER) sizeSqr = 1;
+            __m128 rSizeSqr = _mm_blendv_ps(
+                _mm_div_ps(one, sizeSqr),
+                one,
+                _mm_cmplt_ps(sizeSqr, _mm_set1_ps(std::numeric_limits<float>::min())));
+
+            res.c[0].v = _mm_mul_ps(res.c[0].v, rSizeSqr);
+            res.c[1].v = _mm_mul_ps(res.c[1].v, rSizeSqr);
+            res.c[2].v = _mm_mul_ps(res.c[2].v, rSizeSqr);
+
+            // last line
+            res.c[3].v = _mm_mul_ps(res.c[0].v, _mm_shuffle_ps(mat.c[3].v, mat.c[3].v, _MM_SHUFFLE(0, 0, 0, 0)));
+            res.c[3].v = _mm_add_ps(res.c[3].v, _mm_mul_ps(res.c[1].v, _mm_shuffle_ps(mat.c[3].v, mat.c[3].v, _MM_SHUFFLE(1, 2, 2, 2))));
+            res.c[3].v = _mm_add_ps(res.c[3].v, _mm_mul_ps(res.c[2].v, _mm_shuffle_ps(mat.c[3].v, mat.c[3].v, _MM_SHUFFLE(2, 2, 2, 2))));
+            res.c[3].v = _mm_sub_ps(_mm_setr_ps(0.f, 0.f, 0.f, 1.f), res.c[3].v);
+
+            return res;
+        }
+
+        // https://gist.github.com/rygorous/4172889
+        _gm_SSE_MATHCALL_FRIEND linearCombination(Vector4f lhs, Matrix4f rhs) noexcept->Vector4f {
+            __m128 result;
+            result = _mm_mul_ps(_mm_shuffle_ps(lhs.v, lhs.v, 0x00), rhs.c[0].v);
+            result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(lhs.v, lhs.v, 0x55), rhs.c[1].v));
+            result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(lhs.v, lhs.v, 0xaa), rhs.c[2].v));
+            result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(lhs.v, lhs.v, 0xff), rhs.c[3].v));
+            return result;
+        }
+
+        _gm_SSE_MATHCALL_FRIEND operator*(Matrix4f lhs, Matrix4f rhs) noexcept->Matrix4f {
+            Matrix4f result{noinit};
+            result.c[0] = linearCombination(lhs.c[0].v, rhs);
+            result.c[2] = linearCombination(lhs.c[2].v, rhs);
+            result.c[1] = linearCombination(lhs.c[1].v, rhs);
+            result.c[3] = linearCombination(lhs.c[3].v, rhs);
+            return result;
+        }
+
+        _gm_SSE_MATHCALL_FRIEND operator*(Matrix4f lhs, value_type rhs) noexcept->value_type {
+            __m128 prod1 = _mm_dp_ps(lhs.c[0].v, rhs.v, 0xFF);
+            __m128 prod2 = _mm_dp_ps(lhs.c[1].v, rhs.v, 0xFF);
+            __m128 prod3 = _mm_dp_ps(lhs.c[2].v, rhs.v, 0xFF);
+            __m128 prod4 = _mm_dp_ps(lhs.c[3].v, rhs.v, 0xFF);
+            return _mm_shuffle_ps(_mm_movelh_ps(prod1, prod2), _mm_movelh_ps(prod3, prod4), _MM_SHUFFLE(2, 0, 2, 0));
+        }
+
+    public:
+        value_type c[4];
+    };
+
     using Vector = Vector4f;
+    using Matrix = Matrix4f;
 
     static_assert(sizeof(Vector4f) == sizeof(float) * 4);
     static_assert(alignof(Vector4f) == 16);
+
+    static_assert(sizeof(Matrix4f) == sizeof(float) * 16);
+    static_assert(alignof(Matrix4f) == 16);
 } // namespace gm
 
 #undef _gm_SSE_MATHCALL

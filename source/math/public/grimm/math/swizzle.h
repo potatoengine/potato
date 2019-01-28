@@ -20,7 +20,7 @@ namespace gm::swizzle::_detail::component {
 
 #define GM_DEFINE_SWIZZLE(...) \
     template <typename T> \
-    GM_MATHCALL GM_PP_JOIN(__VA_ARGS__)(T value) \
+    GM_MATHCALL GM_PP_JOIN(__VA_ARGS__)(T value) noexcept \
         ->::gm::enable_if_t< \
             T::component_length >= _gm_MATH_SWIZZLE_MIN_LENGTH(__VA_ARGS__), \
             typename T::template vector_template<GM_PP_ARITY(__VA_ARGS__)>> { \
