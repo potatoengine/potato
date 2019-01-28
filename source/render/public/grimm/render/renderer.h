@@ -11,6 +11,8 @@
 #include <atomic>
 
 namespace gm::gpu {
+    class Buffer;
+    class CommandList;
     class Device;
     class SwapChain;
 } // namespace gm::gpu
@@ -24,11 +26,21 @@ namespace gm {
         Renderer(Renderer const&) = delete;
         Renderer& operator=(Renderer const&) = delete;
 
+        GM_RENDER_API void beginFrame();
+        GM_RENDER_API void endFrame();
+
+        gpu::CommandList& commandList() const noexcept { return *_commandList; }
+
     private:
         void _renderMain();
 
         rc<gpu::Device> _device;
+        box<gpu::CommandList> _commandList;
+        box<gpu::Buffer> _frameBufferConstants;
         std::thread _renderThread;
         concurrency::ConcurrentQueue<RenderTask> _taskQueue;
+        uint32 _frameCounter = 0;
+        uint64 _startTimestamp = 0;
+        double _frameTimestamp = 0;
     };
 } // namespace gm

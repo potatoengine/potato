@@ -32,7 +32,7 @@ gm::ShellApp::ShellApp() = default;
 gm::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
 
-    _commandList.reset();
+    _renderer.reset();
     _root.reset();
     _camera.reset();
     _swapChain.reset();
@@ -83,12 +83,6 @@ int gm::ShellApp::initialize() {
     }
 
     _camera = make_box<Camera>(_swapChain);
-
-    _commandList = _device->createCommandList();
-    if (_commandList == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create command list", _window.get());
-        return 1;
-    }
 
     blob basicVertShader, basicPixelShader;
     auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_5_0.cbo");
@@ -183,12 +177,15 @@ void gm::ShellApp::run() {
         }
         ImGui::End();
 
-        _camera->beginFrame(*_commandList, *_device);
-        _root->render(*_commandList, *_device);
+        _renderer->beginFrame();
+        _camera->beginFrame(_renderer->commandList(), *_device);
+        _root->render(_renderer->commandList(), *_device);
 
-        _drawImgui.endFrame(*_device, *_commandList);
+        _drawImgui.endFrame(*_device, _renderer->commandList());
 
-        _camera->endFrame(*_commandList, *_device);
+        _camera->endFrame(_renderer->commandList(), *_device);
+        _renderer->endFrame();
+        _swapChain->present();
 
         auto endFrame = clock.now();
         duration = endFrame - now;
@@ -208,7 +205,7 @@ void gm::ShellApp::onWindowSizeChanged() {
     int width, height;
     SDL_GetWindowSize(_window.get(), &width, &height);
     _camera->resetSwapChain(nullptr);
-    _commandList->clear();
+    _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
     _camera->resetSwapChain(_swapChain);
 }

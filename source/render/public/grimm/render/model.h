@@ -14,6 +14,7 @@ namespace gm::gpu {
 
 namespace gm {
     class Material;
+    class Mesh;
 
     class Model {
     public:
@@ -24,6 +25,6 @@ namespace gm {
 
     private:
         rc<Material> _material;
-        box<gpu::Buffer> _vbo;
+        rc<Mesh> _mesh;
     };
 } // namespace gm

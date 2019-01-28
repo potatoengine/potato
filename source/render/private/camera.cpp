@@ -27,15 +27,10 @@ void gm::Camera::beginFrame(gpu::CommandList& commandList, gpu::Device& device) 
     viewport.width = dimensions.m.x;
     viewport.height = dimensions.m.y;
 
-    commandList.clear();
     commandList.clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
     commandList.bindRenderTarget(0, _rtv.get());
     commandList.setViewport(viewport);
 }
 
 void gm::Camera::endFrame(gpu::CommandList& commandList, gpu::Device& device) {
-
-    commandList.finish();
-    device.execute(&commandList);
-    _swapChain->present();
 }

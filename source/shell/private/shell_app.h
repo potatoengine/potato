@@ -15,7 +15,6 @@ namespace gm {
 } // namespace gm
 
 namespace gm::gpu {
-    class CommandList;
     class Device;
     class SwapChain;
 } // namespace gm::gpu
@@ -43,7 +42,6 @@ private:
     fs::FileSystem _fileSystem;
     rc<gpu::Device> _device;
     rc<gpu::SwapChain> _swapChain;
-    box<gpu::CommandList> _commandList;
     box<Renderer> _renderer;
     box<Camera> _camera;
     box<Node> _root;
