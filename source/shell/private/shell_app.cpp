@@ -126,6 +126,10 @@ void gm::ShellApp::run() {
 
     auto now = clock.now();
     auto duration = now - now;
+    float frameTime = 0;
+
+    Mat4x4 cameraTransform;
+    Vec4 movement;
 
     while (isRunning()) {
         SDL_Event ev;
@@ -143,9 +147,34 @@ void gm::ShellApp::run() {
                     break;
                 }
                 break;
+            case SDL_KEYDOWN:
+                if (ev.key.keysym.sym == SDLK_w) {
+                    movement = Vec4{0, 0, -1, 0};
+                }
+                else if (ev.key.keysym.sym == SDLK_s) {
+                    movement = Vec4{0, 0, +1, 0};
+                }
+                else if (ev.key.keysym.sym == SDLK_a) {
+                    movement = Vec4{-1, 0, 0, 0};
+                }
+                else if (ev.key.keysym.sym == SDLK_d) {
+                    movement = Vec4{+1, 0, 0, 0};
+                }
+                else if (ev.key.keysym.sym == SDLK_SPACE) {
+                    movement = Vec4{0, +1, 0, 0};
+                }
+                else if (ev.key.keysym.sym == SDLK_LCTRL) {
+                    movement = Vec4{0, -1, 0, 0};
+                }
+                break;
+            case SDL_KEYUP:
+                movement = Vec4{};
+                break;
             }
             _drawImgui.handleEvent(ev);
         }
+
+        cameraTransform.r[3] = cameraTransform.r[3] - movement * frameTime;
 
         gpu::Viewport viewport;
         int width, height;
@@ -173,14 +202,14 @@ void gm::ShellApp::run() {
             format_into(buffer, "{}us", micro);
             ImGui::LabelText("Frametime", "%s", buffer.c_str());
             buffer.clear();
-            format_into(buffer, "{}", 1000000.0 / micro);
+            format_into(buffer, "{}", 1 / frameTime);
             ImGui::LabelText("FPS", "%s", buffer.c_str());
         }
         ImGui::End();
 
         _renderer->beginFrame();
         auto ctx = _renderer->context();
-        _camera->beginFrame(ctx);
+        _camera->beginFrame(ctx, cameraTransform);
         _root->render(ctx);
 
         _drawImgui.endFrame(*_device, _renderer->commandList());
@@ -191,6 +220,7 @@ void gm::ShellApp::run() {
 
         auto endFrame = clock.now();
         duration = endFrame - now;
+        frameTime = static_cast<float>(duration.count() / 1000000000.0);
         now = endFrame;
     }
 }
