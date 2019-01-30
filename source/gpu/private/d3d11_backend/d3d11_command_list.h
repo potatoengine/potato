@@ -34,7 +34,7 @@ namespace gm::gpu::d3d11 {
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override;
         void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) override;
 
-        void clearRenderTarget(ResourceView* view, PackedVector4f color) override;
+        void clearRenderTarget(ResourceView* view, Packed4 color) override;
 
         void finish() override;
         void clear(PipelineState* pipelineState = nullptr) override;

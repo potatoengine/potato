@@ -35,7 +35,7 @@ DXGI_FORMAT gm::gpu::d3d11::TextureD3D11::nativeFormat() const noexcept {
     return DXGI_FORMAT_UNKNOWN;
 }
 
-auto gm::gpu::d3d11::TextureD3D11::dimensions() const noexcept -> PackedVector3f {
+auto gm::gpu::d3d11::TextureD3D11::dimensions() const noexcept -> Packed3 {
     com_ptr<ID3D11Texture2D> texture2D;
     if (SUCCEEDED(_texture->QueryInterface(__uuidof(ID3D11Texture2D), out_ptr(texture2D)))) {
         D3D11_TEXTURE2D_DESC desc;

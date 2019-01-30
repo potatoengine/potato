@@ -37,7 +37,7 @@ namespace gm::gpu {
         virtual void draw(uint32 vertexCount, uint32 firstVertex = 0) = 0;
         virtual void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) = 0;
 
-        virtual void clearRenderTarget(ResourceView* view, PackedVector4f color) = 0;
+        virtual void clearRenderTarget(ResourceView* view, Packed4 color) = 0;
 
         virtual void finish() = 0;
         virtual void clear(PipelineState* pipelineState = nullptr) = 0;

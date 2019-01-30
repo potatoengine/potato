@@ -160,10 +160,11 @@ void gm::gpu::d3d11::CommandListD3D11::drawIndexed(gm::uint32 indexCount, gm::ui
     _context->DrawIndexed(indexCount, firstIndex, baseIndex);
 }
 
-void gm::gpu::d3d11::CommandListD3D11::clearRenderTarget(ResourceView* view, PackedVector4f color) {
+void gm::gpu::d3d11::CommandListD3D11::clearRenderTarget(ResourceView* view, Packed4 color) {
     GM_ASSERT(view != nullptr);
 
-    _context->ClearRenderTargetView(static_cast<ID3D11RenderTargetView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), color);
+    FLOAT c[4] = {color.x, color.y, color.z, color.w};
+    _context->ClearRenderTargetView(static_cast<ID3D11RenderTargetView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), c);
 }
 
 void gm::gpu::d3d11::CommandListD3D11::finish() {
