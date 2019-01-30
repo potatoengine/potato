@@ -24,7 +24,7 @@ namespace gm::swizzle::_detail::component {
         ->::gm::enable_if_t< \
             component_length_v<T> >= _gm_MATH_SWIZZLE_MIN_LENGTH(__VA_ARGS__), \
             ::gm::vector_resized_t<T, GM_PP_ARITY(__VA_ARGS__)>> { \
-        return ::gm::shuffle<_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__)>(value); \
+        return shuffle<_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__)>(value); \
     }
 
 namespace gm::swizzle {

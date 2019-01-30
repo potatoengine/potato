@@ -90,68 +90,68 @@ namespace gm {
     template <int A, int B, int C = 2, int D = 3>
     Vec4 shuffle(Vec4 val) noexcept { return Vec4{_mm_shuffle_ps(val.v, val.v, _MM_SHUFFLE(D, C, B, A))}; }
 
-    GM_FORCEINLINE auto GM_VECTORCALL operator+(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_add_ps(lhs.v, rhs.v); }
-    GM_FORCEINLINE auto GM_VECTORCALL operator-(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_sub_ps(lhs.v, rhs.v); }
-    GM_FORCEINLINE auto GM_VECTORCALL operator*(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_mul_ps(lhs.v, rhs.v); }
-    GM_FORCEINLINE auto GM_VECTORCALL operator/(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_div_ps(lhs.v, rhs.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator+(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_add_ps(lhs.v, rhs.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator-(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_sub_ps(lhs.v, rhs.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator*(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_mul_ps(lhs.v, rhs.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator/(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_div_ps(lhs.v, rhs.v); }
 
-    GM_FORCEINLINE auto GM_VECTORCALL operator+(Vec4 lhs, float rhs) noexcept -> Vec4 { return _mm_add_ps(lhs.v, _mm_set1_ps(rhs)); }
-    GM_FORCEINLINE auto GM_VECTORCALL operator-(Vec4 lhs, float rhs) noexcept -> Vec4 { return _mm_sub_ps(lhs.v, _mm_set1_ps(rhs)); }
-    GM_FORCEINLINE auto GM_VECTORCALL operator*(Vec4 lhs, float rhs) noexcept -> Vec4 { return _mm_mul_ps(lhs.v, _mm_set1_ps(rhs)); }
-    GM_FORCEINLINE auto GM_VECTORCALL operator/(Vec4 lhs, float rhs) noexcept -> Vec4 { return _mm_div_ps(lhs.v, _mm_set1_ps(rhs)); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator+(Vec4 lhs, float rhs) noexcept -> Vec4 { return _mm_add_ps(lhs.v, _mm_set1_ps(rhs)); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator-(Vec4 lhs, float rhs) noexcept -> Vec4 { return _mm_sub_ps(lhs.v, _mm_set1_ps(rhs)); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator*(Vec4 lhs, float rhs) noexcept -> Vec4 { return _mm_mul_ps(lhs.v, _mm_set1_ps(rhs)); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator/(Vec4 lhs, float rhs) noexcept -> Vec4 { return _mm_div_ps(lhs.v, _mm_set1_ps(rhs)); }
 
-    GM_FORCEINLINE auto GM_VECTORCALL operator+(float lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_add_ps(_mm_set1_ps(lhs), rhs.v); }
-    GM_FORCEINLINE auto GM_VECTORCALL operator-(float lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_sub_ps(_mm_set1_ps(lhs), rhs.v); }
-    GM_FORCEINLINE auto GM_VECTORCALL operator*(float lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_mul_ps(_mm_set1_ps(lhs), rhs.v); }
-    GM_FORCEINLINE auto GM_VECTORCALL operator/(float lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_div_ps(_mm_set1_ps(lhs), rhs.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator+(float lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_add_ps(_mm_set1_ps(lhs), rhs.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator-(float lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_sub_ps(_mm_set1_ps(lhs), rhs.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator*(float lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_mul_ps(_mm_set1_ps(lhs), rhs.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator/(float lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_div_ps(_mm_set1_ps(lhs), rhs.v); }
 
-    GM_FORCEINLINE auto GM_VECTORCALL operator-(Vec4 val) noexcept -> Vec4 { return _mm_sub_ps(_mm_setzero_ps(), val.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator-(Vec4 val) noexcept -> Vec4 { return _mm_sub_ps(_mm_setzero_ps(), val.v); }
 
-    GM_FORCEINLINE auto GM_VECTORCALL operator==(Vec4 lhs, Vec4 rhs) noexcept -> bool {
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator==(Vec4 lhs, Vec4 rhs) noexcept -> bool {
         return (_mm_movemask_ps(_mm_cmpeq_ps(lhs.v, rhs.v)) & 15) == 15;
     }
-    GM_FORCEINLINE auto GM_VECTORCALL operator!=(Vec4 lhs, Vec4 rhs) noexcept -> bool {
+    GM_FORCEINLINE inline auto GM_VECTORCALL operator!=(Vec4 lhs, Vec4 rhs) noexcept -> bool {
         return (_mm_movemask_ps(_mm_cmpeq_ps(lhs.v, rhs.v)) & 15) != 15;
     }
 
-    GM_FORCEINLINE auto GM_VECTORCALL min(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_min_ps(lhs.v, rhs.v); }
-    GM_FORCEINLINE auto GM_VECTORCALL max(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_max_ps(lhs.v, rhs.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL min(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_min_ps(lhs.v, rhs.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL max(Vec4 lhs, Vec4 rhs) noexcept -> Vec4 { return _mm_max_ps(lhs.v, rhs.v); }
 
-    GM_FORCEINLINE auto GM_VECTORCALL abs(Vec4 val) noexcept -> Vec4 {
+    GM_FORCEINLINE inline auto GM_VECTORCALL abs(Vec4 val) noexcept -> Vec4 {
         auto signBits = _mm_set_ps(0x80000000, 0x80000000, 0x80000000, 0x80000000);
         return _mm_andnot_ps(signBits, val.v);
     }
 
-    GM_FORCEINLINE auto GM_VECTORCALL hsum(Vec4 val) {
+    GM_FORCEINLINE inline auto GM_VECTORCALL hsum(Vec4 val) {
         __m128 t = _mm_hadd_ps(val.v, val.v);
         return _mm_cvtss_f32(_mm_hadd_ps(t, t));
     }
-    GM_FORCEINLINE auto GM_VECTORCALL hmin(Vec4 val) {
+    GM_FORCEINLINE inline auto GM_VECTORCALL hmin(Vec4 val) {
         __m128 a = _mm_min_ps(val.v, _mm_shuffle_ps(val.v, val.v, _MM_SHUFFLE(1, 3, 0, 2)));
         __m128 b = _mm_min_ps(val.v, _mm_shuffle_ps(val.v, val.v, _MM_SHUFFLE(2, 0, 3, 1)));
         __m128 c = _mm_min_ps(val.v, _mm_shuffle_ps(val.v, val.v, _MM_SHUFFLE(0, 1, 2, 3)));
         return _mm_cvtss_f32(_mm_min_ps(_mm_min_ps(a, b), c));
     }
-    GM_FORCEINLINE auto GM_VECTORCALL hmax(Vec4 val) {
+    GM_FORCEINLINE inline auto GM_VECTORCALL hmax(Vec4 val) {
         __m128 a = _mm_max_ps(val.v, _mm_shuffle_ps(val.v, val.v, _MM_SHUFFLE(1, 3, 0, 2)));
         __m128 b = _mm_max_ps(val.v, _mm_shuffle_ps(val.v, val.v, _MM_SHUFFLE(2, 0, 3, 1)));
         __m128 c = _mm_max_ps(val.v, _mm_shuffle_ps(val.v, val.v, _MM_SHUFFLE(0, 1, 2, 3)));
         return _mm_cvtss_f32(_mm_max_ps(_mm_max_ps(a, b), c));
     }
 
-    GM_FORCEINLINE auto GM_VECTORCALL sqrt(Vec4 val) { return _mm_sqrt_ps(val.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL sqrt(Vec4 val) { return _mm_sqrt_ps(val.v); }
 
-    GM_FORCEINLINE auto GM_VECTORCALL clamp(Vec4 t, Vec4 a, Vec4 b) noexcept -> Vec4 { return min(max(t, a), b); }
-    GM_FORCEINLINE auto GM_VECTORCALL dot(Vec4 a, Vec4 b) { return _mm_cvtss_f32(_mm_dp_ps(a.v, b.v, 0xff)); }
-    GM_FORCEINLINE auto GM_VECTORCALL dot3(Vec4 a, Vec4 b) { return _mm_cvtss_f32(_mm_dp_ps(a.v, b.v, 0x77)); }
-    GM_FORCEINLINE auto GM_VECTORCALL length(Vec4 val) noexcept -> float { return std::sqrt(dot(val, val)); }
-    GM_FORCEINLINE auto GM_VECTORCALL length3(Vec4 val) noexcept -> float { return std::sqrt(dot3(val, val)); }
-    GM_FORCEINLINE auto GM_VECTORCALL reciprocal(Vec4 val) noexcept -> Vec4 { return _mm_rcp_ps(val.v); }
-    GM_FORCEINLINE auto GM_VECTORCALL normalize(Vec4 val) noexcept -> Vec4 { return val * reciprocal(Vec4{vec_broadcast, length(val)}); }
-    GM_FORCEINLINE auto GM_VECTORCALL normalize3(Vec4 val) noexcept -> Vec4 { return val * reciprocal(Vec4{vec_broadcast, length3(val)}); }
-    GM_FORCEINLINE auto GM_VECTORCALL lerp(Vec4 a, Vec4 b, float t) noexcept -> Vec4 { return a + (b - a) * t; }
+    GM_FORCEINLINE inline auto GM_VECTORCALL clamp(Vec4 t, Vec4 a, Vec4 b) noexcept -> Vec4 { return min(max(t, a), b); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL dot(Vec4 a, Vec4 b) { return _mm_cvtss_f32(_mm_dp_ps(a.v, b.v, 0xff)); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL dot3(Vec4 a, Vec4 b) { return _mm_cvtss_f32(_mm_dp_ps(a.v, b.v, 0x77)); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL length(Vec4 val) noexcept -> float { return std::sqrt(dot(val, val)); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL length3(Vec4 val) noexcept -> float { return std::sqrt(dot3(val, val)); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL reciprocal(Vec4 val) noexcept -> Vec4 { return _mm_rcp_ps(val.v); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL normalize(Vec4 val) noexcept -> Vec4 { return val * reciprocal(Vec4{vec_broadcast, length(val)}); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL normalize3(Vec4 val) noexcept -> Vec4 { return val * reciprocal(Vec4{vec_broadcast, length3(val)}); }
+    GM_FORCEINLINE inline auto GM_VECTORCALL lerp(Vec4 a, Vec4 b, float t) noexcept -> Vec4 { return a + (b - a) * t; }
 
-    GM_FORCEINLINE auto GM_VECTORCALL cross(Vec4 a, Vec4 b) {
+    GM_FORCEINLINE inline auto GM_VECTORCALL cross(Vec4 a, Vec4 b) {
         // x  <-  a.y*b.z - a.z*b.y
         // y  <-  a.z*b.x - a.x*b.z
         // z  <-  a.x*b.y - a.y*b.x
