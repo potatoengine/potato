@@ -22,9 +22,9 @@ namespace gm::swizzle::_detail::component {
     template <typename T> \
     GM_MATHCALL GM_PP_JOIN(__VA_ARGS__)(T value) noexcept \
         ->::gm::enable_if_t< \
-            T::component_length >= _gm_MATH_SWIZZLE_MIN_LENGTH(__VA_ARGS__), \
-            typename T::template vector_template<GM_PP_ARITY(__VA_ARGS__)>> { \
-        return value.template shuffle<_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__)>(); \
+            component_length_v<T> >= _gm_MATH_SWIZZLE_MIN_LENGTH(__VA_ARGS__), \
+            ::gm::vector_resized_t<T, GM_PP_ARITY(__VA_ARGS__)>> { \
+        return ::gm::shuffle<_gm_MATH_SWIZZLE_INDICES(__VA_ARGS__)>(value); \
     }
 
 namespace gm::swizzle {

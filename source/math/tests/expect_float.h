@@ -1,4 +1,8 @@
+#pragma once
+
 #include <cmath>
+#include "stream_vector.h"
+#include "grimm/math/common.h"
 
 namespace {
     template <typename T>
@@ -23,7 +27,7 @@ namespace {
         ExpectVector(T v) : value(v) {}
 
         friend bool operator==(T lhs, ExpectVector rhs) {
-            for (int i = 0; i != rhs.value.component_length; ++i) {
+            for (int i = 0; i != gm::component_length_v<decltype(rhs.value)>; ++i) {
                 if (!(lhs[i] == ExpectFloat{rhs.value[i]})) {
                     return false;
                 }
@@ -32,5 +36,9 @@ namespace {
         }
 
         operator T() const { return value; }
+
+        friend std::ostream& operator<<(std::ostream& os, ExpectVector const& val) {
+            return os << val.value;
+        }
     };
 } // namespace
