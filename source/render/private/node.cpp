@@ -16,7 +16,7 @@ void gm::Node::addChild(box<Node> child) {
 
 void gm::Node::render(RenderContext& ctx) {
     if (_model != nullptr) {
-        _model->render(ctx);
+        _model->render(ctx, _transform);
     }
 
     for (auto& node : _children) {

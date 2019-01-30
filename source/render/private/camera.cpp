@@ -54,7 +54,7 @@ void gm::Camera::beginFrame(RenderContext& ctx, Mat4x4 cameraTransform) {
     float fovY = constants::degreesToRadians<float> * 75.f;
 
     CameraData data;
-    Mat4x4 worldView = /*rotationZ(static_cast<float>(std::fmod(ctx.frameTime, 2.0 * constants::pi<double>))) */ cameraTransform;
+    Mat4x4 worldView = cameraTransform;
     transpose(worldView).alignedStore(data.worldView);
 
     Mat4x4 viewProjection = projection(aspect, fovY, nearZ, farZ);

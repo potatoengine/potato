@@ -48,12 +48,6 @@ namespace gm {
             r[3].alignedStore(aligned + 12);
         }
 
-        friend auto GM_VECTORCALL operator*(Mat4x4 lhs, Mat4x4 rhs) noexcept -> Mat4x4;
-        auto GM_VECTORCALL operator*=(Mat4x4 rhs) noexcept -> Mat4x4&;
-
-        friend auto GM_VECTORCALL operator*(Mat4x4 lhs, value_type rhs) noexcept -> value_type;
-        friend auto GM_VECTORCALL operator*(value_type lhs, Mat4x4 rhs) noexcept -> value_type;
-
     public:
         value_type r[4];
     };
@@ -66,6 +60,12 @@ namespace gm {
 
     static_assert(sizeof(Mat4x4) == sizeof(float) * 16);
     static_assert(alignof(Mat4x4) == 16);
+
+    auto GM_VECTORCALL operator*(Mat4x4 lhs, Mat4x4 rhs) noexcept -> Mat4x4;
+    auto GM_VECTORCALL operator*=(Mat4x4& lhs, Mat4x4 rhs) noexcept -> Mat4x4&;
+
+    auto GM_VECTORCALL operator*(Mat4x4 lhs, Vec4 rhs) noexcept -> Vec4;
+    auto GM_VECTORCALL operator*(Vec4 lhs, Mat4x4 rhs) noexcept -> Vec4;
 
     auto GM_VECTORCALL transpose(Mat4x4 mat) noexcept -> Mat4x4;
     auto GM_VECTORCALL transformInverseUnscaled(Mat4x4 mat) noexcept -> Mat4x4;

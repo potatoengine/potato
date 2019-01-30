@@ -9,9 +9,14 @@
 #include "grimm/gpu/command_list.h"
 
 namespace {
-    struct Vert {
+    struct alignas(16) Vert {
         gm::Packed3 pos;
         gm::Packed3 color;
+    };
+
+    struct alignas(16) Trans {
+        float modelWorld[16];
+        float worldModel[26];
     };
 } // namespace
 
@@ -45,11 +50,21 @@ gm::Model::Model(rc<Material> material) : _material(std::move(material)) {
 
 gm::Model::~Model() = default;
 
-void gm::Model::render(RenderContext& ctx) {
+void GM_VECTORCALL gm::Model::render(RenderContext& ctx, Mat4x4 transform) {
+    if (_transformBuffer == nullptr) {
+        _transformBuffer = ctx.device.createBuffer(gpu::BufferType::Constant, sizeof(Trans));
+    }
+
+    Trans trans;
+    transform.alignedStore(trans.modelWorld);
+    transpose(transform).alignedStore(trans.worldModel);
+
     _mesh->updateVertexBuffers(ctx);
+    ctx.commandList.update(_transformBuffer.get(), span{&trans, 1}.as_bytes());
 
     _material->bindMaterialToRender(ctx);
     _mesh->bindVertexBuffers(ctx);
+    ctx.commandList.bindConstantBuffer(2, _transformBuffer.get(), gpu::ShaderStage::All);
     ctx.commandList.setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
     ctx.commandList.draw(static_cast<uint32>(std::size(triangle)));
 }

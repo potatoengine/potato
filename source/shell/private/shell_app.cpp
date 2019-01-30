@@ -13,6 +13,8 @@
 #include "grimm/gpu/swap_chain.h"
 #include "grimm/gpu/texture.h"
 #include "grimm/math/packed.h"
+#include "grimm/math/matrix.h"
+#include "grimm/math/constants.h"
 #include "grimm/render/renderer.h"
 #include "grimm/render/camera.h"
 #include "grimm/render/context.h"
@@ -175,6 +177,9 @@ void gm::ShellApp::run() {
         }
 
         cameraTransform.r[3] = cameraTransform.r[3] - movement * frameTime;
+
+        const float radiansPerSec = 1;
+        _root->transform(_root->transform() * rotationZ(radiansPerSec * frameTime));
 
         gpu::Viewport viewport;
         int width, height;

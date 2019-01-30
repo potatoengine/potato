@@ -92,15 +92,15 @@ auto GM_VECTORCALL gm::operator*(Mat4x4 lhs, Mat4x4 rhs) noexcept -> Mat4x4 {
     return result;
 }
 
-auto GM_VECTORCALL gm::Mat4x4::operator*=(Mat4x4 rhs) noexcept -> Mat4x4& {
-    r[0] = linearCombination(r[0].v, rhs);
-    r[1] = linearCombination(r[1].v, rhs);
-    r[2] = linearCombination(r[2].v, rhs);
-    r[3] = linearCombination(r[3].v, rhs);
-    return *this;
+auto GM_VECTORCALL gm::operator*=(Mat4x4& lhs, Mat4x4 rhs) noexcept -> Mat4x4& {
+    lhs.r[0] = linearCombination(lhs.r[0].v, rhs);
+    lhs.r[1] = linearCombination(lhs.r[1].v, rhs);
+    lhs.r[2] = linearCombination(lhs.r[2].v, rhs);
+    lhs.r[3] = linearCombination(lhs.r[3].v, rhs);
+    return lhs;
 }
 
-auto GM_VECTORCALL gm::operator*(Mat4x4 lhs, Mat4x4::value_type rhs) noexcept -> Mat4x4::value_type {
+auto GM_VECTORCALL gm::operator*(Mat4x4 lhs, Mat4x4::value_type rhs) noexcept -> Vec4 {
     __m128 prod1 = _mm_dp_ps(lhs.r[0].v, rhs.v, 0xFF);
     __m128 prod2 = _mm_dp_ps(lhs.r[1].v, rhs.v, 0xFF);
     __m128 prod3 = _mm_dp_ps(lhs.r[2].v, rhs.v, 0xFF);
@@ -108,7 +108,7 @@ auto GM_VECTORCALL gm::operator*(Mat4x4 lhs, Mat4x4::value_type rhs) noexcept ->
     return _mm_shuffle_ps(_mm_movelh_ps(prod1, prod2), _mm_movelh_ps(prod3, prod4), _MM_SHUFFLE(2, 0, 2, 0));
 }
 
-auto GM_VECTORCALL gm::operator*(Mat4x4::value_type lhs, Mat4x4 rhs) noexcept -> Mat4x4::value_type {
+auto GM_VECTORCALL gm::operator*(Vec4 lhs, Mat4x4 rhs) noexcept -> Vec4 {
     // Splat x,y,z and w
     __m128 xv = _mm_shuffle_ps(lhs.v, lhs.v, _MM_SHUFFLE(0, 0, 0, 0));
     __m128 yv = _mm_shuffle_ps(lhs.v, lhs.v, _MM_SHUFFLE(1, 1, 1, 1));

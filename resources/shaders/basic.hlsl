@@ -11,7 +11,7 @@ VS_Output vertex_main(float3 inputPosition
                       : POSITION, float3 inputColor
                       : COLOR) {
     VS_Output output;
-    output.position = mul(float4(inputPosition, 1), worldViewProjection);
+    output.position = mul(float4(inputPosition, 1), mul(modelWorld, worldViewProjection));
     output.color = inputColor;
     return output;
 }
