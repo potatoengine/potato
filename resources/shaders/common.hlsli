@@ -7,7 +7,7 @@ cbuffer frameData : register(b0) {
 };
 
 cbuffer cameraData : register(b1) {
-    float4x4 worldViewProjection;
+    float4x4 worldViewProjection row;
     float4x4 worldView;
     float4x4 viewProjection;
 };

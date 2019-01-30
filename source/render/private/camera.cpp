@@ -9,7 +9,7 @@
 #include "grimm/gpu/resource_view.h"
 #include "grimm/math/packed.h"
 #include "grimm/math/vector.h"
-#include "grimm/math/geometry.h"
+#include "grimm/math/matrix.h"
 #include "grimm/math/constants.h"
 
 namespace {
@@ -30,7 +30,7 @@ void gm::Camera::resetSwapChain(rc<gpu::SwapChain> swapChain) {
     _rtv.reset();
 }
 
-void gm::Camera::beginFrame(RenderContext& ctx) {
+void gm::Camera::beginFrame(RenderContext& ctx, Mat4x4 cameraTransform) {
     if (_rtv == nullptr && _swapChain != nullptr) {
         _backBuffer = _swapChain->getBuffer(0);
         _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
@@ -43,26 +43,25 @@ void gm::Camera::beginFrame(RenderContext& ctx) {
     auto dimensions = _backBuffer->dimensions();
 
     gpu::Viewport viewport;
-    viewport.width = dimensions.m.x;
-    viewport.height = dimensions.m.y;
+    viewport.width = dimensions.x;
+    viewport.height = dimensions.y;
     viewport.minDepth = 0;
     viewport.maxDepth = 1;
 
     float farZ = 4000.f;
-    float nearZ = 2.f;
+    float nearZ = 2.0f;
     float aspect = viewport.width / viewport.height;
     float fovY = constants::degreesToRadians<float> * 75.f;
 
     CameraData data;
-    Matrix4f worldView;
-    worldView *= rotationXY(static_cast<float>(std::fmod(ctx.frameTime, 2.0 * constants::pi<double>)));
-    worldView.alignedStore(data.worldView);
+    Mat4x4 worldView = /*rotationZ(static_cast<float>(std::fmod(ctx.frameTime, 2.0 * constants::pi<double>))) */ cameraTransform;
+    transpose(worldView).alignedStore(data.worldView);
 
-    Matrix4f viewProjection = projection(aspect, fovY, nearZ, farZ);
-    viewProjection.alignedStore(data.viewProjection);
+    Mat4x4 viewProjection = projection(aspect, fovY, nearZ, farZ);
+    transpose(viewProjection).alignedStore(data.viewProjection);
 
-    auto modelViewProjection = worldView * viewProjection;
-    modelViewProjection.alignedStore(data.worldViewProjection);
+    auto worldViewProjection = worldView * viewProjection;
+    transpose(worldViewProjection).alignedStore(data.worldViewProjection);
 
     ctx.commandList.update(_cameraDataBuffer.get(), span{&data, 1}.as_bytes());
 
