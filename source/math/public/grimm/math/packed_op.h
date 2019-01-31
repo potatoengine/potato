@@ -91,4 +91,15 @@ namespace gm {
         return rhs;
     }
 
+    // --- @(scalar)
+
+    template <typename T, int N>
+    Packed<T, N> GM_VECTORCALL abs(Packed<T, N> val) noexcept {
+        using std::abs;
+        for (int i = 0; i != N; ++i) {
+            val[i] = abs(val[i]);
+        }
+        return val;
+    }
+
 } // namespace gm
