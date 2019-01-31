@@ -3,6 +3,7 @@
 #pragma once
 
 #include "packed.h"
+#include <cmath>
 
 namespace gm {
 #define _gm_PACK_OP(op) \
