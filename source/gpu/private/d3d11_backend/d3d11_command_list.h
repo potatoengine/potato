@@ -21,6 +21,7 @@ namespace gm::gpu::d3d11 {
         void setPipelineState(PipelineState* state) override;
 
         void bindRenderTarget(uint32 index, ResourceView* view) override;
+        void bindDepthStencil(ResourceView* view) override;
         void bindIndexBuffer(Buffer* buffer, IndexType indexType, uint32 offset = 0) override;
         void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override;
         void bindConstantBuffer(uint32 slot, Buffer* buffer, ShaderStage stage) override;
@@ -35,6 +36,7 @@ namespace gm::gpu::d3d11 {
         void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) override;
 
         void clearRenderTarget(ResourceView* view, Packed4 color) override;
+        void clearDepthStencil(ResourceView* view) override;
 
         void finish() override;
         void clear(PipelineState* pipelineState = nullptr) override;

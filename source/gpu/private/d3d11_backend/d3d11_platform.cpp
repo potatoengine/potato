@@ -17,6 +17,7 @@ auto gm::gpu::d3d11::toNative(Format format) noexcept -> DXGI_FORMAT {
     case Format::R32G32B32Float: return DXGI_FORMAT_R32G32B32_FLOAT;
     case Format::R32G32Float: return DXGI_FORMAT_R32G32_FLOAT;
     case Format::R8G8B8A8UnsignedNormalized: return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case Format::D32Float: return DXGI_FORMAT_D32_FLOAT;
     default: GM_UNREACHABLE("Unknown Format"); return DXGI_FORMAT_UNKNOWN;
     }
 }
@@ -27,16 +28,22 @@ auto gm::gpu::d3d11::fromNative(DXGI_FORMAT format) noexcept -> Format {
     case DXGI_FORMAT_R32G32B32_FLOAT: return Format::R32G32B32Float;
     case DXGI_FORMAT_R32G32_FLOAT: return Format::R32G32Float;
     case DXGI_FORMAT_R8G8B8A8_UNORM: return Format::R8G8B8A8UnsignedNormalized;
+    case DXGI_FORMAT_D32_FLOAT: return Format::D32Float;
     default: return Format::Unknown;
     }
 }
 
 auto gm::gpu::d3d11::toByteSize(Format format) noexcept -> gm::uint32 {
     switch (format) {
-    case Format::R32G32B32A32Float: return 16;
-    case Format::R32G32B32Float: return 12;
-    case Format::R32G32Float: return 8;
-    case Format::R8G8B8A8UnsignedNormalized: return 4;
+    case Format::R32G32B32A32Float:
+        return 16;
+    case Format::R32G32B32Float:
+        return 12;
+    case Format::R32G32Float:
+        return 8;
+    case Format::R8G8B8A8UnsignedNormalized:
+    case Format::D32Float:
+        return 4;
     default: GM_UNREACHABLE("Unknown Format"); return 0;
     }
 }

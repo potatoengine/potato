@@ -32,6 +32,10 @@ auto gm::gpu::null::DeviceNull::createRenderTargetView(Texture* renderTarget) ->
     return make_box<ResourceViewNull>(ViewType::RTV);
 }
 
+auto gm::gpu::null::DeviceNull::createDepthStencilView(Texture* depthStencilBuffer) -> box<ResourceView> {
+    return make_box<ResourceViewNull>(ViewType::DSV);
+}
+
 auto gm::gpu::null::DeviceNull::createShaderResourceView(Buffer* resource) -> box<ResourceView> {
     return make_box<ResourceViewNull>(ViewType::SRV);
 }
@@ -44,7 +48,7 @@ auto gm::gpu::null::DeviceNull::createBuffer(BufferType type, gm::uint64 size) -
     return make_box<BufferNull>(type);
 }
 
-auto gm::gpu::null::DeviceNull::createTexture2D(gm::uint32 width, gm::uint32 height, Format format, span<gm::byte const> data) -> box<Texture> {
+auto gm::gpu::null::DeviceNull::createTexture2D(TextureDesc const& desc, span<gm::byte const> data) -> box<Texture> {
     return make_box<TextureNull>();
 }
 

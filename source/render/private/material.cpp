@@ -18,6 +18,9 @@ void gm::Material::bindMaterialToRender(RenderContext& ctx) {
             {gpu::Format::R32G32B32Float, gpu::Semantic::Position, 0, 0},
             {gpu::Format::R32G32B32Float, gpu::Semantic::Color, 0, 0},
         };
+
+        pipelineDesc.enableDepthTest = true;
+        pipelineDesc.enableDepthWrite = true;
         pipelineDesc.vertShader = _vertexShader;
         pipelineDesc.pixelShader = _pixelShader;
         pipelineDesc.inputLayout = layout;

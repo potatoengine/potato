@@ -33,6 +33,8 @@ namespace gm {
         rc<gpu::SwapChain> _swapChain;
         box<gpu::Buffer> _cameraDataBuffer;
         box<gpu::Texture> _backBuffer;
+        box<gpu::Texture> _depthStencilBuffer;
         box<gpu::ResourceView> _rtv;
+        box<gpu::ResourceView> _dsv;
     };
 } // namespace gm

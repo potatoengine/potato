@@ -131,6 +131,7 @@ void gm::ShellApp::run() {
     float frameTime = 0;
 
     Mat4x4 cameraTransform;
+    //cameraTransform.r[3] = {0, 0, -5, 0};
     Vec4 movement;
 
     while (isRunning()) {
@@ -179,7 +180,7 @@ void gm::ShellApp::run() {
         cameraTransform.r[3] = cameraTransform.r[3] - movement * frameTime;
 
         const float radiansPerSec = 1;
-        _root->transform(_root->transform() * rotationZ(radiansPerSec * frameTime));
+        _root->transform(_root->transform() * rotationZ(radiansPerSec * frameTime) * rotationY(radiansPerSec * frameTime));
 
         gpu::Viewport viewport;
         int width, height;

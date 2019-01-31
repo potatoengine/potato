@@ -51,7 +51,13 @@ bool gm::imgrui::DrawImgui::createResources(gpu::Device& device) {
     int fontWidth, fontHeight;
     unsigned char* pixels;
     imguiIO.Fonts->GetTexDataAsRGBA32(&pixels, &fontWidth, &fontHeight);
-    auto font = device.createTexture2D(fontWidth, fontHeight, gpu::Format::R8G8B8A8UnsignedNormalized, span{pixels, static_cast<uint32>(fontWidth * fontHeight * 4)}.as_bytes());
+    gpu::TextureDesc texDesc;
+    texDesc.format = gpu::Format::R8G8B8A8UnsignedNormalized;
+    texDesc.type = gpu::TextureType::Texture2D;
+    texDesc.width = fontWidth;
+    texDesc.height = fontHeight;
+
+    auto font = device.createTexture2D(texDesc, span{pixels, static_cast<uint32>(fontWidth * fontHeight * 4)}.as_bytes());
     _srv = device.createShaderResourceView(font.get());
 
     _sampler = device.createSampler();

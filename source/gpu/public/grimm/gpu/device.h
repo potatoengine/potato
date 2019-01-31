@@ -17,6 +17,7 @@ namespace gm::gpu {
     class Texture;
 
     struct PipelineStateDesc;
+    struct TextureDesc;
 
     class Device : public shared<Device> {
     public:
@@ -30,12 +31,13 @@ namespace gm::gpu {
         virtual box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) = 0;
         virtual box<PipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
         virtual box<Buffer> createBuffer(BufferType type, uint64 size) = 0;
-        virtual box<Texture> createTexture2D(uint32 width, uint32 height, Format format, span<byte const> data) = 0;
+        virtual box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) = 0;
         virtual box<Sampler> createSampler() = 0;
 
         virtual void execute(CommandList* commandList) = 0;
 
         virtual box<ResourceView> createRenderTargetView(Texture* renderTarget) = 0;
+        virtual box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) = 0;
         virtual box<ResourceView> createShaderResourceView(Buffer* resource) = 0;
         virtual box<ResourceView> createShaderResourceView(Texture* texture) = 0;
     };

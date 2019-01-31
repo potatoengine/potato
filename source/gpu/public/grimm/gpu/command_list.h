@@ -25,6 +25,7 @@ namespace gm::gpu {
         virtual void setPipelineState(PipelineState* state) = 0;
 
         virtual void bindRenderTarget(uint32 index, ResourceView* view) = 0;
+        virtual void bindDepthStencil(ResourceView* view) = 0;
         virtual void bindIndexBuffer(Buffer* buffer, IndexType indexType, uint32 offset = 0) = 0;
         virtual void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) = 0;
         virtual void bindConstantBuffer(uint32 slot, Buffer* buffer, ShaderStage stage) = 0;
@@ -38,6 +39,7 @@ namespace gm::gpu {
         virtual void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) = 0;
 
         virtual void clearRenderTarget(ResourceView* view, Packed4 color) = 0;
+        virtual void clearDepthStencil(ResourceView* view) = 0;
 
         virtual void finish() = 0;
         virtual void clear(PipelineState* pipelineState = nullptr) = 0;
