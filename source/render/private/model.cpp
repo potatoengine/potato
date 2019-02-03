@@ -4,15 +4,15 @@
 #include "material.h"
 #include "mesh.h"
 #include "context.h"
-#include "grimm/math/packed_op.h"
 #include "grimm/gpu/buffer.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/command_list.h"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace {
     struct alignas(16) Vert {
-        gm::Packed3 pos;
-        gm::Packed3 color;
+        glm::vec3 pos;
+        glm::vec3 color;
     };
 
     struct alignas(16) Trans {
@@ -23,7 +23,7 @@ namespace {
 
 static Vert cube[6 * 6];
 
-static void makeFace(int index, gm::Packed3 normal, gm::Packed3 up, gm::Packed3 right) {
+static void makeFace(int index, glm::vec3 normal, glm::vec3 up, glm::vec3 right) {
     cube[index++] = Vert{
         normal - right - up,
         abs(normal)};
@@ -67,14 +67,15 @@ gm::Model::Model(rc<Material> material) : _material(std::move(material)) {
 
 gm::Model::~Model() = default;
 
-void GM_VECTORCALL gm::Model::render(RenderContext& ctx, Mat4x4 transform) {
+void GM_VECTORCALL gm::Model::render(RenderContext& ctx, glm::mat4x4 transform) {
     if (_transformBuffer == nullptr) {
         _transformBuffer = ctx.device.createBuffer(gpu::BufferType::Constant, sizeof(Trans));
     }
 
     Trans trans;
-    transform.alignedStore(trans.modelWorld);
-    transpose(transform).alignedStore(trans.worldModel);
+    std::memcpy(&trans.modelWorld, glm::value_ptr(transform), sizeof(trans.modelWorld));
+    auto worldModel = transpose(transform);
+    std::memcpy(&trans.worldModel, glm::value_ptr(worldModel), sizeof(trans.worldModel));
 
     _mesh->updateVertexBuffers(ctx);
     ctx.commandList.update(_transformBuffer.get(), span{&trans, 1}.as_bytes());

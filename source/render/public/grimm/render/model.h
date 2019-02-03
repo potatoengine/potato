@@ -5,7 +5,8 @@
 #include "_export.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/rc.h"
-#include "grimm/math/matrix.h"
+#include "grimm/foundation/platform.h"
+#include <glm/mat4x4.hpp>
 
 namespace gm::gpu {
     class Buffer;
@@ -23,7 +24,7 @@ namespace gm {
         GM_RENDER_API explicit Model(rc<Material> material);
         GM_RENDER_API ~Model();
 
-        GM_RENDER_API void GM_VECTORCALL render(RenderContext& ctx, Mat4x4 transform);
+        GM_RENDER_API void GM_VECTORCALL render(RenderContext& ctx, glm::mat4x4 transform);
 
     private:
         rc<Material> _material;

@@ -35,12 +35,12 @@ DXGI_FORMAT gm::gpu::d3d11::TextureD3D11::nativeFormat() const noexcept {
     return DXGI_FORMAT_UNKNOWN;
 }
 
-auto gm::gpu::d3d11::TextureD3D11::dimensions() const noexcept -> Packed3 {
+auto gm::gpu::d3d11::TextureD3D11::dimensions() const noexcept -> glm::ivec3 {
     com_ptr<ID3D11Texture2D> texture2D;
     if (SUCCEEDED(_texture->QueryInterface(__uuidof(ID3D11Texture2D), out_ptr(texture2D)))) {
         D3D11_TEXTURE2D_DESC desc;
         texture2D->GetDesc(&desc);
-        return {static_cast<float>(desc.Width), static_cast<float>(desc.Height), 0};
+        return {desc.Width, desc.Height, 0};
     }
 
     GM_UNREACHABLE("could not detect texture type");

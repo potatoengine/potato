@@ -6,7 +6,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/rc.h"
 #include "grimm/gpu/swap_chain.h"
-#include "grimm/math/matrix.h"
+#include <glm/mat4x4.hpp>
 
 namespace gm::gpu {
     class Buffer;
@@ -26,7 +26,7 @@ namespace gm {
 
         GM_RENDER_API void resetSwapChain(rc<gpu::SwapChain> swapChain);
 
-        GM_RENDER_API void beginFrame(RenderContext& ctx, Mat4x4 cameraTransform);
+        GM_RENDER_API void beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform);
         GM_RENDER_API void endFrame(RenderContext& ctx);
 
     private:

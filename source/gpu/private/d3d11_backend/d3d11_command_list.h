@@ -35,7 +35,7 @@ namespace gm::gpu::d3d11 {
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override;
         void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) override;
 
-        void clearRenderTarget(ResourceView* view, Packed4 color) override;
+        void clearRenderTarget(ResourceView* view, glm::vec4 color) override;
         void clearDepthStencil(ResourceView* view) override;
 
         void finish() override;

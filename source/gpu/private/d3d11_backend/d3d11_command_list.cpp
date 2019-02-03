@@ -168,7 +168,7 @@ void gm::gpu::d3d11::CommandListD3D11::drawIndexed(gm::uint32 indexCount, gm::ui
     _context->DrawIndexed(indexCount, firstIndex, baseIndex);
 }
 
-void gm::gpu::d3d11::CommandListD3D11::clearRenderTarget(ResourceView* view, Packed4 color) {
+void gm::gpu::d3d11::CommandListD3D11::clearRenderTarget(ResourceView* view, glm::vec4 color) {
     GM_ASSERT(view != nullptr);
 
     FLOAT c[4] = {color.x, color.y, color.z, color.w};

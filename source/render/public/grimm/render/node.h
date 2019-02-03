@@ -5,7 +5,7 @@
 #include "_export.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/vector.h"
-#include "grimm/math/matrix.h"
+#include <glm/mat4x4.hpp>
 
 namespace gm::gpu {
     class CommandList;
@@ -24,11 +24,11 @@ namespace gm {
         GM_RENDER_API void render(RenderContext& ctx);
         GM_RENDER_API void addChild(box<Node> child);
 
-        Mat4x4 GM_VECTORCALL transform() const { return _transform; }
-        void GM_VECTORCALL transform(Mat4x4 transform) { _transform = transform; }
+        glm::mat4x4 GM_VECTORCALL transform() const { return _transform; }
+        void GM_VECTORCALL transform(glm::mat4x4 transform) { _transform = transform; }
 
     private:
-        Mat4x4 _transform;
+        glm::mat4x4 _transform;
         box<Model> _model;
         vector<box<Node>> _children;
     };

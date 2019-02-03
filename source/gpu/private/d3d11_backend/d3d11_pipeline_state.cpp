@@ -3,7 +3,6 @@
 #include "D3D11_pipeline_state.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
-#include "grimm/math/packed.h"
 
 gm::gpu::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {
     GM_ASSERT(_params.rasterState != nullptr);

@@ -12,9 +12,6 @@
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/swap_chain.h"
 #include "grimm/gpu/texture.h"
-#include "grimm/math/packed.h"
-#include "grimm/math/matrix.h"
-#include "grimm/math/constants.h"
 #include "grimm/render/renderer.h"
 #include "grimm/render/camera.h"
 #include "grimm/render/context.h"
@@ -29,6 +26,8 @@
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
 #include <imgui.h>
+#include <glm/vec3.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 gm::ShellApp::ShellApp() = default;
 
@@ -130,9 +129,9 @@ void gm::ShellApp::run() {
     auto duration = now - now;
     float frameTime = 0;
 
-    Mat4x4 cameraTransform;
-    //cameraTransform.r[3] = {0, 0, -5, 0};
-    Vec4 movement;
+    glm::mat4x4 cameraTransform = glm::identity<glm::mat4x4>();
+    //cameraTransform.r[2] = {0, 0, 0, 20};
+    glm::vec3 movement = {0, 0, 0};
 
     while (isRunning()) {
         SDL_Event ev;
@@ -152,35 +151,35 @@ void gm::ShellApp::run() {
                 break;
             case SDL_KEYDOWN:
                 if (ev.key.keysym.sym == SDLK_w) {
-                    movement = Vec4{0, 0, -1, 0};
+                    movement.z = -1;
                 }
                 else if (ev.key.keysym.sym == SDLK_s) {
-                    movement = Vec4{0, 0, +1, 0};
+                    movement.z = +1;
                 }
                 else if (ev.key.keysym.sym == SDLK_a) {
-                    movement = Vec4{-1, 0, 0, 0};
+                    movement.x = -1;
                 }
                 else if (ev.key.keysym.sym == SDLK_d) {
-                    movement = Vec4{+1, 0, 0, 0};
+                    movement.x = +1;
                 }
                 else if (ev.key.keysym.sym == SDLK_SPACE) {
-                    movement = Vec4{0, +1, 0, 0};
+                    movement.y = +1;
                 }
                 else if (ev.key.keysym.sym == SDLK_LCTRL) {
-                    movement = Vec4{0, -1, 0, 0};
+                    movement.y = -1;
                 }
                 break;
             case SDL_KEYUP:
-                movement = Vec4{};
+                movement = glm::vec3{};
                 break;
             }
             _drawImgui.handleEvent(ev);
         }
 
-        cameraTransform.r[3] = cameraTransform.r[3] - movement * frameTime;
+        cameraTransform = glm::translate(cameraTransform, movement * frameTime);
 
         const float radiansPerSec = 1;
-        _root->transform(_root->transform() * rotationZ(radiansPerSec * frameTime) * rotationY(radiansPerSec * frameTime));
+        _root->transform(glm::rotate(glm::rotate(_root->transform(), radiansPerSec * frameTime, {0, 1, 0}), radiansPerSec * frameTime * 0.5f, {0, 0, 1}));
 
         gpu::Viewport viewport;
         int width, height;

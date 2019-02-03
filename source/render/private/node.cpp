@@ -5,8 +5,9 @@
 #include "camera.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/command_list.h"
+#include <glm/gtc/matrix_transform.hpp>
 
-gm::Node::Node(box<Model> model) : _model(std::move(model)) {}
+gm::Node::Node(box<Model> model) : _transform(glm::identity<glm::mat4x4>()), _model(std::move(model)) {}
 
 gm::Node::~Node() = default;
 

@@ -18,7 +18,7 @@ namespace gm::gpu::d3d11 {
 
         TextureType type() const noexcept override;
         Format format() const noexcept override;
-        Packed3 dimensions() const noexcept;
+        glm::ivec3 dimensions() const noexcept;
 
         DXGI_FORMAT nativeFormat() const noexcept;
         com_ptr<ID3D11Resource> const& get() const { return _texture; }

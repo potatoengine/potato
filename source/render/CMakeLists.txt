@@ -23,9 +23,9 @@ target_include_directories(grimm_render
 target_link_libraries(grimm_render
     PUBLIC
         grimm::foundation
-        grimm::math
         grimm::gpu
         grimm::concurrency
+        glm
     PRIVATE
         doctest
 )
