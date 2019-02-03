@@ -101,6 +101,7 @@ int gm::ShellApp::initialize() {
     auto material = make_shared<Material>(std::move(basicVertShader), std::move(basicPixelShader));
     auto model = make_box<Model>(std::move(material));
     _root = make_box<Node>(std::move(model));
+    _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 0, -5}));
 
     blob imguiVertShader, imguiPixelShader;
     stream = _fileSystem.openRead("build/resources/shaders/imgui.vs_5_0.cbo");
@@ -129,8 +130,7 @@ void gm::ShellApp::run() {
     auto duration = now - now;
     float frameTime = 0;
 
-    glm::mat4x4 cameraTransform = glm::identity<glm::mat4x4>();
-    //cameraTransform.r[2] = {0, 0, 0, 20};
+    glm::mat4x4 cameraTransform = translate(glm::identity<glm::mat4x4>(), {0, 0, -4});
     glm::vec3 movement = {0, 0, 0};
 
     while (isRunning()) {
@@ -150,36 +150,23 @@ void gm::ShellApp::run() {
                 }
                 break;
             case SDL_KEYDOWN:
-                if (ev.key.keysym.sym == SDLK_w) {
-                    movement.z = -1;
-                }
-                else if (ev.key.keysym.sym == SDLK_s) {
-                    movement.z = +1;
-                }
-                else if (ev.key.keysym.sym == SDLK_a) {
-                    movement.x = -1;
-                }
-                else if (ev.key.keysym.sym == SDLK_d) {
-                    movement.x = +1;
-                }
-                else if (ev.key.keysym.sym == SDLK_SPACE) {
-                    movement.y = +1;
-                }
-                else if (ev.key.keysym.sym == SDLK_LCTRL) {
-                    movement.y = -1;
-                }
+            case SDL_KEYUP: {
+                int count = 0;
+                auto keys = SDL_GetKeyboardState(&count);
+                movement.x = static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]);
+                movement.y = static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LCTRL]);
+                movement.z = static_cast<float>(keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]);
                 break;
-            case SDL_KEYUP:
-                movement = glm::vec3{};
-                break;
+            }
             }
             _drawImgui.handleEvent(ev);
         }
 
-        cameraTransform = glm::translate(cameraTransform, movement * frameTime);
+        cameraTransform = glm::translate(cameraTransform, -movement * frameTime);
 
-        const float radiansPerSec = 1;
-        _root->transform(glm::rotate(glm::rotate(_root->transform(), radiansPerSec * frameTime, {0, 1, 0}), radiansPerSec * frameTime * 0.5f, {0, 0, 1}));
+        const float radiansPerSec = 2;
+        const float rotateRads = radiansPerSec * frameTime;
+        _root->transform(glm::rotate(glm::rotate(_root->transform(), rotateRads, {0, 1, 0}), rotateRads, {1, 0, 0}));
 
         gpu::Viewport viewport;
         int width, height;

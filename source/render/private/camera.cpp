@@ -59,13 +59,14 @@ void gm::Camera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform) {
     viewport.maxDepth = 1;
 
     float farZ = 4000.f;
-    float nearZ = 2.0f;
-    float fovY = glm::pi<float>() / 180.f * 75.f;
+    float nearZ = 2.f;
+
+    auto projection = glm::perspectiveFovRH_ZO(glm::radians(75.f), viewport.width, viewport.height, nearZ, farZ);
 
     CameraData data;
-    data.worldView = cameraTransform;
-    data.viewProjection = glm::perspectiveFov(fovY, viewport.width, viewport.height, nearZ, farZ);
-    data.worldViewProjection = data.worldView * data.viewProjection;
+    data.worldView = transpose(cameraTransform);
+    data.viewProjection = transpose(projection);
+    data.worldViewProjection = cameraTransform * projection;
 
     ctx.commandList.update(_cameraDataBuffer.get(), span{&data, 1}.as_bytes());
 

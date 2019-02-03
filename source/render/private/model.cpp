@@ -16,8 +16,8 @@ namespace {
     };
 
     struct alignas(16) Trans {
-        float modelWorld[16];
-        float worldModel[26];
+        glm::mat4x4 modelWorld;
+        glm::mat4x4 worldModel;
     };
 } // namespace
 
@@ -26,22 +26,22 @@ static Vert cube[6 * 6];
 static void makeFace(int index, glm::vec3 normal, glm::vec3 up, glm::vec3 right) {
     cube[index++] = Vert{
         normal - right - up,
-        abs(normal)};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
     cube[index++] = Vert{
         normal + right - up,
-        abs(normal)};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
     cube[index++] = Vert{
         normal + right + up,
-        abs(normal)};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
     cube[index++] = Vert{
         normal - right - up,
-        abs(normal)};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
     cube[index++] = Vert{
         normal + right + up,
-        abs(normal)};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
     cube[index++] = Vert{
         normal - right + up,
-        abs(normal)};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
 }
 static void makeCube() {
     makeFace(0, {1, 0, 0}, {0, 1, 0}, {0, 0, 1});
@@ -73,9 +73,8 @@ void GM_VECTORCALL gm::Model::render(RenderContext& ctx, glm::mat4x4 transform) 
     }
 
     Trans trans;
-    std::memcpy(&trans.modelWorld, glm::value_ptr(transform), sizeof(trans.modelWorld));
-    auto worldModel = transpose(transform);
-    std::memcpy(&trans.worldModel, glm::value_ptr(worldModel), sizeof(trans.worldModel));
+    trans.modelWorld = transpose(transform);
+    trans.worldModel = glm::inverse(transform);
 
     _mesh->updateVertexBuffers(ctx);
     ctx.commandList.update(_transformBuffer.get(), span{&trans, 1}.as_bytes());
