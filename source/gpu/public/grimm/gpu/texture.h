@@ -3,7 +3,7 @@
 #pragma once
 
 #include "common.h"
-#include "grimm/math/packed.h"
+#include <glm/vec3.hpp>
 
 namespace gm::gpu {
     class Texture {
@@ -16,6 +16,6 @@ namespace gm::gpu {
 
         virtual TextureType type() const noexcept = 0;
         virtual Format format() const noexcept = 0;
-        virtual PackedVector3f dimensions() const noexcept = 0;
+        virtual glm::ivec3 dimensions() const noexcept = 0;
     };
 } // namespace gm::gpu

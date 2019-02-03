@@ -56,6 +56,14 @@ void gm::gpu::d3d11::CommandListD3D11::bindRenderTarget(gm::uint32 index, Resour
     _bindingsDirty = true;
 }
 
+void gm::gpu::d3d11::CommandListD3D11::bindDepthStencil(ResourceView* view) {
+    auto dsv = static_cast<ResourceViewD3D11*>(view);
+    GM_ASSERT(dsv->type() == ViewType::DSV);
+
+    _dsv = dsv->getView().as<ID3D11DepthStencilView>();
+    _bindingsDirty = true;
+}
+
 void gm::gpu::d3d11::CommandListD3D11::bindIndexBuffer(Buffer* buffer, IndexType indexType, gm::uint32 offset) {
     GM_ASSERT(buffer != nullptr);
     GM_ASSERT(buffer->type() == BufferType::Index);
@@ -160,10 +168,17 @@ void gm::gpu::d3d11::CommandListD3D11::drawIndexed(gm::uint32 indexCount, gm::ui
     _context->DrawIndexed(indexCount, firstIndex, baseIndex);
 }
 
-void gm::gpu::d3d11::CommandListD3D11::clearRenderTarget(ResourceView* view, PackedVector4f color) {
+void gm::gpu::d3d11::CommandListD3D11::clearRenderTarget(ResourceView* view, glm::vec4 color) {
     GM_ASSERT(view != nullptr);
 
-    _context->ClearRenderTargetView(static_cast<ID3D11RenderTargetView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), color);
+    FLOAT c[4] = {color.x, color.y, color.z, color.w};
+    _context->ClearRenderTargetView(static_cast<ID3D11RenderTargetView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), c);
+}
+
+void gm::gpu::d3d11::CommandListD3D11::clearDepthStencil(ResourceView* view) {
+    GM_ASSERT(view != nullptr);
+
+    _context->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), D3D11_CLEAR_DEPTH, 1.f, 0);
 }
 
 void gm::gpu::d3d11::CommandListD3D11::finish() {

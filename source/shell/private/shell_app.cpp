@@ -9,9 +9,15 @@
 #include "grimm/filesystem/stream_util.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/factory.h"
+#include "grimm/gpu/command_list.h"
 #include "grimm/gpu/swap_chain.h"
 #include "grimm/gpu/texture.h"
-#include "grimm/math/packed.h"
+#include "grimm/render/renderer.h"
+#include "grimm/render/camera.h"
+#include "grimm/render/context.h"
+#include "grimm/render/node.h"
+#include "grimm/render/model.h"
+#include "grimm/render/material.h"
 #include "grimm/imgrui/imgrui.h"
 
 #include <fmt/chrono.h>
@@ -20,23 +26,17 @@
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
 #include <imgui.h>
+#include <glm/vec3.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-static constexpr gm::PackedVector3f triangle[] = {
-    {-0.8f, -0.8f, 0},
-    {1, 0, 0},
-    {0.8f, -0.8f, 0},
-    {0, 1, 0},
-    {0, +0.8f, 0},
-    {0, 0, 1},
-};
+gm::ShellApp::ShellApp() = default;
 
 gm::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
 
-    _commandList.reset();
-    _rtv.reset();
-    _pipelineState.reset();
-    _vbo.reset();
+    _renderer.reset();
+    _root.reset();
+    _camera.reset();
     _swapChain.reset();
     _window.reset();
 
@@ -74,6 +74,8 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
+    _renderer = make_box<Renderer>(_device);
+
 #if GM_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
 #endif
@@ -82,18 +84,7 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _rtv = _device->createRenderTargetView(_swapChain->getBuffer(0).get());
-
-    _commandList = _device->createCommandList();
-    if (_commandList == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create command list", _window.get());
-        return 1;
-    }
-
-    _vbo = _device->createBuffer(gpu::BufferType::Vertex, sizeof(triangle));
-    _commandList->update(_vbo.get(), span{triangle, 6}.as_bytes(), 0);
-
-    gpu::PipelineStateDesc pipelineDesc;
+    _camera = make_box<Camera>(_swapChain);
 
     blob basicVertShader, basicPixelShader;
     auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_5_0.cbo");
@@ -107,18 +98,10 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    gpu::InputLayoutElement layout[2] = {
-        {gpu::Format::R32G32B32Float, gpu::Semantic::Position, 0, 0},
-        {gpu::Format::R32G32B32Float, gpu::Semantic::Color, 0, 0},
-    };
-    pipelineDesc.vertShader = basicVertShader;
-    pipelineDesc.pixelShader = basicPixelShader;
-    pipelineDesc.inputLayout = layout;
-    _pipelineState = _device->createPipelineState(pipelineDesc);
-    if (_pipelineState == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create pipeline state", _window.get());
-        return 1;
-    }
+    auto material = make_shared<Material>(std::move(basicVertShader), std::move(basicPixelShader));
+    auto model = make_box<Model>(std::move(material));
+    _root = make_box<Node>(std::move(model));
+    _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 0, -5}));
 
     blob imguiVertShader, imguiPixelShader;
     stream = _fileSystem.openRead("build/resources/shaders/imgui.vs_5_0.cbo");
@@ -145,6 +128,10 @@ void gm::ShellApp::run() {
 
     auto now = clock.now();
     auto duration = now - now;
+    float frameTime = 0;
+
+    glm::mat4x4 cameraTransform = translate(glm::identity<glm::mat4x4>(), {0, 0, -4});
+    glm::vec3 movement = {0, 0, 0};
 
     while (isRunning()) {
         SDL_Event ev;
@@ -162,9 +149,24 @@ void gm::ShellApp::run() {
                     break;
                 }
                 break;
+            case SDL_KEYDOWN:
+            case SDL_KEYUP: {
+                int count = 0;
+                auto keys = SDL_GetKeyboardState(&count);
+                movement.x = static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]);
+                movement.y = static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LCTRL]);
+                movement.z = static_cast<float>(keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]);
+                break;
+            }
             }
             _drawImgui.handleEvent(ev);
         }
+
+        cameraTransform = glm::translate(cameraTransform, -movement * frameTime);
+
+        const float radiansPerSec = 2;
+        const float rotateRads = radiansPerSec * frameTime;
+        _root->transform(glm::rotate(glm::rotate(_root->transform(), rotateRads, {0, 1, 0}), rotateRads, {1, 0, 0}));
 
         gpu::Viewport viewport;
         int width, height;
@@ -190,31 +192,27 @@ void gm::ShellApp::run() {
 
             fixed_string_writer<128> buffer;
             format_into(buffer, "{}us", micro);
-            ImGui::LabelText("Frametime", buffer.c_str());
+            ImGui::LabelText("Frametime", "%s", buffer.c_str());
             buffer.clear();
-            format_into(buffer, "{}", 1000000.0 / micro);
-            ImGui::LabelText("FPS", buffer.c_str());
+            format_into(buffer, "{}", 1 / frameTime);
+            ImGui::LabelText("FPS", "%s", buffer.c_str());
         }
         ImGui::End();
 
-        _commandList->clear();
-        _commandList->clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
-        _commandList->setPipelineState(_pipelineState.get());
-        _commandList->bindRenderTarget(0, _rtv.get());
-        _commandList->bindVertexBuffer(0, _vbo.get(), sizeof(PackedVector3f) * 2);
-        _commandList->setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
-        _commandList->setViewport(viewport);
-        _commandList->draw(3);
+        _renderer->beginFrame();
+        auto ctx = _renderer->context();
+        _camera->beginFrame(ctx, cameraTransform);
+        _root->render(ctx);
 
-        _drawImgui.endFrame(*_device, *_commandList);
+        _drawImgui.endFrame(*_device, _renderer->commandList());
 
-        _commandList->finish();
-        _device->execute(_commandList.get());
-
+        _camera->endFrame(ctx);
+        _renderer->endFrame();
         _swapChain->present();
 
         auto endFrame = clock.now();
         duration = endFrame - now;
+        frameTime = static_cast<float>(duration.count() / 1000000000.0);
         now = endFrame;
     }
 }
@@ -230,8 +228,8 @@ void gm::ShellApp::onWindowClosed() {
 void gm::ShellApp::onWindowSizeChanged() {
     int width, height;
     SDL_GetWindowSize(_window.get(), &width, &height);
-    _rtv.reset();
-    _commandList->clear();
+    _camera->resetSwapChain(nullptr);
+    _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
-    _rtv = _device->createRenderTargetView(_swapChain->getBuffer(0).get());
+    _camera->resetSwapChain(_swapChain);
 }

@@ -11,7 +11,7 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::vector") {
     }
 
     DOCTEST_TEST_CASE("vector initializer list") {
-        gm::vector vec = {1, 2, 3, 4};
+        gm::vector vec{1, 2, 3, 4};
 
         DOCTEST_CHECK_EQ(vec.size(), 4);
         DOCTEST_CHECK_GE(vec.capacity(), 4);
@@ -43,7 +43,7 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::vector") {
     }
 
     DOCTEST_TEST_CASE("vector erase") {
-        gm::vector vec = {1, 2, 3, 4};
+        gm::vector vec{1, 2, 3, 4};
 
         vec.erase(vec.begin());
 

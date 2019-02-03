@@ -16,18 +16,19 @@ namespace gm::gpu::d3d11 {
         DeviceD3D11(DeviceD3D11&&) = delete;
         DeviceD3D11& operator=(DeviceD3D11&&) = delete;
 
-        static box<Device> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
+        static rc<Device> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
-        box<SwapChain> createSwapChain(void* native_window) override;
+        rc<SwapChain> createSwapChain(void* native_window) override;
         box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;
-        box<Texture> createTexture2D(uint32 width, uint32 height, Format format, span<byte const> data) override;
+        box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
         box<Sampler> createSampler() override;
 
         void execute(CommandList* commandList) override;
 
         box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
+        box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) override;
         box<ResourceView> createShaderResourceView(Buffer* resource) override;
         box<ResourceView> createShaderResourceView(Texture* texture) override;
 

@@ -13,6 +13,7 @@ namespace gm::gpu {
         R32G32B32Float,
         R32G32Float,
         R8G8B8A8UnsignedNormalized,
+        D32Float
     };
 
     enum class Semantic {
@@ -76,8 +77,16 @@ namespace gm::gpu {
         int index;
     };
 
+    struct TextureDesc {
+        Format format = Format::Unknown;
+        TextureType type = TextureType::DepthStencil;
+        uint32 width = 0, height = 0;
+    };
+
     struct PipelineStateDesc {
         bool enableScissor = false;
+        bool enableDepthWrite = false;
+        bool enableDepthTest = false;
         span<byte const> vertShader;
         span<byte const> pixelShader;
         span<InputLayoutElement const> inputLayout;

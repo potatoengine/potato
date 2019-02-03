@@ -19,19 +19,20 @@ namespace gm::gpu::null {
     public:
         bool isEnabled() const override { return true; }
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
-        box<Device> createDevice(int index) override;
+        rc<Device> createDevice(int index) override;
     };
 
     class DeviceNull final : public Device {
     public:
-        box<SwapChain> createSwapChain(void* native_window) override;
+        rc<SwapChain> createSwapChain(void* native_window) override;
         box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<Buffer> createBuffer(BufferType type, uint64 size) override;
-        box<Texture> createTexture2D(uint32 width, uint32 height, Format format, span<byte const> data) override;
+        box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
         box<Sampler> createSampler() override;
 
         box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
+        box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) override;
         box<ResourceView> createShaderResourceView(Buffer* resource) override;
         box<ResourceView> createShaderResourceView(Texture* texture) override;
 
@@ -63,7 +64,8 @@ namespace gm::gpu::null {
     public:
         void setPipelineState(PipelineState* state) override {}
 
-        void clearRenderTarget(ResourceView* view, PackedVector4f color) override {}
+        void clearRenderTarget(ResourceView* view, glm::vec4 color) override {}
+        void clearDepthStencil(ResourceView* view) override {}
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override {}
         void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) override {}
@@ -76,6 +78,7 @@ namespace gm::gpu::null {
         void update(Buffer* resource, span<byte const> data, uint64 offset = 0) override {}
 
         void bindRenderTarget(uint32 index, ResourceView* view) override {}
+        void bindDepthStencil(ResourceView* view) override {}
         void bindIndexBuffer(Buffer* buffer, IndexType indexType, uint32 offset = 0) override {}
         void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override {}
         void bindConstantBuffer(uint32 slot, Buffer* buffer, ShaderStage stage) override {}
@@ -101,7 +104,7 @@ namespace gm::gpu::null {
     public:
         TextureType type() const noexcept override { return TextureType::Texture2D; }
         Format format() const noexcept override { return Format::Unknown; }
-        PackedVector3f dimensions() const noexcept override { return {0, 0, 0}; }
+        glm::ivec3 dimensions() const noexcept override { return {0, 0, 0}; }
     };
 
     class SamplerNull final : public Sampler {

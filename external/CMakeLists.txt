@@ -30,4 +30,8 @@ target_compile_definitions(imgui PUBLIC
 )
 target_link_libraries(imgui PUBLIC grimm::foundation)
 
+set(GLM_QUIET ON CACHE BOOL "quiet glm build")
+set(GLM_TEST_ENABLE OFF CACHE BOOL "disable glm tests")
+add_subdirectory(glm-0.9.9.3/glm EXCLUDE_FROM_ALL)
+
 set(CMAKE_CXX_CLANG_TIDY ${OLD_TIDY})

@@ -6,7 +6,7 @@
 
 gm::concurrency::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _queue(queue) {
     // just to make sure this is called at least once on the main thread...
-    auto _ = currentSmallThreadId();
+    [[maybe_unused]] auto _ = currentSmallThreadId();
 
     Semaphore sem;
     _thread = std::thread([this, name, &sem] {

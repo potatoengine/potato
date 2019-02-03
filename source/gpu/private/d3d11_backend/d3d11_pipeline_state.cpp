@@ -3,7 +3,6 @@
 #include "D3D11_pipeline_state.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
-#include "grimm/math/packed.h"
 
 gm::gpu::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {
     GM_ASSERT(_params.rasterState != nullptr);
@@ -25,7 +24,9 @@ auto gm::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(PipelineSta
     rasterDesc.DepthClipEnable = true;
 
     D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
-    depthStencilDesc.DepthEnable = false;
+    depthStencilDesc.DepthEnable = desc.enableDepthTest;
+    depthStencilDesc.DepthWriteMask = desc.enableDepthWrite ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
 
     D3D11_BLEND_DESC blendDesc = {};
     blendDesc.AlphaToCoverageEnable = false;

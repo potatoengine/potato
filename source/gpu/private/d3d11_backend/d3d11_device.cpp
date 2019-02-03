@@ -37,7 +37,7 @@ gm::gpu::d3d11::DeviceD3D11::~DeviceD3D11() {
     }
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> box<Device> {
+auto gm::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> rc<Device> {
     GM_ASSERT(factory != nullptr);
     GM_ASSERT(adapter != nullptr);
 
@@ -50,10 +50,10 @@ auto gm::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, c
         return nullptr;
     }
 
-    return make_box<DeviceD3D11>(std::move(factory), std::move(adapter), std::move(device), std::move(context));
+    return make_shared<DeviceD3D11>(std::move(factory), std::move(adapter), std::move(device), std::move(context));
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> box<SwapChain> {
+auto gm::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> rc<SwapChain> {
     GM_ASSERT(nativeWindow != nullptr);
 
     return SwapChainD3D11::createSwapChain(_factory.get(), _device.get(), nativeWindow);
@@ -70,7 +70,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(Texture* renderTarget) 
 
     D3D11_RENDER_TARGET_VIEW_DESC desc = {};
     desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.Format = toNative(d3d11Resource->format());
 
     com_ptr<ID3D11RenderTargetView> view;
     HRESULT hr = _device->CreateRenderTargetView(d3d11Resource->get().get(), &desc, out_ptr(view));
@@ -79,6 +79,24 @@ auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(Texture* renderTarget) 
     }
 
     return make_box<ResourceViewD3D11>(ViewType::RTV, view.as<ID3D11View>());
+}
+
+auto gm::gpu::d3d11::DeviceD3D11::createDepthStencilView(Texture* depthStencilBuffer) -> box<ResourceView> {
+    GM_ASSERT(depthStencilBuffer != nullptr);
+
+    auto d3d11Resource = static_cast<TextureD3D11*>(depthStencilBuffer);
+
+    D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
+    desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    desc.Format = toNative(d3d11Resource->format());
+
+    com_ptr<ID3D11DepthStencilView> view;
+    HRESULT hr = _device->CreateDepthStencilView(d3d11Resource->get().get(), &desc, out_ptr(view));
+    if (!SUCCEEDED(hr)) {
+        return nullptr;
+    }
+
+    return make_box<ResourceViewD3D11>(ViewType::DSV, view.as<ID3D11View>());
 }
 
 auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Buffer* resource) -> box<ResourceView> {
@@ -150,29 +168,35 @@ auto gm::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size)
     return make_box<BufferD3D11>(type, size, std::move(buffer));
 }
 
-auto gm::gpu::d3d11::DeviceD3D11::createTexture2D(gm::uint32 width, gm::uint32 height, Format format, span<gm::byte const> data) -> box<Texture> {
-    auto bytesPerPixel = toByteSize(format);
+auto gm::gpu::d3d11::DeviceD3D11::createTexture2D(TextureDesc const& desc, span<gm::byte const> data) -> box<Texture> {
+    auto bytesPerPixel = toByteSize(desc.format);
 
-    GM_ASSERT(data.empty() || data.size() == width * height * bytesPerPixel);
+    GM_ASSERT(data.empty() || data.size() == desc.width * desc.height * bytesPerPixel);
 
-    D3D11_TEXTURE2D_DESC desc = {};
-    desc.Format = toNative(format);
-    desc.Width = width;
-    desc.Height = height;
-    desc.MipLevels = 1;
-    desc.ArraySize = 1;
-    desc.CPUAccessFlags = 0;
-    desc.Usage = D3D11_USAGE_IMMUTABLE;
-    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-    desc.SampleDesc.Count = 1;
-    desc.SampleDesc.Quality = 0;
+    D3D11_TEXTURE2D_DESC nativeDesc = {};
+    nativeDesc.Format = toNative(desc.format);
+    nativeDesc.Width = desc.width;
+    nativeDesc.Height = desc.height;
+    nativeDesc.MipLevels = 1;
+    nativeDesc.ArraySize = 1;
+    nativeDesc.CPUAccessFlags = 0;
+    if (desc.type == TextureType::DepthStencil) {
+        nativeDesc.Usage = D3D11_USAGE_DEFAULT;
+        nativeDesc.BindFlags = D3D10_BIND_DEPTH_STENCIL;
+    }
+    else {
+        nativeDesc.Usage = D3D11_USAGE_IMMUTABLE;
+        nativeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    }
+    nativeDesc.SampleDesc.Count = 1;
+    nativeDesc.SampleDesc.Quality = 0;
 
     D3D11_SUBRESOURCE_DATA init = {};
     init.pSysMem = data.data();
-    init.SysMemPitch = width * bytesPerPixel;
+    init.SysMemPitch = desc.width * bytesPerPixel;
 
     com_ptr<ID3D11Texture2D> texture;
-    HRESULT hr = _device->CreateTexture2D(&desc, data.empty() ? nullptr : &init, out_ptr(texture));
+    HRESULT hr = _device->CreateTexture2D(&nativeDesc, data.empty() ? nullptr : &init, out_ptr(texture));
     if (!SUCCEEDED(hr)) {
         return nullptr;
     }

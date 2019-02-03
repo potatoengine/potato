@@ -5,7 +5,7 @@
 #include "common.h"
 #include "grimm/foundation/span.h"
 #include "grimm/foundation/types.h"
-#include "grimm/math/packed.h"
+#include <glm/vec4.hpp>
 
 namespace gm::gpu {
     class Buffer;
@@ -25,6 +25,7 @@ namespace gm::gpu {
         virtual void setPipelineState(PipelineState* state) = 0;
 
         virtual void bindRenderTarget(uint32 index, ResourceView* view) = 0;
+        virtual void bindDepthStencil(ResourceView* view) = 0;
         virtual void bindIndexBuffer(Buffer* buffer, IndexType indexType, uint32 offset = 0) = 0;
         virtual void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) = 0;
         virtual void bindConstantBuffer(uint32 slot, Buffer* buffer, ShaderStage stage) = 0;
@@ -37,7 +38,8 @@ namespace gm::gpu {
         virtual void draw(uint32 vertexCount, uint32 firstVertex = 0) = 0;
         virtual void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) = 0;
 
-        virtual void clearRenderTarget(ResourceView* view, PackedVector4f color) = 0;
+        virtual void clearRenderTarget(ResourceView* view, glm::vec4 color) = 0;
+        virtual void clearDepthStencil(ResourceView* view) = 0;
 
         virtual void finish() = 0;
         virtual void clear(PipelineState* pipelineState = nullptr) = 0;

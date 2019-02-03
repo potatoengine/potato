@@ -13,7 +13,7 @@ gm::gpu::d3d11::SwapChainD3D11::SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChai
 
 gm::gpu::d3d11::SwapChainD3D11::~SwapChainD3D11() = default;
 
-auto gm::gpu::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow) -> box<SwapChain> {
+auto gm::gpu::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow) -> rc<SwapChain> {
     DXGI_SWAP_CHAIN_DESC1 desc = {0};
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     desc.SampleDesc.Count = 1;
@@ -35,7 +35,7 @@ auto gm::gpu::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3
 
     factory->MakeWindowAssociation(window, DXGI_MWA_NO_ALT_ENTER);
 
-    return make_box<SwapChainD3D11>(std::move(swapChain));
+    return make_shared<SwapChainD3D11>(std::move(swapChain));
 }
 
 void gm::gpu::d3d11::SwapChainD3D11::present() {

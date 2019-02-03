@@ -8,16 +8,16 @@ void gm::gpu::null::FactoryNull::enumerateDevices(delegate<void(DeviceInfo const
     callback(deviceInfo);
 }
 
-auto gm::gpu::null::FactoryNull::createDevice(int index) -> box<Device> {
-    return make_box<DeviceNull>();
+auto gm::gpu::null::FactoryNull::createDevice(int index) -> rc<Device> {
+    return make_shared<DeviceNull>();
 }
 
 GM_GPU_API auto gm::gpu::CreateFactoryNull() -> box<Factory> {
     return make_box<null::FactoryNull>();
 }
 
-auto gm::gpu::null::DeviceNull::createSwapChain(void* native_window) -> box<SwapChain> {
-    return make_box<SwapChainNull>();
+auto gm::gpu::null::DeviceNull::createSwapChain(void* native_window) -> rc<SwapChain> {
+    return make_shared<SwapChainNull>();
 }
 
 auto gm::gpu::null::DeviceNull::createCommandList(PipelineState* pipelineState) -> box<CommandList> {
@@ -32,6 +32,10 @@ auto gm::gpu::null::DeviceNull::createRenderTargetView(Texture* renderTarget) ->
     return make_box<ResourceViewNull>(ViewType::RTV);
 }
 
+auto gm::gpu::null::DeviceNull::createDepthStencilView(Texture* depthStencilBuffer) -> box<ResourceView> {
+    return make_box<ResourceViewNull>(ViewType::DSV);
+}
+
 auto gm::gpu::null::DeviceNull::createShaderResourceView(Buffer* resource) -> box<ResourceView> {
     return make_box<ResourceViewNull>(ViewType::SRV);
 }
@@ -44,7 +48,7 @@ auto gm::gpu::null::DeviceNull::createBuffer(BufferType type, gm::uint64 size) -
     return make_box<BufferNull>(type);
 }
 
-auto gm::gpu::null::DeviceNull::createTexture2D(gm::uint32 width, gm::uint32 height, Format format, span<gm::byte const> data) -> box<Texture> {
+auto gm::gpu::null::DeviceNull::createTexture2D(TextureDesc const& desc, span<gm::byte const> data) -> box<Texture> {
     return make_box<TextureNull>();
 }
 

@@ -17,7 +17,7 @@ namespace gm::gpu::d3d11 {
 
         bool isEnabled() const override;
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
-        box<Device> createDevice(int index) override;
+        rc<Device> createDevice(int index) override;
 
     private:
         com_ptr<IDXGIFactory2> _dxgiFactory;

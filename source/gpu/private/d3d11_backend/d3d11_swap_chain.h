@@ -16,7 +16,7 @@ namespace gm::gpu::d3d11 {
         SwapChainD3D11(SwapChainD3D11&&) = delete;
         SwapChainD3D11& operator=(SwapChainD3D11&&) = delete;
 
-        static box<SwapChain> createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow);
+        static rc<SwapChain> createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow);
 
         void present() override;
         void resizeBuffers(int width, int height) override;
