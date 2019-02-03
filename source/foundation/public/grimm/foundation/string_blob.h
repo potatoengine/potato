@@ -164,7 +164,7 @@ public:
         if (rs < 0) {
             return true;
         }
-        else if (rs == 0 || lhs.size() < rhs.size()) {
+        else if (rs == 0 && lhs.size() < rhs.size()) {
             return true;
         }
         return false;
