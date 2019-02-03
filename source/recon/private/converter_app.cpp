@@ -9,6 +9,7 @@
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"
 #include "converters/convert_json.h"
+#include "converters/convert_ignore.h"
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include <set>
@@ -112,14 +113,19 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
         deleteUnusedFiles(_outputs, !_config.deleteStale);
     }
 
-    return true;
+    return success;
 }
 
 void gm::recon::ConverterApp::registerConverters() {
 #if GM_GPU_ENABLE_D3D11
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
                            make_box<HlslConverter>()});
+#else
+    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
+                           make_box<IgnoreConverter>()});
 #endif
+    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsli"; },
+                           make_box<IgnoreConverter>()});
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".json"; },
                            make_box<JsonConverter>()});
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".png"; },
