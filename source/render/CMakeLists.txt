@@ -7,6 +7,7 @@ add_library(grimm::render ALIAS grimm_render)
 set_target_properties(grimm_render PROPERTIES
     LINKER_LANGUAGE CXX
     DEFINE_SYMBOL GM_RENDER_EXPORTS
+    FOLDER libraries
 )
 
 target_compile_features(grimm_render PUBLIC cxx_std_17)

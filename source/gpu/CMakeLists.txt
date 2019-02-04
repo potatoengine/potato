@@ -7,6 +7,7 @@ add_library(grimm::gpu ALIAS gpu)
 set_target_properties(gpu PROPERTIES
     LINKER_LANGUAGE CXX
     DEFINE_SYMBOL GM_GPU_EXPORTS
+    FOLDER libraries
 )
 
 target_compile_features(gpu PUBLIC cxx_std_17)

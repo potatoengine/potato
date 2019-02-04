@@ -2,6 +2,10 @@ add_executable(test_grimm_render
     main.cpp
 )
 
+set_target_properties(test_grimm_render PROPERTIES
+    FOLDER tests
+)
+
 target_link_libraries(test_grimm_render PRIVATE
     gpu
     doctest

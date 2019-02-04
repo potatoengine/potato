@@ -7,6 +7,7 @@ add_library(grimm::filesystem ALIAS filesystem)
 set_target_properties(filesystem PROPERTIES
     LINKER_LANGUAGE CXX
     DEFINE_SYMBOL GM_FILESYSTEM_EXPORTS
+    FOLDER libraries
 )
 
 target_include_directories(filesystem

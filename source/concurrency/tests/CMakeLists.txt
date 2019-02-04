@@ -7,6 +7,10 @@ add_executable(test_grimm_concurrency
     test_thread_util.cpp
 )
 
+set_target_properties(test_grimm_concurrency PROPERTIES
+    FOLDER tests
+)
+
 target_link_libraries(test_grimm_concurrency PRIVATE
     grimm_concurrency
     doctest

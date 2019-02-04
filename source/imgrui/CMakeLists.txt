@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.11)
 project(imgrui VERSION 0.1 LANGUAGES CXX)
 
-add_library(imgrui OBJECT)
+add_library(imgrui STATIC)
 add_library(grimm::imgrui ALIAS imgrui)
 
 set_target_properties(imgrui PROPERTIES
     LINKER_LANGUAGE CXX
     DEFINE_SYMBOL GM_IMGRUI_EXPORTS
+    FOLDER libraries
 )
 
 # CMake doesn't generate the correct command-line for clang-tidy (7.x) using

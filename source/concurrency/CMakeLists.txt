@@ -7,6 +7,7 @@ add_library(grimm::concurrency ALIAS grimm_concurrency)
 set_target_properties(grimm_concurrency PROPERTIES
     LINKER_LANGUAGE CXX
     DEFINE_SYMBOL GM_CONCURRENCY_EXPORTS
+    FOLDER libraries
 )
 
 target_compile_features(grimm_concurrency PUBLIC cxx_std_17)

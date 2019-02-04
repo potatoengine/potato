@@ -7,6 +7,7 @@ add_library(grimm::library ALIAS library)
 set_target_properties(library PROPERTIES
     LINKER_LANGUAGE CXX
     DEFINE_SYMBOL GM_LIBRARY_EXPORTS
+    FOLDER libraries
 )
 
 # CMake doesn't generate the correct command-line for clang-tidy (7.x) using
