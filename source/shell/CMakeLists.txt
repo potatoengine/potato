@@ -7,17 +7,8 @@ find_package(SDL2 REQUIRED)
 
 add_executable(shell WIN32)
 
-set_target_properties(shell PROPERTIES
-    FOLDER tools
-)
-
-target_include_directories(shell
-    PUBLIC
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/private
-)
+include(gm_set_common_properties)
+gm_set_common_properties(shell)
 
 target_link_libraries(shell PRIVATE
     grimm::foundation

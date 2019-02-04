@@ -9,7 +9,7 @@
 
 namespace gm::_detail {
     // platform-specific function that must be implemented
-    GM_FRAMEWORK_API GM_NOINLINE error_action platform_fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
+    GM_FOUNDATION_API GM_NOINLINE error_action platform_fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
 } // namespace gm::_detail
 
 auto gm::fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText) -> error_action {

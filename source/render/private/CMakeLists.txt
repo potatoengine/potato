@@ -1,4 +1,4 @@
-target_sources(grimm_render PRIVATE
+target_sources(render PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/camera.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/draw_imgui.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/material.cpp

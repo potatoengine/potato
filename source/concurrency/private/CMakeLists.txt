@@ -1,4 +1,4 @@
-target_sources(grimm_concurrency PRIVATE
+target_sources(concurrency PRIVATE
     $<$<NOT:$<PLATFORM_ID:Windows>>:${CMAKE_CURRENT_SOURCE_DIR}/semaphore.posix.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/semaphore.windows.cpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/task_worker.cpp

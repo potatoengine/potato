@@ -1,6 +1,9 @@
 #include "doctest.h"
 
-#include "null_backend/null_objects.h"
+#include "grimm/gpu/factory.h"
+#include "grimm/gpu/device.h"
+#include "grimm/gpu/swap_chain.h"
+#include "grimm/gpu/pipeline_state.h"
 
 DOCTEST_TEST_SUITE("[grimm][gpu] DeviceNull") {
     using namespace gm;

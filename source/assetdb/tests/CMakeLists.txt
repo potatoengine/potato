@@ -2,18 +2,11 @@ add_executable(test_grimm_assetdb
     main.cpp
 )
 
-set_target_properties(test_grimm_assetdb PROPERTIES
-    FOLDER tests
-)
+include(gm_set_common_properties)
+gm_set_common_properties(test_grimm_assetdb)
 
 target_link_libraries(test_grimm_assetdb PRIVATE
     assetdb doctest
-)
-
-target_compile_definitions(test_grimm_assetdb PRIVATE
-    DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
-    DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-    DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
 )
 
 add_test(NAME grimm_assetdb COMMAND test_grimm_assetdb)

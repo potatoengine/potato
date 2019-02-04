@@ -45,29 +45,29 @@ namespace gm {
 
         /*implicit*/ operator string_view() const noexcept { return {_ptr, _size}; }
 
-        GM_FRAMEWORK_API void write(value_type ch);
-        GM_FRAMEWORK_API void write(const_pointer data, size_type length);
+        GM_FOUNDATION_API void write(value_type ch);
+        GM_FOUNDATION_API void write(const_pointer data, size_type length);
         void write(string_view str) { write(str.data(), str.size()); }
 
         // for back_inserter/fmt support
         void push_back(value_type ch) { write(ch); }
 
-        GM_FRAMEWORK_API void reserve(size_type capacity);
+        GM_FOUNDATION_API void reserve(size_type capacity);
 
-        GM_FRAMEWORK_API span<value_type> acquire(size_type size);
-        GM_FRAMEWORK_API void commit(span<value_type const> data);
+        GM_FOUNDATION_API span<value_type> acquire(size_type size);
+        GM_FOUNDATION_API void commit(span<value_type const> data);
 
-        GM_FRAMEWORK_API void resize(size_type newSize, value_type fill = ' ');
+        GM_FOUNDATION_API void resize(size_type newSize, value_type fill = ' ');
 
         void clear() {
             *_ptr = 0;
             _size = 0;
         }
 
-        GM_FRAMEWORK_API void reset();
+        GM_FOUNDATION_API void reset();
 
-        GM_FRAMEWORK_API string to_string() const&;
-        GM_FRAMEWORK_API string to_string() &&;
+        GM_FOUNDATION_API string to_string() const&;
+        GM_FOUNDATION_API string to_string() &&;
 
     private:
         void
