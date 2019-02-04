@@ -87,12 +87,12 @@ int gm::ShellApp::initialize() {
     _camera = make_box<Camera>(_swapChain);
 
     blob basicVertShader, basicPixelShader;
-    auto stream = _fileSystem.openRead("build/resources/shaders/basic.vs_5_0.cbo");
+    auto stream = _fileSystem.openRead("resources/shaders/basic.vs_5_0.cbo");
     if (fs::readBlob(stream, basicVertShader) != fs::Result{}) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open vertex shader", _window.get());
         return 1;
     }
-    stream = _fileSystem.openRead("build/resources/shaders/basic.ps_5_0.cbo");
+    stream = _fileSystem.openRead("resources/shaders/basic.ps_5_0.cbo");
     if (fs::readBlob(stream, basicPixelShader) != fs::Result{}) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open pixel shader", _window.get());
         return 1;
@@ -104,12 +104,12 @@ int gm::ShellApp::initialize() {
     _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 0, -5}));
 
     blob imguiVertShader, imguiPixelShader;
-    stream = _fileSystem.openRead("build/resources/shaders/imgui.vs_5_0.cbo");
+    stream = _fileSystem.openRead("resources/shaders/imgui.vs_5_0.cbo");
     if (fs::readBlob(stream, imguiVertShader) != fs::Result{}) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open imgui vertex shader", _window.get());
         return 1;
     }
-    stream = _fileSystem.openRead("build/resources/shaders/imgui.ps_5_0.cbo");
+    stream = _fileSystem.openRead("resources/shaders/imgui.ps_5_0.cbo");
     if (fs::readBlob(stream, imguiPixelShader) != fs::Result{}) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open imgui pixel shader", _window.get());
         return 1;
