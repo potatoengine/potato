@@ -19,13 +19,13 @@ namespace gm {
         HashCache() = default;
         HashCache(fs::FileSystem fileSystem) : _fileSystem(std::move(fileSystem)) {}
 
-        static GM_LIBRARY_API uint64 hashAssetContent(span<byte const> contents) noexcept;
-        static GM_LIBRARY_API uint64 hashAssetStream(fs::Stream& stream);
+        static GM_ASSETDB_API uint64 hashAssetContent(span<byte const> contents) noexcept;
+        static GM_ASSETDB_API uint64 hashAssetStream(fs::Stream& stream);
 
-        GM_LIBRARY_API uint64 hashAssetAtPath(zstring_view path);
+        GM_ASSETDB_API uint64 hashAssetAtPath(zstring_view path);
 
-        GM_LIBRARY_API bool serialize(fs::Stream& stream) const;
-        GM_LIBRARY_API bool deserialize(fs::Stream& stream);
+        GM_ASSETDB_API bool serialize(fs::Stream& stream) const;
+        GM_ASSETDB_API bool deserialize(fs::Stream& stream);
 
     private:
         struct HashRecord {

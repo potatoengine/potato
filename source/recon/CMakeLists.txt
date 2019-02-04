@@ -21,7 +21,7 @@ target_link_libraries(recon_lib
     PUBLIC
         grimm::foundation
         grimm::gpu
-        grimm::library
+        grimm::assetdb
         grimm::filesystem
     PRIVATE
         rapidjson

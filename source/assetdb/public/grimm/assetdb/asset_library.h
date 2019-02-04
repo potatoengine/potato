@@ -3,9 +3,9 @@
 #pragma once
 
 #include "_export.h"
+#include "common.h"
+#include "asset_record.h"
 #include "grimm/foundation/vector.h"
-#include "grimm/library/common.h"
-#include "grimm/library/asset_record.h"
 #include <unordered_map>
 #include <iosfwd>
 
@@ -18,20 +18,20 @@ namespace gm {
     class AssetLibrary {
     public:
         AssetLibrary() = default;
-        GM_LIBRARY_API ~AssetLibrary();
+        GM_ASSETDB_API ~AssetLibrary();
 
         AssetLibrary(AssetLibrary const&) = delete;
         AssetLibrary& operator=(AssetLibrary const&) = delete;
 
-        GM_LIBRARY_API auto pathToAssetId(string_view path) const -> AssetId;
-        GM_LIBRARY_API auto assetIdToPath(AssetId assetId) const -> string_view;
+        GM_ASSETDB_API auto pathToAssetId(string_view path) const -> AssetId;
+        GM_ASSETDB_API auto assetIdToPath(AssetId assetId) const -> string_view;
 
-        GM_LIBRARY_API AssetImportRecord const* findRecord(AssetId assetId) const;
+        GM_ASSETDB_API AssetImportRecord const* findRecord(AssetId assetId) const;
 
-        GM_LIBRARY_API bool insertRecord(AssetImportRecord record);
+        GM_ASSETDB_API bool insertRecord(AssetImportRecord record);
 
-        GM_LIBRARY_API bool serialize(fs::Stream& stream) const;
-        GM_LIBRARY_API bool deserialize(fs::Stream& stream);
+        GM_ASSETDB_API bool serialize(fs::Stream& stream) const;
+        GM_ASSETDB_API bool deserialize(fs::Stream& stream);
 
     private:
         struct HashAssetId {

@@ -12,8 +12,8 @@
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/recon/converter.h"
 #include "grimm/recon/converter_config.h"
-#include "grimm/library/asset_library.h"
-#include "grimm/library/hash_cache.h"
+#include "grimm/assetdb/asset_library.h"
+#include "grimm/assetdb/hash_cache.h"
 
 namespace gm::recon {
     class Converter;

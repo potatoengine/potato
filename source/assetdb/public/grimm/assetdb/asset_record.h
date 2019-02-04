@@ -13,16 +13,16 @@ namespace gm {
         Intermediate, // lives in build/cache/
         Output // lives in build/resources/
     };
-    GM_LIBRARY_API span<string_view const> assetCategoryNames() noexcept;
-    GM_LIBRARY_API string_view assetCategoryName(AssetCategory category) noexcept;
-    GM_LIBRARY_API AssetCategory assetCategoryFromName(string_view name) noexcept;
+    GM_ASSETDB_API span<string_view const> assetCategoryNames() noexcept;
+    GM_ASSETDB_API string_view assetCategoryName(AssetCategory category) noexcept;
+    GM_ASSETDB_API AssetCategory assetCategoryFromName(string_view name) noexcept;
 
     enum class AssetDependencyType {
         Source,
         Runtime,
         Tool
     };
-    GM_LIBRARY_API span<string_view const> assetDependencyTypeNames() noexcept;
+    GM_ASSETDB_API span<string_view const> assetDependencyTypeNames() noexcept;
 
     struct AssetDependencyRecord {
         string path;

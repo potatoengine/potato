@@ -1,6 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/library/asset_record.h"
+#include "asset_record.h"
 
 auto gm::assetCategoryNames() noexcept -> span<string_view const> {
     constexpr static string_view const names[] = {

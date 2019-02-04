@@ -5,7 +5,7 @@
 #include "grimm/filesystem/path_util.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
-#include "grimm/library/hash_cache.h"
+#include "grimm/assetdb/hash_cache.h"
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"
 #include "converters/convert_json.h"
