@@ -5,7 +5,7 @@
 #include "grimm/filesystem/path_util.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
-#include "grimm/library/hash_cache.h"
+#include "grimm/assetdb/hash_cache.h"
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"
 #include "converters/convert_json.h"
@@ -77,14 +77,14 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     std::cout << "Cache: " << _config.cacheFolderPath << "\n";
 
     if (!_fileSystem.directoryExists(_config.destinationFolderPath.c_str())) {
-        if (!_fileSystem.createDirectories(_config.destinationFolderPath.c_str())) {
+        if (_fileSystem.createDirectories(_config.destinationFolderPath.c_str()) != fs::Result::Success) {
             std::cerr << "Failed to create `" << _config.destinationFolderPath << "'\n";
             return false;
         }
     }
 
     if (!_fileSystem.directoryExists(_config.cacheFolderPath.c_str())) {
-        if (!_fileSystem.createDirectories(_config.cacheFolderPath.c_str())) {
+        if (_fileSystem.createDirectories(_config.cacheFolderPath.c_str()) != fs::Result::Success) {
             std::cerr << "Failed to create `" << _config.cacheFolderPath << "'\n";
             return false;
         }
@@ -136,8 +136,6 @@ bool gm::recon::ConverterApp::convertFiles(vector<string> const& files) {
     bool failed = false;
 
     for (auto const& path : files) {
-        std::cout << "Processing `" << path << "`\n";
-
         auto assetId = _library.pathToAssetId(string_view(path));
         auto record = _library.findRecord(assetId);
 

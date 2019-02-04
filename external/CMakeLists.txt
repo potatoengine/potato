@@ -1,5 +1,6 @@
 set(OLD_TIDY ${CMAKE_CXX_CLANG_TIDY})
 set(CMAKE_CXX_CLANG_TIDY "")
+set(CMAKE_FOLDER "external")
 
 set(FMT_TEST OFF CACHE BOOL "enable fmtlib tests")
 add_subdirectory(fmt-5.3.0 EXCLUDE_FROM_ALL)

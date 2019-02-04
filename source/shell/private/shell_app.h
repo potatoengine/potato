@@ -3,7 +3,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/filesystem/filesystem.h"
-#include "grimm/imgrui/imgrui.h"
+#include "grimm/render/draw_imgui.h"
 
 #include <SDL.h>
 
@@ -46,5 +46,5 @@ private:
     box<Camera> _camera;
     box<Node> _root;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
-    imgrui::DrawImgui _drawImgui;
+    DrawImgui _drawImgui;
 };

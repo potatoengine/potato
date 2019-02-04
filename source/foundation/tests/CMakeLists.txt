@@ -1,4 +1,4 @@
-add_executable(foundation_test
+add_executable(test_grimm_foundation
     main.cpp
     test_callstack.cpp
     test_blob.cpp
@@ -16,14 +16,11 @@ add_executable(foundation_test
     test_zstring_view.cpp
 )
 
-target_link_libraries(foundation_test PRIVATE
+include(gm_set_common_properties)
+gm_set_common_properties(test_grimm_foundation)
+
+target_link_libraries(test_grimm_foundation PRIVATE
     foundation doctest
 )
 
-target_compile_definitions(foundation_test PRIVATE
-    DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
-    DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-    DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
-)
-
-add_test(NAME grimm_foundation COMMAND foundation_test)
+add_test(NAME test_grimm_foundation COMMAND test_grimm_foundation)

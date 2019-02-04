@@ -24,7 +24,7 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
     fs::FileSystem fileSys;
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (!fileSys.createDirectories(destParentAbsolutePath.c_str())) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != fs::Result::Success) {
             std::cerr << "Failed to create `" << destParentAbsolutePath << '\n';
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }

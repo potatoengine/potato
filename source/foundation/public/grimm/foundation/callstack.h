@@ -18,6 +18,6 @@ namespace gm::callstack {
         int line = 0;
     };
 
-    extern GM_FRAMEWORK_API span<uintptr> readTrace(span<uintptr> addresses, uint skip = 0);
-    extern GM_FRAMEWORK_API span<TraceRecord> resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records);
+    extern GM_FOUNDATION_API span<uintptr> readTrace(span<uintptr> addresses, uint skip = 0);
+    extern GM_FOUNDATION_API span<TraceRecord> resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records);
 } // namespace gm::callstack

@@ -1,6 +1,7 @@
-target_sources(grimm_render PRIVATE
+target_sources(render PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_export.h
     ${CMAKE_CURRENT_SOURCE_DIR}/camera.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/draw_imgui.h
     ${CMAKE_CURRENT_SOURCE_DIR}/material.h
     ${CMAKE_CURRENT_SOURCE_DIR}/mesh.h
     ${CMAKE_CURRENT_SOURCE_DIR}/model.h

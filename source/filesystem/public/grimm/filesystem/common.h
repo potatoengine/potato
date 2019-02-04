@@ -6,7 +6,7 @@
 #include "grimm/foundation/zstring_view.h"
 
 namespace gm::fs {
-    enum Result {
+    enum class Result {
         Success,
         AccessDenied,
         FileNotFound,
@@ -16,25 +16,25 @@ namespace gm::fs {
         Unknown,
     };
 
-    enum EnumerateResult {
+    enum class EnumerateResult {
         Continue,
         Recurse,
         Break,
     };
 
-    enum FileOpenMode {
+    enum class FileOpenMode {
         Binary,
         Text
     };
 
-    enum FileType {
+    enum class FileType {
         Regular,
         Directory,
         SymbolicLink,
         Other
     };
 
-    enum SeekPosition {
+    enum class SeekPosition {
         Begin,
         End,
         Current
