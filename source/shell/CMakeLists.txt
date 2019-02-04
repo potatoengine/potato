@@ -24,7 +24,6 @@ target_link_libraries(shell PRIVATE
     grimm::filesystem
     grimm::gpu
     grimm::render
-    grimm::imgrui
     glm
     SDL2
     SDL2main

@@ -18,7 +18,7 @@
 #include "grimm/render/node.h"
 #include "grimm/render/model.h"
 #include "grimm/render/material.h"
-#include "grimm/imgrui/imgrui.h"
+#include "grimm/render/draw_imgui.h"
 
 #include <fmt/chrono.h>
 #include <chrono>

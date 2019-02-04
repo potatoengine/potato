@@ -27,6 +27,8 @@ target_link_libraries(grimm_render
         grimm::gpu
         grimm::concurrency
         glm
+        imgui
+        SDL2
     PRIVATE
         doctest
 )

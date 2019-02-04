@@ -1,6 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/imgrui/imgrui.h"
+#include "draw_imgui.h"
 #include "grimm/gpu/buffer.h"
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/device.h"
@@ -15,10 +15,10 @@
 
 static constexpr gm::uint32 bufferSize = 256 * 1024;
 
-gm::imgrui::DrawImgui::DrawImgui() = default;
-gm::imgrui::DrawImgui::~DrawImgui() = default;
+gm::DrawImgui::DrawImgui() = default;
+gm::DrawImgui::~DrawImgui() = default;
 
-void gm::imgrui::DrawImgui::bindShaders(blob vertShader, blob pixelShader) {
+void gm::DrawImgui::bindShaders(blob vertShader, blob pixelShader) {
     _vertShaderBlob = std::move(vertShader);
     _pixelShaderBlob = std::move(pixelShader);
 
@@ -26,7 +26,7 @@ void gm::imgrui::DrawImgui::bindShaders(blob vertShader, blob pixelShader) {
     releaseResources();
 }
 
-bool gm::imgrui::DrawImgui::createResources(gpu::Device& device) {
+bool gm::DrawImgui::createResources(gpu::Device& device) {
     _ensureContext();
 
     gpu::InputLayoutElement layout[] = {
@@ -65,7 +65,7 @@ bool gm::imgrui::DrawImgui::createResources(gpu::Device& device) {
     return true;
 }
 
-void gm::imgrui::DrawImgui::releaseResources() {
+void gm::DrawImgui::releaseResources() {
     _indexBuffer.reset();
     _vertexBuffer.reset();
     _constantBuffer.reset();
@@ -74,14 +74,14 @@ void gm::imgrui::DrawImgui::releaseResources() {
     _sampler.reset();
 }
 
-void gm::imgrui::DrawImgui::beginFrame() {
+void gm::DrawImgui::beginFrame() {
     _ensureContext();
 
     ImGui::SetCurrentContext(_context.get());
     ImGui::NewFrame();
 }
 
-bool gm::imgrui::DrawImgui::handleEvent(SDL_Event const& ev) {
+bool gm::DrawImgui::handleEvent(SDL_Event const& ev) {
     GM_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());
@@ -140,7 +140,7 @@ bool gm::imgrui::DrawImgui::handleEvent(SDL_Event const& ev) {
     return false;
 }
 
-void gm::imgrui::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& commandList) {
+void gm::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& commandList) {
     GM_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());
@@ -242,19 +242,19 @@ void gm::imgrui::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& comm
     }
 }
 
-char const* gm::imgrui::DrawImgui::_getClipboardTextContents(void* self) {
+char const* gm::DrawImgui::_getClipboardTextContents(void* self) {
     auto imgui = static_cast<DrawImgui*>(self);
     imgui->_clipboardTextData = gm::string(SDL_GetClipboardText());
     return imgui->_clipboardTextData.c_str();
 }
 
-void gm::imgrui::DrawImgui::_setClipboardTextContents(void* self, char const* text) {
+void gm::DrawImgui::_setClipboardTextContents(void* self, char const* text) {
     auto imgui = static_cast<DrawImgui*>(self);
     imgui->_clipboardTextData.reset();
     SDL_SetClipboardText(text);
 }
 
-void gm::imgrui::DrawImgui::_ensureContext() {
+void gm::DrawImgui::_ensureContext() {
     if (_context) {
         return;
     }
@@ -293,7 +293,7 @@ void gm::imgrui::DrawImgui::_ensureContext() {
     io.ClipboardUserData = this;
 }
 
-void gm::imgrui::DrawImgui::_freeContext(ImGuiContext* ctx) {
+void gm::DrawImgui::_freeContext(ImGuiContext* ctx) {
     if (ctx != nullptr) {
         ImGui::DestroyContext(ctx);
     }

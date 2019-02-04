@@ -24,21 +24,21 @@ struct ImGuiContext;
 struct ImGuiIO;
 using SDL_Event = union SDL_Event;
 
-namespace gm::imgrui {
+namespace gm {
     class DrawImgui {
     public:
-        GM_IMGRUI_API DrawImgui();
-        GM_IMGRUI_API ~DrawImgui();
+        GM_RENDER_API DrawImgui();
+        GM_RENDER_API ~DrawImgui();
 
-        GM_IMGRUI_API void bindShaders(blob vertShader, blob pixelShader);
+        GM_RENDER_API void bindShaders(blob vertShader, blob pixelShader);
 
-        GM_IMGRUI_API bool createResources(gpu::Device& device);
-        GM_IMGRUI_API void releaseResources();
+        GM_RENDER_API bool createResources(gpu::Device& device);
+        GM_RENDER_API void releaseResources();
 
-        GM_IMGRUI_API bool handleEvent(SDL_Event const& ev);
+        GM_RENDER_API bool handleEvent(SDL_Event const& ev);
 
-        GM_IMGRUI_API void beginFrame();
-        GM_IMGRUI_API void endFrame(gpu::Device& device, gpu::CommandList& commandList);
+        GM_RENDER_API void beginFrame();
+        GM_RENDER_API void endFrame(gpu::Device& device, gpu::CommandList& commandList);
 
     private:
         void _ensureContext();
@@ -57,4 +57,4 @@ namespace gm::imgrui {
         blob _pixelShaderBlob;
         string _clipboardTextData;
     };
-} // namespace gm::imgrui
+} // namespace gm
