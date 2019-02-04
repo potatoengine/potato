@@ -1,0 +1,29 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "recon.exe (bin\\recon.exe)",
+      "name": "recon.exe (bin\\recon.exe)",
+      "args": [
+        "-source",
+        "${workspaceRoot}/resources",
+        "-dest",
+        "${workspaceRoot}.build/resources",
+        "-cache",
+        "${workspaceRoot}.build/cache"
+      ],
+      "cwd": "${workspaceRoot}"
+    },
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "shell.exe (bin\\shell.exe)",
+      "name": "shell.exe (bin\\shell.exe)",
+      "cwd": "${workspaceRoot}.build",
+      "currentDir": "${workspaceRoot}.build"
+    }
+  ]
+}
