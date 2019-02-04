@@ -110,7 +110,7 @@ bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zs
     string destParentAbsolutePath(fs::path::parent(destAbsolutePath));
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (!fileSys.createDirectories(destParentAbsolutePath.c_str())) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != fs::Result::Success) {
             std::cerr << "Failed to create `" << destParentAbsolutePath << "'\n";
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }

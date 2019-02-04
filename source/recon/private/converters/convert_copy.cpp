@@ -18,7 +18,7 @@ bool gm::recon::CopyConverter::convert(Context& ctx) {
     fs::FileSystem fileSys;
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (!fileSys.createDirectories(destParentAbsolutePath.c_str())) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != fs::Result::Success) {
             std::cerr << "Failed to create `" << destParentAbsolutePath << '\n';
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
@@ -27,7 +27,7 @@ bool gm::recon::CopyConverter::convert(Context& ctx) {
     // output has same name as input
     ctx.addOutput(ctx.sourceFilePath());
 
-    if (fileSys.copyFile(sourceAbsolutePath.c_str(), destParentAbsolutePath.c_str())) {
+    if (fileSys.copyFile(sourceAbsolutePath.c_str(), destParentAbsolutePath.c_str()) != fs::Result::Success) {
         std::cerr << "Failed to coy `" << sourceAbsolutePath << "' to `" << destAbsolutePath << '\n';
         return false;
     }

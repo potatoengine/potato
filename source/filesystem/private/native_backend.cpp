@@ -72,10 +72,10 @@ namespace gm::fs {
                 return Result::UnsupportedOperation;
             }
             Stream::difference_type tell() const override {
-                return Result::UnsupportedOperation;
+                return 0;
             }
             Stream::difference_type remaining() const override {
-                return Result::UnsupportedOperation;
+                return 0;
             }
 
             Result write(span<byte const> buffer) override {
