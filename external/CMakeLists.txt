@@ -36,6 +36,6 @@ set(GLM_TEST_ENABLE OFF CACHE BOOL "disable glm tests")
 add_subdirectory(glm-0.9.9.3/glm EXCLUDE_FROM_ALL)
 
 add_library(stb INTERFACE)
-target_include_directories(stb INTERFACE stb)
+target_include_directories(stb INTERFACE "${CMAKE_CURRENT_LIST_DIR}/stb-e6afb9c")
 
 set(CMAKE_CXX_CLANG_TIDY ${OLD_TIDY})
