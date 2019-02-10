@@ -1,6 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "draw_imgui.h"
+#include "shader.h"
 #include "grimm/gpu/buffer.h"
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/device.h"
@@ -18,9 +19,9 @@ static constexpr gm::uint32 bufferSize = 256 * 1024;
 gm::DrawImgui::DrawImgui() = default;
 gm::DrawImgui::~DrawImgui() = default;
 
-void gm::DrawImgui::bindShaders(blob vertShader, blob pixelShader) {
-    _vertShaderBlob = std::move(vertShader);
-    _pixelShaderBlob = std::move(pixelShader);
+void gm::DrawImgui::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
+    _vertShader = std::move(vertShader);
+    _pixelShader = std::move(pixelShader);
 
     // we'll need to recreate pipeline state at the least
     releaseResources();
@@ -37,8 +38,8 @@ bool gm::DrawImgui::createResources(gpu::Device& device) {
 
     gpu::PipelineStateDesc desc;
     desc.enableScissor = true;
-    desc.vertShader = _vertShaderBlob;
-    desc.pixelShader = _pixelShaderBlob;
+    desc.vertShader = _vertShader->content();
+    desc.pixelShader = _pixelShader->content();
     desc.inputLayout = layout;
 
     _indexBuffer = device.createBuffer(gpu::BufferType::Index, bufferSize);

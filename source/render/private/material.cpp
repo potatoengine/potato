@@ -2,11 +2,12 @@
 
 #include "material.h"
 #include "context.h"
+#include "shader.h"
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/pipeline_state.h"
 #include "grimm/gpu/device.h"
 
-gm::Material::Material(blob vertexShader, blob pixelShader) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)) {}
+gm::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)) {}
 
 gm::Material::~Material() = default;
 
@@ -21,8 +22,8 @@ void gm::Material::bindMaterialToRender(RenderContext& ctx) {
 
         pipelineDesc.enableDepthTest = true;
         pipelineDesc.enableDepthWrite = true;
-        pipelineDesc.vertShader = _vertexShader;
-        pipelineDesc.pixelShader = _pixelShader;
+        pipelineDesc.vertShader = _vertexShader->content();
+        pipelineDesc.pixelShader = _pixelShader->content();
         pipelineDesc.inputLayout = layout;
         _state = ctx.device.createPipelineState(pipelineDesc);
     }

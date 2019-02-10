@@ -12,9 +12,11 @@ target_link_libraries(render
         grimm::foundation
         grimm::gpu
         grimm::concurrency
+        grimm::image
         glm
         imgui
         SDL2
+        rapidjson
     PRIVATE
         doctest
 )

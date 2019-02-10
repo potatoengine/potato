@@ -15,17 +15,18 @@ namespace gm::gpu {
 
 namespace gm {
     class RenderContext;
+    class Shader;
 
     class Material : public shared<Material> {
     public:
-        GM_RENDER_API explicit Material(blob vertexShader, blob pixelShader);
+        GM_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader);
         GM_RENDER_API ~Material();
 
         GM_RENDER_API void bindMaterialToRender(RenderContext& ctx);
 
     private:
         box<gpu::PipelineState> _state;
-        blob _vertexShader;
-        blob _pixelShader;
+        rc<Shader> _vertexShader;
+        rc<Shader> _pixelShader;
     };
 } // namespace gm
