@@ -13,6 +13,7 @@ namespace {
     struct alignas(16) Vert {
         glm::vec3 pos;
         glm::vec3 color;
+        glm::vec2 uv;
     };
 
     struct alignas(16) Trans {
@@ -26,23 +27,30 @@ static Vert cube[6 * 6];
 static void makeFace(int index, glm::vec3 normal, glm::vec3 up, glm::vec3 right) {
     cube[index++] = Vert{
         normal - right - up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
+        {0, 1}};
     cube[index++] = Vert{
         normal + right - up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
+        {1, 1}};
     cube[index++] = Vert{
         normal + right + up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
+        {1, 0}};
     cube[index++] = Vert{
         normal - right - up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
+        {0, 1}};
     cube[index++] = Vert{
         normal + right + up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
+        {1, 0}};
     cube[index++] = Vert{
         normal - right + up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f}};
+        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
+        {0, 0}};
 }
+
 static void makeCube() {
     makeFace(0, {1, 0, 0}, {0, 1, 0}, {0, 0, 1});
     makeFace(6, {-1, 0, 0}, {0, 1, 0}, {0, 0, 1});

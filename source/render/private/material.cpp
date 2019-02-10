@@ -17,9 +17,10 @@ void gm::Material::bindMaterialToRender(RenderContext& ctx) {
     if (_state == nullptr) {
         gpu::PipelineStateDesc pipelineDesc;
 
-        gpu::InputLayoutElement layout[2] = {
+        gpu::InputLayoutElement layout[] = {
             {gpu::Format::R32G32B32Float, gpu::Semantic::Position, 0, 0},
             {gpu::Format::R32G32B32Float, gpu::Semantic::Color, 0, 0},
+            {gpu::Format::R32G32Float, gpu::Semantic::TexCoord, 0, 0},
         };
 
         pipelineDesc.enableDepthTest = true;
