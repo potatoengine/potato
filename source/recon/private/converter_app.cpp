@@ -158,7 +158,7 @@ bool gm::recon::ConverterApp::convertFiles(vector<string> const& files) {
             continue;
         }
 
-        std::cout << "Asset `" << path << "' requires import (" << converter->name() << ")\n";
+        std::cout << "Asset `" << path << "' requires import (" << converter->name() << ' ' << converter->revision() << ")\n";
 
         Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str());
         if (!converter->convert(context)) {

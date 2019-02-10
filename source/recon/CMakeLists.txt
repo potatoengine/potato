@@ -13,6 +13,7 @@ target_link_libraries(recon_lib
         grimm::foundation
         grimm::gpu
         grimm::assetdb
+        grimm::image
         grimm::filesystem
         stb
     PRIVATE
