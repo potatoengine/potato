@@ -1,7 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "image.h"
-#include "dds.h"
 #include "grimm/filesystem/stream.h"
 #include <stb_image.h>
 
