@@ -9,4 +9,5 @@ target_sources(render PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/render_task.h
     ${CMAKE_CURRENT_SOURCE_DIR}/shader.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/texture.h
 )

@@ -30,12 +30,12 @@ static constexpr stbi_io_callbacks stb_io = {&stb_read, &stb_skip, &stb_eof};
 
 auto gm::image::loadImage(fs::Stream& stream) -> Image {
     int width = 0, height = 0, channels = 0;
-    stbi_uc* image = stbi_load_from_callbacks(&stb_io, &stream, &width, &height, &channels, 0);
+    stbi_uc* image = stbi_load_from_callbacks(&stb_io, &stream, &width, &height, &channels, 4);
     if (image == nullptr) {
         return {};
     }
 
-    gm::blob data(width * height * channels);
+    gm::blob data(width * height * 4);
     std::memcpy(data.data(), image, data.size());
     free(image);
 
@@ -52,5 +52,5 @@ auto gm::image::loadImage(fs::Stream& stream) -> Image {
         break;
     }
 
-    return Image(format, std::move(data), width, height, channels * width);
+    return Image(format, std::move(data), width, height, 4 * width);
 }

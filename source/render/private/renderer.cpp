@@ -11,6 +11,7 @@
 #include <grimm/gpu/command_list.h>
 #include <grimm/gpu/device.h>
 #include <grimm/gpu/swap_chain.h>
+#include <grimm/gpu/texture.h>
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
 #include "grimm/filesystem/stream_util.h"
@@ -98,6 +99,7 @@ auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
 
     rc<Shader> vertex;
     rc<Shader> pixel;
+    vector<rc<Texture>> textures;
 
     auto root = doc.GetObject();
     auto& shaders = root["shaders"];
@@ -114,6 +116,22 @@ auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
         }
     }
 
+    auto& texts = root["textures"];
+    if (texts.IsArray()) {
+        for (auto& texPath : texts.GetArray()) {
+            if (!texPath.IsString()) {
+                return nullptr;
+            }
+
+            auto tex = loadTextureSync(texPath.GetString());
+            if (!tex) {
+                return nullptr;
+            }
+
+            textures.push_back(std::move(tex));
+        }
+    }
+
     if (vertex == nullptr) {
         return nullptr;
     }
@@ -122,7 +140,7 @@ auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
         return nullptr;
     }
 
-    return make_shared<Material>(std::move(vertex), std::move(pixel));
+    return make_shared<Material>(std::move(vertex), std::move(pixel), std::move(textures));
 }
 
 auto gm::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
@@ -135,5 +153,26 @@ auto gm::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
 }
 
 auto gm::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
-    return nullptr;
+    fs::Stream stream = _fileSystem.openRead(path);
+    if (!stream) {
+        return nullptr;
+    }
+
+    auto img = image::loadImage(stream);
+    if (img.size() == 0) {
+        return nullptr;
+    }
+
+    gpu::TextureDesc desc = {};
+    desc.type = gpu::TextureType::Texture2D;
+    desc.format = gpu::Format::R8G8B8A8UnsignedNormalized;
+    desc.width = img.width();
+    desc.height = img.height();
+
+    auto tex = _device->createTexture2D(desc, {img.data(), img.size()});
+    if (tex == nullptr) {
+        return nullptr;
+    }
+
+    return make_shared<Texture>(std::move(img), std::move(tex));
 }
