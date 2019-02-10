@@ -6,6 +6,9 @@
 #include "render_task.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/rc.h"
+#include "grimm/foundation/blob.h"
+#include "grimm/foundation/zstring_view.h"
+#include "grimm/filesystem/filesystem.h"
 #include "grimm/concurrency/concurrent_queue.h"
 #include <thread>
 #include <atomic>
@@ -14,15 +17,18 @@ namespace gm::gpu {
     class Buffer;
     class CommandList;
     class Device;
-    class SwapChain;
 } // namespace gm::gpu
 
 namespace gm {
     class RenderContext;
+    class Material;
+    class Mesh;
+    class Shader;
+    class Texture;
 
     class Renderer {
     public:
-        GM_RENDER_API explicit Renderer(rc<gpu::Device> device);
+        GM_RENDER_API explicit Renderer(fs::FileSystem fileSystem, rc<gpu::Device> device);
         virtual ~Renderer();
 
         Renderer(Renderer const&) = delete;
@@ -33,6 +39,12 @@ namespace gm {
 
         GM_RENDER_API RenderContext context();
 
+        GM_RENDER_API rc<Mesh> loadMeshSync(zstring_view path);
+        GM_RENDER_API rc<Material> loadMaterialSync(zstring_view path);
+        GM_RENDER_API rc<Shader> loadShaderSync(zstring_view path);
+        GM_RENDER_API rc<Texture> loadTextureSync(zstring_view path);
+
+        gpu::Device& device() const noexcept { return *_device; }
         gpu::CommandList& commandList() const noexcept { return *_commandList; }
 
     private:
@@ -41,6 +53,7 @@ namespace gm {
         rc<gpu::Device> _device;
         box<gpu::CommandList> _commandList;
         box<gpu::Buffer> _frameDataBuffer;
+        fs::FileSystem _fileSystem;
         std::thread _renderThread;
         concurrency::ConcurrentQueue<RenderTask> _taskQueue;
         uint32 _frameCounter = 0;

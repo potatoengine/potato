@@ -4,7 +4,7 @@
 
 #include "_export.h"
 #include "grimm/foundation/box.h"
-#include "grimm/foundation/blob.h"
+#include "grimm/foundation/rc.h"
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/foundation/string_blob.h"
 
@@ -25,12 +25,14 @@ struct ImGuiIO;
 using SDL_Event = union SDL_Event;
 
 namespace gm {
+    class Shader;
+
     class DrawImgui {
     public:
         GM_RENDER_API DrawImgui();
         GM_RENDER_API ~DrawImgui();
 
-        GM_RENDER_API void bindShaders(blob vertShader, blob pixelShader);
+        GM_RENDER_API void bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader);
 
         GM_RENDER_API bool createResources(gpu::Device& device);
         GM_RENDER_API void releaseResources();
@@ -53,8 +55,8 @@ namespace gm {
         box<gpu::PipelineState> _pipelineState;
         box<gpu::ResourceView> _srv;
         box<gpu::Sampler> _sampler;
-        blob _vertShaderBlob;
-        blob _pixelShaderBlob;
+        rc<Shader> _vertShader;
+        rc<Shader> _pixelShader;
         string _clipboardTextData;
     };
 } // namespace gm

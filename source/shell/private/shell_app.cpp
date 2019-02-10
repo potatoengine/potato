@@ -18,6 +18,7 @@
 #include "grimm/render/node.h"
 #include "grimm/render/model.h"
 #include "grimm/render/material.h"
+#include "grimm/render/shader.h"
 #include "grimm/render/draw_imgui.h"
 
 #include <fmt/chrono.h>
@@ -74,7 +75,7 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _renderer = make_box<Renderer>(_device);
+    _renderer = make_box<Renderer>(_fileSystem, _device);
 
 #if GM_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
@@ -86,34 +87,13 @@ int gm::ShellApp::initialize() {
 
     _camera = make_box<Camera>(_swapChain);
 
-    blob basicVertShader, basicPixelShader;
-    auto stream = _fileSystem.openRead("resources/shaders/basic.vs_5_0.cbo");
-    if (fs::readBlob(stream, basicVertShader) != fs::Result{}) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open vertex shader", _window.get());
-        return 1;
-    }
-    stream = _fileSystem.openRead("resources/shaders/basic.ps_5_0.cbo");
-    if (fs::readBlob(stream, basicPixelShader) != fs::Result{}) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open pixel shader", _window.get());
-        return 1;
-    }
-
-    auto material = make_shared<Material>(std::move(basicVertShader), std::move(basicPixelShader));
+    auto material = _renderer->loadMaterialSync("resources/materials/basic.json");
     auto model = make_box<Model>(std::move(material));
     _root = make_box<Node>(std::move(model));
     _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 0, -5}));
 
-    blob imguiVertShader, imguiPixelShader;
-    stream = _fileSystem.openRead("resources/shaders/imgui.vs_5_0.cbo");
-    if (fs::readBlob(stream, imguiVertShader) != fs::Result{}) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open imgui vertex shader", _window.get());
-        return 1;
-    }
-    stream = _fileSystem.openRead("resources/shaders/imgui.ps_5_0.cbo");
-    if (fs::readBlob(stream, imguiPixelShader) != fs::Result{}) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not open imgui pixel shader", _window.get());
-        return 1;
-    }
+    auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
+    auto imguiPixelShader = _renderer->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
 
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
     _drawImgui.createResources(*_device);
