@@ -12,6 +12,7 @@ namespace gm::gpu {
     class Device;
     class PipelineState;
     class ResourceView;
+    class Sampler;
 } // namespace gm::gpu
 
 namespace gm {
@@ -32,5 +33,6 @@ namespace gm {
         rc<Shader> _pixelShader;
         vector<rc<Texture>> _textures;
         vector<box<gpu::ResourceView>> _srvs;
+        vector<box<gpu::Sampler>> _samplers;
     };
 } // namespace gm

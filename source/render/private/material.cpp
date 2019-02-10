@@ -8,8 +8,9 @@
 #include "grimm/gpu/pipeline_state.h"
 #include "grimm/gpu/resource_view.h"
 #include "grimm/gpu/device.h"
+#include "grimm/gpu/sampler.h"
 
-gm::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)), _textures(std::move(textures)), _srvs(_textures.size()) {}
+gm::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)), _textures(std::move(textures)), _srvs(_textures.size()), _samplers(_textures.size()) {}
 
 gm::Material::~Material() = default;
 
@@ -32,7 +33,8 @@ void gm::Material::bindMaterialToRender(RenderContext& ctx) {
 
         int texIndex = 0;
         for (auto const& tex : _textures) {
-            _srvs[texIndex++] = ctx.device.createShaderResourceView(&tex->texture());
+            _srvs[texIndex] = ctx.device.createShaderResourceView(&tex->texture());
+            _samplers[texIndex++] = ctx.device.createSampler();
         }
     }
 
@@ -40,6 +42,7 @@ void gm::Material::bindMaterialToRender(RenderContext& ctx) {
 
     int texIndex = 0;
     for (auto const& srv : _srvs) {
+        ctx.commandList.bindSampler(texIndex, _samplers[texIndex].get(), gpu::ShaderStage::Pixel);
         ctx.commandList.bindShaderResource(texIndex++, srv.get(), gpu::ShaderStage::Pixel);
     }
 }
