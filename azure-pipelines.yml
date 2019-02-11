@@ -62,22 +62,54 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-  - bash: |
-      set -o xtrace
-      docker pull seanmiddleditch/grimm-fedora-build:latest
-    displayName: Docker Pull
-  - bash: |
-      set -o xtrace
-      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/ci/scripts/analyze.sh
+  - task: Docker@0
+    displayName: 'Build Fedora Image'
+    inputs:
+      azureSubscription: '$(Parameters.azureSubscriptionEndpoint)'
+      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
+      dockerFile: 'ci/docker/fedora-build/Dockerfile'
+      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
+  - task: Docker@1
     displayName: Clang Format
-  - bash: |
-      set -o xtrace
-      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/ci/scripts/build.sh RelWithDebInfo
+    inputs:
+      azureSubscriptionEndpoint: '$(Parameters.azureSubscriptionEndpoint)'
+      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
+      command: 'Run an image'
+      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
+      volumes: '$(Build.SourcesDirectory):/source'
+      containerCommand: 'bash /source/ci/scripts/analyze.sh'
+      runInBackground: false
+      enforceDockerNamingConvention: false
+  - task: Docker@1
     displayName: Build (Release)
-  - bash: |
-      set -o xtrace
-      docker run --rm -v "${BUILD_SOURCESDIRECTORY}:/source" seanmiddleditch/grimm-fedora-build:latest bash /source/ci/scripts/build.sh Debug
+    inputs:
+      azureSubscriptionEndpoint: '$(Parameters.azureSubscriptionEndpoint)'
+      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
+      command: 'Run an image'
+      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
+      volumes: '$(Build.SourcesDirectory):/source'
+      containerCommand: 'bash /source/ci/scripts/build.sh RelWithDebInfo'
+      runInBackground: false
+      enforceDockerNamingConvention: false
+  - task: Docker@1
     displayName: Build (Debug)
+    inputs:
+      azureSubscriptionEndpoint: '$(Parameters.azureSubscriptionEndpoint)'
+      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
+      command: 'Run an image'
+      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
+      volumes: '$(Build.SourcesDirectory):/source'
+      containerCommand: 'bash /source/ci/scripts/build.sh Debug'
+      runInBackground: false
+      enforceDockerNamingConvention: false
+# DISABLED - TODO: allow us to reuse an image once its built if the Dockerfile isn't changing
+#  - task: Docker@0
+#    displayName: 'Publish Fedora Image'
+#    inputs:
+#      azureSubscription: '$(Parameters.azureSubscriptionEndpoint)'
+#      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
+#      action: 'Push an image'
+#      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
 
 - job: MacOS
   pool:
@@ -121,3 +153,4 @@ jobs:
       cd build/RelWithDebInfo
       ctest -R grimm --verbose
     displayName: Run Tests
+
