@@ -64,7 +64,7 @@ jobs:
   steps:
   - bash: |
       set -o xtrace
-      docker pull seanmiddleditch/grimm-fedora-build:latest
+      docker pull grimm.azurecr.io/${BUILD_REPOSITORY_NAME}:${BUILD_SOURCEBRANCHNAME}
     displayName: Docker Pull
   - bash: |
       set -o xtrace
