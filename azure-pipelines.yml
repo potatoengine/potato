@@ -9,54 +9,54 @@ trigger:
     - ci/
 
 jobs:
-- job: Windows
-  pool:
-    vmImage: 'vs2017-win2016'
-  steps:
-  - bash: |
-      set -o xtrace
-      curl -o SDL.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
-      unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
-      curl -o dxc.zip -L https://ci.appveyor.com/api/buildjobs/s3597u0bjjh0v87k/artifacts/build%2FRelease%2Fdxc-artifacts.zip
-      unzip dxc.zip -d "${BUILD_SOURCESDIRECTORY}/deps/dxc"
-    displayName: Installing Dependencies
-  - script: |
-      "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
-      cmake --version
-    displayName: Build Information
-  - bash: |
-      set -o xtrace
-      mkdir -p build/shared
-      cd build/shared
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DDXC_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/dxc" "${BUILD_SOURCESDIRECTORY}"
-    displayName: CMake Configure
-  - bash: |
-      set -o xtrace
-      cmake --build build/shared --config RelWithDebInfo --parallel
-    displayName: Build (Release Shared)
-  - bash: |
-      set -o xtrace
-      cd build/shared
-      ctest -C RelWithDebInfo -R grimm --verbose
-    displayName: Run Tests
-  - bash: |
-      set -o xtrace
-      cmake --build build/shared --config Debug --parallel
-    displayName: Build (Debug Shared)
-  - bash: |
-      set -o xtrace
-      mkdir -p build/static
-      cd build/static
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DDXC_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/dxc" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
-    displayName: CMake Configure (Static)
-  - bash: |
-      set -o xtrace
-      cmake --build build/static --config RelWithDebInfo --parallel
-    displayName: Build (Release Static)
-  - bash: |
-      set -o xtrace
-      cmake --build build/static --config Debug --parallel
-    displayName: Build (Debug Static)
+#- job: Windows
+#  pool:
+#    vmImage: 'vs2017-win2016'
+#  steps:
+#  - bash: |
+#      set -o xtrace
+#      curl -o SDL.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+#      unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
+#      curl -o dxc.zip -L https://ci.appveyor.com/api/buildjobs/s3597u0bjjh0v87k/artifacts/build%2FRelease%2Fdxc-artifacts.zip
+#      unzip dxc.zip -d "${BUILD_SOURCESDIRECTORY}/deps/dxc"
+#    displayName: Installing Dependencies
+#  - script: |
+#      "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+#      cmake --version
+#    displayName: Build Information
+#  - bash: |
+#      set -o xtrace
+#      mkdir -p build/shared
+#      cd build/shared
+#      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DDXC_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/dxc" "${BUILD_SOURCESDIRECTORY}"
+#    displayName: CMake Configure
+#  - bash: |
+#      set -o xtrace
+#      cmake --build build/shared --config RelWithDebInfo --parallel
+#    displayName: Build (Release Shared)
+#  - bash: |
+#      set -o xtrace
+#      cd build/shared
+#      ctest -C RelWithDebInfo -R grimm --verbose
+#    displayName: Run Tests
+#  - bash: |
+#      set -o xtrace
+#      cmake --build build/shared --config Debug --parallel
+#    displayName: Build (Debug Shared)
+#  - bash: |
+#      set -o xtrace
+#      mkdir -p build/static
+#      cd build/static
+#      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DDXC_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/dxc" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
+#    displayName: CMake Configure (Static)
+#  - bash: |
+#      set -o xtrace
+#      cmake --build build/static --config RelWithDebInfo --parallel
+#    displayName: Build (Release Static)
+#  - bash: |
+#      set -o xtrace
+#      cmake --build build/static --config Debug --parallel
+#    displayName: Build (Debug Static)
 
 - job: Linux
   pool:
@@ -96,45 +96,46 @@ jobs:
       runInBackground: false
       enforceDockerNamingConvention: false
 
-- job: MacOS
-  pool:
-    vmImage: 'macOS-10.13'
-  steps:
-  - bash: |
-      set -o xtrace
-      sudo xcode-select -switch /Applications/Xcode_10.1.app
-      export HOMEBREW_NO_AUTO_UPDATE=1
-      brew install sdl2
-    displayName: Installing Dependencies
-  - bash: |
-      set -o xtrace
-      xcode-select --print-path
-      clang++ --version
-      cmake --version
-      brew info llvm
-    displayName: Build Information
-  - bash: |
-      set -o xtrace
-      mkdir -p build/RelWithDebInfo
-      cd build/RelWithDebInfo
-      cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
-    displayName: Configure CMake (Release)
-  - bash: |
-      set -o xtrace
-      cmake --build build/RelWithDebInfo --parallel
-    displayName: Build (Release)
-  - bash: |
-      set -o xtrace
-      mkdir -p build/Debug
-      cd build/Debug
-      cmake -DCMAKE_BUILD_TYPE:STRING=Debug ../..
-    displayName: Configure CMake (Debug)
-  - bash: |
-      set -o xtrace
-      cmake --build build/Debug --parallel
-    displayName: Build (Debug)
-  - script: |
-      set -o xtrace
-      cd build/RelWithDebInfo
-      ctest -R grimm --verbose
-    displayName: Run Tests
+#- job: MacOS
+#  pool:
+#    vmImage: 'macOS-10.13'
+#  steps:
+#  - bash: |
+#      set -o xtrace
+#      sudo xcode-select -switch /Applications/Xcode_10.1.app
+#      export HOMEBREW_NO_AUTO_UPDATE=1
+#      brew install sdl2
+#    displayName: Installing Dependencies
+#  - bash: |
+#      set -o xtrace
+#      xcode-select --print-path
+#      clang++ --version
+#      cmake --version
+#      brew info llvm
+#    displayName: Build Information
+#  - bash: |
+#      set -o xtrace
+#      mkdir -p build/RelWithDebInfo
+#      cd build/RelWithDebInfo
+#      cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
+#    displayName: Configure CMake (Release)
+#  - bash: |
+#      set -o xtrace
+#      cmake --build build/RelWithDebInfo --parallel
+#    displayName: Build (Release)
+#  - bash: |
+#      set -o xtrace
+#      mkdir -p build/Debug
+#      cd build/Debug
+#      cmake -DCMAKE_BUILD_TYPE:STRING=Debug ../..
+#    displayName: Configure CMake (Debug)
+#  - bash: |
+#      set -o xtrace
+#      cmake --build build/Debug --parallel
+#    displayName: Build (Debug)
+#  - script: |
+#      set -o xtrace
+#      cd build/RelWithDebInfo
+#      ctest -R grimm --verbose
+#    displayName: Run Tests
+#
