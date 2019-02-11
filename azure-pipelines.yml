@@ -62,6 +62,13 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
+  - task: Docker@0
+    displayName: 'Build Fedora Image'
+    inputs:
+      azureSubscription: '$(Parameters.azureSubscriptionEndpoint)'
+      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
+      dockerFile: 'ci/docker/fedora-build/Dockerfile'
+      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
   - task: Docker@1
     displayName: Clang Format
     inputs:
@@ -95,6 +102,13 @@ jobs:
       containerCommand: 'bash /source/ci/scripts/build.sh Debug'
       runInBackground: false
       enforceDockerNamingConvention: false
+  - task: Docker@0
+    displayName: 'Publish Fedora Image'
+    inputs:
+      azureSubscription: '$(Parameters.azureSubscriptionEndpoint)'
+      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
+      action: 'Push an image'
+      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
 
 #- job: MacOS
 #  pool:
