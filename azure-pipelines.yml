@@ -102,13 +102,14 @@ jobs:
       containerCommand: 'bash /source/ci/scripts/build.sh Debug'
       runInBackground: false
       enforceDockerNamingConvention: false
-  - task: Docker@0
-    displayName: 'Publish Fedora Image'
-    inputs:
-      azureSubscription: '$(Parameters.azureSubscriptionEndpoint)'
-      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
-      action: 'Push an image'
-      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
+# DISABLED - TODO: allow us to reuse an image once its built if the Dockerfile isn't changing
+#  - task: Docker@0
+#    displayName: 'Publish Fedora Image'
+#    inputs:
+#      azureSubscription: '$(Parameters.azureSubscriptionEndpoint)'
+#      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
+#      action: 'Push an image'
+#      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
 
 - job: MacOS
   pool:
