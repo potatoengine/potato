@@ -10,6 +10,7 @@
 #include "converters/convert_copy.h"
 #include "converters/convert_json.h"
 #include "converters/convert_ignore.h"
+#include "converters/convert_model.h"
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include <set>
@@ -130,6 +131,8 @@ void gm::recon::ConverterApp::registerConverters() {
                            make_box<JsonConverter>()});
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".png"; },
                            make_box<CopyConverter>()});
+    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".obj"; },
+                           make_box<ModelConverter>()});
 }
 
 bool gm::recon::ConverterApp::convertFiles(vector<string> const& files) {

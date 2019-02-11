@@ -16,6 +16,7 @@ target_link_libraries(recon_lib
         grimm::image
         grimm::filesystem
         stb
+        assimp
     PRIVATE
         rapidjson
 )
@@ -25,6 +26,11 @@ add_executable(recon)
 gm_set_common_properties(recon)
 
 target_link_libraries(recon PRIVATE recon_lib)
+
+find_package(Assimp REQUIRED)
+target_link_libraries(recon PRIVATE assimp)
+include(gm_copy_library_import)
+gm_copy_library_import(assimp recon)
 
 get_target_property(GM_GPU_ENABLE_D3D11 gpu GM_GPU_ENABLE_D3D11)
 if(GM_GPU_ENABLE_D3D11)
