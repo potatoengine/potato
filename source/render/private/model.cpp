@@ -42,5 +42,5 @@ void GM_VECTORCALL gm::Model::render(RenderContext& ctx, glm::mat4x4 transform) 
     _mesh->bindVertexBuffers(ctx);
     ctx.commandList.bindConstantBuffer(2, _transformBuffer.get(), gpu::ShaderStage::All);
     ctx.commandList.setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
-    ctx.commandList.draw(static_cast<uint32>(std::size(cube)));
+    ctx.commandList.drawIndexed(static_cast<uint32>(_mesh->indexCount()));
 }

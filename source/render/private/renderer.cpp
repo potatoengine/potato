@@ -107,8 +107,17 @@ auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
 
     MeshBuffer bufferDesc = {size, 0, stride};
 
+    vector<uint16> indices;
+    indices.reserve(mesh->mNumFaces * 3);
+
     vector<float> data;
     data.reserve(mesh->mNumVertices);
+
+    for (uint32 i = 0; i != mesh->mNumFaces; ++i) {
+        indices.push_back(mesh->mFaces[i].mIndices[0]);
+        indices.push_back(mesh->mFaces[i].mIndices[1]);
+        indices.push_back(mesh->mFaces[i].mIndices[2]);
+    }
 
     for (uint32 i = 0; i != mesh->mNumVertices; ++i) {
         data.push_back(mesh->mVertices[i].x);
@@ -120,15 +129,15 @@ auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
             data.push_back(mesh->mColors[0][i].b);
         }
         else {
-            data.push_back(1);
-            data.push_back(1);
-            data.push_back(1);
+            data.push_back(1.f);
+            data.push_back(1.f);
+            data.push_back(1.f);
         }
         data.push_back(mesh->mTextureCoords[0][i].x);
         data.push_back(mesh->mTextureCoords[0][i].y);
     }
 
-    return make_shared<Mesh>(blob(span{data.data(), data.size()}.as_bytes()), span{&bufferDesc, 1}, channels);
+    return make_shared<Mesh>(std::move(indices), blob(span{data.data(), data.size()}.as_bytes()), span{&bufferDesc, 1}, channels);
 }
 
 auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
