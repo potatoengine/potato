@@ -22,58 +22,6 @@ namespace {
     };
 } // namespace
 
-static Vert cube[6 * 6];
-
-static void makeFace(int index, glm::vec3 normal, glm::vec3 up, glm::vec3 right) {
-    cube[index++] = Vert{
-        normal - right - up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
-        {0, 1}};
-    cube[index++] = Vert{
-        normal + right - up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
-        {1, 1}};
-    cube[index++] = Vert{
-        normal + right + up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
-        {1, 0}};
-    cube[index++] = Vert{
-        normal - right - up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
-        {0, 1}};
-    cube[index++] = Vert{
-        normal + right + up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
-        {1, 0}};
-    cube[index++] = Vert{
-        normal - right + up,
-        normal * 0.5f + glm::vec3{0.5f, 0.5f, 0.5f},
-        {0, 0}};
-}
-
-static void makeCube() {
-    makeFace(0, {1, 0, 0}, {0, 1, 0}, {0, 0, 1});
-    makeFace(6, {-1, 0, 0}, {0, 1, 0}, {0, 0, 1});
-    makeFace(12, {0, 0, 1}, {0, 1, 0}, {1, 0, 0});
-    makeFace(18, {0, 0, -1}, {0, 1, 0}, {-1, 0, 0});
-    makeFace(24, {0, 1, 0}, {1, 0, 0}, {0, 0, 1});
-    makeFace(30, {0, -1, 0}, {1, 0, 0}, {0, 0, 1});
-}
-
-gm::Model::Model(rc<Material> material) : _material(std::move(material)) {
-    MeshBuffer buffer;
-    buffer.stride = sizeof(Vert);
-
-    MeshChannel channels[] = {
-        {0, gpu::Format::R32G32B32Float, gpu::Semantic::Position},
-        {0, gpu::Format::R32G32B32Float, gpu::Semantic::Color},
-        {0, gpu::Format::R32G32Float, gpu::Semantic::TexCoord},
-    };
-
-    makeCube();
-    _mesh = make_shared<Mesh>(blob(span{cube, std::size(cube)}.as_bytes()), span{&buffer, 1}, channels);
-}
-
 gm::Model::Model(rc<Mesh> mesh, rc<Material> material) : _mesh(std::move(mesh)), _material(std::move(material)) {}
 
 gm::Model::~Model() = default;

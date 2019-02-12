@@ -32,17 +32,21 @@ namespace gm {
 
     class Mesh : public shared<Mesh> {
     public:
-        GM_RENDER_API explicit Mesh(blob data, view<MeshBuffer> buffers, view<MeshChannel> channels);
+        GM_RENDER_API explicit Mesh(vector<uint16> indices, blob data, view<MeshBuffer> buffers, view<MeshChannel> channels);
         GM_RENDER_API ~Mesh();
 
         GM_RENDER_API void populateLayout(span<gpu::InputLayoutElement>& inputLayout) const noexcept;
         GM_RENDER_API void updateVertexBuffers(RenderContext& ctx);
         GM_RENDER_API void bindVertexBuffers(RenderContext& ctx);
 
+        uint32 indexCount() const noexcept { return static_cast<uint32>(_indices.size()); }
+
     private:
+        box<gpu::Buffer> _ibo;
         box<gpu::Buffer> _vbo;
         vector<MeshBuffer> _buffers;
         vector<MeshChannel> _channels;
+        vector<uint16> _indices;
         blob _data;
     };
 } // namespace gm
