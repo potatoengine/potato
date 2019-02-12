@@ -7,6 +7,10 @@ add_library(grimm::render ALIAS render)
 include(gm_set_common_properties)
 gm_set_common_properties(render)
 
+find_package(Assimp REQUIRED)
+include(gm_copy_library_import)
+gm_copy_library_import(assimp render)
+
 target_link_libraries(render
     PUBLIC
         grimm::foundation
@@ -17,6 +21,7 @@ target_link_libraries(render
         imgui
         SDL2
         rapidjson
+        assimp
     PRIVATE
         doctest
 )

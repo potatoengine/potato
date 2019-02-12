@@ -22,6 +22,7 @@ namespace gm {
     class Model {
     public:
         GM_RENDER_API explicit Model(rc<Material> material);
+        GM_RENDER_API explicit Model(rc<Mesh> mesh, rc<Material> material);
         GM_RENDER_API ~Model();
 
         GM_RENDER_API void GM_VECTORCALL render(RenderContext& ctx, glm::mat4x4 transform);
