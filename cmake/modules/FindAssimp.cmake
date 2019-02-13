@@ -3,74 +3,47 @@
 
 INCLUDE(FindPackageHandleStandardArgs)
 
-if(NOT TARGET assimp)
+function(FindAssimp)
     if(WIN32)
-        set(ASSIMP_ROOT_DIR CACHE PATH "ASSIMP root directory")
-
-        find_path(ASSIMP_INCLUDE_DIR
-            NAMES
-                assimp/config.h
-            PATH_SUFFIXES
-                include
-            HINTS
-                "${ASSIMP_ROOT_DIR}"
-                "$ENV{ProgramW6432}/Assimp"
-        )
-
         set(ASSIMP_MSVC_VERSION vc140)
         set(ASSIMP_ARCHITECTURE x64)
+
+        set(ASSIMP_ROOT_DIR CACHE PATH "ASSIMP root directory")
+        set(ASSIMP_HINTS "${ASSIMP_ROOT_DIR}" "$ENV{ProgramW6432}/Assimp")
+        set(ASSIMP_LIBRARY_SUFFICES lib debug/lib "lib/${ASSIMP_ARCHITECTURE}")
+        set(ASSIMP_BINARY_SUFFICES bin debug/bin "bin/${ASSIMP_ARCHITECTURE}")
+
+        find_path(ASSIMP_INCLUDE_DIR
+            NAMES assimp/config.h
+            PATH_SUFFIXES include
+            HINTS ${ASSIMP_HINTS}
+        )
     
         find_library(ASSIMP_LIBRARY_RELEASE
-            NAMES
-                assimp
-                assimp-${ASSIMP_MSVC_VERSION}-mt.lib
-            PATH_SUFFIXES
-                lib
-                "${ASSIMP_ARCHITECTURE}/lib"
-            HINTS
-                "${ASSIMP_ROOT_DIR}"
-                "$ENV{ProgramW6432}/Assimp"
+            NAMES "assimp-${ASSIMP_MSVC_VERSION}-mt.lib"
+            PATH_SUFFIXES ${ASSIMP_LIBRARY_SUFFICES}
+            HINTS ${ASSIMP_HINTS}
         )
 
         find_file(ASSIMP_DLL_RELEASE
-            NAMES
-                assimp
-                assimp-${ASSIMP_MSVC_VERSION}-mt.dll
-            PATH_SUFFIXES
-                bin
-                "${ASSIMP_ARCHITECTURE}/bin"
-            PATHS
-                "${ASSIMP_ROOT_DIR}"
-                "$ENV{ProgramW6432}/Assimp"
+            NAMES "assimp-${ASSIMP_MSVC_VERSION}-mt.dll"
+            PATH_SUFFIXES ${ASSIMP_BINARY_SUFFICES}
+            HINTS ${ASSIMP_HINTS}
         )
 
-        if(WIN32)
-            find_library(ASSIMP_LIBRARY_DEBUG
-                NAMES
-                    assimp-${ASSIMP_MSVC_VERSION}-mtd.lib
-                PATH_SUFFIXES
-                    lib
-                    debug/lib
-                    "${ASSIMP_ARCHITECTURE}/lib"
-                HINTS
-                    "${ASSIMP_ROOT_DIR}"
-                    "$ENV{ProgramW6432}/Assimp"
-            )
+        find_library(ASSIMP_LIBRARY_DEBUG
+            NAMES "assimp-${ASSIMP_MSVC_VERSION}-mtd.lib"
+            PATH_SUFFIXES ${ASSIMP_LIBRARY_SUFFICES}
+            HINTS ${ASSIMP_HINTS}
+        )
 
-            find_file(ASSIMP_DLL_DEBUG
-                NAMES
-                    assimp-${ASSIMP_MSVC_VERSION}-mtd.dll
-                PATH_SUFFIXES
-                    bin
-                    debug/bin
-                    "${ASSIMP_ARCHITECTURE}/bin"
-                PATHS
-                    "${ASSIMP_ROOT_DIR}"
-                    "$ENV{ProgramW6432}/Assimp"
-            )
-        endif(WIN32)
+        find_file(ASSIMP_DLL_DEBUG
+            NAMES "assimp-${ASSIMP_MSVC_VERSION}-mtd.dll"
+            PATH_SUFFIXES ${ASSIMP_BINARY_SUFFICES}
+            HINTS ${ASSIMP_HINTS}
+        )
 
-        if(ASSIMP_INCLUDE_DIR)
+        if(ASSIMP_INCLUDE_DIR AND ASSIMP_LIBRARY_RELEASE)
             add_library(assimp IMPORTED SHARED GLOBAL)
             set_target_properties(assimp PROPERTIES
                 INTERFACE_INCLUDE_DIRECTORIES ${ASSIMP_INCLUDE_DIR}
@@ -82,11 +55,13 @@ if(NOT TARGET assimp)
                     IMPORTED_LOCATION_RELEASE ${ASSIMP_DLL_RELEASE}
                     IMPORTED_IMPLIB_DEBUG ${ASSIMP_LIBRARY_DEBUG}
                     IMPORTED_IMPLIB_RELEASE ${ASSIMP_LIBRARY_RELEASE}
-                )
+                    MAP_IMPORTED_CONFIG_MINSIZEREL Release
+                    MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release
+                ) 
             else(ASSIMP_LIBRARY_DEBUG)
                 set_target_properties(assimp PROPERTIES
-                    IMPORTED_LOCATION ${ASSIMP_DLL_RELEASE}
-                    IMPORTED_IMPLIB ${ASSIMP_LIBRARY_RELEASE}
+                    IMPORTED_LOCATION "${ASSIMP_DLL_RELEASE}"
+                    IMPORTED_IMPLIB "${ASSIMP_LIBRARY_RELEASE}"
                 )
             endif(ASSIMP_LIBRARY_DEBUG)
         endif()
@@ -94,7 +69,6 @@ if(NOT TARGET assimp)
         FIND_PACKAGE_HANDLE_STANDARD_ARGS(assimp REQUIRED_VARS ASSIMP_INCLUDE_DIR ASSIMP_LIBRARY_RELEASE)
     
     else(WIN32)
-
         find_path(
             assimp_INCLUDE_DIRS
             NAMES assimp/anim.h
@@ -136,4 +110,8 @@ if(NOT TARGET assimp)
         FIND_PACKAGE_HANDLE_STANDARD_ARGS(assimp REQUIRED_VARS assimp_INCLUDE_DIRS assimp_LIBRARIES)
     
     endif(WIN32)
+endfunction(FindAssimp)
+
+if(NOT TARGET assimp)
+    FindAssimp()
 endif(NOT TARGET assimp)
