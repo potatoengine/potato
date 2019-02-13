@@ -17,6 +17,8 @@
 #include "grimm/filesystem/stream_util.h"
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 #include <fstream>
 #include <chrono>
 
@@ -79,7 +81,63 @@ auto gm::Renderer::context() -> RenderContext {
 }
 
 auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
-    return nullptr;
+    blob contents;
+    auto stream = _fileSystem.openRead(path);
+    if (fs::readBlob(stream, contents) != fs::Result{}) {
+        return {};
+    }
+    stream.close();
+
+    Assimp::Importer importer;
+    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), 0, "assbin");
+    if (scene == nullptr) {
+        zstring_view error = importer.GetErrorString();
+        return {};
+    }
+    aiMesh const* mesh = scene->mMeshes[0];
+
+    MeshChannel channels[] = {
+        {0, gpu::Format::R32G32B32Float, gpu::Semantic::Position},
+        {0, gpu::Format::R32G32B32Float, gpu::Semantic::Color},
+        {0, gpu::Format::R32G32B32Float, gpu::Semantic::TexCoord},
+    };
+
+    uint16 stride = sizeof(float) * 8;
+    uint32 size = mesh->mNumVertices * stride;
+
+    MeshBuffer bufferDesc = {size, 0, stride};
+
+    vector<uint16> indices;
+    indices.reserve(mesh->mNumFaces * 3);
+
+    vector<float> data;
+    data.reserve(mesh->mNumVertices);
+
+    for (uint32 i = 0; i != mesh->mNumFaces; ++i) {
+        indices.push_back(mesh->mFaces[i].mIndices[0]);
+        indices.push_back(mesh->mFaces[i].mIndices[1]);
+        indices.push_back(mesh->mFaces[i].mIndices[2]);
+    }
+
+    for (uint32 i = 0; i != mesh->mNumVertices; ++i) {
+        data.push_back(mesh->mVertices[i].x);
+        data.push_back(mesh->mVertices[i].y);
+        data.push_back(mesh->mVertices[i].z);
+        if (mesh->GetNumColorChannels() >= 1) {
+            data.push_back(mesh->mColors[0][i].r);
+            data.push_back(mesh->mColors[0][i].g);
+            data.push_back(mesh->mColors[0][i].b);
+        }
+        else {
+            data.push_back(1.f);
+            data.push_back(1.f);
+            data.push_back(1.f);
+        }
+        data.push_back(mesh->mTextureCoords[0][i].x);
+        data.push_back(mesh->mTextureCoords[0][i].y);
+    }
+
+    return make_shared<Mesh>(std::move(indices), blob(span{data.data(), data.size()}.as_bytes()), span{&bufferDesc, 1}, channels);
 }
 
 auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {

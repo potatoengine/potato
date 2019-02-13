@@ -17,6 +17,7 @@
 #include "grimm/render/context.h"
 #include "grimm/render/node.h"
 #include "grimm/render/model.h"
+#include "grimm/render/mesh.h"
 #include "grimm/render/material.h"
 #include "grimm/render/shader.h"
 #include "grimm/render/draw_imgui.h"
@@ -88,7 +89,8 @@ int gm::ShellApp::initialize() {
     _camera = make_box<Camera>(_swapChain);
 
     auto material = _renderer->loadMaterialSync("resources/materials/basic.json");
-    auto model = make_box<Model>(std::move(material));
+    auto mesh = _renderer->loadMeshSync("resources/meshes/cube.model");
+    auto model = make_box<Model>(std::move(mesh), std::move(material));
     _root = make_box<Node>(std::move(model));
     _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 0, -5}));
 

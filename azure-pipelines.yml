@@ -15,10 +15,10 @@ jobs:
   steps:
   - bash: |
       set -o xtrace
-      curl -o SDL.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
-      unzip SDL.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
-      curl -o dxc.zip -L https://ci.appveyor.com/api/buildjobs/s3597u0bjjh0v87k/artifacts/build%2FRelease%2Fdxc-artifacts.zip
-      unzip dxc.zip -d "${BUILD_SOURCESDIRECTORY}/deps/dxc"
+      curl -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+      unzip SDL2-devel-2.0.9-VC.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
+      curl -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
+      unzip assimp-4.1.0.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
     displayName: Installing Dependencies
   - script: |
       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
@@ -28,7 +28,7 @@ jobs:
       set -o xtrace
       mkdir -p build/shared
       cd build/shared
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DDXC_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/dxc" "${BUILD_SOURCESDIRECTORY}"
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
     displayName: CMake Configure
   - bash: |
       set -o xtrace
@@ -47,7 +47,7 @@ jobs:
       set -o xtrace
       mkdir -p build/static
       cd build/static
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DDXC_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/dxc" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
     displayName: CMake Configure (Static)
   - bash: |
       set -o xtrace
@@ -119,7 +119,7 @@ jobs:
       set -o xtrace
       sudo xcode-select -switch /Applications/Xcode_10.1.app
       export HOMEBREW_NO_AUTO_UPDATE=1
-      brew install sdl2
+      brew install sdl2 assimp
     displayName: Installing Dependencies
   - bash: |
       set -o xtrace
