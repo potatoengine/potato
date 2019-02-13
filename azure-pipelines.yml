@@ -28,7 +28,7 @@ jobs:
       set -o xtrace
       mkdir -p build/shared
       cd build/shared
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/vcpkg-export-20190210-170120/installed/x64-windows" "${BUILD_SOURCESDIRECTORY}"
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/vcpkg-export-20190210-170120/installed/x64-windows" "${BUILD_SOURCESDIRECTORY}"
     displayName: CMake Configure
   - bash: |
       set -o xtrace
@@ -47,7 +47,7 @@ jobs:
       set -o xtrace
       mkdir -p build/static
       cd build/static
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/vcpkg-export-20190210-170120/installed/x64-windows" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/vcpkg-export-20190210-170120/installed/x64-windows" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
     displayName: CMake Configure (Static)
   - bash: |
       set -o xtrace
