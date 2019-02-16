@@ -86,7 +86,7 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _camera = make_box<Camera>(_swapChain);
+    _camera = make_box<RenderCamera>(_swapChain);
 
     auto material = _renderer->loadMaterialSync("resources/materials/basic.json");
     auto mesh = _renderer->loadMeshSync("resources/meshes/cube.model");
