@@ -7,6 +7,7 @@
 #include "mesh.h"
 #include "shader.h"
 #include "texture.h"
+#include "debug_draw.h"
 #include <grimm/gpu/buffer.h>
 #include <grimm/gpu/command_list.h>
 #include <grimm/gpu/device.h>
@@ -32,6 +33,9 @@ namespace {
 
 gm::Renderer::Renderer(fs::FileSystem fileSystem, rc<gpu::Device> device) : _device(std::move(device)), _fileSystem(std::move(fileSystem)), _renderThread([this] { _renderMain(); }) {
     _commandList = _device->createCommandList();
+
+    _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.json");
+    _debugLineBuffer = _device->createBuffer(gpu::BufferType::Vertex, 64 * 1024);
 }
 
 gm::Renderer::~Renderer() {
@@ -68,7 +72,10 @@ void gm::Renderer::beginFrame() {
     _commandList->bindConstantBuffer(0, _frameDataBuffer.get(), gpu::ShaderStage::All);
 }
 
-void gm::Renderer::endFrame() {
+void gm::Renderer::endFrame(float frameTime) {
+    auto ctx = context();
+    _debugLineMaterial->bindMaterialToRender(ctx);
+    flushDebugDraw(*_device, *_commandList, *_debugLineBuffer, frameTime);
     _commandList->finish();
     _device->execute(_commandList.get());
 }

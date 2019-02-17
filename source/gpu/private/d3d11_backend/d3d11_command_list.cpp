@@ -134,6 +134,7 @@ void gm::gpu::d3d11::CommandListD3D11::setPrimitiveTopology(PrimitiveTopology to
     D3D11_PRIMITIVE_TOPOLOGY primitive;
     switch (topology) {
     case PrimitiveTopology::Triangles: primitive = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
+    case PrimitiveTopology::Lines: primitive = D3D11_PRIMITIVE_TOPOLOGY_LINELIST; break;
     }
     _context->IASetPrimitiveTopology(primitive);
 }
@@ -210,7 +211,8 @@ auto gm::gpu::d3d11::CommandListD3D11::map(Buffer* resource, gm::uint64 size, gm
 
     bool writeAll = offset == 0 && size == buffer->size();
 
-    _context->Map(d3dBuffer, 0, writeAll ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &sub);
+    //_context->Map(d3dBuffer, 0, writeAll ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &sub);
+    _context->Map(d3dBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &sub);
     return {static_cast<gm::byte*>(sub.pData) + offset, size};
 }
 
@@ -230,7 +232,10 @@ void gm::gpu::d3d11::CommandListD3D11::update(Buffer* buffer, span<gm::byte cons
     }
 
     auto target = map(buffer, data.size(), offset);
-    std::memcpy(target.data(), data.data(), data.size());
+
+    GM_ASSERT(data.size_bytes() <= target.size());
+
+    std::memcpy(target.data(), data.data(), data.size_bytes());
     unmap(buffer, target);
 }
 

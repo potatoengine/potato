@@ -23,6 +23,7 @@
 #include "grimm/render/material.h"
 #include "grimm/render/shader.h"
 #include "grimm/render/draw_imgui.h"
+#include "grimm/render/debug_draw.h"
 
 #include <fmt/chrono.h>
 #include <chrono>
@@ -96,7 +97,7 @@ int gm::ShellApp::initialize() {
     auto mesh = _renderer->loadMeshSync("resources/meshes/cube.model");
     auto model = make_box<Model>(std::move(mesh), std::move(material));
     _root = make_box<Node>(std::move(model));
-    _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 0, -5}));
+    _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 5, 0}));
 
     auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
     auto imguiPixelShader = _renderer->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
@@ -122,14 +123,23 @@ namespace {
                 camera.up() * relativeMovement.y +
                 camera.view() * relativeMovement.z;
 
-            camera.position(camera.position() + movement * _moveSpeedPerSec * frameTime);
-            camera.rotateYaw(-relativeMotion.x); // * rotateRadiansPerSec * frameTime);
-            camera.rotatePitch(-relativeMotion.y); // * rotateRadiansPerSec * frameTime);
+            glm::vec3 pos = camera.position() + movement * _moveSpeedPerSec * frameTime;
+
+            _yaw -= relativeMotion.x;
+            _pitch -= relativeMotion.y;
+
+            glm::vec3 view{0, 0, -1};
+            view = glm::rotate(view, _pitch, {1, 0, 0});
+            view = glm::rotate(view, _yaw, {0, 1, 0});
+
+            camera.lookAt(pos, pos + view, {0, 1, 0});
         }
 
     private:
         float _moveSpeedPerSec = 10;
         float _rotateRadiansPerSec = 1;
+        float _yaw = 0;
+        float _pitch = 0;
     };
 
     class ArcBallCameraController : public CameraController {
@@ -138,20 +148,20 @@ namespace {
             _target += relativeMovement * 10.f * frameTime;
 
             _yaw += relativeMotion.x;
-            _pitch += relativeMotion.y;
+            _pitch -= relativeMotion.y;
 
             glm::vec3 pos{0, 0, _boomLength};
             pos = glm::rotate(pos, _pitch, {1, 0, 0});
             pos = glm::rotate(pos, _yaw, {0, 1, 0});
 
-            camera.lookAt(pos, _target, {0, 1, 0});
+            camera.lookAt(pos + _target, _target, {0, 1, 0});
         }
 
     private:
-        glm::vec3 _target = {0, 0, 0};
+        glm::vec3 _target = {0, 5, 0};
         float _boomLength = 10;
         float _yaw = 0;
-        float _pitch = 45;
+        float _pitch = -45;
     };
 } // namespace
 
@@ -168,7 +178,7 @@ void gm::ShellApp::run() {
     float camRotSpeed = 800;
 
     Camera camera;
-    camera.lookAt({0, 0, 4}, {0, 0, 0}, {0, 1, 0});
+    camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
 
     box<CameraController> controller = make_box<FlyCameraController>();
     glm::vec3 arcCenter = {0, 0, 0};
@@ -227,7 +237,7 @@ void gm::ShellApp::run() {
         const float radiansPerSec = 2;
         const float rotateRads = radiansPerSec * frameTime;
         objRotateInput += frameTime;
-        _root->transform(glm::rotate(glm::rotate(glm::identity<glm::mat4x4>(), objRotateInput, {0, 1, 0}), std::sin(objRotateInput), {1, 0, 0}));
+        _root->transform(glm::rotate(glm::rotate(glm::translate(glm::identity<glm::mat4x4>(), {0, 5, 0}), objRotateInput, {0, 1, 0}), std::sin(objRotateInput), {1, 0, 0}));
 
         gpu::Viewport viewport;
         int width, height;
@@ -273,6 +283,12 @@ void gm::ShellApp::run() {
         }
         ImGui::End();
 
+        for (int i = -10; i <= 10; ++i) {
+            drawDebugLine({-10, 0, i}, {10, 0, i}, i == 0 ? glm::vec4{1, 0, 0, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
+            drawDebugLine({i, 0, -10}, {i, 0, 10}, i == 0 ? glm ::vec4{0, 0, 1, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
+        }
+        drawDebugLine({0, -10, 0}, {0, +10, 0}, {0, 1, 0, 1});
+
         _renderer->beginFrame();
         auto ctx = _renderer->context();
         _camera->beginFrame(ctx, camera.matrix());
@@ -281,7 +297,7 @@ void gm::ShellApp::run() {
         _drawImgui.endFrame(*_device, _renderer->commandList());
 
         _camera->endFrame(ctx);
-        _renderer->endFrame();
+        _renderer->endFrame(frameTime);
         _swapChain->present();
 
         auto endFrame = clock.now();

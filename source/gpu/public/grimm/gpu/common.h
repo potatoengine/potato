@@ -61,6 +61,7 @@ namespace gm::gpu {
 
     enum class PrimitiveTopology {
         Triangles,
+        Lines,
     };
 
     struct Rect {
