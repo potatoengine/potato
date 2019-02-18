@@ -20,6 +20,7 @@
 #include <rapidjson/istreamwrapper.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include <fstream>
 #include <chrono>
 
@@ -96,7 +97,7 @@ auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     stream.close();
 
     Assimp::Importer importer;
-    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), 0, "assbin");
+    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), aiProcess_FlipWindingOrder, "assbin");
     if (scene == nullptr) {
         zstring_view error = importer.GetErrorString();
         return {};
