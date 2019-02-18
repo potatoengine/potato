@@ -4,6 +4,7 @@
 
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/types.h"
+#include "grimm/foundation/span.h"
 #include "common.h"
 
 namespace gm::fs {

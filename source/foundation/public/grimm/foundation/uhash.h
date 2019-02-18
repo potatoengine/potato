@@ -28,12 +28,12 @@ namespace gm {
 namespace gm {
     template <typename HashAlgorithm, typename T>
     inline enable_if_t<is_contiguous<T>::value> hash_append(HashAlgorithm& hasher, T const& value) {
-        hasher(span(reinterpret_cast<byte const*>(&value), sizeof(value)));
+        hasher(&value, sizeof(value));
     }
 
     template <typename HashAlgorithm, typename CharT, typename CharTraits, typename AllocatorT>
     inline void hash_append(HashAlgorithm& hasher, std::basic_string<CharT, CharTraits, AllocatorT> const& string) {
-        hasher({string.data(), string.size()});
+        hasher(string.data(), string.size());
     }
 
     template <typename HashAlgorithm, typename ContainerT, typename, typename>
@@ -73,8 +73,8 @@ namespace gm {
 struct gm::default_hash {
     using result_type = typename fnv1a::result_type;
 
-    inline void operator()(span<byte const> data) noexcept {
-        _fnva1.operator()(data);
+    inline void operator()(char const* data, size_t size) noexcept {
+        _fnva1.operator()(data, size);
     }
 
     inline operator result_type() const noexcept {

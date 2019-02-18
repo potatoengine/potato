@@ -121,11 +121,8 @@ private:
 
 template <typename HashAlgorithm, typename T>
 void gm::hash_append(HashAlgorithm& hasher, gm::span<T> const& view) noexcept {
-    if constexpr (std::is_same_v<std::remove_cv_t<T>, std::byte>) {
-        hasher(view);
-    }
-    else if constexpr (gm::is_contiguous_v<T>) {
-        hasher(view.as_bytes());
+    if constexpr (gm::is_contiguous_v<T>) {
+        hasher(reinterpret_cast<char const*>(view.data()), view.size() * sizeof(T));
     }
     else {
         for (auto&& value : view) {

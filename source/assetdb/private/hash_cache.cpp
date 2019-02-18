@@ -7,9 +7,7 @@
 #include "stream_json.h"
 
 auto gm::HashCache::hashAssetContent(span<gm::byte const> contents) noexcept -> gm::uint64 {
-    auto hasher = fnv1a();
-    hasher(contents);
-    return static_cast<uint64>(hasher);
+    return hash_value<fnv1a>(contents);
 }
 
 auto gm::HashCache::hashAssetStream(fs::Stream& stream) -> gm::uint64 {
@@ -21,7 +19,7 @@ auto gm::HashCache::hashAssetStream(fs::Stream& stream) -> gm::uint64 {
         if (read.empty()) {
             break;
         }
-        hasher(read);
+        hash_append(hasher, read);
     }
     return static_cast<uint64>(hasher);
 }

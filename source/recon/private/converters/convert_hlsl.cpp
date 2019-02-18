@@ -95,7 +95,7 @@ bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zs
     HRESULT hr = D3DCompile2(source.data(), source.size(), ctx.sourceFilePath().c_str(), nullptr, &includeHandler, entryName.c_str(), targetProfileName.c_str(), D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS, 0, 0, nullptr, 0, out_ptr(blob), out_ptr(errors));
     if (!SUCCEEDED(hr)) {
         std::cerr << "Compilation failed for `" << ctx.sourceFilePath() << "':" << entryName << '(' << targetProfileName << ")\n"
-                  << string_view((char*)errors->GetBufferPointer(), errors->GetBufferSize()) << '\n';
+                  << std::string_view((char*)errors->GetBufferPointer(), errors->GetBufferSize()) << '\n';
         return false;
     }
 

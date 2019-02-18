@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "span.h"
 #include "types.h"
 #include "platform.h"
 
@@ -12,8 +11,8 @@ namespace gm {
     public:
         using result_type = uint64;
 
-        inline void operator()(gm::span<byte const> data) noexcept;
-        explicit operator result_type() const noexcept { return _state; }
+        inline constexpr void operator()(char const* data, size_t size) noexcept;
+        explicit constexpr operator result_type() const noexcept { return _state; }
 
     private:
         static constexpr uint64 offset = 14695981039346656037ULL;
@@ -21,11 +20,11 @@ namespace gm {
         result_type _state = offset;
     };
 
-    GM_FORCEINLINE void fnv1a::operator()(span<byte const> data) noexcept {
+    GM_FORCEINLINE constexpr void fnv1a::operator()(char const* data, size_t size) noexcept {
         constexpr uint64 prime = 1099511628211ULL;
 
-        for (std::byte c : data) {
-            _state ^= static_cast<uint64>(c);
+        for (size_t i = 0; i != size; ++i) {
+            _state ^= static_cast<uint64>(data[i]);
             _state *= prime;
         }
     }

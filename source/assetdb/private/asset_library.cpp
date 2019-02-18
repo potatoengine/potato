@@ -3,6 +3,7 @@
 #include "_export.h"
 #include "asset_library.h"
 #include "grimm/foundation/fnv1a.h"
+#include "grimm/foundation/uhash.h"
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include "stream_json.h"

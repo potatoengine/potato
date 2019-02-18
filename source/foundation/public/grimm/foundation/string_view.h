@@ -3,11 +3,8 @@
 #pragma once
 
 #include "numeric_util.h"
-#include "uhash.h"
 #include <cstring>
-#include <cstddef>
 #include <string_view>
-#include <iosfwd>
 
 namespace gm {
     class string_view;
@@ -172,12 +169,6 @@ public:
         return {_data, _size};
     }
 
-    template <typename T>
-    friend auto& operator<<(std::basic_ostream<value_type, T>& os, string_view sv) {
-        os.write(sv._data, sv._size);
-        return os;
-    }
-
 private:
     pointer _data = nullptr;
     size_type _size = 0;
@@ -185,5 +176,5 @@ private:
 
 template <typename HashAlgorithm>
 void gm::hash_append(HashAlgorithm& hasher, string_view const& string) {
-    hasher({reinterpret_cast<std::byte const*>(string.data()), string.size()});
+    hasher(string.data(), string.size());
 }

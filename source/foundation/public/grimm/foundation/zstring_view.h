@@ -110,6 +110,6 @@ namespace gm {
 
     template <typename HashAlgorithm>
     void hash_append(HashAlgorithm& hasher, zstring_view string) {
-        hasher(span<char const>(string.data(), string.size()).as_bytes());
+        hasher(string.data(), string.size());
     }
 } // namespace gm
