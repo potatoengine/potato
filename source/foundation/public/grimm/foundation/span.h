@@ -9,9 +9,6 @@
 #include <array>
 
 namespace gm {
-    template <typename T, typename A>
-    class vector;
-
     template <typename T>
     struct span;
 

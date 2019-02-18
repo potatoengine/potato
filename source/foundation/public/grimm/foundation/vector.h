@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "allocator.h"
 #include "span.h"
 #include "assertion.h"
 #include "iterator_range.h"
@@ -14,17 +13,17 @@
 #include <type_traits>
 
 namespace gm {
-    template <typename T, typename AllocatorT = gm::default_allocator>
+    template <typename T>
     class vector;
 
     template <typename T>
-    vector(std::initializer_list<T>)->vector<T, gm::default_allocator>;
+    vector(std::initializer_list<T>)->vector<T>;
     template <typename IteratorT, typename SentinelT>
-    vector(IteratorT, SentinelT)->vector<decltype(*std::declval<IteratorT>()), gm::default_allocator>;
+    vector(IteratorT, SentinelT)->vector<decltype(*std::declval<IteratorT>())>;
 } // namespace gm
 
-template <typename T, typename AllocatorT>
-class gm::vector : private AllocatorT {
+template <typename T>
+class gm::vector {
     T* _first = nullptr;
     T* _last = nullptr;
     T* _sentinel = nullptr;
@@ -45,17 +44,14 @@ public:
     using rvalue_reference = T&&;
     using size_type = size_t;
     using difference_type = ptrdiff_t;
-    using allocator_type = AllocatorT;
 
     vector() = default;
-    vector(AllocatorT const& allocator)
-        : AllocatorT(allocator) {}
 
     template <typename IteratorT, typename SentinelT>
-    inline explicit vector(IteratorT begin, SentinelT end, AllocatorT const& allocator = AllocatorT{});
-    inline explicit vector(std::initializer_list<T> initial, AllocatorT const& allocator = AllocatorT{});
-    inline explicit vector(size_type size, const_reference initial, AllocatorT const& allocator = AllocatorT{});
-    inline explicit vector(size_type size, AllocatorT const& allocator = AllocatorT{});
+    inline explicit vector(IteratorT begin, SentinelT end);
+    inline explicit vector(std::initializer_list<T> initial);
+    inline explicit vector(size_type size, const_reference initial);
+    inline explicit vector(size_type size);
 
     vector(vector const&) = delete;
     vector& operator=(vector const&) = delete;
@@ -65,7 +61,7 @@ public:
 
     inline ~vector();
 
-    static vector acquire(T* memory, size_type count, AllocatorT const& allocator = AllocatorT{});
+    static vector acquire(T* memory, size_type count);
 
     iterator begin() { return _first; }
     iterator end() { return _last; }
@@ -123,55 +119,47 @@ public:
 
     void pop_back();
 
-    AllocatorT& get_allocator() { return *this; }
-    AllocatorT const& get_allocator() const { return *this; }
-
     operator span<T>() { return span<T>(_first, _last); }
     operator span<T const>() const { return span<T const>(_first, _last); }
 };
 
-template <typename T, typename AllocatorT>
+template <typename T>
 template <typename IteratorT, typename SentinelT>
-gm::vector<T, AllocatorT>::vector(IteratorT begin, SentinelT end, AllocatorT const& allocator)
-    : AllocatorT(allocator) {
+gm::vector<T>::vector(IteratorT begin, SentinelT end) {
     insert(_first, begin, end);
 }
 
-template <typename T, typename AllocatorT>
-gm::vector<T, AllocatorT>::vector(std::initializer_list<T> initial, AllocatorT const& allocator)
-    : AllocatorT(allocator) {
+template <typename T>
+gm::vector<T>::vector(std::initializer_list<T> initial) {
     insert(_first, initial.begin(), initial.end());
 }
 
-template <typename T, typename AllocatorT>
-gm::vector<T, AllocatorT>::vector(size_type size, const_reference initial, AllocatorT const& allocator) : vector(allocator) {
+template <typename T>
+gm::vector<T>::vector(size_type size, const_reference initial) {
     resize(size, initial);
 }
 
-template <typename T, typename AllocatorT>
-gm::vector<T, AllocatorT>::vector(size_type size, AllocatorT const& allocator) : vector(allocator) {
+template <typename T>
+gm::vector<T>::vector(size_type size) {
     resize(size);
 }
 
-template <typename T, typename AllocatorT>
-gm::vector<T, AllocatorT>::vector(vector&& src)
-    : AllocatorT(src), _first(src._first), _last(src._last), _sentinel(src._sentinel) {
+template <typename T>
+gm::vector<T>::vector(vector&& src) : _first(src._first), _last(src._last), _sentinel(src._sentinel) {
     src._sentinel = src._last = src._first = nullptr;
 }
 
-template <typename T, typename AllocatorT>
-gm::vector<T, AllocatorT>::~vector() {
+template <typename T>
+gm::vector<T>::~vector() {
     clear();
     shrink_to_fit();
 }
 
-template <typename T, typename AllocatorT>
-auto gm::vector<T, AllocatorT>::operator=(vector&& src) -> vector& {
+template <typename T>
+auto gm::vector<T>::operator=(vector&& src) -> vector& {
     if (this != &src) {
         clear();
         shrink_to_fit();
-
-        static_cast<AllocatorT&>(*this) = std::move(src);
 
         _first = src._first;
         _last = src._last;
@@ -182,32 +170,32 @@ auto gm::vector<T, AllocatorT>::operator=(vector&& src) -> vector& {
     return *this;
 }
 
-template <typename T, typename AllocatorT>
-auto gm::vector<T, AllocatorT>::acquire(T* memory, size_type count, AllocatorT const& allocator) -> vector {
-    vector rs(allocator);
+template <typename T>
+auto gm::vector<T>::acquire(T* memory, size_type count) -> vector {
+    vector rs;
     rs._first = memory;
     rs._last = rs._sentinel = count;
     return rs;
 }
 
-template <typename T, typename AllocatorT>
-T* gm::vector<T, AllocatorT>::release() {
+template <typename T>
+T* gm::vector<T>::release() {
     GM_ASSERT(_last == _sentinel, "Releasing memory from a vector that has uninitialized capacity; call resize(capacity()) first!");
     T* tmp = _first;
     _first = _last = _sentinel = nullptr;
     return tmp;
 }
 
-template <typename T, typename AllocatorT>
-size_t gm::vector<T, AllocatorT>::_grow(size_t minimum) {
+template <typename T>
+size_t gm::vector<T>::_grow(size_t minimum) {
     size_type capacity = _sentinel - _first;
     capacity += capacity >> 1;
 
     return gm::max(minimum, capacity); // grow by 50%
 }
 
-template <typename T, typename AllocatorT>
-void gm::vector<T, AllocatorT>::_rshift(T* pos, size_t shift) {
+template <typename T>
+void gm::vector<T>::_rshift(T* pos, size_t shift) {
     size_t size = _last - pos;
 
     // copy elements to the new area, as needed
@@ -221,23 +209,23 @@ void gm::vector<T, AllocatorT>::_rshift(T* pos, size_t shift) {
     gm::move_backwards_n(pos, head, pos + head);
 }
 
-template <typename T, typename AllocatorT>
-void gm::vector<T, AllocatorT>::reserve(size_type required) {
+template <typename T>
+void gm::vector<T>::reserve(size_type required) {
     size_type const capacity = _sentinel - _first;
     if (capacity < required) {
-        T* tmp = gm::allocate<T>(get_allocator(), required);
+        T* tmp = new T[required];
         auto const count = _last - _first;
         gm::unitialized_move_n(_first, count, tmp);
         gm::destruct_n(_first, count);
-        gm::deallocate(get_allocator(), _first, capacity);
+        delete[] _first;
         _first = tmp;
         _last = _first + count;
         _sentinel = _first + required;
     }
 }
 
-template <typename T, typename AllocatorT>
-void gm::vector<T, AllocatorT>::resize(size_type new_size) {
+template <typename T>
+void gm::vector<T>::resize(size_type new_size) {
     size_type const size = _last - _first;
     if (size < new_size) {
         reserve(new_size);
@@ -250,8 +238,8 @@ void gm::vector<T, AllocatorT>::resize(size_type new_size) {
     }
 }
 
-template <typename T, typename AllocatorT>
-void gm::vector<T, AllocatorT>::resize(size_type new_size, const_reference init) {
+template <typename T>
+void gm::vector<T>::resize(size_type new_size, const_reference init) {
     size_type const count = _last - _first;
     if (count < new_size) {
         reserve(new_size);
@@ -264,40 +252,40 @@ void gm::vector<T, AllocatorT>::resize(size_type new_size, const_reference init)
     }
 }
 
-template <typename T, typename AllocatorT>
-void gm::vector<T, AllocatorT>::clear() {
+template <typename T>
+void gm::vector<T>::clear() {
     gm::destruct_n(_first, _last - _first);
     _last = _first;
 }
 
-template <typename T, typename AllocatorT>
-void gm::vector<T, AllocatorT>::shrink_to_fit() {
+template <typename T>
+void gm::vector<T>::shrink_to_fit() {
     if (_sentinel == nullptr) { /* do nothing */
     }
     else if (_first == _last) {
-        gm::deallocate(get_allocator(), _first, _sentinel - _first);
+        delete[] _first;
         _first = _last = _sentinel = nullptr;
     }
     else if (_sentinel > _last) {
         auto const size = _last - _first;
-        T* tmp = gm::allocate<T>(get_allocator(), size);
+        T* tmp = new T[size];
         gm::unitialized_move_n(_first, size, tmp);
         gm::destruct_n(_first, size);
-        gm::deallocate(get_allocator(), _first, _sentinel - _first);
+        delete[] _first;
         _first = tmp;
         _sentinel = _last = _first + size;
     }
 }
 
-template <typename T, typename AllocatorT>
+template <typename T>
 template <typename... ParamsT>
-auto gm::vector<T, AllocatorT>::emplace(const_iterator pos, ParamsT&&... params) -> gm::enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
+auto gm::vector<T>::emplace(const_iterator pos, ParamsT&&... params) -> gm::enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
     if (_last == _sentinel) {
         auto const offset = pos - _first;
 
         // grow
-        auto const new_capacity = _grow(_last - _first + 1);
-        T* tmp = gm::allocate<T>(get_allocator(), new_capacity);
+        auto const newCapacity = _grow(_last - _first + 1);
+        T* tmp = new T[newCapacity];
 
         // insert new elements
         new (tmp + offset) value_type(std::forward<ParamsT>(params)...);
@@ -311,12 +299,12 @@ auto gm::vector<T, AllocatorT>::emplace(const_iterator pos, ParamsT&&... params)
         auto const new_size = _last - _first + 1;
 
         // free up old space
-        gm::deallocate(get_allocator(), _first, _sentinel - _first);
+        delete[] _first;
 
         // commit new space
         _first = tmp;
         _last = _first + new_size;
-        _sentinel = _first + new_capacity;
+        _sentinel = _first + newCapacity;
 
         return _first + offset;
     }
@@ -331,15 +319,15 @@ auto gm::vector<T, AllocatorT>::emplace(const_iterator pos, ParamsT&&... params)
     }
 }
 
-template <typename T, typename AllocatorT>
+template <typename T>
 template <typename... ParamsT>
-auto gm::vector<T, AllocatorT>::emplace_back(ParamsT&&... params) -> gm::enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
+auto gm::vector<T>::emplace_back(ParamsT&&... params) -> gm::enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
     if (_last == _sentinel) {
         auto const size = _last - _first;
 
         // grow
         auto const new_capacity = _grow(size + 1);
-        T* tmp = gm::allocate<T>(get_allocator(), new_capacity);
+        T* tmp = new T[new_capacity];
 
         // insert new elements
         new (tmp + size) value_type(std::forward<ParamsT>(params)...);
@@ -348,7 +336,7 @@ auto gm::vector<T, AllocatorT>::emplace_back(ParamsT&&... params) -> gm::enable_
         gm::unitialized_move_n(_first, size, tmp);
 
         // free up old space
-        gm::deallocate(get_allocator(), _first, size);
+        delete[] _first;
 
         // commit new space
         _first = tmp;
@@ -362,9 +350,9 @@ auto gm::vector<T, AllocatorT>::emplace_back(ParamsT&&... params) -> gm::enable_
     }
 }
 
-template <typename T, typename AllocatorT>
+template <typename T>
 template <typename IteratorT, typename SentinelT>
-auto gm::vector<T, AllocatorT>::insert(const_iterator pos, IteratorT begin, SentinelT end) -> iterator {
+auto gm::vector<T>::insert(const_iterator pos, IteratorT begin, SentinelT end) -> iterator {
     GM_ASSERT(begin < _first || begin >= _last, "Inserting a sub-range of a vector into itself is not supported");
 
     auto const count = std::distance(begin, end);
@@ -373,8 +361,8 @@ auto gm::vector<T, AllocatorT>::insert(const_iterator pos, IteratorT begin, Sent
         auto const offset = pos - _first;
 
         // grow
-        auto const new_capacity = _grow(_last - _first + count);
-        T* tmp = gm::allocate<T>(get_allocator(), new_capacity);
+        auto const newCapacity = _grow(_last - _first + count);
+        T* tmp = new T[newCapacity];
 
         // insert new elements
         gm::unitialized_copy_n(begin, count, tmp + offset);
@@ -388,12 +376,12 @@ auto gm::vector<T, AllocatorT>::insert(const_iterator pos, IteratorT begin, Sent
         auto const new_size = _last - _first + count;
 
         // free up old space
-        gm::deallocate(get_allocator(), _first, _sentinel - _first);
+        delete[] _first;
 
         // commit new space
         _first = tmp;
         _last = _first + new_size;
-        _sentinel = _first + new_capacity;
+        _sentinel = _first + newCapacity;
 
         return _first + offset;
     }
@@ -405,16 +393,16 @@ auto gm::vector<T, AllocatorT>::insert(const_iterator pos, IteratorT begin, Sent
     }
 }
 
-template <typename T, typename AllocatorT>
-auto gm::vector<T, AllocatorT>::erase(const_iterator pos) -> iterator {
+template <typename T>
+auto gm::vector<T>::erase(const_iterator pos) -> iterator {
     iterator mpos = const_cast<iterator>(pos);
     gm::move_n(mpos + 1, _last - mpos - 1, mpos);
     pop_back();
     return mpos;
 }
 
-template <typename T, typename AllocatorT>
-auto gm::vector<T, AllocatorT>::erase(const_iterator begin, const_iterator end) -> iterator {
+template <typename T>
+auto gm::vector<T>::erase(const_iterator begin, const_iterator end) -> iterator {
     iterator mbegin = const_cast<iterator>(begin);
     auto const count = end - begin;
     gm::move_n(mbegin + count, _last - begin - count, mbegin);
@@ -423,7 +411,7 @@ auto gm::vector<T, AllocatorT>::erase(const_iterator begin, const_iterator end) 
     return mbegin;
 }
 
-template <typename T, typename AllocatorT>
-void gm::vector<T, AllocatorT>::pop_back() {
+template <typename T>
+void gm::vector<T>::pop_back() {
     (--_last)->~value_type();
 }

@@ -21,7 +21,7 @@ namespace gm {
     template <typename HashAlgorithm = default_hash, typename T>
     auto hash_value(T const& value) -> typename HashAlgorithm::result_type;
 
-    template <typename, typename>
+    template <typename>
     class vector;
 } // namespace gm
 
@@ -58,13 +58,13 @@ namespace gm {
     // note: [[1, 2], 3] will hash the same as [1, [2, 3]]
     //       likewise, ["a", "bc"] will hash the same as ["ab", "c"]
 
-    template <typename HashAlgorithm, typename ValueT, typename AllocatorT>
-    inline enable_if_t<is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT, AllocatorT> const& container) {
+    template <typename HashAlgorithm, typename ValueT>
+    inline enable_if_t<is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT> const& container) {
         hasher({container.data(), container.size() * sizeof(ValueT)});
     }
 
     template <typename HashAlgorithm, typename ValueT, typename AllocatorT>
-    inline enable_if_t<!is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT, AllocatorT> const& container) {
+    inline enable_if_t<!is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT> const& container) {
         for (auto&& value : container)
             hash_append(hasher, value);
     }
