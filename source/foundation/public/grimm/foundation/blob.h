@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "allocator.h"
+#include "assertion.h"
 #include "span.h"
+#include "types.h"
 
 namespace gm {
     class blob {
@@ -16,11 +17,9 @@ namespace gm {
         using const_pointer_chars = char const*;
         using size_type = std::size_t;
 
-        static constexpr size_type alignment = alignof(double);
-
         blob() = default;
         explicit blob(size_type size) : _size(size) {
-            _data = default_allocator{}.allocate(size, alignment);
+            _data = new byte[size];
         }
         explicit blob(view<byte> data) : blob(data.size()) {
             std::memcpy(_data, data.data(), _size);
@@ -32,7 +31,7 @@ namespace gm {
         }
 
         ~blob() {
-            default_allocator{}.deallocate(_data, _size, 32);
+            delete[] _data;
         }
 
         blob& operator=(blob&& rhs) noexcept {
@@ -57,7 +56,7 @@ namespace gm {
         explicit operator bool() const noexcept { return _size != 0; }
 
         void reset() {
-            default_allocator{}.deallocate(_data, _size, alignment);
+            delete[] _data;
             _data = nullptr;
             _size = 0;
         }
