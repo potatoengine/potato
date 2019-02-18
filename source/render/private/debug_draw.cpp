@@ -8,14 +8,8 @@
 #include <grimm/gpu/device.h>
 #include <grimm/gpu/pipeline_state.h>
 
-struct DebugVert {
-    glm::vec3 position;
-    glm::vec4 color;
-    float linger;
-};
-
 static std::mutex debugLock;
-static gm::vector<DebugVert> debugVertices;
+static gm::vector<gm::DebugDrawVertex> debugVertices;
 
 void GM_VECTORCALL gm::drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color, float lingerSeconds) {
     std::unique_lock _(debugLock);
@@ -24,26 +18,23 @@ void GM_VECTORCALL gm::drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 c
     debugVertices.push_back({end, color, lingerSeconds});
 }
 
-void gm::flushDebugDraw(gpu::Device& device, gpu::CommandList& commandList, gpu::Buffer& buffer, float frameTime) {
-    uint32 drawCount = 0;
+//gpu::Device &device, gpu::CommandList &commandList, gpu::Buffer &buffer
 
-    {
-        std::unique_lock _(debugLock);
-        commandList.update(&buffer, span{debugVertices.data(), debugVertices.size()}.as_bytes());
-        drawCount = static_cast<uint32>(debugVertices.size());
+void gm::dumpDebugDraw(delegate_ref<void(view<DebugDrawVertex>)> callback) {
+    std::unique_lock _(debugLock);
+    callback(span{debugVertices.data(), debugVertices.size()});
+}
 
-        decltype(debugVertices.size()) outCount = 0;
-        for (auto const& vert : debugVertices) {
-            if (vert.linger >= frameTime) {
-                debugVertices[outCount] = vert;
-                debugVertices[outCount++].linger -= frameTime;
-            }
+void gm::flushDebugDraw(float frameTime) {
+    std::unique_lock _(debugLock);
+
+    decltype(debugVertices.size()) outCount = 0;
+    for (auto const& vert : debugVertices) {
+        if (vert.linger >= frameTime) {
+            debugVertices[outCount] = vert;
+            debugVertices[outCount++].linger -= frameTime;
         }
-
-        debugVertices.resize(outCount);
     }
 
-    commandList.bindVertexBuffer(0, &buffer, sizeof(DebugVert));
-    commandList.setPrimitiveTopology(gpu::PrimitiveTopology::Lines);
-    commandList.draw(drawCount);
+    debugVertices.resize(outCount);
 }

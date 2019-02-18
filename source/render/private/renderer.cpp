@@ -74,9 +74,28 @@ void gm::Renderer::beginFrame() {
 }
 
 void gm::Renderer::endFrame(float frameTime) {
+    if (_debugLineBuffer == nullptr) {
+        _debugLineBuffer = _device->createBuffer(gpu::BufferType::Vertex, 64 * 1024);
+    }
+
+    uint32 debugVertexCount = 0;
+    dumpDebugDraw([this, &debugVertexCount](auto debugVertices) {
+        if (debugVertices.empty()) {
+            return;
+        }
+
+        _commandList->update(_debugLineBuffer.get(), debugVertices.as_bytes());
+        debugVertexCount = static_cast<uint32>(debugVertices.size());
+    });
+
     auto ctx = context();
     _debugLineMaterial->bindMaterialToRender(ctx);
-    flushDebugDraw(*_device, *_commandList, *_debugLineBuffer, frameTime);
+    _commandList->bindVertexBuffer(0, _debugLineBuffer.get(), sizeof(DebugDrawVertex));
+    _commandList->setPrimitiveTopology(gpu::PrimitiveTopology::Lines);
+    _commandList->draw(debugVertexCount);
+
+    flushDebugDraw(frameTime);
+
     _commandList->finish();
     _device->execute(_commandList.get());
 }
