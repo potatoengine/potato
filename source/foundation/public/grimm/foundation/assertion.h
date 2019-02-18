@@ -7,8 +7,6 @@
 #include "string_format.h"
 #include "fixed_string_writer.h"
 
-#include <cstdlib>
-
 #if defined(NDEBUG)
 
 #    define GM_ASSERT(condition, ...) \

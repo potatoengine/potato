@@ -22,7 +22,7 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::blob") {
 
         std::memcpy(b.data(), "Hello!", 7);
 
-        DOCTEST_CHECK_EQ(b.data_chars(), "Hello!");
+        DOCTEST_CHECK_EQ(reinterpret_cast<char const*>(b.data()), "Hello!");
     }
 
     DOCTEST_TEST_CASE("reset") {

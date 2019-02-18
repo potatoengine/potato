@@ -4,11 +4,8 @@
 
 #include "_export.h"
 #include "span.h"
-#include "delegate.h"
 #include "fixed_string.h"
-#include "platform.h"
 #include "types.h"
-#include <array>
 
 namespace gm::callstack {
     struct TraceRecord {

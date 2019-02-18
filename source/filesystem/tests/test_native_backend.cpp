@@ -38,7 +38,7 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
         byte buffer[1024];
         span<byte> bspan(buffer);
         inFile.read(bspan);
-        string_view text(reinterpret_cast<char*>(buffer), bspan.size());
+        string_view text(bspan.as_chars().data(), bspan.size());
 
         DOCTEST_CHECK_EQ(text.first(15), "This is a test.");
     }

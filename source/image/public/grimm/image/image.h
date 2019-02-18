@@ -41,7 +41,7 @@ namespace gm::image {
     class Image : public ImageView {
     public:
         Image() = default;
-        Image(ImageFormat format, gm::blob data, int width, int height, int stride) noexcept : ImageView(format, data.data_bytes(), width, height, stride), _data(std::move(data)) {}
+        Image(ImageFormat format, gm::blob data, int width, int height, int stride) noexcept : ImageView(format, data.data(), width, height, stride), _data(std::move(data)) {}
 
     private:
         gm::blob _data;

@@ -192,7 +192,7 @@ void gm::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& commandList)
     };
 
     auto constants = commandList.map(_constantBuffer.get(), sizeof(mvp));
-    std::memcpy(constants.data(), mvp, constants.size_bytes());
+    std::memcpy(constants.data(), mvp, constants.size());
     commandList.unmap(_constantBuffer.get(), constants);
 
     commandList.bindIndexBuffer(_indexBuffer.get(), gpu::IndexType::Unsigned16, 0);

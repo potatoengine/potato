@@ -39,7 +39,7 @@ namespace gm::fs {
                     return Result::InvalidArgument;
                 }
 
-                _stream.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+                _stream.read(buffer.as_chars().data(), buffer.size());
                 buffer = buffer.first(_stream.gcount());
                 if (_stream.eof()) {
                     _stream.clear();
@@ -79,7 +79,7 @@ namespace gm::fs {
             }
 
             Result write(span<byte const> buffer) override {
-                _stream.write(reinterpret_cast<char const*>(buffer.data()), buffer.size());
+                _stream.write(buffer.as_chars().data(), buffer.size());
                 return Result::Success;
             }
 

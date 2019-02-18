@@ -233,9 +233,9 @@ void gm::gpu::d3d11::CommandListD3D11::update(Buffer* buffer, span<gm::byte cons
 
     auto target = map(buffer, data.size(), offset);
 
-    GM_ASSERT(data.size_bytes() <= target.size());
+    GM_ASSERT(data.size() <= target.size());
 
-    std::memcpy(target.data(), data.data(), data.size_bytes());
+    std::memcpy(target.data(), data.data(), data.size());
     unmap(buffer, target);
 }
 

@@ -103,7 +103,7 @@ bool gm::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSys
         return false;
     }
 
-    return parseConfigString(config, {text.data_chars(), text.size()}, path);
+    return parseConfigString(config, text.as_string_view(), path);
 }
 
 bool gm::recon::parseConfigString(ConverterConfig& config, string_view json, zstring_view filename) {

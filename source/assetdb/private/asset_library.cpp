@@ -12,9 +12,8 @@ static constexpr gm::uint64 libraryRevision = 3;
 gm::AssetLibrary::~AssetLibrary() = default;
 
 auto gm::AssetLibrary::pathToAssetId(string_view path) const -> AssetId {
-    fnv1a hasher;
-    hasher({reinterpret_cast<byte const*>(path.data()), path.size()});
-    return static_cast<AssetId>(static_cast<uint64>(hasher));
+    auto hash = hash_value<fnv1a>(path);
+    return static_cast<AssetId>(hash);
 }
 
 auto gm::AssetLibrary::assetIdToPath(AssetId assetId) const -> string_view {

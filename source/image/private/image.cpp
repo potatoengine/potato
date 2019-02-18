@@ -12,7 +12,7 @@ static int stb_read(void* user, char* data, int size) {
         return 0;
     }
 
-    return static_cast<int>(bytes.size_bytes());
+    return static_cast<int>(bytes.size());
 }
 
 static void stb_skip(void* user, int n) {

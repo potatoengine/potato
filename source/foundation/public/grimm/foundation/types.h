@@ -25,5 +25,8 @@ namespace gm {
         using uintptr = std::uintptr_t;
 
         using byte = std::byte;
+
+        using size_t = std::size_t;
+        using ssize_t = std::ptrdiff_t;
     } // namespace types
 } // namespace gm

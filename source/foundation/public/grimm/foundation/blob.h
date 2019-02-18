@@ -5,17 +5,14 @@
 #include "assertion.h"
 #include "span.h"
 #include "types.h"
+#include "string_view.h"
 
 namespace gm {
     class blob {
     public:
-        using pointer = void*;
-        using const_pointer = void const*;
-        using pointer_bytes = std::byte*;
-        using const_pointer_bytes = std::byte const*;
-        using pointer_chars = char*;
-        using const_pointer_chars = char const*;
-        using size_type = std::size_t;
+        using pointer = byte*;
+        using const_pointer = byte const*;
+        using size_type = size_t;
 
         blob() = default;
         explicit blob(size_type size) : _size(size) {
@@ -43,14 +40,7 @@ namespace gm {
         pointer data() noexcept { return _data; }
         const_pointer data() const noexcept { return _data; }
 
-        pointer_bytes data_bytes() noexcept { return reinterpret_cast<pointer_bytes>(_data); }
-        const_pointer_bytes data_bytes() const noexcept { return reinterpret_cast<const_pointer_bytes>(_data); }
-
-        pointer_chars data_chars() noexcept { return reinterpret_cast<pointer_chars>(_data); }
-        const_pointer_chars data_chars() const noexcept { return reinterpret_cast<const_pointer_chars>(_data); }
-
         size_type size() const noexcept { return _size; }
-        size_type size_bytes() const noexcept { return _size; }
 
         bool empty() const noexcept { return _size == 0; }
         explicit operator bool() const noexcept { return _size != 0; }
@@ -68,8 +58,8 @@ namespace gm {
             return tmp;
         }
 
-        /*implicit*/ operator span<byte>() noexcept { return {reinterpret_cast<pointer_bytes>(_data), _size}; }
-        /*implicit*/ operator span<byte const>() const noexcept { return {reinterpret_cast<const_pointer_bytes>(_data), _size}; }
+        span<byte const> as_span() const noexcept { return span{_data, _size}; }
+        string_view as_string_view() const noexcept { return string_view{reinterpret_cast<char const*>(_data), _size}; }
 
     private:
         pointer _data = nullptr;

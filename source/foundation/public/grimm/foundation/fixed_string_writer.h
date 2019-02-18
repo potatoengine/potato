@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "grimm/foundation/string_view.h"
+#include "string_view.h"
 
 namespace gm {
     template <std::size_t Capacity>
