@@ -150,7 +150,7 @@ namespace {
 
             _yaw = glm::mod(_yaw + relativeMotion.x, glm::two_pi<float>());
             _pitch = glm::clamp(_pitch - relativeMotion.y, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
-            _boomLength -= relativeMotion.z;
+            _boomLength = glm::clamp(_boomLength - relativeMotion.z, 1.f, 100.f);
 
             glm::vec3 pos{0, 0, _boomLength};
             pos = glm::rotate(pos, _pitch, {1, 0, 0});
@@ -163,7 +163,7 @@ namespace {
         glm::vec3 _target = {0, 5, 0};
         float _boomLength = 10;
         float _yaw = 0;
-        float _pitch = -45;
+        float _pitch = -glm::quarter_pi<float>();
     };
 } // namespace
 
@@ -182,7 +182,7 @@ void gm::ShellApp::run() {
     Camera camera;
     camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
 
-    box<CameraController> controller = make_box<FlyCameraController>();
+    box<CameraController> controller = make_box<ArcBallCameraController>();
     glm::vec3 arcCenter = {0, 0, 0};
 
     float objRotateInput = 0;
