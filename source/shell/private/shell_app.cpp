@@ -33,6 +33,7 @@
 #include <imgui.h>
 
 #include <glm/vec3.hpp>
+#include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
@@ -112,12 +113,12 @@ namespace {
     class CameraController {
     public:
         virtual ~CameraController() = default;
-        virtual void apply(gm::Camera& camera, glm::vec3 relativeMovement, glm::vec2 relativeMotion, float frameTime) = 0;
+        virtual void apply(gm::Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) = 0;
     };
 
     class FlyCameraController : public CameraController {
     public:
-        void apply(gm::Camera& camera, glm::vec3 relativeMovement, glm::vec2 relativeMotion, float frameTime) override {
+        void apply(gm::Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) override {
             glm::vec3 movement =
                 camera.right() * relativeMovement.x +
                 camera.up() * relativeMovement.y +
@@ -125,8 +126,8 @@ namespace {
 
             glm::vec3 pos = camera.position() + movement * _moveSpeedPerSec * frameTime;
 
-            _yaw -= relativeMotion.x;
-            _pitch -= relativeMotion.y;
+            _yaw = glm::mod(_yaw - relativeMotion.x, glm::two_pi<float>());
+            _pitch = glm::clamp(_pitch - relativeMotion.y, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
 
             glm::vec3 view{0, 0, -1};
             view = glm::rotate(view, _pitch, {1, 0, 0});
@@ -144,11 +145,12 @@ namespace {
 
     class ArcBallCameraController : public CameraController {
     public:
-        void apply(gm::Camera& camera, glm::vec3 relativeMovement, glm::vec2 relativeMotion, float frameTime) override {
+        void apply(gm::Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) override {
             _target += relativeMovement * 10.f * frameTime;
 
-            _yaw += relativeMotion.x;
-            _pitch -= relativeMotion.y;
+            _yaw = glm::mod(_yaw + relativeMotion.x, glm::two_pi<float>());
+            _pitch = glm::clamp(_pitch - relativeMotion.y, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
+            _boomLength -= relativeMotion.z;
 
             glm::vec3 pos{0, 0, _boomLength};
             pos = glm::rotate(pos, _pitch, {1, 0, 0});
@@ -186,6 +188,8 @@ void gm::ShellApp::run() {
     float objRotateInput = 0;
 
     while (isRunning()) {
+        int wheelAction = 0;
+
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
             switch (ev.type) {
@@ -209,12 +213,15 @@ void gm::ShellApp::run() {
                     controller = make_box<ArcBallCameraController>();
                 }
                 break;
+            case SDL_MOUSEWHEEL:
+                wheelAction += (ev.wheel.y > 0 ? 1 : ev.wheel.y < 0 ? -1 : 0) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1 : 1);
+                break;
             }
             _drawImgui.handleEvent(ev);
         }
 
         glm::vec3 relativeMovement = {0, 0, 0};
-        glm::vec2 relativeMotion = {0, 0};
+        glm::vec3 relativeMotion = {0, 0, 0};
 
         if (!imguiIO.WantCaptureKeyboard) {
             auto keys = SDL_GetKeyboardState(nullptr);
@@ -231,6 +238,7 @@ void gm::ShellApp::run() {
             relativeMotion.x = static_cast<float>(relx) / 800;
             relativeMotion.y = static_cast<float>(rely) / 600;
         }
+        relativeMotion.z = static_cast<float>(wheelAction);
 
         controller->apply(camera, relativeMovement, relativeMotion, frameTime);
 
