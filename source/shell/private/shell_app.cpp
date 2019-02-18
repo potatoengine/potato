@@ -2,6 +2,7 @@
 
 #include "shell_app.h"
 #include "camera.h"
+#include "camera_controller.h"
 
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/platform.h"
@@ -108,64 +109,6 @@ int gm::ShellApp::initialize() {
 
     return 0;
 }
-
-namespace {
-    class CameraController {
-    public:
-        virtual ~CameraController() = default;
-        virtual void apply(gm::Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) = 0;
-    };
-
-    class FlyCameraController : public CameraController {
-    public:
-        void apply(gm::Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) override {
-            glm::vec3 movement =
-                camera.right() * relativeMovement.x +
-                camera.up() * relativeMovement.y +
-                camera.view() * relativeMovement.z;
-
-            glm::vec3 pos = camera.position() + movement * _moveSpeedPerSec * frameTime;
-
-            _yaw = glm::mod(_yaw - relativeMotion.x, glm::two_pi<float>());
-            _pitch = glm::clamp(_pitch - relativeMotion.y, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
-
-            glm::vec3 view{0, 0, -1};
-            view = glm::rotate(view, _pitch, {1, 0, 0});
-            view = glm::rotate(view, _yaw, {0, 1, 0});
-
-            camera.lookAt(pos, pos + view, {0, 1, 0});
-        }
-
-    private:
-        float _moveSpeedPerSec = 10;
-        float _rotateRadiansPerSec = 1;
-        float _yaw = 0;
-        float _pitch = 0;
-    };
-
-    class ArcBallCameraController : public CameraController {
-    public:
-        void apply(gm::Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) override {
-            _target += relativeMovement * 10.f * frameTime;
-
-            _yaw = glm::mod(_yaw + relativeMotion.x, glm::two_pi<float>());
-            _pitch = glm::clamp(_pitch - relativeMotion.y, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
-            _boomLength = glm::clamp(_boomLength - relativeMotion.z, 1.f, 100.f);
-
-            glm::vec3 pos{0, 0, _boomLength};
-            pos = glm::rotate(pos, _pitch, {1, 0, 0});
-            pos = glm::rotate(pos, _yaw, {0, 1, 0});
-
-            camera.lookAt(pos + _target, _target, {0, 1, 0});
-        }
-
-    private:
-        glm::vec3 _target = {0, 5, 0};
-        float _boomLength = 10;
-        float _yaw = 0;
-        float _pitch = -glm::quarter_pi<float>();
-    };
-} // namespace
 
 void gm::ShellApp::run() {
     auto& imguiIO = ImGui::GetIO();
