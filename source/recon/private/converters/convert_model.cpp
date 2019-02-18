@@ -40,7 +40,7 @@ bool gm::recon::ModelConverter::convert(Context& ctx) {
     file.close();
 
     Assimp::Importer importer;
-    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), aiProcessPreset_TargetRealtime_Fast);
+    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), aiProcess_FlipWindingOrder | aiProcessPreset_TargetRealtime_Fast);
     if (scene == nullptr) {
         std::cerr << "Failed to decode\n";
         return false;

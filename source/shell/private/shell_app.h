@@ -10,7 +10,7 @@
 namespace gm {
     class ShellApp;
     class Renderer;
-    class Camera;
+    class RenderCamera;
     class Node;
 } // namespace gm
 
@@ -43,7 +43,7 @@ private:
     rc<gpu::Device> _device;
     rc<gpu::SwapChain> _swapChain;
     box<Renderer> _renderer;
-    box<Camera> _camera;
+    box<RenderCamera> _camera;
     box<Node> _root;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     DrawImgui _drawImgui;

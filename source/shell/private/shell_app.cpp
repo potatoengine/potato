@@ -1,6 +1,9 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
 #include "shell_app.h"
+#include "camera.h"
+#include "camera_controller.h"
+
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/platform.h"
 #include "grimm/foundation/unique_resource.h"
@@ -21,6 +24,7 @@
 #include "grimm/render/material.h"
 #include "grimm/render/shader.h"
 #include "grimm/render/draw_imgui.h"
+#include "grimm/render/debug_draw.h"
 
 #include <fmt/chrono.h>
 #include <chrono>
@@ -28,8 +32,11 @@
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
 #include <imgui.h>
+
 #include <glm/vec3.hpp>
+#include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 gm::ShellApp::ShellApp() = default;
 
@@ -86,13 +93,13 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _camera = make_box<Camera>(_swapChain);
+    _camera = make_box<RenderCamera>(_swapChain);
 
     auto material = _renderer->loadMaterialSync("resources/materials/basic.json");
     auto mesh = _renderer->loadMeshSync("resources/meshes/cube.model");
     auto model = make_box<Model>(std::move(mesh), std::move(material));
     _root = make_box<Node>(std::move(model));
-    _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 0, -5}));
+    _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 5, 0}));
 
     auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
     auto imguiPixelShader = _renderer->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
@@ -112,10 +119,20 @@ void gm::ShellApp::run() {
     auto duration = now - now;
     float frameTime = 0;
 
-    glm::mat4x4 cameraTransform = translate(glm::identity<glm::mat4x4>(), {0, 0, -4});
-    glm::vec3 movement = {0, 0, 0};
+    float camSpeed = 10;
+    float camRotSpeed = 800;
+
+    Camera camera;
+    camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+
+    box<CameraController> controller = make_box<ArcBallCameraController>();
+    glm::vec3 arcCenter = {0, 0, 0};
+
+    float objRotateInput = 0;
 
     while (isRunning()) {
+        int wheelAction = 0;
+
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
             switch (ev.type) {
@@ -132,23 +149,46 @@ void gm::ShellApp::run() {
                 }
                 break;
             case SDL_KEYDOWN:
-            case SDL_KEYUP: {
-                int count = 0;
-                auto keys = SDL_GetKeyboardState(&count);
-                movement.x = static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]);
-                movement.y = static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LCTRL]);
-                movement.z = static_cast<float>(keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]);
+                if (ev.key.keysym.scancode == SDL_SCANCODE_F) {
+                    controller = make_box<FlyCameraController>();
+                }
+                if (ev.key.keysym.scancode == SDL_SCANCODE_B) {
+                    controller = make_box<ArcBallCameraController>();
+                }
                 break;
-            }
+            case SDL_MOUSEWHEEL:
+                wheelAction += (ev.wheel.y > 0 ? 1 : ev.wheel.y < 0 ? -1 : 0) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1 : 1);
+                break;
             }
             _drawImgui.handleEvent(ev);
         }
 
-        cameraTransform = glm::translate(cameraTransform, -movement * frameTime);
+        glm::vec3 relativeMovement = {0, 0, 0};
+        glm::vec3 relativeMotion = {0, 0, 0};
+
+        if (!imguiIO.WantCaptureKeyboard) {
+            auto keys = SDL_GetKeyboardState(nullptr);
+            relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
+                                static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LCTRL]),
+                                static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
+        }
+
+        int relx, rely;
+        int buttons = SDL_GetRelativeMouseState(&relx, &rely);
+        bool isMouseMove = buttons != 0 && !imguiIO.WantCaptureMouse;
+        SDL_SetRelativeMouseMode(isMouseMove ? SDL_TRUE : SDL_FALSE);
+        if (isMouseMove) {
+            relativeMotion.x = static_cast<float>(relx) / 800;
+            relativeMotion.y = static_cast<float>(rely) / 600;
+        }
+        relativeMotion.z = static_cast<float>(wheelAction);
+
+        controller->apply(camera, relativeMovement, relativeMotion, frameTime);
 
         const float radiansPerSec = 2;
         const float rotateRads = radiansPerSec * frameTime;
-        _root->transform(glm::rotate(glm::rotate(_root->transform(), rotateRads, {0, 1, 0}), rotateRads, {1, 0, 0}));
+        objRotateInput += frameTime;
+        _root->transform(glm::rotate(glm::rotate(glm::translate(glm::identity<glm::mat4x4>(), {0, 5, 0}), objRotateInput, {0, 1, 0}), std::sin(objRotateInput), {1, 0, 0}));
 
         gpu::Viewport viewport;
         int width, height;
@@ -169,6 +209,19 @@ void gm::ShellApp::run() {
             ImGui::EndMainMenuBar();
         }
 
+        if (ImGui::Begin("Camera")) {
+            auto pos = camera.position();
+            auto view = camera.view();
+            auto right = camera.right();
+            auto up = camera.up();
+            ImGui::InputFloat3("Position", &pos.x);
+            ImGui::InputFloat3("View", &view.x);
+            ImGui::InputFloat3("Right", &right.x);
+            ImGui::InputFloat3("Up", &up.x);
+            camera.lookAt(pos, pos + view, up);
+        }
+        ImGui::End();
+
         if (ImGui::Begin("Statistics")) {
             auto micro = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
 
@@ -181,15 +234,21 @@ void gm::ShellApp::run() {
         }
         ImGui::End();
 
+        for (int i = -10; i <= 10; ++i) {
+            drawDebugLine({-10, 0, i}, {10, 0, i}, i == 0 ? glm::vec4{1, 0, 0, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
+            drawDebugLine({i, 0, -10}, {i, 0, 10}, i == 0 ? glm ::vec4{0, 0, 1, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
+        }
+        drawDebugLine({0, -10, 0}, {0, +10, 0}, {0, 1, 0, 1});
+
         _renderer->beginFrame();
         auto ctx = _renderer->context();
-        _camera->beginFrame(ctx, cameraTransform);
+        _camera->beginFrame(ctx, camera.matrix());
         _root->render(ctx);
 
         _drawImgui.endFrame(*_device, _renderer->commandList());
 
         _camera->endFrame(ctx);
-        _renderer->endFrame();
+        _renderer->endFrame(frameTime);
         _swapChain->present();
 
         auto endFrame = clock.now();

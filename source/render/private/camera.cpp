@@ -18,11 +18,11 @@ namespace {
     };
 } // namespace
 
-gm::Camera::Camera(rc<gpu::SwapChain> swapChain) : _swapChain(std::move(swapChain)) {}
+gm::RenderCamera::RenderCamera(rc<gpu::SwapChain> swapChain) : _swapChain(std::move(swapChain)) {}
 
-gm::Camera::~Camera() = default;
+gm::RenderCamera::~RenderCamera() = default;
 
-void gm::Camera::resetSwapChain(rc<gpu::SwapChain> swapChain) {
+void gm::RenderCamera::resetSwapChain(rc<gpu::SwapChain> swapChain) {
     _swapChain = std::move(swapChain);
     _backBuffer.reset();
     _depthStencilBuffer.reset();
@@ -30,7 +30,7 @@ void gm::Camera::resetSwapChain(rc<gpu::SwapChain> swapChain) {
     _dsv.reset();
 }
 
-void gm::Camera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform) {
+void gm::RenderCamera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform) {
     if (_rtv == nullptr && _swapChain != nullptr) {
         _backBuffer = _swapChain->getBuffer(0);
         _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
@@ -78,5 +78,5 @@ void gm::Camera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform) {
     ctx.commandList.setViewport(viewport);
 }
 
-void gm::Camera::endFrame(RenderContext& ctx) {
+void gm::RenderCamera::endFrame(RenderContext& ctx) {
 }

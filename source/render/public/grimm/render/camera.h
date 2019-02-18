@@ -19,10 +19,10 @@ namespace gm::gpu {
 namespace gm {
     class RenderContext;
 
-    class Camera {
+    class RenderCamera {
     public:
-        GM_RENDER_API explicit Camera(rc<gpu::SwapChain> swapChain = nullptr);
-        GM_RENDER_API ~Camera();
+        GM_RENDER_API explicit RenderCamera(rc<gpu::SwapChain> swapChain = nullptr);
+        GM_RENDER_API ~RenderCamera();
 
         GM_RENDER_API void resetSwapChain(rc<gpu::SwapChain> swapChain);
 

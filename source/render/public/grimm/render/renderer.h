@@ -35,7 +35,7 @@ namespace gm {
         Renderer& operator=(Renderer const&) = delete;
 
         GM_RENDER_API void beginFrame();
-        GM_RENDER_API void endFrame();
+        GM_RENDER_API void endFrame(float frameTime);
 
         GM_RENDER_API RenderContext context();
 
@@ -53,6 +53,8 @@ namespace gm {
         rc<gpu::Device> _device;
         box<gpu::CommandList> _commandList;
         box<gpu::Buffer> _frameDataBuffer;
+        rc<Material> _debugLineMaterial;
+        box<gpu::Buffer> _debugLineBuffer;
         fs::FileSystem _fileSystem;
         std::thread _renderThread;
         concurrency::ConcurrentQueue<RenderTask> _taskQueue;

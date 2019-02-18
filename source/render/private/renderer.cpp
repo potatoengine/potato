@@ -7,6 +7,7 @@
 #include "mesh.h"
 #include "shader.h"
 #include "texture.h"
+#include "debug_draw.h"
 #include <grimm/gpu/buffer.h>
 #include <grimm/gpu/command_list.h>
 #include <grimm/gpu/device.h>
@@ -19,6 +20,7 @@
 #include <rapidjson/istreamwrapper.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include <fstream>
 #include <chrono>
 
@@ -32,6 +34,9 @@ namespace {
 
 gm::Renderer::Renderer(fs::FileSystem fileSystem, rc<gpu::Device> device) : _device(std::move(device)), _fileSystem(std::move(fileSystem)), _renderThread([this] { _renderMain(); }) {
     _commandList = _device->createCommandList();
+
+    _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.json");
+    _debugLineBuffer = _device->createBuffer(gpu::BufferType::Vertex, 64 * 1024);
 }
 
 gm::Renderer::~Renderer() {
@@ -68,7 +73,29 @@ void gm::Renderer::beginFrame() {
     _commandList->bindConstantBuffer(0, _frameDataBuffer.get(), gpu::ShaderStage::All);
 }
 
-void gm::Renderer::endFrame() {
+void gm::Renderer::endFrame(float frameTime) {
+    if (_debugLineBuffer == nullptr) {
+        _debugLineBuffer = _device->createBuffer(gpu::BufferType::Vertex, 64 * 1024);
+    }
+
+    uint32 debugVertexCount = 0;
+    dumpDebugDraw([this, &debugVertexCount](auto debugVertices) {
+        if (debugVertices.empty()) {
+            return;
+        }
+
+        _commandList->update(_debugLineBuffer.get(), debugVertices.as_bytes());
+        debugVertexCount = static_cast<uint32>(debugVertices.size());
+    });
+
+    auto ctx = context();
+    _debugLineMaterial->bindMaterialToRender(ctx);
+    _commandList->bindVertexBuffer(0, _debugLineBuffer.get(), sizeof(DebugDrawVertex));
+    _commandList->setPrimitiveTopology(gpu::PrimitiveTopology::Lines);
+    _commandList->draw(debugVertexCount);
+
+    flushDebugDraw(frameTime);
+
     _commandList->finish();
     _device->execute(_commandList.get());
 }
@@ -89,7 +116,7 @@ auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     stream.close();
 
     Assimp::Importer importer;
-    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), 0, "assbin");
+    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), aiProcess_FlipWindingOrder, "assbin");
     if (scene == nullptr) {
         zstring_view error = importer.GetErrorString();
         return {};
