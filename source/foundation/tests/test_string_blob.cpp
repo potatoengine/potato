@@ -1,5 +1,4 @@
 #include "grimm/foundation/string_blob.h"
-#include "grimm/foundation/allocator.h"
 #include "doctest.h"
 #include <ostream>
 
