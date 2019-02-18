@@ -79,7 +79,7 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::string") {
     }
 
     DOCTEST_TEST_CASE("take_ownership") {
-        char* cs = (char*)string_allocator{}.allocate(12);
+        char* cs = new char[12];
         std::memcpy(cs, "hello world", 12);
 
         string s = string::take_ownership(cs, 11);

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "allocator.h"
 #include "string_view.h"
 #include "zstring_view.h"
 
@@ -237,9 +236,9 @@ public:
     }
 
 private:
-    static pointer _copy(const_pointer str, size_type length) {
+    static [[nodiscard]] pointer _copy(const_pointer str, size_type length) {
         if (length != 0) {
-            pointer p = static_cast<pointer>(string_allocator{}.allocate(length + 1 /*NUL*/));
+            pointer p = new value_type[length + 1];
             std::memmove(p, str, length);
             p[length] = 0;
             return p;
@@ -251,7 +250,7 @@ private:
 
     static void _free(pointer data, size_type length) {
         if (data != nullptr) {
-            string_allocator{}.deallocate(data, length + 1 /*NUL*/);
+            delete[] data;
         }
     }
 
