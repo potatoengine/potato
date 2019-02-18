@@ -19,30 +19,6 @@ namespace gm {
         }
     };
 
-    /// <summary> The standard string allocator. </summary>
-    struct string_allocator {
-        [[nodiscard]] void* allocate(size_t size, size_t align = 1) {
-            GM_ASSERT(align == 1, "String allocator does not support alignment greater than 1");
-            return GM_STRING_ALLOC(size, 1);
-        }
-
-        void deallocate(void* ptr, size_t size, size_t align = 1) {
-            GM_ASSERT(align == 1, "String allocator does not support alignment greater than 1");
-            GM_STRING_FREE(ptr, size, 1);
-        }
-    };
-
-    template <typename T, typename Allocator = default_allocator>
-    struct typed_allocator : Allocator {
-        [[nodiscard]] T* allocate(size_t count) {
-            return static_cast<T*>(Allocator::allocate(count * sizeof(T), alignof(T)));
-        }
-
-        void deallocate(void* ptr, size_t count) {
-            Allocator::deallocate(ptr, count * sizeof(T), alignof(T));
-        }
-    };
-
     /// <summary> Allocates a contiguous block of memory sized and aligned for one or more copies of specific object. </summary>
     /// <typeparam name="T"> Type of the object to allocate. </typeparam>
     /// <typeparam name="Allocator"> The type of allocator to use. </typeparam>
