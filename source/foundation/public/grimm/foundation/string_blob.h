@@ -10,6 +10,8 @@ namespace gm {
 
     template <typename HashAlgorithm>
     inline void hash_append(HashAlgorithm& hasher, string const& string);
+
+    inline string operator"" _s(char const* str, size_t size);
 } // namespace gm
 
 class gm::string {
@@ -28,16 +30,16 @@ public:
     string() = default;
     ~string() { _free(_data, _size); }
 
-    explicit string(string const& str) : _data(_copy(str._data, str._size)), _size(str._size) {}
+    /*implicit*/ string(string const& str) : _data(_copy(str._data, str._size)), _size(str._size) {}
     string(string&& rhs) : _data(rhs._data), _size(rhs._size) {
         rhs._data = nullptr;
         rhs._size = 0;
     }
-    explicit string(std::string str) : _data(_copy(str.data(), str.size())), _size(str.size()) {}
-    explicit string(const_pointer zstr) : _size(zstr != nullptr ? traits::length(zstr) : 0) { _data = _copy(zstr, _size); }
-    explicit string(const_pointer data, size_type size) : _data(_copy(data, size)), _size(size) {}
-    explicit string(zstring_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
-    explicit string(string_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
+    /*implicit*/ string(std::string str) : _data(_copy(str.data(), str.size())), _size(str.size()) {}
+    /*implicit*/ string(const_pointer zstr) : _size(zstr != nullptr ? traits::length(zstr) : 0) { _data = _copy(zstr, _size); }
+    /*implicit*/ string(const_pointer data, size_type size) : _data(_copy(data, size)), _size(size) {}
+    /*implicit*/ string(zstring_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
+    /*implicit*/ string(string_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
 
     static string take_ownership(pointer str, size_type length) {
         string s;
@@ -147,7 +149,7 @@ public:
         return npos;
     }
 
-    friend bool operator==(string const& lhs, string rhs) noexcept {
+    friend bool operator==(string const& lhs, string const& rhs) noexcept {
         return lhs.size() == rhs.size() && traits::compare(lhs.data(), rhs.data(), lhs.size()) == 0;
     }
     friend bool operator==(string const& lhs, const_pointer rhs) noexcept {
@@ -251,6 +253,7 @@ private:
     static void _free(pointer data, size_type length) {
         if (data != nullptr) {
             delete[] data;
+            data = nullptr;
         }
     }
 
@@ -263,4 +266,8 @@ private:
 template <typename HashAlgorithm>
 void gm::hash_append(HashAlgorithm& hasher, string const& string) {
     hasher({reinterpret_cast<std::byte const*>(string.data()), string.size()});
+}
+
+inline auto gm::operator"" _s(char const* str, size_t size) -> string {
+    return string{str, size};
 }

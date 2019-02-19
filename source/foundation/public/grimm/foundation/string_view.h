@@ -3,14 +3,15 @@
 #pragma once
 
 #include "numeric_util.h"
-#include <cstring>
-#include <string_view>
+#include <string>
 
 namespace gm {
     class string_view;
 
     template <typename HashAlgorithm>
     inline void hash_append(HashAlgorithm& hasher, string_view const& string);
+
+    inline string_view operator"" _sv(char const* str, size_t size) noexcept;
 } // namespace gm
 
 class gm::string_view {
@@ -29,7 +30,6 @@ public:
     ~string_view() = default;
 
     constexpr string_view(string_view const&) = default;
-    /*implicit*/ constexpr string_view(std::string_view str) noexcept : _data(str.data()), _size(str.size()) {}
     /*implicit*/ constexpr string_view(pointer zstr) noexcept : _data(zstr), _size(zstr != nullptr ? traits::length(zstr) : 0) {}
     /*implicit*/ constexpr string_view(pointer data, size_type size) noexcept : _data(data), _size(size) {}
 
@@ -165,10 +165,6 @@ public:
         return false;
     }
 
-    /*implicit*/ constexpr operator std::string_view() const noexcept {
-        return {_data, _size};
-    }
-
 private:
     pointer _data = nullptr;
     size_type _size = 0;
@@ -177,4 +173,8 @@ private:
 template <typename HashAlgorithm>
 void gm::hash_append(HashAlgorithm& hasher, string_view const& string) {
     hasher(string.data(), string.size());
+}
+
+inline auto gm::operator"" _sv(char const* str, size_t size) noexcept -> string_view {
+    return {str, size};
 }

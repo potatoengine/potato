@@ -9,7 +9,6 @@
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include <iostream>
-#include <fstream>
 
 bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem) {
     if (args.empty()) {
@@ -30,7 +29,7 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
     for (zstring_view arg : args) {
         if (!arg.empty() && arg.front() == '-') {
             if (argMode != ArgNone) {
-                std::cerr << "Unexpected option: " << arg << '\n';
+                std::cerr << "Unexpected option: " << arg.c_str() << '\n';
                 return false;
             }
 
@@ -51,7 +50,7 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
                 config.deleteStale = true;
             }
             else {
-                std::cerr << "Unknown option: " << arg << '\n';
+                std::cerr << "Unknown option: " << arg.c_str() << '\n';
                 return false;
             }
             continue;
@@ -59,7 +58,7 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
 
         switch (argMode) {
         case ArgNone:
-            std::cerr << "Unexpected value: " << arg << '\n';
+            std::cerr << "Unexpected value: " << arg.c_str() << '\n';
             return false;
         case ArgSourceFolder:
             config.sourceFolderPath = string(arg);
@@ -93,13 +92,13 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
 bool gm::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path) {
     auto stream = fileSystem.openRead(path, fs::FileOpenMode::Text);
     if (!stream) {
-        std::cerr << "Failed to open `" << path << "'\n";
+        std::cerr << "Failed to open `" << path.c_str() << "'\n";
         return false;
     }
 
     blob text;
     if (fs::readBlob(stream, text) != fs::Result::Success) {
-        std::cerr << "Failed to read `" << path << "'\n";
+        std::cerr << "Failed to read `" << path.c_str() << "'\n";
         return false;
     }
 
@@ -112,7 +111,7 @@ bool gm::recon::parseConfigString(ConverterConfig& config, string_view json, zst
     doc.Parse<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag | rapidjson::kParseNanAndInfFlag>(json.data(), json.size());
 
     if (doc.HasParseError()) {
-        std::cerr << "Failed to parse file `" << filename << "': " << doc.GetParseError() << '\n';
+        std::cerr << "Failed to parse file `" << filename.c_str() << "': " << doc.GetParseError() << '\n';
         return false;
     }
     if (!doc.IsObject()) {

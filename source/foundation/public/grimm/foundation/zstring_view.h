@@ -3,8 +3,6 @@
 #pragma once
 
 #include "string_view.h"
-#include <string_view>
-#include <iosfwd>
 
 namespace gm {
     class zstring_view {
@@ -36,7 +34,6 @@ namespace gm {
         constexpr pointer c_str() const noexcept { return _str; }
 
         constexpr /*implicit*/ operator string_view() const noexcept { return string_view{_str}; }
-        constexpr /*implicit*/ operator std::string_view() const noexcept { return std::string_view{_str}; }
 
         constexpr value_type operator[](size_type index) const noexcept { return _str[index]; }
 
@@ -84,14 +81,6 @@ namespace gm {
             return npos;
         }
 
-        template <typename T>
-        friend auto& operator<<(std::basic_ostream<value_type, T>& os, zstring_view sv) {
-            if (sv._str != nullptr) {
-                os << sv._str;
-            }
-            return os;
-        }
-
         friend constexpr bool operator==(zstring_view lhs, zstring_view rhs) noexcept {
             size_type lhsSize = lhs.size();
             size_type rhsSize = rhs.size();
@@ -111,5 +100,9 @@ namespace gm {
     template <typename HashAlgorithm>
     void hash_append(HashAlgorithm& hasher, zstring_view string) {
         hasher(string.data(), string.size());
+    }
+
+    inline auto operator"" _zsv(char const* str, size_t) noexcept -> zstring_view {
+        return {str};
     }
 } // namespace gm

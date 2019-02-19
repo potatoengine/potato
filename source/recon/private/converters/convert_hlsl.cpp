@@ -86,7 +86,7 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
 }
 
 bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName) {
-    std::cout << "Compiling `" << ctx.sourceFilePath() << "':" << entryName << '(' << targetProfileName << ")\n";
+    std::cout << "Compiling `" << ctx.sourceFilePath().c_str() << "':" << entryName.c_str() << '(' << targetProfileName.c_str() << ")\n";
 
     ReconIncludeHandler includeHandler(fileSys, ctx, gm::fs::path::parent(absoluteSourcePath));
 
@@ -94,7 +94,7 @@ bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zs
     com_ptr<ID3DBlob> errors;
     HRESULT hr = D3DCompile2(source.data(), source.size(), ctx.sourceFilePath().c_str(), nullptr, &includeHandler, entryName.c_str(), targetProfileName.c_str(), D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS, 0, 0, nullptr, 0, out_ptr(blob), out_ptr(errors));
     if (!SUCCEEDED(hr)) {
-        std::cerr << "Compilation failed for `" << ctx.sourceFilePath() << "':" << entryName << '(' << targetProfileName << ")\n"
+        std::cerr << "Compilation failed for `" << ctx.sourceFilePath().c_str() << "':" << entryName.c_str() << '(' << targetProfileName.c_str() << ")\n"
                   << std::string_view((char*)errors->GetBufferPointer(), errors->GetBufferSize()) << '\n';
         return false;
     }

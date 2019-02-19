@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "span.h"
 #include "assertion.h"
 #include "iterator_range.h"
 #include "memory_util.h"
@@ -24,13 +23,6 @@ namespace gm {
 
 template <typename T>
 class gm::vector {
-    T* _first = nullptr;
-    T* _last = nullptr;
-    T* _sentinel = nullptr;
-
-    size_t _grow(size_t minimum = 4);
-    void _rshift(T* pos, size_t shift);
-
 public:
     using value_type = T;
     using iterator = T*;
@@ -49,7 +41,8 @@ public:
 
     template <typename IteratorT, typename SentinelT>
     inline explicit vector(IteratorT begin, SentinelT end);
-    inline explicit vector(std::initializer_list<T> initial);
+    template <typename InsertT>
+    inline explicit vector(std::initializer_list<InsertT> initial);
     inline explicit vector(size_type size, const_reference initial);
     inline explicit vector(size_type size);
 
@@ -119,8 +112,13 @@ public:
 
     void pop_back();
 
-    operator span<T>() { return span<T>(_first, _last); }
-    operator span<T const>() const { return span<T const>(_first, _last); }
+public:
+    size_t _grow(size_t minimum = 4);
+    void _rshift(T* pos, size_t shift);
+
+    T* _first = nullptr;
+    T* _last = nullptr;
+    T* _sentinel = nullptr;
 };
 
 template <typename T>
@@ -130,7 +128,8 @@ gm::vector<T>::vector(IteratorT begin, SentinelT end) {
 }
 
 template <typename T>
-gm::vector<T>::vector(std::initializer_list<T> initial) {
+template <typename InsertT>
+gm::vector<T>::vector(std::initializer_list<InsertT> initial) {
     insert(_first, initial.begin(), initial.end());
 }
 
@@ -353,7 +352,9 @@ auto gm::vector<T>::emplace_back(ParamsT&&... params) -> gm::enable_if_t<std::is
 template <typename T>
 template <typename IteratorT, typename SentinelT>
 auto gm::vector<T>::insert(const_iterator pos, IteratorT begin, SentinelT end) -> iterator {
-    GM_ASSERT(begin < _first || begin >= _last, "Inserting a sub-range of a vector into itself is not supported");
+    if constexpr (std::is_same_v<pointer, IteratorT> || std::is_same_v<const_pointer, IteratorT>) {
+        GM_ASSERT(begin < _first || begin >= _last, "Inserting a sub-range of a vector into itself is not supported");
+    }
 
     auto const count = std::distance(begin, end);
 

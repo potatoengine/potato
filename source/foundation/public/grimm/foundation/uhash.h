@@ -65,8 +65,9 @@ namespace gm {
 
     template <typename HashAlgorithm, typename ValueT, typename AllocatorT>
     inline enable_if_t<!is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT> const& container) {
-        for (auto&& value : container)
+        for (auto&& value : container) {
             hash_append(hasher, value);
+        }
     }
 } // namespace gm
 

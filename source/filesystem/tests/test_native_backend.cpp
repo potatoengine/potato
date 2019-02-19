@@ -1,4 +1,5 @@
 #include "grimm/foundation/vector.h"
+#include "grimm/foundation/string_blob.h"
 #include "grimm/filesystem/native_backend.h"
 #include "grimm/filesystem/stream.h"
 #include "doctest.h"
@@ -44,15 +45,15 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
     }
 
     DOCTEST_TEST_CASE("enumerate") {
-        vector<std::string> const expected{
-            "parent",
-            "parent/child",
-            "parent/child/hello.txt",
-            "test.txt"};
+        vector<string> const expected{
+            "parent"_sv,
+            "parent/child"_sv,
+            "parent/child/hello.txt"_sv,
+            "test.txt"_sv};
 
         auto native = NativeBackend::create();
 
-        vector<std::string> entries;
+        vector<string> entries;
 
         auto cb = [&entries](FileInfo const& info) {
             entries.push_back(info.path);
