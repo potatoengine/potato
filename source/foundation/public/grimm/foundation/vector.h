@@ -3,7 +3,6 @@
 #pragma once
 
 #include "assertion.h"
-#include "iterator_range.h"
 #include "memory_util.h"
 #include "numeric_util.h"
 #include "traits.h"
@@ -27,8 +26,6 @@ public:
     using value_type = T;
     using iterator = T*;
     using const_iterator = T const*;
-    using range = iterator_range<iterator>;
-    using const_range = iterator_range<const_iterator>;
     using pointer = T*;
     using const_pointer = T const*;
     using reference = T&;
