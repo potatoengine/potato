@@ -4,7 +4,7 @@
 
 #include "grimm/foundation/delegate_ref.h"
 #include "grimm/foundation/zstring_view.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 
 namespace gm::fs {
     enum class Result {

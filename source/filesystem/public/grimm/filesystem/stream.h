@@ -3,7 +3,7 @@
 #pragma once
 
 #include "grimm/foundation/box.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 #include "grimm/foundation/span.h"
 #include "common.h"
 

@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include "grimm/foundation/span.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 #include <glm/vec4.hpp>
 
 namespace gm::gpu {

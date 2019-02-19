@@ -7,7 +7,7 @@
 #include "grimm/filesystem/common.h"
 #include "grimm/foundation/vector.h"
 #include "grimm/foundation/string_blob.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 
 namespace gm::fs {
     [[nodiscard]] GM_FILESYSTEM_API Result readBinary(Stream& stream, vector<gm::byte>& out);

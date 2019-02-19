@@ -4,7 +4,7 @@
 
 #include "grimm/foundation/rc.h"
 #include "grimm/foundation/vector.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 
 namespace gm {
     class RenderContext;

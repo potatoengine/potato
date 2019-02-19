@@ -3,7 +3,7 @@
 #pragma once
 
 #include "grimm/foundation/span.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 
 namespace gm::gpu {
     enum class Format {

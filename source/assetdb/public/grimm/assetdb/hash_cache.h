@@ -7,7 +7,7 @@
 #include "grimm/foundation/string_blob.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/box.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 #include "grimm/foundation/uhash.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"

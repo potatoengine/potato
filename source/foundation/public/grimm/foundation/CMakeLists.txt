@@ -10,6 +10,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string_writer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fnv1a.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/int_types.h
     ${CMAKE_CURRENT_SOURCE_DIR}/memory_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/numeric_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/out_ptr.h
@@ -26,7 +27,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/string_view.h
     ${CMAKE_CURRENT_SOURCE_DIR}/traits.h
     ${CMAKE_CURRENT_SOURCE_DIR}/typelist.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/types.h
+
     ${CMAKE_CURRENT_SOURCE_DIR}/uhash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/vector.h
     ${CMAKE_CURRENT_SOURCE_DIR}/zstring_view.h

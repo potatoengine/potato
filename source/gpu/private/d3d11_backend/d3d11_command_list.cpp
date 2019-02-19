@@ -7,7 +7,7 @@
 #include "d3d11_platform.h"
 #include "d3d11_texture.h"
 #include "d3d11_sampler.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 

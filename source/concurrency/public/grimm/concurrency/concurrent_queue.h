@@ -4,7 +4,7 @@
 
 #include <grimm/foundation/assertion.h>
 #include <grimm/foundation/box.h>
-#include <grimm/foundation/types.h>
+#include <grimm/foundation/int_types.h>
 #include <atomic>
 #include <thread>
 #include <mutex>

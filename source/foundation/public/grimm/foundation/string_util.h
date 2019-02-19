@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "types.h"
+#include "int_types.h"
 
 namespace gm {
     inline constexpr size_t stringLength(char const* str) noexcept {

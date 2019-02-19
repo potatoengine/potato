@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "types.h"
+#include "int_types.h"
 #include "platform.h"
 
 namespace gm {

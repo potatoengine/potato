@@ -4,7 +4,7 @@
 
 #include "_export.h"
 #include "format.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 #include "grimm/foundation/vector.h"
 
 namespace gm::fs {

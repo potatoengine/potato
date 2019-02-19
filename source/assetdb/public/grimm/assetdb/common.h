@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 
 namespace gm {
     enum class AssetId : uint64 {

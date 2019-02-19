@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include "grimm/foundation/box.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 #include "grimm/foundation/rc.h"
 
 namespace gm::gpu {

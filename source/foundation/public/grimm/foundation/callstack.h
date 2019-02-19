@@ -5,7 +5,7 @@
 #include "_export.h"
 #include "span.h"
 #include "fixed_string.h"
-#include "types.h"
+#include "int_types.h"
 
 namespace gm::callstack {
     struct TraceRecord {
