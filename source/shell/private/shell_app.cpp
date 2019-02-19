@@ -82,7 +82,7 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _renderer = make_box<Renderer>(_fileSystem, _device);
+    _renderer = new_box<Renderer>(_fileSystem, _device);
 
 #if GM_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
@@ -92,12 +92,12 @@ int gm::ShellApp::initialize() {
         return 1;
     }
 
-    _camera = make_box<RenderCamera>(_swapChain);
+    _camera = new_box<RenderCamera>(_swapChain);
 
     auto material = _renderer->loadMaterialSync("resources/materials/basic.json");
     auto mesh = _renderer->loadMeshSync("resources/meshes/cube.model");
-    auto model = make_box<Model>(std::move(mesh), std::move(material));
-    _root = make_box<Node>(std::move(model));
+    auto model = new_box<Model>(std::move(mesh), std::move(material));
+    _root = new_box<Node>(std::move(model));
     _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 5, 0}));
 
     auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
@@ -124,7 +124,7 @@ void gm::ShellApp::run() {
     Camera camera;
     camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
 
-    box<CameraController> controller = make_box<ArcBallCameraController>();
+    box<CameraController> controller = new_box<ArcBallCameraController>();
     glm::vec3 arcCenter = {0, 0, 0};
 
     float objRotateInput = 0;
@@ -149,10 +149,10 @@ void gm::ShellApp::run() {
                 break;
             case SDL_KEYDOWN:
                 if (ev.key.keysym.scancode == SDL_SCANCODE_F) {
-                    controller = make_box<FlyCameraController>();
+                    controller = new_box<FlyCameraController>();
                 }
                 if (ev.key.keysym.scancode == SDL_SCANCODE_B) {
-                    controller = make_box<ArcBallCameraController>();
+                    controller = new_box<ArcBallCameraController>();
                 }
                 break;
             case SDL_MOUSEWHEEL:

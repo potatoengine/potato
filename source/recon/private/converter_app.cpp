@@ -120,19 +120,19 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
 void gm::recon::ConverterApp::registerConverters() {
 #if GM_GPU_ENABLE_D3D11
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
-                           make_box<HlslConverter>()});
+                           new_box<HlslConverter>()});
 #else
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
-                           make_box<IgnoreConverter>()});
+                           new_box<IgnoreConverter>()});
 #endif
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsli"; },
-                           make_box<IgnoreConverter>()});
+                           new_box<IgnoreConverter>()});
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".json"; },
-                           make_box<JsonConverter>()});
+                           new_box<JsonConverter>()});
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".png"; },
-                           make_box<CopyConverter>()});
+                           new_box<CopyConverter>()});
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".obj"; },
-                           make_box<ModelConverter>()});
+                           new_box<ModelConverter>()});
 }
 
 bool gm::recon::ConverterApp::convertFiles(vector<string> const& files) {

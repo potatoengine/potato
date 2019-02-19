@@ -22,7 +22,7 @@ auto gm::gpu::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, P
         return nullptr;
     }
 
-    return make_box<CommandListD3D11>(std::move(context));
+    return new_box<CommandListD3D11>(std::move(context));
 }
 
 void gm::gpu::d3d11::CommandListD3D11::setPipelineState(PipelineState* state) {

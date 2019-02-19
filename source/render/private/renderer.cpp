@@ -164,7 +164,7 @@ auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
         data.push_back(mesh->mTextureCoords[0][i].y);
     }
 
-    return gm::make_shared<Mesh>(std::move(indices), vector(span(data).as_bytes()), span{&bufferDesc, 1}, channels);
+    return gm::new_shared<Mesh>(std::move(indices), vector(span(data).as_bytes()), span{&bufferDesc, 1}, channels);
 }
 
 auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
@@ -225,7 +225,7 @@ auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
         return nullptr;
     }
 
-    return make_shared<Material>(std::move(vertex), std::move(pixel), std::move(textures));
+    return new_shared<Material>(std::move(vertex), std::move(pixel), std::move(textures));
 }
 
 auto gm::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
@@ -234,7 +234,7 @@ auto gm::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
     if (fs::readBinary(stream, contents) != fs::Result{}) {
         return {};
     }
-    return gm::make_shared<Shader>(std::move(contents));
+    return gm::new_shared<Shader>(std::move(contents));
 }
 
 auto gm::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
@@ -259,5 +259,5 @@ auto gm::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
         return nullptr;
     }
 
-    return make_shared<Texture>(std::move(img), std::move(tex));
+    return new_shared<Texture>(std::move(img), std::move(tex));
 }

@@ -42,7 +42,7 @@ auto gm::HashCache::hashAssetAtPath(zstring_view path) -> gm::uint64 {
     auto hash = hashAssetStream(fstream);
 
     // update the hash
-    auto rec = make_box<HashRecord>();
+    auto rec = new_box<HashRecord>();
     rec->osPath = string(path);
     rec->hash = hash;
     rec->mtime = stat.mtime;
@@ -107,7 +107,7 @@ bool gm::HashCache::deserialize(fs::Stream& stream) {
 
         string path(member.name.GetString());
 
-        auto rec = make_box<HashRecord>();
+        auto rec = new_box<HashRecord>();
         rec->osPath = string(path);
         rec->hash = hash;
         rec->mtime = mtime;
