@@ -362,7 +362,7 @@ auto gm::vector<T>::emplace_back(ParamsT&&... params) -> gm::enable_if_t<std::is
         gm::unitialized_move_n(_first, size, tmp);
 
         // free up old space
-        gm::destruct_n(_first, size);
+        gm::destruct_n(_first, _last - _first);
         _deallocate(_first, _sentinel - _first);
 
         // commit new space

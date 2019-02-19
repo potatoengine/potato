@@ -24,6 +24,13 @@
       "name": "shell.exe (bin\\shell.exe)",
       "cwd": "${workspaceRoot}.build",
       "currentDir": "${workspaceRoot}.build"
+    },
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "test_grimm_filesystem.exe (bin\\test_grimm_filesystem.exe)",
+      "name": "test_grimm_filesystem.exe (bin\\test_grimm_filesystem.exe)",
+      "currentDir": "${workspaceRoot}/source/filesystem/tests/fixtures"
     }
   ]
 }

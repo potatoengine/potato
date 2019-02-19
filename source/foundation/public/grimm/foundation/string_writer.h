@@ -55,7 +55,7 @@ namespace gm {
 
         GM_FOUNDATION_API void reserve(size_type capacity);
 
-        GM_FOUNDATION_API span<value_type> acquire(size_type size);
+        [[nodiscard]] GM_FOUNDATION_API span<value_type> acquire(size_type size);
         GM_FOUNDATION_API void commit(span<value_type const> data);
 
         GM_FOUNDATION_API void resize(size_type newSize, value_type fill = ' ');

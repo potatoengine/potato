@@ -241,10 +241,8 @@ private:
     }
 
     static void _free(pointer data, size_type length) {
-        if (data != nullptr) {
-            delete[] data;
-            data = nullptr;
-        }
+        delete[] data;
+        data = nullptr;
     }
 
     inline static value_type _empty[] = "";

@@ -66,10 +66,8 @@ auto gm::string_writer::to_string() const& -> string {
 auto gm::string_writer::to_string() && -> string {
     if (_ptr != _fixed && _size == _capacity - 1 /*NUL*/) {
         string s = string::take_ownership(_ptr, _size);
-        _size = 0;
-        _capacity = sizeof(_fixed);
-        _ptr = _fixed;
-        *_ptr = 0;
+        _ptr = nullptr;
+        reset();
         return s;
     }
     else {

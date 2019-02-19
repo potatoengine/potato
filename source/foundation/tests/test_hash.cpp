@@ -4,7 +4,7 @@
 #include "grimm/foundation/span.h"
 #include "doctest.h"
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::uhash") {
+DOCTEST_TEST_SUITE("[grimm][foundation] gm::hash") {
     using namespace gm;
 
     DOCTEST_TEST_CASE("default hash_value") {

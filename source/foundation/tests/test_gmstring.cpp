@@ -21,6 +21,13 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::string") {
         DOCTEST_CHECK_EQ(s.c_str(), ss.c_str());
     }
 
+    DOCTEST_TEST_CASE("initialize from string_view") {
+        string s("test"_sv);
+
+        DOCTEST_CHECK(!s.empty());
+        DOCTEST_CHECK_EQ(s.size(), 4);
+    }
+
     DOCTEST_TEST_CASE("move constructor") {
         string s("wrong");
         string s2("correct");

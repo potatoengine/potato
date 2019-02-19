@@ -1,9 +1,12 @@
 #include "grimm/foundation/vector.h"
+#include "grimm/foundation/gmstring.h"
 #include "doctest.h"
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::vector") {
+DOCTEST_TEST_SUITE("[grimm][foundation] vector") {
+    using namespace gm;
+
     DOCTEST_TEST_CASE("vector default initialization") {
-        gm::vector<int> vec;
+        vector<int> vec;
 
         DOCTEST_CHECK_EQ(vec.size(), 0);
         DOCTEST_CHECK_EQ(vec.capacity(), 0);
@@ -11,7 +14,7 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::vector") {
     }
 
     DOCTEST_TEST_CASE("vector initializer list") {
-        gm::vector vec{1, 2, 3, 4};
+        vector vec{1, 2, 3, 4};
 
         DOCTEST_CHECK_EQ(vec.size(), 4);
         DOCTEST_CHECK_GE(vec.capacity(), 4);
@@ -22,7 +25,7 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::vector") {
     }
 
     DOCTEST_TEST_CASE("vector push_back") {
-        gm::vector<int> vec;
+        vector<int> vec;
 
         for (int i = 1; i <= 10; ++i) {
             vec.push_back(i * i);
@@ -43,7 +46,7 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::vector") {
     }
 
     DOCTEST_TEST_CASE("vector erase") {
-        gm::vector vec{1, 2, 3, 4};
+        vector vec{1, 2, 3, 4};
 
         vec.erase(vec.begin());
 
@@ -55,5 +58,13 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::vector") {
 
         DOCTEST_CHECK_EQ(vec.size(), 1);
         DOCTEST_CHECK_EQ(vec.front(), 2);
+    }
+
+    DOCTEST_TEST_CASE("vector<string>") {
+        vector<string> vec1{
+            "first"_sv,
+            "second"_sv,
+            "third"_sv,
+            "fourth"_sv};
     }
 }

@@ -5,12 +5,12 @@ add_executable(test_grimm_foundation
     test_delegate_ref.cpp
     test_fixed_string.cpp
     test_fixed_string_writer.cpp
+    test_hash.cpp
+    test_gmstring.cpp
     test_rc.cpp
     test_span.cpp
-    test_string_blob.cpp
     test_string_writer.cpp
     test_string_view.cpp
-    test_uhash.cpp
     test_vector.cpp
     test_zstring_view.cpp
 )
