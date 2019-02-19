@@ -5,7 +5,7 @@
 #include "_export.h"
 #include "format.h"
 #include "grimm/foundation/types.h"
-#include "grimm/foundation/blob.h"
+#include "grimm/foundation/vector.h"
 
 namespace gm::fs {
     class Stream;
@@ -41,10 +41,10 @@ namespace gm::image {
     class Image : public ImageView {
     public:
         Image() = default;
-        Image(ImageFormat format, gm::blob data, int width, int height, int stride) noexcept : ImageView(format, data.data(), width, height, stride), _data(std::move(data)) {}
+        Image(ImageFormat format, vector<byte> data, int width, int height, int stride) noexcept : ImageView(format, data.data(), width, height, stride), _data(std::move(data)) {}
 
     private:
-        gm::blob _data;
+        vector<byte> _data;
     };
 
     GM_IMAGE_API Image loadImage(fs::Stream& stream);

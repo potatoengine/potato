@@ -108,9 +108,9 @@ auto gm::Renderer::context() -> RenderContext {
 }
 
 auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
-    blob contents;
+    vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (fs::readBlob(stream, contents) != fs::Result{}) {
+    if (fs::readBinary(stream, contents) != fs::Result{}) {
         return {};
     }
     stream.close();
@@ -164,7 +164,7 @@ auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
         data.push_back(mesh->mTextureCoords[0][i].y);
     }
 
-    return make_shared<Mesh>(std::move(indices), blob(span{data.data(), data.size()}.as_bytes()), span{&bufferDesc, 1}, channels);
+    return gm::make_shared<Mesh>(std::move(indices), vector(span(data).as_bytes()), span{&bufferDesc, 1}, channels);
 }
 
 auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
@@ -229,12 +229,12 @@ auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
 }
 
 auto gm::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
-    blob contents;
+    vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (fs::readBlob(stream, contents) != fs::Result{}) {
+    if (fs::readBinary(stream, contents) != fs::Result{}) {
         return {};
     }
-    return make_shared<Shader>(std::move(contents));
+    return gm::make_shared<Shader>(std::move(contents));
 }
 
 auto gm::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {

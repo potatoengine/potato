@@ -6,7 +6,6 @@
 #include "render_task.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/rc.h"
-#include "grimm/foundation/blob.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/concurrency/concurrent_queue.h"

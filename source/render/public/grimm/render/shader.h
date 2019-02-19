@@ -3,19 +3,20 @@
 #pragma once
 
 #include "grimm/foundation/rc.h"
-#include "grimm/foundation/blob.h"
+#include "grimm/foundation/vector.h"
+#include "grimm/foundation/types.h"
 
 namespace gm {
     class RenderContext;
 
     class Shader : public shared<Shader> {
     public:
-        explicit Shader(blob shader) : _content(std::move(shader)) {}
+        explicit Shader(vector<byte> shader) : _content(std::move(shader)) {}
         ~Shader() = default;
 
         view<byte> content() const noexcept { return _content; }
 
     private:
-        blob _content;
+        vector<byte> _content;
     };
 } // namespace gm

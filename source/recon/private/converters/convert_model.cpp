@@ -31,8 +31,8 @@ bool gm::recon::ModelConverter::convert(Context& ctx) {
 
     auto file = fileSys.openRead(sourceAbsolutePath);
 
-    blob contents;
-    if (readBlob(file, contents) != fs::Result::Success) {
+    vector<byte> contents;
+    if (readBinary(file, contents) != fs::Result::Success) {
         std::cerr << "Failed to read\n";
         return false;
     }

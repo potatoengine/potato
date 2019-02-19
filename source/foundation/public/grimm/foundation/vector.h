@@ -6,6 +6,7 @@
 #include "memory_util.h"
 #include "numeric_util.h"
 #include "traits.h"
+#include "span.h"
 
 #include <initializer_list>
 #include <type_traits>
@@ -15,9 +16,11 @@ namespace gm {
     class vector;
 
     template <typename T>
-    vector(std::initializer_list<T>)->vector<T>;
+    vector(span<T>)->vector<std::remove_const_t<T>>;
+    template <typename T>
+    vector(std::initializer_list<T>)->vector<std::remove_const_t<T>>;
     template <typename IteratorT, typename SentinelT>
-    vector(IteratorT, SentinelT)->vector<decltype(*std::declval<IteratorT>())>;
+    vector(IteratorT, SentinelT)->vector<std::remove_const_t<decltype(*std::declval<IteratorT>())>>;
 } // namespace gm
 
 template <typename T>
@@ -41,6 +44,8 @@ public:
     template <typename InsertT>
     inline explicit vector(std::initializer_list<InsertT> initial);
     inline explicit vector(size_type size, const_reference initial);
+    template <typename InsertT>
+    inline explicit vector(span<InsertT> source);
     inline explicit vector(size_type size);
 
     vector(vector const&) = delete;
@@ -107,6 +112,12 @@ public:
     iterator erase(const_iterator pos);
     iterator erase(const_iterator begin, const_iterator end);
 
+    span<T> subspan(size_type index) noexcept { return span<T>{_first + index, _last}; }
+    span<T> subspan(size_type index, size_type count) noexcept { return span<T>{_first + index, _first + index + count}; }
+
+    span<T const> subspan(size_type index) const noexcept { return span<T const>{_first + index, _last}; }
+    span<T const> subspan(size_type index, size_type count) const noexcept { return span<T const>{_first + index, _first + index + count}; }
+
     void pop_back();
 
 public:
@@ -135,6 +146,12 @@ gm::vector<T>::vector(std::initializer_list<InsertT> initial) {
 template <typename T>
 gm::vector<T>::vector(size_type size, const_reference initial) {
     resize(size, initial);
+}
+
+template <typename T>
+template <typename InsertT>
+gm::vector<T>::vector(span<InsertT> source) {
+    insert(_first, source.begin(), source.end());
 }
 
 template <typename T>

@@ -3,7 +3,6 @@
 #include "grimm/recon/converter_config.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/zstring_view.h"
-#include "grimm/foundation/blob.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream_util.h"
 #include <rapidjson/rapidjson.h>
@@ -96,13 +95,13 @@ bool gm::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSys
         return false;
     }
 
-    blob text;
-    if (fs::readBlob(stream, text) != fs::Result::Success) {
+    string text;
+    if (fs::readText(stream, text) != fs::Result::Success) {
         std::cerr << "Failed to read `" << path.c_str() << "'\n";
         return false;
     }
 
-    return parseConfigString(config, text.as_string_view(), path);
+    return parseConfigString(config, text, path);
 }
 
 bool gm::recon::parseConfigString(ConverterConfig& config, string_view json, zstring_view filename) {

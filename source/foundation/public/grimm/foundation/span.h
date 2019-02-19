@@ -30,8 +30,6 @@ namespace gm {
     span(T*, T*)->span<T>;
     template <typename T>
     span(T*, std::size_t)->span<T>;
-    template <typename T>
-    span(std::initializer_list<T>)->span<T const>;
     template <typename T, std::size_t N>
     span(T (&src)[N])->span<T>;
     template <typename C, typename = enable_if_t<_detail::has_data_v<C>>>

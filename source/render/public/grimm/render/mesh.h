@@ -32,7 +32,7 @@ namespace gm {
 
     class Mesh : public shared<Mesh> {
     public:
-        GM_RENDER_API explicit Mesh(vector<uint16> indices, blob data, view<MeshBuffer> buffers, view<MeshChannel> channels);
+        GM_RENDER_API explicit Mesh(vector<uint16> indices, vector<byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels);
         GM_RENDER_API ~Mesh();
 
         GM_RENDER_API void populateLayout(span<gpu::InputLayoutElement>& inputLayout) const noexcept;
@@ -47,6 +47,6 @@ namespace gm {
         vector<MeshBuffer> _buffers;
         vector<MeshChannel> _channels;
         vector<uint16> _indices;
-        blob _data;
+        vector<byte> _data;
     };
 } // namespace gm

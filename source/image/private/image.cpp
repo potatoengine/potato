@@ -35,7 +35,7 @@ auto gm::image::loadImage(fs::Stream& stream) -> Image {
         return {};
     }
 
-    gm::blob data(width * height * 4);
+    vector<byte> data(width * height * 4);
     std::memcpy(data.data(), image, data.size());
     free(image);
 
