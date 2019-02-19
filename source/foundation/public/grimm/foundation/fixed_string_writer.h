@@ -3,6 +3,7 @@
 #pragma once
 
 #include "string_view.h"
+#include <cstring>
 
 namespace gm {
     template <std::size_t Capacity>

@@ -3,17 +3,17 @@
 #pragma once
 
 #include "string_view.h"
-#include <iosfwd>
+#include <cstring>
 
 namespace gm {
-    template <std::size_t Capacity>
+    template <size_t Capacity>
     class fixed_string {
         static_assert(Capacity > 0);
 
     public:
         using value_type = char;
         using pointer = char const*;
-        using size_type = std::size_t;
+        using size_type = size_t;
         static constexpr auto effective_capacity = Capacity - 1;
 
         fixed_string() = default;
@@ -26,7 +26,6 @@ namespace gm {
         inline fixed_string& operator=(string_view string);
 
         /*implicit*/ operator string_view() const { return {_buffer, _size}; }
-        /*implicit*/ operator std::string_view() const { return {_buffer, _size}; }
 
         explicit operator bool() const { return _size != 0; }
         bool empty() const { return _size == 0; }
@@ -39,35 +38,29 @@ namespace gm {
 
         inline void clear();
 
-        template <typename U = char>
-        friend auto& operator<<(std::basic_ostream<U>& os, fixed_string const& fs) {
-            os.write(fs._buffer, fs._size);
-            return os;
-        }
-
         template <typename Writer, typename Spec>
         friend void format_value(Writer& writer, fixed_string const& fs, Spec const&) noexcept {
             writer.write({fs._buffer, fs._size});
         }
 
     private:
-        std::size_t _size = 0;
+        size_t _size = 0;
         char _buffer[Capacity] = {
             '\0',
         };
     };
 
-    template <std::size_t Capacity>
+    template <size_t Capacity>
     fixed_string<Capacity>::fixed_string(fixed_string const& string) : _size(string._size) {
         std::memcpy(_buffer, string._buffer, _size + 1);
     }
 
-    template <std::size_t Capacity>
+    template <size_t Capacity>
     fixed_string<Capacity>::fixed_string(string_view string) {
         *this = string;
     }
 
-    template <std::size_t Capacity>
+    template <size_t Capacity>
     auto fixed_string<Capacity>::operator=(fixed_string const& string) -> fixed_string& {
         if (this != std::addressof(string)) {
             _size = string._size;
@@ -76,9 +69,9 @@ namespace gm {
         return *this;
     }
 
-    template <std::size_t Capacity>
+    template <size_t Capacity>
     auto fixed_string<Capacity>::operator=(string_view string) -> fixed_string& {
-        std::size_t newSize = effective_capacity < string.size() ? effective_capacity : string.size();
+        size_t newSize = effective_capacity < string.size() ? effective_capacity : string.size();
         _size = newSize;
 
         if (string.data() >= _buffer && string.data() < _buffer + Capacity) {
@@ -91,9 +84,14 @@ namespace gm {
         return *this;
     }
 
-    template <std::size_t Capacity>
+    template <size_t Capacity>
     void fixed_string<Capacity>::clear() {
         _size = 0;
         _buffer[0] = '\0';
+    }
+
+    template <typename HashAlgorithm, size_t Size>
+    void hash_append(HashAlgorithm& hasher, fixed_string<Size> const& string) {
+        hasher(string.data(), string.size());
     }
 } // namespace gm

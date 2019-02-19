@@ -1,9 +1,11 @@
-// Copyright (C) 2014 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2014,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
 #include "string_view.h"
 #include "zstring_view.h"
+#include "string_util.h"
+#include <cstring>
 
 namespace gm {
     class string;
@@ -23,7 +25,6 @@ public:
     using const_pointer = char const*;
     using reference = char const&;
     using size_type = std::size_t;
-    using traits = std::char_traits<value_type>;
 
     static constexpr size_type npos = ~size_type{0};
 
@@ -35,7 +36,7 @@ public:
         rhs._data = nullptr;
         rhs._size = 0;
     }
-    /*implicit*/ string(const_pointer zstr) : _size(zstr != nullptr ? traits::length(zstr) : 0) { _data = _copy(zstr, _size); }
+    /*implicit*/ string(const_pointer zstr) : _size(zstr != nullptr ? stringLength(zstr) : 0) { _data = _copy(zstr, _size); }
     /*implicit*/ string(const_pointer data, size_type size) : _data(_copy(data, size)), _size(size) {}
     /*implicit*/ string(zstring_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
     /*implicit*/ string(string_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
@@ -116,17 +117,17 @@ public:
         if (str.size() > _size) {
             return false;
         }
-        return traits::compare(_data, str.data(), str.size()) == 0;
+        return stringCompare(_data, str.data(), str.size()) == 0;
     }
     bool ends_with(string_view str) const noexcept {
         if (str.size() > _size) {
             return false;
         }
-        return traits::compare(_data + _size - str.size(), str.data(), str.size()) == 0;
+        return stringCompare(_data + _size - str.size(), str.data(), str.size()) == 0;
     }
 
     size_type find(value_type ch) const noexcept {
-        auto iter = traits::find(_data, _size, ch);
+        auto iter = stringFindChar(_data, _size, ch);
         return iter != nullptr ? iter - _data : npos;
     }
 
@@ -149,18 +150,18 @@ public:
     }
 
     friend bool operator==(string const& lhs, string const& rhs) noexcept {
-        return lhs.size() == rhs.size() && traits::compare(lhs.data(), rhs.data(), lhs.size()) == 0;
+        return lhs.size() == rhs.size() && stringCompare(lhs.data(), rhs.data(), lhs.size()) == 0;
     }
     friend bool operator==(string const& lhs, const_pointer rhs) noexcept {
-        auto rhsSize = rhs != nullptr ? traits::length(rhs) : 0;
-        return lhs.size() == rhsSize && traits::compare(lhs.data(), rhs, rhsSize) == 0;
+        auto rhsSize = rhs != nullptr ? stringLength(rhs) : 0;
+        return lhs.size() == rhsSize && stringCompare(lhs.data(), rhs, rhsSize) == 0;
     }
     friend bool operator!=(string const& lhs, string const& rhs) noexcept {
-        return lhs.size() != rhs.size() || traits::compare(lhs.data(), rhs.data(), lhs.size()) != 0;
+        return lhs.size() != rhs.size() || stringCompare(lhs.data(), rhs.data(), lhs.size()) != 0;
     }
     friend bool operator<(string const& lhs, string const& rhs) noexcept {
         auto len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
-        auto rs = traits::compare(lhs.data(), rhs.data(), len);
+        auto rs = stringCompare(lhs.data(), rhs.data(), len);
         if (rs < 0) {
             return true;
         }
@@ -170,22 +171,12 @@ public:
         return false;
     }
 
-    /*implicit*/ operator std::string() const noexcept {
-        return {_data, _size};
-    }
-
     /*implicit*/ operator string_view() const noexcept {
         return {_data, _size};
     }
 
     /*implicit*/ operator zstring_view() const noexcept {
         return {_data};
-    }
-
-    template <typename T>
-    friend auto& operator<<(std::basic_ostream<value_type, T>& os, string const& str) {
-        os.write(str._data, str._size);
-        return os;
     }
 
     string& assign(const_pointer str, size_type length) {
@@ -207,7 +198,7 @@ public:
         tmp.swap(*this);
 
         if (zstr != nullptr) {
-            assign(zstr, traits::length(zstr));
+            assign(zstr, stringLength(zstr));
         }
 
         return *this;

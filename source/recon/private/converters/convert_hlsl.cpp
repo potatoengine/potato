@@ -5,13 +5,13 @@
 #include "grimm/foundation/out_ptr.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/string_writer.h"
+#include "grimm/foundation/std_iostream.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
 #include "grimm/filesystem/stream_util.h"
 #include "grimm/filesystem/path_util.h"
 #include <d3d11.h>
 #include <d3dcompiler.h>
-#include <iostream>
 #include <fstream>
 
 namespace {

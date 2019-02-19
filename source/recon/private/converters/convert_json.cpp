@@ -1,9 +1,9 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "convert_json.h"
+#include "grimm/foundation/std_iostream.h"
 #include "grimm/filesystem/path_util.h"
 #include "grimm/filesystem/filesystem.h"
-#include <iostream>
 #include <fstream>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
@@ -30,7 +30,7 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
         }
     }
 
-    std::ifstream inFile(sourceAbsolutePath);
+    std::ifstream inFile(sourceAbsolutePath.c_str());
     if (!inFile) {
         std::cerr << "Failed to open `" << sourceAbsolutePath << "'\n";
         return false;
@@ -46,7 +46,7 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
 
     inFile.close();
 
-    std::ofstream outFile(destAbsolutePath);
+    std::ofstream outFile(destAbsolutePath.c_str());
     if (!outFile) {
         std::cerr << "Failed to open `" << destAbsolutePath << "'\n";
         return false;

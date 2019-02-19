@@ -7,6 +7,7 @@
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/vector.h"
 #include "grimm/foundation/span.h"
+#include <cstring>
 
 namespace gm {
     class string;
@@ -70,8 +71,7 @@ namespace gm {
         GM_FOUNDATION_API string to_string() &&;
 
     private:
-        void
-        _grow(size_type requiredSize);
+        void _grow(size_type requiredSize);
 
         size_type _size = 0;
         size_type _capacity = sizeof(_fixed);

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "numeric_util.h"
-#include <string>
+#include "string_util.h"
 
 namespace gm {
     class string_view;
@@ -21,8 +21,7 @@ public:
     using const_iterator = char const*;
     using pointer = char const*;
     using reference = char const&;
-    using size_type = std::size_t;
-    using traits = std::char_traits<value_type>;
+    using size_type = size_t;
 
     static constexpr size_type npos = ~size_type{0};
 
@@ -30,18 +29,13 @@ public:
     ~string_view() = default;
 
     constexpr string_view(string_view const&) = default;
-    /*implicit*/ constexpr string_view(pointer zstr) noexcept : _data(zstr), _size(zstr != nullptr ? traits::length(zstr) : 0) {}
+    /*implicit*/ constexpr string_view(pointer zstr) noexcept : _data(zstr), _size(zstr != nullptr ? stringLength(zstr) : 0) {}
     /*implicit*/ constexpr string_view(pointer data, size_type size) noexcept : _data(data), _size(size) {}
 
     constexpr string_view& operator=(string_view const&) = default;
-    constexpr string_view& operator=(std::string_view str) noexcept {
-        _data = str.data();
-        _size = str.size();
-        return *this;
-    }
     constexpr string_view& operator=(pointer zstr) noexcept {
         _data = zstr;
-        _size = zstr != nullptr ? traits::length(zstr) : 0;
+        _size = zstr != nullptr ? stringLength(zstr) : 0;
         return *this;
     }
 
@@ -115,23 +109,23 @@ public:
         if (str.size() > _size) {
             return false;
         }
-        return traits::compare(_data, str.data(), str.size()) == 0;
+        return stringCompare(_data, str.data(), str.size()) == 0;
     }
     constexpr bool ends_with(string_view str) const noexcept {
         if (str.size() > _size) {
             return false;
         }
-        return traits::compare(_data + _size - str.size(), str.data(), str.size()) == 0;
+        return stringCompare(_data + _size - str.size(), str.data(), str.size()) == 0;
     }
 
     constexpr size_type find(value_type ch) const noexcept {
-        auto iter = traits::find(_data, _size, ch);
+        auto iter = stringFindChar(_data, _size, ch);
         return iter != nullptr ? iter - _data : npos;
     }
 
     constexpr size_type find_first_of(string_view chars) const noexcept {
         for (size_type i = 0; i != _size; ++i) {
-            if (traits::find(chars._data, chars._size, _data[i]) != nullptr) {
+            if (stringFindChar(chars._data, chars._size, _data[i]) != nullptr) {
                 return i;
             }
         }
@@ -140,7 +134,7 @@ public:
 
     constexpr size_type find_last_of(string_view chars) const noexcept {
         for (size_type i = _size; i != 0; --i) {
-            if (traits::find(chars._data, chars._size, _data[i - 1]) != nullptr) {
+            if (stringFindChar(chars._data, chars._size, _data[i - 1]) != nullptr) {
                 return i - 1;
             }
         }
@@ -148,14 +142,14 @@ public:
     }
 
     friend bool constexpr operator==(string_view lhs, string_view rhs) noexcept {
-        return lhs.size() == rhs.size() && traits::compare(lhs.data(), rhs.data(), lhs.size()) == 0;
+        return lhs.size() == rhs.size() && stringCompare(lhs.data(), rhs.data(), lhs.size()) == 0;
     }
     friend bool constexpr operator!=(string_view lhs, string_view rhs) noexcept {
-        return lhs.size() != rhs.size() || traits::compare(lhs.data(), rhs.data(), lhs.size()) != 0;
+        return lhs.size() != rhs.size() || stringCompare(lhs.data(), rhs.data(), lhs.size()) != 0;
     }
     friend bool constexpr operator<(string_view lhs, string_view rhs) noexcept {
         auto len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
-        auto rs = traits::compare(lhs.data(), rhs.data(), len);
+        auto rs = stringCompare(lhs.data(), rhs.data(), len);
         if (rs < 0) {
             return true;
         }

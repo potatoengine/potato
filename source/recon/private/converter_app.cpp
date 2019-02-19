@@ -2,6 +2,7 @@
 
 #include "converter_app.h"
 #include "grimm/foundation/string_view.h"
+#include "grimm/foundation/std_iostream.h"
 #include "grimm/filesystem/path_util.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
@@ -14,7 +15,6 @@
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include <set>
-#include <iostream>
 
 gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {}
 gm::recon::ConverterApp::~ConverterApp() = default;

@@ -12,8 +12,6 @@ namespace gm {
         using size_type = std::size_t;
         using const_iterator = pointer;
 
-        using traits = std::char_traits<value_type>;
-
         struct const_sentinel {
             friend constexpr bool operator==(const_iterator iter, const_sentinel) noexcept { return iter != nullptr && *iter != 0; }
             friend constexpr bool operator<(const_iterator iter, const_sentinel) noexcept { return iter == nullptr || *iter != 0; }
@@ -28,7 +26,7 @@ namespace gm {
         constexpr explicit operator bool() const noexcept { return _str != nullptr && *_str != 0; }
         constexpr bool empty() const noexcept { return _str == nullptr || *_str == 0; }
 
-        constexpr size_type size() const noexcept { return _str != nullptr ? traits::length(_str) : 0; }
+        constexpr size_type size() const noexcept { return _str != nullptr ? stringLength(_str) : 0; }
 
         constexpr pointer data() const noexcept { return _str; }
         constexpr pointer c_str() const noexcept { return _str; }
@@ -84,12 +82,12 @@ namespace gm {
         friend constexpr bool operator==(zstring_view lhs, zstring_view rhs) noexcept {
             size_type lhsSize = lhs.size();
             size_type rhsSize = rhs.size();
-            return lhsSize == rhsSize && traits::compare(lhs._str, rhs._str, lhsSize) == 0;
+            return lhsSize == rhsSize && stringCompare(lhs._str, rhs._str, lhsSize) == 0;
         }
         friend constexpr bool operator==(zstring_view lhs, pointer rhs) noexcept {
             size_type lhsSize = lhs.size();
-            size_type rhsSize = rhs != nullptr ? traits::length(rhs) : 0;
-            return lhsSize == rhsSize && traits::compare(lhs._str, rhs, lhsSize) == 0;
+            size_type rhsSize = rhs != nullptr ? stringLength(rhs) : 0;
+            return lhsSize == rhsSize && stringCompare(lhs._str, rhs, lhsSize) == 0;
         }
         friend constexpr bool operator==(pointer lhs, zstring_view rhs) noexcept { return rhs == lhs; }
 

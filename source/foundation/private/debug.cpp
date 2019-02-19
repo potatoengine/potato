@@ -28,7 +28,7 @@ auto gm::fatal_error(char const* file, int line, char const* failedConditionText
     auto resolvedRecords = callstack::resolveTraceRecords(stack, records);
     if (!resolvedRecords.empty()) {
         for (auto const& record : resolvedRecords) {
-            format_into(buffer, "[{:016X}] ({}:{}) {}\r\n", record.address, record.filename, record.line, record.symbol);
+            format_into(buffer, "[{:016X}] ({}:{}) {}\r\n", record.address, record.filename.c_str(), record.line, record.symbol.c_str());
         }
     }
     else
