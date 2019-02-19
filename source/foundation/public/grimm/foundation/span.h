@@ -120,7 +120,7 @@ private:
 template <typename HashAlgorithm, typename T>
 void gm::hash_append(HashAlgorithm& hasher, gm::span<T> const& view) noexcept {
     if constexpr (gm::is_contiguous_v<T>) {
-        hasher(reinterpret_cast<char const*>(view.data()), view.size() * sizeof(T));
+        hasher.append_bytes(reinterpret_cast<char const*>(view.data()), view.size() * sizeof(T));
     }
     else {
         for (auto&& value : view) {

@@ -28,18 +28,19 @@ namespace gm {
 namespace gm {
     template <typename HashAlgorithm, typename T>
     inline enable_if_t<is_contiguous<T>::value> hash_append(HashAlgorithm& hasher, T const& value) {
-        hasher(&value, sizeof(value));
+        hasher.append_bytes(&value, sizeof(value));
     }
 
     template <typename HashAlgorithm, typename CharT, typename CharTraits, typename AllocatorT>
     inline void hash_append(HashAlgorithm& hasher, std::basic_string<CharT, CharTraits, AllocatorT> const& string) {
-        hasher(string.data(), string.size());
+        hasher.append_bytes(string.data(), string.size());
     }
 
     template <typename HashAlgorithm, typename ContainerT, typename, typename>
     inline void hash_append(HashAlgorithm& hasher, ContainerT const& container) {
-        for (auto const& value : container)
+        for (auto const& value : container) {
             hash_append(hasher, value);
+        }
     }
 
     template <typename HashAlgorithm, typename FirstT, typename SecondT>
@@ -74,12 +75,12 @@ namespace gm {
 struct gm::default_hash {
     using result_type = typename fnv1a::result_type;
 
-    inline void operator()(char const* data, size_t size) noexcept {
-        _fnva1.operator()(data, size);
+    constexpr void append_bytes(char const* data, size_t size) noexcept {
+        _fnva1.append_bytes(data, size);
     }
 
-    inline operator result_type() const noexcept {
-        auto result = _fnva1.operator result_type();
+    constexpr auto finalize() const noexcept {
+        auto result = _fnva1.finalize();
 #if defined(_MSC_VER)
         // Microsoft's std::hash implementation does this, so let's be compatible
         // TODO: what does libc++ do?
@@ -99,10 +100,7 @@ struct gm::uhash {
 
     template <typename T>
     result_type operator()(T&& value) const {
-        HashAlgorithm hasher;
-        using gm::hash_append;
-        hash_append(hasher, value);
-        return static_cast<result_type>(hasher);
+        return hash_value(value);
     }
 };
 
@@ -111,5 +109,5 @@ auto gm::hash_value(T const& value) -> typename HashAlgorithm::result_type {
     HashAlgorithm hasher{};
     using gm::hash_append;
     hash_append(hasher, value);
-    return static_cast<typename HashAlgorithm::result_type>(hasher);
+    return hasher.finalize();
 }

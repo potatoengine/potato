@@ -21,7 +21,7 @@ auto gm::HashCache::hashAssetStream(fs::Stream& stream) -> gm::uint64 {
         }
         hash_append(hasher, read);
     }
-    return static_cast<uint64>(hasher);
+    return static_cast<uint64>(hasher.finalize());
 }
 
 auto gm::HashCache::hashAssetAtPath(zstring_view path) -> gm::uint64 {

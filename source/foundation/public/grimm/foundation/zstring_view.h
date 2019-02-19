@@ -97,7 +97,7 @@ namespace gm {
 
     template <typename HashAlgorithm>
     void hash_append(HashAlgorithm& hasher, zstring_view string) {
-        hasher(string.data(), string.size());
+        hasher.append_bytes(string.data(), string.size());
     }
 
     inline auto operator"" _zsv(char const* str, size_t) noexcept -> zstring_view {

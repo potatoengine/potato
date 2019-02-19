@@ -166,7 +166,7 @@ private:
 
 template <typename HashAlgorithm>
 void gm::hash_append(HashAlgorithm& hasher, string_view const& string) {
-    hasher(string.data(), string.size());
+    hasher.append_bytes(string.data(), string.size());
 }
 
 inline auto gm::operator"" _sv(char const* str, size_t size) noexcept -> string_view {

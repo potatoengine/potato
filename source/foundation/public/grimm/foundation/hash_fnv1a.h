@@ -11,8 +11,8 @@ namespace gm {
     public:
         using result_type = uint64;
 
-        inline constexpr void operator()(char const* data, size_t size) noexcept;
-        explicit constexpr operator result_type() const noexcept { return _state; }
+        inline constexpr void append_bytes(char const* data, size_t size) noexcept;
+        constexpr result_type finalize() const noexcept { return _state; }
 
     private:
         static constexpr uint64 offset = 14695981039346656037ULL;
@@ -20,7 +20,7 @@ namespace gm {
         result_type _state = offset;
     };
 
-    GM_FORCEINLINE constexpr void fnv1a::operator()(char const* data, size_t size) noexcept {
+    GM_FORCEINLINE constexpr void fnv1a::append_bytes(char const* data, size_t size) noexcept {
         constexpr uint64 prime = 1099511628211ULL;
 
         for (size_t i = 0; i != size; ++i) {
