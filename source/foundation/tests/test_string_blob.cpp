@@ -14,7 +14,7 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::string") {
 
     DOCTEST_TEST_CASE("std::string initialization") {
         std::string ss = "this is a test";
-        string s(ss);
+        string s(ss.data(), ss.size());
 
         DOCTEST_CHECK(!s.empty());
         DOCTEST_CHECK_EQ(s.size(), s.size());

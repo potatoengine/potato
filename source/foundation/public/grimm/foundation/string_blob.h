@@ -35,7 +35,6 @@ public:
         rhs._data = nullptr;
         rhs._size = 0;
     }
-    /*implicit*/ string(std::string str) : _data(_copy(str.data(), str.size())), _size(str.size()) {}
     /*implicit*/ string(const_pointer zstr) : _size(zstr != nullptr ? traits::length(zstr) : 0) { _data = _copy(zstr, _size); }
     /*implicit*/ string(const_pointer data, size_type size) : _data(_copy(data, size)), _size(size) {}
     /*implicit*/ string(zstring_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
