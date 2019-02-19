@@ -4,7 +4,7 @@
 
 #include "_export.h"
 #include "common.h"
-#include "grimm/foundation/string_blob.h"
+#include "grimm/foundation/gmstring.h"
 #include "grimm/foundation/span.h"
 #include "grimm/foundation/vector.h"
 

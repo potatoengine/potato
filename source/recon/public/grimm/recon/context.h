@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "grimm/foundation/string_blob.h"
+#include "grimm/foundation/gmstring.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/vector.h"
 #include "grimm/assetdb/asset_record.h"

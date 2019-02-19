@@ -6,7 +6,7 @@
 #include "grimm/filesystem/stream.h"
 #include "grimm/filesystem/common.h"
 #include "grimm/foundation/vector.h"
-#include "grimm/foundation/string_blob.h"
+#include "grimm/foundation/gmstring.h"
 #include "grimm/foundation/int_types.h"
 
 namespace gm::fs {
