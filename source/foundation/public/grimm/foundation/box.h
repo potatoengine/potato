@@ -1,4 +1,4 @@
-// Copyright (C) 2015 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2015,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
