@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "hash_cache.h"
-#include "grimm/foundation/fnv1a.h"
+#include "grimm/foundation/hash_fnv1a.h"
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include "stream_json.h"

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "fnv1a.h"
+#include "hash_fnv1a.h"
 #include "traits.h"
 #include "int_types.h"
 #include <string>

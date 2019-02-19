@@ -9,8 +9,8 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate_ref.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string_writer.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/fnv1a.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gmstring.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/hash_fnv1a.h
     ${CMAKE_CURRENT_SOURCE_DIR}/int_types.h
     ${CMAKE_CURRENT_SOURCE_DIR}/memory_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/numeric_util.h
