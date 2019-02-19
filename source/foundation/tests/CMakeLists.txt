@@ -1,7 +1,6 @@
 add_executable(test_grimm_foundation
     main.cpp
     test_callstack.cpp
-    test_blob.cpp
     test_delegate.cpp
     test_delegate_ref.cpp
     test_fixed_string.cpp
