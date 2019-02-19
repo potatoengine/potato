@@ -4,7 +4,7 @@
 #include "grimm/filesystem/stream.h"
 #include "grimm/foundation/string_writer.h"
 
-auto gm::fs::readBinary(Stream& stream, vector<byte>& out) -> Result {
+auto gm::fs::readBinary(Stream& stream, vector<gm::byte>& out) -> Result {
     if (!stream.canRead() || !stream.canSeek()) {
         return Result::UnsupportedOperation;
     }
