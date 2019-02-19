@@ -110,7 +110,7 @@ auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, E
 }
 
 auto gm::fs::NativeBackend::createDirectories(zstring_view path) -> Result {
-    std::string dir;
+    string dir;
 
     while (!path.empty() && strcmp(path.c_str(), "/") != 0 && !directoryExists(path)) {
         if (mkdir(path.c_str(), S_IRWXU) != 0) {
@@ -128,7 +128,7 @@ auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Resu
     gm::unique_resource<int, &close> inFile(open(from.c_str(), O_RDONLY));
     gm::unique_resource<int, &close> outFile(open(to.c_str(), O_WRONLY | O_CREAT, S_IRWXU));
 
-    std::byte buffer[32768];
+    gm::byte buffer[32768];
 
     for (;;) {
         ssize_t rs = read(inFile.get(), buffer, sizeof(buffer));
