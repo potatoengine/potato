@@ -7,11 +7,6 @@
 #include "hash_fnv1a.h"
 #include "traits.h"
 #include "int_types.h"
-#include <string>
-#include <type_traits>
-#include <typeindex>
-#include <utility>
-
 namespace gm {
     struct default_hash;
 
@@ -29,31 +24,6 @@ namespace gm {
     template <typename HashAlgorithm, typename T>
     inline enable_if_t<is_contiguous<T>::value> hash_append(HashAlgorithm& hasher, T const& value) {
         hasher.append_bytes(&value, sizeof(value));
-    }
-
-    template <typename HashAlgorithm, typename CharT, typename CharTraits, typename AllocatorT>
-    inline void hash_append(HashAlgorithm& hasher, std::basic_string<CharT, CharTraits, AllocatorT> const& string) {
-        hasher.append_bytes(string.data(), string.size());
-    }
-
-    template <typename HashAlgorithm, typename ContainerT, typename, typename>
-    inline void hash_append(HashAlgorithm& hasher, ContainerT const& container) {
-        for (auto const& value : container) {
-            hash_append(hasher, value);
-        }
-    }
-
-    template <typename HashAlgorithm, typename FirstT, typename SecondT>
-    inline void hash_append(HashAlgorithm& hasher, std::pair<FirstT, SecondT> const& pair) {
-        hash_append(hasher, pair.first);
-        hash_append(hasher, pair.second);
-    }
-
-    template <typename HashAlgorithm>
-    inline void hash_append(HashAlgorithm& hasher, std::type_index type) {
-        // hash_code might not be the same number of bits as the hasher so we rehash.
-        // we rehash even if they are the same number of bits, which is probably not ideal, but works.
-        hash_append(hasher, type.hash_code());
     }
 
     // note: [[1, 2], 3] will hash the same as [1, [2, 3]]

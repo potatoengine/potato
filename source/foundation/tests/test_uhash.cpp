@@ -1,4 +1,4 @@
-#include "grimm/foundation/uhash.h"
+#include "grimm/foundation/hash.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/span.h"
