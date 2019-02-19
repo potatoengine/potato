@@ -324,7 +324,7 @@ auto gm::vector<T>::emplace(const_iterator pos, ParamsT&&... params) -> gm::enab
         auto const new_size = _last - _first + 1;
 
         // free up old space
-        gm::destruct_n(_first, size);
+        gm::destruct_n(_first, _last - _first);
         _deallocate(_first, _sentinel - _first);
 
         // commit new space
