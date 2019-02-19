@@ -113,8 +113,10 @@ public:
     void pop_back();
 
 public:
-    size_t _grow(size_t minimum = 4);
-    void _rshift(T* pos, size_t shift);
+    T* _allocate(size_type capacity);
+    void _deallocate(T* ptr, size_type capacity);
+    size_type _grow(size_type minimum = 4);
+    void _rshift(T* pos, size_type shift);
 
     T* _first = nullptr;
     T* _last = nullptr;
@@ -150,8 +152,8 @@ gm::vector<T>::vector(vector&& src) : _first(src._first), _last(src._last), _sen
 
 template <typename T>
 gm::vector<T>::~vector() {
-    clear();
-    shrink_to_fit();
+    destruct_n(_first, _last - _first);
+    _deallocate(_first, _sentinel - _first);
 }
 
 template <typename T>
@@ -186,6 +188,16 @@ T* gm::vector<T>::release() {
 }
 
 template <typename T>
+T* gm::vector<T>::_allocate(size_type capacity) {
+    return static_cast<T*>(operator new(capacity * sizeof(T), std::align_val_t(alignof(T))));
+}
+
+template <typename T>
+void gm::vector<T>::_deallocate(T* ptr, size_type capacity) {
+    ::operator delete(ptr, capacity * sizeof(T), std::align_val_t(alignof(T)));
+}
+
+template <typename T>
 size_t gm::vector<T>::_grow(size_t minimum) {
     size_type capacity = _sentinel - _first;
     capacity += capacity >> 1;
@@ -212,11 +224,11 @@ template <typename T>
 void gm::vector<T>::reserve(size_type required) {
     size_type const capacity = _sentinel - _first;
     if (capacity < required) {
-        T* tmp = new T[required];
+        T* tmp = _allocate(required);
         auto const count = _last - _first;
         gm::unitialized_move_n(_first, count, tmp);
         gm::destruct_n(_first, count);
-        delete[] _first;
+        _deallocate(_first, _sentinel - _first);
         _first = tmp;
         _last = _first + count;
         _sentinel = _first + required;
@@ -262,15 +274,15 @@ void gm::vector<T>::shrink_to_fit() {
     if (_sentinel == nullptr) { /* do nothing */
     }
     else if (_first == _last) {
-        delete[] _first;
+        _deallocate(_first, _sentinel - _first);
         _first = _last = _sentinel = nullptr;
     }
     else if (_sentinel > _last) {
         auto const size = _last - _first;
-        T* tmp = new T[size];
+        T* tmp = _allocate(size);
         gm::unitialized_move_n(_first, size, tmp);
         gm::destruct_n(_first, size);
-        delete[] _first;
+        _deallocate(_first, _sentinel - _first);
         _first = tmp;
         _sentinel = _last = _first + size;
     }
@@ -284,7 +296,7 @@ auto gm::vector<T>::emplace(const_iterator pos, ParamsT&&... params) -> gm::enab
 
         // grow
         auto const newCapacity = _grow(_last - _first + 1);
-        T* tmp = new T[newCapacity];
+        T* tmp = _allocate(newCapacity);
 
         // insert new elements
         new (tmp + offset) value_type(std::forward<ParamsT>(params)...);
@@ -298,7 +310,8 @@ auto gm::vector<T>::emplace(const_iterator pos, ParamsT&&... params) -> gm::enab
         auto const new_size = _last - _first + 1;
 
         // free up old space
-        delete[] _first;
+        gm::destruct_n(_first, size);
+        _deallocate(_first, _sentinel - _first);
 
         // commit new space
         _first = tmp;
@@ -325,8 +338,8 @@ auto gm::vector<T>::emplace_back(ParamsT&&... params) -> gm::enable_if_t<std::is
         auto const size = _last - _first;
 
         // grow
-        auto const new_capacity = _grow(size + 1);
-        T* tmp = new T[new_capacity];
+        auto const newCapacity = _grow(size + 1);
+        T* tmp = _allocate(newCapacity);
 
         // insert new elements
         new (tmp + size) value_type(std::forward<ParamsT>(params)...);
@@ -335,12 +348,13 @@ auto gm::vector<T>::emplace_back(ParamsT&&... params) -> gm::enable_if_t<std::is
         gm::unitialized_move_n(_first, size, tmp);
 
         // free up old space
-        delete[] _first;
+        gm::destruct_n(_first, size);
+        _deallocate(_first, _sentinel - _first);
 
         // commit new space
         _first = tmp;
         _last = _first + size + 1;
-        _sentinel = _first + new_capacity;
+        _sentinel = _first + newCapacity;
 
         return _first + size;
     }
@@ -363,7 +377,7 @@ auto gm::vector<T>::insert(const_iterator pos, IteratorT begin, SentinelT end) -
 
         // grow
         auto const newCapacity = _grow(_last - _first + count);
-        T* tmp = new T[newCapacity];
+        T* tmp = _allocate(newCapacity);
 
         // insert new elements
         gm::unitialized_copy_n(begin, count, tmp + offset);
@@ -377,7 +391,8 @@ auto gm::vector<T>::insert(const_iterator pos, IteratorT begin, SentinelT end) -
         auto const new_size = _last - _first + count;
 
         // free up old space
-        delete[] _first;
+        gm::destruct_n(_first, _last - _first);
+        _deallocate(_first, _sentinel - _first);
 
         // commit new space
         _first = tmp;
