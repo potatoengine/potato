@@ -7,6 +7,7 @@
 #include "grimm/foundation/span.h"
 #include "grimm/foundation/rc.h"
 #include "grimm/foundation/vector.h"
+#include "grimm/foundation/int_types.h"
 #include "grimm/gpu/common.h"
 
 namespace gm::gpu {
@@ -32,7 +33,7 @@ namespace gm {
 
     class Mesh : public shared<Mesh> {
     public:
-        GM_RENDER_API explicit Mesh(vector<uint16> indices, vector<byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels);
+        GM_RENDER_API explicit Mesh(vector<uint16> indices, vector<gm::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels);
         GM_RENDER_API ~Mesh();
 
         GM_RENDER_API void populateLayout(span<gpu::InputLayoutElement>& inputLayout) const noexcept;
@@ -47,6 +48,6 @@ namespace gm {
         vector<MeshBuffer> _buffers;
         vector<MeshChannel> _channels;
         vector<uint16> _indices;
-        vector<byte> _data;
+        vector<gm::byte> _data;
     };
 } // namespace gm

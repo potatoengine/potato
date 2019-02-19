@@ -228,7 +228,7 @@ public:
     }
 
 private:
-    static pointer [[nodiscard]] _copy(const_pointer str, size_type length) {
+    [[nodiscard]] static pointer _copy(const_pointer str, size_type length) {
         if (length != 0) {
             pointer p = new value_type[length + 1];
             std::memmove(p, str, length);
