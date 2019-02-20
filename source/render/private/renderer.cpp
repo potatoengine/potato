@@ -243,7 +243,7 @@ auto gm::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
         return nullptr;
     }
 
-    auto img = image::loadImage(stream);
+    auto img = loadImage(stream);
     if (img.size() == 0) {
         return nullptr;
     }

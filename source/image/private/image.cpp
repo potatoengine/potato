@@ -28,7 +28,7 @@ static int stb_eof(void* user) {
 
 static constexpr stbi_io_callbacks stb_io = {&stb_read, &stb_skip, &stb_eof};
 
-auto gm::image::loadImage(fs::Stream& stream) -> Image {
+auto gm::loadImage(fs::Stream& stream) -> Image {
     int width = 0, height = 0, channels = 0;
     stbi_uc* image = stbi_load_from_callbacks(&stb_io, &stream, &width, &height, &channels, 4);
     if (image == nullptr) {

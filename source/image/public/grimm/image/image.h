@@ -11,7 +11,7 @@ namespace gm::fs {
     class Stream;
 }
 
-namespace gm::image {
+namespace gm {
     class ImageView {
     public:
         ImageView() = default;
@@ -28,7 +28,7 @@ namespace gm::image {
         int stride() const noexcept { return _stride; }
 
         bool isCompact() const noexcept { return _width == _stride; }
-        bool isCompressed() const noexcept { return gm::image::isCompressed(_format); }
+        bool isCompressed() const noexcept { return gm::isCompressed(_format); }
 
     private:
         byte* _data = nullptr;
@@ -49,4 +49,4 @@ namespace gm::image {
 
     GM_IMAGE_API Image loadImage(fs::Stream& stream);
     GM_IMAGE_API bool saveDDS(ImageView const& image, fs::Stream& stream);
-} // namespace gm::image
+} // namespace gm

@@ -16,13 +16,13 @@ namespace gm {
 
     class Texture : public shared<Texture> {
     public:
-        GM_RENDER_API explicit Texture(image::Image image, box<gpu::Texture> texture);
+        GM_RENDER_API explicit Texture(Image image, box<gpu::Texture> texture);
         GM_RENDER_API ~Texture();
 
         gpu::Texture& texture() const noexcept { return *_texture; }
 
     private:
         box<gpu::Texture> _texture;
-        image::Image _image;
+        Image _image;
     };
 } // namespace gm

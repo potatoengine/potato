@@ -3,7 +3,7 @@
 #include "format.h"
 #include "grimm/foundation/assertion.h"
 
-bool gm::image::isCompressed(ImageFormat format) noexcept {
+bool gm::isCompressed(ImageFormat format) noexcept {
     switch (format) {
     case ImageFormat::DXT5:
         return true;
@@ -12,7 +12,7 @@ bool gm::image::isCompressed(ImageFormat format) noexcept {
     }
 }
 
-int gm::image::channelCount(ImageFormat format) noexcept {
+int gm::channelCount(ImageFormat format) noexcept {
     switch (format) {
     case ImageFormat::RGBA8_UNORM:
     case ImageFormat::DXT5:
@@ -27,7 +27,7 @@ int gm::image::channelCount(ImageFormat format) noexcept {
     }
 }
 
-int gm::image::bytesPerPixel(ImageFormat format) noexcept {
+int gm::bytesPerPixel(ImageFormat format) noexcept {
     switch (format) {
     case ImageFormat::RGBA8_UNORM:
         return 4;
