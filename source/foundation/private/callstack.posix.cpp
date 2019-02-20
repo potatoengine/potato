@@ -6,6 +6,7 @@
 #include "numeric_util.h"
 
 #include <cstring>
+#include <cstdlib>
 #include <execinfo.h>
 
 auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
