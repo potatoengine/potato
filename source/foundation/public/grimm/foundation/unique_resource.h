@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 namespace gm {
     template <typename T, auto D, auto Default = T{}>
     class unique_resource;

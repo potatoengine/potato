@@ -5,7 +5,6 @@
 #include "_export.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/string_view.h"
-#include "grimm/foundation/vector.h"
 #include "grimm/foundation/span.h"
 #include <cstring>
 
