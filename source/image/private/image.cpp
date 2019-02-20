@@ -29,28 +29,29 @@ static int stb_eof(void* user) {
 static constexpr stbi_io_callbacks stb_io = {&stb_read, &stb_skip, &stb_eof};
 
 auto gm::loadImage(fs::Stream& stream) -> Image {
-    int width = 0, height = 0, channels = 0;
-    stbi_uc* image = stbi_load_from_callbacks(&stb_io, &stream, &width, &height, &channels, 4);
+    ImageHeader header;
+
+    int channels = 0;
+    stbi_uc* image = stbi_load_from_callbacks(&stb_io, &stream, &header.width, &header.height, &channels, 4);
     if (image == nullptr) {
         return {};
     }
 
-    vector<byte> data(width * height * 4);
+    vector<byte> data(header.width * header.width * 4);
     std::memcpy(data.data(), image, data.size());
     free(image);
 
-    ImageFormat format = ImageFormat::Unknown;
     switch (channels) {
     case 1:
-        format = ImageFormat::R8_UNORM;
+        header.pixelFormat = ImagePixelFormat::R8_UNORM;
         break;
     case 3:
-        format = ImageFormat::RGB8_UNORM;
+        header.pixelFormat = ImagePixelFormat::RGB8_UNORM;
         break;
     case 4:
-        format = ImageFormat::RGBA8_UNORM;
+        header.pixelFormat = ImagePixelFormat::RGBA8_UNORM;
         break;
     }
 
-    return Image(format, std::move(data), width, height, 4 * width);
+    return Image(header, std::move(data));
 }

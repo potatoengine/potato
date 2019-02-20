@@ -95,13 +95,27 @@ int gm::ShellApp::initialize() {
     _camera = new_box<RenderCamera>(_swapChain);
 
     auto material = _renderer->loadMaterialSync("resources/materials/basic.json");
+    if (material == nullptr) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Failed to load basic material", _window.get());
+        return 1;
+    }
+
     auto mesh = _renderer->loadMeshSync("resources/meshes/cube.model");
+    if (mesh == nullptr) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Failed to load cube mesh", _window.get());
+        return 1;
+    }
+
     auto model = new_box<Model>(std::move(mesh), std::move(material));
     _root = new_box<Node>(std::move(model));
     _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 5, 0}));
 
     auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
     auto imguiPixelShader = _renderer->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
+    if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Failed to load imgui shaders", _window.get());
+        return 1;
+    }
 
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
     _drawImgui.createResources(*_device);

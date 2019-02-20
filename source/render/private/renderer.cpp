@@ -116,7 +116,7 @@ auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     stream.close();
 
     Assimp::Importer importer;
-    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), aiProcess_FlipWindingOrder, "assbin");
+    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), 0, "assbin");
     if (scene == nullptr) {
         zstring_view error = importer.GetErrorString();
         return {};
@@ -244,17 +244,17 @@ auto gm::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
     }
 
     auto img = loadImage(stream);
-    if (img.size() == 0) {
+    if (img.data().empty()) {
         return nullptr;
     }
 
     gpu::TextureDesc desc = {};
     desc.type = gpu::TextureType::Texture2D;
     desc.format = gpu::Format::R8G8B8A8UnsignedNormalized;
-    desc.width = img.width();
-    desc.height = img.height();
+    desc.width = img.header().width;
+    desc.height = img.header().height;
 
-    auto tex = _device->createTexture2D(desc, {img.data(), img.size()});
+    auto tex = _device->createTexture2D(desc, img.data());
     if (tex == nullptr) {
         return nullptr;
     }
