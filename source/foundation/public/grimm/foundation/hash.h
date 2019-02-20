@@ -7,6 +7,7 @@
 #include "hash_fnv1a.h"
 #include "traits.h"
 #include "int_types.h"
+
 namespace gm {
     struct default_hash;
 
@@ -22,23 +23,9 @@ namespace gm {
 
 namespace gm {
     template <typename HashAlgorithm, typename T>
-    inline enable_if_t<is_contiguous<T>::value> hash_append(HashAlgorithm& hasher, T const& value) {
+    inline enable_if_t<is_contiguous<T>::value, HashAlgorithm&> hash_append(HashAlgorithm& hasher, T const& value) {
         hasher.append_bytes(&value, sizeof(value));
-    }
-
-    // note: [[1, 2], 3] will hash the same as [1, [2, 3]]
-    //       likewise, ["a", "bc"] will hash the same as ["ab", "c"]
-
-    template <typename HashAlgorithm, typename ValueT>
-    inline enable_if_t<is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT> const& container) {
-        hasher({container.data(), container.size() * sizeof(ValueT)});
-    }
-
-    template <typename HashAlgorithm, typename ValueT, typename AllocatorT>
-    inline enable_if_t<!is_contiguous<ValueT>::value> hash_append(HashAlgorithm& hasher, vector<ValueT> const& container) {
-        for (auto&& value : container) {
-            hash_append(hasher, value);
-        }
+        return hasher;
     }
 } // namespace gm
 
