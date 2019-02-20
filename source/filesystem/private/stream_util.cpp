@@ -10,9 +10,10 @@ auto gm::fs::readBinary(Stream& stream, vector<gm::byte>& out) -> Result {
     }
 
     auto size = stream.remaining();
-    out.resize(out.size() + size);
+    auto offset = out.size();
+    out.resize(offset + size);
 
-    auto read = out.subspan(out.size());
+    auto read = out.subspan(offset);
     return stream.read(read);
 }
 
