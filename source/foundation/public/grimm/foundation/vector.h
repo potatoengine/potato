@@ -383,7 +383,7 @@ namespace gm {
             GM_ASSERT(begin < _first || begin >= _last, "Inserting a sub-range of a vector into itself is not supported");
         }
 
-        auto const count = std::distance(begin, end);
+        auto const count = end - begin;
 
         if (_sentinel - _last < count) {
             auto const offset = pos - _first;

@@ -15,6 +15,7 @@
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include <set>
+#include <algorithm>
 
 gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {}
 gm::recon::ConverterApp::~ConverterApp() = default;
