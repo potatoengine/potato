@@ -4,7 +4,6 @@
 
 #include "debug.h"
 #include "string_view.h"
-#include <iterator>
 
 // needed by fmtlib
 #if !defined(FMT_ASSERT)
