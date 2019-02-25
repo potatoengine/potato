@@ -9,7 +9,7 @@ gm_set_common_properties(foundation)
 
 target_link_libraries(foundation
     PUBLIC
-        fmt
+        formatxx
         spdlog
     PRIVATE
         doctest
