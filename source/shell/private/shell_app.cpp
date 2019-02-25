@@ -26,7 +26,6 @@
 #include "grimm/render/draw_imgui.h"
 #include "grimm/render/debug_draw.h"
 
-#include <fmt/chrono.h>
 #include <chrono>
 #include <SDL.h>
 #include <SDL_messagebox.h>

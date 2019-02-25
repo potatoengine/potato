@@ -45,6 +45,11 @@ namespace gm {
             return os;
         }
 
+        template <typename Writer, typename Spec>
+        friend void format_value(Writer& writer, fixed_string const& fs, Spec const&) noexcept {
+            writer.write({fs._buffer, fs._size});
+        }
+
     private:
         std::size_t _size = 0;
         char _buffer[Capacity] = {
