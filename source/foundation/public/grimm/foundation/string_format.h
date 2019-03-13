@@ -41,6 +41,6 @@ namespace gm {
     template <typename Buffer, typename... Args>
     constexpr decltype(auto) format_into(Buffer& buffer, string_view format, Args const&... args) {
         format_writer<Buffer> writer(buffer);
-        return ::formatxx::format(writer, ::formatxx::string_view(format.data(), format.size()), args...);
+        return ::formatxx::format_to(writer, ::formatxx::string_view(format.data(), format.size()), args...);
     }
 } // namespace gm
