@@ -39,8 +39,8 @@ namespace gm {
         inline void clear();
 
         template <typename Writer, typename Spec>
-        friend void format_value(Writer& writer, fixed_string const& fs, Spec const&) noexcept {
-            writer.write({fs._buffer, fs._size});
+        friend void format_value(Writer& writer, fixed_string const& fs, Spec const& options) noexcept {
+            format_value_to(writer, string_view{fs._buffer, fs._size}, options);
         }
 
     private:
