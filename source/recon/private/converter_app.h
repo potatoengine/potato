@@ -14,6 +14,7 @@
 #include "grimm/recon/converter_config.h"
 #include "grimm/assetdb/asset_library.h"
 #include "grimm/assetdb/hash_cache.h"
+#include <spdlog/logger.h>
 
 namespace gm::recon {
     class Converter;
@@ -52,5 +53,6 @@ namespace gm::recon {
         fs::FileSystem _fileSystem;
         AssetLibrary _library;
         HashCache _hashes;
+        std::shared_ptr<spdlog::logger> _logger;
     };
 } // namespace gm::recon
