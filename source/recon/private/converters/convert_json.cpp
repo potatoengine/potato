@@ -25,14 +25,14 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
         if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != fs::Result::Success) {
-            std::cerr << "Failed to create `" << destParentAbsolutePath << '\n';
+            ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }
 
     std::ifstream inFile(sourceAbsolutePath.c_str());
     if (!inFile) {
-        std::cerr << "Failed to open `" << sourceAbsolutePath << "'\n";
+        ctx.logger().error("Failed to open `{}'", sourceAbsolutePath);
         return false;
     }
 
@@ -40,7 +40,7 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
     rapidjson::IStreamWrapper inStream(inFile);
     doc.ParseStream<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag | rapidjson::kParseNanAndInfFlag>(inStream);
     if (doc.HasParseError()) {
-        std::cerr << "Failed to parse `" << sourceAbsolutePath << "': " << doc.GetParseError() << '\n';
+        ctx.logger().error("Failed to parse `{}': {}", sourceAbsolutePath, doc.GetParseError());
         return false;
     }
 
@@ -48,7 +48,7 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
 
     std::ofstream outFile(destAbsolutePath.c_str());
     if (!outFile) {
-        std::cerr << "Failed to open `" << destAbsolutePath << "'\n";
+        ctx.logger().error("Failed to open `{}'", destAbsolutePath);
         return false;
     }
 
@@ -56,7 +56,7 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
     rapidjson::Writer<rapidjson::OStreamWrapper> writer(outStream);
 
     if (!doc.Accept(writer)) {
-        std::cerr << "Failed to write to `" << destAbsolutePath << "'\n";
+        ctx.logger().error("Failed to write to `{}'", destAbsolutePath);
         return false;
     }
 
@@ -65,7 +65,7 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
     // output has same name as input
     ctx.addOutput(ctx.sourceFilePath());
 
-    std::cout << "Minified `" << sourceAbsolutePath << "' to `" << destAbsolutePath << "'\n";
+    ctx.logger().info("Minified `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
 
     return true;
 }

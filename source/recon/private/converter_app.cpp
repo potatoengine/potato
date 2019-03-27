@@ -36,7 +36,7 @@ gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSy
 gm::recon::ConverterApp::~ConverterApp() = default;
 
 bool gm::recon::ConverterApp::run(span<char const*> args) {
-    if (!parseArguments(_config, args, _fileSystem)) {
+    if (!parseArguments(_config, args, _fileSystem, *_logger)) {
         _logger->error("Failed to parse arguments");
         return false;
     }
@@ -178,9 +178,9 @@ bool gm::recon::ConverterApp::convertFiles(vector<string> const& files) {
         }
 
         auto name = converter->name();
-        std::cout << "Asset `" << path.c_str() << "' requires import (" << std::string_view(name.data(), name.size()) << ' ' << converter->revision() << ")";
+        _logger->info("Asset `{}' requires import ({} {})", path.c_str(), std::string_view(name.data(), name.size()), converter->revision());
 
-        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str());
+        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_logger);
         if (!converter->convert(context)) {
             failed = true;
             _logger->error("Failed conversion for `{}'", path);

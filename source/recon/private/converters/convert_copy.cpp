@@ -19,7 +19,7 @@ bool gm::recon::CopyConverter::convert(Context& ctx) {
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
         if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != fs::Result::Success) {
-            std::cerr << "Failed to create `" << destParentAbsolutePath << '\n';
+            ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }
@@ -28,11 +28,11 @@ bool gm::recon::CopyConverter::convert(Context& ctx) {
     ctx.addOutput(ctx.sourceFilePath());
 
     if (fileSys.copyFile(sourceAbsolutePath.c_str(), destAbsolutePath.c_str()) != fs::Result::Success) {
-        std::cerr << "Failed to copy `" << sourceAbsolutePath << "' to `" << destAbsolutePath << "'\n";
+        ctx.logger().error("Failed to copy `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
         return false;
     }
 
-    std::cout << "Copied `" << sourceAbsolutePath << "' to `" << destAbsolutePath << "'\n";
+    ctx.logger().info("Copied `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
 
     return true;
 }

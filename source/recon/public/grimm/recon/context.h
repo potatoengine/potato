@@ -5,18 +5,23 @@
 #include "grimm/foundation/gmstring.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/vector.h"
+#include "grimm/foundation/std_iostream.h"
 #include "grimm/assetdb/asset_record.h"
 #include <string>
+#include <spdlog/logger.h>
+#include <spdlog/fmt/ostr.h>
 
 namespace gm::recon {
     class Context {
     public:
         Context(zstring_view sourceFilePath,
                 zstring_view sourceFolderPath,
-                zstring_view destinationFolderPath)
+                zstring_view destinationFolderPath,
+                spdlog::logger& logger)
             : _sourceFilePath(sourceFilePath),
               _sourceFolderPath(sourceFolderPath),
-              _destinationFolderPath(destinationFolderPath) {}
+              _destinationFolderPath(destinationFolderPath),
+              _logger(logger) {}
 
         Context(Context&&) = delete;
         Context& operator=(Context&&) = delete;
@@ -32,6 +37,8 @@ namespace gm::recon {
         span<string const> sourceDependencies() const noexcept { return span{_sourceDependencies.data(), _sourceDependencies.size()}; }
         span<string const> outputs() const noexcept { return span{_outputs.data(), _outputs.size()}; }
 
+        spdlog::logger& logger() noexcept { return _logger; }
+
     private:
         zstring_view _sourceFilePath;
         zstring_view _sourceFolderPath;
@@ -39,5 +46,7 @@ namespace gm::recon {
 
         vector<string> _sourceDependencies;
         vector<string> _outputs;
+
+        spdlog::logger& _logger;
     };
 } // namespace gm::recon
