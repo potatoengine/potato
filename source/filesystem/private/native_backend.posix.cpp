@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <ftw.h>
 #include <errno.h>
+#include <stdio.h>
 
 #if !GM_PLATFORM_POSIX
 #    error "Invalid platform"
@@ -155,10 +156,10 @@ auto gm::fs::NativeBackend::remove(zstring_view path) -> Result {
 }
 
 auto gm::fs::NativeBackend::removeRecursive(zstring_view path) -> Result {
-    auto cb = [](char const* path, struct stat const* st, int flags, struct FTW* ftw) {
+    auto cb = [](char const* path, struct stat const* st, int flags, struct FTW* ftw) -> int {
         return ::remove(path);
     };
-    int rs = nftw(path.c_str(), cb, 64, FTW_DEPTH | FTW_PHYS);
+    int rs = nftw(path.c_str(), +cb, 64, FTW_DEPTH | FTW_PHYS);
     if (rs != 0) {
         return errnoToResult(errno);
     }

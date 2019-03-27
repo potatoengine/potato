@@ -5,6 +5,8 @@
 #include "_export.h"
 #include "platform.h"
 
+#include <cstdlib>
+
 /// Break the debugger, if attached, at this point.
 #if defined(GM_COMPILER_MICROSOFT)
 #    define GM_DEBUG_BREAK() __debugbreak()

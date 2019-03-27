@@ -10,6 +10,7 @@
 
 #include <initializer_list>
 #include <type_traits>
+#include <new>
 
 namespace gm {
     template <typename T>

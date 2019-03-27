@@ -5,6 +5,8 @@
 #include "assertion.h"
 #include "traits.h"
 
+#include <new>
+
 namespace gm {
     template <typename Signature>
     class delegate;

@@ -19,8 +19,10 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
 #include <spdlog/sinks/stdout_sinks.h>
-#include <spdlog/sinks/wincolor_sink.h>
-#include <spdlog/sinks/msvc_sink.h>
+
+#if defined(GM_PLATFORM_WINDOWS)
+#    include <spdlog/sinks/msvc_sink.h>
+#endif
 
 gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {
     auto console = std::make_shared<spdlog::sinks::stdout_sink_mt>();
@@ -28,7 +30,7 @@ gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSy
     auto debug = std::make_shared<spdlog::sinks::msvc_sink_mt>();
     _logger.reset(new spdlog::logger("recon", {console, debug}));
 #else
-    _logger.reset(new spdlog::logger("recon", {console, debug}));
+    _logger.reset(new spdlog::logger("recon", console));
 #endif
     _logger->set_pattern("%v");
 }
