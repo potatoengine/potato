@@ -61,105 +61,111 @@
 
 # message("<FindSDL2.cmake>")
 
-set(SDL2_SEARCH_PATHS
-	~/Library/Frameworks
-	/Library/Frameworks
-	/usr/local
-	/usr
-	/sw # Fink
-	/opt/local # DarwinPorts
-	/opt/csw # Blastwave
-	/opt
-	${SDL2_PATH}
-)
+function(FindSDL2)
+    set(SDL2_SEARCH_PATHS
+	    ~/Library/Frameworks
+	    /Library/Frameworks
+	    /usr/local
+	    /usr
+	    /sw # Fink
+	    /opt/local # DarwinPorts
+	    /opt/csw # Blastwave
+	    /opt
+	    ${SDL2_PATH}
+    )
 
-find_path(SDL2_INCLUDE_DIR SDL.h
-	HINTS $ENV{SDL2DIR}
-	PATH_SUFFIXES include/SDL2 include
-	PATHS ${SDL2_SEARCH_PATHS}
-)
+    find_path(SDL2_INCLUDE_DIR SDL.h
+	    HINTS $ENV{SDL2DIR}
+	    PATH_SUFFIXES include/SDL2 include
+	    PATHS ${SDL2_SEARCH_PATHS}
+    )
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	set(PATH_SUFFIXES lib64 lib/x64 lib)
-else()
-	set(PATH_SUFFIXES lib/x86 lib)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	    set(PATH_SUFFIXES lib64 lib/x64 lib)
+    else()
+	    set(PATH_SUFFIXES lib/x86 lib)
+    endif()
+
+    find_library(SDL2_LIBRARY_TEMP
+	    NAMES SDL2
+	    HINTS $ENV{SDL2DIR}
+	    PATH_SUFFIXES ${PATH_SUFFIXES}
+	    PATHS ${SDL2_SEARCH_PATHS}
+    )
+
+    if(NOT ${SDL2_INCLUDE_DIR} MATCHES ".framework")
+        # Non-OS X framework versions expect you to also dynamically link to
+        # SDL2main. This is mainly for Windows and OS X. Other (Unix) platforms
+        # seem to provide SDL2main for compatibility even though they don't
+        # necessarily need it.
+        find_library(SDL2MAIN_LIBRARY
+            NAMES SDL2main
+            HINTS $ENV{SDL2DIR}
+            PATH_SUFFIXES ${PATH_SUFFIXES}
+            PATHS ${SDL2_SEARCH_PATHS}
+        )
+    endif(NOT ${SDL2_INCLUDE_DIR} MATCHES ".framework")
+
+    if(SDL2_LIBRARY_TEMP)
+        set(SDL2_INTERFACE_LIBRARIES "" CACHE INTERNAL "")
+
+	    # For OS X, SDL2 uses Cocoa as a backend so it must link to Cocoa.
+	    # CMake doesn't display the -framework Cocoa string in the UI even
+	    # though it actually is there if I modify a pre-used variable.
+	    # I think it has something to do with the CACHE STRING.
+	    # So I use a temporary variable until the end so I can set the
+	    # "real" variable in one-shot.
+	    if(APPLE)
+            list(APPEND SDL2_INTERFACE_LIBRARIES "-framework Cocoa")
+	    endif(APPLE)
+
+	    # SDL2 may require threads on your system.
+        # The Apple build may not need an explicit flag because one of the
+        # frameworks may already provide it.
+        # But for non-OSX systems, I will use the CMake Threads package.
+        if(NOT APPLE)
+            find_package(Threads)
+            list(APPEND SDL2_INTERFACE_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+	    endif(NOT APPLE)
+
+	    # MinGW needs an additional link flag, -mwindows
+        # It's total link flags should look like -lmingw32 -lSDL2main -lSDL2 -mwindows
+        if(MINGW)
+            set(MINGW32_LIBRARY mingw32 "-mwindows" CACHE STRING "mwindows for MinGW")
+		    list(APPEND SDL2_INTERFACE_LIBRARIES ${MINGW32_LIBRARY})
+	    endif(MINGW)
+
+	    # Set the final string here so the GUI reflects the final state.
+	    set(SDL2_LIBRARY ${SDL2_LIBRARY_TEMP} CACHE STRING "Where the SDL2 Library can be found")
+	    # Set the temp variable to INTERNAL so it is not seen in the CMake GUI
+        set(SDL2_LIBRARY_TEMP "${SDL2_LIBRARY_TEMP}" CACHE INTERNAL "")
+
+        add_library(SDL2 IMPORTED SHARED GLOBAL)
+        add_library(SDL2::SDL2 ALIAS SDL2)
+        set_target_properties(SDL2 PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIR}
+            IMPORTED_LINK_INTERFACE_LIBRARIES "${SDL2_INTERFACE_LIBRARIES}"
+        )
+
+        add_library(SDL2main IMPORTED STATIC GLOBAL)
+        add_library(SDL2::SDL2main ALIAS SDL2main)
+        set_target_properties(SDL2main PROPERTIES IMPORTED_LOCATION ${SDL2MAIN_LIBRARY})
+
+        if(WIN32)
+            string(REPLACE ".lib" ".dll" SDL2_LIBRARY_DLL ${SDL2_LIBRARY})
+            set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIBRARY_DLL} IMPORTED_IMPLIB ${SDL2_LIBRARY})
+        else(WIN32)
+            set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIBRARY})
+        endif(WIN32)
+    endif(SDL2_LIBRARY_TEMP)
+
+    # message("</FindSDL2.cmake>")
+
+    INCLUDE(FindPackageHandleStandardArgs)
+
+    FIND_PACKAGE_HANDLE_STANDARD_ARGS(SDL2 REQUIRED_VARS SDL2_LIBRARY SDL2_INCLUDE_DIR)
+endfunction(FindSDL2)
+
+if(NOT TARGET SDL2)
+    FindSDL2()
 endif()
-
-find_library(SDL2_LIBRARY_TEMP
-	NAMES SDL2
-	HINTS $ENV{SDL2DIR}
-	PATH_SUFFIXES ${PATH_SUFFIXES}
-	PATHS ${SDL2_SEARCH_PATHS}
-)
-
-if(NOT ${SDL2_INCLUDE_DIR} MATCHES ".framework")
-    # Non-OS X framework versions expect you to also dynamically link to
-    # SDL2main. This is mainly for Windows and OS X. Other (Unix) platforms
-    # seem to provide SDL2main for compatibility even though they don't
-    # necessarily need it.
-    find_library(SDL2MAIN_LIBRARY
-        NAMES SDL2main
-        HINTS $ENV{SDL2DIR}
-        PATH_SUFFIXES ${PATH_SUFFIXES}
-        PATHS ${SDL2_SEARCH_PATHS}
-    )
-endif(NOT ${SDL2_INCLUDE_DIR} MATCHES ".framework")
-
-if(SDL2_LIBRARY_TEMP)
-    set(SDL2_INTERFACE_LIBRARIES "" CACHE INTERNAL "")
-
-	# For OS X, SDL2 uses Cocoa as a backend so it must link to Cocoa.
-	# CMake doesn't display the -framework Cocoa string in the UI even
-	# though it actually is there if I modify a pre-used variable.
-	# I think it has something to do with the CACHE STRING.
-	# So I use a temporary variable until the end so I can set the
-	# "real" variable in one-shot.
-	if(APPLE)
-        list(APPEND SDL2_INTERFACE_LIBRARIES "-framework Cocoa")
-	endif(APPLE)
-
-	# SDL2 may require threads on your system.
-    # The Apple build may not need an explicit flag because one of the
-    # frameworks may already provide it.
-    # But for non-OSX systems, I will use the CMake Threads package.
-    if(NOT APPLE)
-        find_package(Threads)
-        list(APPEND SDL2_INTERFACE_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
-	endif(NOT APPLE)
-
-	# MinGW needs an additional link flag, -mwindows
-    # It's total link flags should look like -lmingw32 -lSDL2main -lSDL2 -mwindows
-    if(MINGW)
-        set(MINGW32_LIBRARY mingw32 "-mwindows" CACHE STRING "mwindows for MinGW")
-		list(APPEND SDL2_INTERFACE_LIBRARIES ${MINGW32_LIBRARY})
-	endif(MINGW)
-
-	# Set the final string here so the GUI reflects the final state.
-	set(SDL2_LIBRARY ${SDL2_LIBRARY_TEMP} CACHE STRING "Where the SDL2 Library can be found")
-	# Set the temp variable to INTERNAL so it is not seen in the CMake GUI
-    set(SDL2_LIBRARY_TEMP "${SDL2_LIBRARY_TEMP}" CACHE INTERNAL "")
-
-    add_library(SDL2 IMPORTED SHARED GLOBAL)
-    add_library(SDL2::SDL2 ALIAS SDL2)
-    set_target_properties(SDL2 PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIR}
-        IMPORTED_LINK_INTERFACE_LIBRARIES "${SDL2_INTERFACE_LIBRARIES}"
-    )
-
-    add_library(SDL2main IMPORTED STATIC GLOBAL)
-    add_library(SDL2::SDL2main ALIAS SDL2main)
-    set_target_properties(SDL2main PROPERTIES IMPORTED_LOCATION ${SDL2MAIN_LIBRARY})
-
-    if(WIN32)
-        string(REPLACE ".lib" ".dll" SDL2_LIBRARY_DLL ${SDL2_LIBRARY})
-        set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIBRARY_DLL} IMPORTED_IMPLIB ${SDL2_LIBRARY})
-    else(WIN32)
-        set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIBRARY})
-    endif(WIN32)
-endif(SDL2_LIBRARY_TEMP)
-
-# message("</FindSDL2.cmake>")
-
-INCLUDE(FindPackageHandleStandardArgs)
-
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(SDL2 REQUIRED_VARS SDL2_LIBRARY SDL2_INCLUDE_DIR)

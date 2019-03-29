@@ -3,40 +3,44 @@ project(recon VERSION 0.1 LANGUAGES CXX)
 
 include(gm_copy_library_import)
 
-add_library(recon_lib STATIC)
+find_package(Assimp)
 
-include(gm_set_common_properties)
-gm_set_common_properties(recon_lib)
+if(TARGET assimp)
 
-target_link_libraries(recon_lib
-    PUBLIC
-        grimm::foundation
-        grimm::gpu
-        grimm::assetdb
-        grimm::image
-        grimm::filesystem
-        stb
-        assimp
-    PRIVATE
-        rapidjson
-)
+    add_library(recon_lib STATIC)
 
-add_executable(recon)
+    include(gm_set_common_properties)
+    gm_set_common_properties(recon_lib)
 
-gm_set_common_properties(recon)
+    target_link_libraries(recon_lib
+        PUBLIC
+            grimm::foundation
+            grimm::gpu
+            grimm::assetdb
+            grimm::image
+            grimm::filesystem
+            stb
+            assimp
+        PRIVATE
+            rapidjson
+    )
 
-target_link_libraries(recon PRIVATE recon_lib)
+    add_executable(recon)
 
-find_package(Assimp REQUIRED)
-target_link_libraries(recon PRIVATE assimp)
-include(gm_copy_library_import)
-gm_copy_library_import(assimp recon)
+    gm_set_common_properties(recon)
 
-get_target_property(GM_GPU_ENABLE_D3D11 gpu GM_GPU_ENABLE_D3D11)
-if(GM_GPU_ENABLE_D3D11)
-    target_link_libraries(recon_lib PRIVATE d3dcompiler)
-endif(GM_GPU_ENABLE_D3D11)
+    target_link_libraries(recon PRIVATE recon_lib)
 
-add_subdirectory(public/grimm/recon)
-add_subdirectory(private)
-add_subdirectory(tests)
+    target_link_libraries(recon PRIVATE assimp)
+    include(gm_copy_library_import)
+    gm_copy_library_import(assimp recon)
+
+    get_target_property(GM_GPU_ENABLE_D3D11 gpu GM_GPU_ENABLE_D3D11)
+    if(GM_GPU_ENABLE_D3D11)
+        target_link_libraries(recon_lib PRIVATE d3dcompiler)
+    endif(GM_GPU_ENABLE_D3D11)
+
+    add_subdirectory(public/grimm/recon)
+    add_subdirectory(private)
+    add_subdirectory(tests)
+endif()

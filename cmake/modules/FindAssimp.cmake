@@ -88,24 +88,12 @@ function(FindAssimp)
         )
 
         if(assimp_INCLUDE_DIRS AND assimp_LIBRARIES)
-            set(assimp_FOUND TRUE)
+            add_library(assimp IMPORTED SHARED GLOBAL)
+            set_target_properties(assimp PROPERTIES
+                IMPORTED_LOCATION ${assimp_LIBRARIES}
+                INTERFACE_INCLUDE_DIRECTORIES ${assimp_INCLUDE_DIRS}
+            )
         endif (assimp_INCLUDE_DIRS AND assimp_LIBRARIES)
-
-        if(assimp_FOUND)
-            if(NOT assimp_FIND_QUIETLY)
-                message(STATUS "Found asset importer library: ${assimp_LIBRARIES}")
-            endif (NOT assimp_FIND_QUIETLY)
-        else(assimp_FOUND)
-            if(assimp_FIND_REQUIRED)
-                message(FATAL_ERROR "Could not find asset importer library")
-            endif (assimp_FIND_REQUIRED)
-        endif (assimp_FOUND)
-
-        add_library(assimp IMPORTED SHARED GLOBAL)
-        set_target_properties(assimp PROPERTIES
-            IMPORTED_LOCATION ${assimp_LIBRARIES}
-            INTERFACE_INCLUDE_DIRECTORIES ${assimp_INCLUDE_DIRS}
-        )
 
         FIND_PACKAGE_HANDLE_STANDARD_ARGS(assimp REQUIRED_VARS assimp_INCLUDE_DIRS assimp_LIBRARIES)
     
