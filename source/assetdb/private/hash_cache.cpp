@@ -67,7 +67,7 @@ bool gm::HashCache::serialize(fs::Stream& stream) const {
     }
 
     RapidJsonStreamWrapper outWrapper(stream);
-    rapidjson::Writer writer(outWrapper);
+    rapidjson::Writer<RapidJsonStreamWrapper> writer(outWrapper);
     return doc.Accept(writer);
 }
 

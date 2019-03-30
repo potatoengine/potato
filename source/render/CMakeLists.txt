@@ -1,32 +1,36 @@
 cmake_minimum_required(VERSION 3.11)
 project(render VERSION 0.1 LANGUAGES CXX)
 
-add_library(render)
-add_library(grimm::render ALIAS render)
+find_package(Assimp)
+find_package(SDL2)
 
-include(gm_set_common_properties)
-gm_set_common_properties(render)
+if(TARGET assimp AND TARGET SDL2)
+    add_library(render)
+    add_library(grimm::render ALIAS render)
 
-find_package(Assimp REQUIRED)
-include(gm_copy_library_import)
-gm_copy_library_import(assimp render)
+    include(gm_set_common_properties)
+    gm_set_common_properties(render)
 
-target_link_libraries(render
-    PUBLIC
-        grimm::foundation
-        grimm::gpu
-        grimm::concurrency
-        grimm::image
-        glm
-        imgui
-        SDL2
-        rapidjson
-        assimp
-    PRIVATE
-        doctest
-)
+    include(gm_copy_library_import)
+    gm_copy_library_import(assimp render)
 
-add_subdirectory(public/grimm/render)
+    target_link_libraries(render
+        PUBLIC
+            grimm::foundation
+            grimm::gpu
+            grimm::concurrency
+            grimm::image
+            glm
+            imgui
+            SDL2
+            rapidjson
+            assimp
+        PRIVATE
+            doctest
+    )
 
-add_subdirectory(private)
-add_subdirectory(tests)
+    add_subdirectory(public/grimm/render)
+
+    add_subdirectory(private)
+    add_subdirectory(tests)
+endif()

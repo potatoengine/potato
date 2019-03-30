@@ -126,7 +126,7 @@ auto gm::fs::NativeBackend::createDirectories(zstring_view path) -> Result {
 
 auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
     gm::unique_resource<int, &close> inFile(open(from.c_str(), O_RDONLY));
-    gm::unique_resource<int, &close> outFile(open(to.c_str(), O_WRONLY | O_CREAT));
+    gm::unique_resource<int, &close> outFile(open(to.c_str(), O_WRONLY | O_CREAT, S_IRWXU));
 
     std::byte buffer[32768];
 

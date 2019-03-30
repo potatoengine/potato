@@ -8,13 +8,19 @@ trigger:
     exclude:
     - ci/
 
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - master
+
 jobs:
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
   steps:
   - bash: |
-      set -o xtrace
+      set -xe
       curl -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
       unzip SDL2-devel-2.0.9-VC.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
       curl -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
@@ -25,132 +31,98 @@ jobs:
       cmake --version
     displayName: Build Information
   - bash: |
-      set -o xtrace
+      set -xe
       mkdir -p build/shared
       cd build/shared
       cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
-    displayName: CMake Configure
-  - bash: |
-      set -o xtrace
-      cmake --build build/shared --config RelWithDebInfo --parallel
+      cmake --build . --config RelWithDebInfo --parallel
+      ctest -R grimm -C RelWithDebInfo --verbose
     displayName: Build (Release Shared)
   - bash: |
-      set -o xtrace
+      set -xe
+      mkdir -p build/shared
       cd build/shared
-      ctest -C RelWithDebInfo -R grimm --verbose
-    displayName: Run Tests
-  - bash: |
-      set -o xtrace
-      cmake --build build/shared --config Debug --parallel
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
+      cmake --build . --config Debug --parallel
+      ctest -R grimm -C Debug --verbose
     displayName: Build (Debug Shared)
   - bash: |
-      set -o xtrace
+      set -xe
       mkdir -p build/static
       cd build/static
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" -DBUILD_SHARED_LIBS=OFF "${BUILD_SOURCESDIRECTORY}"
-    displayName: CMake Configure (Static)
-  - bash: |
-      set -o xtrace
-      cmake --build build/static --config RelWithDebInfo --parallel
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=OFF -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
+      cmake --build . --config RelWithDebInfo --parallel
+      ctest -R grimm -C RelWithDebInfo --verbose
     displayName: Build (Release Static)
   - bash: |
-      set -o xtrace
-      cmake --build build/static --config Debug --parallel
+      set -xe
+      mkdir -p build/static
+      cd build/static
+      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=OFF -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
+      cmake --build . --config Debug --parallel
+      ctest -R grimm -C Debug --verbose
     displayName: Build (Debug Static)
 
-- job: Linux
+- job: Ubuntu
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-  - task: Docker@0
-    displayName: 'Build Fedora Image'
-    inputs:
-      azureSubscription: '$(Parameters.azureSubscriptionEndpoint)'
-      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
-      dockerFile: 'ci/docker/fedora-build/Dockerfile'
-      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
-  - task: Docker@1
-    displayName: Clang Format
-    inputs:
-      azureSubscriptionEndpoint: '$(Parameters.azureSubscriptionEndpoint)'
-      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
-      command: 'Run an image'
-      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
-      volumes: '$(Build.SourcesDirectory):/source'
-      containerCommand: 'bash /source/ci/scripts/analyze.sh'
-      runInBackground: false
-      enforceDockerNamingConvention: false
-  - task: Docker@1
-    displayName: Build (Release)
-    inputs:
-      azureSubscriptionEndpoint: '$(Parameters.azureSubscriptionEndpoint)'
-      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
-      command: 'Run an image'
-      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
-      volumes: '$(Build.SourcesDirectory):/source'
-      containerCommand: 'bash /source/ci/scripts/build.sh RelWithDebInfo'
-      runInBackground: false
-      enforceDockerNamingConvention: false
-  - task: Docker@1
-    displayName: Build (Debug)
-    inputs:
-      azureSubscriptionEndpoint: '$(Parameters.azureSubscriptionEndpoint)'
-      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
-      command: 'Run an image'
-      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
-      volumes: '$(Build.SourcesDirectory):/source'
-      containerCommand: 'bash /source/ci/scripts/build.sh Debug'
-      runInBackground: false
-      enforceDockerNamingConvention: false
-# DISABLED - TODO: allow us to reuse an image once its built if the Dockerfile isn't changing
-#  - task: Docker@0
-#    displayName: 'Publish Fedora Image'
-#    inputs:
-#      azureSubscription: '$(Parameters.azureSubscriptionEndpoint)'
-#      azureContainerRegistry: '$(Parameters.azureContainerRegistry)'
-#      action: 'Push an image'
-#      imageName: '$(Build.Repository.Name):$(Build.SourceBranchName)'
+  - bash: |
+      set -xe
+    displayName: Installing Dependencies
+  - bash: |
+      set -xe
+      g++-7 --version
+      cmake --version
+    displayName: Build Information
+  - bash: |
+      set -xe
+      mkdir -p build/RelWithDebInfo
+      cd build/RelWithDebInfo
+      cmake -DCMAKE_CXX_COMPILER=g++-7 -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
+      cmake --build . --parallel
+      ctest -R grimm --verbose
+    displayName: Build (Release Static)
+  - bash: |
+      set -xe
+      mkdir -p build/Debug
+      cd build/Debug
+      cmake -DCMAKE_CXX_COMPILER=g++-7 -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=Debug ../..
+      cmake --build . --parallel
+      ctest -R grimm --verbose
+    displayName: Build (Debug Static)
 
 - job: MacOS
   pool:
     vmImage: 'macOS-10.13'
   steps:
   - bash: |
-      set -o xtrace
+      set -xe
       sudo xcode-select -switch /Applications/Xcode_10.1.app
       export HOMEBREW_NO_AUTO_UPDATE=1
       brew install sdl2 assimp
     displayName: Installing Dependencies
   - bash: |
-      set -o xtrace
+      set -xe
       xcode-select --print-path
       clang++ --version
       cmake --version
       brew info llvm
     displayName: Build Information
   - bash: |
-      set -o xtrace
+      set -xe
       mkdir -p build/RelWithDebInfo
       cd build/RelWithDebInfo
-      cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
-    displayName: Configure CMake (Release)
+      cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
+      cmake --build . --parallel
+      ctest -R grimm --verbose
+    displayName: Build (Release Static)
   - bash: |
-      set -o xtrace
-      cmake --build build/RelWithDebInfo --parallel
-    displayName: Build (Release)
-  - bash: |
-      set -o xtrace
+      set -xe
       mkdir -p build/Debug
       cd build/Debug
-      cmake -DCMAKE_BUILD_TYPE:STRING=Debug ../..
-    displayName: Configure CMake (Debug)
-  - bash: |
-      set -o xtrace
-      cmake --build build/Debug --parallel
-    displayName: Build (Debug)
-  - script: |
-      set -o xtrace
-      cd build/RelWithDebInfo
+      cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=Debug ../..
+      cmake --build . --parallel
       ctest -R grimm --verbose
-    displayName: Run Tests
+    displayName: Build (Debug Static)
 
