@@ -6,6 +6,7 @@
 #include "platform.h"
 #include "string_format.h"
 #include "fixed_string_writer.h"
+#include <utility>
 
 #if defined(NDEBUG)
 

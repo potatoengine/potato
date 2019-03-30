@@ -4,6 +4,7 @@
 
 #include "traits.h"
 #include <initializer_list>
+#include <cstddef>
 
 namespace gm::_detail {
     template <typename C>
@@ -63,8 +64,6 @@ public:
         : _begin(begin), _end(end) {}
     /*implicit*/ constexpr span(T* ptr, std::size_t size) noexcept
         : _begin(ptr), _end(ptr + size) {}
-    /*implicit*/ constexpr span(std::initializer_list<T> src) noexcept
-        : _begin(src.begin()), _end(src.end()) {}
     template <std::size_t N>
     /*implicit*/ constexpr span(T (&src)[N]) noexcept
         : _begin(src), _end(src + N) {}

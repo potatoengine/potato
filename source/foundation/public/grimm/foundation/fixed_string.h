@@ -62,7 +62,7 @@ namespace gm {
 
     template <size_t Capacity>
     auto fixed_string<Capacity>::operator=(fixed_string const& string) -> fixed_string& {
-        if (this != std::addressof(string)) {
+        if (this != &string) {
             _size = string._size;
             std::memcpy(_buffer, string._buffer, _size + 1);
         }

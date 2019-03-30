@@ -66,7 +66,6 @@ public:
     pointer operator->() const { return _ptr; }
 
     reference operator*() const { return *_ptr; }
-    reference operator[](size_t index) const { return _ptr[index]; }
 
     explicit operator bool() const { return _ptr != nullptr; }
     bool empty() const { return _ptr == nullptr; }
