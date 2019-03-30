@@ -98,9 +98,9 @@ namespace gm::fs {
 } // namespace gm::fs
 
 auto gm::fs::NativeBackend::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
-    return Stream(gm::make_box<NativeInputBackend>(std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
+    return Stream(gm::new_box<NativeInputBackend>(std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }
 
 auto gm::fs::NativeBackend::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
-    return Stream(gm::make_box<NativeOutputBackend>(std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
+    return Stream(gm::new_box<NativeOutputBackend>(std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }
