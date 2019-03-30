@@ -12,7 +12,7 @@ auto gm::fs::readBlob(Stream& stream, blob& out) -> Result {
     auto size = stream.remaining();
     out = blob(size);
 
-    auto read = span{out.data_bytes(), out.size()};
+    auto read = span<byte>{out.data_bytes(), out.size()};
     return stream.read(read);
 }
 

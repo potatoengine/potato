@@ -73,7 +73,7 @@ bool gm::AssetLibrary::serialize(fs::Stream& stream) const {
     root.AddMember("records", array, doc.GetAllocator());
 
     RapidJsonStreamWrapper outWrapper(stream);
-    rapidjson::Writer writer(outWrapper);
+    rapidjson::Writer<RapidJsonStreamWrapper> writer(outWrapper);
     return doc.Accept(writer);
 }
 

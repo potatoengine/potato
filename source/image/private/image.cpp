@@ -7,7 +7,7 @@
 static int stb_read(void* user, char* data, int size) {
     auto* stream = static_cast<gm::fs::Stream*>(user);
 
-    auto bytes = gm::span{data, static_cast<size_t>(size)}.as_bytes();
+    auto bytes = gm::span<char>{data, static_cast<size_t>(size)}.as_bytes();
     if (stream->read(bytes) != gm::fs::Result::Success) {
         return 0;
     }
