@@ -1,12 +1,12 @@
-// Copyright (C) 2014 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2014,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
 #include "_export.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/string_view.h"
-#include "grimm/foundation/vector.h"
 #include "grimm/foundation/span.h"
+#include <cstring>
 
 namespace gm {
     class string;
@@ -54,7 +54,7 @@ namespace gm {
 
         GM_FOUNDATION_API void reserve(size_type capacity);
 
-        GM_FOUNDATION_API span<value_type> acquire(size_type size);
+        [[nodiscard]] GM_FOUNDATION_API span<value_type> acquire(size_type size);
         GM_FOUNDATION_API void commit(span<value_type const> data);
 
         GM_FOUNDATION_API void resize(size_type newSize, value_type fill = ' ');
@@ -70,8 +70,7 @@ namespace gm {
         GM_FOUNDATION_API string to_string() &&;
 
     private:
-        void
-        _grow(size_type requiredSize);
+        void _grow(size_type requiredSize);
 
         size_type _size = 0;
         size_type _capacity = sizeof(_fixed);

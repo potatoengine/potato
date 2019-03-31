@@ -2,7 +2,7 @@ set(OLD_TIDY ${CMAKE_CXX_CLANG_TIDY})
 set(CMAKE_CXX_CLANG_TIDY "")
 set(CMAKE_FOLDER "external")
 
-set(FORMATXX_BUILD_TEST OFF CACHE BOOL "enable formatxx tests")
+set(FORMATXX_BUILD_TESTS OFF CACHE BOOL "enable formatxx tests")
 add_subdirectory(formatxx EXCLUDE_FROM_ALL)
 
 set(DOCTEST_WITH_TESTS OFF CACHE BOOL "enable doctest tests")

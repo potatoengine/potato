@@ -39,7 +39,7 @@ namespace gm::fs {
                     return Result::InvalidArgument;
                 }
 
-                _stream.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+                _stream.read(buffer.as_chars().data(), buffer.size());
                 buffer = buffer.first(_stream.gcount());
                 if (_stream.eof()) {
                     _stream.clear();
@@ -79,7 +79,7 @@ namespace gm::fs {
             }
 
             Result write(span<byte const> buffer) override {
-                _stream.write(reinterpret_cast<char const*>(buffer.data()), buffer.size());
+                _stream.write(buffer.as_chars().data(), buffer.size());
                 return Result::Success;
             }
 
@@ -98,9 +98,9 @@ namespace gm::fs {
 } // namespace gm::fs
 
 auto gm::fs::NativeBackend::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
-    return Stream(gm::make_box<NativeInputBackend>(std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
+    return Stream(gm::new_box<NativeInputBackend>(std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }
 
 auto gm::fs::NativeBackend::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
-    return Stream(gm::make_box<NativeOutputBackend>(std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
+    return Stream(gm::new_box<NativeOutputBackend>(std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }

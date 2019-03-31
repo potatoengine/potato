@@ -1,6 +1,8 @@
-// Copyright (C) 2018 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2018,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
+
+#include <utility>
 
 namespace gm {
     template <typename T, auto D, auto Default = T{}>

@@ -2,6 +2,7 @@
 #include "grimm/foundation/string_view.h"
 #include "grimm/filesystem/filesystem.h"
 #include "doctest.h"
+#include <spdlog/spdlog.h>
 
 DOCTEST_TEST_SUITE("[grimm][recon] ConverterConfig") {
     using namespace gm;
@@ -12,7 +13,7 @@ DOCTEST_TEST_SUITE("[grimm][recon] ConverterConfig") {
         ConverterConfig config;
         fs::FileSystem fs;
 
-        bool ok = parseArguments(config, args, fs);
+        bool ok = parseArguments(config, args, fs, *spdlog::default_logger_raw());
         DOCTEST_CHECK(ok);
 
         DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");
@@ -24,7 +25,7 @@ DOCTEST_TEST_SUITE("[grimm][recon] ConverterConfig") {
         string_view json = R"--({"sourceDir":"ABC","destDir":"DEF","cacheDir":"GHI"})--";
         ConverterConfig config;
 
-        bool ok = parseConfigString(config, json, "test.json");
+        bool ok = parseConfigString(config, json, "test.json", *spdlog::default_logger_raw());
         DOCTEST_CHECK(ok);
 
         DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");

@@ -4,6 +4,7 @@
 
 #include "grimm/foundation/delegate_ref.h"
 #include "grimm/foundation/zstring_view.h"
+#include "grimm/foundation/int_types.h"
 
 namespace gm::fs {
     enum class Result {
@@ -41,14 +42,14 @@ namespace gm::fs {
     };
 
     struct FileStat {
-        std::size_t size = 0;
+        size_t size = 0;
         uint64 mtime = 0;
         FileType type = FileType::Regular;
     };
 
     struct FileInfo {
         zstring_view path;
-        std::size_t size = 0;
+        size_t size = 0;
         FileType type = FileType::Regular;
     };
 

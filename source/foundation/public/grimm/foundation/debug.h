@@ -1,9 +1,11 @@
-// Copyright (C) 2014,2015 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2014,2015,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
 #include "_export.h"
 #include "platform.h"
+
+#include <cstdlib>
 
 /// Break the debugger, if attached, at this point.
 #if defined(GM_COMPILER_MICROSOFT)

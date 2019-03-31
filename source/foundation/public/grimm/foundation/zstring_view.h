@@ -3,8 +3,6 @@
 #pragma once
 
 #include "string_view.h"
-#include <string_view>
-#include <iosfwd>
 
 namespace gm {
     class zstring_view {
@@ -13,8 +11,6 @@ namespace gm {
         using pointer = char const*;
         using size_type = std::size_t;
         using const_iterator = pointer;
-
-        using traits = std::char_traits<value_type>;
 
         struct const_sentinel {
             friend constexpr bool operator==(const_iterator iter, const_sentinel) noexcept { return iter != nullptr && *iter != 0; }
@@ -30,13 +26,12 @@ namespace gm {
         constexpr explicit operator bool() const noexcept { return _str != nullptr && *_str != 0; }
         constexpr bool empty() const noexcept { return _str == nullptr || *_str == 0; }
 
-        constexpr size_type size() const noexcept { return _str != nullptr ? traits::length(_str) : 0; }
+        constexpr size_type size() const noexcept { return _str != nullptr ? stringLength(_str) : 0; }
 
         constexpr pointer data() const noexcept { return _str; }
         constexpr pointer c_str() const noexcept { return _str; }
 
         constexpr /*implicit*/ operator string_view() const noexcept { return string_view{_str}; }
-        constexpr /*implicit*/ operator std::string_view() const noexcept { return std::string_view{_str}; }
 
         constexpr value_type operator[](size_type index) const noexcept { return _str[index]; }
 
@@ -84,23 +79,15 @@ namespace gm {
             return npos;
         }
 
-        template <typename T>
-        friend auto& operator<<(std::basic_ostream<value_type, T>& os, zstring_view sv) {
-            if (sv._str != nullptr) {
-                os << sv._str;
-            }
-            return os;
-        }
-
         friend constexpr bool operator==(zstring_view lhs, zstring_view rhs) noexcept {
             size_type lhsSize = lhs.size();
             size_type rhsSize = rhs.size();
-            return lhsSize == rhsSize && traits::compare(lhs._str, rhs._str, lhsSize) == 0;
+            return lhsSize == rhsSize && stringCompare(lhs._str, rhs._str, lhsSize) == 0;
         }
         friend constexpr bool operator==(zstring_view lhs, pointer rhs) noexcept {
             size_type lhsSize = lhs.size();
-            size_type rhsSize = rhs != nullptr ? traits::length(rhs) : 0;
-            return lhsSize == rhsSize && traits::compare(lhs._str, rhs, lhsSize) == 0;
+            size_type rhsSize = rhs != nullptr ? stringLength(rhs) : 0;
+            return lhsSize == rhsSize && stringCompare(lhs._str, rhs, lhsSize) == 0;
         }
         friend constexpr bool operator==(pointer lhs, zstring_view rhs) noexcept { return rhs == lhs; }
 
@@ -110,6 +97,10 @@ namespace gm {
 
     template <typename HashAlgorithm>
     void hash_append(HashAlgorithm& hasher, zstring_view string) {
-        hasher(span<char const>(string.data(), string.size()).as_bytes());
+        hasher.append_bytes(string.data(), string.size());
+    }
+
+    inline auto operator"" _zsv(char const* str, size_t) noexcept -> zstring_view {
+        return {str};
     }
 } // namespace gm

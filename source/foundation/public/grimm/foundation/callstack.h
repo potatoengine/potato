@@ -1,14 +1,11 @@
-// Copyright (C) 22015 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2015,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
 #include "_export.h"
 #include "span.h"
-#include "delegate.h"
 #include "fixed_string.h"
-#include "platform.h"
-#include "types.h"
-#include <array>
+#include "int_types.h"
 
 namespace gm::callstack {
     struct TraceRecord {

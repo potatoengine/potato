@@ -1,15 +1,13 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "hash_cache.h"
-#include "grimm/foundation/fnv1a.h"
+#include "grimm/foundation/hash_fnv1a.h"
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include "stream_json.h"
 
 auto gm::HashCache::hashAssetContent(span<gm::byte const> contents) noexcept -> gm::uint64 {
-    auto hasher = fnv1a();
-    hasher(contents);
-    return static_cast<uint64>(hasher);
+    return hash_value<fnv1a>(contents);
 }
 
 auto gm::HashCache::hashAssetStream(fs::Stream& stream) -> gm::uint64 {
@@ -21,9 +19,9 @@ auto gm::HashCache::hashAssetStream(fs::Stream& stream) -> gm::uint64 {
         if (read.empty()) {
             break;
         }
-        hasher(read);
+        hash_append(hasher, read);
     }
-    return static_cast<uint64>(hasher);
+    return static_cast<uint64>(hasher.finalize());
 }
 
 auto gm::HashCache::hashAssetAtPath(zstring_view path) -> gm::uint64 {
@@ -44,7 +42,7 @@ auto gm::HashCache::hashAssetAtPath(zstring_view path) -> gm::uint64 {
     auto hash = hashAssetStream(fstream);
 
     // update the hash
-    auto rec = make_box<HashRecord>();
+    auto rec = new_box<HashRecord>();
     rec->osPath = string(path);
     rec->hash = hash;
     rec->mtime = stat.mtime;
@@ -109,7 +107,7 @@ bool gm::HashCache::deserialize(fs::Stream& stream) {
 
         string path(member.name.GetString());
 
-        auto rec = make_box<HashRecord>();
+        auto rec = new_box<HashRecord>();
         rec->osPath = string(path);
         rec->hash = hash;
         rec->mtime = mtime;

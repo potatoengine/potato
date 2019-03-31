@@ -3,17 +3,20 @@
 #include "callstack.h"
 #include "platform.h"
 #include "string.h"
+#include "numeric_util.h"
 
+#include <cstring>
+#include <cstdlib>
 #include <execinfo.h>
 
 auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
     void* buffer;
 
-    uint max = addresses.size() - std::min<uint>(addresses.size(), skip);
+    uint max = addresses.size() - min<uint>(addresses.size(), skip);
     uint count = backtrace(&buffer, max);
-    skip = std::min(skip, count);
+    skip = min(skip, count);
 
-    std::memcpy(addresses.data(), static_cast<uintptr*>(buffer) + skip, std::min(count, max));
+    std::memcpy(addresses.data(), static_cast<uintptr*>(buffer) + skip, min(count, max));
 
     return addresses.first(count - skip);
 }

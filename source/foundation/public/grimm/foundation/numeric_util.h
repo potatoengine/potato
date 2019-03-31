@@ -1,8 +1,6 @@
-// Copyright (C) 2014,2015 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2014,2015,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
-
-#include <utility>
 
 namespace gm {
 

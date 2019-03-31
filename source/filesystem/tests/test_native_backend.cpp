@@ -1,4 +1,5 @@
 #include "grimm/foundation/vector.h"
+#include "grimm/foundation/gmstring.h"
 #include "grimm/filesystem/native_backend.h"
 #include "grimm/filesystem/stream.h"
 #include "doctest.h"
@@ -38,21 +39,21 @@ DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
         byte buffer[1024];
         span<byte> bspan(buffer);
         inFile.read(bspan);
-        string_view text(reinterpret_cast<char*>(buffer), bspan.size());
+        string_view text(bspan.as_chars().data(), bspan.size());
 
         DOCTEST_CHECK_EQ(text.first(15), "This is a test.");
     }
 
     DOCTEST_TEST_CASE("enumerate") {
-        vector<std::string> const expected{
-            "parent",
-            "parent/child",
-            "parent/child/hello.txt",
-            "test.txt"};
+        vector<string> const expected{
+            "parent"_sv,
+            "parent/child"_sv,
+            "parent/child/hello.txt"_sv,
+            "test.txt"_sv};
 
         auto native = NativeBackend::create();
 
-        vector<std::string> entries;
+        vector<string> entries;
 
         auto cb = [&entries](FileInfo const& info) {
             entries.push_back(info.path);

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "_export.h"
-#include "grimm/foundation/string_blob.h"
+#include "grimm/foundation/gmstring.h"
 #include "grimm/foundation/zstring_view.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 #include <initializer_list>
 
 namespace gm::fs::path {

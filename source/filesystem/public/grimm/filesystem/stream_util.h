@@ -5,10 +5,11 @@
 #include "_export.h"
 #include "grimm/filesystem/stream.h"
 #include "grimm/filesystem/common.h"
-#include "grimm/foundation/blob.h"
-#include "grimm/foundation/string_blob.h"
+#include "grimm/foundation/vector.h"
+#include "grimm/foundation/gmstring.h"
+#include "grimm/foundation/int_types.h"
 
 namespace gm::fs {
-    [[nodiscard]] GM_FILESYSTEM_API Result readBlob(Stream& stream, blob& out);
+    [[nodiscard]] GM_FILESYSTEM_API Result readBinary(Stream& stream, vector<gm::byte>& out);
     [[nodiscard]] GM_FILESYSTEM_API Result readText(Stream& stream, string& out);
 } // namespace gm::fs

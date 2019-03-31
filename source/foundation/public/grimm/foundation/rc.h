@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2014,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
@@ -162,7 +162,7 @@ namespace gm {
     }
 
     template <typename T, typename... A>
-    rc<T> make_shared(A&&... args) {
+    rc<T> new_shared(A&&... args) {
         return rc<T>(new T(std::forward<A>(args)...));
     }
 

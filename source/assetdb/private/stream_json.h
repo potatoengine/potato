@@ -10,9 +10,8 @@ namespace gm {
         RapidJsonStreamWrapper(fs::Stream& stream) : _stream(stream) {}
 
         void Put(char c) {
-            byte b = reinterpret_cast<byte&>(c);
-            span<byte const> s(&b, 1);
-            _stream.write(s);
+            byte const b = reinterpret_cast<byte&>(c);
+            _stream.write(span{&b, 1});
         }
 
         void Flush() {

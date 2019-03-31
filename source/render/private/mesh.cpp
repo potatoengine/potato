@@ -6,7 +6,7 @@
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/device.h"
 
-gm::Mesh::Mesh(vector<gm::uint16> indices, blob data, view<MeshBuffer> buffers, view<MeshChannel> channels)
+gm::Mesh::Mesh(vector<gm::uint16> indices, vector<gm::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels)
     : _data(std::move(data)),
       _buffers(buffers.begin(), buffers.end()),
       _channels(channels.begin(), channels.end()),

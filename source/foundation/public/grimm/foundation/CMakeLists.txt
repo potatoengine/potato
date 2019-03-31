@@ -1,8 +1,6 @@
 target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_export.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/allocator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/assertion.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/blob.h
     ${CMAKE_CURRENT_SOURCE_DIR}/box.h
     ${CMAKE_CURRENT_SOURCE_DIR}/callstack.h
     ${CMAKE_CURRENT_SOURCE_DIR}/const_util.h
@@ -11,11 +9,11 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate_ref.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string_writer.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/fnv1a.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/integral_range.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/iterator_range.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/gmstring.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/hash.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/hash_fnv1a.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/int_types.h
     ${CMAKE_CURRENT_SOURCE_DIR}/memory_util.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/memory.h
     ${CMAKE_CURRENT_SOURCE_DIR}/numeric_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/out_ptr.h
     ${CMAKE_CURRENT_SOURCE_DIR}/platform_windows.h
@@ -23,14 +21,14 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.h
     ${CMAKE_CURRENT_SOURCE_DIR}/rc.h
     ${CMAKE_CURRENT_SOURCE_DIR}/span.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/string_blob.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/std_hash.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/std_iostream.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_format.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_writer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/string_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_view.h
     ${CMAKE_CURRENT_SOURCE_DIR}/traits.h
     ${CMAKE_CURRENT_SOURCE_DIR}/typelist.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/types.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/uhash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/vector.h
     ${CMAKE_CURRENT_SOURCE_DIR}/zstring_view.h
 )

@@ -1,6 +1,7 @@
 #include "grimm/foundation/string_view.h"
 #include "doctest.h"
 #include <ostream>
+#include <cstring>
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::string_view") {
     using namespace gm;
@@ -14,7 +15,7 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::string_view") {
 
     DOCTEST_TEST_CASE("std::string initialization") {
         std::string s = "this is a test";
-        string_view sv(s);
+        string_view sv(s.data(), s.size());
 
         DOCTEST_CHECK(!sv.empty());
         DOCTEST_CHECK_EQ(sv.size(), s.size());

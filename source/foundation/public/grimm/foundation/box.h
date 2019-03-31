@@ -1,8 +1,7 @@
-// Copyright (C) 2015 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2015,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
-#include "memory.h"
 #include "traits.h"
 #include <utility>
 
@@ -10,7 +9,7 @@ namespace gm {
     template <typename>
     class box;
     template <typename T, typename... Args>
-    auto make_box(Args&&... args) -> enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>>;
+    auto new_box(Args&&... args) -> enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>>;
 
     namespace _detail {
         template <typename>
@@ -67,7 +66,6 @@ public:
     pointer operator->() const { return _ptr; }
 
     reference operator*() const { return *_ptr; }
-    reference operator[](size_t index) const { return _ptr[index]; }
 
     explicit operator bool() const { return _ptr != nullptr; }
     bool empty() const { return _ptr == nullptr; }
@@ -135,6 +133,6 @@ void gm::box<T>::reset(pointer ptr) {
 /// <param name="args"> Parameters to pass to the constructor. </param>
 /// <returns> A box containing a new instance of the requested object. </returns>
 template <typename T, typename... Args>
-auto gm::make_box(Args&&... args) -> enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>> {
+auto gm::new_box(Args&&... args) -> enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>> {
     return box<T>(new T(std::forward<Args>(args)...));
 }

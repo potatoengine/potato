@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2014,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
@@ -6,8 +6,7 @@
 #include "platform.h"
 #include "string_format.h"
 #include "fixed_string_writer.h"
-
-#include <cstdlib>
+#include <utility>
 
 #if defined(NDEBUG)
 

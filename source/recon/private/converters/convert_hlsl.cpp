@@ -5,13 +5,13 @@
 #include "grimm/foundation/out_ptr.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/string_writer.h"
+#include "grimm/foundation/std_iostream.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
 #include "grimm/filesystem/stream_util.h"
 #include "grimm/filesystem/path_util.h"
 #include <d3d11.h>
 #include <d3dcompiler.h>
-#include <iostream>
 #include <fstream>
 
 namespace {
@@ -24,7 +24,7 @@ namespace {
         HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override {
             gm::string absolutePath = gm::fs::path::join({_folder, pFileName});
 
-            std::cout << "Including `" << absolutePath << "'\n";
+            _ctx.logger().info("Including `{}'", absolutePath);
 
             _ctx.addSourceDependency(pFileName);
 
@@ -73,7 +73,7 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
 
     string shader;
     if (fs::readText(stream, shader) != fs::Result::Success) {
-        std::cerr << "Failed to read `" << absoluteSourcePath << "'\n";
+        ctx.logger().error("Failed to read `{}'", absoluteSourcePath);
         return false;
     }
 
@@ -86,7 +86,7 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
 }
 
 bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName) {
-    std::cout << "Compiling `" << ctx.sourceFilePath() << "':" << entryName << '(' << targetProfileName << ")\n";
+    ctx.logger().info("Compiling `{}':{} ({})", ctx.sourceFilePath(), entryName, targetProfileName);
 
     ReconIncludeHandler includeHandler(fileSys, ctx, gm::fs::path::parent(absoluteSourcePath));
 
@@ -94,8 +94,7 @@ bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zs
     com_ptr<ID3DBlob> errors;
     HRESULT hr = D3DCompile2(source.data(), source.size(), ctx.sourceFilePath().c_str(), nullptr, &includeHandler, entryName.c_str(), targetProfileName.c_str(), D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS, 0, 0, nullptr, 0, out_ptr(blob), out_ptr(errors));
     if (!SUCCEEDED(hr)) {
-        std::cerr << "Compilation failed for `" << ctx.sourceFilePath() << "':" << entryName << '(' << targetProfileName << ")\n"
-                  << string_view((char*)errors->GetBufferPointer(), errors->GetBufferSize()) << '\n';
+        ctx.logger().error("Compilation failed for `{}':{} ({))", ctx.sourceFilePath(), entryName, targetProfileName);
         return false;
     }
 
@@ -111,14 +110,14 @@ bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zs
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
         if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != fs::Result::Success) {
-            std::cerr << "Failed to create `" << destParentAbsolutePath << "'\n";
+            ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }
 
     auto compiledOutput = fileSys.openWrite(destAbsolutePath.c_str(), gm::fs::FileOpenMode::Binary);
     if (!compiledOutput.isOpen()) {
-        std::cerr << "Cannot write `" << destAbsolutePath << '\n';
+        ctx.logger().error("Cannot write `{}'", destAbsolutePath);
         return false;
     }
 

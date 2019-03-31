@@ -35,7 +35,7 @@ auto gm::gpu::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3
 
     factory->MakeWindowAssociation(window, DXGI_MWA_NO_ALT_ENTER);
 
-    return make_shared<SwapChainD3D11>(std::move(swapChain));
+    return new_shared<SwapChainD3D11>(std::move(swapChain));
 }
 
 void gm::gpu::d3d11::SwapChainD3D11::present() {
@@ -53,7 +53,7 @@ auto gm::gpu::d3d11::SwapChainD3D11::getBuffer(int index) -> box<Texture> {
     if (buffer == nullptr) {
         return nullptr;
     }
-    return make_box<TextureD3D11>(std::move(buffer));
+    return new_box<TextureD3D11>(std::move(buffer));
 }
 
 int gm::gpu::d3d11::SwapChainD3D11::getCurrentBufferIndex() {

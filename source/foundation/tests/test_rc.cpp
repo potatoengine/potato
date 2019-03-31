@@ -54,7 +54,7 @@ DOCTEST_TEST_SUITE("[grimm][foundation] gm::rc") {
 
     DOCTEST_TEST_CASE("custom rc") {
         bool active;
-        rc r = make_shared<TestShared>(active);
+        rc r = new_shared<TestShared>(active);
 
         DOCTEST_CHECK(!r.empty());
         DOCTEST_CHECK(active);

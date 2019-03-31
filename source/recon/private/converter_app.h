@@ -5,7 +5,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/delegate.h"
 #include "grimm/foundation/span.h"
-#include "grimm/foundation/string_blob.h"
+#include "grimm/foundation/gmstring.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/vector.h"
@@ -14,6 +14,7 @@
 #include "grimm/recon/converter_config.h"
 #include "grimm/assetdb/asset_library.h"
 #include "grimm/assetdb/hash_cache.h"
+#include <spdlog/logger.h>
 
 namespace gm::recon {
     class Converter;
@@ -52,5 +53,6 @@ namespace gm::recon {
         fs::FileSystem _fileSystem;
         AssetLibrary _library;
         HashCache _hashes;
+        std::shared_ptr<spdlog::logger> _logger;
     };
 } // namespace gm::recon

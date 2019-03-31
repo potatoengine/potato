@@ -7,7 +7,7 @@
 #include "d3d11_platform.h"
 #include "d3d11_texture.h"
 #include "d3d11_sampler.h"
-#include "grimm/foundation/types.h"
+#include "grimm/foundation/int_types.h"
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 
@@ -22,7 +22,7 @@ auto gm::gpu::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, P
         return nullptr;
     }
 
-    return make_box<CommandListD3D11>(std::move(context));
+    return new_box<CommandListD3D11>(std::move(context));
 }
 
 void gm::gpu::d3d11::CommandListD3D11::setPipelineState(PipelineState* state) {
@@ -233,9 +233,9 @@ void gm::gpu::d3d11::CommandListD3D11::update(Buffer* buffer, span<gm::byte cons
 
     auto target = map(buffer, data.size(), offset);
 
-    GM_ASSERT(data.size_bytes() <= target.size());
+    GM_ASSERT(data.size() <= target.size());
 
-    std::memcpy(target.data(), data.data(), data.size_bytes());
+    std::memcpy(target.data(), data.data(), data.size());
     unmap(buffer, target);
 }
 

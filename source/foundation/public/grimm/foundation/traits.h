@@ -1,4 +1,4 @@
-// Copyright (C) 2015 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2015,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
@@ -16,9 +16,6 @@ namespace gm::_detail {
 
 namespace gm {
     template <typename T>
-    struct is_range : std::false_type {};
-
-    template <typename T>
     struct is_contiguous : std::integral_constant<bool, std::is_integral_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>> {};
 
     template <typename F>
@@ -29,9 +26,8 @@ namespace gm {
     struct function_result;
 
     template <typename T>
-    constexpr bool is_range_v = is_range<T>::value;
-    template <typename T>
     constexpr bool is_contiguous_v = is_contiguous<T>::value;
+
     template <typename F>
     using signature_t = typename signature<F>::type;
 

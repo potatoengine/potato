@@ -1,9 +1,11 @@
-// Copyright (C) 2015 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2015,2019 Sean Middleditch, all rights reserverd.
 
 #pragma once
 
 #include "assertion.h"
 #include "traits.h"
+
+#include <new>
 
 namespace gm {
     template <typename Signature>

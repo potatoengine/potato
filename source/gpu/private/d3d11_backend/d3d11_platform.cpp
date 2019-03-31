@@ -1,6 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "d3d11_platform.h"
+#include <grimm/foundation/assertion.h>
 
 auto gm::gpu::d3d11::toNative(Semantic semantic) noexcept -> zstring_view {
     switch (semantic) {

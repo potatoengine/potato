@@ -2,6 +2,7 @@
 
 #include "converter_app.h"
 #include "grimm/foundation/string_view.h"
+#include "grimm/foundation/std_iostream.h"
 #include "grimm/filesystem/path_util.h"
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
@@ -14,14 +15,31 @@
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include <set>
-#include <iostream>
+#include <algorithm>
+#include <spdlog/spdlog.h>
+#include <spdlog/fmt/ostr.h>
+#include <spdlog/sinks/stdout_sinks.h>
 
-gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {}
+#if defined(GM_PLATFORM_WINDOWS)
+#    include <spdlog/sinks/msvc_sink.h>
+#endif
+
+gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {
+    auto console = std::make_shared<spdlog::sinks::stdout_sink_mt>();
+#if defined(GM_PLATFORM_WINDOWS)
+    auto debug = std::make_shared<spdlog::sinks::msvc_sink_mt>();
+    _logger.reset(new spdlog::logger("recon", {console, debug}));
+#else
+    _logger.reset(new spdlog::logger("recon", console));
+#endif
+    _logger->set_pattern("%v");
+}
+
 gm::recon::ConverterApp::~ConverterApp() = default;
 
 bool gm::recon::ConverterApp::run(span<char const*> args) {
-    if (!parseArguments(_config, args, _fileSystem)) {
-        std::cerr << "Failed to parse arguments\n";
+    if (!parseArguments(_config, args, _fileSystem, *_logger)) {
+        _logger->error("Failed to parse arguments");
         return false;
     }
 
@@ -32,12 +50,12 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     if (_fileSystem.fileExists(libraryPath.c_str())) {
         auto libraryReadStream = _fileSystem.openRead(libraryPath.c_str(), fs::FileOpenMode::Text);
         if (!libraryReadStream) {
-            std::cerr << "Failed to open asset library `" << libraryPath << "'\n";
+            _logger->error("Failed to open asset library `{}'", libraryPath);
         }
         if (!_library.deserialize(libraryReadStream)) {
-            std::cerr << "Failed to load asset library `" << libraryPath << "'\n";
+            _logger->error("Failed to load asset library `{}'", libraryPath);
         }
-        std::cout << "Loaded asset library `" << libraryPath << "'\n";
+        _logger->info("Loaded asset library `{}'", libraryPath);
     }
 
     auto hashCachePath = fs::path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
@@ -45,67 +63,67 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     if (_fileSystem.fileExists(hashCachePath.c_str())) {
         auto hashesReadStream = _fileSystem.openRead(hashCachePath.c_str(), fs::FileOpenMode::Text);
         if (!hashesReadStream) {
-            std::cerr << "Failed to open hash cache `" << hashCachePath << "'\n";
+            _logger->error("Failed to open hash cache `{}'", hashCachePath);
         }
         if (!_hashes.deserialize(hashesReadStream)) {
-            std::cerr << "Failed to load hash cache `" << hashCachePath << "'\n";
+            _logger->error("Failed to load hash cache `{}'", hashCachePath);
         }
-        std::cout << "Loaded hash cache `" << hashCachePath << "'\n";
+        _logger->info("Loaded hash cache `{}'", hashCachePath);
     }
 
     auto sources = collectSourceFiles();
 
     if (sources.empty()) {
-        std::cerr << "No source files found\n";
+        _logger->error("No source files found");
         return false;
     }
 
     if (_config.sourceFolderPath.empty()) {
-        std::cerr << "Source directory must be specified.\n";
+        _logger->error("Source directory must be specified.");
         return false;
     }
     if (_config.destinationFolderPath.empty()) {
-        std::cerr << "Destination directory must be specified.\n";
+        _logger->error("Destination directory must be specified.");
         return false;
     }
     if (_config.cacheFolderPath.empty()) {
-        std::cerr << "Cache directory must be specified.\n";
+        _logger->error("Cache directory must be specified.");
         return false;
     }
 
-    std::cout << "Source: " << _config.sourceFolderPath << "\n";
-    std::cout << "Destination: " << _config.destinationFolderPath << "\n";
-    std::cout << "Cache: " << _config.cacheFolderPath << "\n";
+    _logger->info("Source: `{}'", _config.sourceFolderPath);
+    _logger->info("Destination: `{}'", _config.destinationFolderPath);
+    _logger->info("Cache: `{}'", _config.cacheFolderPath);
 
     if (!_fileSystem.directoryExists(_config.destinationFolderPath.c_str())) {
         if (_fileSystem.createDirectories(_config.destinationFolderPath.c_str()) != fs::Result::Success) {
-            std::cerr << "Failed to create `" << _config.destinationFolderPath << "'\n";
+            _logger->error("Failed to create `{}'", _config.destinationFolderPath);
             return false;
         }
     }
 
     if (!_fileSystem.directoryExists(_config.cacheFolderPath.c_str())) {
         if (_fileSystem.createDirectories(_config.cacheFolderPath.c_str()) != fs::Result::Success) {
-            std::cerr << "Failed to create `" << _config.cacheFolderPath << "'\n";
+            _logger->error("Failed to create `{}'", _config.cacheFolderPath);
             return false;
         }
     }
 
     bool success = convertFiles(sources);
     if (!success) {
-        std::cerr << "Conversion failed\n";
+        _logger->error("Conversion failed");
     }
 
     auto hashesWriteStream = _fileSystem.openWrite(hashCachePath.c_str(), fs::FileOpenMode::Text);
     if (!_hashes.serialize(hashesWriteStream)) {
-        std::cerr << "Failed to write hash cache `" << hashCachePath << "'\n";
+        _logger->error("Failed to write hash cache `{}'", hashCachePath);
         return false;
     }
     hashesWriteStream.close();
 
     auto libraryWriteStream = _fileSystem.openWrite(libraryPath.c_str(), fs::FileOpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
-        std::cerr << "Failed to write asset library `" << libraryPath << "'\n";
+        _logger->error("Failed to write asset library `{}'", libraryPath);
         return false;
     }
     libraryWriteStream.close();
@@ -120,19 +138,19 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
 void gm::recon::ConverterApp::registerConverters() {
 #if GM_GPU_ENABLE_D3D11
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
-                           make_box<HlslConverter>()});
+                           new_box<HlslConverter>()});
 #else
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
-                           make_box<IgnoreConverter>()});
+                           new_box<IgnoreConverter>()});
 #endif
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsli"; },
-                           make_box<IgnoreConverter>()});
+                           new_box<IgnoreConverter>()});
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".json"; },
-                           make_box<JsonConverter>()});
+                           new_box<JsonConverter>()});
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".png"; },
-                           make_box<CopyConverter>()});
+                           new_box<CopyConverter>()});
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".obj"; },
-                           make_box<ModelConverter>()});
+                           new_box<ModelConverter>()});
 }
 
 bool gm::recon::ConverterApp::convertFiles(vector<string> const& files) {
@@ -148,25 +166,26 @@ bool gm::recon::ConverterApp::convertFiles(vector<string> const& files) {
         Converter* converter = findConverter(string_view(path));
         if (converter == nullptr) {
             failed = true;
-            std::cerr << "Converter not found for `" << path << "'\n";
+            _logger->error("Converter not found for `{}'", path);
             continue;
         }
 
         bool upToDate = record != nullptr && isUpToDate(*record, contentHash, *converter) && isUpToDate(record->sourceDependencies);
         if (upToDate) {
-            std::cout << "Asset `" << path << "' is up-to-date\n";
+            _logger->info("Asset `{}' is up-to-date", path);
             for (auto const& rec : record->outputs) {
                 _outputs.push_back(rec.path);
             }
             continue;
         }
 
-        std::cout << "Asset `" << path << "' requires import (" << converter->name() << ' ' << converter->revision() << ")\n";
+        auto name = converter->name();
+        _logger->info("Asset `{}' requires import ({} {})", path.c_str(), std::string_view(name.data(), name.size()), converter->revision());
 
-        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str());
+        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_logger);
         if (!converter->convert(context)) {
             failed = true;
-            std::cerr << "Failed conversion for `" << path << "'\n";
+            _logger->error("Failed conversion for `{}'", path);
             continue;
         }
 
@@ -220,12 +239,12 @@ bool gm::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
     std::set_difference(foundFiles.begin(), foundFiles.end(), keepFiles.begin(), keepFiles.end(), std::back_inserter(deleteFiles));
 
     for (auto const& deletePath : deleteFiles) {
-        std::cout << "Stale output file `" << deletePath << "'\n";
+        _logger->info("Stale output file `{}'", deletePath);
         if (!dryRun) {
             string osPath = fs::path::join({_config.destinationFolderPath.c_str(), deletePath.c_str()});
             auto rs = _fileSystem.remove(osPath.c_str());
             if (rs != fs::Result::Success) {
-                std::cerr << "Failed to remove `" << osPath << "'\n";
+                _logger->error("Failed to remove `{}'", osPath);
             }
         }
     }
@@ -262,7 +281,7 @@ auto gm::recon::ConverterApp::findConverter(string_view path) const -> Converter
 
 auto gm::recon::ConverterApp::collectSourceFiles() -> vector<string> {
     if (!_fileSystem.directoryExists(_config.sourceFolderPath.c_str())) {
-        std::cerr << "`" << _config.sourceFolderPath << "' does not exist or is not a directory\n";
+        _logger->error("`{}' does not exist or is not a directory", _config.sourceFolderPath);
         return {};
     }
 

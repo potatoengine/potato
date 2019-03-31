@@ -4,15 +4,16 @@
 #include "grimm/filesystem/stream.h"
 #include "grimm/foundation/string_writer.h"
 
-auto gm::fs::readBlob(Stream& stream, blob& out) -> Result {
+auto gm::fs::readBinary(Stream& stream, vector<gm::byte>& out) -> Result {
     if (!stream.canRead() || !stream.canSeek()) {
         return Result::UnsupportedOperation;
     }
 
     auto size = stream.remaining();
-    out = blob(size);
+    auto offset = out.size();
+    out.resize(offset + size);
 
-    auto read = span<byte>{out.data_bytes(), out.size()};
+    auto read = out.subspan(offset);
     return stream.read(read);
 }
 

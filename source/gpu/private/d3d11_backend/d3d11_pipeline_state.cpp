@@ -88,5 +88,5 @@ auto gm::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(PipelineSta
         return nullptr;
     }
 
-    return make_box<PipelineStateD3D11>(std::move(params));
+    return new_box<PipelineStateD3D11>(std::move(params));
 }

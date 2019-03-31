@@ -108,15 +108,15 @@ auto gm::Renderer::context() -> RenderContext {
 }
 
 auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
-    blob contents;
+    vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (fs::readBlob(stream, contents) != fs::Result{}) {
+    if (fs::readBinary(stream, contents) != fs::Result{}) {
         return {};
     }
     stream.close();
 
     Assimp::Importer importer;
-    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), aiProcess_FlipWindingOrder, "assbin");
+    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), 0, "assbin");
     if (scene == nullptr) {
         zstring_view error = importer.GetErrorString();
         return {};
@@ -164,7 +164,7 @@ auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
         data.push_back(mesh->mTextureCoords[0][i].y);
     }
 
-    return make_shared<Mesh>(std::move(indices), blob(span{data.data(), data.size()}.as_bytes()), span{&bufferDesc, 1}, channels);
+    return gm::new_shared<Mesh>(std::move(indices), vector(span(data).as_bytes()), span{&bufferDesc, 1}, channels);
 }
 
 auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
@@ -225,16 +225,16 @@ auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
         return nullptr;
     }
 
-    return make_shared<Material>(std::move(vertex), std::move(pixel), std::move(textures));
+    return new_shared<Material>(std::move(vertex), std::move(pixel), std::move(textures));
 }
 
 auto gm::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
-    blob contents;
+    vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (fs::readBlob(stream, contents) != fs::Result{}) {
+    if (fs::readBinary(stream, contents) != fs::Result{}) {
         return {};
     }
-    return make_shared<Shader>(std::move(contents));
+    return gm::new_shared<Shader>(std::move(contents));
 }
 
 auto gm::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
@@ -243,21 +243,21 @@ auto gm::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
         return nullptr;
     }
 
-    auto img = image::loadImage(stream);
-    if (img.size() == 0) {
+    auto img = loadImage(stream);
+    if (img.data().empty()) {
         return nullptr;
     }
 
     gpu::TextureDesc desc = {};
     desc.type = gpu::TextureType::Texture2D;
     desc.format = gpu::Format::R8G8B8A8UnsignedNormalized;
-    desc.width = img.width();
-    desc.height = img.height();
+    desc.width = img.header().width;
+    desc.height = img.header().height;
 
-    auto tex = _device->createTexture2D(desc, {img.data(), img.size()});
+    auto tex = _device->createTexture2D(desc, img.data());
     if (tex == nullptr) {
         return nullptr;
     }
 
-    return make_shared<Texture>(std::move(img), std::move(tex));
+    return new_shared<Texture>(std::move(img), std::move(tex));
 }

@@ -50,7 +50,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, c
         return nullptr;
     }
 
-    return make_shared<DeviceD3D11>(std::move(factory), std::move(adapter), std::move(device), std::move(context));
+    return new_shared<DeviceD3D11>(std::move(factory), std::move(adapter), std::move(device), std::move(context));
 }
 
 auto gm::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> rc<SwapChain> {
@@ -78,7 +78,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createRenderTargetView(Texture* renderTarget) 
         return nullptr;
     }
 
-    return make_box<ResourceViewD3D11>(ViewType::RTV, view.as<ID3D11View>());
+    return new_box<ResourceViewD3D11>(ViewType::RTV, view.as<ID3D11View>());
 }
 
 auto gm::gpu::d3d11::DeviceD3D11::createDepthStencilView(Texture* depthStencilBuffer) -> box<ResourceView> {
@@ -96,7 +96,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createDepthStencilView(Texture* depthStencilBu
         return nullptr;
     }
 
-    return make_box<ResourceViewD3D11>(ViewType::DSV, view.as<ID3D11View>());
+    return new_box<ResourceViewD3D11>(ViewType::DSV, view.as<ID3D11View>());
 }
 
 auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Buffer* resource) -> box<ResourceView> {
@@ -116,7 +116,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Buffer* resource) -> 
         return nullptr;
     }
 
-    return make_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
+    return new_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
 }
 
 auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Texture* texture) -> box<ResourceView> {
@@ -140,7 +140,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createShaderResourceView(Texture* texture) -> 
         return nullptr;
     }
 
-    return make_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
+    return new_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
 }
 
 auto gm::gpu::d3d11::DeviceD3D11::createPipelineState(PipelineStateDesc const& desc) -> box<PipelineState> {
@@ -165,7 +165,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, gm::uint64 size)
         return nullptr;
     }
 
-    return make_box<BufferD3D11>(type, size, std::move(buffer));
+    return new_box<BufferD3D11>(type, size, std::move(buffer));
 }
 
 auto gm::gpu::d3d11::DeviceD3D11::createTexture2D(TextureDesc const& desc, span<gm::byte const> data) -> box<Texture> {
@@ -201,7 +201,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createTexture2D(TextureDesc const& desc, span<
         return nullptr;
     }
 
-    return make_box<TextureD3D11>(std::move(texture).as<ID3D11Resource>());
+    return new_box<TextureD3D11>(std::move(texture).as<ID3D11Resource>());
 }
 
 auto gm::gpu::d3d11::DeviceD3D11::createSampler() -> box<Sampler> {
@@ -221,7 +221,7 @@ auto gm::gpu::d3d11::DeviceD3D11::createSampler() -> box<Sampler> {
         return nullptr;
     }
 
-    return make_box<SamplerD3D11>(std::move(sampler));
+    return new_box<SamplerD3D11>(std::move(sampler));
 }
 
 void gm::gpu::d3d11::DeviceD3D11::execute(CommandList* commandList) {

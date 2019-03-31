@@ -2,7 +2,7 @@
 
 #include "callstack.h"
 #include "platform.h"
-#include "types.h"
+#include "int_types.h"
 
 #if !defined(GM_PLATFORM_WINDOWS)
 #    error "Unsupported platform"
