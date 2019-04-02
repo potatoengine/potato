@@ -13,3 +13,6 @@
 [submodule "external/doctest"]
 	path = external/doctest
 	url = git@github.com:onqtam/doctest.git
+[submodule "external/rapidjson"]
+	path = external/rapidjson
+	url = git@github.com:Tencent/rapidjson.git
