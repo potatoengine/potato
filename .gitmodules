@@ -19,3 +19,6 @@
 [submodule "external/spdlog"]
 	path = external/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "external/litexx"]
+	path = external/litexx
+	url = https://github.com/seanmiddleditch/litexx.git
