@@ -1,4 +1,4 @@
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 #include "grimm/gpu/factory.h"
 #include "grimm/gpu/device.h"

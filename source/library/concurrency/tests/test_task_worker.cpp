@@ -1,5 +1,5 @@
 #include "grimm/concurrency/task_worker.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include <thread>
 
 DOCTEST_TEST_SUITE("[grimm][concurrency] TaskWorker") {

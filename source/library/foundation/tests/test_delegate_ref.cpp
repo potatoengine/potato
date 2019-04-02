@@ -1,5 +1,5 @@
 #include "grimm/foundation/delegate_ref.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::delegate_ref") {
     using namespace gm;

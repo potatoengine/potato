@@ -1,5 +1,5 @@
 #include "grimm/foundation/delegate.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 namespace {
     struct Test {

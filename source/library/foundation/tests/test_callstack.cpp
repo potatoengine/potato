@@ -1,5 +1,5 @@
 #include "grimm/foundation/callstack.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include <array>
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::callstack") {

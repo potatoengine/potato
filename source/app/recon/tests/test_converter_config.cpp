@@ -1,7 +1,7 @@
 #include "grimm/recon/converter_config.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/filesystem/filesystem.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
 DOCTEST_TEST_SUITE("[grimm][recon] ConverterConfig") {

@@ -1,5 +1,5 @@
 #include "grimm/foundation/fixed_string_writer.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::fixed_string_writer") {
     using namespace gm;

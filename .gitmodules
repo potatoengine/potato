@@ -10,3 +10,6 @@
 [submodule "external/glm"]
 	path = external/glm
 	url = git@github.com:g-truc/glm.git
+[submodule "external/doctest"]
+	path = external/doctest
+	url = git@github.com:onqtam/doctest.git

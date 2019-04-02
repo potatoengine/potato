@@ -1,5 +1,5 @@
 #include "grimm/foundation/string_view.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include <ostream>
 #include <cstring>
 

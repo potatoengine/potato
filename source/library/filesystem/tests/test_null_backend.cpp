@@ -1,6 +1,6 @@
 #include "grimm/filesystem/null_backend.h"
 #include "grimm/filesystem/stream.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NullBackend") {
     using namespace gm;

@@ -1,6 +1,6 @@
 #include "grimm/foundation/vector.h"
 #include "grimm/foundation/string.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[grimm][foundation] vector") {
     using namespace gm;

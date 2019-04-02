@@ -1,5 +1,5 @@
 #include "grimm/foundation/rc.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 namespace {
     struct TestCounted {

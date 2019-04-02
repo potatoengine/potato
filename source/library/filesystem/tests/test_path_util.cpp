@@ -1,5 +1,5 @@
 #include "grimm/filesystem/path_util.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include <iostream>
 
 DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::path") {

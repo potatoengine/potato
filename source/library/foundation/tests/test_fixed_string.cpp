@@ -1,5 +1,5 @@
 #include "grimm/foundation/fixed_string.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include <iostream>
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::fixed_string") {

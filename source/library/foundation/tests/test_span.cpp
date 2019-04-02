@@ -1,5 +1,5 @@
 #include "grimm/foundation/span.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::span") {
     using namespace gm;

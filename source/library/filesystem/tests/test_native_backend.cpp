@@ -2,7 +2,7 @@
 #include "grimm/foundation/string.h"
 #include "grimm/filesystem/native_backend.h"
 #include "grimm/filesystem/stream.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include <string>
 #include <iostream>
 #include <algorithm>

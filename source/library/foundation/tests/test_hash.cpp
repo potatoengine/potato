@@ -2,7 +2,7 @@
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/span.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::hash") {
     using namespace gm;
