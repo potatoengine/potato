@@ -3,19 +3,19 @@
 	url = https://github.com/seanmiddleditch/formatxx.git
 [submodule "external/stb"]
 	path = external/stb
-	url = git@github.com:nothings/stb.git
+	url = https://github.com/nothings/stb.git
 [submodule "external/imgui"]
 	path = external/imgui
-	url = git@github.com:ocornut/imgui.git
+	url = https://github.com/ocornut/imgui.git
 [submodule "external/glm"]
 	path = external/glm
-	url = git@github.com:g-truc/glm.git
+	url = https://github.com/g-truc/glm.git
 [submodule "external/doctest"]
 	path = external/doctest
-	url = git@github.com:onqtam/doctest.git
+	url = https://github.com/onqtam/doctest.git
 [submodule "external/rapidjson"]
 	path = external/rapidjson
-	url = git@github.com:Tencent/rapidjson.git
+	url = https://github.com/Tencent/rapidjson.git
 [submodule "external/spdlog"]
 	path = external/spdlog
-	url = git@github.com:gabime/spdlog.git
+	url = https://github.com/gabime/spdlog.git
