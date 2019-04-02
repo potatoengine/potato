@@ -7,12 +7,9 @@
       "type": "default",
       "command": "${workspaceRoot}.build/debug/build/bin/recon.exe",
       "args": [
-        "-source",
-        "${workspaceRoot}/resources",
-        "-dest",
-        "${workspaceRoot}.build/resources",
-        "-cache",
-        "${workspaceRoot}.build/cache"
+        "-source", "${workspaceRoot}/resources",
+        "-dest", "${workspaceRoot}.build/resources",
+        "-cache", "${workspaceRoot}.build/cache"
       ]
     }
   ]
