@@ -3,10 +3,10 @@
 #pragma once
 
 #include "_export.h"
-#include <grimm/foundation/box.h>
-#include <grimm/foundation/platform.h>
-#include <grimm/foundation/delegate_ref.h>
-#include <grimm/foundation/span.h>
+#include "grimm/foundation/box.h"
+#include "grimm/foundation/platform.h"
+#include "grimm/foundation/delegate_ref.h"
+#include "grimm/foundation/span.h"
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 

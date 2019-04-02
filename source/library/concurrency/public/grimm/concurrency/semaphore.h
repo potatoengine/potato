@@ -3,8 +3,8 @@
 #pragma once
 
 #include "_export.h"
-#include <grimm/foundation/span.h>
-#include <grimm/foundation/platform.h>
+#include "grimm/foundation/span.h"
+#include "grimm/foundation/platform.h"
 #include <atomic>
 
 namespace gm::concurrency {

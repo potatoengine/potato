@@ -4,7 +4,7 @@
 //   https://github.com/preshing/cpp11-on-multicore
 
 #include "grimm/concurrency/semaphore.h"
-#include <grimm/foundation/platform_windows.h>
+#include "grimm/foundation/platform_windows.h"
 #include <limits>
 
 gm::concurrency::Semaphore::Semaphore(int initial) : _counter(initial), _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {

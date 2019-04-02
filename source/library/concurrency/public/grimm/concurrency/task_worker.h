@@ -5,8 +5,8 @@
 #include "_export.h"
 #include "thread_util.h"
 #include "concurrent_queue.h"
-#include <grimm/foundation/zstring_view.h>
-#include <grimm/foundation/delegate.h>
+#include "grimm/foundation/zstring_view.h"
+#include "grimm/foundation/delegate.h"
 #include <thread>
 
 namespace gm::concurrency {

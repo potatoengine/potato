@@ -1,7 +1,7 @@
 // Copyright (C) 2016,2019 Sean Middleditch, all rights reserverd.
 
 #include "grimm/concurrency/thread_util.h"
-#include <grimm/foundation/assertion.h>
+#include "grimm/foundation/assertion.h"
 #include <atomic>
 #include <limits>
 

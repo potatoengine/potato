@@ -3,8 +3,8 @@
 #pragma once
 
 #include "_export.h"
-#include <grimm/foundation/int_types.h>
-#include <grimm/foundation/zstring_view.h>
+#include "grimm/foundation/int_types.h"
+#include "grimm/foundation/zstring_view.h"
 
 namespace gm::concurrency {
 
