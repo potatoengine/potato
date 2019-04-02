@@ -16,7 +16,7 @@ target_include_directories(rapidjson INTERFACE rapidjson-1.1.0/include)
 target_compile_definitions(rapidjson INTERFACE _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
 
 add_library(imgui)
-target_include_directories(imgui PUBLIC imgui-1.67)
+target_include_directories(imgui PUBLIC imgui)
 target_sources(imgui PRIVATE
     imgui-1.67/imgui.cpp
     imgui-1.67/imgui_demo.cpp
