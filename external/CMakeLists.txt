@@ -32,7 +32,7 @@ target_link_libraries(imgui PUBLIC grimm::foundation)
 
 set(GLM_QUIET ON CACHE BOOL "quiet glm build")
 set(GLM_TEST_ENABLE OFF CACHE BOOL "disable glm tests")
-add_subdirectory(glm-0.9.9.3/glm EXCLUDE_FROM_ALL)
+add_subdirectory(glm EXCLUDE_FROM_ALL)
 target_compile_definitions(glm INTERFACE GLM_ENABLE_EXPERIMENTAL)
 
 add_library(stb INTERFACE)
