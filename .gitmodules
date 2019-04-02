@@ -1,3 +1,6 @@
 [submodule "external/formatxx"]
 	path = external/formatxx
 	url = https://github.com/seanmiddleditch/formatxx.git
+[submodule "external/stb"]
+	path = external/stb
+	url = git@github.com:nothings/stb.git
