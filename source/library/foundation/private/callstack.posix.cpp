@@ -1,9 +1,9 @@
 // Copyright (C) 22015 Sean Middleditch, all rights reserverd.
 
-#include "callstack.h"
-#include "platform.h"
-#include "string.h"
-#include "numeric_util.h"
+#include "grimm/foundation/callstack.h"
+#include "grimm/foundation/platform.h"
+#include "grimm/foundation/string.h"
+#include "grimm/foundation/numeric_util.h"
 
 #include <cstring>
 #include <cstdlib>
