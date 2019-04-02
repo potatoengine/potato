@@ -35,14 +35,6 @@ jobs:
       mkdir -p build/shared
       cd build/shared
       cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
-      cmake --build . --config RelWithDebInfo --parallel
-      ctest -R grimm -C RelWithDebInfo --verbose
-    displayName: Build (Release Shared)
-  - bash: |
-      set -xe
-      mkdir -p build/shared
-      cd build/shared
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
       cmake --build . --config Debug --parallel
       ctest -R grimm -C Debug --verbose
     displayName: Build (Debug Shared)
