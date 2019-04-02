@@ -16,6 +16,7 @@
 #include "grimm/filesystem/filesystem.h"
 #include "grimm/filesystem/stream.h"
 #include "grimm/filesystem/stream_util.h"
+#include <iostream>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 #include <assimp/Importer.hpp>
