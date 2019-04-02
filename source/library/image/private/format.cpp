@@ -1,6 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "pixel_format.h"
+#include "grimm/image/pixel_format.h"
 #include "grimm/foundation/assertion.h"
 
 bool gm::isCompressed(ImagePixelFormat format) noexcept {

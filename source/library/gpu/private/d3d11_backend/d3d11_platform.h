@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "common.h"
+#include "grimm/gpu/common.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/platform_windows.h"
 #include <d3d11.h>

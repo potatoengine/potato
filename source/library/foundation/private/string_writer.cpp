@@ -2,8 +2,8 @@
 //
 // Logging system is designed to minimize the overhead esp. in debug scenarios (Where we most likely want logging), could probably be better.
 
-#include "string_writer.h"
-#include "gmstring.h"
+#include "grimm/foundation/string_writer.h"
+#include "grimm/foundation/gmstring.h"
 
 void gm::string_writer::write(value_type ch) {
     _grow(_size + 1);

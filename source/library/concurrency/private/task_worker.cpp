@@ -1,8 +1,8 @@
 // Copyright (C) 2016,2019 Sean Middleditch, all rights reserverd.
 
-#include "task_worker.h"
-#include "semaphore.h"
-#include "thread_util.h"
+#include "grimm/concurrency/task_worker.h"
+#include "grimm/concurrency/semaphore.h"
+#include "grimm/concurrency/thread_util.h"
 
 gm::concurrency::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _queue(queue) {
     // just to make sure this is called at least once on the main thread...

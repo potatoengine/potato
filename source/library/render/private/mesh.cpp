@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "mesh.h"
-#include "context.h"
+#include "grimm/render/mesh.h"
+#include "grimm/render/context.h"
 #include "grimm/gpu/buffer.h"
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/device.h"

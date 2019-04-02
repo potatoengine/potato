@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "draw_imgui.h"
-#include "shader.h"
+#include "grimm/render/draw_imgui.h"
+#include "grimm/render/shader.h"
 #include "grimm/gpu/buffer.h"
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/device.h"

@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "_export.h"
-#include "asset_library.h"
+#include "grimm/assetdb/_export.h"
+#include "grimm/assetdb/asset_library.h"
 #include "grimm/foundation/hash_fnv1a.h"
 #include "grimm/foundation/hash.h"
 #include <rapidjson/document.h>

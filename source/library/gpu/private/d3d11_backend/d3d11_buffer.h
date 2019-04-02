@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "com_ptr.h"
 #include "d3d11_platform.h"
+#include "grimm/gpu/com_ptr.h"
 #include "grimm/gpu/buffer.h"
 
 namespace gm::gpu::d3d11 {

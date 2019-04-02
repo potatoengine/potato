@@ -1,12 +1,12 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "debug_draw.h"
-#include <mutex>
+#include "grimm/render/debug_draw.h"
 #include <grimm/foundation/vector.h>
 #include <grimm/gpu/buffer.h>
 #include <grimm/gpu/command_list.h>
 #include <grimm/gpu/device.h>
 #include <grimm/gpu/pipeline_state.h>
+#include <mutex>
 
 static std::mutex debugLock;
 static gm::vector<gm::DebugDrawVertex> debugVertices;

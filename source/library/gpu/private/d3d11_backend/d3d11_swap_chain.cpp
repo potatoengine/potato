@@ -2,8 +2,8 @@
 
 #include "d3d11_swap_chain.h"
 #include "d3d11_texture.h"
-#include "com_ptr.h"
 #include "d3d11_platform.h"
+#include "grimm/gpu/com_ptr.h"
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/out_ptr.h"
 #include <utility>

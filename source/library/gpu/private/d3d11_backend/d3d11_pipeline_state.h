@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "com_ptr.h"
 #include "d3d11_platform.h"
+#include "grimm/gpu/com_ptr.h"
 #include "grimm/foundation/box.h"
 #include "grimm/gpu/pipeline_state.h"
 

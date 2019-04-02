@@ -3,7 +3,7 @@
 // Inspired by the technique in the "LightweightSemaphore" at
 //   https://github.com/preshing/cpp11-on-multicore
 
-#include "semaphore.h"
+#include "grimm/concurrency/semaphore.h"
 #include <grimm/foundation/platform_windows.h>
 #include <limits>
 

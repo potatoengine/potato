@@ -1,8 +1,8 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "node.h"
-#include "model.h"
-#include "camera.h"
+#include "grimm/render/node.h"
+#include "grimm/render/model.h"
+#include "grimm/render/camera.h"
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/command_list.h"
 #include <glm/gtc/matrix_transform.hpp>

@@ -1,9 +1,9 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "material.h"
-#include "context.h"
-#include "shader.h"
-#include "texture.h"
+#include "grimm/render/material.h"
+#include "grimm/render/context.h"
+#include "grimm/render/shader.h"
+#include "grimm/render/texture.h"
 #include "grimm/gpu/command_list.h"
 #include "grimm/gpu/pipeline_state.h"
 #include "grimm/gpu/resource_view.h"

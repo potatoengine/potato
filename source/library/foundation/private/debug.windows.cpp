@@ -1,11 +1,11 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
 #include "debug.windows.h"
-#include "callstack.h"
-#include "debug.h"
-#include "platform_windows.h"
-#include "string_format.h"
-#include "fixed_string_writer.h"
+#include "grimm/foundation/callstack.h"
+#include "grimm/foundation/debug.h"
+#include "grimm/foundation/platform_windows.h"
+#include "grimm/foundation/string_format.h"
+#include "grimm/foundation/fixed_string_writer.h"
 
 namespace {
     struct DialogData {

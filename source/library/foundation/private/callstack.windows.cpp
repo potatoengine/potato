@@ -1,15 +1,15 @@
 // Copyright (C) 22015 Sean Middleditch, all rights reserverd.
 
-#include "callstack.h"
-#include "platform.h"
-#include "int_types.h"
+#include "grimm/foundation/callstack.h"
+#include "grimm/foundation/platform.h"
+#include "grimm/foundation/int_types.h"
 
 #if !defined(GM_PLATFORM_WINDOWS)
 #    error "Unsupported platform"
 #endif
 
-#include "numeric_util.h"
-#include "platform_windows.h"
+#include "grimm/foundation/numeric_util.h"
+#include "grimm/foundation/platform_windows.h"
 
 #pragma warning(disable : 4091)
 #include <dbghelp.h>

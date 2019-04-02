@@ -2,7 +2,7 @@
 
 #include "d3d11_texture.h"
 #include "d3d11_platform.h"
-#include "com_ptr.h"
+#include "grimm/gpu/com_ptr.h"
 #include "grimm/foundation/out_ptr.h"
 #include "grimm/foundation/assertion.h"
 

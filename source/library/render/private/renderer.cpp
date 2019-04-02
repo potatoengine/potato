@@ -1,13 +1,13 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "renderer.h"
-#include "render_task.h"
-#include "context.h"
-#include "material.h"
-#include "mesh.h"
-#include "shader.h"
-#include "texture.h"
-#include "debug_draw.h"
+#include "grimm/render/renderer.h"
+#include "grimm/render/render_task.h"
+#include "grimm/render/context.h"
+#include "grimm/render/material.h"
+#include "grimm/render/mesh.h"
+#include "grimm/render/shader.h"
+#include "grimm/render/texture.h"
+#include "grimm/render/debug_draw.h"
 #include <grimm/gpu/buffer.h>
 #include <grimm/gpu/command_list.h>
 #include <grimm/gpu/device.h>

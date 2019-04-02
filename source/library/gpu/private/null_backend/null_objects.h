@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include "command_list.h"
-#include "device.h"
-#include "factory.h"
-#include "pipeline_state.h"
-#include "swap_chain.h"
-#include "resource_view.h"
-#include "buffer.h"
-#include "texture.h"
-#include "sampler.h"
+#include "grimm/gpu/command_list.h"
+#include "grimm/gpu/device.h"
+#include "grimm/gpu/factory.h"
+#include "grimm/gpu/pipeline_state.h"
+#include "grimm/gpu/swap_chain.h"
+#include "grimm/gpu/resource_view.h"
+#include "grimm/gpu/buffer.h"
+#include "grimm/gpu/texture.h"
+#include "grimm/gpu/sampler.h"
 
 namespace gm::gpu::null {
     class DeviceNull;

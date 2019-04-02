@@ -1,9 +1,9 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
-#include "assertion.h"
-#include "callstack.h"
-#include "string_format.h"
-#include "string_writer.h"
+#include "grimm/foundation/assertion.h"
+#include "grimm/foundation/callstack.h"
+#include "grimm/foundation/string_format.h"
+#include "grimm/foundation/string_writer.h"
 #include <spdlog/spdlog.h>
 
 namespace gm::_detail {
