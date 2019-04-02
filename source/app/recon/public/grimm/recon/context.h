@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "grimm/foundation/gmstring.h"
+#include "grimm/foundation/string.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/vector.h"
 #include "grimm/foundation/std_iostream.h"

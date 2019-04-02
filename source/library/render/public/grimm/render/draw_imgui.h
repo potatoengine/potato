@@ -6,7 +6,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/rc.h"
 #include "grimm/foundation/unique_resource.h"
-#include "grimm/foundation/gmstring.h"
+#include "grimm/foundation/string.h"
 
 namespace gm::gpu {
     class Buffer;

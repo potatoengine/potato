@@ -1,5 +1,5 @@
 #include "grimm/foundation/vector.h"
-#include "grimm/foundation/gmstring.h"
+#include "grimm/foundation/string.h"
 #include "doctest.h"
 
 DOCTEST_TEST_SUITE("[grimm][foundation] vector") {

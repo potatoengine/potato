@@ -1,5 +1,5 @@
-#include "grimm/foundation/gmstring.h"
-#include "doctest.h"
+#include "grimm/foundation/string.h"
+#include <doctest.h>
 #include <ostream>
 
 DOCTEST_TEST_SUITE("[grimm][foundation] gm::string") {

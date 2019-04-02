@@ -9,7 +9,6 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate_ref.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string_writer.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/gmstring.h
     ${CMAKE_CURRENT_SOURCE_DIR}/hash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/hash_fnv1a.h
     ${CMAKE_CURRENT_SOURCE_DIR}/int_types.h
@@ -23,6 +22,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/span.h
     ${CMAKE_CURRENT_SOURCE_DIR}/std_hash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/std_iostream.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/string.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_format.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_writer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/string_util.h

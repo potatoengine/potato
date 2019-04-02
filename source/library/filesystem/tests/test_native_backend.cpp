@@ -1,5 +1,5 @@
 #include "grimm/foundation/vector.h"
-#include "grimm/foundation/gmstring.h"
+#include "grimm/foundation/string.h"
 #include "grimm/filesystem/native_backend.h"
 #include "grimm/filesystem/stream.h"
 #include "doctest.h"

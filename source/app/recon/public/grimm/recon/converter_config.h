@@ -3,7 +3,7 @@
 #pragma once
 
 #include "grimm/foundation/span.h"
-#include "grimm/foundation/gmstring.h"
+#include "grimm/foundation/string.h"
 #include "grimm/foundation/string_view.h"
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/std_iostream.h"
