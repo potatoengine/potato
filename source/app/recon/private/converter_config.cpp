@@ -9,7 +9,7 @@
 #include <rapidjson/document.h>
 #include <iostream>
 
-bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem, spdlog::logger& logger) {
+bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem, spdlog::logger& logger) {
     if (args.empty()) {
         return false;
     }
@@ -88,7 +88,7 @@ bool gm::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
     return true;
 }
 
-bool gm::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path, spdlog::logger& logger) {
+bool up::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path, spdlog::logger& logger) {
     auto stream = fileSystem.openRead(path, fs::FileOpenMode::Text);
     if (!stream) {
         logger.error("Failed to open `{}'", path.c_str());
@@ -104,7 +104,7 @@ bool gm::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSys
     return parseConfigString(config, text, path, logger);
 }
 
-bool gm::recon::parseConfigString(ConverterConfig& config, string_view json, zstring_view filename, spdlog::logger& logger) {
+bool up::recon::parseConfigString(ConverterConfig& config, string_view json, zstring_view filename, spdlog::logger& logger) {
     rapidjson::Document doc;
 
     doc.Parse<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag | rapidjson::kParseNanAndInfFlag>(json.data(), json.size());

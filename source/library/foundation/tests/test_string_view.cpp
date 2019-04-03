@@ -3,8 +3,8 @@
 #include <ostream>
 #include <cstring>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::string_view") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[grimm][foundation] up::string_view") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {
         string_view sv;

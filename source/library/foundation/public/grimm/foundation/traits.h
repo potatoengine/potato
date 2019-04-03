@@ -6,15 +6,15 @@
 #include <type_traits>
 #include <utility>
 
-namespace gm::_detail {
+namespace up::_detail {
     template <typename V, template <typename...> class C, typename... A>
     struct detector : std::false_type {};
 
     template <template <typename...> class C, typename... A>
     struct detector<std::void_t<C<A...>>, C, A...> : std::true_type {};
-} // namespace gm::_detail
+} // namespace up::_detail
 
-namespace gm {
+namespace up {
     template <typename T>
     struct is_contiguous : std::integral_constant<bool, std::is_integral_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>> {};
 
@@ -32,7 +32,7 @@ namespace gm {
     using signature_t = typename signature<F>::type;
 
     template <typename R, typename... A>
-    struct function_params<R(A...)> { using type = gm::typelist<A...>; };
+    struct function_params<R(A...)> { using type = up::typelist<A...>; };
 
     template <typename R, typename... A>
     struct function_result<R(A...)> { using type = R; };
@@ -76,30 +76,30 @@ namespace gm {
     static_assert(is_invocable_v<decltype(_detail::is_invocable_func_test)>);
     static_assert(!is_invocable_v<int>);
 #endif
-} // namespace gm
+} // namespace up
 
-#if defined(GM_PLATFORM_WINDOWS)
+#if defined(UP_PLATFORM_WINDOWS)
 template <typename R, typename... A>
-struct gm::signature<R __stdcall(A...)> { using type = R(A...); };
+struct up::signature<R __stdcall(A...)> { using type = R(A...); };
 template <typename R, typename... A>
-struct gm::signature<R __vectorcall(A...)> { using type = R(A...); };
+struct up::signature<R __vectorcall(A...)> { using type = R(A...); };
 template <typename R, typename... A>
-struct gm::signature<R(__stdcall*)(A...)> { using type = R(A...); };
+struct up::signature<R(__stdcall*)(A...)> { using type = R(A...); };
 template <typename R, typename... A>
-struct gm::signature<R(__vectorcall*)(A...)> { using type = R(A...); };
+struct up::signature<R(__vectorcall*)(A...)> { using type = R(A...); };
 template <typename T, typename R, typename... A>
-struct gm::signature<R (__thiscall T::*)(A...)> { using type = R(T&, A...); };
+struct up::signature<R (__thiscall T::*)(A...)> { using type = R(T&, A...); };
 template <typename T, typename R, typename... A>
-struct gm::signature<R (__vectorcall T::*)(A...)> { using type = R(T&, A...); };
+struct up::signature<R (__vectorcall T::*)(A...)> { using type = R(T&, A...); };
 template <typename T, typename R, typename... A>
-struct gm::signature<R (__thiscall T::*)(A...) const> { using type = R(T const&, A...); };
+struct up::signature<R (__thiscall T::*)(A...) const> { using type = R(T const&, A...); };
 template <typename T, typename R, typename... A>
-struct gm::signature<R (__vectorcall T::*)(A...) const> { using type = R(T const&, A...); };
+struct up::signature<R (__vectorcall T::*)(A...) const> { using type = R(T const&, A...); };
 #else
 template <typename R, typename... A>
-struct gm::signature<R(A...)> { using type = R(A...); };
+struct up::signature<R(A...)> { using type = R(A...); };
 template <typename R, typename... A>
-struct gm::signature<R (*)(A...)> { using type = R(A...); };
+struct up::signature<R (*)(A...)> { using type = R(A...); };
 template <typename T, typename R, typename... A>
-struct gm::signature<R (T::*)(A...)> { using type = R(T&, A...); };
+struct up::signature<R (T::*)(A...)> { using type = R(T&, A...); };
 #endif

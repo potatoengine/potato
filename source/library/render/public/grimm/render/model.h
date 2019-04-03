@@ -8,27 +8,27 @@
 #include "grimm/foundation/platform.h"
 #include <glm/mat4x4.hpp>
 
-namespace gm::gpu {
+namespace up::gpu {
     class Buffer;
     class CommandList;
     class Device;
-} // namespace gm::gpu
+} // namespace up::gpu
 
-namespace gm {
+namespace up {
     class Material;
     class Mesh;
     class RenderContext;
 
     class Model {
     public:
-        GM_RENDER_API explicit Model(rc<Mesh> mesh, rc<Material> material);
-        GM_RENDER_API ~Model();
+        UP_RENDER_API explicit Model(rc<Mesh> mesh, rc<Material> material);
+        UP_RENDER_API ~Model();
 
-        GM_RENDER_API void GM_VECTORCALL render(RenderContext& ctx, glm::mat4x4 transform);
+        UP_RENDER_API void UP_VECTORCALL render(RenderContext& ctx, glm::mat4x4 transform);
 
     private:
         rc<Material> _material;
         rc<Mesh> _mesh;
         box<gpu::Buffer> _transformBuffer;
     };
-} // namespace gm
+} // namespace up

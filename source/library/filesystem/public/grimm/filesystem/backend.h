@@ -7,7 +7,7 @@
 #include "grimm/foundation/rc.h"
 #include "common.h"
 
-namespace gm::fs {
+namespace up::fs {
     class Stream;
     class Stream;
 
@@ -38,4 +38,4 @@ namespace gm::fs {
     protected:
         Backend() = default;
     };
-} // namespace gm::fs
+} // namespace up::fs

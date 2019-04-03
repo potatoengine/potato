@@ -5,7 +5,7 @@
 #include <utility>
 #include <atomic>
 
-namespace gm {
+namespace up {
     template <typename T>
     class rc;
 
@@ -166,4 +166,4 @@ namespace gm {
         return rc<T>(new T(std::forward<A>(args)...));
     }
 
-} // namespace gm
+} // namespace up

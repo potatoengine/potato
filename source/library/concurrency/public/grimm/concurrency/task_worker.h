@@ -9,14 +9,14 @@
 #include "grimm/foundation/delegate.h"
 #include <thread>
 
-namespace gm::concurrency {
+namespace up::concurrency {
     using Task = delegate<void()>;
     using TaskQueue = ConcurrentQueue<Task>;
 
     class TaskWorker {
     public:
-        GM_CONCURRENCY_API explicit TaskWorker(TaskQueue& queue, zstring_view name);
-        GM_CONCURRENCY_API ~TaskWorker();
+        UP_CONCURRENCY_API explicit TaskWorker(TaskQueue& queue, zstring_view name);
+        UP_CONCURRENCY_API ~TaskWorker();
 
         TaskWorker(TaskWorker&&) = default;
         TaskWorker& operator=(TaskWorker&&) = default;
@@ -34,4 +34,4 @@ namespace gm::concurrency {
         std::thread _thread;
     };
 
-} // namespace gm::concurrency
+} // namespace up::concurrency

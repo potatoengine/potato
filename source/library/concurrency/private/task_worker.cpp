@@ -4,7 +4,7 @@
 #include "grimm/concurrency/semaphore.h"
 #include "grimm/concurrency/thread_util.h"
 
-gm::concurrency::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _queue(queue) {
+up::concurrency::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _queue(queue) {
     // just to make sure this is called at least once on the main thread...
     [[maybe_unused]] auto _ = currentSmallThreadId();
 
@@ -22,13 +22,13 @@ gm::concurrency::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_vi
     sem.wait();
 }
 
-gm::concurrency::TaskWorker::~TaskWorker() {
+up::concurrency::TaskWorker::~TaskWorker() {
     if (_thread.joinable()) {
         _thread.join();
     }
 }
 
-int gm::concurrency::TaskWorker::_threadMain() {
+int up::concurrency::TaskWorker::_threadMain() {
     Task task;
     while (_queue.dequeWait(task)) {
         task();

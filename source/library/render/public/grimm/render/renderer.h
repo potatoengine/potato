@@ -12,13 +12,13 @@
 #include <thread>
 #include <atomic>
 
-namespace gm::gpu {
+namespace up::gpu {
     class Buffer;
     class CommandList;
     class Device;
-} // namespace gm::gpu
+} // namespace up::gpu
 
-namespace gm {
+namespace up {
     class RenderContext;
     class Material;
     class Mesh;
@@ -27,21 +27,21 @@ namespace gm {
 
     class Renderer {
     public:
-        GM_RENDER_API explicit Renderer(fs::FileSystem fileSystem, rc<gpu::Device> device);
+        UP_RENDER_API explicit Renderer(fs::FileSystem fileSystem, rc<gpu::Device> device);
         virtual ~Renderer();
 
         Renderer(Renderer const&) = delete;
         Renderer& operator=(Renderer const&) = delete;
 
-        GM_RENDER_API void beginFrame();
-        GM_RENDER_API void endFrame(float frameTime);
+        UP_RENDER_API void beginFrame();
+        UP_RENDER_API void endFrame(float frameTime);
 
-        GM_RENDER_API RenderContext context();
+        UP_RENDER_API RenderContext context();
 
-        GM_RENDER_API rc<Mesh> loadMeshSync(zstring_view path);
-        GM_RENDER_API rc<Material> loadMaterialSync(zstring_view path);
-        GM_RENDER_API rc<Shader> loadShaderSync(zstring_view path);
-        GM_RENDER_API rc<Texture> loadTextureSync(zstring_view path);
+        UP_RENDER_API rc<Mesh> loadMeshSync(zstring_view path);
+        UP_RENDER_API rc<Material> loadMaterialSync(zstring_view path);
+        UP_RENDER_API rc<Shader> loadShaderSync(zstring_view path);
+        UP_RENDER_API rc<Texture> loadTextureSync(zstring_view path);
 
         gpu::Device& device() const noexcept { return *_device; }
         gpu::CommandList& commandList() const noexcept { return *_commandList; }
@@ -61,4 +61,4 @@ namespace gm {
         uint64 _startTimestamp = 0;
         double _frameTimestamp = 0;
     };
-} // namespace gm
+} // namespace up

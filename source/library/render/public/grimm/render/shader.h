@@ -6,7 +6,7 @@
 #include "grimm/foundation/vector.h"
 #include "grimm/foundation/int_types.h"
 
-namespace gm {
+namespace up {
     class RenderContext;
 
     class Shader : public shared<Shader> {
@@ -19,4 +19,4 @@ namespace gm {
     private:
         vector<byte> _content;
     };
-} // namespace gm
+} // namespace up

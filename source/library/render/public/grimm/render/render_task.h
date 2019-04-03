@@ -2,6 +2,6 @@
 
 #include "grimm/foundation/delegate.h"
 
-namespace gm {
+namespace up {
     using RenderTask = delegate<void()>;
 }

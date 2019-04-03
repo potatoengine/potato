@@ -5,7 +5,7 @@
 #include "grimm/foundation/span.h"
 #include "grimm/foundation/int_types.h"
 
-namespace gm::gpu {
+namespace up::gpu {
     enum class Format {
         Unknown,
         R32G32B32A32Float,
@@ -92,4 +92,4 @@ namespace gm::gpu {
         span<InputLayoutElement const> inputLayout;
     };
 
-} // namespace gm::gpu
+} // namespace up::gpu

@@ -6,7 +6,7 @@
 #include "grimm/foundation/zstring_view.h"
 #include "grimm/foundation/int_types.h"
 
-namespace gm::fs {
+namespace up::fs {
     enum class Result {
         Success,
         AccessDenied,
@@ -64,5 +64,5 @@ namespace gm::fs {
         return EnumerateOptions(std::underlying_type_t<EnumerateOptions>(lhs) & std::underlying_type_t<EnumerateOptions>(rhs));
     }
 
-    using EnumerateCallback = gm::delegate_ref<EnumerateResult(FileInfo const&)>;
-} // namespace gm::fs
+    using EnumerateCallback = up::delegate_ref<EnumerateResult(FileInfo const&)>;
+} // namespace up::fs

@@ -4,8 +4,8 @@ project(assetdb VERSION 0.1 LANGUAGES CXX)
 add_library(assetdb)
 add_library(grimm::assetdb ALIAS assetdb)
 
-include(gm_set_common_properties)
-gm_set_common_properties(assetdb)
+include(up_set_common_properties)
+up_set_common_properties(assetdb)
 
 target_link_libraries(assetdb
     PUBLIC

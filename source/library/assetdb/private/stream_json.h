@@ -2,7 +2,7 @@
 
 #include "grimm/filesystem/stream.h"
 
-namespace gm {
+namespace up {
     class RapidJsonStreamWrapper {
     public:
         using Ch = char;
@@ -53,4 +53,4 @@ namespace gm {
         char _peekChar = 0;
         bool _peeked = false;
     };
-} // namespace gm
+} // namespace up

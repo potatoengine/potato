@@ -5,11 +5,11 @@
 #include "grimm/filesystem/path_util.h"
 #include "grimm/filesystem/filesystem.h"
 
-gm::recon::CopyConverter::CopyConverter() = default;
+up::recon::CopyConverter::CopyConverter() = default;
 
-gm::recon::CopyConverter::~CopyConverter() = default;
+up::recon::CopyConverter::~CopyConverter() = default;
 
-bool gm::recon::CopyConverter::convert(Context& ctx) {
+bool up::recon::CopyConverter::convert(Context& ctx) {
     auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 

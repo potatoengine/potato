@@ -10,11 +10,11 @@
 #include <assimp/Exporter.hpp>
 #include <assimp/postprocess.h>
 
-gm::recon::ModelConverter::ModelConverter() = default;
+up::recon::ModelConverter::ModelConverter() = default;
 
-gm::recon::ModelConverter::~ModelConverter() = default;
+up::recon::ModelConverter::~ModelConverter() = default;
 
-bool gm::recon::ModelConverter::convert(Context& ctx) {
+bool up::recon::ModelConverter::convert(Context& ctx) {
     auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), fs::path::changeExtension(ctx.sourceFilePath(), ".model")});
 

@@ -5,7 +5,7 @@
 #include <utility>
 #include <type_traits>
 
-namespace gm {
+namespace up {
 
     template <typename T>
     class com_ptr {
@@ -108,4 +108,4 @@ namespace gm {
         return tmp;
     }
 
-} // namespace gm
+} // namespace up

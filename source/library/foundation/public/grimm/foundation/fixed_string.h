@@ -5,7 +5,7 @@
 #include "string_view.h"
 #include <cstring>
 
-namespace gm {
+namespace up {
     template <size_t Capacity>
     class fixed_string {
         static_assert(Capacity > 0);
@@ -94,4 +94,4 @@ namespace gm {
     void hash_append(HashAlgorithm& hasher, fixed_string<Size> const& string) {
         hasher(string.data(), string.size());
     }
-} // namespace gm
+} // namespace up

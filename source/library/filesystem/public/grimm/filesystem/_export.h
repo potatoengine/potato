@@ -2,12 +2,12 @@
 
 #pragma once
 
-#if defined(GM_FILESYSTEM_EXPORTS)
+#if defined(UP_FILESYSTEM_EXPORTS)
 #    if defined(_WINDOWS)
-#        define GM_FILESYSTEM_API __declspec(dllexport)
+#        define UP_FILESYSTEM_API __declspec(dllexport)
 #    else
-#        define GM_FILESYSTEM_API [[gnu::visibility("default")]]
+#        define UP_FILESYSTEM_API [[gnu::visibility("default")]]
 #    endif
 #else
-#    define GM_FILESYSTEM_API
+#    define UP_FILESYSTEM_API
 #endif

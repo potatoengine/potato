@@ -4,8 +4,8 @@ project(foundation VERSION 0.1 LANGUAGES CXX)
 add_library(foundation)
 add_library(grimm::foundation ALIAS foundation)
 
-include(gm_set_common_properties)
-gm_set_common_properties(foundation)
+include(up_set_common_properties)
+up_set_common_properties(foundation)
 
 target_link_libraries(foundation
     PUBLIC

@@ -4,7 +4,7 @@
 
 #include "common.h"
 
-namespace gm::gpu {
+namespace up::gpu {
     class PipelineState {
     public:
         PipelineState() = default;
@@ -13,4 +13,4 @@ namespace gm::gpu {
         PipelineState(PipelineState&&) = delete;
         PipelineState& operator=(PipelineState&&) = delete;
     };
-} // namespace gm::gpu
+} // namespace up::gpu

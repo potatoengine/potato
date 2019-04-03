@@ -6,7 +6,7 @@
 #include <atomic>
 #include <thread>
 
-namespace gm::concurrency {
+namespace up::concurrency {
     class Spinlock {
     public:
         inline void lock();
@@ -51,10 +51,10 @@ namespace gm::concurrency {
     }
 
     void Spinlock::unlock() {
-        GM_ASSERT(_owner == std::this_thread::get_id());
+        UP_ASSERT(_owner == std::this_thread::get_id());
 
         // release the lock
         _owner.store(std::thread::id(), std::memory_order_release);
     }
 
-} // namespace gm::concurrency
+} // namespace up::concurrency

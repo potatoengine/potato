@@ -7,29 +7,29 @@
 #include "grimm/foundation/vector.h"
 #include <glm/mat4x4.hpp>
 
-namespace gm::gpu {
+namespace up::gpu {
     class CommandList;
     class Device;
-} // namespace gm::gpu
+} // namespace up::gpu
 
-namespace gm {
+namespace up {
     class Model;
     class RenderContext;
 
     class Node {
     public:
-        GM_RENDER_API explicit Node(box<Model> model);
-        GM_RENDER_API ~Node();
+        UP_RENDER_API explicit Node(box<Model> model);
+        UP_RENDER_API ~Node();
 
-        GM_RENDER_API void render(RenderContext& ctx);
-        GM_RENDER_API void addChild(box<Node> child);
+        UP_RENDER_API void render(RenderContext& ctx);
+        UP_RENDER_API void addChild(box<Node> child);
 
-        glm::mat4x4 GM_VECTORCALL transform() const { return _transform; }
-        void GM_VECTORCALL transform(glm::mat4x4 transform) { _transform = transform; }
+        glm::mat4x4 UP_VECTORCALL transform() const { return _transform; }
+        void UP_VECTORCALL transform(glm::mat4x4 transform) { _transform = transform; }
 
     private:
         glm::mat4x4 _transform;
         box<Model> _model;
         vector<box<Node>> _children;
     };
-} // namespace gm
+} // namespace up

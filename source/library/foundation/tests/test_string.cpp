@@ -2,8 +2,8 @@
 #include <doctest/doctest.h>
 #include <ostream>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::string") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[grimm][foundation] up::string") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {
         string s;

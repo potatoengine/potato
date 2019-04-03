@@ -5,7 +5,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/foundation/rc.h"
 
-namespace gm::gpu {
+namespace up::gpu {
     class Texture;
 
     class SwapChain : public shared<SwapChain> {
@@ -21,4 +21,4 @@ namespace gm::gpu {
         virtual box<Texture> getBuffer(int index) = 0;
         virtual int getCurrentBufferIndex() = 0;
     };
-} // namespace gm::gpu
+} // namespace up::gpu

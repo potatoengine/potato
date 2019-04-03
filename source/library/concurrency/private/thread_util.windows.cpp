@@ -4,7 +4,7 @@
 #include "grimm/foundation/platform_windows.h"
 
 // https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
-void gm::concurrency::setCurrentThreadName(zstring_view name) {
+void up::concurrency::setCurrentThreadName(zstring_view name) {
     constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
 
 #pragma pack(push, 8)

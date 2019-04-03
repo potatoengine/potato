@@ -5,7 +5,7 @@
 #include "traits.h"
 #include <utility>
 
-namespace gm {
+namespace up {
     template <typename>
     class box;
     template <typename T, typename... Args>
@@ -15,10 +15,10 @@ namespace gm {
         template <typename>
         struct box_traits;
     }
-} // namespace gm
+} // namespace up
 
 template <typename T>
-struct gm::_detail::box_traits {
+struct up::_detail::box_traits {
     using pointer = T*;
     using reference = T&;
 
@@ -30,10 +30,10 @@ struct gm::_detail::box_traits {
 /// <summary> An owning non-copyable pointer to a heap-allocated object, analogous to std::unique_ptr but without custom deleter support. </summary>
 /// <typeparam name="T"> Type of the object owned by the box. </typeparam>
 template <typename T>
-class gm::box : private gm::_detail::box_traits<T> {
+class up::box : private up::_detail::box_traits<T> {
 public:
-    using pointer = typename gm::_detail::box_traits<T>::pointer;
-    using reference = typename gm::_detail::box_traits<T>::reference;
+    using pointer = typename up::_detail::box_traits<T>::pointer;
+    using reference = typename up::_detail::box_traits<T>::reference;
 
     box() = default;
     ~box() { reset(); }
@@ -122,7 +122,7 @@ private:
 };
 
 template <typename T>
-void gm::box<T>::reset(pointer ptr) {
+void up::box<T>::reset(pointer ptr) {
     static_assert(sizeof(T) > 0, "box can not delete incomplete type");
     this->_deallocate(_ptr);
     _ptr = ptr;
@@ -133,6 +133,6 @@ void gm::box<T>::reset(pointer ptr) {
 /// <param name="args"> Parameters to pass to the constructor. </param>
 /// <returns> A box containing a new instance of the requested object. </returns>
 template <typename T, typename... Args>
-auto gm::new_box(Args&&... args) -> enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>> {
+auto up::new_box(Args&&... args) -> enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>> {
     return box<T>(new T(std::forward<Args>(args)...));
 }

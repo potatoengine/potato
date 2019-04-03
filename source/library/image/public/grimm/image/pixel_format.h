@@ -4,7 +4,7 @@
 
 #include "_export.h"
 
-namespace gm {
+namespace up {
     enum class ImagePixelFormat {
         Unknown,
         RGBA8_UNORM,
@@ -13,7 +13,7 @@ namespace gm {
         DXT5
     };
 
-    GM_IMAGE_API bool isCompressed(ImagePixelFormat format) noexcept;
-    GM_IMAGE_API int channelCount(ImagePixelFormat format) noexcept;
-    GM_IMAGE_API int bytesPerPixel(ImagePixelFormat format) noexcept;
-} // namespace gm
+    UP_IMAGE_API bool isCompressed(ImagePixelFormat format) noexcept;
+    UP_IMAGE_API int channelCount(ImagePixelFormat format) noexcept;
+    UP_IMAGE_API int bytesPerPixel(ImagePixelFormat format) noexcept;
+} // namespace up

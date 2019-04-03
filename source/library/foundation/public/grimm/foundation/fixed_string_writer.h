@@ -5,7 +5,7 @@
 #include "string_view.h"
 #include <cstring>
 
-namespace gm {
+namespace up {
     template <std::size_t Capacity>
     class fixed_string_writer {
     public:
@@ -61,4 +61,4 @@ namespace gm {
             0,
         };
     };
-} // namespace gm
+} // namespace up

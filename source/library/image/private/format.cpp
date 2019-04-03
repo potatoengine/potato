@@ -3,7 +3,7 @@
 #include "grimm/image/pixel_format.h"
 #include "grimm/foundation/assertion.h"
 
-bool gm::isCompressed(ImagePixelFormat format) noexcept {
+bool up::isCompressed(ImagePixelFormat format) noexcept {
     switch (format) {
     case ImagePixelFormat::DXT5:
         return true;
@@ -12,7 +12,7 @@ bool gm::isCompressed(ImagePixelFormat format) noexcept {
     }
 }
 
-int gm::channelCount(ImagePixelFormat format) noexcept {
+int up::channelCount(ImagePixelFormat format) noexcept {
     switch (format) {
     case ImagePixelFormat::RGBA8_UNORM:
     case ImagePixelFormat::DXT5:
@@ -22,12 +22,12 @@ int gm::channelCount(ImagePixelFormat format) noexcept {
     case ImagePixelFormat::R8_UNORM:
         return 1;
     default:
-        GM_UNREACHABLE("Unknown format");
+        UP_UNREACHABLE("Unknown format");
         return 0;
     }
 }
 
-int gm::bytesPerPixel(ImagePixelFormat format) noexcept {
+int up::bytesPerPixel(ImagePixelFormat format) noexcept {
     switch (format) {
     case ImagePixelFormat::RGBA8_UNORM:
         return 4;
@@ -37,7 +37,7 @@ int gm::bytesPerPixel(ImagePixelFormat format) noexcept {
     case ImagePixelFormat::DXT5:
         return 1;
     default:
-        GM_UNREACHABLE("Unknown format");
+        UP_UNREACHABLE("Unknown format");
         return 0;
     }
 }

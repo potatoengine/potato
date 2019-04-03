@@ -1,4 +1,4 @@
-function(gm_copy_library_import LIBRARY_TARGET DESTINATION_TARGET)
+function(up_copy_library_import LIBRARY_TARGET DESTINATION_TARGET)
     if(WIN32)
         if(NOT TARGET ${LIBRARY_TARGET})
             message(FATAL_ERROR "${LIBRARY_TARGET} is not a target")
@@ -29,4 +29,4 @@ function(gm_copy_library_import LIBRARY_TARGET DESTINATION_TARGET)
             COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${LIBRARY_TARGET}>" "$<TARGET_FILE_DIR:${DESTINATION_TARGET}>/$<TARGET_FILE_NAME:${LIBRARY_TARGET}>"
         )
     endif(WIN32)
-endfunction(gm_copy_library_import)
+endfunction(up_copy_library_import)

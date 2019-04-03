@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-namespace gm {
+namespace up {
     class string;
     class string_view;
     class zstring_view;
@@ -31,4 +31,4 @@ namespace gm {
         os.write(fs.data(), fs.size());
         return os;
     }
-} // namespace gm
+} // namespace up

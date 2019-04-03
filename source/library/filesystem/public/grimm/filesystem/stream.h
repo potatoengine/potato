@@ -7,7 +7,7 @@
 #include "grimm/foundation/span.h"
 #include "common.h"
 
-namespace gm::fs {
+namespace up::fs {
     class Stream {
     public:
         using size_type = uint64;
@@ -70,4 +70,4 @@ namespace gm::fs {
     private:
         box<Backend> _impl;
     };
-} // namespace gm::fs
+} // namespace up::fs

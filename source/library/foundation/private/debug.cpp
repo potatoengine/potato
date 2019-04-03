@@ -6,12 +6,12 @@
 #include "grimm/foundation/string_writer.h"
 #include <spdlog/spdlog.h>
 
-namespace gm::_detail {
+namespace up::_detail {
     // platform-specific function that must be implemented
-    GM_FOUNDATION_API GM_NOINLINE error_action platform_fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
-} // namespace gm::_detail
+    UP_FOUNDATION_API UP_NOINLINE error_action platform_fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
+} // namespace up::_detail
 
-auto gm::fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText) -> error_action {
+auto up::fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText) -> error_action {
     spdlog::error("{}({}): ***ASSERTION FAILED*** {}", file, line, failedConditionText);
 
     if (messageText != nullptr && *messageText != '\0') {

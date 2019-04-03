@@ -2,12 +2,12 @@
 
 #pragma once
 
-#if defined(GM_ASSETDB_EXPORTS)
+#if defined(UP_ASSETDB_EXPORTS)
 #    if defined(_WINDOWS)
-#        define GM_ASSETDB_API __declspec(dllexport)
+#        define UP_ASSETDB_API __declspec(dllexport)
 #    else
-#        define GM_ASSETDB_API [[gnu::visibility("default")]]
+#        define UP_ASSETDB_API [[gnu::visibility("default")]]
 #    endif
 #else
-#    define GM_ASSETDB_API
+#    define UP_ASSETDB_API
 #endif

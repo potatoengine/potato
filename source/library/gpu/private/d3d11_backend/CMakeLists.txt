@@ -1,4 +1,4 @@
-set(GM_GPU_D3D11_SOURCES
+set(UP_GPU_D3D11_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_buffer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_buffer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_command_list.h
@@ -21,10 +21,10 @@ set(GM_GPU_D3D11_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/d3d11_texture.cpp
 )
 
-if(GM_GPU_ENABLE_D3D11)
+if(UP_GPU_ENABLE_D3D11)
     message(STATUS "ENABLED Direct3D 11 support")
-    target_sources(gpu PRIVATE ${GM_GPU_D3D11_SOURCES})
-    target_compile_definitions(gpu PUBLIC GM_GPU_ENABLE_D3D11)
+    target_sources(gpu PRIVATE ${UP_GPU_D3D11_SOURCES})
+    target_compile_definitions(gpu PUBLIC UP_GPU_ENABLE_D3D11)
 else()
     message(STATUS "DISABLED Direct3D 11 support")
 
@@ -32,7 +32,7 @@ else()
     # so I'm adding a fake target to get the .cpp files registered
     # but unbuilt
 
-    #set_source_files_properties(${GM_GPU_D3D11_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
+    #set_source_files_properties(${UP_GPU_D3D11_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
     add_library(gpu_d3d11 INTERFACE)
-    target_sources(gpu_d3d11 INTERFACE ${GM_GPU_D3D11_SOURCES})
+    target_sources(gpu_d3d11 INTERFACE ${UP_GPU_D3D11_SOURCES})
 endif()

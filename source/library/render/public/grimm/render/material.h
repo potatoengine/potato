@@ -7,25 +7,25 @@
 #include "grimm/foundation/rc.h"
 #include "grimm/foundation/vector.h"
 
-namespace gm::gpu {
+namespace up::gpu {
     class CommandList;
     class Device;
     class PipelineState;
     class ResourceView;
     class Sampler;
-} // namespace gm::gpu
+} // namespace up::gpu
 
-namespace gm {
+namespace up {
     class RenderContext;
     class Shader;
     class Texture;
 
     class Material : public shared<Material> {
     public:
-        GM_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures);
-        GM_RENDER_API ~Material();
+        UP_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures);
+        UP_RENDER_API ~Material();
 
-        GM_RENDER_API void bindMaterialToRender(RenderContext& ctx);
+        UP_RENDER_API void bindMaterialToRender(RenderContext& ctx);
 
     private:
         box<gpu::PipelineState> _state;
@@ -35,4 +35,4 @@ namespace gm {
         vector<box<gpu::ResourceView>> _srvs;
         vector<box<gpu::Sampler>> _samplers;
     };
-} // namespace gm
+} // namespace up

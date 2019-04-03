@@ -7,22 +7,22 @@
 #include "grimm/foundation/platform.h"
 #include <atomic>
 
-namespace gm::concurrency {
+namespace up::concurrency {
     class Semaphore {
     public:
-        GM_CONCURRENCY_API Semaphore(int initial = 0);
-        GM_CONCURRENCY_API ~Semaphore();
+        UP_CONCURRENCY_API Semaphore(int initial = 0);
+        UP_CONCURRENCY_API ~Semaphore();
 
         Semaphore(Semaphore const&) = delete;
         Semaphore& operator=(Semaphore const&) = delete;
 
-        GM_FORCEINLINE inline void signal(int count = 1);
-        GM_FORCEINLINE [[nodiscard]] inline bool tryWait();
-        GM_FORCEINLINE inline void wait();
+        UP_FORCEINLINE inline void signal(int count = 1);
+        UP_FORCEINLINE [[nodiscard]] inline bool tryWait();
+        UP_FORCEINLINE inline void wait();
 
     private:
-        GM_CONCURRENCY_API void _signal(int n);
-        GM_CONCURRENCY_API void _wait();
+        UP_CONCURRENCY_API void _signal(int n);
+        UP_CONCURRENCY_API void _wait();
 
         std::atomic<int> _counter = 0;
         void* _handle = nullptr;
@@ -53,4 +53,4 @@ namespace gm::concurrency {
         }
     }
 
-} // namespace gm::concurrency
+} // namespace up::concurrency

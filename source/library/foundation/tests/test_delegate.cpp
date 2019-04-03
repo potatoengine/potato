@@ -10,8 +10,8 @@ namespace {
     };
 } // namespace
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::delegate") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[grimm][foundation] up::delegate") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("empty delegate") {
         delegate<int()> d;

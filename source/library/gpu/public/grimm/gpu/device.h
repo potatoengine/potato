@@ -7,7 +7,7 @@
 #include "grimm/foundation/int_types.h"
 #include "grimm/foundation/rc.h"
 
-namespace gm::gpu {
+namespace up::gpu {
     class Buffer;
     class CommandList;
     class PipelineState;
@@ -41,4 +41,4 @@ namespace gm::gpu {
         virtual box<ResourceView> createShaderResourceView(Buffer* resource) = 0;
         virtual box<ResourceView> createShaderResourceView(Texture* texture) = 0;
     };
-} // namespace gm::gpu
+} // namespace up::gpu

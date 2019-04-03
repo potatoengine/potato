@@ -5,7 +5,7 @@
 #include "platform.h"
 #include "int_types.h"
 
-namespace gm {
+namespace up {
     inline constexpr size_t stringLength(char const* str) noexcept {
         return __builtin_strlen(str);
     }
@@ -15,10 +15,10 @@ namespace gm {
     }
 
     inline constexpr char const* stringFindChar(char const* str, size_t length, char ch) noexcept {
-#if defined(GM_COMPILER_GCC)
+#if defined(UP_COMPILER_GCC)
         return (char const*)__builtin_memchr(str, ch, length);
 #else
         return __builtin_char_memchr(str, ch, length);
 #endif
     }
-} // namespace gm
+} // namespace up

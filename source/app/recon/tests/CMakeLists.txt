@@ -3,8 +3,8 @@ add_executable(test_grimm_recon
     test_converter_config.cpp
 )
 
-include(gm_set_common_properties)
-gm_set_common_properties(test_grimm_recon)
+include(up_set_common_properties)
+up_set_common_properties(test_grimm_recon)
 
 target_link_libraries(test_grimm_recon PRIVATE
     recon_lib doctest

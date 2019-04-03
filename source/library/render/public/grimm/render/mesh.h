@@ -10,13 +10,13 @@
 #include "grimm/foundation/int_types.h"
 #include "grimm/gpu/common.h"
 
-namespace gm::gpu {
+namespace up::gpu {
     class Buffer;
     class CommandList;
     class Device;
-} // namespace gm::gpu
+} // namespace up::gpu
 
-namespace gm {
+namespace up {
     class RenderContext;
 
     struct MeshBuffer {
@@ -33,12 +33,12 @@ namespace gm {
 
     class Mesh : public shared<Mesh> {
     public:
-        GM_RENDER_API explicit Mesh(vector<uint16> indices, vector<gm::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels);
-        GM_RENDER_API ~Mesh();
+        UP_RENDER_API explicit Mesh(vector<uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels);
+        UP_RENDER_API ~Mesh();
 
-        GM_RENDER_API void populateLayout(span<gpu::InputLayoutElement>& inputLayout) const noexcept;
-        GM_RENDER_API void updateVertexBuffers(RenderContext& ctx);
-        GM_RENDER_API void bindVertexBuffers(RenderContext& ctx);
+        UP_RENDER_API void populateLayout(span<gpu::InputLayoutElement>& inputLayout) const noexcept;
+        UP_RENDER_API void updateVertexBuffers(RenderContext& ctx);
+        UP_RENDER_API void bindVertexBuffers(RenderContext& ctx);
 
         uint32 indexCount() const noexcept { return static_cast<uint32>(_indices.size()); }
 
@@ -48,6 +48,6 @@ namespace gm {
         vector<MeshBuffer> _buffers;
         vector<MeshChannel> _channels;
         vector<uint16> _indices;
-        vector<gm::byte> _data;
+        vector<up::byte> _data;
     };
-} // namespace gm
+} // namespace up

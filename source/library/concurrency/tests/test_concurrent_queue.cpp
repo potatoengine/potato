@@ -3,8 +3,8 @@
 #include <thread>
 
 DOCTEST_TEST_SUITE("[grimm][concurrency] ConcurrentQueue") {
-    using namespace gm;
-    using namespace gm::concurrency;
+    using namespace up;
+    using namespace up::concurrency;
 
     DOCTEST_TEST_CASE("default") {
         ConcurrentQueue<int> queue;

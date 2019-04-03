@@ -2,16 +2,16 @@
 
 #pragma once
 
-namespace gm {
+namespace up {
     template <typename S, typename P>
     class out_ptr_t;
 
     template <typename S>
     auto out_ptr(S& out) -> out_ptr_t<S, typename S::pointer>;
-} // namespace gm
+} // namespace up
 
 template <typename S, typename P>
-class gm::out_ptr_t {
+class up::out_ptr_t {
 public:
     using pointer = P;
 
@@ -35,6 +35,6 @@ private:
 };
 
 template <typename S>
-auto gm::out_ptr(S& out) -> out_ptr_t<S, typename S::pointer> {
+auto up::out_ptr(S& out) -> out_ptr_t<S, typename S::pointer> {
     return out_ptr_t<S, typename S::pointer>(out);
 }

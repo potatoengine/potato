@@ -9,25 +9,25 @@
 #include "common.h"
 #include "backend.h"
 
-namespace gm::fs {
+namespace up::fs {
     class Backend;
     class Stream;
 
     class FileSystem {
     public:
-        GM_FILESYSTEM_API FileSystem();
-        GM_FILESYSTEM_API /*explicit*/ FileSystem(rc<Backend> backend);
-        GM_FILESYSTEM_API ~FileSystem();
+        UP_FILESYSTEM_API FileSystem();
+        UP_FILESYSTEM_API /*explicit*/ FileSystem(rc<Backend> backend);
+        UP_FILESYSTEM_API ~FileSystem();
 
-        static GM_FILESYSTEM_API rc<Backend> swapDefaultBackend(rc<Backend> backend);
+        static UP_FILESYSTEM_API rc<Backend> swapDefaultBackend(rc<Backend> backend);
 
         bool fileExists(zstring_view path) const noexcept { return _impl->fileExists(path); }
         bool directoryExists(zstring_view path) const noexcept { return _impl->directoryExists(path); }
 
         [[nodiscard]] Result fileStat(zstring_view path, FileStat& outInfo) const { return _impl->fileStat(path, outInfo); }
 
-        GM_FILESYSTEM_API Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept;
-        GM_FILESYSTEM_API Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept;
+        UP_FILESYSTEM_API Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept;
+        UP_FILESYSTEM_API Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept;
 
         EnumerateResult enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts = EnumerateOptions::None) const { return _impl->enumerate(path, cb, opts); }
 
@@ -43,4 +43,4 @@ namespace gm::fs {
 
         rc<Backend> _impl;
     };
-} // namespace gm::fs
+} // namespace up::fs

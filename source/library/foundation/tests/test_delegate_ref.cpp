@@ -1,8 +1,8 @@
 #include "grimm/foundation/delegate_ref.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::delegate_ref") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[grimm][foundation] up::delegate_ref") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("lambda delegate_ref") {
         int (*f)(int) = [](int i) { return i * 2; };

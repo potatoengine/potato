@@ -2,8 +2,8 @@
 #include "grimm/foundation/string.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::string_writer") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[grimm][foundation] up::string_writer") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {
         string_writer sw;

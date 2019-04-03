@@ -4,18 +4,18 @@
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 
-gm::gpu::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {
-    GM_ASSERT(_params.rasterState != nullptr);
-    GM_ASSERT(_params.depthStencilState != nullptr);
-    GM_ASSERT(_params.blendState != nullptr);
-    GM_ASSERT(_params.inputLayout != nullptr);
-    GM_ASSERT(_params.vertShader != nullptr);
+up::gpu::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {
+    UP_ASSERT(_params.rasterState != nullptr);
+    UP_ASSERT(_params.depthStencilState != nullptr);
+    UP_ASSERT(_params.blendState != nullptr);
+    UP_ASSERT(_params.inputLayout != nullptr);
+    UP_ASSERT(_params.vertShader != nullptr);
 }
 
-gm::gpu::d3d11::PipelineStateD3D11::~PipelineStateD3D11() = default;
+up::gpu::d3d11::PipelineStateD3D11::~PipelineStateD3D11() = default;
 
-auto gm::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(PipelineStateDesc const& desc, ID3D11Device* device) -> box<PipelineStateD3D11> {
-    GM_ASSERT(device != nullptr);
+auto up::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(PipelineStateDesc const& desc, ID3D11Device* device) -> box<PipelineStateD3D11> {
+    UP_ASSERT(device != nullptr);
 
     D3D11_RASTERIZER_DESC rasterDesc = {};
     rasterDesc.FillMode = D3D11_FILL_SOLID;
@@ -43,7 +43,7 @@ auto gm::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(PipelineSta
     D3D11_INPUT_ELEMENT_DESC layout[maxInputLayoutElements] = {};
     uint32 layoutIndex = 0;
 
-    GM_ASSERT(desc.inputLayout.size() <= maxInputLayoutElements);
+    UP_ASSERT(desc.inputLayout.size() <= maxInputLayoutElements);
 
     for (InputLayoutElement const& element : desc.inputLayout) {
         D3D11_INPUT_ELEMENT_DESC& elemDesc = layout[layoutIndex++];

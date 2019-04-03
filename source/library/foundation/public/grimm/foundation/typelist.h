@@ -4,12 +4,12 @@
 
 #include <type_traits>
 
-namespace gm {
+namespace up {
     template <typename... T>
     struct typelist {};
-} // namespace gm
+} // namespace up
 
-namespace gm::_detail {
+namespace up::_detail {
     template <typename U>
     struct typelist_head;
     template <typename T, typename... R>
@@ -29,9 +29,9 @@ namespace gm::_detail {
     struct typelist_map;
     template <template <class...> class T, typename... U>
     struct typelist_map<T, typelist<U...>> { using type = typelist<T<U>...>; };
-} // namespace gm::_detail
+} // namespace up::_detail
 
-namespace gm {
+namespace up {
     template <typename T>
     using typelist_head_t = typename _detail::typelist_head<T>::type;
 
@@ -60,4 +60,4 @@ namespace gm {
     using typelist_map_t = typename _detail::typelist_map<T, U>::type;
 
     static_assert(std::is_same_v<typelist_map_t<std::add_const_t, typelist<int, char>>, typelist<int const, char const>>);
-} // namespace gm
+} // namespace up

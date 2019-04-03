@@ -16,18 +16,18 @@
 #include <errno.h>
 #include <stdio.h>
 
-#if !GM_PLATFORM_POSIX
+#if !UP_PLATFORM_POSIX
 #    error "Invalid platform"
 #endif
 
-static auto errnoToResult(int error) noexcept -> gm::fs::Result {
+static auto errnoToResult(int error) noexcept -> up::fs::Result {
     switch (error) {
-    case 0: return gm::fs::Result::Success;
-    default: return gm::fs::Result::Unknown;
+    case 0: return up::fs::Result::Success;
+    default: return up::fs::Result::Unknown;
     }
 }
 
-bool gm::fs::NativeBackend::fileExists(zstring_view path) const noexcept {
+bool up::fs::NativeBackend::fileExists(zstring_view path) const noexcept {
     struct stat st;
     if (::stat(path.c_str(), &st) != 0) {
         return false;
@@ -35,7 +35,7 @@ bool gm::fs::NativeBackend::fileExists(zstring_view path) const noexcept {
     return S_ISREG(st.st_mode) != 0;
 }
 
-bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
+bool up::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
     struct stat st;
     if (::stat(path.c_str(), &st) != 0) {
         return false;
@@ -43,7 +43,7 @@ bool gm::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return S_ISDIR(st.st_mode) != 0;
 }
 
-auto gm::fs::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const -> Result {
+auto up::fs::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const -> Result {
     struct stat st;
     if (stat(path.c_str(), &st) != 0) {
         return errnoToResult(errno);
@@ -55,8 +55,8 @@ auto gm::fs::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const
     return Result::Success;
 }
 
-static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback cb, gm::string_writer& writer) -> gm::fs::EnumerateResult {
-    gm::unique_resource<DIR*, &closedir> dir(opendir(path.c_str()));
+static auto enumerateWorker(up::zstring_view path, up::fs::EnumerateCallback cb, up::string_writer& writer) -> up::fs::EnumerateResult {
+    up::unique_resource<DIR*, &closedir> dir(opendir(path.c_str()));
 
     auto writerPos = writer.size();
 
@@ -74,10 +74,10 @@ static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback cb,
         }
         writer.write(entry->d_name);
 
-        gm::fs::FileInfo info;
+        up::fs::FileInfo info;
         info.path = writer.c_str();
         info.size = 0;
-        info.type = entry->d_type == DT_REG ? gm::fs::FileType::Regular : entry->d_type == DT_DIR ? gm::fs::FileType::Directory : entry->d_type == DT_LNK ? gm::fs::FileType::SymbolicLink : gm::fs::FileType::Other;
+        info.type = entry->d_type == DT_REG ? up::fs::FileType::Regular : entry->d_type == DT_DIR ? up::fs::FileType::Directory : entry->d_type == DT_LNK ? up::fs::FileType::SymbolicLink : up::fs::FileType::Other;
 
         struct stat st;
         if (stat(writer.c_str(), &st) == 0) {
@@ -85,22 +85,22 @@ static auto enumerateWorker(gm::zstring_view path, gm::fs::EnumerateCallback cb,
         }
 
         auto result = cb(info);
-        if (result == gm::fs::EnumerateResult::Break) {
+        if (result == up::fs::EnumerateResult::Break) {
             return result;
         }
 
-        if (entry->d_type == DT_DIR && result == gm::fs::EnumerateResult::Recurse) {
+        if (entry->d_type == DT_DIR && result == up::fs::EnumerateResult::Recurse) {
             auto recurse = enumerateWorker(writer.c_str(), cb, writer);
-            if (recurse == gm::fs::EnumerateResult::Break) {
+            if (recurse == up::fs::EnumerateResult::Break) {
                 return recurse;
             }
         }
     }
 
-    return gm::fs::EnumerateResult::Continue;
+    return up::fs::EnumerateResult::Continue;
 }
 
-auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
+auto up::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
     string_writer writer;
 
     if ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath) {
@@ -110,7 +110,7 @@ auto gm::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, E
     return enumerateWorker(path, cb, writer);
 }
 
-auto gm::fs::NativeBackend::createDirectories(zstring_view path) -> Result {
+auto up::fs::NativeBackend::createDirectories(zstring_view path) -> Result {
     string dir;
 
     while (!path.empty() && strcmp(path.c_str(), "/") != 0 && !directoryExists(path)) {
@@ -118,18 +118,18 @@ auto gm::fs::NativeBackend::createDirectories(zstring_view path) -> Result {
             return errnoToResult(errno);
         }
 
-        dir = gm::fs::path::parent(path);
+        dir = up::fs::path::parent(path);
         path = dir.c_str();
     }
 
     return Result::Success;
 }
 
-auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
-    gm::unique_resource<int, &close> inFile(open(from.c_str(), O_RDONLY));
-    gm::unique_resource<int, &close> outFile(open(to.c_str(), O_WRONLY | O_CREAT, S_IRWXU));
+auto up::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
+    up::unique_resource<int, &close> inFile(open(from.c_str(), O_RDONLY));
+    up::unique_resource<int, &close> outFile(open(to.c_str(), O_WRONLY | O_CREAT, S_IRWXU));
 
-    gm::byte buffer[32768];
+    up::byte buffer[32768];
 
     for (;;) {
         ssize_t rs = read(inFile.get(), buffer, sizeof(buffer));
@@ -148,14 +148,14 @@ auto gm::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Resu
     }
 }
 
-auto gm::fs::NativeBackend::remove(zstring_view path) -> Result {
+auto up::fs::NativeBackend::remove(zstring_view path) -> Result {
     if (::remove(path.c_str()) != 0) {
         return errnoToResult(errno);
     }
     return Result::Success;
 }
 
-auto gm::fs::NativeBackend::removeRecursive(zstring_view path) -> Result {
+auto up::fs::NativeBackend::removeRecursive(zstring_view path) -> Result {
     auto cb = [](char const* path, struct stat const* st, int flags, struct FTW* ftw) -> int {
         return ::remove(path);
     };

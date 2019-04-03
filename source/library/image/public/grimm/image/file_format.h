@@ -2,10 +2,10 @@
 
 #pragma once
 
-namespace gm {
+namespace up {
     enum class ImageFileFormat {
         PNG,
         TGA,
         DDS
     };
-} // namespace gm
+} // namespace up

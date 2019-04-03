@@ -7,7 +7,7 @@
 #include "grimm/foundation/box.h"
 #include "grimm/gpu/pipeline_state.h"
 
-namespace gm::gpu::d3d11 {
+namespace up::gpu::d3d11 {
     struct PipelineStateParamsD3D11 {
         com_ptr<ID3D11RasterizerState> rasterState;
         com_ptr<ID3D11DepthStencilState> depthStencilState;
@@ -31,4 +31,4 @@ namespace gm::gpu::d3d11 {
 
         PipelineStateParamsD3D11 _params;
     };
-} // namespace gm::gpu::d3d11
+} // namespace up::gpu::d3d11

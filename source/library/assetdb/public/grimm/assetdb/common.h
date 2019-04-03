@@ -4,7 +4,7 @@
 
 #include "grimm/foundation/int_types.h"
 
-namespace gm {
+namespace up {
     enum class AssetId : uint64 {
         Invalid = 0
     };

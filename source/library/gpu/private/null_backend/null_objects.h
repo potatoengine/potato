@@ -12,7 +12,7 @@
 #include "grimm/gpu/texture.h"
 #include "grimm/gpu/sampler.h"
 
-namespace gm::gpu::null {
+namespace up::gpu::null {
     class DeviceNull;
 
     class FactoryNull final : public Factory {
@@ -109,4 +109,4 @@ namespace gm::gpu::null {
 
     class SamplerNull final : public Sampler {
     };
-} // namespace gm::gpu::null
+} // namespace up::gpu::null

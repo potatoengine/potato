@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <iosfwd>
 
-namespace gm {
+namespace up {
     namespace fs {
         class Stream;
         class Stream;
@@ -18,20 +18,20 @@ namespace gm {
     class AssetLibrary {
     public:
         AssetLibrary() = default;
-        GM_ASSETDB_API ~AssetLibrary();
+        UP_ASSETDB_API ~AssetLibrary();
 
         AssetLibrary(AssetLibrary const&) = delete;
         AssetLibrary& operator=(AssetLibrary const&) = delete;
 
-        GM_ASSETDB_API auto pathToAssetId(string_view path) const -> AssetId;
-        GM_ASSETDB_API auto assetIdToPath(AssetId assetId) const -> string_view;
+        UP_ASSETDB_API auto pathToAssetId(string_view path) const -> AssetId;
+        UP_ASSETDB_API auto assetIdToPath(AssetId assetId) const -> string_view;
 
-        GM_ASSETDB_API AssetImportRecord const* findRecord(AssetId assetId) const;
+        UP_ASSETDB_API AssetImportRecord const* findRecord(AssetId assetId) const;
 
-        GM_ASSETDB_API bool insertRecord(AssetImportRecord record);
+        UP_ASSETDB_API bool insertRecord(AssetImportRecord record);
 
-        GM_ASSETDB_API bool serialize(fs::Stream& stream) const;
-        GM_ASSETDB_API bool deserialize(fs::Stream& stream);
+        UP_ASSETDB_API bool serialize(fs::Stream& stream) const;
+        UP_ASSETDB_API bool deserialize(fs::Stream& stream);
 
     private:
         struct HashAssetId {
@@ -40,4 +40,4 @@ namespace gm {
 
         std::unordered_map<AssetId, AssetImportRecord, HashAssetId> _assets;
     };
-} // namespace gm
+} // namespace up

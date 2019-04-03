@@ -10,11 +10,11 @@
 #include "grimm/gpu/device.h"
 #include "grimm/gpu/sampler.h"
 
-gm::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)), _textures(std::move(textures)), _srvs(_textures.size()), _samplers(_textures.size()) {}
+up::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)), _textures(std::move(textures)), _srvs(_textures.size()), _samplers(_textures.size()) {}
 
-gm::Material::~Material() = default;
+up::Material::~Material() = default;
 
-void gm::Material::bindMaterialToRender(RenderContext& ctx) {
+void up::Material::bindMaterialToRender(RenderContext& ctx) {
     if (_state == nullptr) {
         gpu::PipelineStateDesc pipelineDesc;
 

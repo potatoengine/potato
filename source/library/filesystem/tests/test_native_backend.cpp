@@ -7,9 +7,9 @@
 #include <iostream>
 #include <algorithm>
 
-DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
-    using namespace gm;
-    using namespace gm::fs;
+DOCTEST_TEST_SUITE("[grimm][filesystem] up::fs::NativeBackend") {
+    using namespace up;
+    using namespace up::fs;
 
     DOCTEST_TEST_CASE("fileExists") {
         auto native = NativeBackend::create();

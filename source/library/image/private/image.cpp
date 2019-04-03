@@ -5,10 +5,10 @@
 #include <stb_image.h>
 
 static int stb_read(void* user, char* data, int size) {
-    auto* stream = static_cast<gm::fs::Stream*>(user);
+    auto* stream = static_cast<up::fs::Stream*>(user);
 
-    auto bytes = gm::span<char>{data, static_cast<size_t>(size)}.as_bytes();
-    if (stream->read(bytes) != gm::fs::Result::Success) {
+    auto bytes = up::span<char>{data, static_cast<size_t>(size)}.as_bytes();
+    if (stream->read(bytes) != up::fs::Result::Success) {
         return 0;
     }
 
@@ -16,19 +16,19 @@ static int stb_read(void* user, char* data, int size) {
 }
 
 static void stb_skip(void* user, int n) {
-    auto* stream = static_cast<gm::fs::Stream*>(user);
+    auto* stream = static_cast<up::fs::Stream*>(user);
 
-    stream->seek(gm::fs::SeekPosition::Current, n);
+    stream->seek(up::fs::SeekPosition::Current, n);
 }
 
 static int stb_eof(void* user) {
-    auto* stream = static_cast<gm::fs::Stream*>(user);
+    auto* stream = static_cast<up::fs::Stream*>(user);
     return stream->isEof();
 }
 
 static constexpr stbi_io_callbacks stb_io = {&stb_read, &stb_skip, &stb_eof};
 
-auto gm::loadImage(fs::Stream& stream) -> Image {
+auto up::loadImage(fs::Stream& stream) -> Image {
     ImageHeader header;
 
     int channels = 0;

@@ -2,12 +2,12 @@
 
 #pragma once
 
-#if defined(GM_CONCURRENCY_EXPORTS)
+#if defined(UP_CONCURRENCY_EXPORTS)
 #    if defined(_WINDOWS)
-#        define GM_CONCURRENCY_API __declspec(dllexport)
+#        define UP_CONCURRENCY_API __declspec(dllexport)
 #    else
-#        define GM_CONCURRENCY_API [[gnu::visibility("default")]]
+#        define UP_CONCURRENCY_API [[gnu::visibility("default")]]
 #    endif
 #else
-#    define GM_CONCURRENCY_API
+#    define UP_CONCURRENCY_API
 #endif

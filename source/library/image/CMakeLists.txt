@@ -4,8 +4,8 @@ project(image VERSION 0.1 LANGUAGES CXX)
 add_library(image)
 add_library(grimm::image ALIAS image)
 
-include(gm_set_common_properties)
-gm_set_common_properties(image)
+include(up_set_common_properties)
+up_set_common_properties(image)
 
 target_link_libraries(image
     PUBLIC

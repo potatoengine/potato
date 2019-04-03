@@ -7,7 +7,7 @@
 #include "grimm/foundation/int_types.h"
 #include <glm/vec4.hpp>
 
-namespace gm::gpu {
+namespace up::gpu {
     class Buffer;
     class ResourceView;
     class PipelineState;
@@ -48,4 +48,4 @@ namespace gm::gpu {
         virtual void unmap(Buffer* resource, span<byte const> data) = 0;
         virtual void update(Buffer* resource, span<byte const> data, uint64 offset = 0) = 0;
     };
-} // namespace gm::gpu
+} // namespace up::gpu

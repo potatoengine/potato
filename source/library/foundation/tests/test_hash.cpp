@@ -4,8 +4,8 @@
 #include "grimm/foundation/span.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::hash") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[grimm][foundation] up::hash") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("default hash_value") {
         DOCTEST_CHECK_EQ(hash_value<fnv1a>('x'), 0xaf63f54c86021707);

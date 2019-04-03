@@ -5,7 +5,7 @@
 #include <glm/common.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-void gm::FlyCameraController::apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) {
+void up::FlyCameraController::apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) {
     glm::vec3 movement =
         camera.right() * relativeMovement.x +
         camera.up() * relativeMovement.y +
@@ -23,7 +23,7 @@ void gm::FlyCameraController::apply(Camera& camera, glm::vec3 relativeMovement, 
     camera.lookAt(pos, pos + view, {0, 1, 0});
 }
 
-void gm::ArcBallCameraController::apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) {
+void up::ArcBallCameraController::apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) {
     _target += relativeMovement * 10.f * frameTime;
 
     _yaw = glm::mod(_yaw + relativeMotion.x, glm::two_pi<float>());

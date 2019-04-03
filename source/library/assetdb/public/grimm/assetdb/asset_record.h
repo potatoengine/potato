@@ -8,22 +8,22 @@
 #include "grimm/foundation/span.h"
 #include "grimm/foundation/vector.h"
 
-namespace gm {
+namespace up {
     enum class AssetCategory {
         Source, // lives in resources/
         Intermediate, // lives in build/cache/
         Output // lives in build/resources/
     };
-    GM_ASSETDB_API span<string_view const> assetCategoryNames() noexcept;
-    GM_ASSETDB_API string_view assetCategoryName(AssetCategory category) noexcept;
-    GM_ASSETDB_API AssetCategory assetCategoryFromName(string_view name) noexcept;
+    UP_ASSETDB_API span<string_view const> assetCategoryNames() noexcept;
+    UP_ASSETDB_API string_view assetCategoryName(AssetCategory category) noexcept;
+    UP_ASSETDB_API AssetCategory assetCategoryFromName(string_view name) noexcept;
 
     enum class AssetDependencyType {
         Source,
         Runtime,
         Tool
     };
-    GM_ASSETDB_API span<string_view const> assetDependencyTypeNames() noexcept;
+    UP_ASSETDB_API span<string_view const> assetDependencyTypeNames() noexcept;
 
     struct AssetDependencyRecord {
         string path;
@@ -46,4 +46,4 @@ namespace gm {
         vector<AssetDependencyRecord> sourceDependencies;
         vector<AssetOutputRecord> outputs;
     };
-} // namespace gm
+} // namespace up

@@ -7,11 +7,11 @@
 #include "grimm/foundation/int_types.h"
 #include "grimm/foundation/vector.h"
 
-namespace gm::fs {
+namespace up::fs {
     class Stream;
 }
 
-namespace gm {
+namespace up {
     struct ImageHeader {
         ImagePixelFormat pixelFormat = ImagePixelFormat::Unknown;
         int width = 0, height = 0, stride = 0;
@@ -26,13 +26,13 @@ namespace gm {
         vector<byte> const& data() const noexcept { return _data; }
 
         bool isCompact() const noexcept { return _header.width == _header.stride; }
-        bool isCompressed() const noexcept { return gm::isCompressed(_header.pixelFormat); }
+        bool isCompressed() const noexcept { return up::isCompressed(_header.pixelFormat); }
 
     private:
         vector<byte> _data;
         ImageHeader _header;
     };
 
-    GM_IMAGE_API Image loadImage(fs::Stream& stream);
-    GM_IMAGE_API bool saveDDS(Image const& image, fs::Stream& stream);
-} // namespace gm
+    UP_IMAGE_API Image loadImage(fs::Stream& stream);
+    UP_IMAGE_API bool saveDDS(Image const& image, fs::Stream& stream);
+} // namespace up

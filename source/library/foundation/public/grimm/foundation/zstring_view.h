@@ -4,7 +4,7 @@
 
 #include "string_view.h"
 
-namespace gm {
+namespace up {
     class zstring_view {
     public:
         using value_type = char;
@@ -103,4 +103,4 @@ namespace gm {
     inline auto operator"" _zsv(char const* str, size_t) noexcept -> zstring_view {
         return {str};
     }
-} // namespace gm
+} // namespace up

@@ -4,8 +4,8 @@
 
 #include "platform.h"
 
-#if !defined(GM_PLATFORM_WINDOWS)
-#    error "WindowsKit.h must only be included on Windows, check for GM_PLATFORM_WINDOWS before including"
+#if !defined(UP_PLATFORM_WINDOWS)
+#    error "WindowsKit.h must only be included on Windows, check for UP_PLATFORM_WINDOWS before including"
 #endif
 
 #if !defined(_UNICODE)

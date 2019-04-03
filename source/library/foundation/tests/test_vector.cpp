@@ -3,7 +3,7 @@
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[grimm][foundation] vector") {
-    using namespace gm;
+    using namespace up;
 
     DOCTEST_TEST_CASE("vector default initialization") {
         vector<int> vec;

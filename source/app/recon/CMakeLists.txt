@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 project(recon VERSION 0.1 LANGUAGES CXX)
 
-include(gm_copy_library_import)
+include(up_copy_library_import)
 
 find_package(Assimp)
 
@@ -9,8 +9,8 @@ if(TARGET assimp)
 
     add_library(recon_lib STATIC)
 
-    include(gm_set_common_properties)
-    gm_set_common_properties(recon_lib)
+    include(up_set_common_properties)
+    up_set_common_properties(recon_lib)
 
     target_link_libraries(recon_lib
         PUBLIC
@@ -27,18 +27,18 @@ if(TARGET assimp)
 
     add_executable(recon)
 
-    gm_set_common_properties(recon)
+    up_set_common_properties(recon)
 
     target_link_libraries(recon PRIVATE recon_lib)
 
     target_link_libraries(recon PRIVATE assimp)
-    include(gm_copy_library_import)
-    gm_copy_library_import(assimp recon)
+    include(up_copy_library_import)
+    up_copy_library_import(assimp recon)
 
-    get_target_property(GM_GPU_ENABLE_D3D11 gpu GM_GPU_ENABLE_D3D11)
-    if(GM_GPU_ENABLE_D3D11)
+    get_target_property(UP_GPU_ENABLE_D3D11 gpu UP_GPU_ENABLE_D3D11)
+    if(UP_GPU_ENABLE_D3D11)
         target_link_libraries(recon_lib PRIVATE d3dcompiler)
-    endif(GM_GPU_ENABLE_D3D11)
+    endif(UP_GPU_ENABLE_D3D11)
 
     add_subdirectory(public/grimm/recon)
     add_subdirectory(private)

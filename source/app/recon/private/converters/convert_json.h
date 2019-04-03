@@ -4,7 +4,7 @@
 
 #include "grimm/recon/converter.h"
 
-namespace gm::recon {
+namespace up::recon {
     class JsonConverter : public Converter {
     public:
         JsonConverter();
@@ -15,4 +15,4 @@ namespace gm::recon {
         string_view name() const noexcept override { return "json"; }
         uint64 revision() const noexcept override { return 0; }
     };
-} // namespace gm::recon
+} // namespace up::recon

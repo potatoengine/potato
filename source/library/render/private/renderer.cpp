@@ -27,32 +27,32 @@
 
 namespace {
     struct FrameData {
-        gm::uint32 frameNumber = 0;
+        up::uint32 frameNumber = 0;
         float lastFrameTimeDelta = 0.f;
         double timeStamp = 0.0;
     };
 } // namespace
 
-gm::Renderer::Renderer(fs::FileSystem fileSystem, rc<gpu::Device> device) : _device(std::move(device)), _fileSystem(std::move(fileSystem)), _renderThread([this] { _renderMain(); }) {
+up::Renderer::Renderer(fs::FileSystem fileSystem, rc<gpu::Device> device) : _device(std::move(device)), _fileSystem(std::move(fileSystem)), _renderThread([this] { _renderMain(); }) {
     _commandList = _device->createCommandList();
 
     _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.json");
     _debugLineBuffer = _device->createBuffer(gpu::BufferType::Vertex, 64 * 1024);
 }
 
-gm::Renderer::~Renderer() {
+up::Renderer::~Renderer() {
     _taskQueue.close();
     _renderThread.join();
 }
 
-void gm::Renderer::_renderMain() {
+void up::Renderer::_renderMain() {
     RenderTask task;
     while (_taskQueue.dequeWait(task)) {
         task();
     }
 }
 
-void gm::Renderer::beginFrame() {
+void up::Renderer::beginFrame() {
     if (_frameDataBuffer == nullptr) {
         _frameDataBuffer = _device->createBuffer(gpu::BufferType::Constant, sizeof(FrameData));
     }
@@ -74,7 +74,7 @@ void gm::Renderer::beginFrame() {
     _commandList->bindConstantBuffer(0, _frameDataBuffer.get(), gpu::ShaderStage::All);
 }
 
-void gm::Renderer::endFrame(float frameTime) {
+void up::Renderer::endFrame(float frameTime) {
     if (_debugLineBuffer == nullptr) {
         _debugLineBuffer = _device->createBuffer(gpu::BufferType::Vertex, 64 * 1024);
     }
@@ -101,14 +101,14 @@ void gm::Renderer::endFrame(float frameTime) {
     _device->execute(_commandList.get());
 }
 
-auto gm::Renderer::context() -> RenderContext {
+auto up::Renderer::context() -> RenderContext {
     return RenderContext{
         _frameTimestamp,
         *_commandList,
         *_device};
 }
 
-auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
+auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
     if (fs::readBinary(stream, contents) != fs::Result{}) {
@@ -165,10 +165,10 @@ auto gm::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
         data.push_back(mesh->mTextureCoords[0][i].y);
     }
 
-    return gm::new_shared<Mesh>(std::move(indices), vector(span(data).as_bytes()), span{&bufferDesc, 1}, channels);
+    return up::new_shared<Mesh>(std::move(indices), vector(span(data).as_bytes()), span{&bufferDesc, 1}, channels);
 }
 
-auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
+auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
     std::ifstream inFile(path.c_str());
     if (!inFile) {
         return nullptr;
@@ -229,16 +229,16 @@ auto gm::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
     return new_shared<Material>(std::move(vertex), std::move(pixel), std::move(textures));
 }
 
-auto gm::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
+auto up::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
     if (fs::readBinary(stream, contents) != fs::Result{}) {
         return {};
     }
-    return gm::new_shared<Shader>(std::move(contents));
+    return up::new_shared<Shader>(std::move(contents));
 }
 
-auto gm::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
+auto up::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
     fs::Stream stream = _fileSystem.openRead(path);
     if (!stream) {
         return nullptr;

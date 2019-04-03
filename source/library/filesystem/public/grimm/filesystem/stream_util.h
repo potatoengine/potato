@@ -9,7 +9,7 @@
 #include "grimm/foundation/string.h"
 #include "grimm/foundation/int_types.h"
 
-namespace gm::fs {
-    [[nodiscard]] GM_FILESYSTEM_API Result readBinary(Stream& stream, vector<gm::byte>& out);
-    [[nodiscard]] GM_FILESYSTEM_API Result readText(Stream& stream, string& out);
-} // namespace gm::fs
+namespace up::fs {
+    [[nodiscard]] UP_FILESYSTEM_API Result readBinary(Stream& stream, vector<up::byte>& out);
+    [[nodiscard]] UP_FILESYSTEM_API Result readText(Stream& stream, string& out);
+} // namespace up::fs

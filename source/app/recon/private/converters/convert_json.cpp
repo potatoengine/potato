@@ -10,11 +10,11 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/document.h>
 
-gm::recon::JsonConverter::JsonConverter() = default;
+up::recon::JsonConverter::JsonConverter() = default;
 
-gm::recon::JsonConverter::~JsonConverter() = default;
+up::recon::JsonConverter::~JsonConverter() = default;
 
-bool gm::recon::JsonConverter::convert(Context& ctx) {
+bool up::recon::JsonConverter::convert(Context& ctx) {
 
     auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});

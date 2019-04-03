@@ -10,7 +10,7 @@
 #    define FMT_ASSERT(cond, message) \
         do { \
             if (!(cond)) { \
-                ::gm::fatal_error(__FILE__, __LINE__, #cond, (message)); \
+                ::up::fatal_error(__FILE__, __LINE__, #cond, (message)); \
                 std::abort(); \
             } \
         } while (false)
@@ -22,7 +22,7 @@
 
 #include <formatxx/format.h>
 
-namespace gm {
+namespace up {
     template <typename Buffer>
     class format_writer : public formatxx::format_writer {
     public:
@@ -43,4 +43,4 @@ namespace gm {
         format_writer<Buffer> writer(buffer);
         return ::formatxx::format_to(writer, ::formatxx::string_view(format.data(), format.size()), args...);
     }
-} // namespace gm
+} // namespace up

@@ -6,15 +6,15 @@
 #include <rapidjson/writer.h>
 #include "stream_json.h"
 
-auto gm::HashCache::hashAssetContent(span<gm::byte const> contents) noexcept -> gm::uint64 {
+auto up::HashCache::hashAssetContent(span<up::byte const> contents) noexcept -> up::uint64 {
     return hash_value<fnv1a>(contents);
 }
 
-auto gm::HashCache::hashAssetStream(fs::Stream& stream) -> gm::uint64 {
+auto up::HashCache::hashAssetStream(fs::Stream& stream) -> up::uint64 {
     auto hasher = fnv1a();
-    gm::byte buffer[32768];
+    up::byte buffer[32768];
     while (!stream.isEof()) {
-        span<gm::byte> read(buffer, sizeof(buffer));
+        span<up::byte> read(buffer, sizeof(buffer));
         stream.read(read);
         if (read.empty()) {
             break;
@@ -24,7 +24,7 @@ auto gm::HashCache::hashAssetStream(fs::Stream& stream) -> gm::uint64 {
     return static_cast<uint64>(hasher.finalize());
 }
 
-auto gm::HashCache::hashAssetAtPath(zstring_view path) -> gm::uint64 {
+auto up::HashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
     fs::FileStat stat;
     auto rs = _fileSystem.fileStat(path, stat);
     if (rs != fs::Result::Success) {
@@ -51,7 +51,7 @@ auto gm::HashCache::hashAssetAtPath(zstring_view path) -> gm::uint64 {
     return hash;
 }
 
-bool gm::HashCache::serialize(fs::Stream& stream) const {
+bool up::HashCache::serialize(fs::Stream& stream) const {
     rapidjson::Document doc;
     doc.SetObject();
     auto root = doc.GetObject();
@@ -69,7 +69,7 @@ bool gm::HashCache::serialize(fs::Stream& stream) const {
     return doc.Accept(writer);
 }
 
-bool gm::HashCache::deserialize(fs::Stream& stream) {
+bool up::HashCache::deserialize(fs::Stream& stream) {
     RapidJsonStreamWrapper inWrapper(stream);
     rapidjson::Document doc;
     doc.ParseStream(inWrapper);

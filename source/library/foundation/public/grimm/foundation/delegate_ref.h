@@ -4,15 +4,15 @@
 
 #include "traits.h"
 
-namespace gm {
+namespace up {
     template <typename Signature>
     class delegate_ref;
 
     template <typename T>
     delegate_ref(T)->delegate_ref<signature_t<T>>;
-} // namespace gm
+} // namespace up
 
-namespace gm::_detail {
+namespace up::_detail {
     template <typename F, typename R, typename... P>
     R delegate_ref_thunk(void const* obj, P&&... params) {
         F const& f = *static_cast<F const*>(obj);
@@ -39,10 +39,10 @@ namespace gm::_detail {
         call_t _call = nullptr;
         void const* _functor = nullptr;
     };
-} // namespace gm::_detail
+} // namespace up::_detail
 
 template <typename ReturnType, typename... ParamTypes>
-class gm::delegate_ref<ReturnType(ParamTypes...)> {
+class up::delegate_ref<ReturnType(ParamTypes...)> {
 private:
     using holder_t = _detail::delegate_ref_holder<ReturnType, ParamTypes...>;
 

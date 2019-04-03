@@ -9,7 +9,7 @@
 #include <typeindex>
 #include <utility>
 
-namespace gm {
+namespace up {
     template <typename HashAlgorithm, typename CharT, typename CharTraits, typename AllocatorT>
     inline void hash_append(HashAlgorithm& hasher, std::basic_string<CharT, CharTraits, AllocatorT> const& string) {
         hasher.append_bytes(string.data(), string.size());
@@ -27,4 +27,4 @@ namespace gm {
         // we rehash even if they are the same number of bits, which is probably not ideal, but works.
         hash_append(hasher, type.hash_code());
     }
-} // namespace gm
+} // namespace up

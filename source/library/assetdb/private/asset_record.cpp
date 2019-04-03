@@ -2,7 +2,7 @@
 
 #include "grimm/assetdb/asset_record.h"
 
-auto gm::assetCategoryNames() noexcept -> span<string_view const> {
+auto up::assetCategoryNames() noexcept -> span<string_view const> {
     constexpr static string_view const names[] = {
         "Source",
         "Intermediate",
@@ -11,14 +11,14 @@ auto gm::assetCategoryNames() noexcept -> span<string_view const> {
     return names;
 }
 
-auto gm::assetCategoryName(AssetCategory category) noexcept -> string_view {
+auto up::assetCategoryName(AssetCategory category) noexcept -> string_view {
     auto index = std::underlying_type_t<AssetCategory>(category);
     auto names = assetCategoryNames();
-    GM_ASSERT(index >= 0 && index < names.size());
+    UP_ASSERT(index >= 0 && index < names.size());
     return names[index];
 }
 
-auto gm::assetCategoryFromName(string_view name) noexcept -> AssetCategory {
+auto up::assetCategoryFromName(string_view name) noexcept -> AssetCategory {
     auto names = assetCategoryNames();
     int index = 0;
     for (auto catName : names) {
@@ -30,7 +30,7 @@ auto gm::assetCategoryFromName(string_view name) noexcept -> AssetCategory {
     return AssetCategory::Source;
 }
 
-auto gm::assetDependencyTypeNames() noexcept -> span<string_view const> {
+auto up::assetDependencyTypeNames() noexcept -> span<string_view const> {
     constexpr static string_view const names[] = {
         "Source",
         "Runtime",

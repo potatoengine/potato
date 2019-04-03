@@ -1,8 +1,8 @@
 #include "grimm/foundation/span.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::span") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[grimm][foundation] up::span") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("span default initialization") {
         span<int> av{};

@@ -4,9 +4,9 @@
 #include <iostream>
 
 int main(int argc, char const** argv) {
-    gm::recon::ConverterApp app;
+    up::recon::ConverterApp app;
 
-    if (!app.run(gm::span<char const*>{argv, static_cast<std::size_t>(argc)})) {
+    if (!app.run(up::span<char const*>{argv, static_cast<std::size_t>(argc)})) {
         return 1;
     }
 

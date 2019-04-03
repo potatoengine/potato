@@ -5,16 +5,16 @@
 #include "numeric_util.h"
 #include "string_util.h"
 
-namespace gm {
+namespace up {
     class string_view;
 
     template <typename HashAlgorithm>
     inline void hash_append(HashAlgorithm& hasher, string_view const& string);
 
     inline string_view operator"" _sv(char const* str, size_t size) noexcept;
-} // namespace gm
+} // namespace up
 
-class gm::string_view {
+class up::string_view {
 public:
     using value_type = char;
     using iterator = char const*;
@@ -165,10 +165,10 @@ private:
 };
 
 template <typename HashAlgorithm>
-void gm::hash_append(HashAlgorithm& hasher, string_view const& string) {
+void up::hash_append(HashAlgorithm& hasher, string_view const& string) {
     hasher.append_bytes(string.data(), string.size());
 }
 
-inline auto gm::operator"" _sv(char const* str, size_t size) noexcept -> string_view {
+inline auto up::operator"" _sv(char const* str, size_t size) noexcept -> string_view {
     return {str, size};
 }

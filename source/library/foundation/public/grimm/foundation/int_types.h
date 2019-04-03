@@ -5,7 +5,7 @@
 #include <cinttypes>
 #include <cstddef>
 
-namespace gm {
+namespace up {
     inline namespace types {
         using int8 = std::int8_t;
         using uint8 = std::uint8_t;
@@ -29,4 +29,4 @@ namespace gm {
         using size_t = std::size_t;
         using ssize_t = std::ptrdiff_t;
     } // namespace types
-} // namespace gm
+} // namespace up

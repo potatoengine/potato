@@ -5,7 +5,7 @@
 #include "grimm/recon/converter.h"
 #include "grimm/filesystem/filesystem.h"
 
-namespace gm::recon {
+namespace up::recon {
     class HlslConverter : public Converter {
     public:
         HlslConverter();
@@ -19,4 +19,4 @@ namespace gm::recon {
     private:
         bool compile(Context& ctx, fs::FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName);
     };
-} // namespace gm::recon
+} // namespace up::recon

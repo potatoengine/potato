@@ -11,11 +11,11 @@
 #include <spdlog/logger.h>
 #include <spdlog/fmt/ostr.h>
 
-namespace gm::fs {
+namespace up::fs {
     class FileSystem;
 }
 
-namespace gm::recon {
+namespace up::recon {
     struct ConverterConfig {
         string sourceFolderPath;
         string destinationFolderPath;
@@ -26,4 +26,4 @@ namespace gm::recon {
     bool parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem, spdlog::logger& logger);
     bool parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path, spdlog::logger& logger);
     bool parseConfigString(ConverterConfig& config, string_view json, zstring_view filename, spdlog::logger& logger);
-} // namespace gm::recon
+} // namespace up::recon

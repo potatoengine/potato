@@ -7,7 +7,7 @@
 #include "fixed_string.h"
 #include "int_types.h"
 
-namespace gm::callstack {
+namespace up::callstack {
     struct TraceRecord {
         fixed_string<128> filename;
         fixed_string<128> symbol;
@@ -15,6 +15,6 @@ namespace gm::callstack {
         int line = 0;
     };
 
-    extern GM_FOUNDATION_API span<uintptr> readTrace(span<uintptr> addresses, uint skip = 0);
-    extern GM_FOUNDATION_API span<TraceRecord> resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records);
-} // namespace gm::callstack
+    extern UP_FOUNDATION_API span<uintptr> readTrace(span<uintptr> addresses, uint skip = 0);
+    extern UP_FOUNDATION_API span<TraceRecord> resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records);
+} // namespace up::callstack

@@ -7,16 +7,16 @@
 #include "string_util.h"
 #include <cstring>
 
-namespace gm {
+namespace up {
     class string;
 
     template <typename HashAlgorithm>
     inline void hash_append(HashAlgorithm& hasher, string const& string);
 
     inline string operator"" _s(char const* str, size_t size);
-} // namespace gm
+} // namespace up
 
-class gm::string {
+class up::string {
 public:
     using value_type = char;
     using iterator = char const*;
@@ -252,10 +252,10 @@ private:
 };
 
 template <typename HashAlgorithm>
-void gm::hash_append(HashAlgorithm& hasher, string const& string) {
+void up::hash_append(HashAlgorithm& hasher, string const& string) {
     hasher({reinterpret_cast<std::byte const*>(string.data()), string.size()});
 }
 
-inline auto gm::operator"" _s(char const* str, size_t size) -> string {
+inline auto up::operator"" _s(char const* str, size_t size) -> string {
     return string{str, size};
 }

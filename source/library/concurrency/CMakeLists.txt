@@ -4,8 +4,8 @@ project(concurrency VERSION 0.1 LANGUAGES CXX)
 add_library(concurrency)
 add_library(grimm::concurrency ALIAS concurrency)
 
-include(gm_set_common_properties)
-gm_set_common_properties(concurrency)
+include(up_set_common_properties)
+up_set_common_properties(concurrency)
 
 find_package(Threads REQUIRED)
 

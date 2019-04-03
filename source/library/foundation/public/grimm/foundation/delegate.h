@@ -7,7 +7,7 @@
 
 #include <new>
 
-namespace gm {
+namespace up {
     template <typename Signature>
     class delegate;
 
@@ -28,9 +28,9 @@ namespace gm {
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
     delegate(ClassType const* object, ReturnType (ClassType::*method)(ParamTypes...) const)->delegate<ReturnType(ParamTypes...) const>;
-} // namespace gm
+} // namespace up
 
-namespace gm::_detail {
+namespace up::_detail {
     static constexpr size_t delegate_size_c = 3;
 
     struct delegate_vtable_base {
@@ -133,10 +133,10 @@ namespace gm::_detail {
         template <typename Functor>
         void assign(Functor&& functor);
     };
-} // namespace gm::_detail
+} // namespace up::_detail
 
 template <typename ReturnType, typename... ParamTypes>
-class gm::delegate<ReturnType(ParamTypes...)> : public _detail::delegate_typed<ReturnType, false, ParamTypes...> {
+class up::delegate<ReturnType(ParamTypes...)> : public _detail::delegate_typed<ReturnType, false, ParamTypes...> {
     using vtable_c = _detail::delegate_vtable_typed<ReturnType, false, ParamTypes...>;
     using storage_t = typename _detail::delegate_typed<ReturnType, false, ParamTypes...>::storage_t;
 
@@ -159,7 +159,7 @@ public:
 };
 
 template <typename ReturnType, typename... ParamTypes>
-class gm::delegate<ReturnType(ParamTypes...) const> : public _detail::delegate_typed<ReturnType, true, ParamTypes...> {
+class up::delegate<ReturnType(ParamTypes...) const> : public _detail::delegate_typed<ReturnType, true, ParamTypes...> {
     using vtable_c = _detail::delegate_vtable_typed<ReturnType, true, ParamTypes...>;
     using storage_t = typename _detail::delegate_typed<ReturnType, true, ParamTypes...>::storage_t;
 
@@ -177,7 +177,7 @@ public:
     inline ReturnType operator()(ParamTypes... params) const;
 };
 
-gm::_detail::delegate_base::delegate_base(delegate_base&& rhs) : _vtable(rhs._vtable) {
+up::_detail::delegate_base::delegate_base(delegate_base&& rhs) : _vtable(rhs._vtable) {
     if (_vtable != nullptr) {
         _vtable->move(&_storage, &rhs._storage);
         _vtable->destruct(&rhs._storage);
@@ -186,7 +186,7 @@ gm::_detail::delegate_base::delegate_base(delegate_base&& rhs) : _vtable(rhs._vt
     }
 }
 
-auto gm::_detail::delegate_base::operator=(delegate_base&& rhs) -> delegate_base& {
+auto up::_detail::delegate_base::operator=(delegate_base&& rhs) -> delegate_base& {
     if (this != &rhs) {
         if (_vtable != nullptr) {
             _vtable->destruct(&_storage);
@@ -205,7 +205,7 @@ auto gm::_detail::delegate_base::operator=(delegate_base&& rhs) -> delegate_base
     return *this;
 }
 
-void gm::_detail::delegate_base::reset(std::nullptr_t) {
+void up::_detail::delegate_base::reset(std::nullptr_t) {
     if (_vtable != nullptr) {
         _vtable->destruct(&_storage);
         _vtable = nullptr;
@@ -213,7 +213,7 @@ void gm::_detail::delegate_base::reset(std::nullptr_t) {
 }
 template <typename ReturnType, bool Const, typename... ParamTypes>
 template <typename Functor, typename>
-auto gm::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::operator=(Functor&& functor) -> delegate_typed& {
+auto up::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::operator=(Functor&& functor) -> delegate_typed& {
     if (this->_vtable != nullptr) {
         this->_vtable->destruct(&this->_storage);
     }
@@ -224,7 +224,7 @@ auto gm::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::operator=(Fu
 
 template <typename ReturnType, bool Const, typename... ParamTypes>
 template <typename Functor>
-void gm::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::assign(Functor&& functor) {
+void up::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::assign(Functor&& functor) {
     using FunctorType = std::decay_t<Functor>;
 
     static_assert(alignof(FunctorType) <= alignof(storage_t), "Alignment of the functor given to delegate is too strict");
@@ -240,13 +240,13 @@ void gm::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::assign(Funct
 }
 
 template <typename ReturnType, typename... ParamTypes>
-auto gm::delegate<ReturnType(ParamTypes...)>::operator()(ParamTypes... params) -> ReturnType {
-    GM_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
+auto up::delegate<ReturnType(ParamTypes...)>::operator()(ParamTypes... params) -> ReturnType {
+    UP_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
     return static_cast<vtable_c const*>(this->_vtable)->call(&this->_storage, std::forward<ParamTypes>(params)...);
 }
 
 template <typename ReturnType, typename... ParamTypes>
-auto gm::delegate<ReturnType(ParamTypes...) const>::operator()(ParamTypes... params) const -> ReturnType {
-    GM_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
+auto up::delegate<ReturnType(ParamTypes...) const>::operator()(ParamTypes... params) const -> ReturnType {
+    UP_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
     return static_cast<vtable_c const*>(this->_vtable)->call(const_cast<decltype(this->_storage)*>(&this->_storage), std::forward<ParamTypes>(params)...);
 }

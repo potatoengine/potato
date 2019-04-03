@@ -6,7 +6,7 @@
 #include <initializer_list>
 #include <cstddef>
 
-namespace gm::_detail {
+namespace up::_detail {
     template <typename C>
     using has_data_member = enable_if_t<std::is_pointer_v<decltype(std::declval<C>().data())>>;
 
@@ -21,9 +21,9 @@ namespace gm::_detail {
 
     template <typename C>
     constexpr bool has_data_v = has_data<C>::value;
-} // namespace gm::_detail
+} // namespace up::_detail
 
-namespace gm {
+namespace up {
     template <typename T>
     struct span;
 
@@ -37,16 +37,16 @@ namespace gm {
     span(C &&)->span<std::remove_reference_t<decltype(*std::declval<C>().data())>>;
 
     template <typename HashAlgorithm, typename T>
-    inline void hash_append(HashAlgorithm&, gm::span<T> const&) noexcept;
+    inline void hash_append(HashAlgorithm&, up::span<T> const&) noexcept;
 
     template <typename T>
     using view = span<T const>;
-} // namespace gm
+} // namespace up
 
 /// <summary> A non-owning slice of an array. </summary>
 /// <typeparam name="T"> Type of the elements in the array. </typeparam>
 template <typename T>
-struct gm::span {
+struct up::span {
 public:
     using value_type = T;
     using iterator = T*;
@@ -117,8 +117,8 @@ private:
 };
 
 template <typename HashAlgorithm, typename T>
-void gm::hash_append(HashAlgorithm& hasher, gm::span<T> const& view) noexcept {
-    if constexpr (gm::is_contiguous_v<T>) {
+void up::hash_append(HashAlgorithm& hasher, up::span<T> const& view) noexcept {
+    if constexpr (up::is_contiguous_v<T>) {
         hasher.append_bytes(reinterpret_cast<char const*>(view.data()), view.size() * sizeof(T));
     }
     else {

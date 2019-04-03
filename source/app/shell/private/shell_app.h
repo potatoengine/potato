@@ -7,19 +7,19 @@
 
 #include <SDL.h>
 
-namespace gm {
+namespace up {
     class ShellApp;
     class Renderer;
     class RenderCamera;
     class Node;
-} // namespace gm
+} // namespace up
 
-namespace gm::gpu {
+namespace up::gpu {
     class Device;
     class SwapChain;
-} // namespace gm::gpu
+} // namespace up::gpu
 
-class gm::ShellApp {
+class up::ShellApp {
 public:
     ShellApp();
     ~ShellApp();

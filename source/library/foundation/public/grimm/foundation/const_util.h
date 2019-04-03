@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace gm::_detail {
+namespace up::_detail {
     template <template <auto, auto> typename F, auto... V>
     struct reduce_t;
 
@@ -11,9 +11,9 @@ namespace gm::_detail {
 
     template <template <auto, auto> typename F, auto V, auto... R>
     struct reduce_t<F, V, R...> { static constexpr auto value = F<V, reduce_t<F, R...>::value>::value; };
-} // namespace gm::_detail
+} // namespace up::_detail
 
-namespace gm {
+namespace up {
     template <auto L, auto R>
     struct max_f { static constexpr auto value = L < R ? R : L; };
 
@@ -48,4 +48,4 @@ namespace gm {
 
     static_assert(sum_v<1, -7, 3> == -3);
     static_assert(sum_v<1, -7, -3> == -9);
-} // namespace gm
+} // namespace up

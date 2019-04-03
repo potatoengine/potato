@@ -8,31 +8,31 @@
 #include <rapidjson/writer.h>
 #include "stream_json.h"
 
-static constexpr gm::uint64 libraryRevision = 3;
+static constexpr up::uint64 libraryRevision = 3;
 
-gm::AssetLibrary::~AssetLibrary() = default;
+up::AssetLibrary::~AssetLibrary() = default;
 
-auto gm::AssetLibrary::pathToAssetId(string_view path) const -> AssetId {
+auto up::AssetLibrary::pathToAssetId(string_view path) const -> AssetId {
     auto hash = hash_value<fnv1a>(path);
     return static_cast<AssetId>(hash);
 }
 
-auto gm::AssetLibrary::assetIdToPath(AssetId assetId) const -> string_view {
+auto up::AssetLibrary::assetIdToPath(AssetId assetId) const -> string_view {
     auto record = findRecord(assetId);
     return record != nullptr ? string_view(record->path) : string_view{};
 }
 
-auto gm::AssetLibrary::findRecord(AssetId assetId) const -> AssetImportRecord const* {
+auto up::AssetLibrary::findRecord(AssetId assetId) const -> AssetImportRecord const* {
     auto it = _assets.find(assetId);
     return it != _assets.end() ? &it->second : nullptr;
 }
 
-bool gm::AssetLibrary::insertRecord(AssetImportRecord record) {
+bool up::AssetLibrary::insertRecord(AssetImportRecord record) {
     _assets[record.assetId] = std::move(record);
     return true;
 }
 
-bool gm::AssetLibrary::serialize(fs::Stream& stream) const {
+bool up::AssetLibrary::serialize(fs::Stream& stream) const {
     rapidjson::Document doc;
     doc.SetObject();
     auto root = doc.GetObject();
@@ -77,7 +77,7 @@ bool gm::AssetLibrary::serialize(fs::Stream& stream) const {
     return doc.Accept(writer);
 }
 
-bool gm::AssetLibrary::deserialize(fs::Stream& stream) {
+bool up::AssetLibrary::deserialize(fs::Stream& stream) {
     RapidJsonStreamWrapper inWrapper(stream);
     rapidjson::Document doc;
     doc.ParseStream(inWrapper);

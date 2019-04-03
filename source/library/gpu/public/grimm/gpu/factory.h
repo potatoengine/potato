@@ -9,7 +9,7 @@
 
 #include "_export.h"
 
-namespace gm::gpu {
+namespace up::gpu {
     class Device;
 
     class Factory {
@@ -25,8 +25,8 @@ namespace gm::gpu {
         virtual rc<Device> createDevice(int index) = 0;
     };
 
-    GM_GPU_API box<Factory> CreateFactoryNull();
-#if defined(GM_GPU_ENABLE_D3D11)
-    GM_GPU_API box<Factory> CreateFactoryD3D11();
+    UP_GPU_API box<Factory> CreateFactoryNull();
+#if defined(UP_GPU_ENABLE_D3D11)
+    UP_GPU_API box<Factory> CreateFactoryD3D11();
 #endif
-} // namespace gm::gpu
+} // namespace up::gpu

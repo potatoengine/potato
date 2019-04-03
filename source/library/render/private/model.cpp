@@ -22,11 +22,11 @@ namespace {
     };
 } // namespace
 
-gm::Model::Model(rc<Mesh> mesh, rc<Material> material) : _mesh(std::move(mesh)), _material(std::move(material)) {}
+up::Model::Model(rc<Mesh> mesh, rc<Material> material) : _mesh(std::move(mesh)), _material(std::move(material)) {}
 
-gm::Model::~Model() = default;
+up::Model::~Model() = default;
 
-void GM_VECTORCALL gm::Model::render(RenderContext& ctx, glm::mat4x4 transform) {
+void UP_VECTORCALL up::Model::render(RenderContext& ctx, glm::mat4x4 transform) {
     if (_transformBuffer == nullptr) {
         _transformBuffer = ctx.device.createBuffer(gpu::BufferType::Constant, sizeof(Trans));
     }

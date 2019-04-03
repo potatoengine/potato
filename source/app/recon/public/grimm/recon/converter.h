@@ -4,7 +4,7 @@
 
 #include "grimm/recon/context.h"
 
-namespace gm::recon {
+namespace up::recon {
     class Converter {
     public:
         Converter() = default;
@@ -18,4 +18,4 @@ namespace gm::recon {
         virtual string_view name() const noexcept = 0;
         virtual uint64 revision() const noexcept = 0;
     };
-} // namespace gm::recon
+} // namespace up::recon

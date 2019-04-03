@@ -8,7 +8,7 @@
 #include "traits.h"
 #include "int_types.h"
 
-namespace gm {
+namespace up {
     struct default_hash;
 
     template <typename HashAlgorithm = default_hash>
@@ -19,17 +19,17 @@ namespace gm {
 
     template <typename>
     class vector;
-} // namespace gm
+} // namespace up
 
-namespace gm {
+namespace up {
     template <typename HashAlgorithm, typename T>
     inline enable_if_t<is_contiguous<T>::value, HashAlgorithm&> hash_append(HashAlgorithm& hasher, T const& value) {
         hasher.append_bytes(&value, sizeof(value));
         return hasher;
     }
-} // namespace gm
+} // namespace up
 
-struct gm::default_hash {
+struct up::default_hash {
     using result_type = typename fnv1a::result_type;
 
     constexpr void append_bytes(char const* data, size_t size) noexcept {
@@ -52,7 +52,7 @@ private:
 };
 
 template <typename HashAlgorithm>
-struct gm::uhash {
+struct up::uhash {
     using result_type = typename HashAlgorithm::result_type;
 
     template <typename T>
@@ -62,9 +62,9 @@ struct gm::uhash {
 };
 
 template <typename HashAlgorithm, typename T>
-auto gm::hash_value(T const& value) -> typename HashAlgorithm::result_type {
+auto up::hash_value(T const& value) -> typename HashAlgorithm::result_type {
     HashAlgorithm hasher{};
-    using gm::hash_append;
+    using up::hash_append;
     hash_append(hasher, value);
     return hasher.finalize();
 }

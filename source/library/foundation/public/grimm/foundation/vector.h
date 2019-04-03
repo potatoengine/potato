@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <new>
 
-namespace gm {
+namespace up {
     template <typename T>
     class vector;
 
@@ -195,7 +195,7 @@ namespace gm {
 
     template <typename T>
     T* vector<T>::release() {
-        GM_ASSERT(_last == _sentinel, "Releasing memory from a vector that has uninitialized capacity; call resize(capacity()) first!");
+        UP_ASSERT(_last == _sentinel, "Releasing memory from a vector that has uninitialized capacity; call resize(capacity()) first!");
         T* tmp = _first;
         _first = _last = _sentinel = nullptr;
         return tmp;
@@ -381,7 +381,7 @@ namespace gm {
     template <typename IteratorT, typename SentinelT>
     auto vector<T>::insert(const_iterator pos, IteratorT begin, SentinelT end) -> iterator {
         if constexpr (std::is_same_v<pointer, IteratorT> || std::is_same_v<const_pointer, IteratorT>) {
-            GM_ASSERT(begin < _first || begin >= _last, "Inserting a sub-range of a vector into itself is not supported");
+            UP_ASSERT(begin < _first || begin >= _last, "Inserting a sub-range of a vector into itself is not supported");
         }
 
         auto const count = end - begin;
@@ -461,4 +461,4 @@ namespace gm {
         }
         return hasher;
     }
-} // namespace gm
+} // namespace up

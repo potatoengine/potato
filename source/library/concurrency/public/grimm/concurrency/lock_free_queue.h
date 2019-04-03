@@ -8,7 +8,7 @@
 #include <atomic>
 #include <cstdint>
 
-namespace gm::concurrency {
+namespace up::concurrency {
     template <typename T, std::size_t CacheLineWidth = 64>
     struct alignas(CacheLineWidth) AlignedAtomic : std::atomic<T> {
         char _padding[CacheLineWidth - sizeof(std::atomic<T>)];
@@ -88,4 +88,4 @@ namespace gm::concurrency {
         return true;
     }
 
-} // namespace gm::concurrency
+} // namespace up::concurrency

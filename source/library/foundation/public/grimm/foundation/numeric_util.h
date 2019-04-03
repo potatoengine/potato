@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace gm {
+namespace up {
 
     template <typename T>
     inline T max(T const& lhs, T const& rhs) {
@@ -32,4 +32,4 @@ namespace gm {
         return initial;
     }
 
-} // namespace gm
+} // namespace up

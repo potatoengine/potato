@@ -11,7 +11,7 @@
 #include <spdlog/logger.h>
 #include <spdlog/fmt/ostr.h>
 
-namespace gm::recon {
+namespace up::recon {
     class Context {
     public:
         Context(zstring_view sourceFilePath,
@@ -49,4 +49,4 @@ namespace gm::recon {
 
         spdlog::logger& _logger;
     };
-} // namespace gm::recon
+} // namespace up::recon

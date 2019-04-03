@@ -1,4 +1,4 @@
-function(gm_set_common_properties TARGET)
+function(up_set_common_properties TARGET)
     get_target_property(TYPE ${TARGET} TYPE)
     string(TOUPPER ${TARGET} TARGET_UPPER)
 
@@ -48,7 +48,7 @@ function(gm_set_common_properties TARGET)
     # Windows', and also for smaller symbol tables during
     # the linking stage
     set_target_properties(${TARGET} PROPERTIES
-        DEFINE_SYMBOL "GM_${TARGET_UPPER}_EXPORTS"
+        DEFINE_SYMBOL "UP_${TARGET_UPPER}_EXPORTS"
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
     )

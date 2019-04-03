@@ -4,8 +4,8 @@ project(filesystem VERSION 0.1 LANGUAGES CXX)
 add_library(filesystem)
 add_library(grimm::filesystem ALIAS filesystem)
 
-include(gm_set_common_properties)
-gm_set_common_properties(filesystem)
+include(up_set_common_properties)
+up_set_common_properties(filesystem)
 
 target_link_libraries(filesystem
     PUBLIC

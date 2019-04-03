@@ -4,16 +4,16 @@
 
 #include "_export.h"
 
-namespace gm::gpu {
+namespace up::gpu {
     class CommandList;
     class Device;
-} // namespace gm::gpu
+} // namespace up::gpu
 
-namespace gm {
+namespace up {
     class RenderContext {
     public:
         double frameTime = 0;
         gpu::CommandList& commandList;
         gpu::Device& device;
     };
-} // namespace gm
+} // namespace up

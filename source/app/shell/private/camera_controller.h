@@ -5,7 +5,7 @@
 
 #pragma once
 
-namespace gm {
+namespace up {
     class Camera;
 
     class CameraController {
@@ -35,4 +35,4 @@ namespace gm {
         float _yaw = 0;
         float _pitch = -glm::quarter_pi<float>();
     };
-} // namespace gm
+} // namespace up

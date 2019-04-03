@@ -16,25 +16,25 @@
 
 namespace {
     struct ReconIncludeHandler : public ID3DInclude {
-        ReconIncludeHandler(gm::fs::FileSystem& fileSystem, gm::recon::Context& ctx, gm::string_view folder)
+        ReconIncludeHandler(up::fs::FileSystem& fileSystem, up::recon::Context& ctx, up::string_view folder)
             : _fileSystem(fileSystem),
               _ctx(ctx),
               _folder(folder) {}
 
         HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override {
-            gm::string absolutePath = gm::fs::path::join({_folder, pFileName});
+            up::string absolutePath = up::fs::path::join({_folder, pFileName});
 
             _ctx.logger().info("Including `{}'", absolutePath);
 
             _ctx.addSourceDependency(pFileName);
 
-            auto stream = _fileSystem.openRead(absolutePath.c_str(), gm::fs::FileOpenMode::Text);
+            auto stream = _fileSystem.openRead(absolutePath.c_str(), up::fs::FileOpenMode::Text);
             if (!stream) {
                 return E_FAIL;
             }
 
-            gm::string shader;
-            if (gm::fs::readText(stream, shader) != gm::fs::Result::Success) {
+            up::string shader;
+            if (up::fs::readText(stream, shader) != up::fs::Result::Success) {
                 return E_FAIL;
             }
 
@@ -50,23 +50,23 @@ namespace {
             return S_OK;
         }
 
-        gm::fs::FileSystem& _fileSystem;
-        gm::recon::Context& _ctx;
-        gm::string_view _folder;
-        gm::vector<gm::string> _shaders;
+        up::fs::FileSystem& _fileSystem;
+        up::recon::Context& _ctx;
+        up::string_view _folder;
+        up::vector<up::string> _shaders;
     }; // namespace
 } // namespace
 
-gm::recon::HlslConverter::HlslConverter() = default;
+up::recon::HlslConverter::HlslConverter() = default;
 
-gm::recon::HlslConverter::~HlslConverter() = default;
+up::recon::HlslConverter::~HlslConverter() = default;
 
-bool gm::recon::HlslConverter::convert(Context& ctx) {
+bool up::recon::HlslConverter::convert(Context& ctx) {
     fs::FileSystem fs;
 
     auto absoluteSourcePath = fs::path::join({string_view(ctx.sourceFolderPath()), ctx.sourceFilePath()});
 
-    auto stream = fs.openRead(absoluteSourcePath.c_str(), gm::fs::FileOpenMode::Text);
+    auto stream = fs.openRead(absoluteSourcePath.c_str(), up::fs::FileOpenMode::Text);
     if (!stream) {
         return false;
     }
@@ -85,10 +85,10 @@ bool gm::recon::HlslConverter::convert(Context& ctx) {
     return success;
 }
 
-bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName) {
+bool up::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName) {
     ctx.logger().info("Compiling `{}':{} ({})", ctx.sourceFilePath(), entryName, targetProfileName);
 
-    ReconIncludeHandler includeHandler(fileSys, ctx, gm::fs::path::parent(absoluteSourcePath));
+    ReconIncludeHandler includeHandler(fileSys, ctx, up::fs::path::parent(absoluteSourcePath));
 
     com_ptr<ID3DBlob> blob;
     com_ptr<ID3DBlob> errors;
@@ -115,7 +115,7 @@ bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zs
         }
     }
 
-    auto compiledOutput = fileSys.openWrite(destAbsolutePath.c_str(), gm::fs::FileOpenMode::Binary);
+    auto compiledOutput = fileSys.openWrite(destAbsolutePath.c_str(), up::fs::FileOpenMode::Binary);
     if (!compiledOutput.isOpen()) {
         ctx.logger().error("Cannot write `{}'", destAbsolutePath);
         return false;
@@ -123,7 +123,7 @@ bool gm::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zs
 
     ctx.addOutput(destPath.c_str());
 
-    compiledOutput.write({(gm::byte const*)blob->GetBufferPointer(), blob->GetBufferSize()});
+    compiledOutput.write({(up::byte const*)blob->GetBufferPointer(), blob->GetBufferSize()});
     compiledOutput.close();
 
     return true;

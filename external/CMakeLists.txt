@@ -27,7 +27,7 @@ target_sources(imgui PRIVATE
 )
 set_target_properties(imgui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_compile_definitions(imgui PUBLIC
-    IM_ASSERT=GM_ASSERT
+    IM_ASSERT=UP_ASSERT
     IMGUI_USER_CONFIG="grimm/foundation/assertion.h"
 )
 target_link_libraries(imgui PUBLIC grimm::foundation)

@@ -8,14 +8,14 @@
 #include "grimm/foundation/unique_resource.h"
 #include "grimm/foundation/string.h"
 
-namespace gm::gpu {
+namespace up::gpu {
     class Buffer;
     class CommandList;
     class Device;
     class PipelineState;
     class ResourceView;
     class Sampler;
-} // namespace gm::gpu
+} // namespace up::gpu
 
 struct ImDrawData;
 struct ImDrawList;
@@ -24,23 +24,23 @@ struct ImGuiContext;
 struct ImGuiIO;
 using SDL_Event = union SDL_Event;
 
-namespace gm {
+namespace up {
     class Shader;
 
     class DrawImgui {
     public:
-        GM_RENDER_API DrawImgui();
-        GM_RENDER_API ~DrawImgui();
+        UP_RENDER_API DrawImgui();
+        UP_RENDER_API ~DrawImgui();
 
-        GM_RENDER_API void bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader);
+        UP_RENDER_API void bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader);
 
-        GM_RENDER_API bool createResources(gpu::Device& device);
-        GM_RENDER_API void releaseResources();
+        UP_RENDER_API bool createResources(gpu::Device& device);
+        UP_RENDER_API void releaseResources();
 
-        GM_RENDER_API bool handleEvent(SDL_Event const& ev);
+        UP_RENDER_API bool handleEvent(SDL_Event const& ev);
 
-        GM_RENDER_API void beginFrame();
-        GM_RENDER_API void endFrame(gpu::Device& device, gpu::CommandList& commandList);
+        UP_RENDER_API void beginFrame();
+        UP_RENDER_API void endFrame(gpu::Device& device, gpu::CommandList& commandList);
 
     private:
         void _ensureContext();
@@ -59,4 +59,4 @@ namespace gm {
         rc<Shader> _pixelShader;
         string _clipboardTextData;
     };
-} // namespace gm
+} // namespace up

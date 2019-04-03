@@ -6,26 +6,26 @@
 #include "grimm/foundation/assertion.h"
 #include "grimm/foundation/out_ptr.h"
 
-gm::gpu::d3d11::FactoryD3D11::FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory)
+up::gpu::d3d11::FactoryD3D11::FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory)
     : _dxgiFactory(std::move(dxgiFactory)) {
-    GM_ASSERT(_dxgiFactory != nullptr);
+    UP_ASSERT(_dxgiFactory != nullptr);
 }
 
-gm::gpu::d3d11::FactoryD3D11::~FactoryD3D11() = default;
+up::gpu::d3d11::FactoryD3D11::~FactoryD3D11() = default;
 
-#if GM_GPU_ENABLE_D3D11
-auto gm::gpu::CreateFactoryD3D11() -> box<gpu::Factory> {
+#if UP_GPU_ENABLE_D3D11
+auto up::gpu::CreateFactoryD3D11() -> box<gpu::Factory> {
     com_ptr<IDXGIFactory2> dxgiFactory;
     CreateDXGIFactory1(__uuidof(IDXGIFactory2), out_ptr(dxgiFactory));
     return new_box<d3d11::FactoryD3D11>(std::move(dxgiFactory));
 }
 #endif
 
-bool gm::gpu::d3d11::FactoryD3D11::isEnabled() const {
+bool up::gpu::d3d11::FactoryD3D11::isEnabled() const {
     return true;
 }
 
-void gm::gpu::d3d11::FactoryD3D11::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
+void up::gpu::d3d11::FactoryD3D11::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
     com_ptr<IDXGIAdapter1> adapter;
 
     int index = 0;
@@ -35,7 +35,7 @@ void gm::gpu::d3d11::FactoryD3D11::enumerateDevices(delegate<void(DeviceInfo con
     }
 }
 
-auto gm::gpu::d3d11::FactoryD3D11::createDevice(int index) -> rc<gpu::Device> {
+auto up::gpu::d3d11::FactoryD3D11::createDevice(int index) -> rc<gpu::Device> {
     com_ptr<IDXGIAdapter1> adapter;
 
     UINT targetIndex = 0;

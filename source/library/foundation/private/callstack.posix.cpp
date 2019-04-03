@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <execinfo.h>
 
-auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
+auto up::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
     void* buffer;
 
     uint max = addresses.size() - min<uint>(addresses.size(), skip);
@@ -21,7 +21,7 @@ auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintpt
     return addresses.first(count - skip);
 }
 
-auto gm::callstack::resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
+auto up::callstack::resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
 #if !defined(NDEBUG)
     uint max = addresses.size() < records.size() ? addresses.size() : records.size();
 

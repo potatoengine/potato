@@ -6,7 +6,7 @@ add_executable(test_grimm_foundation
     test_fixed_string.cpp
     test_fixed_string_writer.cpp
     test_hash.cpp
-    test_gmstring.cpp
+    test_string.cpp
     test_rc.cpp
     test_span.cpp
     test_string_writer.cpp
@@ -15,8 +15,8 @@ add_executable(test_grimm_foundation
     test_zstring_view.cpp
 )
 
-include(gm_set_common_properties)
-gm_set_common_properties(test_grimm_foundation)
+include(up_set_common_properties)
+up_set_common_properties(test_grimm_foundation)
 
 target_link_libraries(test_grimm_foundation PRIVATE
     foundation doctest

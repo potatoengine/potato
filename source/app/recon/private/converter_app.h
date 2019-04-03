@@ -16,7 +16,7 @@
 #include "grimm/assetdb/hash_cache.h"
 #include <spdlog/logger.h>
 
-namespace gm::recon {
+namespace up::recon {
     class Converter;
 
     class ConverterApp {
@@ -55,4 +55,4 @@ namespace gm::recon {
         HashCache _hashes;
         std::shared_ptr<spdlog::logger> _logger;
     };
-} // namespace gm::recon
+} // namespace up::recon

@@ -6,8 +6,8 @@
 #include "grimm/gpu/pipeline_state.h"
 
 DOCTEST_TEST_SUITE("[grimm][gpu] DeviceNull") {
-    using namespace gm;
-    using namespace gm::gpu;
+    using namespace up;
+    using namespace up::gpu;
 
     DOCTEST_TEST_CASE("factory enumerates") {
         auto factory = CreateFactoryNull();

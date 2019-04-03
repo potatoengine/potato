@@ -6,8 +6,8 @@ add_executable(test_grimm_filesystem
     test_stream.cpp
 )
 
-include(gm_set_common_properties)
-gm_set_common_properties(test_grimm_filesystem)
+include(up_set_common_properties)
+up_set_common_properties(test_grimm_filesystem)
 
 target_link_libraries(test_grimm_filesystem PRIVATE
     filesystem doctest

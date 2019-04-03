@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace gm::gpu {
+namespace up::gpu {
     class Sampler {
     public:
         Sampler() = default;
@@ -11,4 +11,4 @@ namespace gm::gpu {
         Sampler(Sampler&&) = delete;
         Sampler& operator=(Sampler&&) = delete;
     };
-} // namespace gm::gpu
+} // namespace up::gpu

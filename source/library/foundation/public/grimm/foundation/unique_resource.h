@@ -4,13 +4,13 @@
 
 #include <utility>
 
-namespace gm {
+namespace up {
     template <typename T, auto D, auto Default = T{}>
     class unique_resource;
 }
 
 template <typename T, auto D, auto Default>
-class gm::unique_resource {
+class up::unique_resource {
 public:
     using value_type = T;
     using reference = T&;
@@ -44,7 +44,7 @@ private:
 };
 
 template <typename T, auto D, auto Default>
-auto gm::unique_resource<T, D, Default>::operator=(unique_resource&& src) -> gm::unique_resource<T, D, Default>& {
+auto up::unique_resource<T, D, Default>::operator=(unique_resource&& src) -> up::unique_resource<T, D, Default>& {
     if (this != &src) {
         reset(std::move(src.get()));
     }
@@ -52,7 +52,7 @@ auto gm::unique_resource<T, D, Default>::operator=(unique_resource&& src) -> gm:
 }
 
 template <typename T, auto D, auto Default>
-auto gm::unique_resource<T, D, Default>::operator=(rvalue_reference obj) -> gm::unique_resource<T, D, Default>& {
+auto up::unique_resource<T, D, Default>::operator=(rvalue_reference obj) -> up::unique_resource<T, D, Default>& {
     if (obj != _object) {
         D(_object);
         _object = std::move(obj);
@@ -61,7 +61,7 @@ auto gm::unique_resource<T, D, Default>::operator=(rvalue_reference obj) -> gm::
 }
 
 template <typename T, auto D, auto Default>
-void gm::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
+void up::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
     if (obj != _object) {
         D(_object);
         _object = std::forward<T>(obj);
@@ -69,7 +69,7 @@ void gm::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
 }
 
 template <typename T, auto D, auto Default>
-void gm::unique_resource<T, D, Default>::reset() {
+void up::unique_resource<T, D, Default>::reset() {
     D(_object);
     _object = Default;
 }

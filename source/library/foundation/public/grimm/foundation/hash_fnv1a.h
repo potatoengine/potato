@@ -5,7 +5,7 @@
 #include "int_types.h"
 #include "platform.h"
 
-namespace gm {
+namespace up {
     /// <summary> A uhash-compatible fnv1-a hasher. </summary>
     class fnv1a {
     public:
@@ -20,7 +20,7 @@ namespace gm {
         result_type _state = offset;
     };
 
-    GM_FORCEINLINE constexpr void fnv1a::append_bytes(char const* data, size_t size) noexcept {
+    UP_FORCEINLINE constexpr void fnv1a::append_bytes(char const* data, size_t size) noexcept {
         constexpr uint64 prime = 1099511628211ULL;
 
         for (size_t i = 0; i != size; ++i) {
@@ -28,4 +28,4 @@ namespace gm {
             _state *= prime;
         }
     }
-} // namespace gm
+} // namespace up

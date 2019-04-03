@@ -8,26 +8,26 @@
 #include "grimm/gpu/swap_chain.h"
 #include <glm/mat4x4.hpp>
 
-namespace gm::gpu {
+namespace up::gpu {
     class Buffer;
     class CommandList;
     class Device;
     class ResourceView;
     class Texture;
-} // namespace gm::gpu
+} // namespace up::gpu
 
-namespace gm {
+namespace up {
     class RenderContext;
 
     class RenderCamera {
     public:
-        GM_RENDER_API explicit RenderCamera(rc<gpu::SwapChain> swapChain = nullptr);
-        GM_RENDER_API ~RenderCamera();
+        UP_RENDER_API explicit RenderCamera(rc<gpu::SwapChain> swapChain = nullptr);
+        UP_RENDER_API ~RenderCamera();
 
-        GM_RENDER_API void resetSwapChain(rc<gpu::SwapChain> swapChain);
+        UP_RENDER_API void resetSwapChain(rc<gpu::SwapChain> swapChain);
 
-        GM_RENDER_API void beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform);
-        GM_RENDER_API void endFrame(RenderContext& ctx);
+        UP_RENDER_API void beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform);
+        UP_RENDER_API void endFrame(RenderContext& ctx);
 
     private:
         rc<gpu::SwapChain> _swapChain;
@@ -37,4 +37,4 @@ namespace gm {
         box<gpu::ResourceView> _rtv;
         box<gpu::ResourceView> _dsv;
     };
-} // namespace gm
+} // namespace up

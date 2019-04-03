@@ -3,10 +3,10 @@
 #include "d3d11_buffer.h"
 #include "grimm/foundation/int_types.h"
 
-gm::gpu::d3d11::BufferD3D11::BufferD3D11(BufferType type, gm::uint64 size, com_ptr<ID3D11Buffer> buffer)
+up::gpu::d3d11::BufferD3D11::BufferD3D11(BufferType type, up::uint64 size, com_ptr<ID3D11Buffer> buffer)
     : _type(type),
       _size(size),
       _buffer(std::move(buffer)) {
 }
 
-gm::gpu::d3d11::BufferD3D11::~BufferD3D11() = default;
+up::gpu::d3d11::BufferD3D11::~BufferD3D11() = default;

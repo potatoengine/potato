@@ -8,7 +8,7 @@
 #include "grimm/foundation/span.h"
 #include <cstring>
 
-namespace gm {
+namespace up {
     class string;
 
     class string_writer {
@@ -39,35 +39,35 @@ namespace gm {
         const_pointer data() const noexcept { return _ptr; }
 
         const_pointer c_str() const noexcept {
-            GM_ASSERT(_ptr[_size] == '\0', "acquire() operation did not commit()");
+            UP_ASSERT(_ptr[_size] == '\0', "acquire() operation did not commit()");
             return _ptr;
         }
 
         /*implicit*/ operator string_view() const noexcept { return {_ptr, _size}; }
 
-        GM_FOUNDATION_API void write(value_type ch);
-        GM_FOUNDATION_API void write(const_pointer data, size_type length);
+        UP_FOUNDATION_API void write(value_type ch);
+        UP_FOUNDATION_API void write(const_pointer data, size_type length);
         void write(string_view str) { write(str.data(), str.size()); }
 
         // for back_inserter/fmt support
         void push_back(value_type ch) { write(ch); }
 
-        GM_FOUNDATION_API void reserve(size_type capacity);
+        UP_FOUNDATION_API void reserve(size_type capacity);
 
-        [[nodiscard]] GM_FOUNDATION_API span<value_type> acquire(size_type size);
-        GM_FOUNDATION_API void commit(span<value_type const> data);
+        [[nodiscard]] UP_FOUNDATION_API span<value_type> acquire(size_type size);
+        UP_FOUNDATION_API void commit(span<value_type const> data);
 
-        GM_FOUNDATION_API void resize(size_type newSize, value_type fill = ' ');
+        UP_FOUNDATION_API void resize(size_type newSize, value_type fill = ' ');
 
         void clear() {
             *_ptr = 0;
             _size = 0;
         }
 
-        GM_FOUNDATION_API void reset();
+        UP_FOUNDATION_API void reset();
 
-        GM_FOUNDATION_API string to_string() const&;
-        GM_FOUNDATION_API string to_string() &&;
+        UP_FOUNDATION_API string to_string() const&;
+        UP_FOUNDATION_API string to_string() &&;
 
     private:
         void _grow(size_type requiredSize);
@@ -79,4 +79,4 @@ namespace gm {
             0,
         };
     };
-} // namespace gm
+} // namespace up

@@ -6,7 +6,7 @@
 #include "grimm/gpu/com_ptr.h"
 #include "grimm/gpu/factory.h"
 
-namespace gm::gpu::d3d11 {
+namespace up::gpu::d3d11 {
     class FactoryD3D11 final : public Factory {
     public:
         FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory);
@@ -22,4 +22,4 @@ namespace gm::gpu::d3d11 {
     private:
         com_ptr<IDXGIFactory2> _dxgiFactory;
     };
-} // namespace gm::gpu::d3d11
+} // namespace up::gpu::d3d11

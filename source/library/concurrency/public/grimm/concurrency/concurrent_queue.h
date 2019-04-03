@@ -10,7 +10,7 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace gm::concurrency {
+namespace up::concurrency {
     template <typename T>
     class ConcurrentQueue {
     public:
@@ -47,7 +47,7 @@ namespace gm::concurrency {
 
     template <typename T>
     ConcurrentQueue<T>::ConcurrentQueue(uint32 capacity) : _mask(capacity - 1), _buffer(new storage[capacity]) {
-        GM_ASSERT((capacity & _mask) == 0, "ConcurrentQueue capacity must be a power-of-two");
+        UP_ASSERT((capacity & _mask) == 0, "ConcurrentQueue capacity must be a power-of-two");
     }
 
     template <typename T>
@@ -143,4 +143,4 @@ namespace gm::concurrency {
         _condition.notify_all();
     }
 
-} // namespace gm::concurrency
+} // namespace up::concurrency

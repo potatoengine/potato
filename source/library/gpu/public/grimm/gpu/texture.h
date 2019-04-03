@@ -5,7 +5,7 @@
 #include "common.h"
 #include <glm/vec3.hpp>
 
-namespace gm::gpu {
+namespace up::gpu {
     class Texture {
     public:
         Texture() = default;
@@ -18,4 +18,4 @@ namespace gm::gpu {
         virtual Format format() const noexcept = 0;
         virtual glm::ivec3 dimensions() const noexcept = 0;
     };
-} // namespace gm::gpu
+} // namespace up::gpu

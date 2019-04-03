@@ -10,7 +10,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-namespace gm {
+namespace up {
 
     struct DebugDrawVertex {
         glm::vec3 position;
@@ -18,8 +18,8 @@ namespace gm {
         float linger;
     };
 
-    GM_RENDER_API void GM_VECTORCALL drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color = {1, 0, 0, 1}, float lingerSeconds = 0.f);
-    GM_RENDER_API void dumpDebugDraw(delegate_ref<void(view<DebugDrawVertex>)> callback);
-    GM_RENDER_API void flushDebugDraw(float frameTime);
+    UP_RENDER_API void UP_VECTORCALL drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color = {1, 0, 0, 1}, float lingerSeconds = 0.f);
+    UP_RENDER_API void dumpDebugDraw(delegate_ref<void(view<DebugDrawVertex>)> callback);
+    UP_RENDER_API void flushDebugDraw(float frameTime);
 
-} // namespace gm
+} // namespace up
