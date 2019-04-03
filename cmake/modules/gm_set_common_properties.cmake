@@ -76,8 +76,6 @@ function(gm_set_common_properties TARGET)
             $<INSTALL_INTERFACE:public>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
         PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/public/grimm/${TARGET}
             ${CMAKE_CURRENT_SOURCE_DIR}/private
     )
-    target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/private)
 endfunction()
