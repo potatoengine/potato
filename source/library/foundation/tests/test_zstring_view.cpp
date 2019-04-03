@@ -1,9 +1,9 @@
-#include "grimm/foundation/zstring_view.h"
+#include "potato/foundation/zstring_view.h"
 #include <doctest/doctest.h>
 #include <ostream>
 #include <cstring>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] up::zstring_view") {
+DOCTEST_TEST_SUITE("[potato][foundation] up::zstring_view") {
     using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {

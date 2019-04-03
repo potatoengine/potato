@@ -3,8 +3,8 @@
 #pragma once
 
 #include "d3d11_platform.h"
-#include "grimm/gpu/com_ptr.h"
-#include "grimm/gpu/buffer.h"
+#include "potato/gpu/com_ptr.h"
+#include "potato/gpu/buffer.h"
 
 namespace up::gpu::d3d11 {
     class BufferD3D11 final : public Buffer {

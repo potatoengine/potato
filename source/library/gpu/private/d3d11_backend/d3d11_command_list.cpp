@@ -7,9 +7,9 @@
 #include "d3d11_platform.h"
 #include "d3d11_texture.h"
 #include "d3d11_sampler.h"
-#include "grimm/foundation/int_types.h"
-#include "grimm/foundation/assertion.h"
-#include "grimm/foundation/out_ptr.h"
+#include "potato/foundation/int_types.h"
+#include "potato/foundation/assertion.h"
+#include "potato/foundation/out_ptr.h"
 
 up::gpu::d3d11::CommandListD3D11::CommandListD3D11(com_ptr<ID3D11DeviceContext> context) : _context(std::move(context)) {}
 

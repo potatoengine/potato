@@ -1,8 +1,8 @@
-#include "grimm/foundation/string.h"
+#include "potato/foundation/string.h"
 #include <doctest/doctest.h>
 #include <ostream>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] up::string") {
+DOCTEST_TEST_SUITE("[potato][foundation] up::string") {
     using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {

@@ -1,6 +1,6 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#include "grimm/gpu/com_ptr.h"
+#include "potato/gpu/com_ptr.h"
 #include "d3d11_device.h"
 #include "d3d11_command_list.h"
 #include "d3d11_pipeline_state.h"
@@ -10,8 +10,8 @@
 #include "d3d11_platform.h"
 #include "d3d11_texture.h"
 #include "d3d11_sampler.h"
-#include "grimm/foundation/assertion.h"
-#include "grimm/foundation/out_ptr.h"
+#include "potato/foundation/assertion.h"
+#include "potato/foundation/out_ptr.h"
 #include <utility>
 
 up::gpu::d3d11::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context)

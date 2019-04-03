@@ -1,7 +1,7 @@
-#include "grimm/foundation/delegate_ref.h"
+#include "potato/foundation/delegate_ref.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] up::delegate_ref") {
+DOCTEST_TEST_SUITE("[potato][foundation] up::delegate_ref") {
     using namespace up;
 
     DOCTEST_TEST_CASE("lambda delegate_ref") {

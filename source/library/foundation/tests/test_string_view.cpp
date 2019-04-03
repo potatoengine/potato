@@ -1,9 +1,9 @@
-#include "grimm/foundation/string_view.h"
+#include "potato/foundation/string_view.h"
 #include <doctest/doctest.h>
 #include <ostream>
 #include <cstring>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] up::string_view") {
+DOCTEST_TEST_SUITE("[potato][foundation] up::string_view") {
     using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {

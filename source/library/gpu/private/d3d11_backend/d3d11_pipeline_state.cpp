@@ -1,8 +1,8 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
 #include "D3D11_pipeline_state.h"
-#include "grimm/foundation/assertion.h"
-#include "grimm/foundation/out_ptr.h"
+#include "potato/foundation/assertion.h"
+#include "potato/foundation/out_ptr.h"
 
 up::gpu::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {
     UP_ASSERT(_params.rasterState != nullptr);

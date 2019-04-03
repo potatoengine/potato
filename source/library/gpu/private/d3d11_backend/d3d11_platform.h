@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "grimm/gpu/common.h"
-#include "grimm/foundation/zstring_view.h"
-#include "grimm/foundation/platform_windows.h"
+#include "potato/gpu/common.h"
+#include "potato/foundation/zstring_view.h"
+#include "potato/foundation/platform_windows.h"
 #include <d3d11.h>
 #include <dxgi1_2.h>
 

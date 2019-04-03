@@ -1,8 +1,8 @@
-#include "grimm/filesystem/null_backend.h"
-#include "grimm/filesystem/stream.h"
+#include "potato/filesystem/null_backend.h"
+#include "potato/filesystem/stream.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[grimm][filesystem] up::fs::NullBackend") {
+DOCTEST_TEST_SUITE("[potato][filesystem] up::fs::NullBackend") {
     using namespace up;
     using namespace up::fs;
 

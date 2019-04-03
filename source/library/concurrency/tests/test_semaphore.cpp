@@ -1,8 +1,8 @@
-#include "grimm/concurrency/semaphore.h"
+#include "potato/concurrency/semaphore.h"
 #include <doctest/doctest.h>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[grimm][concurrency] Semaphore") {
+DOCTEST_TEST_SUITE("[potato][concurrency] Semaphore") {
     using namespace up;
     using namespace up::concurrency;
 

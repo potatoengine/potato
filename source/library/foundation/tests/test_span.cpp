@@ -1,7 +1,7 @@
-#include "grimm/foundation/span.h"
+#include "potato/foundation/span.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] up::span") {
+DOCTEST_TEST_SUITE("[potato][foundation] up::span") {
     using namespace up;
 
     DOCTEST_TEST_CASE("span default initialization") {

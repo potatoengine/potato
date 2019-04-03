@@ -1,15 +1,15 @@
 // Copyright (C) 22015 Sean Middleditch, all rights reserverd.
 
-#include "grimm/foundation/callstack.h"
-#include "grimm/foundation/platform.h"
-#include "grimm/foundation/int_types.h"
+#include "potato/foundation/callstack.h"
+#include "potato/foundation/platform.h"
+#include "potato/foundation/int_types.h"
 
 #if !defined(UP_PLATFORM_WINDOWS)
 #    error "Unsupported platform"
 #endif
 
-#include "grimm/foundation/numeric_util.h"
-#include "grimm/foundation/platform_windows.h"
+#include "potato/foundation/numeric_util.h"
+#include "potato/foundation/platform_windows.h"
 
 #pragma warning(disable : 4091)
 #include <dbghelp.h>

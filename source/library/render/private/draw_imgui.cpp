@@ -1,15 +1,15 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/render/draw_imgui.h"
-#include "grimm/render/shader.h"
-#include "grimm/gpu/buffer.h"
-#include "grimm/gpu/command_list.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/pipeline_state.h"
-#include "grimm/gpu/texture.h"
-#include "grimm/gpu/resource_view.h"
-#include "grimm/gpu/sampler.h"
-#include "grimm/foundation/assertion.h"
+#include "potato/render/draw_imgui.h"
+#include "potato/render/shader.h"
+#include "potato/gpu/buffer.h"
+#include "potato/gpu/command_list.h"
+#include "potato/gpu/device.h"
+#include "potato/gpu/pipeline_state.h"
+#include "potato/gpu/texture.h"
+#include "potato/gpu/resource_view.h"
+#include "potato/gpu/sampler.h"
+#include "potato/foundation/assertion.h"
 #include <imgui.h>
 #include <SDL_events.h>
 #include <SDL_clipboard.h>
@@ -264,7 +264,7 @@ void up::DrawImgui::_ensureContext() {
     ImGui::SetCurrentContext(_context.get());
     auto& io = ImGui::GetIO();
 
-    io.BackendPlatformName = "grimm::grui";
+    io.BackendPlatformName = "potato::grui";
     io.IniFilename = nullptr;
 
     io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;

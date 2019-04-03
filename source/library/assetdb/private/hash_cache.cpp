@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/assetdb/hash_cache.h"
-#include "grimm/foundation/hash_fnv1a.h"
+#include "potato/assetdb/hash_cache.h"
+#include "potato/foundation/hash_fnv1a.h"
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include "stream_json.h"

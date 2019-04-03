@@ -1,6 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/concurrency/thread_util.h"
+#include "potato/concurrency/thread_util.h"
 #include <pthread.h>
 
 void up::concurrency::setCurrentThreadName(zstring_view name) {

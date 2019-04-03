@@ -1,12 +1,12 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/render/camera.h"
-#include "grimm/render/context.h"
-#include "grimm/gpu/command_list.h"
-#include "grimm/gpu/buffer.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/texture.h"
-#include "grimm/gpu/resource_view.h"
+#include "potato/render/camera.h"
+#include "potato/render/context.h"
+#include "potato/gpu/command_list.h"
+#include "potato/gpu/buffer.h"
+#include "potato/gpu/device.h"
+#include "potato/gpu/texture.h"
+#include "potato/gpu/resource_view.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

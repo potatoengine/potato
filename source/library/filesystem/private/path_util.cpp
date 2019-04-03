@@ -1,8 +1,8 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/filesystem/path_util.h"
-#include "grimm/foundation/assertion.h"
-#include "grimm/foundation/string_writer.h"
+#include "potato/filesystem/path_util.h"
+#include "potato/foundation/assertion.h"
+#include "potato/foundation/string_writer.h"
 
 // returns extension, including dot, e.g. foo.txt -> .txt
 // only the last extension is returned, e.g. foo.txt.gz -> .gz

@@ -1,4 +1,4 @@
-add_executable(test_grimm_foundation
+add_executable(test_potato_foundation
     main.cpp
     test_callstack.cpp
     test_delegate.cpp
@@ -16,10 +16,10 @@ add_executable(test_grimm_foundation
 )
 
 include(up_set_common_properties)
-up_set_common_properties(test_grimm_foundation)
+up_set_common_properties(test_potato_foundation)
 
-target_link_libraries(test_grimm_foundation PRIVATE
+target_link_libraries(test_potato_foundation PRIVATE
     foundation doctest
 )
 
-add_test(NAME test_grimm_foundation COMMAND test_grimm_foundation)
+add_test(NAME test_potato_foundation COMMAND test_potato_foundation)

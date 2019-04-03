@@ -3,8 +3,8 @@
 #pragma once
 
 #include "d3d11_platform.h"
-#include "grimm/gpu/com_ptr.h"
-#include "grimm/gpu/sampler.h"
+#include "potato/gpu/com_ptr.h"
+#include "potato/gpu/sampler.h"
 
 namespace up::gpu::d3d11 {
     class SamplerD3D11 final : public Sampler {

@@ -2,8 +2,8 @@
 //
 // Logging system is designed to minimize the overhead esp. in debug scenarios (Where we most likely want logging), could probably be better.
 
-#include "grimm/foundation/string_writer.h"
-#include "grimm/foundation/string.h"
+#include "potato/foundation/string_writer.h"
+#include "potato/foundation/string.h"
 
 void up::string_writer::write(value_type ch) {
     _grow(_size + 1);

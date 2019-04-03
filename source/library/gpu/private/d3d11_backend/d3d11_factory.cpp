@@ -3,8 +3,8 @@
 #include "d3d11_factory.h"
 #include "d3d11_device.h"
 #include "d3d11_platform.h"
-#include "grimm/foundation/assertion.h"
-#include "grimm/foundation/out_ptr.h"
+#include "potato/foundation/assertion.h"
+#include "potato/foundation/out_ptr.h"
 
 up::gpu::d3d11::FactoryD3D11::FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory)
     : _dxgiFactory(std::move(dxgiFactory)) {

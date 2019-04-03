@@ -1,8 +1,8 @@
-#include "grimm/concurrency/thread_util.h"
+#include "potato/concurrency/thread_util.h"
 #include <doctest/doctest.h>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[grimm][concurrency] thread_util") {
+DOCTEST_TEST_SUITE("[potato][concurrency] thread_util") {
     using namespace up;
     using namespace up::concurrency;
 

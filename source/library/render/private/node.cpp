@@ -1,10 +1,10 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/render/node.h"
-#include "grimm/render/model.h"
-#include "grimm/render/camera.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/command_list.h"
+#include "potato/render/node.h"
+#include "potato/render/model.h"
+#include "potato/render/camera.h"
+#include "potato/gpu/device.h"
+#include "potato/gpu/command_list.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 up::Node::Node(box<Model> model) : _transform(glm::identity<glm::mat4x4>()), _model(std::move(model)) {}

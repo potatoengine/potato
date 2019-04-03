@@ -1,8 +1,8 @@
-#include "grimm/foundation/fixed_string.h"
+#include "potato/foundation/fixed_string.h"
 #include <doctest/doctest.h>
 #include <iostream>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] up::fixed_string") {
+DOCTEST_TEST_SUITE("[potato][foundation] up::fixed_string") {
     using namespace up;
 
     DOCTEST_TEST_CASE("empty fixed_string") {

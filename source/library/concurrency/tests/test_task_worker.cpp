@@ -1,8 +1,8 @@
-#include "grimm/concurrency/task_worker.h"
+#include "potato/concurrency/task_worker.h"
 #include <doctest/doctest.h>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[grimm][concurrency] TaskWorker") {
+DOCTEST_TEST_SUITE("[potato][concurrency] TaskWorker") {
     using namespace up;
     using namespace up::concurrency;
 

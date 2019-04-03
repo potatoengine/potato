@@ -2,9 +2,9 @@
 
 #include "d3d11_texture.h"
 #include "d3d11_platform.h"
-#include "grimm/gpu/com_ptr.h"
-#include "grimm/foundation/out_ptr.h"
-#include "grimm/foundation/assertion.h"
+#include "potato/gpu/com_ptr.h"
+#include "potato/foundation/out_ptr.h"
+#include "potato/foundation/assertion.h"
 
 up::gpu::d3d11::TextureD3D11::TextureD3D11(com_ptr<ID3D11Resource> texture) : _texture(std::move(texture)) {
 }

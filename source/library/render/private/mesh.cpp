@@ -1,10 +1,10 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/render/mesh.h"
-#include "grimm/render/context.h"
-#include "grimm/gpu/buffer.h"
-#include "grimm/gpu/command_list.h"
-#include "grimm/gpu/device.h"
+#include "potato/render/mesh.h"
+#include "potato/render/context.h"
+#include "potato/gpu/buffer.h"
+#include "potato/gpu/command_list.h"
+#include "potato/gpu/device.h"
 
 up::Mesh::Mesh(vector<up::uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels)
     : _data(std::move(data)),

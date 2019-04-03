@@ -14,11 +14,11 @@ if(TARGET assimp)
 
     target_link_libraries(recon_lib
         PUBLIC
-            grimm::foundation
-            grimm::gpu
-            grimm::assetdb
-            grimm::image
-            grimm::filesystem
+            potato::foundation
+            potato::gpu
+            potato::assetdb
+            potato::image
+            potato::filesystem
             stb
             assimp
         PRIVATE
@@ -40,7 +40,7 @@ if(TARGET assimp)
         target_link_libraries(recon_lib PRIVATE d3dcompiler)
     endif(UP_GPU_ENABLE_D3D11)
 
-    add_subdirectory(public/grimm/recon)
+    add_subdirectory(public/potato/recon)
     add_subdirectory(private)
     add_subdirectory(tests)
 endif()

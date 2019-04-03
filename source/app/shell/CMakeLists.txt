@@ -10,10 +10,10 @@ if(TARGET SDL2)
     up_set_common_properties(shell)
 
     target_link_libraries(shell PRIVATE
-        grimm::foundation
-        grimm::filesystem
-        grimm::gpu
-        grimm::render
+        potato::foundation
+        potato::filesystem
+        potato::gpu
+        potato::render
         glm
         SDL2
         SDL2main
@@ -22,7 +22,7 @@ if(TARGET SDL2)
     include(up_copy_library_import)
     up_copy_library_import(SDL2::SDL2 shell)
 
-    add_subdirectory(public/grimm/shell)
+    add_subdirectory(public/potato/shell)
     add_subdirectory(private)
     add_subdirectory(tests)
 endif()

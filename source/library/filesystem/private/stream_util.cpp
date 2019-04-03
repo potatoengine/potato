@@ -1,8 +1,8 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/filesystem/stream_util.h"
-#include "grimm/filesystem/stream.h"
-#include "grimm/foundation/string_writer.h"
+#include "potato/filesystem/stream_util.h"
+#include "potato/filesystem/stream.h"
+#include "potato/foundation/string_writer.h"
 
 auto up::fs::readBinary(Stream& stream, vector<up::byte>& out) -> Result {
     if (!stream.canRead() || !stream.canSeek()) {

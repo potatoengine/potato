@@ -2,20 +2,20 @@ cmake_minimum_required(VERSION 3.11)
 project(gpu VERSION 0.1 LANGUAGES CXX)
 
 add_library(gpu)
-add_library(grimm::gpu ALIAS gpu)
+add_library(potato::gpu ALIAS gpu)
 
 include(up_set_common_properties)
 up_set_common_properties(gpu)
 
 target_link_libraries(gpu
     PUBLIC
-        grimm::foundation
+        potato::foundation
         glm
     PRIVATE
         doctest
 )
 
-add_subdirectory(public/grimm/gpu)
+add_subdirectory(public/potato/gpu)
 
 find_library(DXGI_PATH dxgi)
 find_library(D3D11_PATH d3d11)

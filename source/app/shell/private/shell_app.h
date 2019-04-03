@@ -1,9 +1,9 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#include "grimm/foundation/box.h"
-#include "grimm/foundation/unique_resource.h"
-#include "grimm/filesystem/filesystem.h"
-#include "grimm/render/draw_imgui.h"
+#include "potato/foundation/box.h"
+#include "potato/foundation/unique_resource.h"
+#include "potato/filesystem/filesystem.h"
+#include "potato/render/draw_imgui.h"
 
 #include <SDL.h>
 

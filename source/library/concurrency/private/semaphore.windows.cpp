@@ -3,8 +3,8 @@
 // Inspired by the technique in the "LightweightSemaphore" at
 //   https://github.com/preshing/cpp11-on-multicore
 
-#include "grimm/concurrency/semaphore.h"
-#include "grimm/foundation/platform_windows.h"
+#include "potato/concurrency/semaphore.h"
+#include "potato/foundation/platform_windows.h"
 #include <limits>
 
 up::concurrency::Semaphore::Semaphore(int initial) : _counter(initial), _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {

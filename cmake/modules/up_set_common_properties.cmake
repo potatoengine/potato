@@ -2,7 +2,7 @@ function(up_set_common_properties TARGET)
     get_target_property(TYPE ${TARGET} TYPE)
     string(TOUPPER ${TARGET} TARGET_UPPER)
 
-    # Grimm requires C++17
+    # Potato requires C++17
     # However, the cxx_std_17 doesn't seem to be honored
     # correctly by CMake 3.12, so we also set compiler
     # flags explicitly

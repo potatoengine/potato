@@ -1,4 +1,4 @@
-add_executable(test_grimm_concurrency
+add_executable(test_potato_concurrency
     main.cpp
     test_concurrent_queue.cpp
     test_lock_free_queue.cpp
@@ -8,14 +8,14 @@ add_executable(test_grimm_concurrency
 )
 
 include(up_set_common_properties)
-up_set_common_properties(test_grimm_concurrency)
+up_set_common_properties(test_potato_concurrency)
 
-target_link_libraries(test_grimm_concurrency PRIVATE
+target_link_libraries(test_potato_concurrency PRIVATE
     concurrency
     doctest
 )
 
-add_test(NAME test_grimm_concurrency COMMAND test_grimm_concurrency)
+add_test(NAME test_potato_concurrency COMMAND test_potato_concurrency)
 
 # because concurrency tests can deadlock (which is a test failure)
-set_tests_properties(test_grimm_concurrency PROPERTIES TIMEOUT 10) 
+set_tests_properties(test_potato_concurrency PROPERTIES TIMEOUT 10) 

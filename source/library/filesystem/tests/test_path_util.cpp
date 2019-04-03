@@ -1,8 +1,8 @@
-#include "grimm/filesystem/path_util.h"
+#include "potato/filesystem/path_util.h"
 #include <doctest/doctest.h>
 #include <iostream>
 
-DOCTEST_TEST_SUITE("[grimm][filesystem] up::fs::path") {
+DOCTEST_TEST_SUITE("[potato][filesystem] up::fs::path") {
     using namespace up;
     using namespace up::fs::path;
 

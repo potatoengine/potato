@@ -3,7 +3,7 @@
 // Inspired by the technique in the "LightweightSemaphore" at
 //   https://github.com/preshing/cpp11-on-multicore
 
-#include "grimm/concurrency/semaphore.h"
+#include "potato/concurrency/semaphore.h"
 #include <limits>
 #include <mutex>
 #include <condition_variable>

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "d3d11_platform.h"
-#include "grimm/gpu/com_ptr.h"
-#include "grimm/foundation/box.h"
-#include "grimm/gpu/swap_chain.h"
+#include "potato/gpu/com_ptr.h"
+#include "potato/foundation/box.h"
+#include "potato/gpu/swap_chain.h"
 
 namespace up::gpu::d3d11 {
     class SwapChainD3D11 : public SwapChain {

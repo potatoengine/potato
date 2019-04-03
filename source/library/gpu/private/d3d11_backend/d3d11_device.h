@@ -3,9 +3,9 @@
 #pragma once
 
 #include "d3d11_platform.h"
-#include "grimm/gpu/com_ptr.h"
-#include "grimm/foundation/unique_resource.h"
-#include "grimm/gpu/device.h"
+#include "potato/gpu/com_ptr.h"
+#include "potato/foundation/unique_resource.h"
+#include "potato/gpu/device.h"
 
 namespace up::gpu::d3d11 {
     class DeviceD3D11 final : public Device {

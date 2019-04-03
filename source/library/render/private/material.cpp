@@ -1,14 +1,14 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/render/material.h"
-#include "grimm/render/context.h"
-#include "grimm/render/shader.h"
-#include "grimm/render/texture.h"
-#include "grimm/gpu/command_list.h"
-#include "grimm/gpu/pipeline_state.h"
-#include "grimm/gpu/resource_view.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/sampler.h"
+#include "potato/render/material.h"
+#include "potato/render/context.h"
+#include "potato/render/shader.h"
+#include "potato/render/texture.h"
+#include "potato/gpu/command_list.h"
+#include "potato/gpu/pipeline_state.h"
+#include "potato/gpu/resource_view.h"
+#include "potato/gpu/device.h"
+#include "potato/gpu/sampler.h"
 
 up::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)), _textures(std::move(textures)), _srvs(_textures.size()), _samplers(_textures.size()) {}
 

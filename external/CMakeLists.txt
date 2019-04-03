@@ -28,9 +28,9 @@ target_sources(imgui PRIVATE
 set_target_properties(imgui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_compile_definitions(imgui PUBLIC
     IM_ASSERT=UP_ASSERT
-    IMGUI_USER_CONFIG="grimm/foundation/assertion.h"
+    IMGUI_USER_CONFIG="potato/foundation/assertion.h"
 )
-target_link_libraries(imgui PUBLIC grimm::foundation)
+target_link_libraries(imgui PUBLIC potato::foundation)
 
 set(GLM_QUIET ON CACHE BOOL "quiet glm build")
 set(GLM_TEST_ENABLE OFF CACHE BOOL "disable glm tests")

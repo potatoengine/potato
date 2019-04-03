@@ -3,8 +3,8 @@
 #pragma once
 
 #include "d3d11_platform.h"
-#include "grimm/gpu/com_ptr.h"
-#include "grimm/gpu/factory.h"
+#include "potato/gpu/com_ptr.h"
+#include "potato/gpu/factory.h"
 
 namespace up::gpu::d3d11 {
     class FactoryD3D11 final : public Factory {
