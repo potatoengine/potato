@@ -13,10 +13,6 @@ add_subdirectory(doctest EXCLUDE_FROM_ALL)
 
 add_subdirectory(spdlog EXCLUDE_FROM_ALL)
 
-add_library(rapidjson INTERFACE)
-target_include_directories(rapidjson INTERFACE rapidjson/include)
-target_compile_definitions(rapidjson INTERFACE _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
-
 add_library(imgui)
 target_include_directories(imgui PUBLIC imgui)
 target_sources(imgui PRIVATE
