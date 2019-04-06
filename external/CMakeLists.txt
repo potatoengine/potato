@@ -40,4 +40,7 @@ target_compile_definitions(glm INTERFACE GLM_ENABLE_EXPERIMENTAL)
 add_library(stb INTERFACE)
 target_include_directories(stb INTERFACE "${CMAKE_CURRENT_LIST_DIR}/stb")
 
+set(JSON_BuildTests OFF CACHE INTERNAL "disable json tests")
+add_subdirectory(json EXCLUDE_FROM_ALL)
+
 set(CMAKE_CXX_CLANG_TIDY ${OLD_TIDY})
