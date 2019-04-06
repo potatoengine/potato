@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.11)
 project(shell VERSION 0.1 LANGUAGES CXX)
 
-find_package(SDL2)
+if(WIN32)
+    find_package(SDL2 REQUIRED)
 
-if(TARGET SDL2)
     add_executable(shell WIN32)
 
     include(up_set_common_properties)
