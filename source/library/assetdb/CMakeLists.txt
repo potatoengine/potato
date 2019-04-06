@@ -11,9 +11,9 @@ target_link_libraries(assetdb
     PUBLIC
         potato::foundation
         potato::filesystem
-        rapidjson
     PRIVATE
         doctest
+        nlohmann_json::nlohmann_json
 )
 
 add_subdirectory(public/potato/assetdb)

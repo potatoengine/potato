@@ -5,8 +5,8 @@
 #include "potato/foundation/zstring_view.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/stream_util.h"
-#include <rapidjson/rapidjson.h>
-#include <rapidjson/document.h>
+#include "potato/filesystem/json_util.h"
+#include <nlohmann/json.hpp>
 #include <iostream>
 
 bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem, spdlog::logger& logger) {
@@ -105,29 +105,32 @@ bool up::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSys
 }
 
 bool up::recon::parseConfigString(ConverterConfig& config, string_view json, zstring_view filename, spdlog::logger& logger) {
-    rapidjson::Document doc;
 
-    doc.Parse<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag | rapidjson::kParseNanAndInfFlag>(json.data(), json.size());
-
-    if (doc.HasParseError()) {
-        logger.error("Failed to parse file `{}': {}", filename, doc.GetParseError());
-        return false;
-    }
-    if (!doc.IsObject()) {
+    auto jsonRoot = nlohmann::json::parse(json.begin(), json.end(), nullptr, false);
+    if (!jsonRoot) {
+        logger.error("Failed to parse file `{}': {}", filename, "unknown parse error");
         return false;
     }
 
-    if (doc.HasMember("sourceDir")) {
-        config.sourceFolderPath = string(doc["sourceDir"].GetString());
+    auto jsonSourceDir = jsonRoot["sourceDir"];
+    auto jsonDestDir = jsonRoot["destDir"];
+    auto jsonCacheDir = jsonRoot["cacheDir"];
+    auto jsonDeleteStale = jsonRoot["deleteStale"];
+
+    if (jsonSourceDir.is_string()) {
+        config.sourceFolderPath = jsonSourceDir.get<string>();
     }
-    if (doc.HasMember("destDir")) {
-        config.destinationFolderPath = string(doc["destDir"].GetString());
+
+    if (jsonDestDir.is_string()) {
+        config.destinationFolderPath = jsonDestDir.get<string>();
     }
-    if (doc.HasMember("cacheDir")) {
-        config.cacheFolderPath = string(doc["cacheDir"].GetString());
+
+    if (jsonCacheDir.is_string()) {
+        config.cacheFolderPath = jsonCacheDir.get<string>();
     }
-    if (doc.HasMember("deleteStale")) {
-        config.deleteStale = doc["deleteStale"].GetBool();
+
+    if (jsonDeleteStale.is_boolean()) {
+        config.deleteStale = jsonDeleteStale.get<bool>();
     }
     return true;
 }

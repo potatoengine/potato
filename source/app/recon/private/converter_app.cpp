@@ -12,8 +12,6 @@
 #include "converters/convert_json.h"
 #include "converters/convert_ignore.h"
 #include "converters/convert_model.h"
-#include <rapidjson/rapidjson.h>
-#include <rapidjson/document.h>
 #include <set>
 #include <algorithm>
 #include <spdlog/spdlog.h>

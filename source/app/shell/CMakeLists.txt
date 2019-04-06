@@ -17,6 +17,7 @@ if(TARGET SDL2)
         glm
         SDL2
         SDL2main
+        imgui
     )
 
     include(up_copy_library_import)

@@ -36,3 +36,12 @@ auto up::fs::readText(Stream& stream, string& out) -> Result {
 
     return rs;
 }
+
+auto up::fs::writeAllText(Stream& stream, string_view text) -> Result {
+    if (!stream.canWrite()) {
+        return Result::UnsupportedOperation;
+    }
+
+    span<char const> textSpan(text.data(), text.size());
+    return stream.write(textSpan.as_bytes());
+}

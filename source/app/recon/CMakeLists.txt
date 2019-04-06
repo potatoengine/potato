@@ -22,7 +22,7 @@ if(TARGET assimp)
             stb
             assimp
         PRIVATE
-            rapidjson
+            nlohmann_json::nlohmann_json
     )
 
     add_executable(recon)

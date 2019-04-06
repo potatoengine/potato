@@ -36,6 +36,7 @@ target_compile_definitions(glm INTERFACE GLM_ENABLE_EXPERIMENTAL)
 add_library(stb INTERFACE)
 target_include_directories(stb INTERFACE "${CMAKE_CURRENT_LIST_DIR}/stb")
 
+set(JSON_MultipleHeaders ON CACHE INTERNAL "use multiple json header build")
 set(JSON_BuildTests OFF CACHE INTERNAL "disable json tests")
 add_subdirectory(json EXCLUDE_FROM_ALL)
 

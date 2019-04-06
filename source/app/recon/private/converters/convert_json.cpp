@@ -5,10 +5,7 @@
 #include "potato/filesystem/path_util.h"
 #include "potato/filesystem/filesystem.h"
 #include <fstream>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/ostreamwrapper.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/document.h>
+#include <nlohmann/json.hpp>
 
 up::recon::JsonConverter::JsonConverter() = default;
 
@@ -36,11 +33,9 @@ bool up::recon::JsonConverter::convert(Context& ctx) {
         return false;
     }
 
-    rapidjson::Document doc;
-    rapidjson::IStreamWrapper inStream(inFile);
-    doc.ParseStream<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag | rapidjson::kParseNanAndInfFlag>(inStream);
-    if (doc.HasParseError()) {
-        ctx.logger().error("Failed to parse `{}': {}", sourceAbsolutePath, doc.GetParseError());
+    nlohmann::json doc = nlohmann::json::parse(inFile, nullptr, false);
+    if (!doc) {
+        ctx.logger().error("Failed to parse `{}': {}", sourceAbsolutePath, "unknown parse error");
         return false;
     }
 
@@ -52,10 +47,9 @@ bool up::recon::JsonConverter::convert(Context& ctx) {
         return false;
     }
 
-    rapidjson::OStreamWrapper outStream(outFile);
-    rapidjson::Writer<rapidjson::OStreamWrapper> writer(outStream);
+    outFile << doc;
 
-    if (!doc.Accept(writer)) {
+    if (!outFile) {
         ctx.logger().error("Failed to write to `{}'", destAbsolutePath);
         return false;
     }

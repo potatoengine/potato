@@ -12,4 +12,6 @@
 namespace up::fs {
     [[nodiscard]] UP_FILESYSTEM_API Result readBinary(Stream& stream, vector<up::byte>& out);
     [[nodiscard]] UP_FILESYSTEM_API Result readText(Stream& stream, string& out);
-} // namespace up::fs
+
+    [[nodiscard]] UP_FILESYSTEM_API Result writeAllText(Stream& stream, string_view text);
+    } // namespace up::fs

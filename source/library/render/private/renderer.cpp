@@ -16,9 +16,9 @@
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/stream.h"
 #include "potato/filesystem/stream_util.h"
+#include "potato/filesystem/json_util.h"
 #include <iostream>
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
+#include <nlohmann/json.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -174,10 +174,8 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
         return nullptr;
     }
 
-    rapidjson::Document doc;
-    rapidjson::IStreamWrapper inStream(inFile);
-    doc.ParseStream<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag | rapidjson::kParseNanAndInfFlag>(inStream);
-    if (doc.HasParseError()) {
+    auto jsonRoot = nlohmann::json::parse(inFile);
+    if (!jsonRoot) {
         return nullptr;
     }
 
@@ -187,35 +185,25 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
     rc<Shader> pixel;
     vector<rc<Texture>> textures;
 
-    auto root = doc.GetObject();
-    auto& shaders = root["shaders"];
-    if (shaders.IsObject()) {
-        auto& vertexPath = shaders["vertex"];
-        auto& pixelPath = shaders["pixel"];
+    auto jsonShaders = jsonRoot["shaders"];
+    if (jsonShaders.is_object()) {
+        auto vertexPath = jsonShaders["vertex"].get<string>();
+        auto pixelPath = jsonShaders["pixel"].get<string>();
 
-        if (vertexPath.IsString()) {
-            vertex = loadShaderSync(vertexPath.GetString());
-        }
-
-        if (pixelPath.IsString()) {
-            pixel = loadShaderSync(pixelPath.GetString());
-        }
+        vertex = loadShaderSync(vertexPath);
+        pixel = loadShaderSync(pixelPath);
     }
 
-    auto& texts = root["textures"];
-    if (texts.IsArray()) {
-        for (auto& texPath : texts.GetArray()) {
-            if (!texPath.IsString()) {
-                return nullptr;
-            }
+    auto jsonTextures = jsonRoot["textures"];
+    for (auto jsonTexture : jsonTextures) {
+        auto texturePath = jsonTexture.get<string>();
 
-            auto tex = loadTextureSync(texPath.GetString());
-            if (!tex) {
-                return nullptr;
-            }
-
-            textures.push_back(std::move(tex));
+        auto tex = loadTextureSync(texturePath);
+        if (!tex) {
+            return nullptr;
         }
+
+        textures.push_back(std::move(tex));
     }
 
     if (vertex == nullptr) {

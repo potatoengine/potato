@@ -20,13 +20,14 @@ if(TARGET assimp AND TARGET SDL2)
             potato::gpu
             potato::concurrency
             potato::image
+            potato::filesystem
             glm
+        PRIVATE
             imgui
             SDL2
-            rapidjson
-            assimp
-        PRIVATE
             doctest
+            nlohmann_json::nlohmann_json
+            assimp
     )
 
     add_subdirectory(public/potato/render)
