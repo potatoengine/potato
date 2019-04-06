@@ -62,20 +62,23 @@
 # message("<FindSDL2.cmake>")
 
 function(FindSDL2)
-    set(SDL2_SEARCH_PATHS
-	    ~/Library/Frameworks
-	    /Library/Frameworks
-	    /usr/local
-	    /usr
-	    /sw # Fink
-	    /opt/local # DarwinPorts
-	    /opt/csw # Blastwave
-	    /opt
-	    ${SDL2_PATH}
-    )
+    if(SDL2_PATH)
+        set(SDL2_SEARCH_PATHS ${SDL2_PATH})
+    else()
+        set(SDL2_SEARCH_PATHS
+	        ~/Library/Frameworks
+	        /Library/Frameworks
+	        /usr/local
+	        /usr
+	        /sw # Fink
+	        /opt/local # DarwinPorts
+	        /opt/csw # Blastwave
+	        /opt
+	        $ENV{SDL2DIR}
+        )
+    endif()
 
     find_path(SDL2_INCLUDE_DIR SDL.h
-	    HINTS $ENV{SDL2DIR}
 	    PATH_SUFFIXES include/SDL2 include
 	    PATHS ${SDL2_SEARCH_PATHS}
     )
@@ -88,7 +91,6 @@ function(FindSDL2)
 
     find_library(SDL2_LIBRARY_TEMP
 	    NAMES SDL2
-	    HINTS $ENV{SDL2DIR}
 	    PATH_SUFFIXES ${PATH_SUFFIXES}
 	    PATHS ${SDL2_SEARCH_PATHS}
     )
@@ -100,7 +102,6 @@ function(FindSDL2)
         # necessarily need it.
         find_library(SDL2MAIN_LIBRARY
             NAMES SDL2main
-            HINTS $ENV{SDL2DIR}
             PATH_SUFFIXES ${PATH_SUFFIXES}
             PATHS ${SDL2_SEARCH_PATHS}
         )
