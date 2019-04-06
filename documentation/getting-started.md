@@ -28,7 +28,7 @@ Several binary dependencies currently need to be installed manually.
 
 **SDL2**
 
-- Grab the [SDL2 SDK](https://www.libsdl.org/release/SDL2-2.0.9-win32-x64.zip) and unpack this file anywhere on your PC.
+- Grab the [SDL2 SDK](https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip) and unpack this file anywhere on your PC.
 
 - Then edit your environment variables and add the path where you unpacked the zip under the `SDL2DIR` variable.
 
