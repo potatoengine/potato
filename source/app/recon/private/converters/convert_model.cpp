@@ -1,20 +1,20 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "convert_model.h"
-#include "grimm/foundation/std_iostream.h"
-#include "grimm/filesystem/path_util.h"
-#include "grimm/filesystem/filesystem.h"
-#include "grimm/filesystem/stream_util.h"
+#include "potato/foundation/std_iostream.h"
+#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/filesystem.h"
+#include "potato/filesystem/stream_util.h"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/Exporter.hpp>
 #include <assimp/postprocess.h>
 
-gm::recon::ModelConverter::ModelConverter() = default;
+up::recon::ModelConverter::ModelConverter() = default;
 
-gm::recon::ModelConverter::~ModelConverter() = default;
+up::recon::ModelConverter::~ModelConverter() = default;
 
-bool gm::recon::ModelConverter::convert(Context& ctx) {
+bool up::recon::ModelConverter::convert(Context& ctx) {
     auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), fs::path::changeExtension(ctx.sourceFilePath(), ".model")});
 

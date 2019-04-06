@@ -3,11 +3,11 @@
 #pragma once
 
 #include "d3d11_platform.h"
-#include "grimm/gpu/com_ptr.h"
-#include "grimm/foundation/box.h"
-#include "grimm/gpu/pipeline_state.h"
+#include "potato/gpu/com_ptr.h"
+#include "potato/foundation/box.h"
+#include "potato/gpu/pipeline_state.h"
 
-namespace gm::gpu::d3d11 {
+namespace up::gpu::d3d11 {
     struct PipelineStateParamsD3D11 {
         com_ptr<ID3D11RasterizerState> rasterState;
         com_ptr<ID3D11DepthStencilState> depthStencilState;
@@ -31,4 +31,4 @@ namespace gm::gpu::d3d11 {
 
         PipelineStateParamsD3D11 _params;
     };
-} // namespace gm::gpu::d3d11
+} // namespace up::gpu::d3d11

@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "grimm/recon/converter.h"
+#include "potato/recon/converter.h"
 
-namespace gm::recon {
+namespace up::recon {
     class ModelConverter : public Converter {
     public:
         ModelConverter();
@@ -15,4 +15,4 @@ namespace gm::recon {
         string_view name() const noexcept override { return "model"; }
         uint64 revision() const noexcept override { return 0; }
     };
-} // namespace gm::recon
+} // namespace up::recon

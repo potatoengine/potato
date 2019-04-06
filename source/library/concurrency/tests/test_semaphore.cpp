@@ -1,10 +1,10 @@
-#include "grimm/concurrency/semaphore.h"
+#include "potato/concurrency/semaphore.h"
 #include <doctest/doctest.h>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[grimm][concurrency] Semaphore") {
-    using namespace gm;
-    using namespace gm::concurrency;
+DOCTEST_TEST_SUITE("[potato][concurrency] Semaphore") {
+    using namespace up;
+    using namespace up::concurrency;
 
     DOCTEST_TEST_CASE("default") {
         Semaphore sem(0);

@@ -1,10 +1,10 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/filesystem/stream_util.h"
-#include "grimm/filesystem/stream.h"
-#include "grimm/foundation/string_writer.h"
+#include "potato/filesystem/stream_util.h"
+#include "potato/filesystem/stream.h"
+#include "potato/foundation/string_writer.h"
 
-auto gm::fs::readBinary(Stream& stream, vector<gm::byte>& out) -> Result {
+auto up::fs::readBinary(Stream& stream, vector<up::byte>& out) -> Result {
     if (!stream.canRead() || !stream.canSeek()) {
         return Result::UnsupportedOperation;
     }
@@ -17,7 +17,7 @@ auto gm::fs::readBinary(Stream& stream, vector<gm::byte>& out) -> Result {
     return stream.read(read);
 }
 
-auto gm::fs::readText(Stream& stream, string& out) -> Result {
+auto up::fs::readText(Stream& stream, string& out) -> Result {
     if (!stream.canRead() || !stream.canSeek()) {
         return Result::UnsupportedOperation;
     }
@@ -35,4 +35,13 @@ auto gm::fs::readText(Stream& stream, string& out) -> Result {
     out = std::move(writer).to_string();
 
     return rs;
+}
+
+auto up::fs::writeAllText(Stream& stream, string_view text) -> Result {
+    if (!stream.canWrite()) {
+        return Result::UnsupportedOperation;
+    }
+
+    span<char const> textSpan(text.data(), text.size());
+    return stream.write(textSpan.as_bytes());
 }

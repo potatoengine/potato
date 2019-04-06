@@ -1,10 +1,10 @@
-#include "grimm/concurrency/thread_util.h"
+#include "potato/concurrency/thread_util.h"
 #include <doctest/doctest.h>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[grimm][concurrency] thread_util") {
-    using namespace gm;
-    using namespace gm::concurrency;
+DOCTEST_TEST_SUITE("[potato][concurrency] thread_util") {
+    using namespace up;
+    using namespace up::concurrency;
 
     DOCTEST_TEST_CASE("setCurrentThreadName") {
         // basically just making sure we're not crashing

@@ -1,14 +1,14 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/filesystem/native_backend.h"
-#include "grimm/filesystem/stream.h"
+#include "potato/filesystem/native_backend.h"
+#include "potato/filesystem/stream.h"
 #include <fstream>
 
-auto gm::fs::NativeBackend::create() -> FileSystem {
+auto up::fs::NativeBackend::create() -> FileSystem {
     return FileSystem(rc<NativeBackend>(new NativeBackend));
 }
 
-namespace gm::fs {
+namespace up::fs {
     namespace {
         struct NativeInputBackend : public Stream::Backend {
             NativeInputBackend(std::ifstream stream) : _stream(std::move(stream)) {}
@@ -95,12 +95,12 @@ namespace gm::fs {
             std::ofstream _stream;
         };
     } // namespace
-} // namespace gm::fs
+} // namespace up::fs
 
-auto gm::fs::NativeBackend::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
-    return Stream(gm::new_box<NativeInputBackend>(std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
+auto up::fs::NativeBackend::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
+    return Stream(up::new_box<NativeInputBackend>(std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }
 
-auto gm::fs::NativeBackend::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
-    return Stream(gm::new_box<NativeOutputBackend>(std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
+auto up::fs::NativeBackend::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
+    return Stream(up::new_box<NativeOutputBackend>(std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }

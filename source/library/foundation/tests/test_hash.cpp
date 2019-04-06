@@ -1,11 +1,11 @@
-#include "grimm/foundation/hash.h"
-#include "grimm/foundation/string_view.h"
-#include "grimm/foundation/zstring_view.h"
-#include "grimm/foundation/span.h"
+#include "potato/foundation/hash.h"
+#include "potato/foundation/string_view.h"
+#include "potato/foundation/zstring_view.h"
+#include "potato/foundation/span.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::hash") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[potato][foundation] up::hash") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("default hash_value") {
         DOCTEST_CHECK_EQ(hash_value<fnv1a>('x'), 0xaf63f54c86021707);

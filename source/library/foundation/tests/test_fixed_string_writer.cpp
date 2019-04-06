@@ -1,8 +1,8 @@
-#include "grimm/foundation/fixed_string_writer.h"
+#include "potato/foundation/fixed_string_writer.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::fixed_string_writer") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[potato][foundation] up::fixed_string_writer") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {
         fixed_string_writer<32> sw;

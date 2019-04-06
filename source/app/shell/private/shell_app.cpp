@@ -4,27 +4,27 @@
 #include "camera.h"
 #include "camera_controller.h"
 
-#include "grimm/foundation/box.h"
-#include "grimm/foundation/platform.h"
-#include "grimm/foundation/unique_resource.h"
-#include "grimm/foundation/vector.h"
-#include "grimm/filesystem/stream.h"
-#include "grimm/filesystem/stream_util.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/factory.h"
-#include "grimm/gpu/command_list.h"
-#include "grimm/gpu/swap_chain.h"
-#include "grimm/gpu/texture.h"
-#include "grimm/render/renderer.h"
-#include "grimm/render/camera.h"
-#include "grimm/render/context.h"
-#include "grimm/render/node.h"
-#include "grimm/render/model.h"
-#include "grimm/render/mesh.h"
-#include "grimm/render/material.h"
-#include "grimm/render/shader.h"
-#include "grimm/render/draw_imgui.h"
-#include "grimm/render/debug_draw.h"
+#include "potato/foundation/box.h"
+#include "potato/foundation/platform.h"
+#include "potato/foundation/unique_resource.h"
+#include "potato/foundation/vector.h"
+#include "potato/filesystem/stream.h"
+#include "potato/filesystem/stream_util.h"
+#include "potato/gpu/device.h"
+#include "potato/gpu/factory.h"
+#include "potato/gpu/command_list.h"
+#include "potato/gpu/swap_chain.h"
+#include "potato/gpu/texture.h"
+#include "potato/render/renderer.h"
+#include "potato/render/camera.h"
+#include "potato/render/context.h"
+#include "potato/render/node.h"
+#include "potato/render/model.h"
+#include "potato/render/mesh.h"
+#include "potato/render/material.h"
+#include "potato/render/shader.h"
+#include "potato/render/draw_imgui.h"
+#include "potato/render/debug_draw.h"
 
 #include <chrono>
 #include <SDL.h>
@@ -37,9 +37,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-gm::ShellApp::ShellApp() = default;
+up::ShellApp::ShellApp() = default;
 
-gm::ShellApp::~ShellApp() {
+up::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
 
     _renderer.reset();
@@ -51,10 +51,10 @@ gm::ShellApp::~ShellApp() {
     _device.reset();
 }
 
-int gm::ShellApp::initialize() {
-    using namespace gm;
+int up::ShellApp::initialize() {
+    using namespace up;
 
-    _window = SDL_CreateWindow("Grimm Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
+    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create window", nullptr);
     }
@@ -66,7 +66,7 @@ int gm::ShellApp::initialize() {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not get window info", _window.get());
     }
 
-#if GM_GPU_ENABLE_D3D11
+#if UP_GPU_ENABLE_D3D11
     if (_device == nullptr) {
         auto factory = gpu::CreateFactoryD3D11();
         _device = factory->createDevice(0);
@@ -84,7 +84,7 @@ int gm::ShellApp::initialize() {
 
     _renderer = new_box<Renderer>(_fileSystem, _device);
 
-#if GM_PLATFORM_WINDOWS
+#if UP_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
 #endif
     if (_swapChain == nullptr) {
@@ -123,7 +123,7 @@ int gm::ShellApp::initialize() {
     return 0;
 }
 
-void gm::ShellApp::run() {
+void up::ShellApp::run() {
     auto& imguiIO = ImGui::GetIO();
 
     std::chrono::high_resolution_clock clock;
@@ -213,7 +213,7 @@ void gm::ShellApp::run() {
         imguiIO.DisplaySize.y = viewport.height;
         _drawImgui.beginFrame();
         if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("Grimm")) {
+            if (ImGui::BeginMenu("Potato")) {
                 if (ImGui::MenuItem("Quit")) {
                     return;
                 }
@@ -271,15 +271,15 @@ void gm::ShellApp::run() {
     }
 }
 
-void gm::ShellApp::quit() {
+void up::ShellApp::quit() {
     _running = false;
 }
 
-void gm::ShellApp::onWindowClosed() {
+void up::ShellApp::onWindowClosed() {
     quit();
 }
 
-void gm::ShellApp::onWindowSizeChanged() {
+void up::ShellApp::onWindowSizeChanged() {
     int width, height;
     SDL_GetWindowSize(_window.get(), &width, &height);
     _camera->resetSwapChain(nullptr);

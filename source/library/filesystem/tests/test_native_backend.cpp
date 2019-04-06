@@ -1,15 +1,15 @@
-#include "grimm/foundation/vector.h"
-#include "grimm/foundation/string.h"
-#include "grimm/filesystem/native_backend.h"
-#include "grimm/filesystem/stream.h"
+#include "potato/foundation/vector.h"
+#include "potato/foundation/string.h"
+#include "potato/filesystem/native_backend.h"
+#include "potato/filesystem/stream.h"
 #include <doctest/doctest.h>
 #include <string>
 #include <iostream>
 #include <algorithm>
 
-DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::NativeBackend") {
-    using namespace gm;
-    using namespace gm::fs;
+DOCTEST_TEST_SUITE("[potato][filesystem] up::fs::NativeBackend") {
+    using namespace up;
+    using namespace up::fs;
 
     DOCTEST_TEST_CASE("fileExists") {
         auto native = NativeBackend::create();

@@ -1,13 +1,13 @@
 #include <doctest/doctest.h>
 
-#include "grimm/gpu/factory.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/swap_chain.h"
-#include "grimm/gpu/pipeline_state.h"
+#include "potato/gpu/factory.h"
+#include "potato/gpu/device.h"
+#include "potato/gpu/swap_chain.h"
+#include "potato/gpu/pipeline_state.h"
 
-DOCTEST_TEST_SUITE("[grimm][gpu] DeviceNull") {
-    using namespace gm;
-    using namespace gm::gpu;
+DOCTEST_TEST_SUITE("[potato][gpu] DeviceNull") {
+    using namespace up;
+    using namespace up::gpu;
 
     DOCTEST_TEST_CASE("factory enumerates") {
         auto factory = CreateFactoryNull();

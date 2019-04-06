@@ -1,10 +1,10 @@
-#include "grimm/concurrency/lock_free_queue.h"
+#include "potato/concurrency/lock_free_queue.h"
 #include <doctest/doctest.h>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[grimm][concurrency] LockFreeQueue") {
-    using namespace gm;
-    using namespace gm::concurrency;
+DOCTEST_TEST_SUITE("[potato][concurrency] LockFreeQueue") {
+    using namespace up;
+    using namespace up::concurrency;
 
     DOCTEST_TEST_CASE("default") {
         LockFreeQueue<int> queue;

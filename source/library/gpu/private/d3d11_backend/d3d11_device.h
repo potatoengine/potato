@@ -3,11 +3,11 @@
 #pragma once
 
 #include "d3d11_platform.h"
-#include "grimm/gpu/com_ptr.h"
-#include "grimm/foundation/unique_resource.h"
-#include "grimm/gpu/device.h"
+#include "potato/gpu/com_ptr.h"
+#include "potato/foundation/unique_resource.h"
+#include "potato/gpu/device.h"
 
-namespace gm::gpu::d3d11 {
+namespace up::gpu::d3d11 {
     class DeviceD3D11 final : public Device {
     public:
         DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context);
@@ -38,4 +38,4 @@ namespace gm::gpu::d3d11 {
         com_ptr<ID3D11Device> _device;
         com_ptr<ID3D11DeviceContext> _context;
     };
-} // namespace gm::gpu::d3d11
+} // namespace up::gpu::d3d11

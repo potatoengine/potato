@@ -3,7 +3,7 @@
 // Inspired by the technique in the "LightweightSemaphore" at
 //   https://github.com/preshing/cpp11-on-multicore
 
-#include "grimm/concurrency/semaphore.h"
+#include "potato/concurrency/semaphore.h"
 #include <limits>
 #include <mutex>
 #include <condition_variable>
@@ -24,14 +24,14 @@ namespace {
     };
 } // namespace
 
-gm::concurrency::Semaphore::Semaphore(int initial) : _counter(initial), _handle(new SemaphoreImplementation) {
+up::concurrency::Semaphore::Semaphore(int initial) : _counter(initial), _handle(new SemaphoreImplementation) {
 }
 
-gm::concurrency::Semaphore::~Semaphore() {
+up::concurrency::Semaphore::~Semaphore() {
     delete static_cast<SemaphoreImplementation*>(_handle);
 }
 
-void gm::concurrency::Semaphore::_signal(int n) {
+void up::concurrency::Semaphore::_signal(int n) {
     auto sema = static_cast<SemaphoreImplementation*>(_handle);
 
     {
@@ -47,7 +47,7 @@ void gm::concurrency::Semaphore::_signal(int n) {
     }
 }
 
-void gm::concurrency::Semaphore::_wait() {
+void up::concurrency::Semaphore::_wait() {
     if (_counter.fetch_sub(1, std::memory_order_acquire) <= 0) {
         auto sema = static_cast<SemaphoreImplementation*>(_handle);
         std::unique_lock lock(sema->lock);

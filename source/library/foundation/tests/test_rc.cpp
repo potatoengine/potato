@@ -1,4 +1,4 @@
-#include "grimm/foundation/rc.h"
+#include "potato/foundation/rc.h"
 #include <doctest/doctest.h>
 
 namespace {
@@ -8,7 +8,7 @@ namespace {
         int refs = 1;
     };
 
-    struct TestShared : gm::shared<TestShared> {
+    struct TestShared : up::shared<TestShared> {
         TestShared(bool& bind) : active(bind) { active = true; }
         ~TestShared() { active = false; }
 
@@ -16,8 +16,8 @@ namespace {
     };
 } // namespace
 
-DOCTEST_TEST_SUITE("[grimm][foundation] gm::rc") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[potato][foundation] up::rc") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("empty rc") {
         rc<TestCounted> r;

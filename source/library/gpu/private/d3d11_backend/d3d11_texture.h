@@ -3,11 +3,11 @@
 #pragma once
 
 #include "d3d11_platform.h"
-#include "grimm/gpu/com_ptr.h"
-#include "grimm/foundation/box.h"
-#include "grimm/gpu/texture.h"
+#include "potato/gpu/com_ptr.h"
+#include "potato/foundation/box.h"
+#include "potato/gpu/texture.h"
 
-namespace gm::gpu::d3d11 {
+namespace up::gpu::d3d11 {
     class TextureD3D11 final : public Texture {
     public:
         explicit TextureD3D11(com_ptr<ID3D11Resource> texture);
@@ -26,4 +26,4 @@ namespace gm::gpu::d3d11 {
     private:
         com_ptr<ID3D11Resource> _texture;
     };
-} // namespace gm::gpu::d3d11
+} // namespace up::gpu::d3d11

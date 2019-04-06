@@ -1,20 +1,17 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "convert_json.h"
-#include "grimm/foundation/std_iostream.h"
-#include "grimm/filesystem/path_util.h"
-#include "grimm/filesystem/filesystem.h"
+#include "potato/foundation/std_iostream.h"
+#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/filesystem.h"
 #include <fstream>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/ostreamwrapper.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/document.h>
+#include <nlohmann/json.hpp>
 
-gm::recon::JsonConverter::JsonConverter() = default;
+up::recon::JsonConverter::JsonConverter() = default;
 
-gm::recon::JsonConverter::~JsonConverter() = default;
+up::recon::JsonConverter::~JsonConverter() = default;
 
-bool gm::recon::JsonConverter::convert(Context& ctx) {
+bool up::recon::JsonConverter::convert(Context& ctx) {
 
     auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
@@ -36,11 +33,9 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
         return false;
     }
 
-    rapidjson::Document doc;
-    rapidjson::IStreamWrapper inStream(inFile);
-    doc.ParseStream<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag | rapidjson::kParseNanAndInfFlag>(inStream);
-    if (doc.HasParseError()) {
-        ctx.logger().error("Failed to parse `{}': {}", sourceAbsolutePath, doc.GetParseError());
+    nlohmann::json doc = nlohmann::json::parse(inFile, nullptr, false);
+    if (!doc) {
+        ctx.logger().error("Failed to parse `{}': {}", sourceAbsolutePath, "unknown parse error");
         return false;
     }
 
@@ -52,10 +47,9 @@ bool gm::recon::JsonConverter::convert(Context& ctx) {
         return false;
     }
 
-    rapidjson::OStreamWrapper outStream(outFile);
-    rapidjson::Writer<rapidjson::OStreamWrapper> writer(outStream);
+    outFile << doc;
 
-    if (!doc.Accept(writer)) {
+    if (!outFile) {
         ctx.logger().error("Failed to write to `{}'", destAbsolutePath);
         return false;
     }

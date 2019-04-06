@@ -1,9 +1,9 @@
-#include "grimm/foundation/vector.h"
-#include "grimm/foundation/string.h"
+#include "potato/foundation/vector.h"
+#include "potato/foundation/string.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[grimm][foundation] vector") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[potato][foundation] vector") {
+    using namespace up;
 
     DOCTEST_TEST_CASE("vector default initialization") {
         vector<int> vec;

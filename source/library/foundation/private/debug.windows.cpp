@@ -1,11 +1,11 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
 #include "debug.windows.h"
-#include "grimm/foundation/callstack.h"
-#include "grimm/foundation/debug.h"
-#include "grimm/foundation/platform_windows.h"
-#include "grimm/foundation/string_format.h"
-#include "grimm/foundation/fixed_string_writer.h"
+#include "potato/foundation/callstack.h"
+#include "potato/foundation/debug.h"
+#include "potato/foundation/platform_windows.h"
+#include "potato/foundation/string_format.h"
+#include "potato/foundation/fixed_string_writer.h"
 
 namespace {
     struct DialogData {
@@ -20,8 +20,8 @@ namespace {
         if (OpenClipboard(nullptr) == TRUE) {
             EmptyClipboard();
 
-            gm::fixed_string_writer<1024> buffer;
-            gm::format_into(buffer, "ASSERTION FAILED: {}\r\n{}\r\n{}\r\n{}", data.condition, data.message, data.location, data.callstack);
+            up::fixed_string_writer<1024> buffer;
+            up::format_into(buffer, "ASSERTION FAILED: {}\r\n{}\r\n{}\r\n{}", data.condition, data.message, data.location, data.callstack);
 
             if (HANDLE handle = GlobalAlloc(GMEM_MOVEABLE, buffer.size() + 1)) {
                 void* data = GlobalLock(handle);
@@ -35,7 +35,7 @@ namespace {
     }
 
     INT_PTR CALLBACK AssertDialogProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-        using namespace gm;
+        using namespace up;
 
         switch (msg) {
         case WM_INITDIALOG: {
@@ -82,8 +82,8 @@ namespace {
         return FALSE;
     }
 
-    GM_NOINLINE gm::error_action ShowAssertDialog(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText) {
-        using namespace gm;
+    UP_NOINLINE up::error_action ShowAssertDialog(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText) {
+        using namespace up;
 
         fixed_string_writer<128> location_buffer;
         format_into(location_buffer, "{}({})", file, line);
@@ -103,8 +103,8 @@ namespace {
     }
 } // namespace
 
-namespace gm::_detail {
+namespace up::_detail {
     auto platform_fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText) -> error_action {
         return ShowAssertDialog(file, line, failedConditionText, messageText, callstackText);
     }
-} // namespace gm::_detail
+} // namespace up::_detail

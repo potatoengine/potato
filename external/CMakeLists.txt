@@ -13,10 +13,6 @@ add_subdirectory(doctest EXCLUDE_FROM_ALL)
 
 add_subdirectory(spdlog EXCLUDE_FROM_ALL)
 
-add_library(rapidjson INTERFACE)
-target_include_directories(rapidjson INTERFACE rapidjson/include)
-target_compile_definitions(rapidjson INTERFACE _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
-
 add_library(imgui)
 target_include_directories(imgui PUBLIC imgui)
 target_sources(imgui PRIVATE
@@ -27,10 +23,10 @@ target_sources(imgui PRIVATE
 )
 set_target_properties(imgui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_compile_definitions(imgui PUBLIC
-    IM_ASSERT=GM_ASSERT
-    IMGUI_USER_CONFIG="grimm/foundation/assertion.h"
+    IM_ASSERT=UP_ASSERT
+    IMGUI_USER_CONFIG="potato/foundation/assertion.h"
 )
-target_link_libraries(imgui PUBLIC grimm::foundation)
+target_link_libraries(imgui PUBLIC potato::foundation)
 
 set(GLM_QUIET ON CACHE BOOL "quiet glm build")
 set(GLM_TEST_ENABLE OFF CACHE BOOL "disable glm tests")
@@ -39,5 +35,9 @@ target_compile_definitions(glm INTERFACE GLM_ENABLE_EXPERIMENTAL)
 
 add_library(stb INTERFACE)
 target_include_directories(stb INTERFACE "${CMAKE_CURRENT_LIST_DIR}/stb")
+
+set(JSON_MultipleHeaders ON CACHE INTERNAL "use multiple json header build")
+set(JSON_BuildTests OFF CACHE INTERNAL "disable json tests")
+add_subdirectory(json EXCLUDE_FROM_ALL)
 
 set(CMAKE_CXX_CLANG_TIDY ${OLD_TIDY})

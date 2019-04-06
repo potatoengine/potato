@@ -1,181 +1,124 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/assetdb/_export.h"
-#include "grimm/assetdb/asset_library.h"
-#include "grimm/foundation/hash_fnv1a.h"
-#include "grimm/foundation/hash.h"
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include "stream_json.h"
+#include "potato/assetdb/_export.h"
+#include "potato/assetdb/asset_library.h"
+#include "potato/foundation/hash_fnv1a.h"
+#include "potato/foundation/hash.h"
+#include "potato/filesystem/stream_util.h"
+#include "potato/filesystem/json_util.h"
+#include <nlohmann/json.hpp>
 
-static constexpr gm::uint64 libraryRevision = 3;
+static constexpr up::uint64 libraryRevision = 3;
 
-gm::AssetLibrary::~AssetLibrary() = default;
+up::AssetLibrary::~AssetLibrary() = default;
 
-auto gm::AssetLibrary::pathToAssetId(string_view path) const -> AssetId {
+auto up::AssetLibrary::pathToAssetId(string_view path) const -> AssetId {
     auto hash = hash_value<fnv1a>(path);
     return static_cast<AssetId>(hash);
 }
 
-auto gm::AssetLibrary::assetIdToPath(AssetId assetId) const -> string_view {
+auto up::AssetLibrary::assetIdToPath(AssetId assetId) const -> string_view {
     auto record = findRecord(assetId);
     return record != nullptr ? string_view(record->path) : string_view{};
 }
 
-auto gm::AssetLibrary::findRecord(AssetId assetId) const -> AssetImportRecord const* {
+auto up::AssetLibrary::findRecord(AssetId assetId) const -> AssetImportRecord const* {
     auto it = _assets.find(assetId);
     return it != _assets.end() ? &it->second : nullptr;
 }
 
-bool gm::AssetLibrary::insertRecord(AssetImportRecord record) {
+bool up::AssetLibrary::insertRecord(AssetImportRecord record) {
     _assets[record.assetId] = std::move(record);
     return true;
 }
 
-bool gm::AssetLibrary::serialize(fs::Stream& stream) const {
-    rapidjson::Document doc;
-    doc.SetObject();
-    auto root = doc.GetObject();
+bool up::AssetLibrary::serialize(fs::Stream& stream) const {
+    nlohmann::json jsonRoot;
 
-    root.AddMember("revision", rapidjson::Value(libraryRevision), doc.GetAllocator());
+    jsonRoot["revision"] = libraryRevision;
 
-    auto array = rapidjson::Value(rapidjson::kArrayType);
+    nlohmann::json jsonRecords;
     for (auto const& [assetId, record] : _assets) {
-        auto recObj = rapidjson::Value(rapidjson::kObjectType);
-        recObj.AddMember("id", rapidjson::Value(static_cast<uint64>(record.assetId)), doc.GetAllocator());
-        recObj.AddMember("path", rapidjson::Value(rapidjson::StringRef(record.path.data(), record.path.size())), doc.GetAllocator());
-        recObj.AddMember("contentHash", rapidjson::Value(record.contentHash), doc.GetAllocator());
+        nlohmann::json jsonRecord;
+
         auto catName = assetCategoryName(record.category);
-        recObj.AddMember("category", rapidjson::Value(rapidjson::StringRef(catName.data(), catName.size())), doc.GetAllocator());
-        recObj.AddMember("importerName", rapidjson::Value(rapidjson::StringRef(record.importerName.data(), record.importerName.size())), doc.GetAllocator());
-        recObj.AddMember("importerRevision", rapidjson::Value(record.importerRevision), doc.GetAllocator());
+        
+        jsonRecord["id"] = record.assetId;
+        jsonRecord["path"] = record.path;
+        jsonRecord["contentHash"] = record.contentHash;
+        jsonRecord["category"] = catName;
+        jsonRecord["importerName"] = record.importerName;
+        jsonRecord["importerRevision"] = record.importerRevision;
 
-        auto outputs = rapidjson::Value(rapidjson::kArrayType);
+        nlohmann::json jsonOutputs;
         for (auto const& output : record.outputs) {
-            auto outputObj = rapidjson::Value(rapidjson::kObjectType);
-            outputObj.AddMember("path", rapidjson::Value(rapidjson::StringRef(output.path.data(), output.path.size())), doc.GetAllocator());
-            outputObj.AddMember("hash", rapidjson::Value(output.contentHash), doc.GetAllocator());
-            outputs.PushBack(outputObj, doc.GetAllocator());
+            nlohmann::json jsonOutput;
+            jsonOutput["path"] = output.path;
+            jsonOutput["hash"] = output.contentHash;
+            jsonOutputs.push_back(std::move(jsonOutput));
         }
-        recObj.AddMember("outputs", outputs, doc.GetAllocator());
+        jsonRecord["outputs"] = std::move(jsonOutputs);
 
-        auto sourceDeps = rapidjson::Value(rapidjson::kArrayType);
+        nlohmann::json jsonSourceDeps;
         for (auto const& dep : record.sourceDependencies) {
-            auto depObj = rapidjson::Value(rapidjson::kObjectType);
-            depObj.AddMember("path", rapidjson::Value(rapidjson::StringRef(dep.path.data(), dep.path.size())), doc.GetAllocator());
-            depObj.AddMember("hash", rapidjson::Value(dep.contentHash), doc.GetAllocator());
-            sourceDeps.PushBack(depObj, doc.GetAllocator());
+            nlohmann::json jsonDep;
+            jsonDep["path"] = dep.path;
+            jsonDep["hash"] = dep.contentHash;
+            jsonSourceDeps.push_back(std::move(jsonDep));
         }
-        recObj.AddMember("sourceDeps", sourceDeps, doc.GetAllocator());
+        jsonRecord["sourceDeps"] = std::move(jsonSourceDeps);
 
-        array.PushBack(recObj, doc.GetAllocator());
+        jsonRecords.push_back(std::move(jsonRecord));
     }
-    root.AddMember("records", array, doc.GetAllocator());
+    jsonRoot["records"] = std::move(jsonRecords);
 
-    RapidJsonStreamWrapper outWrapper(stream);
-    rapidjson::Writer<RapidJsonStreamWrapper> writer(outWrapper);
-    return doc.Accept(writer);
+    auto json = jsonRoot.dump(2);
+    return writeAllText(stream, {json.data(), json.size()}) == fs::Result::Success;
 }
 
-bool gm::AssetLibrary::deserialize(fs::Stream& stream) {
-    RapidJsonStreamWrapper inWrapper(stream);
-    rapidjson::Document doc;
-    doc.ParseStream(inWrapper);
-    if (doc.HasParseError()) {
+bool up::AssetLibrary::deserialize(fs::Stream& stream) {
+    string jsonText;
+    if (readText(stream, jsonText) != fs::Result::Success) {
         return false;
     }
 
-    if (!doc.IsObject()) {
+    auto jsonRoot = nlohmann::json::parse(jsonText, nullptr, false);
+
+    if (!jsonRoot.is_object()) {
         return false;
     }
 
-    auto root = doc.GetObject();
-
-    if (!root.HasMember("revision") || !root["revision"].IsUint64() || root["revision"].GetUint64() != libraryRevision) {
+    auto revision = jsonRoot["revision"];
+    if (!revision.is_number_integer() || revision != libraryRevision) {
         return false;
     }
 
-    if (!root.HasMember("records")) {
+    auto records = jsonRoot["records"];
+    if (!records.is_array()) {
         return false;
     }
 
-    auto& records = root[rapidjson::Value("records")];
-    if (!records.IsArray()) {
-        return false;
-    }
-
-    for (auto& record : records.GetArray()) {
-        if (!record.HasMember("id") || !record["id"].IsUint64()) {
-            continue;
-        }
-        if (!record.HasMember("path") || !record["path"].IsString()) {
-            continue;
-        }
-        if (!record.HasMember("contentHash") || !record["contentHash"].IsUint64()) {
-            continue;
-        }
-        if (!record.HasMember("category") || !record["category"].IsString()) {
-            continue;
-        }
-        if (!record.HasMember("importerName") || !record["importerName"].IsString()) {
-            continue;
-        }
-        if (!record.HasMember("importerRevision") || !record["importerRevision"].IsUint64()) {
-            continue;
-        }
-
-        if (!record.HasMember("outputs") || !record["outputs"].IsArray()) {
-            continue;
-        }
-
+    for (auto const& record : records) {
         AssetImportRecord newRecord;
-        newRecord.assetId = static_cast<AssetId>(record["id"].GetUint64());
-        newRecord.path = string(record["path"].GetString());
-        newRecord.contentHash = record["contentHash"].GetUint64();
-        newRecord.category = assetCategoryFromName(record["category"].GetString());
-        newRecord.importerName = string(record["importerName"].GetString());
-        newRecord.importerRevision = record["importerRevision"].GetUint64();
+        newRecord.assetId = record["id"];
+        newRecord.path = record["path"];
+        newRecord.contentHash = record["contentHash"];
+        newRecord.category = assetCategoryFromName(record["category"].get<string>());
+        newRecord.importerName = record["importerName"].get<string>();
+        newRecord.importerRevision = record["importerRevision"];
 
-        for (auto const& output : record["outputs"].GetArray()) {
-            if (!output.IsObject()) {
-                continue;
-            }
-
-            auto pathIt = output.FindMember("path");
-            auto hashIt = output.FindMember("hash");
-
-            if (pathIt == output.MemberEnd() || !pathIt->value.IsString()) {
-                continue;
-            }
-
-            if (hashIt == output.MemberEnd() || !hashIt->value.IsUint64()) {
-                continue;
-            }
-
+        for (auto const& output : record["outputs"]) {
             newRecord.outputs.push_back(AssetOutputRecord{
-                string(pathIt->value.GetString()),
-                hashIt->value.GetUint64()});
+                output["path"],
+                output["hash"]
+            });
         }
 
-        for (auto const& output : record["sourceDeps"].GetArray()) {
-            if (!output.IsObject()) {
-                continue;
-            }
-
-            auto pathIt = output.FindMember("path");
-            auto hashIt = output.FindMember("hash");
-
-            if (pathIt == output.MemberEnd() || !pathIt->value.IsString()) {
-                continue;
-            }
-
-            if (hashIt == output.MemberEnd() || !hashIt->value.IsUint64()) {
-                continue;
-            }
-
+        for (auto const& output : record["sourceDeps"]) {
             newRecord.sourceDependencies.push_back(AssetDependencyRecord{
-                string(pathIt->value.GetString()),
-                hashIt->value.GetUint64()});
+                output["path"],
+                output["hash"]
+            });
         }
 
         insertRecord(std::move(newRecord));

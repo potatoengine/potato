@@ -6,30 +6,31 @@ find_package(SDL2)
 
 if(TARGET assimp AND TARGET SDL2)
     add_library(render)
-    add_library(grimm::render ALIAS render)
+    add_library(potato::render ALIAS render)
 
-    include(gm_set_common_properties)
-    gm_set_common_properties(render)
+    include(up_set_common_properties)
+    up_set_common_properties(render)
 
-    include(gm_copy_library_import)
-    gm_copy_library_import(assimp render)
+    include(up_copy_library_import)
+    up_copy_library_import(assimp render)
 
     target_link_libraries(render
         PUBLIC
-            grimm::foundation
-            grimm::gpu
-            grimm::concurrency
-            grimm::image
+            potato::foundation
+            potato::gpu
+            potato::concurrency
+            potato::image
+            potato::filesystem
             glm
+        PRIVATE
             imgui
             SDL2
-            rapidjson
-            assimp
-        PRIVATE
             doctest
+            nlohmann_json::nlohmann_json
+            assimp
     )
 
-    add_subdirectory(public/grimm/render)
+    add_subdirectory(public/potato/render)
 
     add_subdirectory(private)
     add_subdirectory(tests)

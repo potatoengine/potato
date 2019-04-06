@@ -1,25 +1,25 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#include "grimm/foundation/box.h"
-#include "grimm/foundation/unique_resource.h"
-#include "grimm/filesystem/filesystem.h"
-#include "grimm/render/draw_imgui.h"
+#include "potato/foundation/box.h"
+#include "potato/foundation/unique_resource.h"
+#include "potato/filesystem/filesystem.h"
+#include "potato/render/draw_imgui.h"
 
 #include <SDL.h>
 
-namespace gm {
+namespace up {
     class ShellApp;
     class Renderer;
     class RenderCamera;
     class Node;
-} // namespace gm
+} // namespace up
 
-namespace gm::gpu {
+namespace up::gpu {
     class Device;
     class SwapChain;
-} // namespace gm::gpu
+} // namespace up::gpu
 
-class gm::ShellApp {
+class up::ShellApp {
 public:
     ShellApp();
     ~ShellApp();

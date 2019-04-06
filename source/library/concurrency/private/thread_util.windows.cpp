@@ -1,10 +1,10 @@
 // Copyright (C) 2016,2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/concurrency/thread_util.h"
-#include "grimm/foundation/platform_windows.h"
+#include "potato/concurrency/thread_util.h"
+#include "potato/foundation/platform_windows.h"
 
 // https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
-void gm::concurrency::setCurrentThreadName(zstring_view name) {
+void up::concurrency::setCurrentThreadName(zstring_view name) {
     constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
 
 #pragma pack(push, 8)

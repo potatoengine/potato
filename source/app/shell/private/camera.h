@@ -6,7 +6,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace gm {
+namespace up {
     class Camera {
     public:
         void lookAt(glm::vec3 pos, glm::vec3 at, glm::vec3 up);
@@ -28,4 +28,4 @@ namespace gm {
         glm::vec3 _right = {1, 0, 0};
         glm::mat4x4 _matrix = glm::identity<glm::mat4x4>();
     };
-} // namespace gm
+} // namespace up

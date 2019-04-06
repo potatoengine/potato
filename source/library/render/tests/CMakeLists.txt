@@ -1,14 +1,14 @@
-add_executable(test_grimm_render
+add_executable(test_potato_render
     main.cpp
 )
 
-include(gm_set_common_properties)
-gm_set_common_properties(test_grimm_render)
+include(up_set_common_properties)
+up_set_common_properties(test_potato_render)
 
-target_link_libraries(test_grimm_render PRIVATE
+target_link_libraries(test_potato_render PRIVATE
     render
     gpu
     doctest
 )
 
-add_test(NAME test_grimm_render COMMAND test_grimm_render)
+add_test(NAME test_potato_render COMMAND test_potato_render)

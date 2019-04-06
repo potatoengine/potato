@@ -1,12 +1,12 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/render/model.h"
-#include "grimm/render/material.h"
-#include "grimm/render/mesh.h"
-#include "grimm/render/context.h"
-#include "grimm/gpu/buffer.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/command_list.h"
+#include "potato/render/model.h"
+#include "potato/render/material.h"
+#include "potato/render/mesh.h"
+#include "potato/render/context.h"
+#include "potato/gpu/buffer.h"
+#include "potato/gpu/device.h"
+#include "potato/gpu/command_list.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace {
@@ -22,11 +22,11 @@ namespace {
     };
 } // namespace
 
-gm::Model::Model(rc<Mesh> mesh, rc<Material> material) : _mesh(std::move(mesh)), _material(std::move(material)) {}
+up::Model::Model(rc<Mesh> mesh, rc<Material> material) : _mesh(std::move(mesh)), _material(std::move(material)) {}
 
-gm::Model::~Model() = default;
+up::Model::~Model() = default;
 
-void GM_VECTORCALL gm::Model::render(RenderContext& ctx, glm::mat4x4 transform) {
+void UP_VECTORCALL up::Model::render(RenderContext& ctx, glm::mat4x4 transform) {
     if (_transformBuffer == nullptr) {
         _transformBuffer = ctx.device.createBuffer(gpu::BufferType::Constant, sizeof(Trans));
     }

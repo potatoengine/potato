@@ -1,15 +1,15 @@
 // Copyright (C) 22015 Sean Middleditch, all rights reserverd.
 
-#include "grimm/foundation/callstack.h"
-#include "grimm/foundation/platform.h"
-#include "grimm/foundation/int_types.h"
+#include "potato/foundation/callstack.h"
+#include "potato/foundation/platform.h"
+#include "potato/foundation/int_types.h"
 
-#if !defined(GM_PLATFORM_WINDOWS)
+#if !defined(UP_PLATFORM_WINDOWS)
 #    error "Unsupported platform"
 #endif
 
-#include "grimm/foundation/numeric_util.h"
-#include "grimm/foundation/platform_windows.h"
+#include "potato/foundation/numeric_util.h"
+#include "potato/foundation/platform_windows.h"
 
 #pragma warning(disable : 4091)
 #include <dbghelp.h>
@@ -28,7 +28,7 @@ namespace {
         CallstackHelper& operator=(CallstackHelper&&) = delete;
 
         bool isInitialized() const { return _initialized; }
-        gm::uint captureStackTrace(gm::uint skip, gm::uint count, void** entries);
+        up::uint captureStackTrace(up::uint skip, up::uint count, void** entries);
         void readSymbol(void* entry, PSYMBOL_INFO symInfo, PIMAGEHLP_LINE64 lineInfo);
 
         static CallstackHelper& instance();
@@ -122,7 +122,7 @@ namespace {
         FreeLibrary(_kernelLib);
     }
 
-    gm::uint CallstackHelper::captureStackTrace(gm::uint skip, gm::uint count, void** entries) {
+    up::uint CallstackHelper::captureStackTrace(up::uint skip, up::uint count, void** entries) {
         if (_captureStackBackTrace != nullptr) {
             return _captureStackBackTrace(skip + 1, count, entries, nullptr);
         }
@@ -150,7 +150,7 @@ namespace {
 
 } // anonymous namespace
 
-auto gm::callstack::readTrace(span<gm::uintptr> addresses, gm::uint skip) -> span<gm::uintptr> {
+auto up::callstack::readTrace(span<up::uintptr> addresses, up::uint skip) -> span<up::uintptr> {
     CallstackHelper& helper = CallstackHelper::instance();
 
     if (!helper.isInitialized()) {
@@ -162,7 +162,7 @@ auto gm::callstack::readTrace(span<gm::uintptr> addresses, gm::uint skip) -> spa
     return addresses.first(count);
 }
 
-auto gm::callstack::resolveTraceRecords(span<gm::uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
+auto up::callstack::resolveTraceRecords(span<up::uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
 #if !defined(NDEBUG)
     CallstackHelper& helper = CallstackHelper::instance();
 
@@ -170,7 +170,7 @@ auto gm::callstack::resolveTraceRecords(span<gm::uintptr const> addresses, span<
         return {};
     }
 
-    int const max = static_cast<int>(gm::min(addresses.size(), records.size()));
+    int const max = static_cast<int>(up::min(addresses.size(), records.size()));
 
     int constexpr kMaxNameLen = 128;
 

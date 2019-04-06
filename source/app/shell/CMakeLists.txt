@@ -6,23 +6,24 @@ find_package(SDL2)
 if(TARGET SDL2)
     add_executable(shell WIN32)
 
-    include(gm_set_common_properties)
-    gm_set_common_properties(shell)
+    include(up_set_common_properties)
+    up_set_common_properties(shell)
 
     target_link_libraries(shell PRIVATE
-        grimm::foundation
-        grimm::filesystem
-        grimm::gpu
-        grimm::render
+        potato::foundation
+        potato::filesystem
+        potato::gpu
+        potato::render
         glm
         SDL2
         SDL2main
+        imgui
     )
 
-    include(gm_copy_library_import)
-    gm_copy_library_import(SDL2::SDL2 shell)
+    include(up_copy_library_import)
+    up_copy_library_import(SDL2::SDL2 shell)
 
-    add_subdirectory(public/grimm/shell)
+    add_subdirectory(public/potato/shell)
     add_subdirectory(private)
     add_subdirectory(tests)
 endif()

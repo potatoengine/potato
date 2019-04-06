@@ -3,11 +3,11 @@
 #pragma once
 
 #include "d3d11_platform.h"
-#include "grimm/gpu/com_ptr.h"
-#include "grimm/foundation/box.h"
-#include "grimm/gpu/command_list.h"
+#include "potato/gpu/com_ptr.h"
+#include "potato/foundation/box.h"
+#include "potato/gpu/command_list.h"
 
-namespace gm::gpu::d3d11 {
+namespace up::gpu::d3d11 {
     class CommandListD3D11 final : public CommandList {
     public:
         CommandListD3D11(com_ptr<ID3D11DeviceContext> context);
@@ -59,4 +59,4 @@ namespace gm::gpu::d3d11 {
         com_ptr<ID3D11CommandList> _commands;
         bool _bindingsDirty = false;
     };
-} // namespace gm::gpu::d3d11
+} // namespace up::gpu::d3d11

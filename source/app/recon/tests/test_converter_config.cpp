@@ -1,11 +1,11 @@
-#include "grimm/recon/converter_config.h"
-#include "grimm/foundation/string_view.h"
-#include "grimm/filesystem/filesystem.h"
+#include "potato/recon/converter_config.h"
+#include "potato/foundation/string_view.h"
+#include "potato/filesystem/filesystem.h"
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
-DOCTEST_TEST_SUITE("[grimm][recon] ConverterConfig") {
-    using namespace gm;
+DOCTEST_TEST_SUITE("[potato][recon] ConverterConfig") {
+    using namespace up;
     using namespace recon;
 
     DOCTEST_TEST_CASE("args") {

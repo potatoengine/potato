@@ -1,12 +1,12 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/render/camera.h"
-#include "grimm/render/context.h"
-#include "grimm/gpu/command_list.h"
-#include "grimm/gpu/buffer.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/texture.h"
-#include "grimm/gpu/resource_view.h"
+#include "potato/render/camera.h"
+#include "potato/render/context.h"
+#include "potato/gpu/command_list.h"
+#include "potato/gpu/buffer.h"
+#include "potato/gpu/device.h"
+#include "potato/gpu/texture.h"
+#include "potato/gpu/resource_view.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -18,11 +18,11 @@ namespace {
     };
 } // namespace
 
-gm::RenderCamera::RenderCamera(rc<gpu::SwapChain> swapChain) : _swapChain(std::move(swapChain)) {}
+up::RenderCamera::RenderCamera(rc<gpu::SwapChain> swapChain) : _swapChain(std::move(swapChain)) {}
 
-gm::RenderCamera::~RenderCamera() = default;
+up::RenderCamera::~RenderCamera() = default;
 
-void gm::RenderCamera::resetSwapChain(rc<gpu::SwapChain> swapChain) {
+void up::RenderCamera::resetSwapChain(rc<gpu::SwapChain> swapChain) {
     _swapChain = std::move(swapChain);
     _backBuffer.reset();
     _depthStencilBuffer.reset();
@@ -30,7 +30,7 @@ void gm::RenderCamera::resetSwapChain(rc<gpu::SwapChain> swapChain) {
     _dsv.reset();
 }
 
-void gm::RenderCamera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform) {
+void up::RenderCamera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform) {
     if (_rtv == nullptr && _swapChain != nullptr) {
         _backBuffer = _swapChain->getBuffer(0);
         _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
@@ -78,5 +78,5 @@ void gm::RenderCamera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransfor
     ctx.commandList.setViewport(viewport);
 }
 
-void gm::RenderCamera::endFrame(RenderContext& ctx) {
+void up::RenderCamera::endFrame(RenderContext& ctx) {
 }

@@ -13,12 +13,12 @@
 [submodule "external/doctest"]
 	path = external/doctest
 	url = https://github.com/onqtam/doctest.git
-[submodule "external/rapidjson"]
-	path = external/rapidjson
-	url = https://github.com/Tencent/rapidjson.git
 [submodule "external/spdlog"]
 	path = external/spdlog
 	url = https://github.com/gabime/spdlog.git
 [submodule "external/litexx"]
 	path = external/litexx
 	url = https://github.com/seanmiddleditch/litexx.git
+[submodule "external/json"]
+	path = external/json
+	url = https://github.com/nlohmann/json.git

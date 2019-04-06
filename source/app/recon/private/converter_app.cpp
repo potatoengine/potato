@@ -1,32 +1,30 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "converter_app.h"
-#include "grimm/foundation/string_view.h"
-#include "grimm/foundation/std_iostream.h"
-#include "grimm/filesystem/path_util.h"
-#include "grimm/filesystem/filesystem.h"
-#include "grimm/filesystem/stream.h"
-#include "grimm/assetdb/hash_cache.h"
+#include "potato/foundation/string_view.h"
+#include "potato/foundation/std_iostream.h"
+#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/filesystem.h"
+#include "potato/filesystem/stream.h"
+#include "potato/assetdb/hash_cache.h"
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"
 #include "converters/convert_json.h"
 #include "converters/convert_ignore.h"
 #include "converters/convert_model.h"
-#include <rapidjson/rapidjson.h>
-#include <rapidjson/document.h>
 #include <set>
 #include <algorithm>
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
 #include <spdlog/sinks/stdout_sinks.h>
 
-#if defined(GM_PLATFORM_WINDOWS)
+#if defined(UP_PLATFORM_WINDOWS)
 #    include <spdlog/sinks/msvc_sink.h>
 #endif
 
-gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {
+up::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {
     auto console = std::make_shared<spdlog::sinks::stdout_sink_mt>();
-#if defined(GM_PLATFORM_WINDOWS)
+#if defined(UP_PLATFORM_WINDOWS)
     auto debug = std::make_shared<spdlog::sinks::msvc_sink_mt>();
     _logger.reset(new spdlog::logger("recon", {console, debug}));
 #else
@@ -35,9 +33,9 @@ gm::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSy
     _logger->set_pattern("%v");
 }
 
-gm::recon::ConverterApp::~ConverterApp() = default;
+up::recon::ConverterApp::~ConverterApp() = default;
 
-bool gm::recon::ConverterApp::run(span<char const*> args) {
+bool up::recon::ConverterApp::run(span<char const*> args) {
     if (!parseArguments(_config, args, _fileSystem, *_logger)) {
         _logger->error("Failed to parse arguments");
         return false;
@@ -135,8 +133,8 @@ bool gm::recon::ConverterApp::run(span<char const*> args) {
     return success;
 }
 
-void gm::recon::ConverterApp::registerConverters() {
-#if GM_GPU_ENABLE_D3D11
+void up::recon::ConverterApp::registerConverters() {
+#if UP_GPU_ENABLE_D3D11
     _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
                            new_box<HlslConverter>()});
 #else
@@ -153,7 +151,7 @@ void gm::recon::ConverterApp::registerConverters() {
                            new_box<ModelConverter>()});
 }
 
-bool gm::recon::ConverterApp::convertFiles(vector<string> const& files) {
+bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
     bool failed = false;
 
     for (auto const& path : files) {
@@ -224,7 +222,7 @@ bool gm::recon::ConverterApp::convertFiles(vector<string> const& files) {
     return !failed;
 }
 
-bool gm::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, bool dryRun) {
+bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, bool dryRun) {
     std::set<string> keepFiles(files.begin(), files.end());
     std::set<string> foundFiles;
     auto cb = [&foundFiles](fs::FileInfo const& info) {
@@ -252,13 +250,13 @@ bool gm::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
     return true;
 }
 
-bool gm::recon::ConverterApp::isUpToDate(AssetImportRecord const& record, gm::uint64 contentHash, Converter const& converter) const noexcept {
+bool up::recon::ConverterApp::isUpToDate(AssetImportRecord const& record, up::uint64 contentHash, Converter const& converter) const noexcept {
     return record.contentHash == contentHash &&
            string_view(record.importerName) == converter.name() &&
            record.importerRevision == converter.revision();
 }
 
-bool gm::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> records) {
+bool up::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> records) {
     for (auto const& rec : records) {
         auto osPath = fs::path::join({_config.sourceFolderPath.c_str(), rec.path.c_str()});
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
@@ -269,7 +267,7 @@ bool gm::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> recor
     return true;
 }
 
-auto gm::recon::ConverterApp::findConverter(string_view path) const -> Converter* {
+auto up::recon::ConverterApp::findConverter(string_view path) const -> Converter* {
     for (auto const& mapping : _converters) {
         if (mapping.predicate(path)) {
             return mapping.conveter.get();
@@ -279,7 +277,7 @@ auto gm::recon::ConverterApp::findConverter(string_view path) const -> Converter
     return nullptr;
 }
 
-auto gm::recon::ConverterApp::collectSourceFiles() -> vector<string> {
+auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
     if (!_fileSystem.directoryExists(_config.sourceFolderPath.c_str())) {
         _logger->error("`{}' does not exist or is not a directory", _config.sourceFolderPath);
         return {};

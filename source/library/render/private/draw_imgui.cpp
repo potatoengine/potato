@@ -1,25 +1,25 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "grimm/render/draw_imgui.h"
-#include "grimm/render/shader.h"
-#include "grimm/gpu/buffer.h"
-#include "grimm/gpu/command_list.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/pipeline_state.h"
-#include "grimm/gpu/texture.h"
-#include "grimm/gpu/resource_view.h"
-#include "grimm/gpu/sampler.h"
-#include "grimm/foundation/assertion.h"
+#include "potato/render/draw_imgui.h"
+#include "potato/render/shader.h"
+#include "potato/gpu/buffer.h"
+#include "potato/gpu/command_list.h"
+#include "potato/gpu/device.h"
+#include "potato/gpu/pipeline_state.h"
+#include "potato/gpu/texture.h"
+#include "potato/gpu/resource_view.h"
+#include "potato/gpu/sampler.h"
+#include "potato/foundation/assertion.h"
 #include <imgui.h>
 #include <SDL_events.h>
 #include <SDL_clipboard.h>
 
-static constexpr gm::uint32 bufferSize = 256 * 1024;
+static constexpr up::uint32 bufferSize = 256 * 1024;
 
-gm::DrawImgui::DrawImgui() = default;
-gm::DrawImgui::~DrawImgui() = default;
+up::DrawImgui::DrawImgui() = default;
+up::DrawImgui::~DrawImgui() = default;
 
-void gm::DrawImgui::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
+void up::DrawImgui::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
     _vertShader = std::move(vertShader);
     _pixelShader = std::move(pixelShader);
 
@@ -27,7 +27,7 @@ void gm::DrawImgui::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
     releaseResources();
 }
 
-bool gm::DrawImgui::createResources(gpu::Device& device) {
+bool up::DrawImgui::createResources(gpu::Device& device) {
     _ensureContext();
 
     gpu::InputLayoutElement layout[] = {
@@ -66,7 +66,7 @@ bool gm::DrawImgui::createResources(gpu::Device& device) {
     return true;
 }
 
-void gm::DrawImgui::releaseResources() {
+void up::DrawImgui::releaseResources() {
     _indexBuffer.reset();
     _vertexBuffer.reset();
     _constantBuffer.reset();
@@ -75,15 +75,15 @@ void gm::DrawImgui::releaseResources() {
     _sampler.reset();
 }
 
-void gm::DrawImgui::beginFrame() {
+void up::DrawImgui::beginFrame() {
     _ensureContext();
 
     ImGui::SetCurrentContext(_context.get());
     ImGui::NewFrame();
 }
 
-bool gm::DrawImgui::handleEvent(SDL_Event const& ev) {
-    GM_ASSERT(!_context.empty());
+bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
+    UP_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());
     ImGuiIO& io = ImGui::GetIO();
@@ -141,8 +141,8 @@ bool gm::DrawImgui::handleEvent(SDL_Event const& ev) {
     return false;
 }
 
-void gm::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& commandList) {
-    GM_ASSERT(!_context.empty());
+void up::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& commandList) {
+    UP_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());
     ImGui::Render();
@@ -153,10 +153,10 @@ void gm::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& commandList)
 
     ImDrawData& data = *ImGui::GetDrawData();
 
-    GM_ASSERT(data.Valid, "DrawImgui::draw() can only be called after Render() but before beginFrame()");
+    UP_ASSERT(data.Valid, "DrawImgui::draw() can only be called after Render() but before beginFrame()");
 
-    GM_ASSERT(data.TotalIdxCount * sizeof(ImDrawIdx) <= bufferSize, "Too many ImGui indices");
-    GM_ASSERT(data.TotalVtxCount * sizeof(ImDrawVert) <= bufferSize, "Too many ImGui verticies");
+    UP_ASSERT(data.TotalIdxCount * sizeof(ImDrawIdx) <= bufferSize, "Too many ImGui indices");
+    UP_ASSERT(data.TotalVtxCount * sizeof(ImDrawVert) <= bufferSize, "Too many ImGui verticies");
 
     commandList.setPipelineState(_pipelineState.get());
     commandList.setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
@@ -243,19 +243,19 @@ void gm::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& commandList)
     }
 }
 
-char const* gm::DrawImgui::_getClipboardTextContents(void* self) {
+char const* up::DrawImgui::_getClipboardTextContents(void* self) {
     auto imgui = static_cast<DrawImgui*>(self);
-    imgui->_clipboardTextData = gm::string(SDL_GetClipboardText());
+    imgui->_clipboardTextData = up::string(SDL_GetClipboardText());
     return imgui->_clipboardTextData.c_str();
 }
 
-void gm::DrawImgui::_setClipboardTextContents(void* self, char const* text) {
+void up::DrawImgui::_setClipboardTextContents(void* self, char const* text) {
     auto imgui = static_cast<DrawImgui*>(self);
     imgui->_clipboardTextData.reset();
     SDL_SetClipboardText(text);
 }
 
-void gm::DrawImgui::_ensureContext() {
+void up::DrawImgui::_ensureContext() {
     if (_context) {
         return;
     }
@@ -264,7 +264,7 @@ void gm::DrawImgui::_ensureContext() {
     ImGui::SetCurrentContext(_context.get());
     auto& io = ImGui::GetIO();
 
-    io.BackendPlatformName = "grimm::grui";
+    io.BackendPlatformName = "potato::grui";
     io.IniFilename = nullptr;
 
     io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
@@ -294,7 +294,7 @@ void gm::DrawImgui::_ensureContext() {
     io.ClipboardUserData = this;
 }
 
-void gm::DrawImgui::_freeContext(ImGuiContext* ctx) {
+void up::DrawImgui::_freeContext(ImGuiContext* ctx) {
     if (ctx != nullptr) {
         ImGui::DestroyContext(ctx);
     }

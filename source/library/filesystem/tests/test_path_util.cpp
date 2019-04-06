@@ -1,10 +1,10 @@
-#include "grimm/filesystem/path_util.h"
+#include "potato/filesystem/path_util.h"
 #include <doctest/doctest.h>
 #include <iostream>
 
-DOCTEST_TEST_SUITE("[grimm][filesystem] gm::fs::path") {
-    using namespace gm;
-    using namespace gm::fs::path;
+DOCTEST_TEST_SUITE("[potato][filesystem] up::fs::path") {
+    using namespace up;
+    using namespace up::fs::path;
 
     DOCTEST_TEST_CASE("extension") {
         DOCTEST_CHECK_EQ(extension(zstring_view("")), "");

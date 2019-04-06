@@ -2,17 +2,17 @@
 
 #pragma once
 
-#include "grimm/gpu/command_list.h"
-#include "grimm/gpu/device.h"
-#include "grimm/gpu/factory.h"
-#include "grimm/gpu/pipeline_state.h"
-#include "grimm/gpu/swap_chain.h"
-#include "grimm/gpu/resource_view.h"
-#include "grimm/gpu/buffer.h"
-#include "grimm/gpu/texture.h"
-#include "grimm/gpu/sampler.h"
+#include "potato/gpu/command_list.h"
+#include "potato/gpu/device.h"
+#include "potato/gpu/factory.h"
+#include "potato/gpu/pipeline_state.h"
+#include "potato/gpu/swap_chain.h"
+#include "potato/gpu/resource_view.h"
+#include "potato/gpu/buffer.h"
+#include "potato/gpu/texture.h"
+#include "potato/gpu/sampler.h"
 
-namespace gm::gpu::null {
+namespace up::gpu::null {
     class DeviceNull;
 
     class FactoryNull final : public Factory {
@@ -109,4 +109,4 @@ namespace gm::gpu::null {
 
     class SamplerNull final : public Sampler {
     };
-} // namespace gm::gpu::null
+} // namespace up::gpu::null

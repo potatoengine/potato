@@ -1,15 +1,15 @@
 // Copyright (C) 22015 Sean Middleditch, all rights reserverd.
 
-#include "grimm/foundation/callstack.h"
-#include "grimm/foundation/platform.h"
-#include "grimm/foundation/string.h"
-#include "grimm/foundation/numeric_util.h"
+#include "potato/foundation/callstack.h"
+#include "potato/foundation/platform.h"
+#include "potato/foundation/string.h"
+#include "potato/foundation/numeric_util.h"
 
 #include <cstring>
 #include <cstdlib>
 #include <execinfo.h>
 
-auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
+auto up::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
     void* buffer;
 
     uint max = addresses.size() - min<uint>(addresses.size(), skip);
@@ -21,7 +21,7 @@ auto gm::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintpt
     return addresses.first(count - skip);
 }
 
-auto gm::callstack::resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
+auto up::callstack::resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
 #if !defined(NDEBUG)
     uint max = addresses.size() < records.size() ? addresses.size() : records.size();
 
