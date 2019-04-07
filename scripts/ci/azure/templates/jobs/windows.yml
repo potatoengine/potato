@@ -17,10 +17,11 @@ jobs:
       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
       cmake --version
     displayName: Build Information
-  - template: ../steps/build-windows.yml
-    parameters:
-      build_shared: ${{parameters.build_shared}}
-      configuration: RelWithDebInfo
+# Takes too long on Azure (~3 mins)
+#  - template: ../steps/build-windows.yml
+#    parameters:
+#      build_shared: ${{parameters.build_shared}}
+#      configuration: RelWithDebInfo
   - template: ../steps/build-windows.yml
     parameters:
       build_shared: ${{parameters.build_shared}}
