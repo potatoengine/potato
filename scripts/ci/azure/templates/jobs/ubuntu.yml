@@ -1,0 +1,21 @@
+jobs:
+- job: Ubuntu
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - bash: |
+      set -xe
+    displayName: Installing Dependencies
+  - bash: |
+      set -xe
+      g++-7 --version
+      cmake --version
+    displayName: Build Information
+  - template: ../steps/build-posix.yml
+    parameters:
+      configuration: RelWithDebInfo
+      cxx_compiler: g++-7
+  - template: ../steps/build-posix.yml
+    parameters:
+      configuration: Debug
+      cxx_compiler: g++-7

@@ -15,106 +15,15 @@ pr:
     - master
 
 jobs:
-- job: Windows
-  pool:
-    vmImage: 'vs2017-win2016'
-  steps:
-  - bash: |
-      set -xe
-      curl -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
-      unzip SDL2-devel-2.0.9-VC.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
-      curl -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
-      unzip assimp-4.1.0.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
-    displayName: Installing Dependencies
-  - script: |
-      "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
-      cmake --version
-    displayName: Build Information
-  - bash: |
-      set -xe
-      mkdir -p build/shared
-      cd build/shared
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
-      cmake --build . --config Debug --parallel
-      ctest -R grimm -C Debug --verbose
-    displayName: Build (Debug Shared)
-  - bash: |
-      set -xe
-      mkdir -p build/static
-      cd build/static
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=OFF -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
-      cmake --build . --config RelWithDebInfo --parallel
-      ctest -R grimm -C RelWithDebInfo --verbose
-    displayName: Build (Release Static)
-  - bash: |
-      set -xe
-      mkdir -p build/static
-      cd build/static
-      cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=OFF -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
-      cmake --build . --config Debug --parallel
-      ctest -R grimm -C Debug --verbose
-    displayName: Build (Debug Static)
+- template: scripts/ci/azure/templates/jobs/windows.yml
+  parameters:
+    build_shared: Shared
 
-- job: Ubuntu
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-  - bash: |
-      set -xe
-    displayName: Installing Dependencies
-  - bash: |
-      set -xe
-      g++-7 --version
-      cmake --version
-    displayName: Build Information
-  - bash: |
-      set -xe
-      mkdir -p build/RelWithDebInfo
-      cd build/RelWithDebInfo
-      cmake -DCMAKE_CXX_COMPILER=g++-7 -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
-      cmake --build . --parallel
-      ctest -R grimm --verbose
-    displayName: Build (Release Static)
-  - bash: |
-      set -xe
-      mkdir -p build/Debug
-      cd build/Debug
-      cmake -DCMAKE_CXX_COMPILER=g++-7 -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=Debug ../..
-      cmake --build . --parallel
-      ctest -R grimm --verbose
-    displayName: Build (Debug Static)
+- template: scripts/ci/azure/templates/jobs/windows.yml
+  parameters:
+    build_shared: Static
 
-- job: MacOS
-  pool:
-    vmImage: 'macOS-10.13'
-  steps:
-  - bash: |
-      set -xe
-      sudo xcode-select -switch /Applications/Xcode_10.1.app
-      export HOMEBREW_NO_AUTO_UPDATE=1
-      brew install sdl2 assimp
-    displayName: Installing Dependencies
-  - bash: |
-      set -xe
-      xcode-select --print-path
-      clang++ --version
-      cmake --version
-      brew info llvm
-    displayName: Build Information
-  - bash: |
-      set -xe
-      mkdir -p build/RelWithDebInfo
-      cd build/RelWithDebInfo
-      cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
-      cmake --build . --parallel
-      ctest -R grimm --verbose
-    displayName: Build (Release Static)
-  - bash: |
-      set -xe
-      mkdir -p build/Debug
-      cd build/Debug
-      cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=Debug ../..
-      cmake --build . --parallel
-      ctest -R grimm --verbose
-    displayName: Build (Debug Static)
+- template: scripts/ci/azure/templates/jobs/ubuntu.yml
+
+- template: scripts/ci/azure/templates/jobs/macos.yml
 

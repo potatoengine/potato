@@ -1,0 +1,19 @@
+parameters:
+  configuration: RelWithDebInfo
+  cxx_compiler: g++-7
+
+steps:
+- bash: |
+    set -xe
+
+    build_dir="build/${{parameters.configuration}}-${{parameters.cxx_compiler}}"
+
+    mkdir -p "${build_dir}"
+    cd "${build_dir}"
+
+    cmake "-DCMAKE_CXX_COMPILER=${{parameters.cxx_compiler}}" -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{parameters.configuration}}" ../..
+
+    cmake --build . --parallel
+
+    ctest -R grimm --verbose
+  displayName: Build (${{parameters.configuration}} ${{parameters.cxx_compiler}})
