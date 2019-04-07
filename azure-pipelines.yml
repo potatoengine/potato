@@ -19,7 +19,7 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
-  - template: scripts/ci/azure/build-windows-steps.yml
+  - template: scripts/ci/azure/build-windows.yml
     parameters:
     - build_shared: true
 
@@ -27,7 +27,7 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
-  - template: scripts/ci/azure/build-windows-steps.yml
+  - template: scripts/ci/azure/build-windows.yml
     parameters:
     - build_shared: false
 
