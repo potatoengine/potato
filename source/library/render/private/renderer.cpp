@@ -175,10 +175,6 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
     }
 
     auto jsonRoot = nlohmann::json::parse(inFile);
-    if (!jsonRoot) {
-        return nullptr;
-    }
-
     inFile.close();
 
     rc<Shader> vertex;
