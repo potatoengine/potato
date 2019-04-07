@@ -34,7 +34,7 @@ bool up::recon::JsonConverter::convert(Context& ctx) {
     }
 
     nlohmann::json doc = nlohmann::json::parse(inFile, nullptr, false);
-    if (!doc) {
+    if (doc.is_discarded()) {
         ctx.logger().error("Failed to parse `{}': {}", sourceAbsolutePath, "unknown parse error");
         return false;
     }

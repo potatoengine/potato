@@ -76,7 +76,7 @@ bool up::HashCache::deserialize(fs::Stream& stream) {
 
     auto jsonRoot = nlohmann::json::parse(jsonText, nullptr, false);
 
-    if (!jsonRoot.is_array()) {
+    if (jsonRoot.is_discarded()) {
         return false;
     }
 
