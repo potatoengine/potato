@@ -18,43 +18,12 @@ jobs:
 - template: scripts/ci/azure/templates/jobs/windows.yml
   parameters:
     build_shared: Shared
+
 - template: scripts/ci/azure/templates/jobs/windows.yml
   parameters:
     build_shared: Static
 
 - template: scripts/ci/azure/templates/jobs/ubuntu.yml
 
-- job: MacOS
-  pool:
-    vmImage: 'macOS-10.13'
-  steps:
-  - bash: |
-      set -xe
-      sudo xcode-select -switch /Applications/Xcode_10.1.app
-      export HOMEBREW_NO_AUTO_UPDATE=1
-      brew install sdl2 assimp
-    displayName: Installing Dependencies
-  - bash: |
-      set -xe
-      xcode-select --print-path
-      clang++ --version
-      cmake --version
-      brew info llvm
-    displayName: Build Information
-  - bash: |
-      set -xe
-      mkdir -p build/RelWithDebInfo
-      cd build/RelWithDebInfo
-      cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
-      cmake --build . --parallel
-      ctest -R grimm --verbose
-    displayName: Build (Release Static)
-  - bash: |
-      set -xe
-      mkdir -p build/Debug
-      cd build/Debug
-      cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=Debug ../..
-      cmake --build . --parallel
-      ctest -R grimm --verbose
-    displayName: Build (Debug Static)
+- template: scripts/ci/azure/templates/jobs/macos.yml
 

@@ -1,0 +1,26 @@
+jobs:
+- job: MacOS
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+  - bash: |
+      set -xe
+      sudo xcode-select -switch /Applications/Xcode_10.1.app
+      export HOMEBREW_NO_AUTO_UPDATE=1
+      brew install sdl2 assimp
+    displayName: Installing Dependencies
+  - bash: |
+      set -xe
+      xcode-select --print-path
+      clang++ --version
+      cmake --version
+      brew info llvm
+    displayName: Build Information
+  - template: ../steps/build-posix.yml
+    parameters:
+      configuration: RelWithDebInfo
+      cxx_compiler: clang++
+  - template: ../steps/build-posix.yml
+    parameters:
+      configuration: Debug
+      cxx_compiler: clang++
