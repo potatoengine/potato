@@ -43,17 +43,17 @@ bool up::AssetLibrary::serialize(fs::Stream& stream) const {
 
         auto catName = assetCategoryName(record.category);
         
-        jsonRecord["id"] = record.assetId;
-        jsonRecord["path"] = record.path;
+        jsonRecord["id"] = static_cast<uint64>(record.assetId);
+        jsonRecord["path"] = std::string(record.path.data(), record.path.size());
         jsonRecord["contentHash"] = record.contentHash;
-        jsonRecord["category"] = catName;
-        jsonRecord["importerName"] = record.importerName;
+        jsonRecord["category"] = std::string(catName.data(), catName.size());
+        jsonRecord["importerName"] = std::string(record.importerName.data(), record.importerName.size());
         jsonRecord["importerRevision"] = record.importerRevision;
 
         nlohmann::json jsonOutputs;
         for (auto const& output : record.outputs) {
             nlohmann::json jsonOutput;
-            jsonOutput["path"] = output.path;
+            jsonOutput["path"] = std::string(output.path.data(), output.path.size());
             jsonOutput["hash"] = output.contentHash;
             jsonOutputs.push_back(std::move(jsonOutput));
         }
@@ -62,7 +62,7 @@ bool up::AssetLibrary::serialize(fs::Stream& stream) const {
         nlohmann::json jsonSourceDeps;
         for (auto const& dep : record.sourceDependencies) {
             nlohmann::json jsonDep;
-            jsonDep["path"] = dep.path;
+            jsonDep["path"] = std::string(dep.path.data(), dep.path.size());
             jsonDep["hash"] = dep.contentHash;
             jsonSourceDeps.push_back(std::move(jsonDep));
         }
@@ -101,7 +101,7 @@ bool up::AssetLibrary::deserialize(fs::Stream& stream) {
     for (auto const& record : records) {
         AssetImportRecord newRecord;
         newRecord.assetId = record["id"];
-        newRecord.path = record["path"];
+        newRecord.path = record["path"].get<string>();
         newRecord.contentHash = record["contentHash"];
         newRecord.category = assetCategoryFromName(record["category"].get<string>());
         newRecord.importerName = record["importerName"].get<string>();
