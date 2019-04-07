@@ -7,7 +7,6 @@
 #include "potato/foundation/box.h"
 #include "potato/foundation/out_ptr.h"
 #include <utility>
-#include <spdlog/spdlog.h>
 
 up::gpu::d3d11::SwapChainD3D11::SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain) : _swapChain(std::move(swapChain)) {}
 
@@ -29,7 +28,6 @@ auto up::gpu::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3
     com_ptr<IDXGISwapChain1> swapChain;
     HRESULT hr = factory->CreateSwapChainForHwnd(device, window, &desc, nullptr, nullptr, out_ptr(swapChain));
     if (swapChain == nullptr) {
-        SPDLOG_DEBUG("CreateSwapChain: %s", static_cast<int>(hr));
         return nullptr;
     }
 
