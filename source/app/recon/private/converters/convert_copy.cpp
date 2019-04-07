@@ -27,8 +27,9 @@ bool up::recon::CopyConverter::convert(Context& ctx) {
     // output has same name as input
     ctx.addOutput(ctx.sourceFilePath());
 
-    if (fileSys.copyFile(sourceAbsolutePath.c_str(), destAbsolutePath.c_str()) != fs::Result::Success) {
-        ctx.logger().error("Failed to copy `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
+    auto rs = fileSys.copyFile(sourceAbsolutePath.c_str(), destAbsolutePath.c_str());
+    if (rs != fs::Result::Success) {
+        ctx.logger().error("Failed to copy `{}' to `{}': {}", sourceAbsolutePath, destAbsolutePath, static_cast<uint64>(rs));
         return false;
     }
 

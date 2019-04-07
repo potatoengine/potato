@@ -56,7 +56,8 @@ bool up::HashCache::serialize(fs::Stream& stream) const {
 
     for (auto const& [key, value] : _hashes) {
         nlohmann::json jsonRecord;
-        
+
+        jsonRecord["name"] = std::string(value->osPath.data(), value->osPath.size());
         jsonRecord["hash"] = value->hash;
         jsonRecord["mtime"] = value->mtime;
         jsonRecord["size"] = value->size;
@@ -80,15 +81,15 @@ bool up::HashCache::deserialize(fs::Stream& stream) {
         return false;
     }
 
-    for (auto const& member : jsonRoot) {
+    for (auto& member : jsonRoot) {
         uint64 hash = member["hash"];        
         uint64 mtime = member["mtime"];
         uint64 size = member["size"];
 
-        string path(member["name"].get<string>());
+        auto path = member["name"].get<string>();
 
         auto rec = new_box<HashRecord>();
-        rec->osPath = string(path);
+        rec->osPath = std::move(path);
         rec->hash = hash;
         rec->mtime = mtime;
         rec->size = size;

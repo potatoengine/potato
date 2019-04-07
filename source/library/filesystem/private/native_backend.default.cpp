@@ -69,7 +69,7 @@ auto up::fs::NativeBackend::createDirectories(zstring_view path) -> Result {
 
 auto up::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
     std::error_code ec;
-    std::filesystem::copy_file(from.c_str(), to.c_str(), ec);
+    std::filesystem::copy_file(from.c_str(), to.c_str(), std::filesystem::copy_options::overwrite_existing, ec);
     return errorCodeToResult(ec);
 }
 

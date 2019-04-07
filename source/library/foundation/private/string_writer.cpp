@@ -37,7 +37,7 @@ void up::string_writer::reserve(size_type capacity) {
 }
 
 auto up::string_writer::acquire(size_type size) -> span<char> {
-    _grow(size);
+    _grow(_size + size);
     return {_ptr + _size, _capacity - 1 - _size};
 }
 
@@ -91,8 +91,8 @@ void up::string_writer::_grow(size_type requiredSize) {
     // >= to account for NUL byte
     if (requiredSize >= _capacity) {
         size_type newCapacity = _capacity * 2;
-        while (_size >= newCapacity) {
-            newCapacity *= 2;
+        if (newCapacity <= requiredSize) {
+            newCapacity = requiredSize + 1 /*NUL*/;
         }
 
         auto newBuffer = new value_type[newCapacity];
