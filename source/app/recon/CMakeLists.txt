@@ -19,6 +19,7 @@ if(TARGET assimp)
             potato::assetdb
             potato::image
             potato::filesystem
+            potato::logger
             stb
             assimp
         PRIVATE

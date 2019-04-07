@@ -6,10 +6,10 @@
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/stream_util.h"
 #include "potato/filesystem/json_util.h"
+#include "potato/logger/logger.h"
 #include <nlohmann/json.hpp>
-#include <iostream>
 
-bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem, spdlog::logger& logger) {
+bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem, Logger& logger) {
     if (args.empty()) {
         return false;
     }
@@ -88,7 +88,7 @@ bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
     return true;
 }
 
-bool up::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path, spdlog::logger& logger) {
+bool up::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path, Logger& logger) {
     auto stream = fileSystem.openRead(path, fs::FileOpenMode::Text);
     if (!stream) {
         logger.error("Failed to open `{}'", path.c_str());
@@ -104,7 +104,7 @@ bool up::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSys
     return parseConfigString(config, text, path, logger);
 }
 
-bool up::recon::parseConfigString(ConverterConfig& config, string_view json, zstring_view filename, spdlog::logger& logger) {
+bool up::recon::parseConfigString(ConverterConfig& config, string_view json, zstring_view filename, Logger& logger) {
 
     auto jsonRoot = nlohmann::json::parse(json.begin(), json.end(), nullptr, false);
     if (!jsonRoot) {

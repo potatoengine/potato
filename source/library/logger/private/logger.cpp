@@ -4,8 +4,12 @@
 #include "potato/foundation/std_iostream.h"
 #include <iostream>
 
-void up::DefaultLogger::logMessage(LogSeverity severity, string_view message, LogLocation location) noexcept {
+void up::DefaultLogger::log(LogSeverity severity, string_view message, LogLocation location) noexcept {
     std::ostream& os = severity == LogSeverity::Info ? std::cout : std::cerr;
 
-    os << location.file << '(' << location.line << ") [" << location.function << "] " << message << '\n';
+    if (location.file) {
+        os << location.file << '(' << location.line << ") [" << location.function << "] ";
+    }
+
+    os << message << '\n';
 }

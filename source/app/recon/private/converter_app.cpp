@@ -14,30 +14,14 @@
 #include "converters/convert_model.h"
 #include <set>
 #include <algorithm>
-#include <spdlog/spdlog.h>
-#include <spdlog/fmt/ostr.h>
-#include <spdlog/sinks/stdout_sinks.h>
 
-#if defined(UP_PLATFORM_WINDOWS)
-#    include <spdlog/sinks/msvc_sink.h>
-#endif
-
-up::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem) {
-    auto console = std::make_shared<spdlog::sinks::stdout_sink_mt>();
-#if defined(UP_PLATFORM_WINDOWS)
-    auto debug = std::make_shared<spdlog::sinks::msvc_sink_mt>();
-    _logger.reset(new spdlog::logger("recon", {console, debug}));
-#else
-    _logger.reset(new spdlog::logger("recon", console));
-#endif
-    _logger->set_pattern("%v");
-}
+up::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem), _logger("recon") {}
 
 up::recon::ConverterApp::~ConverterApp() = default;
 
 bool up::recon::ConverterApp::run(span<char const*> args) {
-    if (!parseArguments(_config, args, _fileSystem, *_logger)) {
-        _logger->error("Failed to parse arguments");
+    if (!parseArguments(_config, args, _fileSystem, _logger)) {
+        _logger.error("Failed to parse arguments");
         return false;
     }
 
@@ -48,12 +32,12 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
     if (_fileSystem.fileExists(libraryPath.c_str())) {
         auto libraryReadStream = _fileSystem.openRead(libraryPath.c_str(), fs::FileOpenMode::Text);
         if (!libraryReadStream) {
-            _logger->error("Failed to open asset library `{}'", libraryPath);
+            _logger.error("Failed to open asset library `{}'", libraryPath);
         }
         if (!_library.deserialize(libraryReadStream)) {
-            _logger->error("Failed to load asset library `{}'", libraryPath);
+            _logger.error("Failed to load asset library `{}'", libraryPath);
         }
-        _logger->info("Loaded asset library `{}'", libraryPath);
+        _logger.info("Loaded asset library `{}'", libraryPath);
     }
 
     auto hashCachePath = fs::path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
@@ -61,67 +45,67 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
     if (_fileSystem.fileExists(hashCachePath.c_str())) {
         auto hashesReadStream = _fileSystem.openRead(hashCachePath.c_str(), fs::FileOpenMode::Text);
         if (!hashesReadStream) {
-            _logger->error("Failed to open hash cache `{}'", hashCachePath);
+            _logger.error("Failed to open hash cache `{}'", hashCachePath);
         }
         if (!_hashes.deserialize(hashesReadStream)) {
-            _logger->error("Failed to load hash cache `{}'", hashCachePath);
+            _logger.error("Failed to load hash cache `{}'", hashCachePath);
         }
-        _logger->info("Loaded hash cache `{}'", hashCachePath);
+        _logger.info("Loaded hash cache `{}'", hashCachePath);
     }
 
     auto sources = collectSourceFiles();
 
     if (sources.empty()) {
-        _logger->error("No source files found");
+        _logger.error("No source files found");
         return false;
     }
 
     if (_config.sourceFolderPath.empty()) {
-        _logger->error("Source directory must be specified.");
+        _logger.error("Source directory must be specified.");
         return false;
     }
     if (_config.destinationFolderPath.empty()) {
-        _logger->error("Destination directory must be specified.");
+        _logger.error("Destination directory must be specified.");
         return false;
     }
     if (_config.cacheFolderPath.empty()) {
-        _logger->error("Cache directory must be specified.");
+        _logger.error("Cache directory must be specified.");
         return false;
     }
 
-    _logger->info("Source: `{}'", _config.sourceFolderPath);
-    _logger->info("Destination: `{}'", _config.destinationFolderPath);
-    _logger->info("Cache: `{}'", _config.cacheFolderPath);
+    _logger.info("Source: `{}'", _config.sourceFolderPath);
+    _logger.info("Destination: `{}'", _config.destinationFolderPath);
+    _logger.info("Cache: `{}'", _config.cacheFolderPath);
 
     if (!_fileSystem.directoryExists(_config.destinationFolderPath.c_str())) {
         if (_fileSystem.createDirectories(_config.destinationFolderPath.c_str()) != fs::Result::Success) {
-            _logger->error("Failed to create `{}'", _config.destinationFolderPath);
+            _logger.error("Failed to create `{}'", _config.destinationFolderPath);
             return false;
         }
     }
 
     if (!_fileSystem.directoryExists(_config.cacheFolderPath.c_str())) {
         if (_fileSystem.createDirectories(_config.cacheFolderPath.c_str()) != fs::Result::Success) {
-            _logger->error("Failed to create `{}'", _config.cacheFolderPath);
+            _logger.error("Failed to create `{}'", _config.cacheFolderPath);
             return false;
         }
     }
 
     bool success = convertFiles(sources);
     if (!success) {
-        _logger->error("Conversion failed");
+        _logger.error("Conversion failed");
     }
 
     auto hashesWriteStream = _fileSystem.openWrite(hashCachePath.c_str(), fs::FileOpenMode::Text);
     if (!_hashes.serialize(hashesWriteStream)) {
-        _logger->error("Failed to write hash cache `{}'", hashCachePath);
+        _logger.error("Failed to write hash cache `{}'", hashCachePath);
         return false;
     }
     hashesWriteStream.close();
 
     auto libraryWriteStream = _fileSystem.openWrite(libraryPath.c_str(), fs::FileOpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
-        _logger->error("Failed to write asset library `{}'", libraryPath);
+        _logger.error("Failed to write asset library `{}'", libraryPath);
         return false;
     }
     libraryWriteStream.close();
@@ -164,13 +148,13 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         Converter* converter = findConverter(string_view(path));
         if (converter == nullptr) {
             failed = true;
-            _logger->error("Converter not found for `{}'", path);
+            _logger.error("Converter not found for `{}'", path);
             continue;
         }
 
         bool upToDate = record != nullptr && isUpToDate(*record, contentHash, *converter) && isUpToDate(record->sourceDependencies);
         if (upToDate) {
-            _logger->info("Asset `{}' is up-to-date", path);
+            _logger.info("Asset `{}' is up-to-date", path);
             for (auto const& rec : record->outputs) {
                 _outputs.push_back(rec.path);
             }
@@ -178,12 +162,12 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         }
 
         auto name = converter->name();
-        _logger->info("Asset `{}' requires import ({} {})", path.c_str(), std::string_view(name.data(), name.size()), converter->revision());
+        _logger.info("Asset `{}' requires import ({} {})", path.c_str(), std::string_view(name.data(), name.size()), converter->revision());
 
-        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_logger);
+        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), _logger);
         if (!converter->convert(context)) {
             failed = true;
-            _logger->error("Failed conversion for `{}'", path);
+            _logger.error("Failed conversion for `{}'", path);
             continue;
         }
 
@@ -237,12 +221,12 @@ bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
     std::set_difference(foundFiles.begin(), foundFiles.end(), keepFiles.begin(), keepFiles.end(), std::back_inserter(deleteFiles));
 
     for (auto const& deletePath : deleteFiles) {
-        _logger->info("Stale output file `{}'", deletePath);
+        _logger.info("Stale output file `{}'", deletePath);
         if (!dryRun) {
             string osPath = fs::path::join({_config.destinationFolderPath.c_str(), deletePath.c_str()});
             auto rs = _fileSystem.remove(osPath.c_str());
             if (rs != fs::Result::Success) {
-                _logger->error("Failed to remove `{}'", osPath);
+                _logger.error("Failed to remove `{}'", osPath);
             }
         }
     }
@@ -279,7 +263,7 @@ auto up::recon::ConverterApp::findConverter(string_view path) const -> Converter
 
 auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
     if (!_fileSystem.directoryExists(_config.sourceFolderPath.c_str())) {
-        _logger->error("`{}' does not exist or is not a directory", _config.sourceFolderPath);
+        _logger.error("`{}' does not exist or is not a directory", _config.sourceFolderPath);
         return {};
     }
 
