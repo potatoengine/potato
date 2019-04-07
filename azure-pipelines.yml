@@ -22,34 +22,7 @@ jobs:
   parameters:
     build_shared: Static
 
-- job: Ubuntu
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-  - bash: |
-      set -xe
-    displayName: Installing Dependencies
-  - bash: |
-      set -xe
-      g++-7 --version
-      cmake --version
-    displayName: Build Information
-  - bash: |
-      set -xe
-      mkdir -p build/RelWithDebInfo
-      cd build/RelWithDebInfo
-      cmake -DCMAKE_CXX_COMPILER=g++-7 -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ../..
-      cmake --build . --parallel
-      ctest -R grimm --verbose
-    displayName: Build (Release Static)
-  - bash: |
-      set -xe
-      mkdir -p build/Debug
-      cd build/Debug
-      cmake -DCMAKE_CXX_COMPILER=g++-7 -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE:STRING=Debug ../..
-      cmake --build . --parallel
-      ctest -R grimm --verbose
-    displayName: Build (Debug Static)
+- template: scripts/ci/azure/templates/jobs/ubuntu.yml
 
 - job: MacOS
   pool:

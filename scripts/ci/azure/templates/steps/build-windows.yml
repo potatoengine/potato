@@ -8,7 +8,7 @@ steps:
 
     build_config='${{parameters.configuration}}'
     build_shared=$([ '${{parameters.build_shared}}' == 'Shared' ] && echo 'ON' || echo 'OFF')
-    build_dir="${build_config}-${{parameters.build_shared}}"
+    build_dir="build/${build_config}-${{parameters.build_shared}}"
 
     mkdir -p "${build_dir}"
     cd "${build_dir}"
