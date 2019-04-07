@@ -84,7 +84,7 @@ bool up::AssetLibrary::deserialize(fs::Stream& stream) {
 
     auto jsonRoot = nlohmann::json::parse(jsonText, nullptr, false);
 
-    if (!jsonRoot.is_object()) {
+    if (jsonRoot.is_discarded()) {
         return false;
     }
 
