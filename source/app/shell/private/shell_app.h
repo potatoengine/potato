@@ -50,5 +50,5 @@ private:
     box<Node> _root;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     DrawImgui _drawImgui;
-    DefaultLogger _logger;
+    Logger _logger;
 };

@@ -53,6 +53,6 @@ namespace up::recon {
         fs::FileSystem _fileSystem;
         AssetLibrary _library;
         HashCache _hashes;
-        DefaultLogger _logger;
+        Logger _logger;
     };
 } // namespace up::recon

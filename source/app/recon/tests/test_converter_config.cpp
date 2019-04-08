@@ -12,7 +12,7 @@ DOCTEST_TEST_SUITE("[potato][recon] ConverterConfig") {
         char const* args[] = {"/bin/test/", "-source", "ABC", "-dest", "DEF", "-cache", "GHI"};
         ConverterConfig config;
         fs::FileSystem fs;
-        DefaultLogger logger("test");
+        Logger logger("test");
 
         bool ok = parseArguments(config, args, fs, logger);
         DOCTEST_CHECK(ok);
@@ -25,7 +25,7 @@ DOCTEST_TEST_SUITE("[potato][recon] ConverterConfig") {
     DOCTEST_TEST_CASE("json") {
         string_view json = R"--({"sourceDir":"ABC","destDir":"DEF","cacheDir":"GHI"})--";
         ConverterConfig config;
-        DefaultLogger logger("test");
+        Logger logger("test");
 
         bool ok = parseConfigString(config, json, "test.json", logger);
         DOCTEST_CHECK(ok);

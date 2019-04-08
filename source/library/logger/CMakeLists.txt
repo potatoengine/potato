@@ -10,6 +10,7 @@ up_set_common_properties(logger)
 target_link_libraries(logger
     PUBLIC
         potato::foundation
+        potato::concurrency
     PRIVATE
         doctest
 )
