@@ -2,6 +2,7 @@ add_executable(test_potato_concurrency
     main.cpp
     test_concurrent_queue.cpp
     test_lock_free_queue.cpp
+    test_rwlock.cpp
     test_semaphore.cpp
     test_task_worker.cpp
     test_thread_util.cpp
