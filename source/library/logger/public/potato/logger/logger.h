@@ -53,10 +53,12 @@ namespace up {
         void error(string_view message) noexcept { _dispatch(LogSeverity::Error, message, {}); }
 
         void attach(rc<LogReceiver> receiver) noexcept {
+            concurrency::SpinlockGuard _(_receiversLock);
             _receivers.push_back(std::move(receiver));
         }
 
         void detach(LogReceiver* remove) noexcept {
+            concurrency::SpinlockGuard _(_receiversLock);
             for (size_t i = 0; i != _receivers.size(); ++i) {
                 if (_receivers[i].get() == remove) {
                     _receivers.erase(_receivers.begin() + i);
@@ -74,6 +76,7 @@ namespace up {
         }
 
         void _dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept {
+            concurrency::SpinlockGuard _(_receiversLock);
             for (auto& receiver : _receivers) {
                 receiver->log(severity, message, location);
             }
@@ -82,6 +85,7 @@ namespace up {
     private:
         string _name;
         LogSeverity _minimumSeverity = LogSeverity::Info;
+        concurrency::Spinlock _receiversLock;
         vector<rc<LogReceiver>> _receivers;
     };
 
