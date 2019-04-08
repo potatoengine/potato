@@ -10,7 +10,7 @@
 #include "potato/foundation/fixed_string_writer.h"
 #include "potato/foundation/vector.h"
 #include "potato/foundation/rc.h"
-#include "potato/concurrency/spinlock.h"
+#include "potato/concurrency/rwlock.h"
 #include "potato/concurrency/lock_guard.h"
 #include <utility>
 
@@ -54,12 +54,12 @@ namespace up {
         void error(string_view message) noexcept { _dispatch(LogSeverity::Error, message, {}); }
 
         void attach(rc<LogReceiver> receiver) noexcept {
-            concurrency::LockGuard _(_receiversLock);
+            concurrency::LockGuard _(_receiversLock.writer());
             _receivers.push_back(std::move(receiver));
         }
 
         void detach(LogReceiver* remove) noexcept {
-            concurrency::LockGuard _(_receiversLock);
+            concurrency::LockGuard _(_receiversLock.writer());
             for (size_t i = 0; i != _receivers.size(); ++i) {
                 if (_receivers[i].get() == remove) {
                     _receivers.erase(_receivers.begin() + i);
@@ -77,7 +77,7 @@ namespace up {
         }
 
         void _dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept {
-            concurrency::LockGuard _(_receiversLock);
+            concurrency::LockGuard _(_receiversLock.reader());
             for (auto& receiver : _receivers) {
                 receiver->log(severity, message, location);
             }
@@ -86,7 +86,7 @@ namespace up {
     private:
         string _name;
         LogSeverity _minimumSeverity = LogSeverity::Info;
-        concurrency::Spinlock _receiversLock;
+        concurrency::RWLock _receiversLock;
         vector<rc<LogReceiver>> _receivers;
     };
 
