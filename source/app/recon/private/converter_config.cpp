@@ -80,12 +80,25 @@ bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
         }
     }
 
-    if (argMode != ArgNone) {
-        std::cerr << "Value expected\n";
+    switch (argMode) {
+    case ArgNone:
+        return true;
+    case ArgSourceFolder:
+        logger.error("No value provided after `-source' argument");
+        return false;
+    case ArgDestinationFolder:
+        logger.error("No value provided after `-dest' argument");
+        return false;
+    case ArgCacheFolder:
+        logger.error("No value provided after `-cache' argument");
+        return false;
+    case ArgConfig:
+        logger.error("No value provided after `-config' argument");
+        return false;
+    default:
+        logger.error("No value provided");
         return false;
     }
-
-    return true;
 }
 
 bool up::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path, Logger& logger) {
