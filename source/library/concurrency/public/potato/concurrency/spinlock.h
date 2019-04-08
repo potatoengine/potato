@@ -9,27 +9,28 @@
 namespace up::concurrency {
     class Spinlock {
     public:
-        inline void lock();
-        inline [[nodiscard]] bool tryLock();
-        inline [[nodiscard]] bool isLocked() const;
-        inline void unlock();
+        inline void lock() noexcept;
+        inline [[nodiscard]] bool tryLock() noexcept;
+        inline [[nodiscard]] bool isLocked() const noexcept;
+        inline void unlock() noexcept;
 
     private:
         std::atomic<std::thread::id> _owner = std::thread::id();
     };
 
     class SpinlockGuard {
-        Spinlock& _lock;
-
     public:
-        SpinlockGuard(Spinlock& lock) : _lock(lock) { _lock.lock(); }
-        ~SpinlockGuard() { _lock.unlock(); }
+        SpinlockGuard(Spinlock& lock) noexcept  : _lock(lock) { _lock.lock(); }
+        ~SpinlockGuard() noexcept  { _lock.unlock(); }
 
         SpinlockGuard(SpinlockGuard const&) = delete;
         SpinlockGuard& operator=(SpinlockGuard const&) = delete;
+
+    private:
+        Spinlock& _lock;
     };
 
-    void Spinlock::lock() {
+    void Spinlock::lock() noexcept  {
         // try to acquire the lock
         // FIXME - exponential backoff should be added
         std::thread::id expected{};
@@ -39,18 +40,18 @@ namespace up::concurrency {
         }
     }
 
-    bool Spinlock::tryLock() {
+    bool Spinlock::tryLock() noexcept  {
         // try to acquire the lock
         std::thread::id expected{};
         auto const desired = std::this_thread::get_id();
         return _owner.compare_exchange_strong(expected, desired, std::memory_order_acquire);
     }
 
-    bool Spinlock::isLocked() const {
+    bool Spinlock::isLocked() const noexcept  {
         return _owner != std::thread::id();
     }
 
-    void Spinlock::unlock() {
+    void Spinlock::unlock() noexcept  {
         UP_ASSERT(_owner == std::this_thread::get_id());
 
         // release the lock
