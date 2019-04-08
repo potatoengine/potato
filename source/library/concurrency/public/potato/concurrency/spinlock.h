@@ -18,18 +18,6 @@ namespace up::concurrency {
         std::atomic<std::thread::id> _owner = std::thread::id();
     };
 
-    class SpinlockGuard {
-    public:
-        SpinlockGuard(Spinlock& lock) noexcept  : _lock(lock) { _lock.lock(); }
-        ~SpinlockGuard() noexcept  { _lock.unlock(); }
-
-        SpinlockGuard(SpinlockGuard const&) = delete;
-        SpinlockGuard& operator=(SpinlockGuard const&) = delete;
-
-    private:
-        Spinlock& _lock;
-    };
-
     void Spinlock::lock() noexcept  {
         // try to acquire the lock
         // FIXME - exponential backoff should be added
