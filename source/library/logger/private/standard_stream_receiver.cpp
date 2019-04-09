@@ -13,8 +13,8 @@ void up::StandardStreamReceiver::log(LogSeverity severity, string_view message, 
     concurrency::LockGuard _(_lock);
 
     if (location.file) {
-        os << location.file << '(' << location.line << ") [" << location.function << "] ";
+        os << location.file << '(' << location.line << "): <" << location.function << "> ";
     }
 
-    os << message << '\n';
+    os << '[' << toString(severity) << "] " << message << '\n';
 }

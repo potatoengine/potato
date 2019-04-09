@@ -2,15 +2,17 @@
 
 #include "potato/logger/logger.h"
 #include "potato/logger/standard_stream_receiver.h"
-#include <iostream>
+#if UP_PLATFORM_WINDOWS
+#   include "potato/logger/win32_debug_receiver.h"
+#endif
 
-static up::rc<up::LogReceiver> defaultReceiver() noexcept {
-    static auto receiver = up::new_shared<up::StandardStreamReceiver>();
-    return receiver;
-}
+up::Logger::Logger(string name, LogSeverity minimumSeverity) noexcept : _name(std::move(name)), _minimumSeverity(minimumSeverity) {
 
-up::Logger::Logger(string name, LogSeverity minimumSeverity) noexcept
-    : _name(std::move(name))
-    , _minimumSeverity(minimumSeverity) {
-    attach(defaultReceiver());
+    static auto standard = up::new_shared<up::StandardStreamReceiver>();
+    attach(standard);
+
+    #if UP_PLATFORM_WINDOWS
+    static auto debug = up::new_shared<up::Win32DebugReceiver>();
+    attach(debug);
+    #endif
 }

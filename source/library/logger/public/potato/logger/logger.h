@@ -41,6 +41,14 @@ namespace up {
         return static_cast<LogSeverityMask>(high | rest);
     }
 
+    constexpr string_view toString(LogSeverity severity) noexcept {
+        switch (severity) {
+        case LogSeverity::Info: return "info";
+        case LogSeverity::Error: return "error";
+        default: return "unknown";
+        }
+    }
+
     class LogReceiver : public shared<LogReceiver> {
     public:
         virtual ~LogReceiver() = default;

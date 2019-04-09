@@ -2,15 +2,17 @@
 
 #pragma once
 
+#include "potato/foundation/platform.h"
+
+#if !defined(UP_PLATFORM_WINDOWS)
+#    error "win32_debug_receiver.h can only be used on Windows platforms"
+#endif
+
 #include "potato/logger/logger.h"
-#include "potato/concurrency/spinlock.h"
 
 namespace up {
-    class StandardStreamReceiver : public LogReceiver {
+    class Win32DebugReceiver : public LogReceiver {
     public:
         virtual void log(LogSeverity severity, string_view message, LogLocation location = {}) noexcept override;
-
-    private:
-        concurrency::Spinlock _lock;
     };
 } // namespace up
