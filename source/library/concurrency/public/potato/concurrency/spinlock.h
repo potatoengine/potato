@@ -10,8 +10,8 @@ namespace up::concurrency {
     class Spinlock {
     public:
         inline void lock() noexcept;
-        inline [[nodiscard]] bool tryLock() noexcept;
-        inline [[nodiscard]] bool isLocked() const noexcept;
+        [[nodiscard]] inline bool tryLock() noexcept;
+        [[nodiscard]] inline bool isLocked() const noexcept;
         inline void unlock() noexcept;
 
     private:

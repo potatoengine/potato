@@ -12,7 +12,7 @@ namespace up::concurrency {
             explicit Reader(std::atomic<unsigned>& lock) noexcept : _lock(lock) {}
 
             inline void lock() noexcept;
-            inline bool tryLock() noexcept;
+            [[nodiscard]] inline bool tryLock() noexcept;
             inline void unlock() noexcept;
 
         private:
@@ -24,7 +24,7 @@ namespace up::concurrency {
             explicit Writer(std::atomic<unsigned>& lock) noexcept : _lock(lock) {}
 
             inline void lock() noexcept;
-            inline bool tryLock() noexcept;
+            [[nodiscard]] inline bool tryLock() noexcept;
             inline void unlock() noexcept;
 
         private:
