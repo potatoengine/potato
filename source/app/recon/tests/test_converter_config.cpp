@@ -1,8 +1,8 @@
 #include "potato/recon/converter_config.h"
 #include "potato/foundation/string_view.h"
 #include "potato/filesystem/filesystem.h"
+#include "potato/logger/logger.h"
 #include <doctest/doctest.h>
-#include <spdlog/spdlog.h>
 
 DOCTEST_TEST_SUITE("[potato][recon] ConverterConfig") {
     using namespace up;
@@ -12,8 +12,9 @@ DOCTEST_TEST_SUITE("[potato][recon] ConverterConfig") {
         char const* args[] = {"/bin/test/", "-source", "ABC", "-dest", "DEF", "-cache", "GHI"};
         ConverterConfig config;
         fs::FileSystem fs;
+        Logger logger("test");
 
-        bool ok = parseArguments(config, args, fs, *spdlog::default_logger_raw());
+        bool ok = parseArguments(config, args, fs, logger);
         DOCTEST_CHECK(ok);
 
         DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");
@@ -24,8 +25,9 @@ DOCTEST_TEST_SUITE("[potato][recon] ConverterConfig") {
     DOCTEST_TEST_CASE("json") {
         string_view json = R"--({"sourceDir":"ABC","destDir":"DEF","cacheDir":"GHI"})--";
         ConverterConfig config;
+        Logger logger("test");
 
-        bool ok = parseConfigString(config, json, "test.json", *spdlog::default_logger_raw());
+        bool ok = parseConfigString(config, json, "test.json", logger);
         DOCTEST_CHECK(ok);
 
         DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");

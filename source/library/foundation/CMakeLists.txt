@@ -10,7 +10,6 @@ up_set_common_properties(foundation)
 target_link_libraries(foundation
     PUBLIC
         formatxx
-        spdlog
     PRIVATE
         doctest
 )

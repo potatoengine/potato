@@ -14,6 +14,7 @@ if(WIN32)
         potato::filesystem
         potato::gpu
         potato::render
+        potato::logger
         glm
         SDL2
         SDL2main

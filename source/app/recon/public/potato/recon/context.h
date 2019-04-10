@@ -7,9 +7,8 @@
 #include "potato/foundation/vector.h"
 #include "potato/foundation/std_iostream.h"
 #include "potato/assetdb/asset_record.h"
+#include "potato/logger/logger.h"
 #include <string>
-#include <spdlog/logger.h>
-#include <spdlog/fmt/ostr.h>
 
 namespace up::recon {
     class Context {
@@ -17,7 +16,7 @@ namespace up::recon {
         Context(zstring_view sourceFilePath,
                 zstring_view sourceFolderPath,
                 zstring_view destinationFolderPath,
-                spdlog::logger& logger)
+                Logger& logger)
             : _sourceFilePath(sourceFilePath),
               _sourceFolderPath(sourceFolderPath),
               _destinationFolderPath(destinationFolderPath),
@@ -37,7 +36,7 @@ namespace up::recon {
         span<string const> sourceDependencies() const noexcept { return span{_sourceDependencies.data(), _sourceDependencies.size()}; }
         span<string const> outputs() const noexcept { return span{_outputs.data(), _outputs.size()}; }
 
-        spdlog::logger& logger() noexcept { return _logger; }
+        Logger& logger() noexcept { return _logger; }
 
     private:
         zstring_view _sourceFilePath;
@@ -47,6 +46,6 @@ namespace up::recon {
         vector<string> _sourceDependencies;
         vector<string> _outputs;
 
-        spdlog::logger& _logger;
+        Logger& _logger;
     };
 } // namespace up::recon

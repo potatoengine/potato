@@ -4,6 +4,7 @@
 #include "potato/foundation/unique_resource.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/render/draw_imgui.h"
+#include "potato/logger/logger.h"
 
 #include <SDL.h>
 
@@ -37,6 +38,8 @@ private:
     void onWindowSizeChanged();
     void onWindowClosed();
 
+    void _errorDialog(zstring_view message);
+
 private:
     bool _running = true;
     fs::FileSystem _fileSystem;
@@ -47,4 +50,5 @@ private:
     box<Node> _root;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     DrawImgui _drawImgui;
+    Logger _logger;
 };

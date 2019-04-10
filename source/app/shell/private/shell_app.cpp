@@ -37,7 +37,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-up::ShellApp::ShellApp() = default;
+up::ShellApp::ShellApp() : _logger("shell") {}
 
 up::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
@@ -63,7 +63,8 @@ int up::ShellApp::initialize() {
     SDL_VERSION(&wmInfo.version);
 
     if (!SDL_GetWindowWMInfo(_window.get(), &wmInfo)) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not get window info", _window.get());
+        _errorDialog("Could not get window info");
+        return 1;
     }
 
 #if UP_GPU_ENABLE_D3D11
@@ -78,7 +79,7 @@ int up::ShellApp::initialize() {
     }
 
     if (_device == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not find device", _window.get());
+        _errorDialog("Could not find device");
         return 1;
     }
 
@@ -88,7 +89,7 @@ int up::ShellApp::initialize() {
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
 #endif
     if (_swapChain == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Failed to create swap chain", _window.get());
+        _errorDialog("Failed to create swap chain");
         return 1;
     }
 
@@ -96,13 +97,13 @@ int up::ShellApp::initialize() {
 
     auto material = _renderer->loadMaterialSync("resources/materials/basic.json");
     if (material == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Failed to load basic material", _window.get());
+        _errorDialog("Failed to load basic material");
         return 1;
     }
 
     auto mesh = _renderer->loadMeshSync("resources/meshes/cube.model");
     if (mesh == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Failed to load cube mesh", _window.get());
+        _errorDialog("Failed to load cube mesh");
         return 1;
     }
 
@@ -113,7 +114,7 @@ int up::ShellApp::initialize() {
     auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
     auto imguiPixelShader = _renderer->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
     if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Failed to load imgui shaders", _window.get());
+        _errorDialog("Failed to load imgui shaders");
         return 1;
     }
 
@@ -286,4 +287,9 @@ void up::ShellApp::onWindowSizeChanged() {
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
     _camera->resetSwapChain(_swapChain);
+}
+
+void up::ShellApp::_errorDialog(zstring_view message) {
+    _logger.error("Fatal error: {}", message);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", message.c_str(), _window.get());
 }

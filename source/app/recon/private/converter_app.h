@@ -14,7 +14,7 @@
 #include "potato/recon/converter_config.h"
 #include "potato/assetdb/asset_library.h"
 #include "potato/assetdb/hash_cache.h"
-#include <spdlog/logger.h>
+#include "potato/logger/logger.h"
 
 namespace up::recon {
     class Converter;
@@ -53,6 +53,6 @@ namespace up::recon {
         fs::FileSystem _fileSystem;
         AssetLibrary _library;
         HashCache _hashes;
-        std::shared_ptr<spdlog::logger> _logger;
+        Logger _logger;
     };
 } // namespace up::recon
