@@ -40,8 +40,13 @@ namespace up {
     protected:
         template <typename... T>
         void _formatDispatch(LogSeverity severity, string_view format, T const&... args) {
+            if (!isEnabledFor(severity)) {
+                return;
+            }
+
             fixed_string_writer<1024> writer;
             format_into(writer, format, args...);
+
             _dispatch(severity, writer, {});
         }
 

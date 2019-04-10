@@ -37,6 +37,10 @@ void up::Logger::detach(LogReceiver* remove) noexcept {
 }
 
 void up::Logger::_dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept {
+    if (!isEnabledFor(severity)) {
+        return;
+    }
+
     concurrency::LockGuard _(_receiversLock.reader());
     for (auto& receiver : _receivers) {
         receiver->log(severity, message, location);
