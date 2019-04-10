@@ -20,10 +20,7 @@ namespace up {
     class Logger {
     public:
         UP_LOGGER_API Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
-
-        Logger(string name, rc<LogReceiver> receiver, LogSeverity minimumSeverity = LogSeverity::Info) noexcept : _name(std::move(name)), _minimumSeverity(minimumSeverity) {
-            attach(std::move(receiver));
-        }
+        UP_LOGGER_API Logger(string name, rc<LogReceiver> receiver, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
 
         constexpr bool isEnabledFor(LogSeverity severity) const noexcept {
             return severity >= _minimumSeverity;
@@ -37,20 +34,8 @@ namespace up {
         void error(string_view format, T const&... args) { _formatDispatch(LogSeverity::Error, format, args...); }
         void error(string_view message) noexcept { _dispatch(LogSeverity::Error, message, {}); }
 
-        void attach(rc<LogReceiver> receiver) noexcept {
-            concurrency::LockGuard _(_receiversLock.writer());
-            _receivers.push_back(std::move(receiver));
-        }
-
-        void detach(LogReceiver* remove) noexcept {
-            concurrency::LockGuard _(_receiversLock.writer());
-            for (size_t i = 0; i != _receivers.size(); ++i) {
-                if (_receivers[i].get() == remove) {
-                    _receivers.erase(_receivers.begin() + i);
-                    --i;
-                }
-            }
-        }
+        void UP_LOGGER_API attach(rc<LogReceiver> receiver) noexcept;
+        void UP_LOGGER_API detach(LogReceiver* remove) noexcept;
 
     protected:
         template <typename... T>
@@ -60,22 +45,12 @@ namespace up {
             _dispatch(severity, writer, {});
         }
 
-        void _dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept {
-            concurrency::LockGuard _(_receiversLock.reader());
-            for (auto& receiver : _receivers) {
-                receiver->log(severity, message, location);
-            }
-        }
+        void UP_LOGGER_API _dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept;
 
     private:
         string _name;
         LogSeverity _minimumSeverity = LogSeverity::Info;
         concurrency::RWLock _receiversLock;
         vector<rc<LogReceiver>> _receivers;
-    };
-
-    class DefaultLogReceiver final : public LogReceiver {
-    public:
-        void UP_LOGGER_API log(LogSeverity severity, string_view message, LogLocation location = {}) noexcept override;
     };
 } // namespace up
