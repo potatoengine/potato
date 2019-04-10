@@ -8,7 +8,7 @@
 namespace up {
     class StandardStreamReceiver : public LogReceiver {
     public:
-        virtual void log(LogSeverity severity, string_view message, LogLocation location = {}) noexcept override;
+        virtual void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept override;
 
     private:
         concurrency::Spinlock _lock;

@@ -13,6 +13,6 @@
 namespace up {
     class Win32DebugReceiver : public LogReceiver {
     public:
-        virtual void log(LogSeverity severity, string_view message, LogLocation location = {}) noexcept override;
+        virtual void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept override;
     };
 } // namespace up

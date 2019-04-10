@@ -43,6 +43,6 @@ void up::Logger::_dispatch(LogSeverity severity, string_view message, LogLocatio
 
     concurrency::LockGuard _(_receiversLock.reader());
     for (auto& receiver : _receivers) {
-        receiver->log(severity, message, location);
+        receiver->log(_name, severity, message, location);
     }
 }
