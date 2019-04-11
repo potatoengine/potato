@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "components": [
+    "Microsoft.VisualStudio.Component.CoreEditor",
+    "Microsoft.VisualStudio.Workload.CoreEditor",
+    "Component.Microsoft.VisualStudio.LiveShare",
+    "Microsoft.VisualStudio.Component.VC.CoreIde",
+    "Microsoft.VisualStudio.Component.Windows10SDK",
+    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+    "Microsoft.VisualStudio.Component.Graphics.Tools",
+    "Microsoft.VisualStudio.Component.VC.DiagnosticTools",
+    "Microsoft.VisualStudio.Component.Windows10SDK.17763",
+    "Microsoft.VisualStudio.Component.Debugger.JustInTime",
+    "Microsoft.VisualStudio.Component.VC.Redist.14.Latest",
+    "Microsoft.VisualStudio.Component.VC.CMake.Project",
+    "Component.MDD.Linux",
+    "Component.Linux.CMake"
+  ]
+}
