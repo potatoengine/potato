@@ -139,7 +139,7 @@ void up::ShellApp::run() {
     Camera camera;
     camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
 
-    box<CameraController> controller = new_box<ArcBallCameraController>();
+    box<CameraController> controller = new_box<ArcBallCameraController>(camera);
     glm::vec3 arcCenter = {0, 0, 0};
 
     float objRotateInput = 0;
@@ -164,10 +164,10 @@ void up::ShellApp::run() {
                 break;
             case SDL_KEYDOWN:
                 if (ev.key.keysym.scancode == SDL_SCANCODE_F) {
-                    controller = new_box<FlyCameraController>();
+                    controller = new_box<FlyCameraController>(camera);
                 }
                 if (ev.key.keysym.scancode == SDL_SCANCODE_B) {
-                    controller = new_box<ArcBallCameraController>();
+                    controller = new_box<ArcBallCameraController>(camera);
                 }
                 break;
             case SDL_MOUSEWHEEL:
@@ -233,6 +233,12 @@ void up::ShellApp::run() {
             ImGui::InputFloat3("Right", &right.x);
             ImGui::InputFloat3("Up", &up.x);
             camera.lookAt(pos, pos + view, up);
+            if (ImGui::Button("Fly")) {
+                controller = new_box<FlyCameraController>(camera);
+            }
+            else if (ImGui::Button("ArcBall")) {
+                controller = new_box<ArcBallCameraController>(camera);
+            }
         }
         ImGui::End();
 
