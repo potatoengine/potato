@@ -59,7 +59,7 @@ auto up::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> rc<Swap
     return SwapChainD3D11::createSwapChain(_factory.get(), _device.get(), nativeWindow);
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createCommandList(PipelineState* pipelineState) -> box<CommandList> {
+auto up::gpu::d3d11::DeviceD3D11::createCommandList(PipelineState* pipelineState) -> box<GpuCommandList> {
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
 }
 
@@ -224,7 +224,7 @@ auto up::gpu::d3d11::DeviceD3D11::createSampler() -> box<Sampler> {
     return new_box<SamplerD3D11>(std::move(sampler));
 }
 
-void up::gpu::d3d11::DeviceD3D11::execute(CommandList* commandList) {
+void up::gpu::d3d11::DeviceD3D11::execute(GpuCommandList* commandList) {
     UP_ASSERT(commandList != nullptr);
 
     auto deferred = static_cast<CommandListD3D11*>(commandList);

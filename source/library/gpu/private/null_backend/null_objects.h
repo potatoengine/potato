@@ -25,7 +25,7 @@ namespace up::gpu::null {
     class DeviceNull final : public Device {
     public:
         rc<SwapChain> createSwapChain(void* native_window) override;
-        box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
+        box<GpuCommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
         box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
@@ -36,7 +36,7 @@ namespace up::gpu::null {
         box<ResourceView> createShaderResourceView(GpuBuffer* resource) override;
         box<ResourceView> createShaderResourceView(Texture* texture) override;
 
-        void execute(CommandList* commands) override {}
+        void execute(GpuCommandList* commands) override {}
     };
 
     class ResourceViewNull final : public ResourceView {
@@ -60,7 +60,7 @@ namespace up::gpu::null {
     class PipelineStateNull final : public PipelineState {
     };
 
-    class CommandListNull final : public CommandList {
+    class CommandListNull final : public GpuCommandList {
     public:
         void setPipelineState(PipelineState* state) override {}
 

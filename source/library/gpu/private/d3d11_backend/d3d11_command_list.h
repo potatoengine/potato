@@ -8,7 +8,7 @@
 #include "potato/gpu/command_list.h"
 
 namespace up::gpu::d3d11 {
-    class CommandListD3D11 final : public CommandList {
+    class CommandListD3D11 final : public GpuCommandList {
     public:
         CommandListD3D11(com_ptr<ID3D11DeviceContext> context);
         virtual ~CommandListD3D11();

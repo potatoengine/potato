@@ -10,7 +10,7 @@
 
 namespace up::gpu {
     class GpuBuffer;
-    class CommandList;
+    class GpuCommandList;
     class Device;
     class PipelineState;
     class ResourceView;
@@ -40,7 +40,7 @@ namespace up {
         UP_RENDER_API bool handleEvent(SDL_Event const& ev);
 
         UP_RENDER_API void beginFrame();
-        UP_RENDER_API void endFrame(gpu::Device& device, gpu::CommandList& commandList);
+        UP_RENDER_API void endFrame(gpu::Device& device, gpu::GpuCommandList& commandList);
 
     private:
         void _ensureContext();

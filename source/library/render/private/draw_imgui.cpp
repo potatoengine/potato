@@ -141,7 +141,7 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
     return false;
 }
 
-void up::DrawImgui::endFrame(gpu::Device& device, gpu::CommandList& commandList) {
+void up::DrawImgui::endFrame(gpu::Device& device, gpu::GpuCommandList& commandList) {
     UP_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());

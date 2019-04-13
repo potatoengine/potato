@@ -14,7 +14,7 @@
 
 namespace up::gpu {
     class GpuBuffer;
-    class CommandList;
+    class GpuCommandList;
     class Device;
 } // namespace up::gpu
 
@@ -44,13 +44,13 @@ namespace up {
         UP_RENDER_API rc<Texture> loadTextureSync(zstring_view path);
 
         gpu::Device& device() const noexcept { return *_device; }
-        gpu::CommandList& commandList() const noexcept { return *_commandList; }
+        gpu::GpuCommandList& commandList() const noexcept { return *_commandList; }
 
     private:
         void _renderMain();
 
         rc<gpu::Device> _device;
-        box<gpu::CommandList> _commandList;
+        box<gpu::GpuCommandList> _commandList;
         box<gpu::GpuBuffer> _frameDataBuffer;
         rc<Material> _debugLineMaterial;
         box<gpu::GpuBuffer> _debugLineBuffer;

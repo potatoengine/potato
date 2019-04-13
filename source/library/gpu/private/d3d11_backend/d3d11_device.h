@@ -19,13 +19,13 @@ namespace up::gpu::d3d11 {
         static rc<Device> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
         rc<SwapChain> createSwapChain(void* native_window) override;
-        box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
+        box<GpuCommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
         box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
         box<Sampler> createSampler() override;
 
-        void execute(CommandList* commandList) override;
+        void execute(GpuCommandList* commandList) override;
 
         box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
         box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) override;

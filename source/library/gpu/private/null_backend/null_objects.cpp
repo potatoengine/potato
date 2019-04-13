@@ -20,7 +20,7 @@ auto up::gpu::null::DeviceNull::createSwapChain(void* native_window) -> rc<SwapC
     return new_shared<SwapChainNull>();
 }
 
-auto up::gpu::null::DeviceNull::createCommandList(PipelineState* pipelineState) -> box<CommandList> {
+auto up::gpu::null::DeviceNull::createCommandList(PipelineState* pipelineState) -> box<GpuCommandList> {
     return new_box<CommandListNull>();
 }
 

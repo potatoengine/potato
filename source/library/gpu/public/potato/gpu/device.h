@@ -9,7 +9,7 @@
 
 namespace up::gpu {
     class GpuBuffer;
-    class CommandList;
+    class GpuCommandList;
     class PipelineState;
     class ResourceView;
     class Sampler;
@@ -28,13 +28,13 @@ namespace up::gpu {
         Device& operator=(Device&&) = delete;
 
         virtual rc<SwapChain> createSwapChain(void* nativeWindow) = 0;
-        virtual box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) = 0;
+        virtual box<GpuCommandList> createCommandList(PipelineState* pipelineState = nullptr) = 0;
         virtual box<PipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
         virtual box<GpuBuffer> createBuffer(BufferType type, uint64 size) = 0;
         virtual box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) = 0;
         virtual box<Sampler> createSampler() = 0;
 
-        virtual void execute(CommandList* commandList) = 0;
+        virtual void execute(GpuCommandList* commandList) = 0;
 
         virtual box<ResourceView> createRenderTargetView(Texture* renderTarget) = 0;
         virtual box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) = 0;

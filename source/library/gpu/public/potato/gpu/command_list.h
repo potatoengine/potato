@@ -14,13 +14,13 @@ namespace up::gpu {
     class Sampler;
     class Texture;
 
-    class CommandList {
+    class GpuCommandList {
     public:
-        CommandList() = default;
-        virtual ~CommandList() = default;
+        GpuCommandList() = default;
+        virtual ~GpuCommandList() = default;
 
-        CommandList(CommandList&&) = delete;
-        CommandList& operator=(CommandList&&) = delete;
+        GpuCommandList(GpuCommandList&&) = delete;
+        GpuCommandList& operator=(GpuCommandList&&) = delete;
 
         virtual void setPipelineState(PipelineState* state) = 0;
 
