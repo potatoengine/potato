@@ -8,14 +8,14 @@
 #include "potato/foundation/unique_resource.h"
 #include "potato/foundation/string.h"
 
-namespace up::gpu {
+namespace up {
     class GpuBuffer;
     class GpuCommandList;
     class GpuDevice;
     class GpuPipelineState;
     class GpuResourceView;
     class GpuSampler;
-} // namespace up::gpu
+} // namespace up
 
 struct ImDrawData;
 struct ImDrawList;
@@ -34,13 +34,13 @@ namespace up {
 
         UP_RENDER_API void bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader);
 
-        UP_RENDER_API bool createResources(gpu::GpuDevice& device);
+        UP_RENDER_API bool createResources(GpuDevice& device);
         UP_RENDER_API void releaseResources();
 
         UP_RENDER_API bool handleEvent(SDL_Event const& ev);
 
         UP_RENDER_API void beginFrame();
-        UP_RENDER_API void endFrame(gpu::GpuDevice& device, gpu::GpuCommandList& commandList);
+        UP_RENDER_API void endFrame(GpuDevice& device, GpuCommandList& commandList);
 
     private:
         void _ensureContext();
@@ -49,12 +49,12 @@ namespace up {
         static void _setClipboardTextContents(void* self, char const* zstr);
 
         unique_resource<ImGuiContext*, &_freeContext, nullptr> _context;
-        box<gpu::GpuBuffer> _indexBuffer;
-        box<gpu::GpuBuffer> _vertexBuffer;
-        box<gpu::GpuBuffer> _constantBuffer;
-        box<gpu::GpuPipelineState> _pipelineState;
-        box<gpu::GpuResourceView> _srv;
-        box<gpu::GpuSampler> _sampler;
+        box<GpuBuffer> _indexBuffer;
+        box<GpuBuffer> _vertexBuffer;
+        box<GpuBuffer> _constantBuffer;
+        box<GpuPipelineState> _pipelineState;
+        box<GpuResourceView> _srv;
+        box<GpuSampler> _sampler;
         rc<Shader> _vertShader;
         rc<Shader> _pixelShader;
         string _clipboardTextData;

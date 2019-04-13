@@ -7,22 +7,22 @@
 #include "potato/foundation/rc.h"
 #include "potato/image/image.h"
 
-namespace up::gpu {
+namespace up {
     class GpuTexture;
 }
 
 namespace up {
     class RenderContext;
 
-    class GpuTexture : public shared<GpuTexture> {
+    class Texture : public shared<Texture> {
     public:
-        UP_RENDER_API explicit GpuTexture(Image image, box<gpu::GpuTexture> texture);
-        UP_RENDER_API ~GpuTexture();
+        UP_RENDER_API explicit Texture(Image image, box<GpuTexture> texture);
+        UP_RENDER_API ~Texture();
 
-        gpu::GpuTexture& texture() const noexcept { return *_texture; }
+        GpuTexture& texture() const noexcept { return *_texture; }
 
     private:
-        box<gpu::GpuTexture> _texture;
+        box<GpuTexture> _texture;
         Image _image;
     };
 } // namespace up

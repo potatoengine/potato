@@ -9,7 +9,7 @@
 
 #include "_export.h"
 
-namespace up::gpu {
+namespace up {
     class GpuDevice;
 
     class GpuDeviceFactory {
@@ -29,4 +29,4 @@ namespace up::gpu {
 #if defined(UP_GPU_ENABLE_D3D11)
     UP_GPU_API box<GpuDeviceFactory> CreateFactoryD3D11();
 #endif
-} // namespace up::gpu
+} // namespace up

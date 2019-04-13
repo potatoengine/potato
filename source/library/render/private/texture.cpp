@@ -4,6 +4,6 @@
 #include "potato/render/context.h"
 #include "potato/gpu/texture.h"
 
-up::GpuTexture::GpuTexture(Image image, box<gpu::GpuTexture> texture) : _texture(std::move(texture)), _image(std::move(image)) {}
+up::Texture::Texture(Image image, box<GpuTexture> texture) : _texture(std::move(texture)), _image(std::move(image)) {}
 
-up::GpuTexture::~GpuTexture() = default;
+up::Texture::~Texture() = default;

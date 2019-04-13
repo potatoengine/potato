@@ -15,7 +15,7 @@ up::Mesh::Mesh(vector<up::uint16> indices, vector<up::byte> data, view<MeshBuffe
 
 up::Mesh::~Mesh() = default;
 
-void up::Mesh::populateLayout(span<gpu::GpuInputLayoutElement>& inputLayout) const noexcept {
+void up::Mesh::populateLayout(span<GpuInputLayoutElement>& inputLayout) const noexcept {
     auto size = inputLayout.size() < _channels.size() ? inputLayout.size() : _channels.size();
 
     for (decltype(size) index = 0; index != size; ++index) {
@@ -30,17 +30,17 @@ void up::Mesh::populateLayout(span<gpu::GpuInputLayoutElement>& inputLayout) con
 
 void up::Mesh::updateVertexBuffers(RenderContext& ctx) {
     if (_ibo == nullptr) {
-        _ibo = ctx.device.createBuffer(gpu::GpuBufferType::Index, _indices.size() * sizeof(uint16));
+        _ibo = ctx.device.createBuffer(GpuBufferType::Index, _indices.size() * sizeof(uint16));
         ctx.commandList.update(_ibo.get(), span{_indices.data(), _indices.size()}.as_bytes(), 0);
     }
     if (_vbo == nullptr) {
-        _vbo = ctx.device.createBuffer(gpu::GpuBufferType::Vertex, _data.size());
+        _vbo = ctx.device.createBuffer(GpuBufferType::Vertex, _data.size());
         ctx.commandList.update(_vbo.get(), _data, 0);
     }
 }
 
 void up::Mesh::bindVertexBuffers(RenderContext& ctx) {
-    ctx.commandList.bindIndexBuffer(_ibo.get(), gpu::GpuIndexFormat::Unsigned16, 0);
+    ctx.commandList.bindIndexBuffer(_ibo.get(), GpuIndexFormat::Unsigned16, 0);
     for (int i = 0; i != _buffers.size(); ++i) {
         ctx.commandList.bindVertexBuffer(i, _vbo.get(), _buffers[i].stride, _buffers[i].offset);
     }

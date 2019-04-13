@@ -7,7 +7,7 @@
 #include "potato/foundation/box.h"
 #include "potato/gpu/texture.h"
 
-namespace up::gpu::d3d11 {
+namespace up::d3d11 {
     class TextureD3D11 final : public GpuTexture {
     public:
         explicit TextureD3D11(com_ptr<ID3D11Resource> texture);
@@ -26,4 +26,4 @@ namespace up::gpu::d3d11 {
     private:
         com_ptr<ID3D11Resource> _texture;
     };
-} // namespace up::gpu::d3d11
+} // namespace up::d3d11

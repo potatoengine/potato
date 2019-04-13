@@ -6,7 +6,7 @@
 #include "potato/gpu/com_ptr.h"
 #include "potato/gpu/buffer.h"
 
-namespace up::gpu::d3d11 {
+namespace up::d3d11 {
     class BufferD3D11 final : public GpuBuffer {
     public:
         BufferD3D11(GpuBufferType type, uint64 size, com_ptr<ID3D11Buffer> buffer);
@@ -22,4 +22,4 @@ namespace up::gpu::d3d11 {
         uint64 _size;
         com_ptr<ID3D11Buffer> _buffer;
     };
-} // namespace up::gpu::d3d11
+} // namespace up::d3d11

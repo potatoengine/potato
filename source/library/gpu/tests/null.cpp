@@ -7,7 +7,7 @@
 
 DOCTEST_TEST_SUITE("[potato][gpu] DeviceNull") {
     using namespace up;
-    using namespace up::gpu;
+    using namespace up;
 
     DOCTEST_TEST_CASE("factory enumerates") {
         auto factory = CreateFactoryNull();

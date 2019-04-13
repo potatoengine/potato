@@ -7,7 +7,7 @@
 #include "potato/foundation/int_types.h"
 #include "potato/foundation/rc.h"
 
-namespace up::gpu {
+namespace up {
     class GpuBuffer;
     class GpuCommandList;
     class GpuPipelineState;
@@ -41,4 +41,4 @@ namespace up::gpu {
         virtual box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
         virtual box<GpuResourceView> createShaderResourceView(GpuTexture* texture) = 0;
     };
-} // namespace up::gpu
+} // namespace up

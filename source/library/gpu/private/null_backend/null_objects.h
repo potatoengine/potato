@@ -12,7 +12,7 @@
 #include "potato/gpu/texture.h"
 #include "potato/gpu/sampler.h"
 
-namespace up::gpu::null {
+namespace up::null {
     class DeviceNull;
 
     class FactoryNull final : public GpuDeviceFactory {
@@ -109,4 +109,4 @@ namespace up::gpu::null {
 
     class SamplerNull final : public GpuSampler {
     };
-} // namespace up::gpu::null
+} // namespace up::null

@@ -7,7 +7,7 @@
 #include "potato/foundation/box.h"
 #include "potato/gpu/swap_chain.h"
 
-namespace up::gpu::d3d11 {
+namespace up::d3d11 {
     class SwapChainD3D11 : public GpuSwapChain {
     public:
         SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain);
@@ -27,4 +27,4 @@ namespace up::gpu::d3d11 {
         com_ptr<IDXGISwapChain1> _swapChain;
         int _bufferIndex = 0;
     };
-} // namespace up::gpu::d3d11
+} // namespace up::d3d11

@@ -7,7 +7,7 @@
 #include "potato/foundation/box.h"
 #include "potato/gpu/resource_view.h"
 
-namespace up::gpu::d3d11 {
+namespace up::d3d11 {
     class ResourceViewD3D11 final : public GpuResourceView {
     public:
         explicit ResourceViewD3D11(GpuViewType type, com_ptr<ID3D11View> view);
@@ -23,4 +23,4 @@ namespace up::gpu::d3d11 {
         GpuViewType _type;
         com_ptr<ID3D11View> _view;
     };
-} // namespace up::gpu::d3d11
+} // namespace up::d3d11

@@ -12,22 +12,22 @@
 #include <thread>
 #include <atomic>
 
-namespace up::gpu {
+namespace up {
     class GpuBuffer;
     class GpuCommandList;
     class GpuDevice;
-} // namespace up::gpu
+} // namespace up
 
 namespace up {
     class RenderContext;
     class Material;
     class Mesh;
     class Shader;
-    class GpuTexture;
+    class Texture;
 
     class Renderer {
     public:
-        UP_RENDER_API explicit Renderer(FileSystem fileSystem, rc<gpu::GpuDevice> device);
+        UP_RENDER_API explicit Renderer(FileSystem fileSystem, rc<GpuDevice> device);
         virtual ~Renderer();
 
         Renderer(Renderer const&) = delete;
@@ -41,19 +41,19 @@ namespace up {
         UP_RENDER_API rc<Mesh> loadMeshSync(zstring_view path);
         UP_RENDER_API rc<Material> loadMaterialSync(zstring_view path);
         UP_RENDER_API rc<Shader> loadShaderSync(zstring_view path);
-        UP_RENDER_API rc<GpuTexture> loadTextureSync(zstring_view path);
+        UP_RENDER_API rc<Texture> loadTextureSync(zstring_view path);
 
-        gpu::GpuDevice& device() const noexcept { return *_device; }
-        gpu::GpuCommandList& commandList() const noexcept { return *_commandList; }
+        GpuDevice& device() const noexcept { return *_device; }
+        GpuCommandList& commandList() const noexcept { return *_commandList; }
 
     private:
         void _renderMain();
 
-        rc<gpu::GpuDevice> _device;
-        box<gpu::GpuCommandList> _commandList;
-        box<gpu::GpuBuffer> _frameDataBuffer;
+        rc<GpuDevice> _device;
+        box<GpuCommandList> _commandList;
+        box<GpuBuffer> _frameDataBuffer;
         rc<Material> _debugLineMaterial;
-        box<gpu::GpuBuffer> _debugLineBuffer;
+        box<GpuBuffer> _debugLineBuffer;
         FileSystem _fileSystem;
         std::thread _renderThread;
         ConcurrentQueue<RenderTask> _taskQueue;

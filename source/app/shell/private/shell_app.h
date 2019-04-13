@@ -15,10 +15,10 @@ namespace up {
     class Node;
 } // namespace up
 
-namespace up::gpu {
+namespace up {
     class GpuDevice;
     class GpuSwapChain;
-} // namespace up::gpu
+} // namespace up
 
 class up::ShellApp {
 public:
@@ -43,8 +43,8 @@ private:
 private:
     bool _running = true;
     FileSystem _fileSystem;
-    rc<gpu::GpuDevice> _device;
-    rc<gpu::GpuSwapChain> _swapChain;
+    rc<GpuDevice> _device;
+    rc<GpuSwapChain> _swapChain;
     box<Renderer> _renderer;
     box<RenderCamera> _camera;
     box<Node> _root;

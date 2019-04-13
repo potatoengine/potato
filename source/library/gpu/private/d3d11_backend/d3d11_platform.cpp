@@ -3,7 +3,7 @@
 #include "d3d11_platform.h"
 #include "potato/foundation/assertion.h"
 
-auto up::gpu::d3d11::toNative(GpuShaderSemantic semantic) noexcept -> zstring_view {
+auto up::d3d11::toNative(GpuShaderSemantic semantic) noexcept -> zstring_view {
     switch (semantic) {
     case GpuShaderSemantic::Position: return "POSITION";
     case GpuShaderSemantic::Color: return "COLOR";
@@ -12,7 +12,7 @@ auto up::gpu::d3d11::toNative(GpuShaderSemantic semantic) noexcept -> zstring_vi
     }
 }
 
-auto up::gpu::d3d11::toNative(GpuFormat format) noexcept -> DXGI_FORMAT {
+auto up::d3d11::toNative(GpuFormat format) noexcept -> DXGI_FORMAT {
     switch (format) {
     case GpuFormat::R32G32B32A32Float: return DXGI_FORMAT_R32G32B32A32_FLOAT;
     case GpuFormat::R32G32B32Float: return DXGI_FORMAT_R32G32B32_FLOAT;
@@ -23,7 +23,7 @@ auto up::gpu::d3d11::toNative(GpuFormat format) noexcept -> DXGI_FORMAT {
     }
 }
 
-auto up::gpu::d3d11::fromNative(DXGI_FORMAT format) noexcept -> GpuFormat {
+auto up::d3d11::fromNative(DXGI_FORMAT format) noexcept -> GpuFormat {
     switch (format) {
     case DXGI_FORMAT_R32G32B32A32_FLOAT: return GpuFormat::R32G32B32A32Float;
     case DXGI_FORMAT_R32G32B32_FLOAT: return GpuFormat::R32G32B32Float;
@@ -34,7 +34,7 @@ auto up::gpu::d3d11::fromNative(DXGI_FORMAT format) noexcept -> GpuFormat {
     }
 }
 
-auto up::gpu::d3d11::toByteSize(GpuFormat format) noexcept -> up::uint32 {
+auto up::d3d11::toByteSize(GpuFormat format) noexcept -> up::uint32 {
     switch (format) {
     case GpuFormat::R32G32B32A32Float:
         return 16;
@@ -49,7 +49,7 @@ auto up::gpu::d3d11::toByteSize(GpuFormat format) noexcept -> up::uint32 {
     }
 }
 
-auto up::gpu::d3d11::toNative(GpuIndexFormat type) noexcept -> DXGI_FORMAT {
+auto up::d3d11::toNative(GpuIndexFormat type) noexcept -> DXGI_FORMAT {
     switch (type) {
     case GpuIndexFormat::Unsigned16: return DXGI_FORMAT_R16_UINT;
     case GpuIndexFormat::Unsigned32: return DXGI_FORMAT_R32_UINT;

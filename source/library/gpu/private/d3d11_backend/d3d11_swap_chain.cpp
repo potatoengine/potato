@@ -8,11 +8,11 @@
 #include "potato/foundation/out_ptr.h"
 #include <utility>
 
-up::gpu::d3d11::SwapChainD3D11::SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain) : _swapChain(std::move(swapChain)) {}
+up::d3d11::SwapChainD3D11::SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain) : _swapChain(std::move(swapChain)) {}
 
-up::gpu::d3d11::SwapChainD3D11::~SwapChainD3D11() = default;
+up::d3d11::SwapChainD3D11::~SwapChainD3D11() = default;
 
-auto up::gpu::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow) -> rc<GpuSwapChain> {
+auto up::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow) -> rc<GpuSwapChain> {
     DXGI_SWAP_CHAIN_DESC1 desc = {0};
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     desc.SampleDesc.Count = 1;
@@ -36,16 +36,16 @@ auto up::gpu::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3
     return new_shared<SwapChainD3D11>(std::move(swapChain));
 }
 
-void up::gpu::d3d11::SwapChainD3D11::present() {
+void up::d3d11::SwapChainD3D11::present() {
     _swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
     _bufferIndex = (_bufferIndex + 1) % 2;
 }
 
-void up::gpu::d3d11::SwapChainD3D11::resizeBuffers(int width, int height) {
+void up::d3d11::SwapChainD3D11::resizeBuffers(int width, int height) {
     _swapChain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 }
 
-auto up::gpu::d3d11::SwapChainD3D11::getBuffer(int index) -> box<GpuTexture> {
+auto up::d3d11::SwapChainD3D11::getBuffer(int index) -> box<GpuTexture> {
     com_ptr<ID3D11Resource> buffer;
     _swapChain->GetBuffer(index, __uuidof(ID3D11Resource), out_ptr(buffer));
     if (buffer == nullptr) {
@@ -54,6 +54,6 @@ auto up::gpu::d3d11::SwapChainD3D11::getBuffer(int index) -> box<GpuTexture> {
     return new_box<TextureD3D11>(std::move(buffer));
 }
 
-int up::gpu::d3d11::SwapChainD3D11::getCurrentBufferIndex() {
+int up::d3d11::SwapChainD3D11::getCurrentBufferIndex() {
     return _bufferIndex;
 }

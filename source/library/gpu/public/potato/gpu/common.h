@@ -5,7 +5,7 @@
 #include "potato/foundation/span.h"
 #include "potato/foundation/int_types.h"
 
-namespace up::gpu {
+namespace up {
     enum class GpuFormat {
         Unknown,
         R32G32B32A32Float,
@@ -92,4 +92,4 @@ namespace up::gpu {
         span<GpuInputLayoutElement const> inputLayout;
     };
 
-} // namespace up::gpu
+} // namespace up

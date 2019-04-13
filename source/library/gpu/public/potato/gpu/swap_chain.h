@@ -5,7 +5,7 @@
 #include "potato/foundation/box.h"
 #include "potato/foundation/rc.h"
 
-namespace up::gpu {
+namespace up {
     class GpuTexture;
 
     class GpuSwapChain : public shared<GpuSwapChain> {
@@ -21,4 +21,4 @@ namespace up::gpu {
         virtual box<GpuTexture> getBuffer(int index) = 0;
         virtual int getCurrentBufferIndex() = 0;
     };
-} // namespace up::gpu
+} // namespace up

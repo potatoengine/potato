@@ -4,7 +4,7 @@
 
 #include "common.h"
 
-namespace up::gpu {
+namespace up {
     class GpuResourceView {
     public:
         GpuResourceView() = default;
@@ -15,4 +15,4 @@ namespace up::gpu {
 
         virtual GpuViewType type() const = 0;
     };
-} // namespace up::gpu
+} // namespace up

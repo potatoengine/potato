@@ -7,7 +7,7 @@
 #include "potato/foundation/box.h"
 #include "potato/gpu/pipeline_state.h"
 
-namespace up::gpu::d3d11 {
+namespace up::d3d11 {
     struct PipelineStateParamsD3D11 {
         com_ptr<ID3D11RasterizerState> rasterState;
         com_ptr<ID3D11DepthStencilState> depthStencilState;
@@ -31,4 +31,4 @@ namespace up::gpu::d3d11 {
 
         PipelineStateParamsD3D11 _params;
     };
-} // namespace up::gpu::d3d11
+} // namespace up::d3d11

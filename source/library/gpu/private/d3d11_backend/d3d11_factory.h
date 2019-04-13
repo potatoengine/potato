@@ -6,7 +6,7 @@
 #include "potato/gpu/com_ptr.h"
 #include "potato/gpu/factory.h"
 
-namespace up::gpu::d3d11 {
+namespace up::d3d11 {
     class FactoryD3D11 final : public GpuDeviceFactory {
     public:
         FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory);
@@ -22,4 +22,4 @@ namespace up::gpu::d3d11 {
     private:
         com_ptr<IDXGIFactory2> _dxgiFactory;
     };
-} // namespace up::gpu::d3d11
+} // namespace up::d3d11

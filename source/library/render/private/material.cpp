@@ -10,18 +10,18 @@
 #include "potato/gpu/device.h"
 #include "potato/gpu/sampler.h"
 
-up::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<GpuTexture>> textures) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)), _textures(std::move(textures)), _srvs(_textures.size()), _samplers(_textures.size()) {}
+up::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)), _textures(std::move(textures)), _srvs(_textures.size()), _samplers(_textures.size()) {}
 
 up::Material::~Material() = default;
 
 void up::Material::bindMaterialToRender(RenderContext& ctx) {
     if (_state == nullptr) {
-        gpu::GpuPipelineStateDesc pipelineDesc;
+        GpuPipelineStateDesc pipelineDesc;
 
-        gpu::GpuInputLayoutElement layout[] = {
-            {gpu::GpuFormat::R32G32B32Float, gpu::GpuShaderSemantic::Position, 0, 0},
-            {gpu::GpuFormat::R32G32B32Float, gpu::GpuShaderSemantic::Color, 0, 0},
-            {gpu::GpuFormat::R32G32Float, gpu::GpuShaderSemantic::TexCoord, 0, 0},
+        GpuInputLayoutElement layout[] = {
+            {GpuFormat::R32G32B32Float, GpuShaderSemantic::Position, 0, 0},
+            {GpuFormat::R32G32B32Float, GpuShaderSemantic::Color, 0, 0},
+            {GpuFormat::R32G32Float, GpuShaderSemantic::TexCoord, 0, 0},
         };
 
         pipelineDesc.enableDepthTest = true;
@@ -42,7 +42,7 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
 
     int texIndex = 0;
     for (auto const& srv : _srvs) {
-        ctx.commandList.bindSampler(texIndex, _samplers[texIndex].get(), gpu::GpuShaderStage::Pixel);
-        ctx.commandList.bindShaderResource(texIndex++, srv.get(), gpu::GpuShaderStage::Pixel);
+        ctx.commandList.bindSampler(texIndex, _samplers[texIndex].get(), GpuShaderStage::Pixel);
+        ctx.commandList.bindShaderResource(texIndex++, srv.get(), GpuShaderStage::Pixel);
     }
 }

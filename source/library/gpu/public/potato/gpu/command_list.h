@@ -7,7 +7,7 @@
 #include "potato/foundation/int_types.h"
 #include <glm/vec4.hpp>
 
-namespace up::gpu {
+namespace up {
     class GpuBuffer;
     class GpuResourceView;
     class GpuPipelineState;
@@ -48,4 +48,4 @@ namespace up::gpu {
         virtual void unmap(GpuBuffer* resource, span<byte const> data) = 0;
         virtual void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) = 0;
     };
-} // namespace up::gpu
+} // namespace up

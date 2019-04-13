@@ -14,7 +14,7 @@
 #include "potato/foundation/out_ptr.h"
 #include <utility>
 
-up::gpu::d3d11::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context)
+up::d3d11::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context)
     : _factory(std::move(factory)), _adaptor(std::move(adapter)), _device(std::move(device)), _context(std::move(context)) {
     UP_ASSERT(_factory != nullptr);
     UP_ASSERT(_adaptor != nullptr);
@@ -22,7 +22,7 @@ up::gpu::d3d11::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr
     UP_ASSERT(_context != nullptr);
 }
 
-up::gpu::d3d11::DeviceD3D11::~DeviceD3D11() {
+up::d3d11::DeviceD3D11::~DeviceD3D11() {
     _context.reset();
 
     com_ptr<ID3D11Debug> debug;
@@ -37,7 +37,7 @@ up::gpu::d3d11::DeviceD3D11::~DeviceD3D11() {
     }
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> rc<GpuDevice> {
+auto up::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> rc<GpuDevice> {
     UP_ASSERT(factory != nullptr);
     UP_ASSERT(adapter != nullptr);
 
@@ -53,17 +53,17 @@ auto up::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, c
     return new_shared<DeviceD3D11>(std::move(factory), std::move(adapter), std::move(device), std::move(context));
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> rc<GpuSwapChain> {
+auto up::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> rc<GpuSwapChain> {
     UP_ASSERT(nativeWindow != nullptr);
 
     return SwapChainD3D11::createSwapChain(_factory.get(), _device.get(), nativeWindow);
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
+auto up::d3d11::DeviceD3D11::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createRenderTargetView(GpuTexture* renderTarget) -> box<GpuResourceView> {
+auto up::d3d11::DeviceD3D11::createRenderTargetView(GpuTexture* renderTarget) -> box<GpuResourceView> {
     UP_ASSERT(renderTarget != nullptr);
 
     auto d3d11Resource = static_cast<TextureD3D11*>(renderTarget);
@@ -81,7 +81,7 @@ auto up::gpu::d3d11::DeviceD3D11::createRenderTargetView(GpuTexture* renderTarge
     return new_box<ResourceViewD3D11>(GpuViewType::RTV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createDepthStencilView(GpuTexture* depthStencilBuffer) -> box<GpuResourceView> {
+auto up::d3d11::DeviceD3D11::createDepthStencilView(GpuTexture* depthStencilBuffer) -> box<GpuResourceView> {
     UP_ASSERT(depthStencilBuffer != nullptr);
 
     auto d3d11Resource = static_cast<TextureD3D11*>(depthStencilBuffer);
@@ -99,7 +99,7 @@ auto up::gpu::d3d11::DeviceD3D11::createDepthStencilView(GpuTexture* depthStenci
     return new_box<ResourceViewD3D11>(GpuViewType::DSV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
+auto up::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
     UP_ASSERT(resource != nullptr);
 
     auto buffer = static_cast<BufferD3D11*>(resource);
@@ -119,7 +119,7 @@ auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) 
     return new_box<ResourceViewD3D11>(GpuViewType::SRV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuTexture* texture) -> box<GpuResourceView> {
+auto up::d3d11::DeviceD3D11::createShaderResourceView(GpuTexture* texture) -> box<GpuResourceView> {
     UP_ASSERT(texture != nullptr);
 
     auto d3dTexture = static_cast<TextureD3D11*>(texture);
@@ -143,11 +143,11 @@ auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuTexture* texture) 
     return new_box<ResourceViewD3D11>(GpuViewType::SRV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createPipelineState(GpuPipelineStateDesc const& desc) -> box<GpuPipelineState> {
+auto up::d3d11::DeviceD3D11::createPipelineState(GpuPipelineStateDesc const& desc) -> box<GpuPipelineState> {
     return PipelineStateD3D11::createGraphicsPipelineState(desc, _device.get());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createBuffer(GpuBufferType type, up::uint64 size) -> box<GpuBuffer> {
+auto up::d3d11::DeviceD3D11::createBuffer(GpuBufferType type, up::uint64 size) -> box<GpuBuffer> {
     D3D11_BUFFER_DESC desc = {};
     desc.Usage = D3D11_USAGE_DYNAMIC;
     desc.ByteWidth = static_cast<UINT>(size);
@@ -168,7 +168,7 @@ auto up::gpu::d3d11::DeviceD3D11::createBuffer(GpuBufferType type, up::uint64 si
     return new_box<BufferD3D11>(type, size, std::move(buffer));
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createTexture2D(GpuTextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
+auto up::d3d11::DeviceD3D11::createTexture2D(GpuTextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
     auto bytesPerPixel = toByteSize(desc.format);
 
     UP_ASSERT(data.empty() || data.size() == desc.width * desc.height * bytesPerPixel);
@@ -204,7 +204,7 @@ auto up::gpu::d3d11::DeviceD3D11::createTexture2D(GpuTextureDesc const& desc, sp
     return new_box<TextureD3D11>(std::move(texture).as<ID3D11Resource>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createSampler() -> box<GpuSampler> {
+auto up::d3d11::DeviceD3D11::createSampler() -> box<GpuSampler> {
     D3D11_SAMPLER_DESC desc = {};
     desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
     desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -224,7 +224,7 @@ auto up::gpu::d3d11::DeviceD3D11::createSampler() -> box<GpuSampler> {
     return new_box<SamplerD3D11>(std::move(sampler));
 }
 
-void up::gpu::d3d11::DeviceD3D11::execute(GpuCommandList* commandList) {
+void up::d3d11::DeviceD3D11::execute(GpuCommandList* commandList) {
     UP_ASSERT(commandList != nullptr);
 
     auto deferred = static_cast<CommandListD3D11*>(commandList);

@@ -7,7 +7,7 @@
 #include "potato/foundation/box.h"
 #include "potato/gpu/command_list.h"
 
-namespace up::gpu::d3d11 {
+namespace up::d3d11 {
     class CommandListD3D11 final : public GpuCommandList {
     public:
         CommandListD3D11(com_ptr<ID3D11DeviceContext> context);
@@ -59,4 +59,4 @@ namespace up::gpu::d3d11 {
         com_ptr<ID3D11CommandList> _commands;
         bool _bindingsDirty = false;
     };
-} // namespace up::gpu::d3d11
+} // namespace up::d3d11

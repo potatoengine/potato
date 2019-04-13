@@ -10,11 +10,11 @@
 #include "potato/foundation/int_types.h"
 #include "potato/gpu/common.h"
 
-namespace up::gpu {
+namespace up {
     class GpuBuffer;
     class CommandList;
     class GpuDevice;
-} // namespace up::gpu
+} // namespace up
 
 namespace up {
     class RenderContext;
@@ -27,8 +27,8 @@ namespace up {
 
     struct MeshChannel {
         uint8 buffer = 0;
-        gpu::GpuFormat format = gpu::GpuFormat::R32G32B32Float;
-        gpu::GpuShaderSemantic semantic = gpu::GpuShaderSemantic::Position;
+        GpuFormat format = GpuFormat::R32G32B32Float;
+        GpuShaderSemantic semantic = GpuShaderSemantic::Position;
     };
 
     class Mesh : public shared<Mesh> {
@@ -36,15 +36,15 @@ namespace up {
         UP_RENDER_API explicit Mesh(vector<uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels);
         UP_RENDER_API ~Mesh();
 
-        UP_RENDER_API void populateLayout(span<gpu::GpuInputLayoutElement>& inputLayout) const noexcept;
+        UP_RENDER_API void populateLayout(span<GpuInputLayoutElement>& inputLayout) const noexcept;
         UP_RENDER_API void updateVertexBuffers(RenderContext& ctx);
         UP_RENDER_API void bindVertexBuffers(RenderContext& ctx);
 
         uint32 indexCount() const noexcept { return static_cast<uint32>(_indices.size()); }
 
     private:
-        box<gpu::GpuBuffer> _ibo;
-        box<gpu::GpuBuffer> _vbo;
+        box<GpuBuffer> _ibo;
+        box<GpuBuffer> _vbo;
         vector<MeshBuffer> _buffers;
         vector<MeshChannel> _channels;
         vector<uint16> _indices;
