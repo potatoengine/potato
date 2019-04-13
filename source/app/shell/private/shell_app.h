@@ -16,7 +16,7 @@ namespace up {
 } // namespace up
 
 namespace up::gpu {
-    class Device;
+    class GpuDevice;
     class SwapChain;
 } // namespace up::gpu
 
@@ -43,7 +43,7 @@ private:
 private:
     bool _running = true;
     FileSystem _fileSystem;
-    rc<gpu::Device> _device;
+    rc<gpu::GpuDevice> _device;
     rc<gpu::SwapChain> _swapChain;
     box<Renderer> _renderer;
     box<RenderCamera> _camera;

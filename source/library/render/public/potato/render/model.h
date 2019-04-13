@@ -11,7 +11,7 @@
 namespace up::gpu {
     class GpuBuffer;
     class CommandList;
-    class Device;
+    class GpuDevice;
 } // namespace up::gpu
 
 namespace up {

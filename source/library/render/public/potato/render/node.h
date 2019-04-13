@@ -9,7 +9,7 @@
 
 namespace up::gpu {
     class CommandList;
-    class Device;
+    class GpuDevice;
 } // namespace up::gpu
 
 namespace up {

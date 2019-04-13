@@ -15,7 +15,7 @@
 namespace up::gpu {
     class GpuBuffer;
     class GpuCommandList;
-    class Device;
+    class GpuDevice;
 } // namespace up::gpu
 
 namespace up {
@@ -27,7 +27,7 @@ namespace up {
 
     class Renderer {
     public:
-        UP_RENDER_API explicit Renderer(FileSystem fileSystem, rc<gpu::Device> device);
+        UP_RENDER_API explicit Renderer(FileSystem fileSystem, rc<gpu::GpuDevice> device);
         virtual ~Renderer();
 
         Renderer(Renderer const&) = delete;
@@ -43,13 +43,13 @@ namespace up {
         UP_RENDER_API rc<Shader> loadShaderSync(zstring_view path);
         UP_RENDER_API rc<Texture> loadTextureSync(zstring_view path);
 
-        gpu::Device& device() const noexcept { return *_device; }
+        gpu::GpuDevice& device() const noexcept { return *_device; }
         gpu::GpuCommandList& commandList() const noexcept { return *_commandList; }
 
     private:
         void _renderMain();
 
-        rc<gpu::Device> _device;
+        rc<gpu::GpuDevice> _device;
         box<gpu::GpuCommandList> _commandList;
         box<gpu::GpuBuffer> _frameDataBuffer;
         rc<Material> _debugLineMaterial;

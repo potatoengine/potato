@@ -6,7 +6,7 @@
 
 namespace up::gpu {
     class GpuCommandList;
-    class Device;
+    class GpuDevice;
 } // namespace up::gpu
 
 namespace up {
@@ -14,6 +14,6 @@ namespace up {
     public:
         double frameTime = 0;
         gpu::GpuCommandList& commandList;
-        gpu::Device& device;
+        gpu::GpuDevice& device;
     };
 } // namespace up

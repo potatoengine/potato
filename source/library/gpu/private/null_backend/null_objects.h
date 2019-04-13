@@ -19,10 +19,10 @@ namespace up::gpu::null {
     public:
         bool isEnabled() const override { return true; }
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
-        rc<Device> createDevice(int index) override;
+        rc<GpuDevice> createDevice(int index) override;
     };
 
-    class DeviceNull final : public Device {
+    class DeviceNull final : public GpuDevice {
     public:
         rc<SwapChain> createSwapChain(void* native_window) override;
         box<GpuCommandList> createCommandList(PipelineState* pipelineState = nullptr) override;

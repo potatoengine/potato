@@ -27,7 +27,7 @@ void up::DrawImgui::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
     releaseResources();
 }
 
-bool up::DrawImgui::createResources(gpu::Device& device) {
+bool up::DrawImgui::createResources(gpu::GpuDevice& device) {
     _ensureContext();
 
     gpu::InputLayoutElement layout[] = {
@@ -141,7 +141,7 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
     return false;
 }
 
-void up::DrawImgui::endFrame(gpu::Device& device, gpu::GpuCommandList& commandList) {
+void up::DrawImgui::endFrame(gpu::GpuDevice& device, gpu::GpuCommandList& commandList) {
     UP_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());

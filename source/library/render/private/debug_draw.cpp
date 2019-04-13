@@ -18,7 +18,7 @@ void UP_VECTORCALL up::drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 c
     debugVertices.push_back({end, color, lingerSeconds});
 }
 
-//gpu::Device &device, gpu::GpuCommandList &commandList, gpu::GpuBuffer &buffer
+//gpu::GpuDevice &device, gpu::GpuCommandList &commandList, gpu::GpuBuffer &buffer
 
 void up::dumpDebugDraw(delegate_ref<void(view<DebugDrawVertex>)> callback) {
     std::unique_lock _(debugLock);

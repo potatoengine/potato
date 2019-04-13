@@ -11,7 +11,7 @@
 namespace up::gpu {
     class GpuBuffer;
     class GpuCommandList;
-    class Device;
+    class GpuDevice;
     class PipelineState;
     class ResourceView;
     class Sampler;
@@ -34,13 +34,13 @@ namespace up {
 
         UP_RENDER_API void bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader);
 
-        UP_RENDER_API bool createResources(gpu::Device& device);
+        UP_RENDER_API bool createResources(gpu::GpuDevice& device);
         UP_RENDER_API void releaseResources();
 
         UP_RENDER_API bool handleEvent(SDL_Event const& ev);
 
         UP_RENDER_API void beginFrame();
-        UP_RENDER_API void endFrame(gpu::Device& device, gpu::GpuCommandList& commandList);
+        UP_RENDER_API void endFrame(gpu::GpuDevice& device, gpu::GpuCommandList& commandList);
 
     private:
         void _ensureContext();

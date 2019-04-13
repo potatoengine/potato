@@ -8,7 +8,7 @@ void up::gpu::null::FactoryNull::enumerateDevices(delegate<void(DeviceInfo const
     callback(deviceInfo);
 }
 
-auto up::gpu::null::FactoryNull::createDevice(int index) -> rc<Device> {
+auto up::gpu::null::FactoryNull::createDevice(int index) -> rc<GpuDevice> {
     return new_shared<DeviceNull>();
 }
 

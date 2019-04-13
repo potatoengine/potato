@@ -19,13 +19,13 @@ namespace up::gpu {
     struct PipelineStateDesc;
     struct TextureDesc;
 
-    class Device : public shared<Device> {
+    class GpuDevice : public shared<GpuDevice> {
     public:
-        Device() = default;
-        virtual ~Device() = default;
+        GpuDevice() = default;
+        virtual ~GpuDevice() = default;
 
-        Device(Device&&) = delete;
-        Device& operator=(Device&&) = delete;
+        GpuDevice(GpuDevice&&) = delete;
+        GpuDevice& operator=(GpuDevice&&) = delete;
 
         virtual rc<SwapChain> createSwapChain(void* nativeWindow) = 0;
         virtual box<GpuCommandList> createCommandList(PipelineState* pipelineState = nullptr) = 0;

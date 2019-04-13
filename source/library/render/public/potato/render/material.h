@@ -9,7 +9,7 @@
 
 namespace up::gpu {
     class CommandList;
-    class Device;
+    class GpuDevice;
     class PipelineState;
     class ResourceView;
     class Sampler;

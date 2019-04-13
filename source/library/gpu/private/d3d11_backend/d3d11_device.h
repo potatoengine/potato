@@ -8,7 +8,7 @@
 #include "potato/gpu/device.h"
 
 namespace up::gpu::d3d11 {
-    class DeviceD3D11 final : public Device {
+    class DeviceD3D11 final : public GpuDevice {
     public:
         DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context);
         virtual ~DeviceD3D11();
@@ -16,7 +16,7 @@ namespace up::gpu::d3d11 {
         DeviceD3D11(DeviceD3D11&&) = delete;
         DeviceD3D11& operator=(DeviceD3D11&&) = delete;
 
-        static rc<Device> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
+        static rc<GpuDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
         rc<SwapChain> createSwapChain(void* native_window) override;
         box<GpuCommandList> createCommandList(PipelineState* pipelineState = nullptr) override;

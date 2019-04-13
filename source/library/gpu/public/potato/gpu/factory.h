@@ -10,7 +10,7 @@
 #include "_export.h"
 
 namespace up::gpu {
-    class Device;
+    class GpuDevice;
 
     class Factory {
     public:
@@ -22,7 +22,7 @@ namespace up::gpu {
 
         virtual bool isEnabled() const = 0;
         virtual void enumerateDevices(delegate<void(DeviceInfo const&)> callback) = 0;
-        virtual rc<Device> createDevice(int index) = 0;
+        virtual rc<GpuDevice> createDevice(int index) = 0;
     };
 
     UP_GPU_API box<Factory> CreateFactoryNull();
