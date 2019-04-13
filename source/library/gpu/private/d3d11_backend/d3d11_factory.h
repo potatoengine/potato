@@ -7,7 +7,7 @@
 #include "potato/gpu/factory.h"
 
 namespace up::gpu::d3d11 {
-    class FactoryD3D11 final : public Factory {
+    class FactoryD3D11 final : public GpuDeviceFactory {
     public:
         FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory);
         virtual ~FactoryD3D11();

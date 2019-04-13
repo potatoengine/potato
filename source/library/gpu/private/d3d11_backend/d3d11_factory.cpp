@@ -14,7 +14,7 @@ up::gpu::d3d11::FactoryD3D11::FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory)
 up::gpu::d3d11::FactoryD3D11::~FactoryD3D11() = default;
 
 #if UP_GPU_ENABLE_D3D11
-auto up::gpu::CreateFactoryD3D11() -> box<gpu::Factory> {
+auto up::gpu::CreateFactoryD3D11() -> box<gpu::GpuDeviceFactory> {
     com_ptr<IDXGIFactory2> dxgiFactory;
     CreateDXGIFactory1(__uuidof(IDXGIFactory2), out_ptr(dxgiFactory));
     return new_box<d3d11::FactoryD3D11>(std::move(dxgiFactory));

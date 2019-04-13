@@ -12,21 +12,21 @@
 namespace up::gpu {
     class GpuDevice;
 
-    class Factory {
+    class GpuDeviceFactory {
     public:
-        Factory() = default;
-        virtual ~Factory() = default;
+        GpuDeviceFactory() = default;
+        virtual ~GpuDeviceFactory() = default;
 
-        Factory(Factory&&) = delete;
-        Factory& operator=(Factory&&) = delete;
+        GpuDeviceFactory(GpuDeviceFactory&&) = delete;
+        GpuDeviceFactory& operator=(GpuDeviceFactory&&) = delete;
 
         virtual bool isEnabled() const = 0;
         virtual void enumerateDevices(delegate<void(DeviceInfo const&)> callback) = 0;
         virtual rc<GpuDevice> createDevice(int index) = 0;
     };
 
-    UP_GPU_API box<Factory> CreateFactoryNull();
+    UP_GPU_API box<GpuDeviceFactory> CreateFactoryNull();
 #if defined(UP_GPU_ENABLE_D3D11)
-    UP_GPU_API box<Factory> CreateFactoryD3D11();
+    UP_GPU_API box<GpuDeviceFactory> CreateFactoryD3D11();
 #endif
 } // namespace up::gpu

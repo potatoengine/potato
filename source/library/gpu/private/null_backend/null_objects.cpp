@@ -12,7 +12,7 @@ auto up::gpu::null::FactoryNull::createDevice(int index) -> rc<GpuDevice> {
     return new_shared<DeviceNull>();
 }
 
-UP_GPU_API auto up::gpu::CreateFactoryNull() -> box<Factory> {
+UP_GPU_API auto up::gpu::CreateFactoryNull() -> box<GpuDeviceFactory> {
     return new_box<null::FactoryNull>();
 }
 

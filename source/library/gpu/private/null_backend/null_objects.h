@@ -15,7 +15,7 @@
 namespace up::gpu::null {
     class DeviceNull;
 
-    class FactoryNull final : public Factory {
+    class FactoryNull final : public GpuDeviceFactory {
     public:
         bool isEnabled() const override { return true; }
         void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
