@@ -1,6 +1,10 @@
-The Engine Formerly Known as Grimm
-Possibly Known as UnderPotatoes
+<img title="Potato" src="./documentation/images/potato.svg" width="128"/>
+
+The Engine Formerly Known as Grimm <br>
+Possibly Known as UnderPotatoes <br>
 Also goes by Bob
+
+[![Build Status](https://seanmiddleditch.visualstudio.com/grimm/_apis/build/status/Build%20Grimm?branchName=master)](https://seanmiddleditch.visualstudio.com/grimm/_build/latest?definitionId=5&branchName=master)
 
 Authors
 -------
