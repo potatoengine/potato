@@ -20,10 +20,10 @@
 #    error "Invalid platform"
 #endif
 
-static auto errnoToResult(int error) noexcept -> up::Result {
+static auto errnoToResult(int error) noexcept -> up::IOResult {
     switch (error) {
-    case 0: return up::Result::Success;
-    default: return up::Result::Unknown;
+    case 0: return up::IOResult::Success;
+    default: return up::IOResult::Unknown;
     }
 }
 
@@ -43,7 +43,7 @@ bool up::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return S_ISDIR(st.st_mode) != 0;
 }
 
-auto up::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const -> Result {
+auto up::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const -> IOResult {
     struct stat st;
     if (stat(path.c_str(), &st) != 0) {
         return errnoToResult(errno);
@@ -52,7 +52,7 @@ auto up::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const -> 
     outInfo.size = st.st_size;
     outInfo.mtime = st.st_mtime;
     outInfo.type = S_ISREG(st.st_mode) ? FileType::Regular : S_ISDIR(st.st_mode) ? FileType::Directory : S_ISLNK(st.st_mode) ? FileType::SymbolicLink : FileType::Other;
-    return Result::Success;
+    return IOResult::Success;
 }
 
 static auto enumerateWorker(up::zstring_view path, up::EnumerateCallback cb, up::string_writer& writer) -> up::EnumerateResult {
@@ -110,7 +110,7 @@ auto up::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, Enume
     return enumerateWorker(path, cb, writer);
 }
 
-auto up::NativeBackend::createDirectories(zstring_view path) -> Result {
+auto up::NativeBackend::createDirectories(zstring_view path) -> IOResult {
     string dir;
 
     while (!path.empty() && strcmp(path.c_str(), "/") != 0 && !directoryExists(path)) {
@@ -122,10 +122,10 @@ auto up::NativeBackend::createDirectories(zstring_view path) -> Result {
         path = dir.c_str();
     }
 
-    return Result::Success;
+    return IOResult::Success;
 }
 
-auto up::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
+auto up::NativeBackend::copyFile(zstring_view from, zstring_view to) -> IOResult {
     up::unique_resource<int, &close> inFile(open(from.c_str(), O_RDONLY));
     up::unique_resource<int, &close> outFile(open(to.c_str(), O_WRONLY | O_CREAT, S_IRWXU));
 
@@ -138,7 +138,7 @@ auto up::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
         }
 
         if (rs == 0) {
-            return Result::Success;
+            return IOResult::Success;
         }
 
         ssize_t rs2 = write(outFile.get(), buffer, rs);
@@ -148,14 +148,14 @@ auto up::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
     }
 }
 
-auto up::NativeBackend::remove(zstring_view path) -> Result {
+auto up::NativeBackend::remove(zstring_view path) -> IOResult {
     if (::remove(path.c_str()) != 0) {
         return errnoToResult(errno);
     }
-    return Result::Success;
+    return IOResult::Success;
 }
 
-auto up::NativeBackend::removeRecursive(zstring_view path) -> Result {
+auto up::NativeBackend::removeRecursive(zstring_view path) -> IOResult {
     auto cb = [](char const* path, struct stat const* st, int flags, struct FTW* ftw) -> int {
         return ::remove(path);
     };
@@ -163,5 +163,5 @@ auto up::NativeBackend::removeRecursive(zstring_view path) -> Result {
     if (rs != 0) {
         return errnoToResult(errno);
     }
-    return Result::Success;
+    return IOResult::Success;
 }
