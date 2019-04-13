@@ -32,7 +32,7 @@ bool up::AssetLibrary::insertRecord(AssetImportRecord record) {
     return true;
 }
 
-bool up::AssetLibrary::serialize(fs::Stream& stream) const {
+bool up::AssetLibrary::serialize(Stream& stream) const {
     nlohmann::json jsonRoot;
 
     jsonRoot["revision"] = libraryRevision;
@@ -73,12 +73,12 @@ bool up::AssetLibrary::serialize(fs::Stream& stream) const {
     jsonRoot["records"] = std::move(jsonRecords);
 
     auto json = jsonRoot.dump(2);
-    return writeAllText(stream, {json.data(), json.size()}) == fs::Result::Success;
+    return writeAllText(stream, {json.data(), json.size()}) == Result::Success;
 }
 
-bool up::AssetLibrary::deserialize(fs::Stream& stream) {
+bool up::AssetLibrary::deserialize(Stream& stream) {
     string jsonText;
-    if (readText(stream, jsonText) != fs::Result::Success) {
+    if (readText(stream, jsonText) != Result::Success) {
         return false;
     }
 

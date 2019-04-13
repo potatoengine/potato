@@ -7,7 +7,7 @@
 #include "potato/foundation/rc.h"
 #include "common.h"
 
-namespace up::fs {
+namespace up {
     class Stream;
     class Stream;
 
@@ -38,4 +38,4 @@ namespace up::fs {
     protected:
         Backend() = default;
     };
-} // namespace up::fs
+} // namespace up

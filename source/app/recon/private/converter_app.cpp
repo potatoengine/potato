@@ -27,10 +27,10 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
 
     registerConverters();
 
-    auto libraryPath = fs::path::join({string_view(_config.destinationFolderPath), "library$.json"});
+    auto libraryPath = path::join({string_view(_config.destinationFolderPath), "library$.json"});
     _outputs.push_back("library$.json");
     if (_fileSystem.fileExists(libraryPath.c_str())) {
-        auto libraryReadStream = _fileSystem.openRead(libraryPath.c_str(), fs::FileOpenMode::Text);
+        auto libraryReadStream = _fileSystem.openRead(libraryPath.c_str(), FileOpenMode::Text);
         if (!libraryReadStream) {
             _logger.error("Failed to open asset library `{}'", libraryPath);
         }
@@ -40,10 +40,10 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
         _logger.info("Loaded asset library `{}'", libraryPath);
     }
 
-    auto hashCachePath = fs::path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
+    auto hashCachePath = path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
     _outputs.push_back("hashes$.json");
     if (_fileSystem.fileExists(hashCachePath.c_str())) {
-        auto hashesReadStream = _fileSystem.openRead(hashCachePath.c_str(), fs::FileOpenMode::Text);
+        auto hashesReadStream = _fileSystem.openRead(hashCachePath.c_str(), FileOpenMode::Text);
         if (!hashesReadStream) {
             _logger.error("Failed to open hash cache `{}'", hashCachePath);
         }
@@ -78,14 +78,14 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
     _logger.info("Cache: `{}'", _config.cacheFolderPath);
 
     if (!_fileSystem.directoryExists(_config.destinationFolderPath.c_str())) {
-        if (_fileSystem.createDirectories(_config.destinationFolderPath.c_str()) != fs::Result::Success) {
+        if (_fileSystem.createDirectories(_config.destinationFolderPath.c_str()) != Result::Success) {
             _logger.error("Failed to create `{}'", _config.destinationFolderPath);
             return false;
         }
     }
 
     if (!_fileSystem.directoryExists(_config.cacheFolderPath.c_str())) {
-        if (_fileSystem.createDirectories(_config.cacheFolderPath.c_str()) != fs::Result::Success) {
+        if (_fileSystem.createDirectories(_config.cacheFolderPath.c_str()) != Result::Success) {
             _logger.error("Failed to create `{}'", _config.cacheFolderPath);
             return false;
         }
@@ -96,14 +96,14 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
         _logger.error("Conversion failed");
     }
 
-    auto hashesWriteStream = _fileSystem.openWrite(hashCachePath.c_str(), fs::FileOpenMode::Text);
+    auto hashesWriteStream = _fileSystem.openWrite(hashCachePath.c_str(), FileOpenMode::Text);
     if (!_hashes.serialize(hashesWriteStream)) {
         _logger.error("Failed to write hash cache `{}'", hashCachePath);
         return false;
     }
     hashesWriteStream.close();
 
-    auto libraryWriteStream = _fileSystem.openWrite(libraryPath.c_str(), fs::FileOpenMode::Text);
+    auto libraryWriteStream = _fileSystem.openWrite(libraryPath.c_str(), FileOpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
         _logger.error("Failed to write asset library `{}'", libraryPath);
         return false;
@@ -119,19 +119,19 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
 
 void up::recon::ConverterApp::registerConverters() {
 #if UP_GPU_ENABLE_D3D11
-    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; },
                            new_box<HlslConverter>()});
 #else
-    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsl"; },
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; },
                            new_box<IgnoreConverter>()});
 #endif
-    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".hlsli"; },
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsli"; },
                            new_box<IgnoreConverter>()});
-    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".json"; },
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".json"; },
                            new_box<JsonConverter>()});
-    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".png"; },
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".png"; },
                            new_box<CopyConverter>()});
-    _converters.push_back({[](string_view path) { return fs::path::extension(path) == ".obj"; },
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".obj"; },
                            new_box<ModelConverter>()});
 }
 
@@ -142,7 +142,7 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         auto assetId = _library.pathToAssetId(string_view(path));
         auto record = _library.findRecord(assetId);
 
-        auto osPath = fs::path::join({_config.sourceFolderPath.c_str(), path.c_str()});
+        auto osPath = path::join({_config.sourceFolderPath.c_str(), path.c_str()});
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
 
         Converter* converter = findConverter(string_view(path));
@@ -185,7 +185,7 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         newRecord.importerRevision = converter->revision();
 
         for (auto const& sourceDepPath : context.sourceDependencies()) {
-            auto osPath = fs::path::join({_config.sourceFolderPath.c_str(), sourceDepPath.c_str()});
+            auto osPath = path::join({_config.sourceFolderPath.c_str(), sourceDepPath.c_str()});
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
             newRecord.sourceDependencies.push_back(AssetDependencyRecord{
                 string(sourceDepPath),
@@ -193,7 +193,7 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         }
 
         for (auto const& outputPath : context.outputs()) {
-            auto osPath = fs::path::join({_config.destinationFolderPath.c_str(), outputPath.c_str()});
+            auto osPath = path::join({_config.destinationFolderPath.c_str(), outputPath.c_str()});
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
             newRecord.outputs.push_back(AssetOutputRecord{
                 string(outputPath),
@@ -209,11 +209,11 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
 bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, bool dryRun) {
     std::set<string> keepFiles(files.begin(), files.end());
     std::set<string> foundFiles;
-    auto cb = [&foundFiles](fs::FileInfo const& info) {
-        if (info.type == fs::FileType::Regular) {
+    auto cb = [&foundFiles](FileInfo const& info) {
+        if (info.type == FileType::Regular) {
             foundFiles.insert(string(info.path));
         }
-        return fs::EnumerateResult::Recurse;
+        return EnumerateResult::Recurse;
     };
     _fileSystem.enumerate(_config.destinationFolderPath.c_str(), cb);
 
@@ -223,9 +223,9 @@ bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
     for (auto const& deletePath : deleteFiles) {
         _logger.info("Stale output file `{}'", deletePath);
         if (!dryRun) {
-            string osPath = fs::path::join({_config.destinationFolderPath.c_str(), deletePath.c_str()});
+            string osPath = path::join({_config.destinationFolderPath.c_str(), deletePath.c_str()});
             auto rs = _fileSystem.remove(osPath.c_str());
-            if (rs != fs::Result::Success) {
+            if (rs != Result::Success) {
                 _logger.error("Failed to remove `{}'", osPath);
             }
         }
@@ -242,7 +242,7 @@ bool up::recon::ConverterApp::isUpToDate(AssetImportRecord const& record, up::ui
 
 bool up::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> records) {
     for (auto const& rec : records) {
-        auto osPath = fs::path::join({_config.sourceFolderPath.c_str(), rec.path.c_str()});
+        auto osPath = path::join({_config.sourceFolderPath.c_str(), rec.path.c_str()});
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
         if (contentHash != rec.contentHash) {
             return false;
@@ -269,16 +269,16 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
 
     vector<string> files;
 
-    auto cb = [&files](fs::FileInfo const& info) -> fs::EnumerateResult {
-        if (info.type == fs::FileType::Regular) {
+    auto cb = [&files](FileInfo const& info) -> EnumerateResult {
+        if (info.type == FileType::Regular) {
             files.push_back(info.path);
         }
-        else if (info.type == fs::FileType::Directory) {
-            return fs::EnumerateResult::Recurse;
+        else if (info.type == FileType::Directory) {
+            return EnumerateResult::Recurse;
         }
-        return fs::EnumerateResult::Continue;
+        return EnumerateResult::Continue;
     };
-    _fileSystem.enumerate(_config.sourceFolderPath.c_str(), cb, fs::EnumerateOptions::None);
+    _fileSystem.enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
 
     return files;
 }

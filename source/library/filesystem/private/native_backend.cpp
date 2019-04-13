@@ -4,11 +4,11 @@
 #include "potato/filesystem/stream.h"
 #include <fstream>
 
-auto up::fs::NativeBackend::create() -> FileSystem {
+auto up::NativeBackend::create() -> FileSystem {
     return FileSystem(rc<NativeBackend>(new NativeBackend));
 }
 
-namespace up::fs {
+namespace up {
     namespace {
         struct NativeInputBackend : public Stream::Backend {
             NativeInputBackend(std::ifstream stream) : _stream(std::move(stream)) {}
@@ -95,12 +95,12 @@ namespace up::fs {
             std::ofstream _stream;
         };
     } // namespace
-} // namespace up::fs
+} // namespace up
 
-auto up::fs::NativeBackend::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
+auto up::NativeBackend::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
     return Stream(up::new_box<NativeInputBackend>(std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }
 
-auto up::fs::NativeBackend::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
+auto up::NativeBackend::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
     return Stream(up::new_box<NativeOutputBackend>(std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }

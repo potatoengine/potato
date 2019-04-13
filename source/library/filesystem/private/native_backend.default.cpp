@@ -3,27 +3,27 @@
 #include "potato/filesystem/native_backend.h"
 #include <filesystem>
 
-static auto errorCodeToResult(std::error_code ec) noexcept -> up::fs::Result {
+static auto errorCodeToResult(std::error_code ec) noexcept -> up::Result {
     if (!ec) {
-        return up::fs::Result::Success;
+        return up::Result::Success;
     }
 
     if (ec.category() == std::system_category()) {
         // FIXME: translate error codes
-        return up::fs::Result::System;
+        return up::Result::System;
     }
-    return up::fs::Result::Unknown;
+    return up::Result::Unknown;
 }
 
-bool up::fs::NativeBackend::fileExists(zstring_view path) const noexcept {
+bool up::NativeBackend::fileExists(zstring_view path) const noexcept {
     return std::filesystem::is_regular_file(std::string_view(path.c_str(), path.size()));
 }
 
-bool up::fs::NativeBackend::directoryExists(zstring_view path) const noexcept {
+bool up::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return std::filesystem::is_directory(std::string_view(path.c_str(), path.size()));
 }
 
-auto up::fs::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const -> Result {
+auto up::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const -> Result {
     std::error_code ec;
     outInfo.size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
     outInfo.mtime = std::chrono::duration_cast<std::chrono::microseconds>(std::filesystem::last_write_time(std::string_view(path.c_str(), path.size()), ec).time_since_epoch()).count();
@@ -33,7 +33,7 @@ auto up::fs::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const
     return errorCodeToResult(ec);
 }
 
-auto up::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
+auto up::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
     auto iter = std::filesystem::recursive_directory_iterator(path.c_str());
     auto end = std::filesystem::recursive_directory_iterator();
 
@@ -61,19 +61,19 @@ auto up::fs::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, E
     return EnumerateResult::Continue;
 }
 
-auto up::fs::NativeBackend::createDirectories(zstring_view path) -> Result {
+auto up::NativeBackend::createDirectories(zstring_view path) -> Result {
     std::error_code ec;
     std::filesystem::create_directories(path.c_str(), ec);
     return errorCodeToResult(ec);
 }
 
-auto up::fs::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
+auto up::NativeBackend::copyFile(zstring_view from, zstring_view to) -> Result {
     std::error_code ec;
     std::filesystem::copy_file(from.c_str(), to.c_str(), std::filesystem::copy_options::overwrite_existing, ec);
     return errorCodeToResult(ec);
 }
 
-auto up::fs::NativeBackend::remove(zstring_view path) -> Result {
+auto up::NativeBackend::remove(zstring_view path) -> Result {
     std::error_code ec;
     if (!std::filesystem::remove(path.c_str(), ec)) {
         return Result::FileNotFound;
@@ -81,7 +81,7 @@ auto up::fs::NativeBackend::remove(zstring_view path) -> Result {
     return errorCodeToResult(ec);
 }
 
-auto up::fs::NativeBackend::removeRecursive(zstring_view path) -> Result {
+auto up::NativeBackend::removeRecursive(zstring_view path) -> Result {
     std::error_code ec;
     std::filesystem::remove_all(path.c_str(), ec);
     return errorCodeToResult(ec);

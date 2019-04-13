@@ -16,25 +16,25 @@
 
 namespace {
     struct ReconIncludeHandler : public ID3DInclude {
-        ReconIncludeHandler(up::fs::FileSystem& fileSystem, up::recon::Context& ctx, up::string_view folder)
+        ReconIncludeHandler(up::FileSystem& fileSystem, up::recon::Context& ctx, up::string_view folder)
             : _fileSystem(fileSystem),
               _ctx(ctx),
               _folder(folder) {}
 
         HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override {
-            up::string absolutePath = up::fs::path::join({_folder, pFileName});
+            up::string absolutePath = up::path::join({_folder, pFileName});
 
             _ctx.logger().info("Including `{}'", absolutePath);
 
             _ctx.addSourceDependency(pFileName);
 
-            auto stream = _fileSystem.openRead(absolutePath.c_str(), up::fs::FileOpenMode::Text);
+            auto stream = _fileSystem.openRead(absolutePath.c_str(), up::FileOpenMode::Text);
             if (!stream) {
                 return E_FAIL;
             }
 
             up::string shader;
-            if (up::fs::readText(stream, shader) != up::fs::Result::Success) {
+            if (up::readText(stream, shader) != up::Result::Success) {
                 return E_FAIL;
             }
 
@@ -50,7 +50,7 @@ namespace {
             return S_OK;
         }
 
-        up::fs::FileSystem& _fileSystem;
+        up::FileSystem& _fileSystem;
         up::recon::Context& _ctx;
         up::string_view _folder;
         up::vector<up::string> _shaders;
@@ -62,17 +62,17 @@ up::recon::HlslConverter::HlslConverter() = default;
 up::recon::HlslConverter::~HlslConverter() = default;
 
 bool up::recon::HlslConverter::convert(Context& ctx) {
-    fs::FileSystem fs;
+    FileSystem fs;
 
-    auto absoluteSourcePath = fs::path::join({string_view(ctx.sourceFolderPath()), ctx.sourceFilePath()});
+    auto absoluteSourcePath = path::join({string_view(ctx.sourceFolderPath()), ctx.sourceFilePath()});
 
-    auto stream = fs.openRead(absoluteSourcePath.c_str(), up::fs::FileOpenMode::Text);
+    auto stream = fs.openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
     if (!stream) {
         return false;
     }
 
     string shader;
-    if (fs::readText(stream, shader) != fs::Result::Success) {
+    if (readText(stream, shader) != Result::Success) {
         ctx.logger().error("Failed to read `{}'", absoluteSourcePath);
         return false;
     }
@@ -85,10 +85,10 @@ bool up::recon::HlslConverter::convert(Context& ctx) {
     return success;
 }
 
-bool up::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName) {
+bool up::recon::HlslConverter::compile(Context& ctx, FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName) {
     ctx.logger().info("Compiling `{}':{} ({})", ctx.sourceFilePath(), entryName, targetProfileName);
 
-    ReconIncludeHandler includeHandler(fileSys, ctx, up::fs::path::parent(absoluteSourcePath));
+    ReconIncludeHandler includeHandler(fileSys, ctx, up::path::parent(absoluteSourcePath));
 
     com_ptr<ID3DBlob> blob;
     com_ptr<ID3DBlob> errors;
@@ -103,19 +103,19 @@ bool up::recon::HlslConverter::compile(Context& ctx, fs::FileSystem& fileSys, zs
     ext.write(targetProfileName);
     ext.write(".cbo");
 
-    auto destPath = fs::path::changeExtension(ctx.sourceFilePath(), ext.c_str());
-    auto destAbsolutePath = fs::path::join({string_view(ctx.destinationFolderPath()), destPath.c_str()});
+    auto destPath = path::changeExtension(ctx.sourceFilePath(), ext.c_str());
+    auto destAbsolutePath = path::join({string_view(ctx.destinationFolderPath()), destPath.c_str()});
 
-    string destParentAbsolutePath(fs::path::parent(destAbsolutePath));
+    string destParentAbsolutePath(path::parent(destAbsolutePath));
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != fs::Result::Success) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != Result::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }
 
-    auto compiledOutput = fileSys.openWrite(destAbsolutePath.c_str(), up::fs::FileOpenMode::Binary);
+    auto compiledOutput = fileSys.openWrite(destAbsolutePath.c_str(), up::FileOpenMode::Binary);
     if (!compiledOutput.isOpen()) {
         ctx.logger().error("Cannot write `{}'", destAbsolutePath);
         return false;

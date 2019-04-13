@@ -17,6 +17,6 @@ namespace up::recon {
         uint64 revision() const noexcept override { return 8; }
 
     private:
-        bool compile(Context& ctx, fs::FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName);
+        bool compile(Context& ctx, FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName);
     };
 } // namespace up::recon

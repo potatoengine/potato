@@ -7,9 +7,9 @@
 #include <iostream>
 #include <algorithm>
 
-DOCTEST_TEST_SUITE("[potato][filesystem] up::fs::NativeBackend") {
+DOCTEST_TEST_SUITE("[potato][filesystem] up::NativeBackend") {
     using namespace up;
-    using namespace up::fs;
+    using namespace up;
 
     DOCTEST_TEST_CASE("fileExists") {
         auto native = NativeBackend::create();

@@ -6,7 +6,7 @@
 #include "backend.h"
 #include "filesystem.h"
 
-namespace up::fs {
+namespace up {
     class NullBackend : public Backend {
     public:
         static FileSystem create() { return FileSystem(rc<NullBackend>(new NullBackend)); }
@@ -31,4 +31,4 @@ namespace up::fs {
     private:
         NullBackend() = default;
     };
-} // namespace up::fs
+} // namespace up

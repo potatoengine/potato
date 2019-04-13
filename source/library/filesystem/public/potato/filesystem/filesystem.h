@@ -9,7 +9,7 @@
 #include "common.h"
 #include "backend.h"
 
-namespace up::fs {
+namespace up {
     class Backend;
     class Stream;
 
@@ -43,4 +43,4 @@ namespace up::fs {
 
         rc<Backend> _impl;
     };
-} // namespace up::fs
+} // namespace up

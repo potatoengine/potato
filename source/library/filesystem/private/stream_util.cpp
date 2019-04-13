@@ -4,7 +4,7 @@
 #include "potato/filesystem/stream.h"
 #include "potato/foundation/string_writer.h"
 
-auto up::fs::readBinary(Stream& stream, vector<up::byte>& out) -> Result {
+auto up::readBinary(Stream& stream, vector<up::byte>& out) -> Result {
     if (!stream.canRead() || !stream.canSeek()) {
         return Result::UnsupportedOperation;
     }
@@ -17,7 +17,7 @@ auto up::fs::readBinary(Stream& stream, vector<up::byte>& out) -> Result {
     return stream.read(read);
 }
 
-auto up::fs::readText(Stream& stream, string& out) -> Result {
+auto up::readText(Stream& stream, string& out) -> Result {
     if (!stream.canRead() || !stream.canSeek()) {
         return Result::UnsupportedOperation;
     }
@@ -37,7 +37,7 @@ auto up::fs::readText(Stream& stream, string& out) -> Result {
     return rs;
 }
 
-auto up::fs::writeAllText(Stream& stream, string_view text) -> Result {
+auto up::writeAllText(Stream& stream, string_view text) -> Result {
     if (!stream.canWrite()) {
         return Result::UnsupportedOperation;
     }

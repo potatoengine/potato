@@ -7,7 +7,7 @@
 #include "potato/foundation/span.h"
 #include "common.h"
 
-namespace up::fs {
+namespace up {
     class Stream {
     public:
         using size_type = uint64;
@@ -70,4 +70,4 @@ namespace up::fs {
     private:
         box<Backend> _impl;
     };
-} // namespace up::fs
+} // namespace up

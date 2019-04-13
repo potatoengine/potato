@@ -2,9 +2,9 @@
 #include "potato/filesystem/stream.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[potato][filesystem] up::fs::NullBackend") {
+DOCTEST_TEST_SUITE("[potato][filesystem] up::NullBackend") {
     using namespace up;
-    using namespace up::fs;
+    using namespace up;
 
     DOCTEST_TEST_CASE("null abides") {
         auto null = NullBackend::create();

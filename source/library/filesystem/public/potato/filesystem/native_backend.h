@@ -6,7 +6,7 @@
 #include "filesystem.h"
 #include "backend.h"
 
-namespace up::fs {
+namespace up {
     class NativeBackend : public Backend {
     public:
         static UP_FILESYSTEM_API FileSystem create();
@@ -34,4 +34,4 @@ namespace up::fs {
         // needed as NativeBackend is the default FileSystem
         friend class FileSystem;
     };
-} // namespace up::fs
+} // namespace up

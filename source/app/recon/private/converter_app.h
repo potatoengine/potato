@@ -50,7 +50,7 @@ namespace up::recon {
         vector<Mapping> _converters;
         vector<string> _outputs;
         ConverterConfig _config;
-        fs::FileSystem _fileSystem;
+        FileSystem _fileSystem;
         AssetLibrary _library;
         HashCache _hashes;
         Logger _logger;

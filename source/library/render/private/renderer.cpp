@@ -33,7 +33,7 @@ namespace {
     };
 } // namespace
 
-up::Renderer::Renderer(fs::FileSystem fileSystem, rc<gpu::Device> device) : _device(std::move(device)), _fileSystem(std::move(fileSystem)), _renderThread([this] { _renderMain(); }) {
+up::Renderer::Renderer(FileSystem fileSystem, rc<gpu::Device> device) : _device(std::move(device)), _fileSystem(std::move(fileSystem)), _renderThread([this] { _renderMain(); }) {
     _commandList = _device->createCommandList();
 
     _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.json");
@@ -111,7 +111,7 @@ auto up::Renderer::context() -> RenderContext {
 auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (fs::readBinary(stream, contents) != fs::Result{}) {
+    if (readBinary(stream, contents) != Result{}) {
         return {};
     }
     stream.close();
@@ -216,14 +216,14 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
 auto up::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (fs::readBinary(stream, contents) != fs::Result{}) {
+    if (readBinary(stream, contents) != Result{}) {
         return {};
     }
     return up::new_shared<Shader>(std::move(contents));
 }
 
 auto up::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
-    fs::Stream stream = _fileSystem.openRead(path);
+    Stream stream = _fileSystem.openRead(path);
     if (!stream) {
         return nullptr;
     }

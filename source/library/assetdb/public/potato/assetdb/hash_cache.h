@@ -17,15 +17,15 @@ namespace up {
     class HashCache {
     public:
         HashCache() = default;
-        HashCache(fs::FileSystem fileSystem) : _fileSystem(std::move(fileSystem)) {}
+        HashCache(FileSystem fileSystem) : _fileSystem(std::move(fileSystem)) {}
 
         static UP_ASSETDB_API uint64 hashAssetContent(span<byte const> contents) noexcept;
-        static UP_ASSETDB_API uint64 hashAssetStream(fs::Stream& stream);
+        static UP_ASSETDB_API uint64 hashAssetStream(Stream& stream);
 
         UP_ASSETDB_API uint64 hashAssetAtPath(zstring_view path);
 
-        UP_ASSETDB_API bool serialize(fs::Stream& stream) const;
-        UP_ASSETDB_API bool deserialize(fs::Stream& stream);
+        UP_ASSETDB_API bool serialize(Stream& stream) const;
+        UP_ASSETDB_API bool deserialize(Stream& stream);
 
     private:
         struct HashRecord {
@@ -35,7 +35,7 @@ namespace up {
             uint64 size = 0;
         };
 
-        fs::FileSystem _fileSystem;
+        FileSystem _fileSystem;
         std::unordered_map<zstring_view, box<HashRecord>, uhash<>> _hashes;
     };
 } // namespace up

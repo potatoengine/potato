@@ -7,7 +7,7 @@
 #include "potato/foundation/int_types.h"
 #include "potato/foundation/vector.h"
 
-namespace up::fs {
+namespace up {
     class Stream;
 }
 
@@ -33,6 +33,6 @@ namespace up {
         ImageHeader _header;
     };
 
-    UP_IMAGE_API Image loadImage(fs::Stream& stream);
-    UP_IMAGE_API bool saveDDS(Image const& image, fs::Stream& stream);
+    UP_IMAGE_API Image loadImage(Stream& stream);
+    UP_IMAGE_API bool saveDDS(Image const& image, Stream& stream);
 } // namespace up

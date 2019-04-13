@@ -10,7 +10,7 @@ auto up::HashCache::hashAssetContent(span<up::byte const> contents) noexcept -> 
     return hash_value<fnv1a>(contents);
 }
 
-auto up::HashCache::hashAssetStream(fs::Stream& stream) -> up::uint64 {
+auto up::HashCache::hashAssetStream(Stream& stream) -> up::uint64 {
     auto hasher = fnv1a();
     up::byte buffer[32768];
     while (!stream.isEof()) {
@@ -25,15 +25,15 @@ auto up::HashCache::hashAssetStream(fs::Stream& stream) -> up::uint64 {
 }
 
 auto up::HashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
-    fs::FileStat stat;
+    FileStat stat;
     auto rs = _fileSystem.fileStat(path, stat);
-    if (rs != fs::Result::Success) {
+    if (rs != Result::Success) {
         return 0;
     }
 
     auto it = _hashes.find(path);
     if (it != _hashes.end()) {
-        if (rs == fs::Result::Success && stat.size == it->second->size && stat.mtime == it->second->mtime) {
+        if (rs == Result::Success && stat.size == it->second->size && stat.mtime == it->second->mtime) {
             return it->second->hash;
         }
     }
@@ -51,7 +51,7 @@ auto up::HashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
     return hash;
 }
 
-bool up::HashCache::serialize(fs::Stream& stream) const {
+bool up::HashCache::serialize(Stream& stream) const {
     nlohmann::json jsonRoot;
 
     for (auto const& [key, value] : _hashes) {
@@ -66,12 +66,12 @@ bool up::HashCache::serialize(fs::Stream& stream) const {
     }
 
     auto json = jsonRoot.dump();
-    return writeAllText(stream, {json.data(), json.size()}) == fs::Result::Success;
+    return writeAllText(stream, {json.data(), json.size()}) == Result::Success;
 }
 
-bool up::HashCache::deserialize(fs::Stream& stream) {
+bool up::HashCache::deserialize(Stream& stream) {
     string jsonText;
-    if (readText(stream, jsonText) != fs::Result::Success) {
+    if (readText(stream, jsonText) != Result::Success) {
         return false;
     }
 
