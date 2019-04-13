@@ -16,31 +16,31 @@ UP_GPU_API auto up::gpu::CreateFactoryNull() -> box<GpuDeviceFactory> {
     return new_box<null::FactoryNull>();
 }
 
-auto up::gpu::null::DeviceNull::createSwapChain(void* native_window) -> rc<SwapChain> {
+auto up::gpu::null::DeviceNull::createSwapChain(void* native_window) -> rc<GpuSwapChain> {
     return new_shared<SwapChainNull>();
 }
 
-auto up::gpu::null::DeviceNull::createCommandList(PipelineState* pipelineState) -> box<GpuCommandList> {
+auto up::gpu::null::DeviceNull::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
     return new_box<CommandListNull>();
 }
 
-auto up::gpu::null::DeviceNull::createPipelineState(PipelineStateDesc const&) -> box<PipelineState> {
+auto up::gpu::null::DeviceNull::createPipelineState(PipelineStateDesc const&) -> box<GpuPipelineState> {
     return new_box<PipelineStateNull>();
 }
 
-auto up::gpu::null::DeviceNull::createRenderTargetView(Texture* renderTarget) -> box<ResourceView> {
+auto up::gpu::null::DeviceNull::createRenderTargetView(Texture* renderTarget) -> box<GpuResourceView> {
     return new_box<ResourceViewNull>(ViewType::RTV);
 }
 
-auto up::gpu::null::DeviceNull::createDepthStencilView(Texture* depthStencilBuffer) -> box<ResourceView> {
+auto up::gpu::null::DeviceNull::createDepthStencilView(Texture* depthStencilBuffer) -> box<GpuResourceView> {
     return new_box<ResourceViewNull>(ViewType::DSV);
 }
 
-auto up::gpu::null::DeviceNull::createShaderResourceView(GpuBuffer* resource) -> box<ResourceView> {
+auto up::gpu::null::DeviceNull::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
     return new_box<ResourceViewNull>(ViewType::SRV);
 }
 
-auto up::gpu::null::DeviceNull::createShaderResourceView(Texture* resource) -> box<ResourceView> {
+auto up::gpu::null::DeviceNull::createShaderResourceView(Texture* resource) -> box<GpuResourceView> {
     return new_box<ResourceViewNull>(ViewType::SRV);
 }
 
@@ -52,7 +52,7 @@ auto up::gpu::null::DeviceNull::createTexture2D(TextureDesc const& desc, span<up
     return new_box<TextureNull>();
 }
 
-auto up::gpu::null::DeviceNull::createSampler() -> box<Sampler> {
+auto up::gpu::null::DeviceNull::createSampler() -> box<GpuSampler> {
     return new_box<SamplerNull>();
 }
 

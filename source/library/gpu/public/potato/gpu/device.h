@@ -10,10 +10,10 @@
 namespace up::gpu {
     class GpuBuffer;
     class GpuCommandList;
-    class PipelineState;
-    class ResourceView;
-    class Sampler;
-    class SwapChain;
+    class GpuPipelineState;
+    class GpuResourceView;
+    class GpuSampler;
+    class GpuSwapChain;
     class Texture;
 
     struct PipelineStateDesc;
@@ -27,18 +27,18 @@ namespace up::gpu {
         GpuDevice(GpuDevice&&) = delete;
         GpuDevice& operator=(GpuDevice&&) = delete;
 
-        virtual rc<SwapChain> createSwapChain(void* nativeWindow) = 0;
-        virtual box<GpuCommandList> createCommandList(PipelineState* pipelineState = nullptr) = 0;
-        virtual box<PipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
+        virtual rc<GpuSwapChain> createSwapChain(void* nativeWindow) = 0;
+        virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
+        virtual box<GpuPipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
         virtual box<GpuBuffer> createBuffer(BufferType type, uint64 size) = 0;
         virtual box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) = 0;
-        virtual box<Sampler> createSampler() = 0;
+        virtual box<GpuSampler> createSampler() = 0;
 
         virtual void execute(GpuCommandList* commandList) = 0;
 
-        virtual box<ResourceView> createRenderTargetView(Texture* renderTarget) = 0;
-        virtual box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) = 0;
-        virtual box<ResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
-        virtual box<ResourceView> createShaderResourceView(Texture* texture) = 0;
+        virtual box<GpuResourceView> createRenderTargetView(Texture* renderTarget) = 0;
+        virtual box<GpuResourceView> createDepthStencilView(Texture* depthStencilBuffer) = 0;
+        virtual box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
+        virtual box<GpuResourceView> createShaderResourceView(Texture* texture) = 0;
     };
 } // namespace up::gpu

@@ -53,17 +53,17 @@ auto up::gpu::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, c
     return new_shared<DeviceD3D11>(std::move(factory), std::move(adapter), std::move(device), std::move(context));
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> rc<SwapChain> {
+auto up::gpu::d3d11::DeviceD3D11::createSwapChain(void* nativeWindow) -> rc<GpuSwapChain> {
     UP_ASSERT(nativeWindow != nullptr);
 
     return SwapChainD3D11::createSwapChain(_factory.get(), _device.get(), nativeWindow);
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createCommandList(PipelineState* pipelineState) -> box<GpuCommandList> {
+auto up::gpu::d3d11::DeviceD3D11::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createRenderTargetView(Texture* renderTarget) -> box<ResourceView> {
+auto up::gpu::d3d11::DeviceD3D11::createRenderTargetView(Texture* renderTarget) -> box<GpuResourceView> {
     UP_ASSERT(renderTarget != nullptr);
 
     auto d3d11Resource = static_cast<TextureD3D11*>(renderTarget);
@@ -81,7 +81,7 @@ auto up::gpu::d3d11::DeviceD3D11::createRenderTargetView(Texture* renderTarget) 
     return new_box<ResourceViewD3D11>(ViewType::RTV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createDepthStencilView(Texture* depthStencilBuffer) -> box<ResourceView> {
+auto up::gpu::d3d11::DeviceD3D11::createDepthStencilView(Texture* depthStencilBuffer) -> box<GpuResourceView> {
     UP_ASSERT(depthStencilBuffer != nullptr);
 
     auto d3d11Resource = static_cast<TextureD3D11*>(depthStencilBuffer);
@@ -99,7 +99,7 @@ auto up::gpu::d3d11::DeviceD3D11::createDepthStencilView(Texture* depthStencilBu
     return new_box<ResourceViewD3D11>(ViewType::DSV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<ResourceView> {
+auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
     UP_ASSERT(resource != nullptr);
 
     auto buffer = static_cast<BufferD3D11*>(resource);
@@ -119,7 +119,7 @@ auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) 
     return new_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(Texture* texture) -> box<ResourceView> {
+auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(Texture* texture) -> box<GpuResourceView> {
     UP_ASSERT(texture != nullptr);
 
     auto d3dTexture = static_cast<TextureD3D11*>(texture);
@@ -143,7 +143,7 @@ auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(Texture* texture) -> 
     return new_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createPipelineState(PipelineStateDesc const& desc) -> box<PipelineState> {
+auto up::gpu::d3d11::DeviceD3D11::createPipelineState(PipelineStateDesc const& desc) -> box<GpuPipelineState> {
     return PipelineStateD3D11::createGraphicsPipelineState(desc, _device.get());
 }
 
@@ -204,7 +204,7 @@ auto up::gpu::d3d11::DeviceD3D11::createTexture2D(TextureDesc const& desc, span<
     return new_box<TextureD3D11>(std::move(texture).as<ID3D11Resource>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createSampler() -> box<Sampler> {
+auto up::gpu::d3d11::DeviceD3D11::createSampler() -> box<GpuSampler> {
     D3D11_SAMPLER_DESC desc = {};
     desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
     desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;

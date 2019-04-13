@@ -15,7 +15,7 @@ up::gpu::d3d11::CommandListD3D11::CommandListD3D11(com_ptr<ID3D11DeviceContext> 
 
 up::gpu::d3d11::CommandListD3D11::~CommandListD3D11() = default;
 
-auto up::gpu::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, PipelineState* pipelineState) -> box<CommandListD3D11> {
+auto up::gpu::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, GpuPipelineState* pipelineState) -> box<CommandListD3D11> {
     com_ptr<ID3D11DeviceContext> context;
     HRESULT hr = device->CreateDeferredContext(0, out_ptr(context));
     if (context == nullptr) {
@@ -25,7 +25,7 @@ auto up::gpu::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, P
     return new_box<CommandListD3D11>(std::move(context));
 }
 
-void up::gpu::d3d11::CommandListD3D11::setPipelineState(PipelineState* state) {
+void up::gpu::d3d11::CommandListD3D11::setPipelineState(GpuPipelineState* state) {
     UP_ASSERT(state != nullptr);
 
     auto pipelineState = static_cast<PipelineStateD3D11*>(state);
@@ -40,7 +40,7 @@ void up::gpu::d3d11::CommandListD3D11::setPipelineState(PipelineState* state) {
     _context->OMSetDepthStencilState(params.depthStencilState.get(), 0);
 }
 
-void up::gpu::d3d11::CommandListD3D11::bindRenderTarget(up::uint32 index, ResourceView* view) {
+void up::gpu::d3d11::CommandListD3D11::bindRenderTarget(up::uint32 index, GpuResourceView* view) {
     UP_ASSERT(index < maxRenderTargetBindings);
 
     if (view == nullptr) {
@@ -56,7 +56,7 @@ void up::gpu::d3d11::CommandListD3D11::bindRenderTarget(up::uint32 index, Resour
     _bindingsDirty = true;
 }
 
-void up::gpu::d3d11::CommandListD3D11::bindDepthStencil(ResourceView* view) {
+void up::gpu::d3d11::CommandListD3D11::bindDepthStencil(GpuResourceView* view) {
     auto dsv = static_cast<ResourceViewD3D11*>(view);
     UP_ASSERT(dsv->type() == ViewType::DSV);
 
@@ -102,7 +102,7 @@ void up::gpu::d3d11::CommandListD3D11::bindConstantBuffer(up::uint32 slot, GpuBu
     }
 }
 
-void up::gpu::d3d11::CommandListD3D11::bindShaderResource(up::uint32 slot, ResourceView* view, ShaderStage stage) {
+void up::gpu::d3d11::CommandListD3D11::bindShaderResource(up::uint32 slot, GpuResourceView* view, ShaderStage stage) {
     UP_ASSERT(view != nullptr);
 
     auto buffer = static_cast<ResourceViewD3D11*>(view);
@@ -116,7 +116,7 @@ void up::gpu::d3d11::CommandListD3D11::bindShaderResource(up::uint32 slot, Resou
     }
 }
 
-void up::gpu::d3d11::CommandListD3D11::bindSampler(up::uint32 slot, Sampler* sampler, ShaderStage stage) {
+void up::gpu::d3d11::CommandListD3D11::bindSampler(up::uint32 slot, GpuSampler* sampler, ShaderStage stage) {
     UP_ASSERT(sampler != nullptr);
 
     auto d3dSampler = static_cast<SamplerD3D11*>(sampler);
@@ -169,14 +169,14 @@ void up::gpu::d3d11::CommandListD3D11::drawIndexed(up::uint32 indexCount, up::ui
     _context->DrawIndexed(indexCount, firstIndex, baseIndex);
 }
 
-void up::gpu::d3d11::CommandListD3D11::clearRenderTarget(ResourceView* view, glm::vec4 color) {
+void up::gpu::d3d11::CommandListD3D11::clearRenderTarget(GpuResourceView* view, glm::vec4 color) {
     UP_ASSERT(view != nullptr);
 
     FLOAT c[4] = {color.x, color.y, color.z, color.w};
     _context->ClearRenderTargetView(static_cast<ID3D11RenderTargetView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), c);
 }
 
-void up::gpu::d3d11::CommandListD3D11::clearDepthStencil(ResourceView* view) {
+void up::gpu::d3d11::CommandListD3D11::clearDepthStencil(GpuResourceView* view) {
     UP_ASSERT(view != nullptr);
 
     _context->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), D3D11_CLEAR_DEPTH, 1.f, 0);
@@ -186,7 +186,7 @@ void up::gpu::d3d11::CommandListD3D11::finish() {
     _context->FinishCommandList(FALSE, out_ptr(_commands));
 }
 
-void up::gpu::d3d11::CommandListD3D11::clear(PipelineState* pipelineState) {
+void up::gpu::d3d11::CommandListD3D11::clear(GpuPipelineState* pipelineState) {
     _context->ClearState();
     _context->RSSetScissorRects(0, nullptr);
     _commands.reset();

@@ -18,19 +18,19 @@ namespace up::gpu::d3d11 {
 
         static rc<GpuDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
-        rc<SwapChain> createSwapChain(void* native_window) override;
-        box<GpuCommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
-        box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
+        rc<GpuSwapChain> createSwapChain(void* native_window) override;
+        box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
+        box<GpuPipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
         box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
-        box<Sampler> createSampler() override;
+        box<GpuSampler> createSampler() override;
 
         void execute(GpuCommandList* commandList) override;
 
-        box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
-        box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) override;
-        box<ResourceView> createShaderResourceView(GpuBuffer* resource) override;
-        box<ResourceView> createShaderResourceView(Texture* texture) override;
+        box<GpuResourceView> createRenderTargetView(Texture* renderTarget) override;
+        box<GpuResourceView> createDepthStencilView(Texture* depthStencilBuffer) override;
+        box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
+        box<GpuResourceView> createShaderResourceView(Texture* texture) override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;

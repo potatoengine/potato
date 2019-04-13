@@ -10,9 +10,9 @@
 namespace up::gpu {
     class CommandList;
     class GpuDevice;
-    class PipelineState;
-    class ResourceView;
-    class Sampler;
+    class GpuPipelineState;
+    class GpuResourceView;
+    class GpuSampler;
 } // namespace up::gpu
 
 namespace up {
@@ -28,11 +28,11 @@ namespace up {
         UP_RENDER_API void bindMaterialToRender(RenderContext& ctx);
 
     private:
-        box<gpu::PipelineState> _state;
+        box<gpu::GpuPipelineState> _state;
         rc<Shader> _vertexShader;
         rc<Shader> _pixelShader;
         vector<rc<Texture>> _textures;
-        vector<box<gpu::ResourceView>> _srvs;
-        vector<box<gpu::Sampler>> _samplers;
+        vector<box<gpu::GpuResourceView>> _srvs;
+        vector<box<gpu::GpuSampler>> _samplers;
     };
 } // namespace up

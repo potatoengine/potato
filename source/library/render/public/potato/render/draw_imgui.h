@@ -12,9 +12,9 @@ namespace up::gpu {
     class GpuBuffer;
     class GpuCommandList;
     class GpuDevice;
-    class PipelineState;
-    class ResourceView;
-    class Sampler;
+    class GpuPipelineState;
+    class GpuResourceView;
+    class GpuSampler;
 } // namespace up::gpu
 
 struct ImDrawData;
@@ -52,9 +52,9 @@ namespace up {
         box<gpu::GpuBuffer> _indexBuffer;
         box<gpu::GpuBuffer> _vertexBuffer;
         box<gpu::GpuBuffer> _constantBuffer;
-        box<gpu::PipelineState> _pipelineState;
-        box<gpu::ResourceView> _srv;
-        box<gpu::Sampler> _sampler;
+        box<gpu::GpuPipelineState> _pipelineState;
+        box<gpu::GpuResourceView> _srv;
+        box<gpu::GpuSampler> _sampler;
         rc<Shader> _vertShader;
         rc<Shader> _pixelShader;
         string _clipboardTextData;

@@ -17,7 +17,7 @@ namespace up::gpu::d3d11 {
         com_ptr<ID3D11PixelShader> pixelShader;
     };
 
-    class PipelineStateD3D11 : public PipelineState {
+    class PipelineStateD3D11 : public GpuPipelineState {
     public:
         explicit PipelineStateD3D11(PipelineStateParamsD3D11 params);
         virtual ~PipelineStateD3D11();

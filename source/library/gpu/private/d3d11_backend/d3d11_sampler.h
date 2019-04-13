@@ -7,7 +7,7 @@
 #include "potato/gpu/sampler.h"
 
 namespace up::gpu::d3d11 {
-    class SamplerD3D11 final : public Sampler {
+    class SamplerD3D11 final : public GpuSampler {
     public:
         explicit SamplerD3D11(com_ptr<ID3D11SamplerState> sampler);
         virtual ~SamplerD3D11();

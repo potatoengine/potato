@@ -8,7 +8,7 @@
 #include "potato/gpu/swap_chain.h"
 
 namespace up::gpu::d3d11 {
-    class SwapChainD3D11 : public SwapChain {
+    class SwapChainD3D11 : public GpuSwapChain {
     public:
         SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain);
         virtual ~SwapChainD3D11();
@@ -16,7 +16,7 @@ namespace up::gpu::d3d11 {
         SwapChainD3D11(SwapChainD3D11&&) = delete;
         SwapChainD3D11& operator=(SwapChainD3D11&&) = delete;
 
-        static rc<SwapChain> createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow);
+        static rc<GpuSwapChain> createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow);
 
         void present() override;
         void resizeBuffers(int width, int height) override;

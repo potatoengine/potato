@@ -18,11 +18,11 @@ namespace {
     };
 } // namespace
 
-up::RenderCamera::RenderCamera(rc<gpu::SwapChain> swapChain) : _swapChain(std::move(swapChain)) {}
+up::RenderCamera::RenderCamera(rc<gpu::GpuSwapChain> swapChain) : _swapChain(std::move(swapChain)) {}
 
 up::RenderCamera::~RenderCamera() = default;
 
-void up::RenderCamera::resetSwapChain(rc<gpu::SwapChain> swapChain) {
+void up::RenderCamera::resetSwapChain(rc<gpu::GpuSwapChain> swapChain) {
     _swapChain = std::move(swapChain);
     _backBuffer.reset();
     _depthStencilBuffer.reset();

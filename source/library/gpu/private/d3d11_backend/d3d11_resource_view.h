@@ -8,7 +8,7 @@
 #include "potato/gpu/resource_view.h"
 
 namespace up::gpu::d3d11 {
-    class ResourceViewD3D11 final : public ResourceView {
+    class ResourceViewD3D11 final : public GpuResourceView {
     public:
         explicit ResourceViewD3D11(ViewType type, com_ptr<ID3D11View> view);
         virtual ~ResourceViewD3D11();

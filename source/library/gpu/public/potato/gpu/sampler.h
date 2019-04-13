@@ -3,12 +3,12 @@
 #pragma once
 
 namespace up::gpu {
-    class Sampler {
+    class GpuSampler {
     public:
-        Sampler() = default;
-        virtual ~Sampler() = default;
+        GpuSampler() = default;
+        virtual ~GpuSampler() = default;
 
-        Sampler(Sampler&&) = delete;
-        Sampler& operator=(Sampler&&) = delete;
+        GpuSampler(GpuSampler&&) = delete;
+        GpuSampler& operator=(GpuSampler&&) = delete;
     };
 } // namespace up::gpu
