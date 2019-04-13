@@ -6,7 +6,10 @@ trigger:
     - releases/*
   paths:
     exclude:
-    - ci/
+    - documentation/
+    - resources/
+    - README.md
+    - License.txt
 
 pr:
   autoCancel: true

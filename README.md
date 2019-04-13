@@ -1,11 +1,23 @@
-The Engine Formerly Known as Grimm
+The Game Engine Formerly Known as Grimm <br>
 Possibly Known as UnderPotatoes
-Also goes by Bob
+
+<img title="Powered by a Potato" src="./documentation/images/potato.svg" width="128"/>
+
+Documentation
+-------------
+
+- [Getting Started](./documentation/getting-started.md)
+- [Coding Guidelines](./documentation/coding-style.md)
+
+Status
+------
+
+[![Build Status](https://seanmiddleditch.visualstudio.com/grimm/_apis/build/status/Build%20Grimm?branchName=master)](https://seanmiddleditch.visualstudio.com/grimm/_build/latest?definitionId=5&branchName=master)
 
 Authors
 -------
 
-- Sean Middleditch <sean.middleditch+grimm@gmail.com>
+Sean Middleditch (sean.middleditch+grimm@gmail.com)
 
 License
 -------
@@ -15,10 +27,4 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Documentation
--------------
-
-- [Getting Started](./documentation/getting-started.md)
-- [Coding Guidelines](./documentation/coding-style.md)
 
