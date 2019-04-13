@@ -38,11 +38,8 @@ up::ArcBallCameraController::ArcBallCameraController(Camera const& camera) noexc
 }
 
 void up::ArcBallCameraController::apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept {
-    // Movement controls and arcball don't make sense
-    //_target += relativeMovement * 10.f * frameTime;
-
-    _yaw = glm::mod(_yaw + relativeMotion.x, glm::two_pi<float>());
-    _pitch = glm::clamp(_pitch - relativeMotion.y, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
+    _yaw = glm::mod(_yaw + relativeMotion.x + relativeMovement.x * 0.001f, glm::two_pi<float>());
+    _pitch = glm::clamp(_pitch - relativeMotion.y - relativeMovement.z * 0.001f, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
     _boomLength = glm::clamp(_boomLength - relativeMotion.z, 1.f, 100.f);
 
     glm::vec3 pos{0, 0, _boomLength};
