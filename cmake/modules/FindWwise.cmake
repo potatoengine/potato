@@ -13,48 +13,38 @@ function(FindWwise)
         list(APPEND WWISE_HINTS "$ENV{ProgramW6432}/Audiokinetic/Wwise 2019.1.0.6947/SDK")
     endforeach()
         
-    set(WWISE_RELEASE_LIBRARY_SUFFICES "${WWISE_ARCHITECTURE}_${WWISE_MSVC_VERSION}/Release/lib")
-    set(WWISE_DEBUG_LIBRARY_SUFFICES "${WWISE_ARCHITECTURE}_${WWISE_MSVC_VERSION}/Debug/lib")
-
     find_path(WWISE_INCLUDE_DIR
         NAMES AK/AkWwiseSDKVersion.h
         PATH_SUFFIXES include
         HINTS ${WWISE_HINTS}
     )
-    
-    find_library(WWISE_LIBRARY_RELEASE
-        NAMES "SFLib.lib"
-        PATH_SUFFIXES ${WWISE_RELEASE_LIBRARY_SUFFICES}
+
+    find_path(WWISE_LIBRARY_DIR
+        NAMES SFLib.lib
+        PATH_SUFFIXES "${WWISE_ARCHITECTURE}_${WWISE_MSVC_VERSION}/Debug/lib"
         HINTS ${WWISE_HINTS}
     )
 
-    find_library(WWISE_LIBRARY_DEBUG
-        NAMES "SFLib.lib"
-        PATH_SUFFIXES ${WWISE_DEBUG_LIBRARY_SUFFICES}
-        HINTS ${WWISE_HINTS}
-    )
-
-    if(WWISE_INCLUDE_DIR AND WWISE_LIBRARY_RELEASE)
-        add_library(Wwise IMPORTED STATIC GLOBAL)
-        set_target_properties(Wwise PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES ${WWISE_INCLUDE_DIR}
+    if(WWISE_INCLUDE_DIR AND WWISE_LIBRARY_DIR)
+        add_library(Wwise INTERFACE)
+        target_include_directories(Wwise INTERFACE ${WWISE_INCLUDE_DIR})
+        target_link_libraries(Wwise INTERFACE
+            "${WWISE_LIBRARY_DIR}/SFLib.lib"
+            "${WWISE_LIBRARY_DIR}/AkMemoryMgr.lib"
+            "${WWISE_LIBRARY_DIR}/AkStreamMgr.lib"
+            "${WWISE_LIBRARY_DIR}/AkMusicEngine.lib"
+            "${WWISE_LIBRARY_DIR}/AkSpatialAudio.lib"
+            "${WWISE_LIBRARY_DIR}/AkVorbisDecoder.lib"
+            "${WWISE_LIBRARY_DIR}/AkSoundengine.lib"
+            dinput8
+            Winmm
+            dsound
+            dxguid
+            xinput
         )
-
-        if(WWISE_LIBRARY_DEBUG)
-            set_target_properties(Wwise PROPERTIES
-                IMPORTED_LOCATION_DEBUG ${WWISE_LIBRARY_DEBUG}
-                IMPORTED_LOCATION_RELEASE ${WWISE_LIBRARY_RELEASE}
-                MAP_IMPORTED_CONFIG_MINSIZEREL Release
-                MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release
-            ) 
-        else(WWISE_LIBRARY_DEBUG)
-            set_target_properties(Wwise PROPERTIES
-                IMPORTED_LOCATION "${WWISE_LIBRARY_RELEASE}"
-            )
-        endif(WWISE_LIBRARY_DEBUG)
     endif()
         
-    FIND_PACKAGE_HANDLE_STANDARD_ARGS(Wwise REQUIRED_VARS WWISE_INCLUDE_DIR WWISE_LIBRARY_RELEASE)
+    FIND_PACKAGE_HANDLE_STANDARD_ARGS(Wwise REQUIRED_VARS WWISE_INCLUDE_DIR WWISE_LIBRARY_DIR)
 endfunction(FindWwise)
 
 if(NOT TARGET Wwise)
