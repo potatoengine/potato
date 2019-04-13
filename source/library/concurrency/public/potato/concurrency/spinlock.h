@@ -6,7 +6,7 @@
 #include <atomic>
 #include <thread>
 
-namespace up::concurrency {
+namespace up {
     class Spinlock {
     public:
         inline void lock() noexcept;
@@ -46,4 +46,4 @@ namespace up::concurrency {
         _owner.store(std::thread::id(), std::memory_order_release);
     }
 
-} // namespace up::concurrency
+} // namespace up

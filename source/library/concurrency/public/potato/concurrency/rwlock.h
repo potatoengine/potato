@@ -4,7 +4,7 @@
 
 #include <atomic>
 
-namespace up::concurrency {
+namespace up {
     class RWLock {
     public:
         class Reader {
@@ -74,4 +74,4 @@ namespace up::concurrency {
         _lock.store(0, std::memory_order_release);
     }
 
-} // namespace up::concurrency
+} // namespace up

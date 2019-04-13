@@ -9,7 +9,7 @@
 #include "potato/foundation/delegate.h"
 #include <thread>
 
-namespace up::concurrency {
+namespace up {
     using Task = delegate<void()>;
     using TaskQueue = ConcurrentQueue<Task>;
 
@@ -34,4 +34,4 @@ namespace up::concurrency {
         std::thread _thread;
     };
 
-} // namespace up::concurrency
+} // namespace up

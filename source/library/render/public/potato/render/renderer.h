@@ -56,7 +56,7 @@ namespace up {
         box<gpu::Buffer> _debugLineBuffer;
         fs::FileSystem _fileSystem;
         std::thread _renderThread;
-        concurrency::ConcurrentQueue<RenderTask> _taskQueue;
+        ConcurrentQueue<RenderTask> _taskQueue;
         uint32 _frameCounter = 0;
         uint64 _startTimestamp = 0;
         double _frameTimestamp = 0;

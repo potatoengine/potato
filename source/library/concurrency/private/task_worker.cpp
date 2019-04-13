@@ -4,7 +4,7 @@
 #include "potato/concurrency/semaphore.h"
 #include "potato/concurrency/thread_util.h"
 
-up::concurrency::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _queue(queue) {
+up::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _queue(queue) {
     // just to make sure this is called at least once on the main thread...
     [[maybe_unused]] auto _ = currentSmallThreadId();
 
@@ -22,13 +22,13 @@ up::concurrency::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_vi
     sem.wait();
 }
 
-up::concurrency::TaskWorker::~TaskWorker() {
+up::TaskWorker::~TaskWorker() {
     if (_thread.joinable()) {
         _thread.join();
     }
 }
 
-int up::concurrency::TaskWorker::_threadMain() {
+int up::TaskWorker::_threadMain() {
     Task task;
     while (_queue.dequeWait(task)) {
         task();
