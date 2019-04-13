@@ -21,7 +21,7 @@ bool up::recon::JsonConverter::convert(Context& ctx) {
     FileSystem fileSys;
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != Result::Success) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }

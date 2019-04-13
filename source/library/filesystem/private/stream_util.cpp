@@ -4,9 +4,9 @@
 #include "potato/filesystem/stream.h"
 #include "potato/foundation/string_writer.h"
 
-auto up::readBinary(Stream& stream, vector<up::byte>& out) -> Result {
+auto up::readBinary(Stream& stream, vector<up::byte>& out) -> IOResult {
     if (!stream.canRead() || !stream.canSeek()) {
-        return Result::UnsupportedOperation;
+        return IOResult::UnsupportedOperation;
     }
 
     auto size = stream.remaining();
@@ -17,9 +17,9 @@ auto up::readBinary(Stream& stream, vector<up::byte>& out) -> Result {
     return stream.read(read);
 }
 
-auto up::readText(Stream& stream, string& out) -> Result {
+auto up::readText(Stream& stream, string& out) -> IOResult {
     if (!stream.canRead() || !stream.canSeek()) {
-        return Result::UnsupportedOperation;
+        return IOResult::UnsupportedOperation;
     }
 
     auto size = stream.remaining();
@@ -37,9 +37,9 @@ auto up::readText(Stream& stream, string& out) -> Result {
     return rs;
 }
 
-auto up::writeAllText(Stream& stream, string_view text) -> Result {
+auto up::writeAllText(Stream& stream, string_view text) -> IOResult {
     if (!stream.canWrite()) {
-        return Result::UnsupportedOperation;
+        return IOResult::UnsupportedOperation;
     }
 
     span<char const> textSpan(text.data(), text.size());

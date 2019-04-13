@@ -27,13 +27,13 @@ auto up::HashCache::hashAssetStream(Stream& stream) -> up::uint64 {
 auto up::HashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
     FileStat stat;
     auto rs = _fileSystem.fileStat(path, stat);
-    if (rs != Result::Success) {
+    if (rs != IOResult::Success) {
         return 0;
     }
 
     auto it = _hashes.find(path);
     if (it != _hashes.end()) {
-        if (rs == Result::Success && stat.size == it->second->size && stat.mtime == it->second->mtime) {
+        if (rs == IOResult::Success && stat.size == it->second->size && stat.mtime == it->second->mtime) {
             return it->second->hash;
         }
     }
@@ -66,12 +66,12 @@ bool up::HashCache::serialize(Stream& stream) const {
     }
 
     auto json = jsonRoot.dump();
-    return writeAllText(stream, {json.data(), json.size()}) == Result::Success;
+    return writeAllText(stream, {json.data(), json.size()}) == IOResult::Success;
 }
 
 bool up::HashCache::deserialize(Stream& stream) {
     string jsonText;
-    if (readText(stream, jsonText) != Result::Success) {
+    if (readText(stream, jsonText) != IOResult::Success) {
         return false;
     }
 

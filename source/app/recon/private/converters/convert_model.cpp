@@ -23,7 +23,7 @@ bool up::recon::ModelConverter::convert(Context& ctx) {
     FileSystem fileSys;
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != Result::Success) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
@@ -32,7 +32,7 @@ bool up::recon::ModelConverter::convert(Context& ctx) {
     auto file = fileSys.openRead(sourceAbsolutePath);
 
     vector<byte> contents;
-    if (readBinary(file, contents) != Result::Success) {
+    if (readBinary(file, contents) != IOResult::Success) {
         ctx.logger().error("Failed to read");
         return false;
     }

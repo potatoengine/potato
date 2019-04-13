@@ -73,12 +73,12 @@ bool up::AssetLibrary::serialize(Stream& stream) const {
     jsonRoot["records"] = std::move(jsonRecords);
 
     auto json = jsonRoot.dump(2);
-    return writeAllText(stream, {json.data(), json.size()}) == Result::Success;
+    return writeAllText(stream, {json.data(), json.size()}) == IOResult::Success;
 }
 
 bool up::AssetLibrary::deserialize(Stream& stream) {
     string jsonText;
-    if (readText(stream, jsonText) != Result::Success) {
+    if (readText(stream, jsonText) != IOResult::Success) {
         return false;
     }
 

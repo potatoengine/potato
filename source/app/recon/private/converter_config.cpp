@@ -109,7 +109,7 @@ bool up::recon::parseConfigFile(ConverterConfig& config, FileSystem& fileSystem,
     }
 
     string text;
-    if (readText(stream, text) != Result::Success) {
+    if (readText(stream, text) != IOResult::Success) {
         logger.error("Failed to read `{}'", path.c_str());
         return false;
     }

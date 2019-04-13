@@ -34,7 +34,7 @@ namespace {
             }
 
             up::string shader;
-            if (up::readText(stream, shader) != up::Result::Success) {
+            if (up::readText(stream, shader) != up::IOResult::Success) {
                 return E_FAIL;
             }
 
@@ -72,7 +72,7 @@ bool up::recon::HlslConverter::convert(Context& ctx) {
     }
 
     string shader;
-    if (readText(stream, shader) != Result::Success) {
+    if (readText(stream, shader) != IOResult::Success) {
         ctx.logger().error("Failed to read `{}'", absoluteSourcePath);
         return false;
     }
@@ -109,7 +109,7 @@ bool up::recon::HlslConverter::compile(Context& ctx, FileSystem& fileSys, zstrin
     string destParentAbsolutePath(path::parent(destAbsolutePath));
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != Result::Success) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }

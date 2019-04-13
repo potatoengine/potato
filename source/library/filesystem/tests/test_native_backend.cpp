@@ -76,7 +76,7 @@ DOCTEST_TEST_SUITE("[potato][filesystem] up::NativeBackend") {
 
         FileStat stat;
         auto rs = native.fileStat("test.txt", stat);
-        DOCTEST_CHECK_EQ(rs, Result::Success);
+        DOCTEST_CHECK_EQ(rs, IOResult::Success);
         DOCTEST_CHECK_EQ(stat.type, FileType::Regular);
 
         // note: can't test size (Windows/UNIX line endings!) or mtime (git)

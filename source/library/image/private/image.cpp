@@ -8,7 +8,7 @@ static int stb_read(void* user, char* data, int size) {
     auto* stream = static_cast<up::Stream*>(user);
 
     auto bytes = up::span<char>{data, static_cast<size_t>(size)}.as_bytes();
-    if (stream->read(bytes) != up::Result::Success) {
+    if (stream->read(bytes) != up::IOResult::Success) {
         return 0;
     }
 

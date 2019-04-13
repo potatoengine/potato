@@ -18,8 +18,8 @@ DOCTEST_TEST_SUITE("[potato][filesystem] up::NullBackend") {
         auto cb(EnumerateCallback{[](FileInfo const&) { return EnumerateResult::Continue; }});
         DOCTEST_CHECK_EQ(null.enumerate("/", cb), EnumerateResult::Continue);
 
-        DOCTEST_CHECK_EQ(null.createDirectories("/foo/bar"), Result::UnsupportedOperation);
+        DOCTEST_CHECK_EQ(null.createDirectories("/foo/bar"), IOResult::UnsupportedOperation);
 
-        DOCTEST_CHECK_EQ(null.copyFile("/test.txt", "/out.txt"), Result::UnsupportedOperation);
+        DOCTEST_CHECK_EQ(null.copyFile("/test.txt", "/out.txt"), IOResult::UnsupportedOperation);
     }
 }

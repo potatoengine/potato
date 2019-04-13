@@ -19,9 +19,9 @@ namespace up {
             bool canWrite() const noexcept override { return false; }
             bool canSeek() const noexcept override { return true; }
 
-            Result seek(SeekPosition position, Stream::difference_type offset) override {
+            IOResult seek(SeekPosition position, Stream::difference_type offset) override {
                 _stream.seekg(offset, position == SeekPosition::Begin ? std::ios::beg : position == SeekPosition::End ? std::ios::end : std::ios::cur);
-                return Result::Success;
+                return IOResult::Success;
             }
             Stream::difference_type tell() const override {
                 return _stream.tellg();
@@ -34,9 +34,9 @@ namespace up {
                 return end - pos;
             }
 
-            Result read(span<byte>& buffer) override {
+            IOResult read(span<byte>& buffer) override {
                 if (!_stream.is_open()) {
-                    return Result::InvalidArgument;
+                    return IOResult::InvalidArgument;
                 }
 
                 _stream.read(buffer.as_chars().data(), buffer.size());
@@ -45,15 +45,15 @@ namespace up {
                     _stream.clear();
                 }
 
-                return Result::Success;
+                return IOResult::Success;
             }
 
-            Result write(span<byte const>) override {
-                return Result::UnsupportedOperation;
+            IOResult write(span<byte const>) override {
+                return IOResult::UnsupportedOperation;
             }
 
-            Result flush() override {
-                return Result::UnsupportedOperation;
+            IOResult flush() override {
+                return IOResult::UnsupportedOperation;
             }
 
             mutable std::ifstream _stream;
@@ -68,8 +68,8 @@ namespace up {
             bool canWrite() const noexcept override { return true; }
             bool canSeek() const noexcept override { return false; }
 
-            Result seek(SeekPosition position, Stream::difference_type offset) override {
-                return Result::UnsupportedOperation;
+            IOResult seek(SeekPosition position, Stream::difference_type offset) override {
+                return IOResult::UnsupportedOperation;
             }
             Stream::difference_type tell() const override {
                 return 0;
@@ -78,18 +78,18 @@ namespace up {
                 return 0;
             }
 
-            Result write(span<byte const> buffer) override {
+            IOResult write(span<byte const> buffer) override {
                 _stream.write(buffer.as_chars().data(), buffer.size());
-                return Result::Success;
+                return IOResult::Success;
             }
 
-            Result flush() override {
+            IOResult flush() override {
                 _stream.flush();
-                return Result::Success;
+                return IOResult::Success;
             }
 
-            Result read(span<byte>&) override {
-                return Result::UnsupportedOperation;
+            IOResult read(span<byte>&) override {
+                return IOResult::UnsupportedOperation;
             }
 
             std::ofstream _stream;

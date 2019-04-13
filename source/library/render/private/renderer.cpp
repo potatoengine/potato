@@ -111,7 +111,7 @@ auto up::Renderer::context() -> RenderContext {
 auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (readBinary(stream, contents) != Result{}) {
+    if (readBinary(stream, contents) != IOResult{}) {
         return {};
     }
     stream.close();
@@ -216,7 +216,7 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
 auto up::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (readBinary(stream, contents) != Result{}) {
+    if (readBinary(stream, contents) != IOResult{}) {
         return {};
     }
     return up::new_shared<Shader>(std::move(contents));

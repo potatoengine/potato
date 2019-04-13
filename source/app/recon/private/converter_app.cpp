@@ -78,14 +78,14 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
     _logger.info("Cache: `{}'", _config.cacheFolderPath);
 
     if (!_fileSystem.directoryExists(_config.destinationFolderPath.c_str())) {
-        if (_fileSystem.createDirectories(_config.destinationFolderPath.c_str()) != Result::Success) {
+        if (_fileSystem.createDirectories(_config.destinationFolderPath.c_str()) != IOResult::Success) {
             _logger.error("Failed to create `{}'", _config.destinationFolderPath);
             return false;
         }
     }
 
     if (!_fileSystem.directoryExists(_config.cacheFolderPath.c_str())) {
-        if (_fileSystem.createDirectories(_config.cacheFolderPath.c_str()) != Result::Success) {
+        if (_fileSystem.createDirectories(_config.cacheFolderPath.c_str()) != IOResult::Success) {
             _logger.error("Failed to create `{}'", _config.cacheFolderPath);
             return false;
         }
@@ -225,7 +225,7 @@ bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
         if (!dryRun) {
             string osPath = path::join({_config.destinationFolderPath.c_str(), deletePath.c_str()});
             auto rs = _fileSystem.remove(osPath.c_str());
-            if (rs != Result::Success) {
+            if (rs != IOResult::Success) {
                 _logger.error("Failed to remove `{}'", osPath);
             }
         }

@@ -18,7 +18,7 @@ bool up::recon::CopyConverter::convert(Context& ctx) {
     FileSystem fileSys;
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != Result::Success) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
@@ -28,7 +28,7 @@ bool up::recon::CopyConverter::convert(Context& ctx) {
     ctx.addOutput(ctx.sourceFilePath());
 
     auto rs = fileSys.copyFile(sourceAbsolutePath.c_str(), destAbsolutePath.c_str());
-    if (rs != Result::Success) {
+    if (rs != IOResult::Success) {
         ctx.logger().error("Failed to copy `{}' to `{}': {}", sourceAbsolutePath, destAbsolutePath, static_cast<uint64>(rs));
         return false;
     }

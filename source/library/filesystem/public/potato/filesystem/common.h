@@ -7,7 +7,7 @@
 #include "potato/foundation/int_types.h"
 
 namespace up {
-    enum class Result {
+    enum class IOResult {
         Success,
         AccessDenied,
         FileNotFound,
