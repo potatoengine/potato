@@ -8,7 +8,7 @@
 #include "potato/gpu/texture.h"
 
 namespace up::gpu::d3d11 {
-    class TextureD3D11 final : public Texture {
+    class TextureD3D11 final : public GpuTexture {
     public:
         explicit TextureD3D11(com_ptr<ID3D11Resource> texture);
         virtual ~TextureD3D11();

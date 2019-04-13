@@ -179,7 +179,7 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
 
     rc<Shader> vertex;
     rc<Shader> pixel;
-    vector<rc<Texture>> textures;
+    vector<rc<GpuTexture>> textures;
 
     auto jsonShaders = jsonRoot["shaders"];
     if (jsonShaders.is_object()) {
@@ -222,7 +222,7 @@ auto up::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
     return up::new_shared<Shader>(std::move(contents));
 }
 
-auto up::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
+auto up::Renderer::loadTextureSync(zstring_view path) -> rc<GpuTexture> {
     Stream stream = _fileSystem.openRead(path);
     if (!stream) {
         return nullptr;
@@ -244,5 +244,5 @@ auto up::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
         return nullptr;
     }
 
-    return new_shared<Texture>(std::move(img), std::move(tex));
+    return new_shared<GpuTexture>(std::move(img), std::move(tex));
 }

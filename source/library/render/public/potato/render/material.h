@@ -18,11 +18,11 @@ namespace up::gpu {
 namespace up {
     class RenderContext;
     class Shader;
-    class Texture;
+    class GpuTexture;
 
     class Material : public shared<Material> {
     public:
-        UP_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures);
+        UP_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<GpuTexture>> textures);
         UP_RENDER_API ~Material();
 
         UP_RENDER_API void bindMaterialToRender(RenderContext& ctx);
@@ -31,7 +31,7 @@ namespace up {
         box<gpu::GpuPipelineState> _state;
         rc<Shader> _vertexShader;
         rc<Shader> _pixelShader;
-        vector<rc<Texture>> _textures;
+        vector<rc<GpuTexture>> _textures;
         vector<box<gpu::GpuResourceView>> _srvs;
         vector<box<gpu::GpuSampler>> _samplers;
     };

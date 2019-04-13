@@ -6,13 +6,13 @@
 #include <glm/vec3.hpp>
 
 namespace up::gpu {
-    class Texture {
+    class GpuTexture {
     public:
-        Texture() = default;
-        virtual ~Texture() = default;
+        GpuTexture() = default;
+        virtual ~GpuTexture() = default;
 
-        Texture(Texture&&) = delete;
-        Texture& operator=(Texture&&) = delete;
+        GpuTexture(GpuTexture&&) = delete;
+        GpuTexture& operator=(GpuTexture&&) = delete;
 
         virtual TextureType type() const noexcept = 0;
         virtual Format format() const noexcept = 0;

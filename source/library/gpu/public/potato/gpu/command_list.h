@@ -12,7 +12,7 @@ namespace up::gpu {
     class GpuResourceView;
     class GpuPipelineState;
     class GpuSampler;
-    class Texture;
+    class GpuTexture;
 
     class GpuCommandList {
     public:

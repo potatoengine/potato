@@ -20,7 +20,7 @@ namespace up::gpu::d3d11 {
 
         void present() override;
         void resizeBuffers(int width, int height) override;
-        box<Texture> getBuffer(int index) override;
+        box<GpuTexture> getBuffer(int index) override;
         int getCurrentBufferIndex() override;
 
     private:

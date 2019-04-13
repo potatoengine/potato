@@ -13,7 +13,7 @@ namespace up::gpu {
     class CommandList;
     class GpuDevice;
     class GpuResourceView;
-    class Texture;
+    class GpuTexture;
 } // namespace up::gpu
 
 namespace up {
@@ -32,8 +32,8 @@ namespace up {
     private:
         rc<gpu::GpuSwapChain> _swapChain;
         box<gpu::GpuBuffer> _cameraDataBuffer;
-        box<gpu::Texture> _backBuffer;
-        box<gpu::Texture> _depthStencilBuffer;
+        box<gpu::GpuTexture> _backBuffer;
+        box<gpu::GpuTexture> _depthStencilBuffer;
         box<gpu::GpuResourceView> _rtv;
         box<gpu::GpuResourceView> _dsv;
     };

@@ -63,7 +63,7 @@ auto up::gpu::d3d11::DeviceD3D11::createCommandList(GpuPipelineState* pipelineSt
     return CommandListD3D11::createCommandList(_device.get(), pipelineState);
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createRenderTargetView(Texture* renderTarget) -> box<GpuResourceView> {
+auto up::gpu::d3d11::DeviceD3D11::createRenderTargetView(GpuTexture* renderTarget) -> box<GpuResourceView> {
     UP_ASSERT(renderTarget != nullptr);
 
     auto d3d11Resource = static_cast<TextureD3D11*>(renderTarget);
@@ -81,7 +81,7 @@ auto up::gpu::d3d11::DeviceD3D11::createRenderTargetView(Texture* renderTarget) 
     return new_box<ResourceViewD3D11>(ViewType::RTV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createDepthStencilView(Texture* depthStencilBuffer) -> box<GpuResourceView> {
+auto up::gpu::d3d11::DeviceD3D11::createDepthStencilView(GpuTexture* depthStencilBuffer) -> box<GpuResourceView> {
     UP_ASSERT(depthStencilBuffer != nullptr);
 
     auto d3d11Resource = static_cast<TextureD3D11*>(depthStencilBuffer);
@@ -119,7 +119,7 @@ auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) 
     return new_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(Texture* texture) -> box<GpuResourceView> {
+auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuTexture* texture) -> box<GpuResourceView> {
     UP_ASSERT(texture != nullptr);
 
     auto d3dTexture = static_cast<TextureD3D11*>(texture);
@@ -168,7 +168,7 @@ auto up::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, up::uint64 size)
     return new_box<BufferD3D11>(type, size, std::move(buffer));
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createTexture2D(TextureDesc const& desc, span<up::byte const> data) -> box<Texture> {
+auto up::gpu::d3d11::DeviceD3D11::createTexture2D(TextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
     auto bytesPerPixel = toByteSize(desc.format);
 
     UP_ASSERT(data.empty() || data.size() == desc.width * desc.height * bytesPerPixel);

@@ -22,15 +22,15 @@ namespace up::gpu::d3d11 {
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
-        box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
+        box<GpuTexture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
         box<GpuSampler> createSampler() override;
 
         void execute(GpuCommandList* commandList) override;
 
-        box<GpuResourceView> createRenderTargetView(Texture* renderTarget) override;
-        box<GpuResourceView> createDepthStencilView(Texture* depthStencilBuffer) override;
+        box<GpuResourceView> createRenderTargetView(GpuTexture* renderTarget) override;
+        box<GpuResourceView> createDepthStencilView(GpuTexture* depthStencilBuffer) override;
         box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
-        box<GpuResourceView> createShaderResourceView(Texture* texture) override;
+        box<GpuResourceView> createShaderResourceView(GpuTexture* texture) override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;

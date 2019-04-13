@@ -10,7 +10,7 @@
 #include "potato/gpu/device.h"
 #include "potato/gpu/sampler.h"
 
-up::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)), _textures(std::move(textures)), _srvs(_textures.size()), _samplers(_textures.size()) {}
+up::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<GpuTexture>> textures) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)), _textures(std::move(textures)), _srvs(_textures.size()), _samplers(_textures.size()) {}
 
 up::Material::~Material() = default;
 

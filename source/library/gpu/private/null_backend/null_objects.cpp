@@ -28,11 +28,11 @@ auto up::gpu::null::DeviceNull::createPipelineState(PipelineStateDesc const&) ->
     return new_box<PipelineStateNull>();
 }
 
-auto up::gpu::null::DeviceNull::createRenderTargetView(Texture* renderTarget) -> box<GpuResourceView> {
+auto up::gpu::null::DeviceNull::createRenderTargetView(GpuTexture* renderTarget) -> box<GpuResourceView> {
     return new_box<ResourceViewNull>(ViewType::RTV);
 }
 
-auto up::gpu::null::DeviceNull::createDepthStencilView(Texture* depthStencilBuffer) -> box<GpuResourceView> {
+auto up::gpu::null::DeviceNull::createDepthStencilView(GpuTexture* depthStencilBuffer) -> box<GpuResourceView> {
     return new_box<ResourceViewNull>(ViewType::DSV);
 }
 
@@ -40,7 +40,7 @@ auto up::gpu::null::DeviceNull::createShaderResourceView(GpuBuffer* resource) ->
     return new_box<ResourceViewNull>(ViewType::SRV);
 }
 
-auto up::gpu::null::DeviceNull::createShaderResourceView(Texture* resource) -> box<GpuResourceView> {
+auto up::gpu::null::DeviceNull::createShaderResourceView(GpuTexture* resource) -> box<GpuResourceView> {
     return new_box<ResourceViewNull>(ViewType::SRV);
 }
 
@@ -48,7 +48,7 @@ auto up::gpu::null::DeviceNull::createBuffer(BufferType type, up::uint64 size) -
     return new_box<BufferNull>(type);
 }
 
-auto up::gpu::null::DeviceNull::createTexture2D(TextureDesc const& desc, span<up::byte const> data) -> box<Texture> {
+auto up::gpu::null::DeviceNull::createTexture2D(TextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
     return new_box<TextureNull>();
 }
 
@@ -56,7 +56,7 @@ auto up::gpu::null::DeviceNull::createSampler() -> box<GpuSampler> {
     return new_box<SamplerNull>();
 }
 
-auto up::gpu::null::SwapChainNull::getBuffer(int index) -> box<Texture> {
+auto up::gpu::null::SwapChainNull::getBuffer(int index) -> box<GpuTexture> {
     return new_box<TextureNull>();
 }
 

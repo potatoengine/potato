@@ -28,13 +28,13 @@ namespace up::gpu::null {
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(PipelineStateDesc const& desc) override;
         box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
-        box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
+        box<GpuTexture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
         box<GpuSampler> createSampler() override;
 
-        box<GpuResourceView> createRenderTargetView(Texture* renderTarget) override;
-        box<GpuResourceView> createDepthStencilView(Texture* depthStencilBuffer) override;
+        box<GpuResourceView> createRenderTargetView(GpuTexture* renderTarget) override;
+        box<GpuResourceView> createDepthStencilView(GpuTexture* depthStencilBuffer) override;
         box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
-        box<GpuResourceView> createShaderResourceView(Texture* texture) override;
+        box<GpuResourceView> createShaderResourceView(GpuTexture* texture) override;
 
         void execute(GpuCommandList* commands) override {}
     };
@@ -53,7 +53,7 @@ namespace up::gpu::null {
     public:
         void present() override {}
         void resizeBuffers(int width, int height) override {}
-        box<Texture> getBuffer(int index) override;
+        box<GpuTexture> getBuffer(int index) override;
         int getCurrentBufferIndex() override;
     };
 
@@ -100,7 +100,7 @@ namespace up::gpu::null {
         BufferType _type;
     };
 
-    class TextureNull final : public Texture {
+    class TextureNull final : public GpuTexture {
     public:
         TextureType type() const noexcept override { return TextureType::Texture2D; }
         Format format() const noexcept override { return Format::Unknown; }

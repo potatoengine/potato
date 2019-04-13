@@ -45,7 +45,7 @@ void up::gpu::d3d11::SwapChainD3D11::resizeBuffers(int width, int height) {
     _swapChain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 }
 
-auto up::gpu::d3d11::SwapChainD3D11::getBuffer(int index) -> box<Texture> {
+auto up::gpu::d3d11::SwapChainD3D11::getBuffer(int index) -> box<GpuTexture> {
     com_ptr<ID3D11Resource> buffer;
     _swapChain->GetBuffer(index, __uuidof(ID3D11Resource), out_ptr(buffer));
     if (buffer == nullptr) {

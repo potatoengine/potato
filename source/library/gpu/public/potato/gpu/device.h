@@ -14,7 +14,7 @@ namespace up::gpu {
     class GpuResourceView;
     class GpuSampler;
     class GpuSwapChain;
-    class Texture;
+    class GpuTexture;
 
     struct PipelineStateDesc;
     struct TextureDesc;
@@ -31,14 +31,14 @@ namespace up::gpu {
         virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
         virtual box<GpuPipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
         virtual box<GpuBuffer> createBuffer(BufferType type, uint64 size) = 0;
-        virtual box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) = 0;
+        virtual box<GpuTexture> createTexture2D(TextureDesc const& desc, span<byte const> data) = 0;
         virtual box<GpuSampler> createSampler() = 0;
 
         virtual void execute(GpuCommandList* commandList) = 0;
 
-        virtual box<GpuResourceView> createRenderTargetView(Texture* renderTarget) = 0;
-        virtual box<GpuResourceView> createDepthStencilView(Texture* depthStencilBuffer) = 0;
+        virtual box<GpuResourceView> createRenderTargetView(GpuTexture* renderTarget) = 0;
+        virtual box<GpuResourceView> createDepthStencilView(GpuTexture* depthStencilBuffer) = 0;
         virtual box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
-        virtual box<GpuResourceView> createShaderResourceView(Texture* texture) = 0;
+        virtual box<GpuResourceView> createShaderResourceView(GpuTexture* texture) = 0;
     };
 } // namespace up::gpu

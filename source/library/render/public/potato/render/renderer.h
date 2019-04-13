@@ -23,7 +23,7 @@ namespace up {
     class Material;
     class Mesh;
     class Shader;
-    class Texture;
+    class GpuTexture;
 
     class Renderer {
     public:
@@ -41,7 +41,7 @@ namespace up {
         UP_RENDER_API rc<Mesh> loadMeshSync(zstring_view path);
         UP_RENDER_API rc<Material> loadMaterialSync(zstring_view path);
         UP_RENDER_API rc<Shader> loadShaderSync(zstring_view path);
-        UP_RENDER_API rc<Texture> loadTextureSync(zstring_view path);
+        UP_RENDER_API rc<GpuTexture> loadTextureSync(zstring_view path);
 
         gpu::GpuDevice& device() const noexcept { return *_device; }
         gpu::GpuCommandList& commandList() const noexcept { return *_commandList; }
