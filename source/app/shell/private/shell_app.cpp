@@ -25,6 +25,7 @@
 #include "potato/render/shader.h"
 #include "potato/render/draw_imgui.h"
 #include "potato/render/debug_draw.h"
+#include "potato/audio/audio_engine.h"
 
 #include <chrono>
 #include <SDL.h>
@@ -64,6 +65,12 @@ int up::ShellApp::initialize() {
 
     if (!SDL_GetWindowWMInfo(_window.get(), &wmInfo)) {
         _errorDialog("Could not get window info");
+        return 1;
+    }
+
+    AudioEngine audio;
+    if (!audio.initialize()) {
+        _errorDialog("Could not initialize audio engine");
         return 1;
     }
 
