@@ -3,6 +3,7 @@
 #include "camera_controller.h"
 #include "camera.h"
 #include <glm/common.hpp>
+#include <glm/geometric.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <cmath>
 
@@ -35,6 +36,11 @@ void up::FlyCameraController::apply(Camera& camera, glm::vec3 relativeMovement, 
 }
 
 up::ArcBallCameraController::ArcBallCameraController(Camera const& camera) noexcept {
+    auto view = -camera.view();
+
+    _pitch = asin(-view.y);
+    _yaw = atan2(view.x, view.z);
+    _boomLength = distance(camera.position(), _target);
 }
 
 void up::ArcBallCameraController::apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept {
