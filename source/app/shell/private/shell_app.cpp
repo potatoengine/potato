@@ -204,7 +204,7 @@ void up::ShellApp::run() {
         objRotateInput += frameTime;
         _root->transform(glm::rotate(glm::rotate(glm::translate(glm::identity<glm::mat4x4>(), {0, 5, 0}), objRotateInput, {0, 1, 0}), std::sin(objRotateInput), {1, 0, 0}));
 
-        gpu::Viewport viewport;
+        gpu::GpuViewportDesc viewport;
         int width, height;
         SDL_GetWindowSize(_window.get(), &width, &height);
         viewport.width = static_cast<float>(width);

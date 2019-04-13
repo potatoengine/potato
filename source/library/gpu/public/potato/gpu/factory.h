@@ -21,7 +21,7 @@ namespace up::gpu {
         GpuDeviceFactory& operator=(GpuDeviceFactory&&) = delete;
 
         virtual bool isEnabled() const = 0;
-        virtual void enumerateDevices(delegate<void(DeviceInfo const&)> callback) = 0;
+        virtual void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) = 0;
         virtual rc<GpuDevice> createDevice(int index) = 0;
     };
 

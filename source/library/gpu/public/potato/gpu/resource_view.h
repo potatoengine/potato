@@ -13,6 +13,6 @@ namespace up::gpu {
         GpuResourceView(GpuResourceView&&) = delete;
         GpuResourceView& operator=(GpuResourceView&&) = delete;
 
-        virtual ViewType type() const = 0;
+        virtual GpuViewType type() const = 0;
     };
 } // namespace up::gpu

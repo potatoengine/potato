@@ -22,15 +22,15 @@ namespace up::gpu::d3d11 {
 
         void bindRenderTarget(uint32 index, GpuResourceView* view) override;
         void bindDepthStencil(GpuResourceView* view) override;
-        void bindIndexBuffer(GpuBuffer* buffer, IndexType indexType, uint32 offset = 0) override;
+        void bindIndexBuffer(GpuBuffer* buffer, GpuIndexFormat indexType, uint32 offset = 0) override;
         void bindVertexBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override;
-        void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, ShaderStage stage) override;
-        void bindShaderResource(uint32 slot, GpuResourceView* view, ShaderStage stage) override;
-        void bindSampler(uint32 slot, GpuSampler* sampler, ShaderStage stage) override;
-        void setClipRect(Rect rect) override;
+        void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, GpuShaderStage stage) override;
+        void bindShaderResource(uint32 slot, GpuResourceView* view, GpuShaderStage stage) override;
+        void bindSampler(uint32 slot, GpuSampler* sampler, GpuShaderStage stage) override;
+        void setClipRect(GpuClipRect rect) override;
 
-        void setPrimitiveTopology(PrimitiveTopology topology) override;
-        void setViewport(Viewport const& viewport) override;
+        void setPrimitiveTopology(GpuPrimitiveTopology topology) override;
+        void setViewport(GpuViewportDesc const& viewport) override;
 
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override;
         void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) override;

@@ -27,8 +27,8 @@ namespace up {
 
     struct MeshChannel {
         uint8 buffer = 0;
-        gpu::Format format = gpu::Format::R32G32B32Float;
-        gpu::Semantic semantic = gpu::Semantic::Position;
+        gpu::GpuFormat format = gpu::GpuFormat::R32G32B32Float;
+        gpu::GpuShaderSemantic semantic = gpu::GpuShaderSemantic::Position;
     };
 
     class Mesh : public shared<Mesh> {
@@ -36,7 +36,7 @@ namespace up {
         UP_RENDER_API explicit Mesh(vector<uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels);
         UP_RENDER_API ~Mesh();
 
-        UP_RENDER_API void populateLayout(span<gpu::InputLayoutElement>& inputLayout) const noexcept;
+        UP_RENDER_API void populateLayout(span<gpu::GpuInputLayoutElement>& inputLayout) const noexcept;
         UP_RENDER_API void updateVertexBuffers(RenderContext& ctx);
         UP_RENDER_API void bindVertexBuffers(RenderContext& ctx);
 

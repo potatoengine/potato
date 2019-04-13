@@ -11,17 +11,17 @@ up::gpu::d3d11::TextureD3D11::TextureD3D11(com_ptr<ID3D11Resource> texture) : _t
 
 up::gpu::d3d11::TextureD3D11::~TextureD3D11() = default;
 
-auto up::gpu::d3d11::TextureD3D11::type() const noexcept -> TextureType {
+auto up::gpu::d3d11::TextureD3D11::type() const noexcept -> GpuTextureType {
     com_ptr<ID3D11Texture2D> texture2D;
     if (SUCCEEDED(_texture->QueryInterface(__uuidof(ID3D11Texture2D), out_ptr(texture2D)))) {
-        return TextureType::Texture2D;
+        return GpuTextureType::Texture2D;
     }
 
     UP_UNREACHABLE("could not detect texture type");
-    return TextureType::Texture2D;
+    return GpuTextureType::Texture2D;
 }
 
-auto up::gpu::d3d11::TextureD3D11::format() const noexcept -> Format {
+auto up::gpu::d3d11::TextureD3D11::format() const noexcept -> GpuFormat {
     return fromNative(nativeFormat());
 }
 

@@ -16,8 +16,8 @@ namespace up::gpu {
     class GpuSwapChain;
     class GpuTexture;
 
-    struct PipelineStateDesc;
-    struct TextureDesc;
+    struct GpuPipelineStateDesc;
+    struct GpuTextureDesc;
 
     class GpuDevice : public shared<GpuDevice> {
     public:
@@ -29,9 +29,9 @@ namespace up::gpu {
 
         virtual rc<GpuSwapChain> createSwapChain(void* nativeWindow) = 0;
         virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
-        virtual box<GpuPipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
-        virtual box<GpuBuffer> createBuffer(BufferType type, uint64 size) = 0;
-        virtual box<GpuTexture> createTexture2D(TextureDesc const& desc, span<byte const> data) = 0;
+        virtual box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) = 0;
+        virtual box<GpuBuffer> createBuffer(GpuBufferType type, uint64 size) = 0;
+        virtual box<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) = 0;
         virtual box<GpuSampler> createSampler() = 0;
 
         virtual void execute(GpuCommandList* commandList) = 0;

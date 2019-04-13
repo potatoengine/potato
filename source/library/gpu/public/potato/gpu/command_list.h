@@ -26,14 +26,14 @@ namespace up::gpu {
 
         virtual void bindRenderTarget(uint32 index, GpuResourceView* view) = 0;
         virtual void bindDepthStencil(GpuResourceView* view) = 0;
-        virtual void bindIndexBuffer(GpuBuffer* buffer, IndexType indexType, uint32 offset = 0) = 0;
+        virtual void bindIndexBuffer(GpuBuffer* buffer, GpuIndexFormat indexType, uint32 offset = 0) = 0;
         virtual void bindVertexBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) = 0;
-        virtual void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, ShaderStage stage) = 0;
-        virtual void bindShaderResource(uint32 slot, GpuResourceView* view, ShaderStage stage) = 0;
-        virtual void bindSampler(uint32 slot, GpuSampler* sampler, ShaderStage stage) = 0;
-        virtual void setPrimitiveTopology(PrimitiveTopology topology) = 0;
-        virtual void setViewport(Viewport const& viewport) = 0;
-        virtual void setClipRect(Rect rect) = 0;
+        virtual void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, GpuShaderStage stage) = 0;
+        virtual void bindShaderResource(uint32 slot, GpuResourceView* view, GpuShaderStage stage) = 0;
+        virtual void bindSampler(uint32 slot, GpuSampler* sampler, GpuShaderStage stage) = 0;
+        virtual void setPrimitiveTopology(GpuPrimitiveTopology topology) = 0;
+        virtual void setViewport(GpuViewportDesc const& viewport) = 0;
+        virtual void setClipRect(GpuClipRect rect) = 0;
 
         virtual void draw(uint32 vertexCount, uint32 firstVertex = 0) = 0;
         virtual void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) = 0;

@@ -28,7 +28,7 @@ up::Model::~Model() = default;
 
 void UP_VECTORCALL up::Model::render(RenderContext& ctx, glm::mat4x4 transform) {
     if (_transformBuffer == nullptr) {
-        _transformBuffer = ctx.device.createBuffer(gpu::BufferType::Constant, sizeof(Trans));
+        _transformBuffer = ctx.device.createBuffer(gpu::GpuBufferType::Constant, sizeof(Trans));
     }
 
     Trans trans;
@@ -40,7 +40,7 @@ void UP_VECTORCALL up::Model::render(RenderContext& ctx, glm::mat4x4 transform) 
 
     _material->bindMaterialToRender(ctx);
     _mesh->bindVertexBuffers(ctx);
-    ctx.commandList.bindConstantBuffer(2, _transformBuffer.get(), gpu::ShaderStage::All);
-    ctx.commandList.setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
+    ctx.commandList.bindConstantBuffer(2, _transformBuffer.get(), gpu::GpuShaderStage::All);
+    ctx.commandList.setPrimitiveTopology(gpu::GpuPrimitiveTopology::Triangles);
     ctx.commandList.drawIndexed(static_cast<uint32>(_mesh->indexCount()));
 }

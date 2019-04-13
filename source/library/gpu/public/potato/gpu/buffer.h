@@ -15,7 +15,7 @@ namespace up::gpu {
         GpuBuffer(GpuBuffer&&) = delete;
         GpuBuffer& operator=(GpuBuffer&&) = delete;
 
-        virtual BufferType type() const noexcept = 0;
+        virtual GpuBufferType type() const noexcept = 0;
         virtual uint64 size() const noexcept = 0;
     };
 } // namespace up::gpu

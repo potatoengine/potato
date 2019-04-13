@@ -30,21 +30,21 @@ void up::DrawImgui::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
 bool up::DrawImgui::createResources(gpu::GpuDevice& device) {
     _ensureContext();
 
-    gpu::InputLayoutElement layout[] = {
-        {gpu::Format::R32G32Float, gpu::Semantic::Position, 0, 0},
-        {gpu::Format::R32G32Float, gpu::Semantic::TexCoord, 0, 0},
-        {gpu::Format::R8G8B8A8UnsignedNormalized, gpu::Semantic::Color, 0, 0},
+    gpu::GpuInputLayoutElement layout[] = {
+        {gpu::GpuFormat::R32G32Float, gpu::GpuShaderSemantic::Position, 0, 0},
+        {gpu::GpuFormat::R32G32Float, gpu::GpuShaderSemantic::TexCoord, 0, 0},
+        {gpu::GpuFormat::R8G8B8A8UnsignedNormalized, gpu::GpuShaderSemantic::Color, 0, 0},
     };
 
-    gpu::PipelineStateDesc desc;
+    gpu::GpuPipelineStateDesc desc;
     desc.enableScissor = true;
     desc.vertShader = _vertShader->content();
     desc.pixelShader = _pixelShader->content();
     desc.inputLayout = layout;
 
-    _indexBuffer = device.createBuffer(gpu::BufferType::Index, bufferSize);
-    _vertexBuffer = device.createBuffer(gpu::BufferType::Vertex, bufferSize);
-    _constantBuffer = device.createBuffer(gpu::BufferType::Constant, sizeof(float) * 16);
+    _indexBuffer = device.createBuffer(gpu::GpuBufferType::Index, bufferSize);
+    _vertexBuffer = device.createBuffer(gpu::GpuBufferType::Vertex, bufferSize);
+    _constantBuffer = device.createBuffer(gpu::GpuBufferType::Constant, sizeof(float) * 16);
     _pipelineState = device.createPipelineState(desc);
 
     auto& imguiIO = ImGui::GetIO();
@@ -52,9 +52,9 @@ bool up::DrawImgui::createResources(gpu::GpuDevice& device) {
     int fontWidth, fontHeight;
     unsigned char* pixels;
     imguiIO.Fonts->GetTexDataAsRGBA32(&pixels, &fontWidth, &fontHeight);
-    gpu::TextureDesc texDesc;
-    texDesc.format = gpu::Format::R8G8B8A8UnsignedNormalized;
-    texDesc.type = gpu::TextureType::Texture2D;
+    gpu::GpuTextureDesc texDesc;
+    texDesc.format = gpu::GpuFormat::R8G8B8A8UnsignedNormalized;
+    texDesc.type = gpu::GpuTextureType::Texture2D;
     texDesc.width = fontWidth;
     texDesc.height = fontHeight;
 
@@ -159,7 +159,7 @@ void up::DrawImgui::endFrame(gpu::GpuDevice& device, gpu::GpuCommandList& comman
     UP_ASSERT(data.TotalVtxCount * sizeof(ImDrawVert) <= bufferSize, "Too many ImGui verticies");
 
     commandList.setPipelineState(_pipelineState.get());
-    commandList.setPrimitiveTopology(gpu::PrimitiveTopology::Triangles);
+    commandList.setPrimitiveTopology(gpu::GpuPrimitiveTopology::Triangles);
 
     auto indices = commandList.map(_indexBuffer.get(), bufferSize);
     auto vertices = commandList.map(_vertexBuffer.get(), bufferSize);
@@ -195,12 +195,12 @@ void up::DrawImgui::endFrame(gpu::GpuDevice& device, gpu::GpuCommandList& comman
     std::memcpy(constants.data(), mvp, constants.size());
     commandList.unmap(_constantBuffer.get(), constants);
 
-    commandList.bindIndexBuffer(_indexBuffer.get(), gpu::IndexType::Unsigned16, 0);
+    commandList.bindIndexBuffer(_indexBuffer.get(), gpu::GpuIndexFormat::Unsigned16, 0);
     commandList.bindVertexBuffer(0, _vertexBuffer.get(), sizeof(ImDrawVert));
-    commandList.bindConstantBuffer(0, _constantBuffer.get(), gpu::ShaderStage::Vertex);
-    commandList.bindSampler(0, _sampler.get(), gpu::ShaderStage::Pixel);
+    commandList.bindConstantBuffer(0, _constantBuffer.get(), gpu::GpuShaderStage::Vertex);
+    commandList.bindSampler(0, _sampler.get(), gpu::GpuShaderStage::Pixel);
 
-    gpu::Viewport viewport;
+    gpu::GpuViewportDesc viewport;
     viewport.width = data.DisplaySize.x;
     viewport.height = data.DisplaySize.y;
     viewport.leftX = 0;
@@ -225,7 +225,7 @@ void up::DrawImgui::endFrame(gpu::GpuDevice& device, gpu::GpuCommandList& comman
                 continue;
             }
 
-            gpu::Rect scissor;
+            gpu::GpuClipRect scissor;
             scissor.left = (uint32)cmd.ClipRect.x - (uint32)pos.x;
             scissor.top = (uint32)cmd.ClipRect.y - (uint32)pos.y;
             scissor.right = (uint32)cmd.ClipRect.z - (uint32)pos.x;
@@ -233,7 +233,7 @@ void up::DrawImgui::endFrame(gpu::GpuDevice& device, gpu::GpuCommandList& comman
             commandList.setClipRect(scissor);
 
             // FIXME: different texture per cmd
-            commandList.bindShaderResource(0, _srv.get(), gpu::ShaderStage::Pixel);
+            commandList.bindShaderResource(0, _srv.get(), gpu::GpuShaderStage::Pixel);
             commandList.drawIndexed(cmd.ElemCount, indexOffset, vertexOffset);
 
             indexOffset += cmd.ElemCount;

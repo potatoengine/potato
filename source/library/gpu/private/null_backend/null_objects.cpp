@@ -2,8 +2,8 @@
 
 #include "null_objects.h"
 
-void up::gpu::null::FactoryNull::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
-    static DeviceInfo deviceInfo = {0};
+void up::gpu::null::FactoryNull::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
+    static GpuDeviceInfo deviceInfo = {0};
 
     callback(deviceInfo);
 }
@@ -24,31 +24,31 @@ auto up::gpu::null::DeviceNull::createCommandList(GpuPipelineState* pipelineStat
     return new_box<CommandListNull>();
 }
 
-auto up::gpu::null::DeviceNull::createPipelineState(PipelineStateDesc const&) -> box<GpuPipelineState> {
+auto up::gpu::null::DeviceNull::createPipelineState(GpuPipelineStateDesc const&) -> box<GpuPipelineState> {
     return new_box<PipelineStateNull>();
 }
 
 auto up::gpu::null::DeviceNull::createRenderTargetView(GpuTexture* renderTarget) -> box<GpuResourceView> {
-    return new_box<ResourceViewNull>(ViewType::RTV);
+    return new_box<ResourceViewNull>(GpuViewType::RTV);
 }
 
 auto up::gpu::null::DeviceNull::createDepthStencilView(GpuTexture* depthStencilBuffer) -> box<GpuResourceView> {
-    return new_box<ResourceViewNull>(ViewType::DSV);
+    return new_box<ResourceViewNull>(GpuViewType::DSV);
 }
 
 auto up::gpu::null::DeviceNull::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
-    return new_box<ResourceViewNull>(ViewType::SRV);
+    return new_box<ResourceViewNull>(GpuViewType::SRV);
 }
 
 auto up::gpu::null::DeviceNull::createShaderResourceView(GpuTexture* resource) -> box<GpuResourceView> {
-    return new_box<ResourceViewNull>(ViewType::SRV);
+    return new_box<ResourceViewNull>(GpuViewType::SRV);
 }
 
-auto up::gpu::null::DeviceNull::createBuffer(BufferType type, up::uint64 size) -> box<GpuBuffer> {
+auto up::gpu::null::DeviceNull::createBuffer(GpuBufferType type, up::uint64 size) -> box<GpuBuffer> {
     return new_box<BufferNull>(type);
 }
 
-auto up::gpu::null::DeviceNull::createTexture2D(TextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
+auto up::gpu::null::DeviceNull::createTexture2D(GpuTextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
     return new_box<TextureNull>();
 }
 

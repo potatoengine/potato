@@ -16,7 +16,7 @@ namespace up::gpu::d3d11 {
         FactoryD3D11& operator=(FactoryD3D11&&) = delete;
 
         bool isEnabled() const override;
-        void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
+        void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) override;
         rc<GpuDevice> createDevice(int index) override;
 
     private:

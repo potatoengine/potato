@@ -38,7 +38,7 @@ DOCTEST_TEST_SUITE("[potato][gpu] DeviceNull") {
         auto swapChain = device->createSwapChain(nullptr);
         DOCTEST_CHECK_NE(swapChain, nullptr);
 
-        PipelineStateDesc desc;
+        GpuPipelineStateDesc desc;
         auto pipelineState = device->createPipelineState(desc);
         DOCTEST_CHECK_NE(pipelineState, nullptr);
     }

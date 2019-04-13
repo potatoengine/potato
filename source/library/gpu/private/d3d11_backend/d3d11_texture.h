@@ -16,8 +16,8 @@ namespace up::gpu::d3d11 {
         TextureD3D11(TextureD3D11&&) = delete;
         TextureD3D11& operator=(TextureD3D11&&) = delete;
 
-        TextureType type() const noexcept override;
-        Format format() const noexcept override;
+        GpuTextureType type() const noexcept override;
+        GpuFormat format() const noexcept override;
         glm::ivec3 dimensions() const noexcept;
 
         DXGI_FORMAT nativeFormat() const noexcept;

@@ -18,7 +18,7 @@ namespace up::gpu::null {
     class FactoryNull final : public GpuDeviceFactory {
     public:
         bool isEnabled() const override { return true; }
-        void enumerateDevices(delegate<void(DeviceInfo const&)> callback) override;
+        void enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) override;
         rc<GpuDevice> createDevice(int index) override;
     };
 
@@ -26,9 +26,9 @@ namespace up::gpu::null {
     public:
         rc<GpuSwapChain> createSwapChain(void* native_window) override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
-        box<GpuPipelineState> createPipelineState(PipelineStateDesc const& desc) override;
-        box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
-        box<GpuTexture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
+        box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
+        box<GpuBuffer> createBuffer(GpuBufferType type, uint64 size) override;
+        box<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) override;
         box<GpuSampler> createSampler() override;
 
         box<GpuResourceView> createRenderTargetView(GpuTexture* renderTarget) override;
@@ -41,12 +41,12 @@ namespace up::gpu::null {
 
     class ResourceViewNull final : public GpuResourceView {
     public:
-        ResourceViewNull(ViewType type) : _type(type) {}
+        ResourceViewNull(GpuViewType type) : _type(type) {}
 
-        ViewType type() const override { return _type; }
+        GpuViewType type() const override { return _type; }
 
     private:
-        ViewType _type;
+        GpuViewType _type;
     };
 
     class SwapChainNull final : public GpuSwapChain {
@@ -79,31 +79,31 @@ namespace up::gpu::null {
 
         void bindRenderTarget(uint32 index, GpuResourceView* view) override {}
         void bindDepthStencil(GpuResourceView* view) override {}
-        void bindIndexBuffer(GpuBuffer* buffer, IndexType indexType, uint32 offset = 0) override {}
+        void bindIndexBuffer(GpuBuffer* buffer, GpuIndexFormat indexType, uint32 offset = 0) override {}
         void bindVertexBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override {}
-        void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, ShaderStage stage) override {}
-        void bindShaderResource(uint32 slot, GpuResourceView* view, ShaderStage stage) override {}
-        void bindSampler(uint32 slot, GpuSampler* sampler, ShaderStage stage) override {}
-        void setPrimitiveTopology(PrimitiveTopology topology) override {}
-        void setViewport(Viewport const& viewport) override {}
-        void setClipRect(Rect rect) override {}
+        void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, GpuShaderStage stage) override {}
+        void bindShaderResource(uint32 slot, GpuResourceView* view, GpuShaderStage stage) override {}
+        void bindSampler(uint32 slot, GpuSampler* sampler, GpuShaderStage stage) override {}
+        void setPrimitiveTopology(GpuPrimitiveTopology topology) override {}
+        void setViewport(GpuViewportDesc const& viewport) override {}
+        void setClipRect(GpuClipRect rect) override {}
     };
 
     class BufferNull final : public GpuBuffer {
     public:
-        BufferNull(BufferType type) : _type(type) {}
+        BufferNull(GpuBufferType type) : _type(type) {}
 
-        BufferType type() const noexcept override { return _type; }
+        GpuBufferType type() const noexcept override { return _type; }
         uint64 size() const noexcept override { return 0; }
 
     private:
-        BufferType _type;
+        GpuBufferType _type;
     };
 
     class TextureNull final : public GpuTexture {
     public:
-        TextureType type() const noexcept override { return TextureType::Texture2D; }
-        Format format() const noexcept override { return Format::Unknown; }
+        GpuTextureType type() const noexcept override { return GpuTextureType::Texture2D; }
+        GpuFormat format() const noexcept override { return GpuFormat::Unknown; }
         glm::ivec3 dimensions() const noexcept override { return {0, 0, 0}; }
     };
 

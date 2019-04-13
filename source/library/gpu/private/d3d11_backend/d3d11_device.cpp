@@ -78,7 +78,7 @@ auto up::gpu::d3d11::DeviceD3D11::createRenderTargetView(GpuTexture* renderTarge
         return nullptr;
     }
 
-    return new_box<ResourceViewD3D11>(ViewType::RTV, view.as<ID3D11View>());
+    return new_box<ResourceViewD3D11>(GpuViewType::RTV, view.as<ID3D11View>());
 }
 
 auto up::gpu::d3d11::DeviceD3D11::createDepthStencilView(GpuTexture* depthStencilBuffer) -> box<GpuResourceView> {
@@ -96,7 +96,7 @@ auto up::gpu::d3d11::DeviceD3D11::createDepthStencilView(GpuTexture* depthStenci
         return nullptr;
     }
 
-    return new_box<ResourceViewD3D11>(ViewType::DSV, view.as<ID3D11View>());
+    return new_box<ResourceViewD3D11>(GpuViewType::DSV, view.as<ID3D11View>());
 }
 
 auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
@@ -116,7 +116,7 @@ auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) 
         return nullptr;
     }
 
-    return new_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
+    return new_box<ResourceViewD3D11>(GpuViewType::SRV, view.as<ID3D11View>());
 }
 
 auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuTexture* texture) -> box<GpuResourceView> {
@@ -127,7 +127,7 @@ auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuTexture* texture) 
     D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
     desc.Format = toNative(texture->format());
     switch (texture->type()) {
-    case TextureType::Texture2D:
+    case GpuTextureType::Texture2D:
         desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         desc.Texture2D.MipLevels = 1;
         desc.Texture2D.MostDetailedMip = 0;
@@ -140,22 +140,22 @@ auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuTexture* texture) 
         return nullptr;
     }
 
-    return new_box<ResourceViewD3D11>(ViewType::SRV, view.as<ID3D11View>());
+    return new_box<ResourceViewD3D11>(GpuViewType::SRV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createPipelineState(PipelineStateDesc const& desc) -> box<GpuPipelineState> {
+auto up::gpu::d3d11::DeviceD3D11::createPipelineState(GpuPipelineStateDesc const& desc) -> box<GpuPipelineState> {
     return PipelineStateD3D11::createGraphicsPipelineState(desc, _device.get());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, up::uint64 size) -> box<GpuBuffer> {
+auto up::gpu::d3d11::DeviceD3D11::createBuffer(GpuBufferType type, up::uint64 size) -> box<GpuBuffer> {
     D3D11_BUFFER_DESC desc = {};
     desc.Usage = D3D11_USAGE_DYNAMIC;
     desc.ByteWidth = static_cast<UINT>(size);
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     switch (type) {
-    case BufferType::Index: desc.BindFlags = D3D11_BIND_INDEX_BUFFER; break;
-    case BufferType::Vertex: desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; break;
-    case BufferType::Constant: desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER; break;
+    case GpuBufferType::Index: desc.BindFlags = D3D11_BIND_INDEX_BUFFER; break;
+    case GpuBufferType::Vertex: desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; break;
+    case GpuBufferType::Constant: desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER; break;
     default: desc.BindFlags = D3D11_BIND_SHADER_RESOURCE; break;
     }
 
@@ -168,7 +168,7 @@ auto up::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, up::uint64 size)
     return new_box<BufferD3D11>(type, size, std::move(buffer));
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createTexture2D(TextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
+auto up::gpu::d3d11::DeviceD3D11::createTexture2D(GpuTextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
     auto bytesPerPixel = toByteSize(desc.format);
 
     UP_ASSERT(data.empty() || data.size() == desc.width * desc.height * bytesPerPixel);
@@ -180,7 +180,7 @@ auto up::gpu::d3d11::DeviceD3D11::createTexture2D(TextureDesc const& desc, span<
     nativeDesc.MipLevels = 1;
     nativeDesc.ArraySize = 1;
     nativeDesc.CPUAccessFlags = 0;
-    if (desc.type == TextureType::DepthStencil) {
+    if (desc.type == GpuTextureType::DepthStencil) {
         nativeDesc.Usage = D3D11_USAGE_DEFAULT;
         nativeDesc.BindFlags = D3D10_BIND_DEPTH_STENCIL;
     }

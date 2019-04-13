@@ -14,8 +14,8 @@ namespace up::gpu {
         GpuTexture(GpuTexture&&) = delete;
         GpuTexture& operator=(GpuTexture&&) = delete;
 
-        virtual TextureType type() const noexcept = 0;
-        virtual Format format() const noexcept = 0;
+        virtual GpuTextureType type() const noexcept = 0;
+        virtual GpuFormat format() const noexcept = 0;
         virtual glm::ivec3 dimensions() const noexcept = 0;
     };
 } // namespace up::gpu

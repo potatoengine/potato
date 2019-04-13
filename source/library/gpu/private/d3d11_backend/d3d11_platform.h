@@ -9,9 +9,9 @@
 #include <dxgi1_2.h>
 
 namespace up::gpu::d3d11 {
-    extern zstring_view toNative(Semantic semantic) noexcept;
-    extern DXGI_FORMAT toNative(Format format) noexcept;
-    extern Format fromNative(DXGI_FORMAT format) noexcept;
-    extern uint32 toByteSize(Format format) noexcept;
-    extern DXGI_FORMAT toNative(IndexType type) noexcept;
+    extern zstring_view toNative(GpuShaderSemantic semantic) noexcept;
+    extern DXGI_FORMAT toNative(GpuFormat format) noexcept;
+    extern GpuFormat fromNative(DXGI_FORMAT format) noexcept;
+    extern uint32 toByteSize(GpuFormat format) noexcept;
+    extern DXGI_FORMAT toNative(GpuIndexFormat type) noexcept;
 } // namespace up::gpu::d3d11

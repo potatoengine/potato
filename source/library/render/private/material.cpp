@@ -16,12 +16,12 @@ up::Material::~Material() = default;
 
 void up::Material::bindMaterialToRender(RenderContext& ctx) {
     if (_state == nullptr) {
-        gpu::PipelineStateDesc pipelineDesc;
+        gpu::GpuPipelineStateDesc pipelineDesc;
 
-        gpu::InputLayoutElement layout[] = {
-            {gpu::Format::R32G32B32Float, gpu::Semantic::Position, 0, 0},
-            {gpu::Format::R32G32B32Float, gpu::Semantic::Color, 0, 0},
-            {gpu::Format::R32G32Float, gpu::Semantic::TexCoord, 0, 0},
+        gpu::GpuInputLayoutElement layout[] = {
+            {gpu::GpuFormat::R32G32B32Float, gpu::GpuShaderSemantic::Position, 0, 0},
+            {gpu::GpuFormat::R32G32B32Float, gpu::GpuShaderSemantic::Color, 0, 0},
+            {gpu::GpuFormat::R32G32Float, gpu::GpuShaderSemantic::TexCoord, 0, 0},
         };
 
         pipelineDesc.enableDepthTest = true;
@@ -42,7 +42,7 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
 
     int texIndex = 0;
     for (auto const& srv : _srvs) {
-        ctx.commandList.bindSampler(texIndex, _samplers[texIndex].get(), gpu::ShaderStage::Pixel);
-        ctx.commandList.bindShaderResource(texIndex++, srv.get(), gpu::ShaderStage::Pixel);
+        ctx.commandList.bindSampler(texIndex, _samplers[texIndex].get(), gpu::GpuShaderStage::Pixel);
+        ctx.commandList.bindShaderResource(texIndex++, srv.get(), gpu::GpuShaderStage::Pixel);
     }
 }
