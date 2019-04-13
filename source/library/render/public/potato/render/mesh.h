@@ -11,7 +11,7 @@
 #include "potato/gpu/common.h"
 
 namespace up::gpu {
-    class Buffer;
+    class GpuBuffer;
     class CommandList;
     class Device;
 } // namespace up::gpu
@@ -43,8 +43,8 @@ namespace up {
         uint32 indexCount() const noexcept { return static_cast<uint32>(_indices.size()); }
 
     private:
-        box<gpu::Buffer> _ibo;
-        box<gpu::Buffer> _vbo;
+        box<gpu::GpuBuffer> _ibo;
+        box<gpu::GpuBuffer> _vbo;
         vector<MeshBuffer> _buffers;
         vector<MeshChannel> _channels;
         vector<uint16> _indices;

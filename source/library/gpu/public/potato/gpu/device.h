@@ -8,7 +8,7 @@
 #include "potato/foundation/rc.h"
 
 namespace up::gpu {
-    class Buffer;
+    class GpuBuffer;
     class CommandList;
     class PipelineState;
     class ResourceView;
@@ -30,7 +30,7 @@ namespace up::gpu {
         virtual rc<SwapChain> createSwapChain(void* nativeWindow) = 0;
         virtual box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) = 0;
         virtual box<PipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
-        virtual box<Buffer> createBuffer(BufferType type, uint64 size) = 0;
+        virtual box<GpuBuffer> createBuffer(BufferType type, uint64 size) = 0;
         virtual box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) = 0;
         virtual box<Sampler> createSampler() = 0;
 
@@ -38,7 +38,7 @@ namespace up::gpu {
 
         virtual box<ResourceView> createRenderTargetView(Texture* renderTarget) = 0;
         virtual box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) = 0;
-        virtual box<ResourceView> createShaderResourceView(Buffer* resource) = 0;
+        virtual box<ResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
         virtual box<ResourceView> createShaderResourceView(Texture* texture) = 0;
     };
 } // namespace up::gpu

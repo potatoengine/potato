@@ -8,7 +8,7 @@
 #include <glm/vec4.hpp>
 
 namespace up::gpu {
-    class Buffer;
+    class GpuBuffer;
     class ResourceView;
     class PipelineState;
     class Sampler;
@@ -26,9 +26,9 @@ namespace up::gpu {
 
         virtual void bindRenderTarget(uint32 index, ResourceView* view) = 0;
         virtual void bindDepthStencil(ResourceView* view) = 0;
-        virtual void bindIndexBuffer(Buffer* buffer, IndexType indexType, uint32 offset = 0) = 0;
-        virtual void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) = 0;
-        virtual void bindConstantBuffer(uint32 slot, Buffer* buffer, ShaderStage stage) = 0;
+        virtual void bindIndexBuffer(GpuBuffer* buffer, IndexType indexType, uint32 offset = 0) = 0;
+        virtual void bindVertexBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) = 0;
+        virtual void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, ShaderStage stage) = 0;
         virtual void bindShaderResource(uint32 slot, ResourceView* view, ShaderStage stage) = 0;
         virtual void bindSampler(uint32 slot, Sampler* sampler, ShaderStage stage) = 0;
         virtual void setPrimitiveTopology(PrimitiveTopology topology) = 0;
@@ -44,8 +44,8 @@ namespace up::gpu {
         virtual void finish() = 0;
         virtual void clear(PipelineState* pipelineState = nullptr) = 0;
 
-        virtual span<byte> map(Buffer* resource, uint64 size, uint64 offset = 0) = 0;
-        virtual void unmap(Buffer* resource, span<byte const> data) = 0;
-        virtual void update(Buffer* resource, span<byte const> data, uint64 offset = 0) = 0;
+        virtual span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) = 0;
+        virtual void unmap(GpuBuffer* resource, span<byte const> data) = 0;
+        virtual void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) = 0;
     };
 } // namespace up::gpu

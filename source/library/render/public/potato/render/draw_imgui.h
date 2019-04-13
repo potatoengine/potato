@@ -9,7 +9,7 @@
 #include "potato/foundation/string.h"
 
 namespace up::gpu {
-    class Buffer;
+    class GpuBuffer;
     class CommandList;
     class Device;
     class PipelineState;
@@ -49,9 +49,9 @@ namespace up {
         static void _setClipboardTextContents(void* self, char const* zstr);
 
         unique_resource<ImGuiContext*, &_freeContext, nullptr> _context;
-        box<gpu::Buffer> _indexBuffer;
-        box<gpu::Buffer> _vertexBuffer;
-        box<gpu::Buffer> _constantBuffer;
+        box<gpu::GpuBuffer> _indexBuffer;
+        box<gpu::GpuBuffer> _vertexBuffer;
+        box<gpu::GpuBuffer> _constantBuffer;
         box<gpu::PipelineState> _pipelineState;
         box<gpu::ResourceView> _srv;
         box<gpu::Sampler> _sampler;

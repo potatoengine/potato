@@ -21,7 +21,7 @@ namespace up::gpu::d3d11 {
         rc<SwapChain> createSwapChain(void* native_window) override;
         box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
-        box<Buffer> createBuffer(BufferType type, uint64 size) override;
+        box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
         box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
         box<Sampler> createSampler() override;
 
@@ -29,7 +29,7 @@ namespace up::gpu::d3d11 {
 
         box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
         box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) override;
-        box<ResourceView> createShaderResourceView(Buffer* resource) override;
+        box<ResourceView> createShaderResourceView(GpuBuffer* resource) override;
         box<ResourceView> createShaderResourceView(Texture* texture) override;
 
     private:

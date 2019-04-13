@@ -9,7 +9,7 @@
 #include <glm/mat4x4.hpp>
 
 namespace up::gpu {
-    class Buffer;
+    class GpuBuffer;
     class CommandList;
     class Device;
     class ResourceView;
@@ -31,7 +31,7 @@ namespace up {
 
     private:
         rc<gpu::SwapChain> _swapChain;
-        box<gpu::Buffer> _cameraDataBuffer;
+        box<gpu::GpuBuffer> _cameraDataBuffer;
         box<gpu::Texture> _backBuffer;
         box<gpu::Texture> _depthStencilBuffer;
         box<gpu::ResourceView> _rtv;

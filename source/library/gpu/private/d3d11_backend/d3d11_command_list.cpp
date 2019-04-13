@@ -64,7 +64,7 @@ void up::gpu::d3d11::CommandListD3D11::bindDepthStencil(ResourceView* view) {
     _bindingsDirty = true;
 }
 
-void up::gpu::d3d11::CommandListD3D11::bindIndexBuffer(Buffer* buffer, IndexType indexType, up::uint32 offset) {
+void up::gpu::d3d11::CommandListD3D11::bindIndexBuffer(GpuBuffer* buffer, IndexType indexType, up::uint32 offset) {
     UP_ASSERT(buffer != nullptr);
     UP_ASSERT(buffer->type() == BufferType::Index);
 
@@ -75,7 +75,7 @@ void up::gpu::d3d11::CommandListD3D11::bindIndexBuffer(Buffer* buffer, IndexType
     _context->IASetIndexBuffer(d3d11Buffer, toNative(indexType), d3dOffset);
 }
 
-void up::gpu::d3d11::CommandListD3D11::bindVertexBuffer(up::uint32 slot, Buffer* buffer, up::uint64 stride, up::uint64 offset) {
+void up::gpu::d3d11::CommandListD3D11::bindVertexBuffer(up::uint32 slot, GpuBuffer* buffer, up::uint64 stride, up::uint64 offset) {
     UP_ASSERT(buffer != nullptr);
     UP_ASSERT(buffer->type() == BufferType::Vertex);
 
@@ -87,7 +87,7 @@ void up::gpu::d3d11::CommandListD3D11::bindVertexBuffer(up::uint32 slot, Buffer*
     _context->IASetVertexBuffers(slot, 1, &d3d11Buffer, &d3dStride, &d3dOffset);
 }
 
-void up::gpu::d3d11::CommandListD3D11::bindConstantBuffer(up::uint32 slot, Buffer* buffer, ShaderStage stage) {
+void up::gpu::d3d11::CommandListD3D11::bindConstantBuffer(up::uint32 slot, GpuBuffer* buffer, ShaderStage stage) {
     UP_ASSERT(buffer != nullptr);
     UP_ASSERT(buffer->type() == BufferType::Constant);
 
@@ -195,7 +195,7 @@ void up::gpu::d3d11::CommandListD3D11::clear(PipelineState* pipelineState) {
     }
 }
 
-auto up::gpu::d3d11::CommandListD3D11::map(Buffer* resource, up::uint64 size, up::uint64 offset) -> span<up::byte> {
+auto up::gpu::d3d11::CommandListD3D11::map(GpuBuffer* resource, up::uint64 size, up::uint64 offset) -> span<up::byte> {
     if (resource == nullptr) {
         return {};
     }
@@ -216,7 +216,7 @@ auto up::gpu::d3d11::CommandListD3D11::map(Buffer* resource, up::uint64 size, up
     return {static_cast<up::byte*>(sub.pData) + offset, size};
 }
 
-void up::gpu::d3d11::CommandListD3D11::unmap(Buffer* buffer, span<up::byte const> data) {
+void up::gpu::d3d11::CommandListD3D11::unmap(GpuBuffer* buffer, span<up::byte const> data) {
     if (buffer == nullptr) {
         return;
     }
@@ -226,7 +226,7 @@ void up::gpu::d3d11::CommandListD3D11::unmap(Buffer* buffer, span<up::byte const
     _context->Unmap(d3dBuffer, 0);
 }
 
-void up::gpu::d3d11::CommandListD3D11::update(Buffer* buffer, span<up::byte const> data, up::uint64 offset) {
+void up::gpu::d3d11::CommandListD3D11::update(GpuBuffer* buffer, span<up::byte const> data, up::uint64 offset) {
     if (buffer == nullptr) {
         return;
     }

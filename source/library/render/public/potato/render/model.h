@@ -9,7 +9,7 @@
 #include <glm/mat4x4.hpp>
 
 namespace up::gpu {
-    class Buffer;
+    class GpuBuffer;
     class CommandList;
     class Device;
 } // namespace up::gpu
@@ -29,6 +29,6 @@ namespace up {
     private:
         rc<Material> _material;
         rc<Mesh> _mesh;
-        box<gpu::Buffer> _transformBuffer;
+        box<gpu::GpuBuffer> _transformBuffer;
     };
 } // namespace up

@@ -99,7 +99,7 @@ auto up::gpu::d3d11::DeviceD3D11::createDepthStencilView(Texture* depthStencilBu
     return new_box<ResourceViewD3D11>(ViewType::DSV, view.as<ID3D11View>());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(Buffer* resource) -> box<ResourceView> {
+auto up::gpu::d3d11::DeviceD3D11::createShaderResourceView(GpuBuffer* resource) -> box<ResourceView> {
     UP_ASSERT(resource != nullptr);
 
     auto buffer = static_cast<BufferD3D11*>(resource);
@@ -147,7 +147,7 @@ auto up::gpu::d3d11::DeviceD3D11::createPipelineState(PipelineStateDesc const& d
     return PipelineStateD3D11::createGraphicsPipelineState(desc, _device.get());
 }
 
-auto up::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, up::uint64 size) -> box<Buffer> {
+auto up::gpu::d3d11::DeviceD3D11::createBuffer(BufferType type, up::uint64 size) -> box<GpuBuffer> {
     D3D11_BUFFER_DESC desc = {};
     desc.Usage = D3D11_USAGE_DYNAMIC;
     desc.ByteWidth = static_cast<UINT>(size);

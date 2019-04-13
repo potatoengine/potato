@@ -13,7 +13,7 @@
 #include <atomic>
 
 namespace up::gpu {
-    class Buffer;
+    class GpuBuffer;
     class CommandList;
     class Device;
 } // namespace up::gpu
@@ -51,9 +51,9 @@ namespace up {
 
         rc<gpu::Device> _device;
         box<gpu::CommandList> _commandList;
-        box<gpu::Buffer> _frameDataBuffer;
+        box<gpu::GpuBuffer> _frameDataBuffer;
         rc<Material> _debugLineMaterial;
-        box<gpu::Buffer> _debugLineBuffer;
+        box<gpu::GpuBuffer> _debugLineBuffer;
         FileSystem _fileSystem;
         std::thread _renderThread;
         ConcurrentQueue<RenderTask> _taskQueue;

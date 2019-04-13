@@ -36,7 +36,7 @@ auto up::gpu::null::DeviceNull::createDepthStencilView(Texture* depthStencilBuff
     return new_box<ResourceViewNull>(ViewType::DSV);
 }
 
-auto up::gpu::null::DeviceNull::createShaderResourceView(Buffer* resource) -> box<ResourceView> {
+auto up::gpu::null::DeviceNull::createShaderResourceView(GpuBuffer* resource) -> box<ResourceView> {
     return new_box<ResourceViewNull>(ViewType::SRV);
 }
 
@@ -44,7 +44,7 @@ auto up::gpu::null::DeviceNull::createShaderResourceView(Texture* resource) -> b
     return new_box<ResourceViewNull>(ViewType::SRV);
 }
 
-auto up::gpu::null::DeviceNull::createBuffer(BufferType type, up::uint64 size) -> box<Buffer> {
+auto up::gpu::null::DeviceNull::createBuffer(BufferType type, up::uint64 size) -> box<GpuBuffer> {
     return new_box<BufferNull>(type);
 }
 

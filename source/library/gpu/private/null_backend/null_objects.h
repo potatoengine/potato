@@ -27,13 +27,13 @@ namespace up::gpu::null {
         rc<SwapChain> createSwapChain(void* native_window) override;
         box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
         box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
-        box<Buffer> createBuffer(BufferType type, uint64 size) override;
+        box<GpuBuffer> createBuffer(BufferType type, uint64 size) override;
         box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
         box<Sampler> createSampler() override;
 
         box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
         box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) override;
-        box<ResourceView> createShaderResourceView(Buffer* resource) override;
+        box<ResourceView> createShaderResourceView(GpuBuffer* resource) override;
         box<ResourceView> createShaderResourceView(Texture* texture) override;
 
         void execute(CommandList* commands) override {}
@@ -73,15 +73,15 @@ namespace up::gpu::null {
         void finish() override {}
         void clear(PipelineState* pipelineState = nullptr) override {}
 
-        span<byte> map(Buffer* resource, uint64 size, uint64 offset = 0) override { return {}; }
-        void unmap(Buffer* resource, span<byte const> data) override {}
-        void update(Buffer* resource, span<byte const> data, uint64 offset = 0) override {}
+        span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override { return {}; }
+        void unmap(GpuBuffer* resource, span<byte const> data) override {}
+        void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override {}
 
         void bindRenderTarget(uint32 index, ResourceView* view) override {}
         void bindDepthStencil(ResourceView* view) override {}
-        void bindIndexBuffer(Buffer* buffer, IndexType indexType, uint32 offset = 0) override {}
-        void bindVertexBuffer(uint32 slot, Buffer* buffer, uint64 stride, uint64 offset = 0) override {}
-        void bindConstantBuffer(uint32 slot, Buffer* buffer, ShaderStage stage) override {}
+        void bindIndexBuffer(GpuBuffer* buffer, IndexType indexType, uint32 offset = 0) override {}
+        void bindVertexBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override {}
+        void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, ShaderStage stage) override {}
         void bindShaderResource(uint32 slot, ResourceView* view, ShaderStage stage) override {}
         void bindSampler(uint32 slot, Sampler* sampler, ShaderStage stage) override {}
         void setPrimitiveTopology(PrimitiveTopology topology) override {}
@@ -89,7 +89,7 @@ namespace up::gpu::null {
         void setClipRect(Rect rect) override {}
     };
 
-    class BufferNull final : public Buffer {
+    class BufferNull final : public GpuBuffer {
     public:
         BufferNull(BufferType type) : _type(type) {}
 
