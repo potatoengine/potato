@@ -5,6 +5,9 @@
 #include "int_types.h"
 #include "platform.h"
 
+// https://stackoverflow.com/questions/37658794/integer-constant-overflow-warning-in-constexpr
+__pragma(warning(disable : 4307))
+
 namespace up {
     /// <summary> A uhash-compatible fnv1-a hasher. </summary>
     class fnv1a {
