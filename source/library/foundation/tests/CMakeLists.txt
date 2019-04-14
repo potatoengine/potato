@@ -3,12 +3,14 @@ add_executable(test_potato_foundation
     test_callstack.cpp
     test_delegate.cpp
     test_delegate_ref.cpp
+    test_find.cpp
     test_fixed_string.cpp
     test_fixed_string_writer.cpp
     test_hash.cpp
-    test_string.cpp
+    test_nameof.cpp
     test_rc.cpp
     test_span.cpp
+    test_string.cpp
     test_string_writer.cpp
     test_string_view.cpp
     test_vector.cpp

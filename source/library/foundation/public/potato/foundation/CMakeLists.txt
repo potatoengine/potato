@@ -7,12 +7,14 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/debug.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate_ref.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/find.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string_writer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/hash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/hash_fnv1a.h
     ${CMAKE_CURRENT_SOURCE_DIR}/int_types.h
     ${CMAKE_CURRENT_SOURCE_DIR}/memory_util.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nameof.h
     ${CMAKE_CURRENT_SOURCE_DIR}/numeric_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/out_ptr.h
     ${CMAKE_CURRENT_SOURCE_DIR}/platform_windows.h
