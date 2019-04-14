@@ -1,5 +1,6 @@
 add_executable(test_potato_ecs
     main.cpp
+    test_archetype.cpp
 )
 
 include(up_set_common_properties)
