@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "traits.h"
+
 namespace up {
     template <class C>
     constexpr auto begin(C& c) noexcept(noexcept(c.begin())) { return c.begin(); }
@@ -31,13 +33,22 @@ namespace up {
         }
     };
 
+    template <class T, class P>
+    decltype(auto) project(P const& projection, T const& value) noexcept(noexcept(invoke(projection, value))) {
+        return invoke(projection, value);
+    }
+    template <class T, class C>
+    decltype(auto) project(T C::*member, T const& value) noexcept {
+        return value.*member;
+    }
+
     template <typename C, typename T, typename E = equality, typename P = identity>
-    constexpr auto find(C const& container, T const& value, E const& equals = {}, P const& projection = {}) noexcept(noexcept(projection(*begin(container)))) {
+    constexpr auto find(C const& container, T const& value, E const& equals = {}, P const& projection = {}) noexcept(noexcept(project(projection, *begin(container)))) {
         auto iter = begin(container);
         auto last = end(container);
 
         for (; iter != last; ++iter) {
-            if (equals(projection(*iter), value)) {
+            if (equals(project(projection, *iter), value)) {
                 return iter;
             }
         }
