@@ -79,6 +79,17 @@ The System's logic is then invoked for each of these pairs of pointers, along wi
 
 Because the System is just given pointers and a count, it doesn't need to know anything at all about Archetypes or Layouts or Chunks. It just iterates over the Components at the provided spans of memory.
 
+Creating, Destroying, and Modifying Entities
+--------------------------------------------
+
+New Entities cannot always be safely inserted into an Archetype's Chunks. Background jobs on other threads may be operating on the Chunks, and due to cacheline sharing, it is unsafe for another thread to mutate those Chunks' memory unless all tasks are coordinating (e.g. using atomic operations). For this reason, new Entities must be queued up and only processed at safe points.
+
+This problem is exasperated by Entities which are destroyed; a destroy cannot be processed immediately because the data may be in active use. Even if we were to know that the specific Entity and its Components aren't in use, we have to "backfill" the memory occuped by the destroyed Components to maintain our nice linear arrays, and this requires moving other Components around. None of the Chunks can be in active use during the destroy operation. For this reason, destroying Entities must also be queued up.
+
+Modifying an Entity's set of Components can be seen as a combination of Create + Destroy. Adding or removing a Component from an Entity will change its Archetype, which will usually also result in a new Layout; even when the Layout doesn't change, the book-keeping data in the Archetype will need to be updated. Since Components are co-located with a Layout, adding or removing Components will typically result in the Entity needing to be copied into a new Chunk. The copy can be comprised of an addition of the Components to the new Layout followed by removal from the old Layout.
+
+Exactly how this queuing works is still TBD. The gist is that the World will need to somehow track the requested additions and deletions and apply them at known safe points between System updates. Deletions are relatively easy (just a list of Entities to be deleted), while creations will also need to buffer up the new Entity's Component data via some mechanism.
+
 Testing
 -------
 
