@@ -78,3 +78,14 @@ Our Query for `{Mesh,Tranform}` would also find this Archetype, and pairs of `Me
 The System's logic is then invoked for each of these pairs of pointers, along with a count; different Chunks can fit a different maximum number of Components (based on Layout), and some Chunks may not have full residency (e.g., if only a few Entities for a given Archetype exist, there may not be a full Chunk's worth of Components).
 
 Because the System is just given pointers and a count, it doesn't need to know anything at all about Archetypes or Layouts or Chunks. It just iterates over the Components at the provided spans of memory.
+
+Testing
+-------
+
+A killer features of ECS is the ability to easily write tests for game simulation code.
+
+Traditional game engines - even those based on components of some kind - often have a lot of "spaghetti" dependencies between components and external managers. In order to test a component's logic, it is often required to construct elaborate test scenes with many objects and components, carefully balanced to satisfy all dependencies. This can become a maintenance nightmare, and often makes tests so difficult to write that they simply never get written.
+
+With ECS, all testable logic resides in Systems, which mostly just operate on simple arrays of Components. Communication between Systems happens via Component mutations, and Components do not communicate themselves nor have intrinsic dependencies. This makes construction of a test fixture almost trivial: fill some arrays with appropriate Component data, run the System, and then inspect the arrays for the appropriate mutations.
+
+Systems may still have dependencies on external modules like IO, but these kinds of modules are generally easy to mock out for testing purposes. Using arrays and data-oriented techniques also alleviates the overhead of virtual function calls; instead of calling a virtual function for each Entity or Component, for instance, a virtual function may be called with an array containing data for a whole chunk of Entities and Components.
