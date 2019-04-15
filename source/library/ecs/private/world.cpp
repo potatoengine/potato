@@ -8,7 +8,7 @@ up::World::~World() = default;
 
 void up::World::unsafeSelect(Query const& query, delegate_ref<SelectSignature> callback) const noexcept {
     for (rc<Archetype> const& archetype : _archetypes) {
-        if (archetype->matches(query)) {
+        if (archetype->matches(query.components())) {
             archetype->unsafeSelect(query, callback);
         }
     }

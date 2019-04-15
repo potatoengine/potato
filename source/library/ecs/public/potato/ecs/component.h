@@ -7,13 +7,21 @@
 #include "potato/foundation/hash_fnv1a.h"
 
 namespace up {
-    enum class ComponentId : uint32 { Unknown = 0 };
+    enum class ComponentId : uint64 { Unknown = 0 };
 
     struct ComponentInfo {
-        ComponentId id = ComponentId::Unknown;
-        uint32 size = 0;
-        uint32 alignment = 0;
+        constexpr ComponentInfo() noexcept : hash(0), size(0), alignment(0) {}
+        constexpr ComponentInfo(uint64 h, uint32 s, uint32 a) noexcept : hash(h), size(s), alignment(a) {}
+
+        constexpr ComponentInfo(ComponentId id) noexcept : hash(uint64(id) >> 18), size(uint64(id) >> 4 & 0x1FFF), alignment(uint64(id) & 31) {}
+
+        constexpr operator ComponentId() noexcept { return ComponentId((hash << 18) | (size << 5) | alignment); }
+
+        uint64 hash : 46;
+        uint64 size : 13;
+        uint64 alignment : 5;
     };
+    static_assert(sizeof(ComponentInfo) == sizeof(ComponentId));
 
     template <typename ComponentT>
     constexpr ComponentId getComponentId() noexcept {
@@ -21,11 +29,8 @@ namespace up {
 
         fnv1a hasher;
         hasher.append_bytes(componentName.data(), componentName.size());
-        return static_cast<ComponentId>(hasher.finalize());
-    }
+        uint64 hash = hasher.finalize();
 
-    template <typename ComponentT>
-    constexpr ComponentInfo getComponentInfo() noexcept {
-        return {getComponentId<ComponentT>(), sizeof(ComponentT), alignof(ComponentT)};
+        return ComponentInfo(hash, sizeof(ComponentT), alignof(ComponentT));
     }
 } // namespace up

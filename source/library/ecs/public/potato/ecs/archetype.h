@@ -14,7 +14,7 @@
 
 namespace up {
     struct Layout {
-        ComponentInfo componentInfo;
+        ComponentId component = ComponentId::Unknown;
         uint32 offset = 0;
     };
 
@@ -26,13 +26,13 @@ namespace up {
     /// Components.
     class Archetype : public shared<Archetype> {
     public:
-        UP_ECS_API explicit Archetype(view<ComponentInfo> comps) noexcept;
+        UP_ECS_API explicit Archetype(view<ComponentId> comps) noexcept;
         UP_ECS_API ~Archetype();
 
         Archetype(Archetype&&) = delete;
         Archetype& operator=(Archetype&&) = delete;
 
-        bool UP_ECS_API matches(Query const& query) const noexcept;
+        bool UP_ECS_API matches(view<ComponentId> components) const noexcept;
         void UP_ECS_API unsafeSelect(Query const& query, delegate_ref<SelectSignature> callback) const noexcept;
 
         uint32 UP_ECS_API allocateEntity() noexcept;
