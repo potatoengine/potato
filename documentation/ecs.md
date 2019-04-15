@@ -90,6 +90,17 @@ Modifying an Entity's set of Components can be seen as a combination of Create +
 
 Exactly how this queuing works is still TBD. The gist is that the World will need to somehow track the requested additions and deletions and apply them at known safe points between System updates. Deletions are relatively easy (just a list of Entities to be deleted), while creations will also need to buffer up the new Entity's Component data via some mechanism.
 
+Entity Lookup
+-------------
+
+While the ECS pattern discourages such, it is sometimes necessary to find a Component based on its Entity. Because Components are associated to an Entity via an Archetype, it is thus necessary to find the Archetype for an Entity; it is then necessary to find the Entity's index in that Archetype.
+
+The basic approach here is to keep tables (as hash maps). One table, in the World, contains Entity identifiers and the Entity's associated Archetype. A slot map data structure is a potential option for Entity identifiers, and an index into the World's list of known Archetypes can be the value stored for the Entity's identifier.
+
+Inside the Archetype, a simple hash map of Entity identifier to index can be stored; there is no need for a slot map here as the index inside an Archetype should be considered transient, and is only really used to find pointers to Components (and the pointers are also transient).
+
+For handling the reverse - where a Component needs to find its own Entity identifier - a few options are available. The simplest is to pass in the Entity identifier as a new array to the System. These could even be allocated separately from the regular Chunk if that were deemed advantageous.
+
 Testing
 -------
 
