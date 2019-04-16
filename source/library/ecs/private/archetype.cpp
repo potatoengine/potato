@@ -64,13 +64,17 @@ void up::Archetype::unsafeSelect(Query const& query, delegate_ref<SelectSignatur
     auto queryComponents = query.components();
 
     for (size_t i = 0; i < queryComponents.size(); ++i) {
-        auto layoutIter = find(_layout, queryComponents[i], {}, [](Layout const& layout) noexcept { return layout.component; });
-        UP_ASSERT(layoutIter != _layout.end());
-
-        pointers[i] = _components + layoutIter->offset;
+        pointers[i] = unsafeComponentPointer(0, queryComponents[i]);
     }
 
     callback(static_cast<size_t>(_count), view<void*>(pointers).first(queryComponents.size()));
+}
+
+void* up::Archetype::unsafeComponentPointer(uint32 entityIndex, ComponentId component) const noexcept {
+    auto layoutIter = find(_layout, component, {}, [](Layout const& layout) noexcept { return layout.component; });
+    UP_ASSERT(layoutIter != _layout.end());
+    ComponentInfo info(component);
+    return _components + layoutIter->offset + entityIndex * info.size;
 }
 
 auto up::Archetype::allocateEntity() noexcept -> uint32 {
@@ -79,13 +83,15 @@ auto up::Archetype::allocateEntity() noexcept -> uint32 {
     return id;
 }
 
-auto up::Archetype::unsafeAllocate(view<void const*> componentData) noexcept -> uint32 {
+auto up::Archetype::unsafeAllocate(view<ComponentId> componentIds, view<void const*> componentData) noexcept -> uint32 {
     UP_ASSERT(componentData.size() == _layout.size());
+    UP_ASSERT(componentIds.size() == componentData.size());
+
     uint32 entityIndex = allocateEntity();
 
-    for (uint32 index = 0; index != _layout.size(); ++index) {
-        ComponentInfo info(_layout[index].component);
-        std::memcpy(_components + _layout[index].offset + info.size * entityIndex, componentData[index], info.size);
+    for (uint32 index = 0; index != componentIds.size(); ++index) {
+        ComponentInfo info(componentIds[index]);
+        std::memcpy(unsafeComponentPointer(entityIndex, componentIds[index]), componentData[index], info.size);
     }
 
     return entityIndex;

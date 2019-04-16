@@ -32,13 +32,15 @@ namespace up {
         Archetype(Archetype&&) = delete;
         Archetype& operator=(Archetype&&) = delete;
 
-        bool UP_ECS_API matches(view<ComponentId> components) const noexcept;
-        bool UP_ECS_API matchesExact(view<ComponentId> components) const noexcept;
-        void UP_ECS_API unsafeSelect(Query const& query, delegate_ref<SelectSignature> callback) const noexcept;
+        UP_ECS_API bool matches(view<ComponentId> components) const noexcept;
+        UP_ECS_API bool matchesExact(view<ComponentId> components) const noexcept;
+        UP_ECS_API void unsafeSelect(Query const& query, delegate_ref<SelectSignature> callback) const noexcept;
 
-        uint32 UP_ECS_API allocateEntity() noexcept;
+        UP_ECS_API void* unsafeComponentPointer(uint32 entityIndex, ComponentId component) const noexcept;
 
-        uint32 UP_ECS_API unsafeAllocate(view<void const*> componentData) noexcept;
+        UP_ECS_API uint32 allocateEntity() noexcept;
+
+        UP_ECS_API uint32 unsafeAllocate(view<ComponentId> componentIds, view<void const*> componentData) noexcept;
 
     private:
         static constexpr uint32 _chunkSize = 64 * 1024;

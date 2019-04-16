@@ -32,8 +32,9 @@ namespace up {
         void createEntity(Components const&... components) noexcept {
             ComponentId const componentIds[] = {getComponentId<Components>()...};
             void const* componentData[] = {&components...};
+
             rc<Archetype> archetype = acquireArchetype(componentIds);
-            archetype->unsafeAllocate(componentData);
+            archetype->unsafeAllocate(componentIds, componentData);
         }
 
     private:
