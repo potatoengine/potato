@@ -10,7 +10,6 @@
 
 namespace up {
     class Archetype;
-    class Query;
 
     using SelectSignature = void(size_t count, view<void*> componentArrays);
 
@@ -25,7 +24,7 @@ namespace up {
         World(World&&) = delete;
         World& operator=(World&&) = delete;
 
-        void UP_ECS_API unsafeSelect(Query const& query, delegate_ref<SelectSignature> callback) const noexcept;
+        void UP_ECS_API unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const noexcept;
         rc<Archetype> UP_ECS_API acquireArchetype(view<ComponentId> components) noexcept;
 
         template <typename... Components>

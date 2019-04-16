@@ -58,16 +58,15 @@ bool up::Archetype::matchesExact(view<ComponentId> components) const noexcept {
     return matches(components);
 }
 
-void up::Archetype::unsafeSelect(Query const& query, delegate_ref<SelectSignature> callback) const noexcept {
+void up::Archetype::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const noexcept {
     void* pointers[64];
+    UP_ASSERT(components.size() <= std::size(pointers));    
 
-    auto queryComponents = query.components();
-
-    for (size_t i = 0; i < queryComponents.size(); ++i) {
-        pointers[i] = unsafeComponentPointer(0, queryComponents[i]);
+    for (size_t i = 0; i < components.size(); ++i) {
+        pointers[i] = unsafeComponentPointer(0, components[i]);
     }
 
-    callback(static_cast<size_t>(_count), view<void*>(pointers).first(queryComponents.size()));
+    callback(static_cast<size_t>(_count), view<void*>(pointers).first(components.size()));
 }
 
 void* up::Archetype::unsafeComponentPointer(uint32 entityIndex, ComponentId component) const noexcept {

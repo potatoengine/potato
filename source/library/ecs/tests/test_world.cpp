@@ -19,7 +19,6 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
     DOCTEST_TEST_CASE("Archetype selects") {
         World world;
-        Query query{getComponentId<Second>()};
 
         world.createEntity(Test1{'f'}, Second{'g', 7.f});
         world.createEntity(Second{'g', 9.f}, Another{1.f, 2.f});
@@ -30,7 +29,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         size_t entityCount = 0;
         float weight = 0;
 
-        world.unsafeSelect(query, [&](size_t count, view<void*> arrays) {
+        world.unsafeSelect(view<ComponentId>({getComponentId<Second>()}), [&](size_t count, view<void*> arrays) {
             ++invokeCount;
             entityCount += count;
 

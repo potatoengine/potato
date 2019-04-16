@@ -20,25 +20,19 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
         Archetype arch1{vector{getComponentId<Test1>(), getComponentId<Second>()}};
         Archetype arch2{vector{getComponentId<Second>(), getComponentId<Another>()}};
 
-        Query queryTest1{getComponentId<Test1>()};
-        Query queryTest1Second{getComponentId<Test1>(), getComponentId<Second>()};
-        Query querySecond{getComponentId<Second>()};
-        Query queryAnother{getComponentId<Another>()};
+        DOCTEST_CHECK(arch1.matches(view<ComponentId>({getComponentId<Test1>()})));
+        DOCTEST_CHECK(arch1.matches(view<ComponentId>({getComponentId<Test1>(), getComponentId<Second>()})));
+        DOCTEST_CHECK(arch1.matches(view<ComponentId>({getComponentId<Second>()})));
+        DOCTEST_CHECK_FALSE(arch1.matches(view<ComponentId>({getComponentId<Another>()})));
 
-        DOCTEST_CHECK(arch1.matches(queryTest1.components()));
-        DOCTEST_CHECK(arch1.matches(queryTest1Second.components()));
-        DOCTEST_CHECK(arch1.matches(querySecond.components()));
-        DOCTEST_CHECK_FALSE(arch1.matches(queryAnother.components()));
-
-        DOCTEST_CHECK_FALSE(arch2.matches(queryTest1.components()));
-        DOCTEST_CHECK_FALSE(arch2.matches(queryTest1Second.components()));
-        DOCTEST_CHECK(arch2.matches(querySecond.components()));
-        DOCTEST_CHECK(arch2.matches(queryAnother.components()));
+        DOCTEST_CHECK_FALSE(arch2.matches(view<ComponentId>({getComponentId<Test1>()})));
+        DOCTEST_CHECK_FALSE(arch2.matches(view<ComponentId>({getComponentId<Test1>(), getComponentId<Second>()})));
+        DOCTEST_CHECK(arch2.matches(view<ComponentId>({getComponentId<Second>()})));
+        DOCTEST_CHECK(arch2.matches(view<ComponentId>({getComponentId<Another>()})));
     }
 
     DOCTEST_TEST_CASE("Archetype selects") {
         Archetype arch{vector{getComponentId<Test1>(), getComponentId<Second>()}};
-        Query query{getComponentId<Test1>(), getComponentId<Second>()};
 
         arch.allocateEntity();
         arch.allocateEntity();
@@ -47,7 +41,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
         arch.allocateEntity();
 
         size_t total = 0;
-        arch.unsafeSelect(query, [&total](size_t count, view<void*> arrays) {
+        arch.unsafeSelect(view<ComponentId>({getComponentId<Test1>(), getComponentId<Second>()}), [&total](size_t count, view<void*> arrays) {
             total += count;
         });
         DOCTEST_CHECK_EQ(5, total);

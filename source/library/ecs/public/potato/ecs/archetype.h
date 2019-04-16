@@ -9,7 +9,6 @@
 #include "potato/foundation/span.h"
 #include "potato/foundation/delegate_ref.h"
 #include "potato/ecs/component.h"
-#include "potato/ecs/query.h"
 #include <utility>
 
 namespace up {
@@ -34,7 +33,7 @@ namespace up {
 
         UP_ECS_API bool matches(view<ComponentId> components) const noexcept;
         UP_ECS_API bool matchesExact(view<ComponentId> components) const noexcept;
-        UP_ECS_API void unsafeSelect(Query const& query, delegate_ref<SelectSignature> callback) const noexcept;
+        UP_ECS_API void unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const noexcept;
 
         UP_ECS_API void* unsafeComponentPointer(uint32 entityIndex, ComponentId component) const noexcept;
 
