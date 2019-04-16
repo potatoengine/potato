@@ -1,6 +1,7 @@
 add_executable(test_potato_ecs
     main.cpp
     test_archetype.cpp
+    test_component.cpp
     test_world.cpp
 )
 
