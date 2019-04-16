@@ -48,6 +48,8 @@ namespace up {
 
         rc<Archetype> UP_ECS_API acquireArchetype(view<ComponentId> components) noexcept;
 
+        view<rc<Archetype>> archetypes() const noexcept { return _archetypes; }
+
         template <typename... Components>
         void createEntity(Components const&... components) noexcept {
             ComponentId const componentIds[] = {getComponentId<Components>()...};

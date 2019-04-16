@@ -21,9 +21,12 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         World world;
 
         world.createEntity(Test1{'f'}, Second{'g', 7.f});
-        world.createEntity(Second{'g', 9.f}, Another{1.f, 2.f});
+        world.createEntity(Another{1.f, 2.f}, Second{'g', 9.f});
         world.createEntity(Second{'h', -2.f}, Another{2.f, 1.f});
         world.createEntity(Test1{'j'}, Another{3.f, 4.f});
+
+        // Exactly two of the entities should be in the same archetype
+        DOCTEST_CHECK_EQ(3, world.archetypes().size());
 
         size_t invokeCount = 0;
         size_t entityCount = 0;
@@ -38,7 +41,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
             }
         });
 
-        // Only two archetypes should have been created that match
+        // Only two archetypes should have matches
         DOCTEST_CHECK_EQ(2, invokeCount);
 
         // Three total entities between the two archetypes should exist that match
