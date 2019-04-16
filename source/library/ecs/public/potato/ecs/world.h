@@ -3,6 +3,7 @@
 #pragma once
 
 #include "_export.h"
+#include "potato/ecs/component.h"
 #include "potato/foundation/vector.h"
 #include "potato/foundation/delegate_ref.h"
 #include "potato/foundation/rc.h"
@@ -25,6 +26,15 @@ namespace up {
         World& operator=(World&&) = delete;
 
         void UP_ECS_API unsafeSelect(Query const& query, delegate_ref<SelectSignature> callback) const noexcept;
+        rc<Archetype> UP_ECS_API acquireArchetype(view<ComponentId> components) noexcept;
+
+        template <typename... Components>
+        void createEntity(Components const&... components) noexcept {
+            ComponentId const componentIds[] = {getComponentId<Components>()...};
+            void const* componentData[] = {&components...};
+            rc<Archetype> archetype = acquireArchetype(componentIds);
+            archetype->unsafeAllocate(componentData);
+        }
 
     private:
         vector<rc<Archetype>> _archetypes;

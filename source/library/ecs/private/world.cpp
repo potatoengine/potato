@@ -13,3 +13,15 @@ void up::World::unsafeSelect(Query const& query, delegate_ref<SelectSignature> c
         }
     }
 }
+
+auto up::World::acquireArchetype(view<ComponentId> components) noexcept -> rc<Archetype> {
+    for (rc<Archetype> const& archetype : _archetypes) {
+        if (archetype->matchesExact(components)) {
+            return archetype;
+        }
+    }
+
+    auto arch = new_shared<Archetype>(components);
+    _archetypes.push_back(arch);
+    return arch;
+}

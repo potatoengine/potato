@@ -41,12 +41,21 @@ up::Archetype::~Archetype() {
 }
 
 bool up::Archetype::matches(view<ComponentId> components) const noexcept {
+    // FIXME: handle Archetypes that have multiple copies of the same component
     for (ComponentId comp : components) {
         if (find(_layout, comp, {}, [](Layout const& layout) noexcept -> ComponentId { return layout.component; }) == _layout.end()) {
             return false;
         }
     }
     return true;
+}
+
+bool up::Archetype::matchesExact(view<ComponentId> components) const noexcept {
+    if (components.size() != _layout.size()) {
+        return false;
+    }
+
+    return matches(components);
 }
 
 void up::Archetype::unsafeSelect(Query const& query, delegate_ref<SelectSignature> callback) const noexcept {
@@ -68,4 +77,16 @@ auto up::Archetype::allocateEntity() noexcept -> uint32 {
     uint32 id = _count++;
     UP_ASSERT(_count < _perChunk);
     return id;
+}
+
+auto up::Archetype::unsafeAllocate(view<void const*> componentData) noexcept -> uint32 {
+    UP_ASSERT(componentData.size() == _layout.size());
+    uint32 entityIndex = allocateEntity();
+
+    for (uint32 index = 0; index != _layout.size(); ++index) {
+        ComponentInfo info(_layout[index].component);
+        std::memcpy(_components + _layout[index].offset + info.size * entityIndex, componentData[index], info.size);
+    }
+
+    return entityIndex;
 }
