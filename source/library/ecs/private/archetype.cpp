@@ -58,7 +58,7 @@ bool up::Archetype::matchesExact(view<ComponentId> components) const noexcept {
     return matches(components);
 }
 
-void up::Archetype::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const noexcept {
+void up::Archetype::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const {
     void* pointers[64];
     UP_ASSERT(components.size() <= std::size(pointers));    
 

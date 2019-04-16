@@ -29,13 +29,12 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         size_t entityCount = 0;
         float weight = 0;
 
-        world.unsafeSelect(view<ComponentId>({getComponentId<Second>()}), [&](size_t count, view<void*> arrays) {
+        world.select<Second>([&](size_t count, Second* second) {
             ++invokeCount;
             entityCount += count;
 
-            Second const* seconds = static_cast<Second const*>(arrays[0]);
             for (size_t index = 0; index != count; ++index) {
-                weight += seconds[index].b;
+                weight += second[index].b;
             }
         });
 

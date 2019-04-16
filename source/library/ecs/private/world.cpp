@@ -6,7 +6,7 @@
 up::World::World() = default;
 up::World::~World() = default;
 
-void up::World::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const noexcept {
+void up::World::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const {
     for (rc<Archetype> const& archetype : _archetypes) {
         if (archetype->matches(components)) {
             archetype->unsafeSelect(components, callback);
