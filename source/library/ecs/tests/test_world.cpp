@@ -38,8 +38,13 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
             }
         });
 
+        // Only two archetypes should have been created that match
         DOCTEST_CHECK_EQ(2, invokeCount);
+
+        // Three total entities between the two archetypes should exist that match
         DOCTEST_CHECK_EQ(3, entityCount);
+
+        // Ensure we're storing/retrieving correct values
         DOCTEST_CHECK_EQ(14.f, weight);
     }
 }
