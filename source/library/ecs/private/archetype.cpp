@@ -11,11 +11,10 @@ up::Archetype::Archetype(view<ComponentId> comps) noexcept : _layout(comps.size(
 
     if (size == 0) {
         _perChunk = 0;
-        _components = nullptr;
         return;
     }
 
-    _perChunk = static_cast<uint32>(_chunkSize / size);
+    _perChunk = static_cast<uint32>(Chunk::allocatedSize / size);
 
     size_t offset = 0;
     for (size_t i = 0; i != comps.size(); ++i) {
@@ -31,14 +30,10 @@ up::Archetype::Archetype(view<ComponentId> comps) noexcept : _layout(comps.size(
         offset += info.size * _perChunk;
     }
 
-    UP_ASSERT(offset <= _chunkSize);
-
-    _components = new char[_chunkSize];
+    UP_ASSERT(offset <= Chunk::allocatedSize);
 }
 
-up::Archetype::~Archetype() {
-    delete[] _components;
-}
+up::Archetype::~Archetype() = default;
 
 bool up::Archetype::matches(view<ComponentId> components) const noexcept {
     // FIXME: handle Archetypes that have multiple copies of the same component
@@ -73,12 +68,23 @@ void* up::Archetype::unsafeComponentPointer(uint32 entityIndex, ComponentId comp
     auto layoutIter = find(_layout, component, {}, [](Layout const& layout) noexcept { return layout.component; });
     UP_ASSERT(layoutIter != _layout.end());
     ComponentInfo info(component);
-    return _components + layoutIter->offset + entityIndex * info.size;
+
+    auto chunkIndex = entityIndex / _perChunk;
+    auto subIndex = entityIndex % _perChunk;
+
+    return _chunks[chunkIndex]->data + layoutIter->offset + entityIndex * info.size;
 }
 
 auto up::Archetype::allocateEntity() noexcept -> uint32 {
     uint32 id = _count++;
-    UP_ASSERT(_count < _perChunk);
+
+    if (_chunks.empty()) {
+        _chunks.push_back(new_box<Chunk>());
+    }
+    else if (_chunks.back()->header.count == _perChunk) {
+        _chunks.push_back(new_box<Chunk>());
+    }
+    
     return id;
 }
 

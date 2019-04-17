@@ -46,4 +46,22 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
         });
         DOCTEST_CHECK_EQ(5, total);
     }
+
+    DOCTEST_TEST_CASE("chunks") {
+        int const count = 100000;
+        Archetype arch{vector{getComponentId<Test1>(), getComponentId<Second>()}};
+
+        for (int i = 0; i != count; ++i) {
+            arch.allocateEntity();
+        }
+
+        size_t chunks = 0;
+        size_t total = 0;
+        arch.unsafeSelect(view<ComponentId>({getComponentId<Test1>(), getComponentId<Second>()}), [&](size_t count, view<void*> arrays) {
+            ++chunks;
+            total += count;
+        });
+        DOCTEST_CHECK_NE(0, chunks);
+        DOCTEST_CHECK_EQ(count, total);
+    }
 }
