@@ -6,8 +6,8 @@
 #include "potato/foundation/zstring_view.h"
 #include "potato/foundation/int_types.h"
 
-namespace up::fs {
-    enum class Result {
+namespace up {
+    enum class IOResult {
         Success,
         AccessDenied,
         FileNotFound,
@@ -65,4 +65,4 @@ namespace up::fs {
     }
 
     using EnumerateCallback = up::delegate_ref<EnumerateResult(FileInfo const&)>;
-} // namespace up::fs
+} // namespace up

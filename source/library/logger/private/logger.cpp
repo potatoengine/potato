@@ -22,12 +22,12 @@ up::Logger::Logger(string name, rc<LogReceiver> receiver, LogSeverity minimumSev
 }
 
 void up::Logger::attach(rc<LogReceiver> receiver) noexcept {
-    concurrency::LockGuard _(_receiversLock.writer());
+    LockGuard _(_receiversLock.writer());
     _receivers.push_back(std::move(receiver));
 }
 
 void up::Logger::detach(LogReceiver* remove) noexcept {
-    concurrency::LockGuard _(_receiversLock.writer());
+    LockGuard _(_receiversLock.writer());
     for (size_t i = 0; i != _receivers.size(); ++i) {
         if (_receivers[i].get() == remove) {
             _receivers.erase(_receivers.begin() + i);
@@ -41,7 +41,7 @@ void up::Logger::_dispatch(LogSeverity severity, string_view message, LogLocatio
         return;
     }
 
-    concurrency::LockGuard _(_receiversLock.reader());
+    LockGuard _(_receiversLock.reader());
     for (auto& receiver : _receivers) {
         receiver->log(_name, severity, message, location);
     }

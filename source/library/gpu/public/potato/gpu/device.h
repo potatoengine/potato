@@ -7,38 +7,38 @@
 #include "potato/foundation/int_types.h"
 #include "potato/foundation/rc.h"
 
-namespace up::gpu {
-    class Buffer;
-    class CommandList;
-    class PipelineState;
-    class ResourceView;
-    class Sampler;
-    class SwapChain;
-    class Texture;
+namespace up {
+    class GpuBuffer;
+    class GpuCommandList;
+    class GpuPipelineState;
+    class GpuResourceView;
+    class GpuSampler;
+    class GpuSwapChain;
+    class GpuTexture;
 
-    struct PipelineStateDesc;
-    struct TextureDesc;
+    struct GpuPipelineStateDesc;
+    struct GpuTextureDesc;
 
-    class Device : public shared<Device> {
+    class GpuDevice : public shared<GpuDevice> {
     public:
-        Device() = default;
-        virtual ~Device() = default;
+        GpuDevice() = default;
+        virtual ~GpuDevice() = default;
 
-        Device(Device&&) = delete;
-        Device& operator=(Device&&) = delete;
+        GpuDevice(GpuDevice&&) = delete;
+        GpuDevice& operator=(GpuDevice&&) = delete;
 
-        virtual rc<SwapChain> createSwapChain(void* nativeWindow) = 0;
-        virtual box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) = 0;
-        virtual box<PipelineState> createPipelineState(PipelineStateDesc const& desc) = 0;
-        virtual box<Buffer> createBuffer(BufferType type, uint64 size) = 0;
-        virtual box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) = 0;
-        virtual box<Sampler> createSampler() = 0;
+        virtual rc<GpuSwapChain> createSwapChain(void* nativeWindow) = 0;
+        virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
+        virtual box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) = 0;
+        virtual box<GpuBuffer> createBuffer(GpuBufferType type, uint64 size) = 0;
+        virtual box<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) = 0;
+        virtual box<GpuSampler> createSampler() = 0;
 
-        virtual void execute(CommandList* commandList) = 0;
+        virtual void execute(GpuCommandList* commandList) = 0;
 
-        virtual box<ResourceView> createRenderTargetView(Texture* renderTarget) = 0;
-        virtual box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) = 0;
-        virtual box<ResourceView> createShaderResourceView(Buffer* resource) = 0;
-        virtual box<ResourceView> createShaderResourceView(Texture* texture) = 0;
+        virtual box<GpuResourceView> createRenderTargetView(GpuTexture* renderTarget) = 0;
+        virtual box<GpuResourceView> createDepthStencilView(GpuTexture* depthStencilBuffer) = 0;
+        virtual box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
+        virtual box<GpuResourceView> createShaderResourceView(GpuTexture* texture) = 0;
     };
-} // namespace up::gpu
+} // namespace up

@@ -9,7 +9,7 @@
 #include "potato/foundation/std_iostream.h"
 #include "potato/logger/logger.h"
 
-namespace up::fs {
+namespace up {
     class FileSystem;
 }
 
@@ -21,7 +21,7 @@ namespace up::recon {
         bool deleteStale = false;
     };
 
-    bool parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem, Logger& logger);
-    bool parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path, Logger& logger);
+    bool parseArguments(ConverterConfig& config, span<char const*> args, FileSystem& fileSystem, Logger& logger);
+    bool parseConfigFile(ConverterConfig& config, FileSystem& fileSystem, zstring_view path, Logger& logger);
     bool parseConfigString(ConverterConfig& config, string_view json, zstring_view filename, Logger& logger);
 } // namespace up::recon

@@ -8,33 +8,33 @@
 #include "potato/gpu/swap_chain.h"
 #include <glm/mat4x4.hpp>
 
-namespace up::gpu {
-    class Buffer;
+namespace up {
+    class GpuBuffer;
     class CommandList;
-    class Device;
-    class ResourceView;
-    class Texture;
-} // namespace up::gpu
+    class GpuDevice;
+    class GpuResourceView;
+    class GpuTexture;
+} // namespace up
 
 namespace up {
     class RenderContext;
 
     class RenderCamera {
     public:
-        UP_RENDER_API explicit RenderCamera(rc<gpu::SwapChain> swapChain = nullptr);
+        UP_RENDER_API explicit RenderCamera(rc<GpuSwapChain> swapChain = nullptr);
         UP_RENDER_API ~RenderCamera();
 
-        UP_RENDER_API void resetSwapChain(rc<gpu::SwapChain> swapChain);
+        UP_RENDER_API void resetSwapChain(rc<GpuSwapChain> swapChain);
 
         UP_RENDER_API void beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform);
         UP_RENDER_API void endFrame(RenderContext& ctx);
 
     private:
-        rc<gpu::SwapChain> _swapChain;
-        box<gpu::Buffer> _cameraDataBuffer;
-        box<gpu::Texture> _backBuffer;
-        box<gpu::Texture> _depthStencilBuffer;
-        box<gpu::ResourceView> _rtv;
-        box<gpu::ResourceView> _dsv;
+        rc<GpuSwapChain> _swapChain;
+        box<GpuBuffer> _cameraDataBuffer;
+        box<GpuTexture> _backBuffer;
+        box<GpuTexture> _depthStencilBuffer;
+        box<GpuResourceView> _rtv;
+        box<GpuResourceView> _dsv;
     };
 } // namespace up

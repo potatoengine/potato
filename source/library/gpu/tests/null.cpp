@@ -7,7 +7,7 @@
 
 DOCTEST_TEST_SUITE("[potato][gpu] DeviceNull") {
     using namespace up;
-    using namespace up::gpu;
+    using namespace up;
 
     DOCTEST_TEST_CASE("factory enumerates") {
         auto factory = CreateFactoryNull();
@@ -38,7 +38,7 @@ DOCTEST_TEST_SUITE("[potato][gpu] DeviceNull") {
         auto swapChain = device->createSwapChain(nullptr);
         DOCTEST_CHECK_NE(swapChain, nullptr);
 
-        PipelineStateDesc desc;
+        GpuPipelineStateDesc desc;
         auto pipelineState = device->createPipelineState(desc);
         DOCTEST_CHECK_NE(pipelineState, nullptr);
     }

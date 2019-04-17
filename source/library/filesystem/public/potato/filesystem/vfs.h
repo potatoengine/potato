@@ -2,9 +2,9 @@
 
 #pragma once
 
-namespace up::fs {
+namespace up {
     class VirtualFileSystem {
     public:
     private:
     };
-} // namespace up::fs
+} // namespace up

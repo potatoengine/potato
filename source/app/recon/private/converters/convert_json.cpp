@@ -13,15 +13,15 @@ up::recon::JsonConverter::~JsonConverter() = default;
 
 bool up::recon::JsonConverter::convert(Context& ctx) {
 
-    auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
-    auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
+    auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
+    auto destAbsolutePath = path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 
-    string destParentAbsolutePath(fs::path::parent(destAbsolutePath));
+    string destParentAbsolutePath(path::parent(destAbsolutePath));
 
-    fs::FileSystem fileSys;
+    FileSystem fileSys;
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != fs::Result::Success) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }

@@ -4,7 +4,7 @@
 
 DOCTEST_TEST_SUITE("[potato][concurrency] TaskWorker") {
     using namespace up;
-    using namespace up::concurrency;
+    using namespace up;
 
     DOCTEST_TEST_CASE("single") {
         TaskQueue queue;

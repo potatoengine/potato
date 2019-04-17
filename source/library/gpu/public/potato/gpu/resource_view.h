@@ -4,15 +4,15 @@
 
 #include "common.h"
 
-namespace up::gpu {
-    class ResourceView {
+namespace up {
+    class GpuResourceView {
     public:
-        ResourceView() = default;
-        virtual ~ResourceView() = default;
+        GpuResourceView() = default;
+        virtual ~GpuResourceView() = default;
 
-        ResourceView(ResourceView&&) = delete;
-        ResourceView& operator=(ResourceView&&) = delete;
+        GpuResourceView(GpuResourceView&&) = delete;
+        GpuResourceView& operator=(GpuResourceView&&) = delete;
 
-        virtual ViewType type() const = 0;
+        virtual GpuViewType type() const = 0;
     };
-} // namespace up::gpu
+} // namespace up

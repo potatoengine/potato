@@ -15,15 +15,15 @@ up::recon::ModelConverter::ModelConverter() = default;
 up::recon::ModelConverter::~ModelConverter() = default;
 
 bool up::recon::ModelConverter::convert(Context& ctx) {
-    auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
-    auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), fs::path::changeExtension(ctx.sourceFilePath(), ".model")});
+    auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
+    auto destAbsolutePath = path::join({ctx.destinationFolderPath(), path::changeExtension(ctx.sourceFilePath(), ".model")});
 
-    string destParentAbsolutePath(fs::path::parent(string_view(destAbsolutePath)));
+    string destParentAbsolutePath(path::parent(string_view(destAbsolutePath)));
 
-    fs::FileSystem fileSys;
+    FileSystem fileSys;
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != fs::Result::Success) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
@@ -32,7 +32,7 @@ bool up::recon::ModelConverter::convert(Context& ctx) {
     auto file = fileSys.openRead(sourceAbsolutePath);
 
     vector<byte> contents;
-    if (readBinary(file, contents) != fs::Result::Success) {
+    if (readBinary(file, contents) != IOResult::Success) {
         ctx.logger().error("Failed to read");
         return false;
     }

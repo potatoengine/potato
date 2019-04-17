@@ -5,8 +5,8 @@
 #include "potato/foundation/span.h"
 #include "potato/foundation/int_types.h"
 
-namespace up::gpu {
-    enum class Format {
+namespace up {
+    enum class GpuFormat {
         Unknown,
         R32G32B32A32Float,
         R32G32B32Float,
@@ -15,81 +15,81 @@ namespace up::gpu {
         D32Float
     };
 
-    enum class Semantic {
+    enum class GpuShaderSemantic {
         Position,
         Color,
         TexCoord
     };
 
-    struct InputLayoutElement {
-        Format format = Format::Unknown;
-        Semantic semantic = Semantic::Position;
+    struct GpuInputLayoutElement {
+        GpuFormat format = GpuFormat::Unknown;
+        GpuShaderSemantic semantic = GpuShaderSemantic::Position;
         uint32 semanticIndex = 0;
         uint32 slot = 0;
     };
 
-    enum class ViewType {
+    enum class GpuViewType {
         RTV,
         UAV,
         SRV,
         DSV
     };
 
-    enum class BufferType {
+    enum class GpuBufferType {
         Constant,
         Index,
         Vertex,
     };
 
-    enum class IndexType {
+    enum class GpuIndexFormat {
         Unsigned16,
         Unsigned32
     };
 
-    enum class ShaderStage {
+    enum class GpuShaderStage {
         Vertex = 1 << 0,
         Pixel = 1 << 1,
         All = Vertex | Pixel
     };
 
-    enum class TextureType {
+    enum class GpuTextureType {
         Texture2D,
         Texture3D,
         DepthStencil,
     };
 
-    enum class PrimitiveTopology {
+    enum class GpuPrimitiveTopology {
         Triangles,
         Lines,
     };
 
-    struct Rect {
+    struct GpuClipRect {
         uint32 left = 0, top = 0, right = 0, bottom = 0;
     };
 
-    struct Viewport {
+    struct GpuViewportDesc {
         float leftX = 0, topY = 1;
         float width = 0, height = 0;
         float minDepth = 0, maxDepth = 1;
     };
 
-    struct DeviceInfo {
+    struct GpuDeviceInfo {
         int index;
     };
 
-    struct TextureDesc {
-        Format format = Format::Unknown;
-        TextureType type = TextureType::DepthStencil;
+    struct GpuTextureDesc {
+        GpuFormat format = GpuFormat::Unknown;
+        GpuTextureType type = GpuTextureType::DepthStencil;
         uint32 width = 0, height = 0;
     };
 
-    struct PipelineStateDesc {
+    struct GpuPipelineStateDesc {
         bool enableScissor = false;
         bool enableDepthWrite = false;
         bool enableDepthTest = false;
         span<byte const> vertShader;
         span<byte const> pixelShader;
-        span<InputLayoutElement const> inputLayout;
+        span<GpuInputLayoutElement const> inputLayout;
     };
 
-} // namespace up::gpu
+} // namespace up

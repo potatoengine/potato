@@ -12,11 +12,11 @@
 #include <thread>
 #include <atomic>
 
-namespace up::gpu {
-    class Buffer;
-    class CommandList;
-    class Device;
-} // namespace up::gpu
+namespace up {
+    class GpuBuffer;
+    class GpuCommandList;
+    class GpuDevice;
+} // namespace up
 
 namespace up {
     class RenderContext;
@@ -27,7 +27,7 @@ namespace up {
 
     class Renderer {
     public:
-        UP_RENDER_API explicit Renderer(fs::FileSystem fileSystem, rc<gpu::Device> device);
+        UP_RENDER_API explicit Renderer(FileSystem fileSystem, rc<GpuDevice> device);
         virtual ~Renderer();
 
         Renderer(Renderer const&) = delete;
@@ -43,20 +43,20 @@ namespace up {
         UP_RENDER_API rc<Shader> loadShaderSync(zstring_view path);
         UP_RENDER_API rc<Texture> loadTextureSync(zstring_view path);
 
-        gpu::Device& device() const noexcept { return *_device; }
-        gpu::CommandList& commandList() const noexcept { return *_commandList; }
+        GpuDevice& device() const noexcept { return *_device; }
+        GpuCommandList& commandList() const noexcept { return *_commandList; }
 
     private:
         void _renderMain();
 
-        rc<gpu::Device> _device;
-        box<gpu::CommandList> _commandList;
-        box<gpu::Buffer> _frameDataBuffer;
+        rc<GpuDevice> _device;
+        box<GpuCommandList> _commandList;
+        box<GpuBuffer> _frameDataBuffer;
         rc<Material> _debugLineMaterial;
-        box<gpu::Buffer> _debugLineBuffer;
-        fs::FileSystem _fileSystem;
+        box<GpuBuffer> _debugLineBuffer;
+        FileSystem _fileSystem;
         std::thread _renderThread;
-        concurrency::ConcurrentQueue<RenderTask> _taskQueue;
+        ConcurrentQueue<RenderTask> _taskQueue;
         uint32 _frameCounter = 0;
         uint64 _startTimestamp = 0;
         double _frameTimestamp = 0;

@@ -10,7 +10,7 @@ void up::StandardStreamReceiver::log(string_view loggerName, LogSeverity severit
 
     // Ensure that output isn't interlaced
     //
-    concurrency::LockGuard _(_lock);
+    LockGuard _(_lock);
 
     if (location.file) {
         os << location.file << '(' << location.line << "): <" << location.function << "> ";

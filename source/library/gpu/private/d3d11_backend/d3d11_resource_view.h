@@ -7,20 +7,20 @@
 #include "potato/foundation/box.h"
 #include "potato/gpu/resource_view.h"
 
-namespace up::gpu::d3d11 {
-    class ResourceViewD3D11 final : public ResourceView {
+namespace up::d3d11 {
+    class ResourceViewD3D11 final : public GpuResourceView {
     public:
-        explicit ResourceViewD3D11(ViewType type, com_ptr<ID3D11View> view);
+        explicit ResourceViewD3D11(GpuViewType type, com_ptr<ID3D11View> view);
         virtual ~ResourceViewD3D11();
 
         ResourceViewD3D11(ResourceViewD3D11&&) = delete;
         ResourceViewD3D11& operator=(ResourceViewD3D11&&) = delete;
 
-        ViewType type() const override { return _type; }
+        GpuViewType type() const override { return _type; }
         com_ptr<ID3D11View> const& getView() const { return _view; }
 
     private:
-        ViewType _type;
+        GpuViewType _type;
         com_ptr<ID3D11View> _view;
     };
-} // namespace up::gpu::d3d11
+} // namespace up::d3d11

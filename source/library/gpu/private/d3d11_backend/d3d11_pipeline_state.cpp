@@ -4,7 +4,7 @@
 #include "potato/foundation/assertion.h"
 #include "potato/foundation/out_ptr.h"
 
-up::gpu::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {
+up::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {
     UP_ASSERT(_params.rasterState != nullptr);
     UP_ASSERT(_params.depthStencilState != nullptr);
     UP_ASSERT(_params.blendState != nullptr);
@@ -12,9 +12,9 @@ up::gpu::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 
     UP_ASSERT(_params.vertShader != nullptr);
 }
 
-up::gpu::d3d11::PipelineStateD3D11::~PipelineStateD3D11() = default;
+up::d3d11::PipelineStateD3D11::~PipelineStateD3D11() = default;
 
-auto up::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(PipelineStateDesc const& desc, ID3D11Device* device) -> box<PipelineStateD3D11> {
+auto up::d3d11::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineStateDesc const& desc, ID3D11Device* device) -> box<PipelineStateD3D11> {
     UP_ASSERT(device != nullptr);
 
     D3D11_RASTERIZER_DESC rasterDesc = {};
@@ -45,7 +45,7 @@ auto up::gpu::d3d11::PipelineStateD3D11::createGraphicsPipelineState(PipelineSta
 
     UP_ASSERT(desc.inputLayout.size() <= maxInputLayoutElements);
 
-    for (InputLayoutElement const& element : desc.inputLayout) {
+    for (GpuInputLayoutElement const& element : desc.inputLayout) {
         D3D11_INPUT_ELEMENT_DESC& elemDesc = layout[layoutIndex++];
         elemDesc.SemanticName = toNative(element.semantic).c_str();
         elemDesc.SemanticIndex = element.semanticIndex;

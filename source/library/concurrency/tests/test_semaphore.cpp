@@ -4,7 +4,7 @@
 
 DOCTEST_TEST_SUITE("[potato][concurrency] Semaphore") {
     using namespace up;
-    using namespace up::concurrency;
+    using namespace up;
 
     DOCTEST_TEST_CASE("default") {
         Semaphore sem(0);

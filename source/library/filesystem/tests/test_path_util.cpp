@@ -2,9 +2,9 @@
 #include <doctest/doctest.h>
 #include <iostream>
 
-DOCTEST_TEST_SUITE("[potato][filesystem] up::fs::path") {
+DOCTEST_TEST_SUITE("[potato][filesystem] up::path") {
     using namespace up;
-    using namespace up::fs::path;
+    using namespace up::path;
 
     DOCTEST_TEST_CASE("extension") {
         DOCTEST_CHECK_EQ(extension(zstring_view("")), "");

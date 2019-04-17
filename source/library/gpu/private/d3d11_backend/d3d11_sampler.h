@@ -6,8 +6,8 @@
 #include "potato/gpu/com_ptr.h"
 #include "potato/gpu/sampler.h"
 
-namespace up::gpu::d3d11 {
-    class SamplerD3D11 final : public Sampler {
+namespace up::d3d11 {
+    class SamplerD3D11 final : public GpuSampler {
     public:
         explicit SamplerD3D11(com_ptr<ID3D11SamplerState> sampler);
         virtual ~SamplerD3D11();
@@ -20,4 +20,4 @@ namespace up::gpu::d3d11 {
     private:
         com_ptr<ID3D11SamplerState> _sampler;
     };
-} // namespace up::gpu::d3d11
+} // namespace up::d3d11

@@ -4,7 +4,7 @@
 
 DOCTEST_TEST_SUITE("[potato][concurrency] RWLock") {
     using namespace up;
-    using namespace up::concurrency;
+    using namespace up;
 
     DOCTEST_TEST_CASE("writer-reader-writer") {
         RWLock lock;

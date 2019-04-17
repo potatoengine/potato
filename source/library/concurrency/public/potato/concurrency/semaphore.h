@@ -7,7 +7,7 @@
 #include "potato/foundation/platform.h"
 #include <atomic>
 
-namespace up::concurrency {
+namespace up {
     class Semaphore {
     public:
         UP_CONCURRENCY_API Semaphore(int initial = 0);
@@ -53,4 +53,4 @@ namespace up::concurrency {
         }
     }
 
-} // namespace up::concurrency
+} // namespace up

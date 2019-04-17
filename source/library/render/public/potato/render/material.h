@@ -7,13 +7,13 @@
 #include "potato/foundation/rc.h"
 #include "potato/foundation/vector.h"
 
-namespace up::gpu {
+namespace up {
     class CommandList;
-    class Device;
-    class PipelineState;
-    class ResourceView;
-    class Sampler;
-} // namespace up::gpu
+    class GpuDevice;
+    class GpuPipelineState;
+    class GpuResourceView;
+    class GpuSampler;
+} // namespace up
 
 namespace up {
     class RenderContext;
@@ -28,11 +28,11 @@ namespace up {
         UP_RENDER_API void bindMaterialToRender(RenderContext& ctx);
 
     private:
-        box<gpu::PipelineState> _state;
+        box<GpuPipelineState> _state;
         rc<Shader> _vertexShader;
         rc<Shader> _pixelShader;
         vector<rc<Texture>> _textures;
-        vector<box<gpu::ResourceView>> _srvs;
-        vector<box<gpu::Sampler>> _samplers;
+        vector<box<GpuResourceView>> _srvs;
+        vector<box<GpuSampler>> _samplers;
     };
 } // namespace up

@@ -10,15 +10,15 @@ up::recon::CopyConverter::CopyConverter() = default;
 up::recon::CopyConverter::~CopyConverter() = default;
 
 bool up::recon::CopyConverter::convert(Context& ctx) {
-    auto sourceAbsolutePath = fs::path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
-    auto destAbsolutePath = fs::path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
+    auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
+    auto destAbsolutePath = path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 
-    string destParentAbsolutePath(fs::path::parent(string_view(destAbsolutePath)));
+    string destParentAbsolutePath(path::parent(string_view(destAbsolutePath)));
 
-    fs::FileSystem fileSys;
+    FileSystem fileSys;
 
     if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != fs::Result::Success) {
+        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
@@ -28,7 +28,7 @@ bool up::recon::CopyConverter::convert(Context& ctx) {
     ctx.addOutput(ctx.sourceFilePath());
 
     auto rs = fileSys.copyFile(sourceAbsolutePath.c_str(), destAbsolutePath.c_str());
-    if (rs != fs::Result::Success) {
+    if (rs != IOResult::Success) {
         ctx.logger().error("Failed to copy `{}' to `{}': {}", sourceAbsolutePath, destAbsolutePath, static_cast<uint64>(rs));
         return false;
     }

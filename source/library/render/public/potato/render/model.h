@@ -8,11 +8,11 @@
 #include "potato/foundation/platform.h"
 #include <glm/mat4x4.hpp>
 
-namespace up::gpu {
-    class Buffer;
+namespace up {
+    class GpuBuffer;
     class CommandList;
-    class Device;
-} // namespace up::gpu
+    class GpuDevice;
+} // namespace up
 
 namespace up {
     class Material;
@@ -29,6 +29,6 @@ namespace up {
     private:
         rc<Material> _material;
         rc<Mesh> _mesh;
-        box<gpu::Buffer> _transformBuffer;
+        box<GpuBuffer> _transformBuffer;
     };
 } // namespace up

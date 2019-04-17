@@ -6,7 +6,7 @@
 
 // returns extension, including dot, e.g. foo.txt -> .txt
 // only the last extension is returned, e.g. foo.txt.gz -> .gz
-up::zstring_view up::fs::path::extension(zstring_view path) noexcept {
+up::zstring_view up::path::extension(zstring_view path) noexcept {
     auto pos = path.find_last_of("/\\.");
     if (pos != zstring_view::npos && path[pos] == '.') {
         return path.substr(pos);
@@ -14,7 +14,7 @@ up::zstring_view up::fs::path::extension(zstring_view path) noexcept {
     return {};
 }
 
-up::string_view up::fs::path::extension(string_view path) noexcept {
+up::string_view up::path::extension(string_view path) noexcept {
     auto pos = path.find_last_of("/\\.");
     if (pos != string_view::npos && path[pos] == '.') {
         return path.substr(pos);
@@ -23,7 +23,7 @@ up::string_view up::fs::path::extension(string_view path) noexcept {
 }
 
 // extension must include the dot, e.g. .txt
-auto up::fs::path::changeExtension(string_view path, string_view extension) -> string {
+auto up::path::changeExtension(string_view path, string_view extension) -> string {
 
     UP_ASSERT(extension.empty() || extension.front() == '.');
 
@@ -40,7 +40,7 @@ auto up::fs::path::changeExtension(string_view path, string_view extension) -> s
 }
 
 // returns the filename of a path, e.g. foo/bar.txt -> bar.txt
-up::string_view up::fs::path::filename(string_view path) noexcept {
+up::string_view up::path::filename(string_view path) noexcept {
     auto pos = path.find_last_of("/\\");
     if (pos != string_view::npos) {
         return path.substr(pos + 1);
@@ -49,7 +49,7 @@ up::string_view up::fs::path::filename(string_view path) noexcept {
 }
 
 // returns the basename of a path, e.g. foo/bar.txt -> bar
-up::string_view up::fs::path::filebasename(string_view path) noexcept {
+up::string_view up::path::filebasename(string_view path) noexcept {
     auto ext = extension(path);
     auto pathWithoutExt = path.substr(0, path.size() - ext.size());
     auto pos = pathWithoutExt.find_last_of("/\\");
@@ -59,7 +59,7 @@ up::string_view up::fs::path::filebasename(string_view path) noexcept {
     return pathWithoutExt;
 }
 
-up::string_view up::fs::path::parent(string_view path) noexcept {
+up::string_view up::path::parent(string_view path) noexcept {
     if (path.empty()) {
         return path;
     }
@@ -73,7 +73,7 @@ up::string_view up::fs::path::parent(string_view path) noexcept {
     return "/";
 }
 
-bool up::fs::path::isNormalized(string_view path) noexcept {
+bool up::path::isNormalized(string_view path) noexcept {
     // ensure path starts with a /
     if (path.empty() || path.front() != '/') {
         return false;
@@ -135,7 +135,7 @@ bool up::fs::path::isNormalized(string_view path) noexcept {
     return true;
 }
 
-auto up::fs::path::normalize(string_view path) -> string {
+auto up::path::normalize(string_view path) -> string {
     if (path.empty()) {
         return string("/");
     }
@@ -202,7 +202,7 @@ auto up::fs::path::normalize(string_view path) -> string {
     return string(result);
 }
 
-auto up::fs::path::join(std::initializer_list<string_view> components) -> string {
+auto up::path::join(std::initializer_list<string_view> components) -> string {
     std::size_t size = 0;
 
     for (auto sv : components) {

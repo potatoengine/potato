@@ -6,7 +6,7 @@
 #include <atomic>
 #include <thread>
 
-namespace up::concurrency {
+namespace up {
     enum class AdoptLock { Adopt };
 
     template <typename LockT>
@@ -25,4 +25,4 @@ namespace up::concurrency {
 
     template <typename LockT>
     LockGuard(LockT&)->LockGuard<LockT>;
-} // namespace up::concurrency
+} // namespace up

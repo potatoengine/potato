@@ -7,10 +7,10 @@
 #include "potato/foundation/vector.h"
 #include <glm/mat4x4.hpp>
 
-namespace up::gpu {
+namespace up {
     class CommandList;
-    class Device;
-} // namespace up::gpu
+    class GpuDevice;
+} // namespace up
 
 namespace up {
     class Model;

@@ -6,16 +6,16 @@
 #include "potato/foundation/int_types.h"
 #include "potato/foundation/span.h"
 
-namespace up::gpu {
-    class Buffer {
+namespace up {
+    class GpuBuffer {
     public:
-        Buffer() = default;
-        virtual ~Buffer() = default;
+        GpuBuffer() = default;
+        virtual ~GpuBuffer() = default;
 
-        Buffer(Buffer&&) = delete;
-        Buffer& operator=(Buffer&&) = delete;
+        GpuBuffer(GpuBuffer&&) = delete;
+        GpuBuffer& operator=(GpuBuffer&&) = delete;
 
-        virtual BufferType type() const noexcept = 0;
+        virtual GpuBufferType type() const noexcept = 0;
         virtual uint64 size() const noexcept = 0;
     };
-} // namespace up::gpu
+} // namespace up

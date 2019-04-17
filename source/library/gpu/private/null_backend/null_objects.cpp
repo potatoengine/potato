@@ -2,64 +2,64 @@
 
 #include "null_objects.h"
 
-void up::gpu::null::FactoryNull::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
-    static DeviceInfo deviceInfo = {0};
+void up::null::FactoryNull::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
+    static GpuDeviceInfo deviceInfo = {0};
 
     callback(deviceInfo);
 }
 
-auto up::gpu::null::FactoryNull::createDevice(int index) -> rc<Device> {
+auto up::null::FactoryNull::createDevice(int index) -> rc<GpuDevice> {
     return new_shared<DeviceNull>();
 }
 
-UP_GPU_API auto up::gpu::CreateFactoryNull() -> box<Factory> {
+UP_GPU_API auto up::CreateFactoryNull() -> box<GpuDeviceFactory> {
     return new_box<null::FactoryNull>();
 }
 
-auto up::gpu::null::DeviceNull::createSwapChain(void* native_window) -> rc<SwapChain> {
+auto up::null::DeviceNull::createSwapChain(void* native_window) -> rc<GpuSwapChain> {
     return new_shared<SwapChainNull>();
 }
 
-auto up::gpu::null::DeviceNull::createCommandList(PipelineState* pipelineState) -> box<CommandList> {
+auto up::null::DeviceNull::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
     return new_box<CommandListNull>();
 }
 
-auto up::gpu::null::DeviceNull::createPipelineState(PipelineStateDesc const&) -> box<PipelineState> {
+auto up::null::DeviceNull::createPipelineState(GpuPipelineStateDesc const&) -> box<GpuPipelineState> {
     return new_box<PipelineStateNull>();
 }
 
-auto up::gpu::null::DeviceNull::createRenderTargetView(Texture* renderTarget) -> box<ResourceView> {
-    return new_box<ResourceViewNull>(ViewType::RTV);
+auto up::null::DeviceNull::createRenderTargetView(GpuTexture* renderTarget) -> box<GpuResourceView> {
+    return new_box<ResourceViewNull>(GpuViewType::RTV);
 }
 
-auto up::gpu::null::DeviceNull::createDepthStencilView(Texture* depthStencilBuffer) -> box<ResourceView> {
-    return new_box<ResourceViewNull>(ViewType::DSV);
+auto up::null::DeviceNull::createDepthStencilView(GpuTexture* depthStencilBuffer) -> box<GpuResourceView> {
+    return new_box<ResourceViewNull>(GpuViewType::DSV);
 }
 
-auto up::gpu::null::DeviceNull::createShaderResourceView(Buffer* resource) -> box<ResourceView> {
-    return new_box<ResourceViewNull>(ViewType::SRV);
+auto up::null::DeviceNull::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
+    return new_box<ResourceViewNull>(GpuViewType::SRV);
 }
 
-auto up::gpu::null::DeviceNull::createShaderResourceView(Texture* resource) -> box<ResourceView> {
-    return new_box<ResourceViewNull>(ViewType::SRV);
+auto up::null::DeviceNull::createShaderResourceView(GpuTexture* resource) -> box<GpuResourceView> {
+    return new_box<ResourceViewNull>(GpuViewType::SRV);
 }
 
-auto up::gpu::null::DeviceNull::createBuffer(BufferType type, up::uint64 size) -> box<Buffer> {
+auto up::null::DeviceNull::createBuffer(GpuBufferType type, up::uint64 size) -> box<GpuBuffer> {
     return new_box<BufferNull>(type);
 }
 
-auto up::gpu::null::DeviceNull::createTexture2D(TextureDesc const& desc, span<up::byte const> data) -> box<Texture> {
+auto up::null::DeviceNull::createTexture2D(GpuTextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
     return new_box<TextureNull>();
 }
 
-auto up::gpu::null::DeviceNull::createSampler() -> box<Sampler> {
+auto up::null::DeviceNull::createSampler() -> box<GpuSampler> {
     return new_box<SamplerNull>();
 }
 
-auto up::gpu::null::SwapChainNull::getBuffer(int index) -> box<Texture> {
+auto up::null::SwapChainNull::getBuffer(int index) -> box<GpuTexture> {
     return new_box<TextureNull>();
 }
 
-int up::gpu::null::SwapChainNull::getCurrentBufferIndex() {
+int up::null::SwapChainNull::getCurrentBufferIndex() {
     return 0;
 }

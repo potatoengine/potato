@@ -7,8 +7,8 @@
 #include "potato/foundation/unique_resource.h"
 #include "potato/gpu/device.h"
 
-namespace up::gpu::d3d11 {
-    class DeviceD3D11 final : public Device {
+namespace up::d3d11 {
+    class DeviceD3D11 final : public GpuDevice {
     public:
         DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context);
         virtual ~DeviceD3D11();
@@ -16,21 +16,21 @@ namespace up::gpu::d3d11 {
         DeviceD3D11(DeviceD3D11&&) = delete;
         DeviceD3D11& operator=(DeviceD3D11&&) = delete;
 
-        static rc<Device> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
+        static rc<GpuDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
-        rc<SwapChain> createSwapChain(void* native_window) override;
-        box<CommandList> createCommandList(PipelineState* pipelineState = nullptr) override;
-        box<PipelineState> createPipelineState(PipelineStateDesc const& desc) override;
-        box<Buffer> createBuffer(BufferType type, uint64 size) override;
-        box<Texture> createTexture2D(TextureDesc const& desc, span<byte const> data) override;
-        box<Sampler> createSampler() override;
+        rc<GpuSwapChain> createSwapChain(void* native_window) override;
+        box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
+        box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
+        box<GpuBuffer> createBuffer(GpuBufferType type, uint64 size) override;
+        box<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) override;
+        box<GpuSampler> createSampler() override;
 
-        void execute(CommandList* commandList) override;
+        void execute(GpuCommandList* commandList) override;
 
-        box<ResourceView> createRenderTargetView(Texture* renderTarget) override;
-        box<ResourceView> createDepthStencilView(Texture* depthStencilBuffer) override;
-        box<ResourceView> createShaderResourceView(Buffer* resource) override;
-        box<ResourceView> createShaderResourceView(Texture* texture) override;
+        box<GpuResourceView> createRenderTargetView(GpuTexture* renderTarget) override;
+        box<GpuResourceView> createDepthStencilView(GpuTexture* depthStencilBuffer) override;
+        box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
+        box<GpuResourceView> createShaderResourceView(GpuTexture* texture) override;
 
     private:
         com_ptr<IDXGIFactory2> _factory;
@@ -38,4 +38,4 @@ namespace up::gpu::d3d11 {
         com_ptr<ID3D11Device> _device;
         com_ptr<ID3D11DeviceContext> _context;
     };
-} // namespace up::gpu::d3d11
+} // namespace up::d3d11

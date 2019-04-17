@@ -4,13 +4,13 @@
 
 #include "common.h"
 
-namespace up::gpu {
-    class PipelineState {
+namespace up {
+    class GpuPipelineState {
     public:
-        PipelineState() = default;
-        virtual ~PipelineState() = default;
+        GpuPipelineState() = default;
+        virtual ~GpuPipelineState() = default;
 
-        PipelineState(PipelineState&&) = delete;
-        PipelineState& operator=(PipelineState&&) = delete;
+        GpuPipelineState(GpuPipelineState&&) = delete;
+        GpuPipelineState& operator=(GpuPipelineState&&) = delete;
     };
-} // namespace up::gpu
+} // namespace up

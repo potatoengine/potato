@@ -5,20 +5,20 @@
 #include "potato/foundation/box.h"
 #include "potato/foundation/rc.h"
 
-namespace up::gpu {
-    class Texture;
+namespace up {
+    class GpuTexture;
 
-    class SwapChain : public shared<SwapChain> {
+    class GpuSwapChain : public shared<GpuSwapChain> {
     public:
-        SwapChain() = default;
-        virtual ~SwapChain() = default;
+        GpuSwapChain() = default;
+        virtual ~GpuSwapChain() = default;
 
-        SwapChain(SwapChain&&) = delete;
-        SwapChain& operator=(SwapChain&&) = delete;
+        GpuSwapChain(GpuSwapChain&&) = delete;
+        GpuSwapChain& operator=(GpuSwapChain&&) = delete;
 
         virtual void present() = 0;
         virtual void resizeBuffers(int width, int height) = 0;
-        virtual box<Texture> getBuffer(int index) = 0;
+        virtual box<GpuTexture> getBuffer(int index) = 0;
         virtual int getCurrentBufferIndex() = 0;
     };
-} // namespace up::gpu
+} // namespace up

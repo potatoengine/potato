@@ -6,36 +6,36 @@
 #include "potato/foundation/assertion.h"
 #include "potato/foundation/out_ptr.h"
 
-up::gpu::d3d11::FactoryD3D11::FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory)
+up::d3d11::FactoryD3D11::FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory)
     : _dxgiFactory(std::move(dxgiFactory)) {
     UP_ASSERT(_dxgiFactory != nullptr);
 }
 
-up::gpu::d3d11::FactoryD3D11::~FactoryD3D11() = default;
+up::d3d11::FactoryD3D11::~FactoryD3D11() = default;
 
 #if UP_GPU_ENABLE_D3D11
-auto up::gpu::CreateFactoryD3D11() -> box<gpu::Factory> {
+auto up::CreateFactoryD3D11() -> box<GpuDeviceFactory> {
     com_ptr<IDXGIFactory2> dxgiFactory;
     CreateDXGIFactory1(__uuidof(IDXGIFactory2), out_ptr(dxgiFactory));
     return new_box<d3d11::FactoryD3D11>(std::move(dxgiFactory));
 }
 #endif
 
-bool up::gpu::d3d11::FactoryD3D11::isEnabled() const {
+bool up::d3d11::FactoryD3D11::isEnabled() const {
     return true;
 }
 
-void up::gpu::d3d11::FactoryD3D11::enumerateDevices(delegate<void(DeviceInfo const&)> callback) {
+void up::d3d11::FactoryD3D11::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
     com_ptr<IDXGIAdapter1> adapter;
 
     int index = 0;
     while (_dxgiFactory->EnumAdapters1(index, out_ptr(adapter)) == S_OK) {
-        DeviceInfo info = {index};
+        GpuDeviceInfo info = {index};
         callback(info);
     }
 }
 
-auto up::gpu::d3d11::FactoryD3D11::createDevice(int index) -> rc<gpu::Device> {
+auto up::d3d11::FactoryD3D11::createDevice(int index) -> rc<GpuDevice> {
     com_ptr<IDXGIAdapter1> adapter;
 
     UINT targetIndex = 0;

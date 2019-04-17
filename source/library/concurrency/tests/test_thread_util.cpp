@@ -4,7 +4,7 @@
 
 DOCTEST_TEST_SUITE("[potato][concurrency] thread_util") {
     using namespace up;
-    using namespace up::concurrency;
+    using namespace up;
 
     DOCTEST_TEST_CASE("setCurrentThreadName") {
         // basically just making sure we're not crashing

@@ -18,11 +18,11 @@ namespace {
     };
 } // namespace
 
-up::RenderCamera::RenderCamera(rc<gpu::SwapChain> swapChain) : _swapChain(std::move(swapChain)) {}
+up::RenderCamera::RenderCamera(rc<GpuSwapChain> swapChain) : _swapChain(std::move(swapChain)) {}
 
 up::RenderCamera::~RenderCamera() = default;
 
-void up::RenderCamera::resetSwapChain(rc<gpu::SwapChain> swapChain) {
+void up::RenderCamera::resetSwapChain(rc<GpuSwapChain> swapChain) {
     _swapChain = std::move(swapChain);
     _backBuffer.reset();
     _depthStencilBuffer.reset();
@@ -39,9 +39,9 @@ void up::RenderCamera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransfor
     auto dimensions = _backBuffer->dimensions();
 
     if (_dsv == nullptr) {
-        gpu::TextureDesc desc;
-        desc.type = gpu::TextureType::DepthStencil;
-        desc.format = gpu::Format::D32Float;
+        GpuTextureDesc desc;
+        desc.type = GpuTextureType::DepthStencil;
+        desc.format = GpuFormat::D32Float;
         desc.width = static_cast<uint32>(dimensions.x);
         desc.height = static_cast<uint32>(dimensions.y);
         _depthStencilBuffer = ctx.device.createTexture2D(desc, {});
@@ -49,10 +49,10 @@ void up::RenderCamera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransfor
     }
 
     if (_cameraDataBuffer == nullptr) {
-        _cameraDataBuffer = ctx.device.createBuffer(gpu::BufferType::Constant, sizeof(CameraData));
+        _cameraDataBuffer = ctx.device.createBuffer(GpuBufferType::Constant, sizeof(CameraData));
     }
 
-    gpu::Viewport viewport;
+    GpuViewportDesc viewport;
     viewport.width = static_cast<float>(dimensions.x);
     viewport.height = static_cast<float>(dimensions.y);
     viewport.minDepth = 0;
@@ -74,7 +74,7 @@ void up::RenderCamera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransfor
     ctx.commandList.clearDepthStencil(_dsv.get());
     ctx.commandList.bindRenderTarget(0, _rtv.get());
     ctx.commandList.bindDepthStencil(_dsv.get());
-    ctx.commandList.bindConstantBuffer(1, _cameraDataBuffer.get(), gpu::ShaderStage::All);
+    ctx.commandList.bindConstantBuffer(1, _cameraDataBuffer.get(), GpuShaderStage::All);
     ctx.commandList.setViewport(viewport);
 }
 

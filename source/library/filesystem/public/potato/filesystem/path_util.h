@@ -8,7 +8,7 @@
 #include "potato/foundation/int_types.h"
 #include <initializer_list>
 
-namespace up::fs::path {
+namespace up::path {
     static constexpr uint32 maxPathLength = 4096;
 
     // returns extension, including dot, e.g. foo.txt -> .txt
@@ -52,4 +52,4 @@ namespace up::fs::path {
     // empty components are ignored, e.g. "", bar -> bar
     UP_FILESYSTEM_API string join(std::initializer_list<string_view> components);
 
-} // namespace up::fs::path
+} // namespace up::path

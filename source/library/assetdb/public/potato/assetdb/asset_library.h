@@ -5,15 +5,12 @@
 #include "_export.h"
 #include "common.h"
 #include "asset_record.h"
+#include "potato/foundation/string_view.h"
 #include "potato/foundation/vector.h"
 #include <unordered_map>
-#include <iosfwd>
 
 namespace up {
-    namespace fs {
-        class Stream;
-        class Stream;
-    } // namespace fs
+    class Stream;
 
     class AssetLibrary {
     public:
@@ -30,8 +27,8 @@ namespace up {
 
         UP_ASSETDB_API bool insertRecord(AssetImportRecord record);
 
-        UP_ASSETDB_API bool serialize(fs::Stream& stream) const;
-        UP_ASSETDB_API bool deserialize(fs::Stream& stream);
+        UP_ASSETDB_API bool serialize(Stream& stream) const;
+        UP_ASSETDB_API bool deserialize(Stream& stream);
 
     private:
         struct HashAssetId {

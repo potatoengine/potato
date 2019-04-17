@@ -9,7 +9,7 @@
 #include "potato/logger/logger.h"
 #include <nlohmann/json.hpp>
 
-bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, fs::FileSystem& fileSystem, Logger& logger) {
+bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, FileSystem& fileSystem, Logger& logger) {
     if (args.empty()) {
         return false;
     }
@@ -101,15 +101,15 @@ bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
     }
 }
 
-bool up::recon::parseConfigFile(ConverterConfig& config, fs::FileSystem& fileSystem, zstring_view path, Logger& logger) {
-    auto stream = fileSystem.openRead(path, fs::FileOpenMode::Text);
+bool up::recon::parseConfigFile(ConverterConfig& config, FileSystem& fileSystem, zstring_view path, Logger& logger) {
+    auto stream = fileSystem.openRead(path, FileOpenMode::Text);
     if (!stream) {
         logger.error("Failed to open `{}'", path.c_str());
         return false;
     }
 
     string text;
-    if (fs::readText(stream, text) != fs::Result::Success) {
+    if (readText(stream, text) != IOResult::Success) {
         logger.error("Failed to read `{}'", path.c_str());
         return false;
     }

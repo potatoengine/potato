@@ -7,8 +7,8 @@
 #include "potato/foundation/rc.h"
 #include "potato/image/image.h"
 
-namespace up::gpu {
-    class Texture;
+namespace up {
+    class GpuTexture;
 }
 
 namespace up {
@@ -16,13 +16,13 @@ namespace up {
 
     class Texture : public shared<Texture> {
     public:
-        UP_RENDER_API explicit Texture(Image image, box<gpu::Texture> texture);
+        UP_RENDER_API explicit Texture(Image image, box<GpuTexture> texture);
         UP_RENDER_API ~Texture();
 
-        gpu::Texture& texture() const noexcept { return *_texture; }
+        GpuTexture& texture() const noexcept { return *_texture; }
 
     private:
-        box<gpu::Texture> _texture;
+        box<GpuTexture> _texture;
         Image _image;
     };
 } // namespace up

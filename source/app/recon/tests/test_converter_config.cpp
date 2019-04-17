@@ -11,7 +11,7 @@ DOCTEST_TEST_SUITE("[potato][recon] ConverterConfig") {
     DOCTEST_TEST_CASE("args") {
         char const* args[] = {"/bin/test/", "-source", "ABC", "-dest", "DEF", "-cache", "GHI"};
         ConverterConfig config;
-        fs::FileSystem fs;
+        FileSystem fs;
         Logger logger("test");
 
         bool ok = parseArguments(config, args, fs, logger);

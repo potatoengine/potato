@@ -33,11 +33,11 @@ namespace {
     };
 } // namespace
 
-up::Renderer::Renderer(fs::FileSystem fileSystem, rc<gpu::Device> device) : _device(std::move(device)), _fileSystem(std::move(fileSystem)), _renderThread([this] { _renderMain(); }) {
+up::Renderer::Renderer(FileSystem fileSystem, rc<GpuDevice> device) : _device(std::move(device)), _fileSystem(std::move(fileSystem)), _renderThread([this] { _renderMain(); }) {
     _commandList = _device->createCommandList();
 
     _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.json");
-    _debugLineBuffer = _device->createBuffer(gpu::BufferType::Vertex, 64 * 1024);
+    _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, 64 * 1024);
 }
 
 up::Renderer::~Renderer() {
@@ -54,7 +54,7 @@ void up::Renderer::_renderMain() {
 
 void up::Renderer::beginFrame() {
     if (_frameDataBuffer == nullptr) {
-        _frameDataBuffer = _device->createBuffer(gpu::BufferType::Constant, sizeof(FrameData));
+        _frameDataBuffer = _device->createBuffer(GpuBufferType::Constant, sizeof(FrameData));
     }
 
     uint64 nowNanoseconds = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -71,12 +71,12 @@ void up::Renderer::beginFrame() {
 
     _commandList->clear();
     _commandList->update(_frameDataBuffer.get(), view<byte>{reinterpret_cast<byte*>(&frame), sizeof(frame)});
-    _commandList->bindConstantBuffer(0, _frameDataBuffer.get(), gpu::ShaderStage::All);
+    _commandList->bindConstantBuffer(0, _frameDataBuffer.get(), GpuShaderStage::All);
 }
 
 void up::Renderer::endFrame(float frameTime) {
     if (_debugLineBuffer == nullptr) {
-        _debugLineBuffer = _device->createBuffer(gpu::BufferType::Vertex, 64 * 1024);
+        _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, 64 * 1024);
     }
 
     uint32 debugVertexCount = 0;
@@ -92,7 +92,7 @@ void up::Renderer::endFrame(float frameTime) {
     auto ctx = context();
     _debugLineMaterial->bindMaterialToRender(ctx);
     _commandList->bindVertexBuffer(0, _debugLineBuffer.get(), sizeof(DebugDrawVertex));
-    _commandList->setPrimitiveTopology(gpu::PrimitiveTopology::Lines);
+    _commandList->setPrimitiveTopology(GpuPrimitiveTopology::Lines);
     _commandList->draw(debugVertexCount);
 
     flushDebugDraw(frameTime);
@@ -111,7 +111,7 @@ auto up::Renderer::context() -> RenderContext {
 auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (fs::readBinary(stream, contents) != fs::Result{}) {
+    if (readBinary(stream, contents) != IOResult{}) {
         return {};
     }
     stream.close();
@@ -125,9 +125,9 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     aiMesh const* mesh = scene->mMeshes[0];
 
     MeshChannel channels[] = {
-        {0, gpu::Format::R32G32B32Float, gpu::Semantic::Position},
-        {0, gpu::Format::R32G32B32Float, gpu::Semantic::Color},
-        {0, gpu::Format::R32G32B32Float, gpu::Semantic::TexCoord},
+        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Position},
+        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Color},
+        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::TexCoord},
     };
 
     uint16 stride = sizeof(float) * 8;
@@ -216,14 +216,14 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
 auto up::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (fs::readBinary(stream, contents) != fs::Result{}) {
+    if (readBinary(stream, contents) != IOResult{}) {
         return {};
     }
     return up::new_shared<Shader>(std::move(contents));
 }
 
 auto up::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
-    fs::Stream stream = _fileSystem.openRead(path);
+    Stream stream = _fileSystem.openRead(path);
     if (!stream) {
         return nullptr;
     }
@@ -233,9 +233,9 @@ auto up::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
         return nullptr;
     }
 
-    gpu::TextureDesc desc = {};
-    desc.type = gpu::TextureType::Texture2D;
-    desc.format = gpu::Format::R8G8B8A8UnsignedNormalized;
+    GpuTextureDesc desc = {};
+    desc.type = GpuTextureType::Texture2D;
+    desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
     desc.width = img.header().width;
     desc.height = img.header().height;
 

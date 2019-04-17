@@ -55,7 +55,7 @@ namespace up {
     private:
         string _name;
         LogSeverity _minimumSeverity = LogSeverity::Info;
-        concurrency::RWLock _receiversLock;
+        RWLock _receiversLock;
         vector<rc<LogReceiver>> _receivers;
     };
 } // namespace up

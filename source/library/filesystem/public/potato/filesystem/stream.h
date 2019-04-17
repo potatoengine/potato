@@ -7,7 +7,7 @@
 #include "potato/foundation/span.h"
 #include "common.h"
 
-namespace up::fs {
+namespace up {
     class Stream {
     public:
         using size_type = uint64;
@@ -27,13 +27,13 @@ namespace up::fs {
             virtual bool canWrite() const noexcept = 0;
             virtual bool canSeek() const noexcept = 0;
 
-            virtual Result seek(SeekPosition position, difference_type offset) = 0;
+            virtual IOResult seek(SeekPosition position, difference_type offset) = 0;
             virtual difference_type tell() const = 0;
             virtual difference_type remaining() const = 0;
 
-            virtual Result read(span<byte>& buffer) = 0;
-            virtual Result write(span<byte const> buffer) = 0;
-            virtual Result flush() = 0;
+            virtual IOResult read(span<byte>& buffer) = 0;
+            virtual IOResult write(span<byte const> buffer) = 0;
+            virtual IOResult flush() = 0;
         };
 
         Stream() = default;
@@ -57,17 +57,17 @@ namespace up::fs {
 
         explicit operator bool() const noexcept { return isOpen(); }
 
-        Result seek(SeekPosition position, difference_type offset) { return _impl->seek(position, offset); }
+        IOResult seek(SeekPosition position, difference_type offset) { return _impl->seek(position, offset); }
         difference_type tell() const { return _impl->tell(); }
         difference_type remaining() const { return _impl->remaining(); }
 
-        Result read(span<byte>& buffer) { return _impl->read(buffer); }
-        Result write(span<byte const> buffer) { return _impl->write(buffer); }
-        Result flush() { return _impl->flush(); }
+        IOResult read(span<byte>& buffer) { return _impl->read(buffer); }
+        IOResult write(span<byte const> buffer) { return _impl->write(buffer); }
+        IOResult flush() { return _impl->flush(); }
 
         void close() { _impl.reset(); }
 
     private:
         box<Backend> _impl;
     };
-} // namespace up::fs
+} // namespace up
