@@ -9,7 +9,7 @@ function(FindAssimp)
         set(ASSIMP_ARCHITECTURE x64)
 
         set(ASSIMP_ROOT_DIR CACHE PATH "ASSIMP root directory")
-        set(ASSIMP_HINTS "${ASSIMP_ROOT_DIR}" "$ENV{ProgramW6432}/Assimp")
+        set(ASSIMP_HINTS "${ASSIMP_ROOT_DIR}" "$ENV{ProgramW6432}/Assimp" "$ENV{ASSIMPDIR}" )
         set(ASSIMP_LIBRARY_SUFFICES lib debug/lib "lib/${ASSIMP_ARCHITECTURE}")
         set(ASSIMP_BINARY_SUFFICES bin debug/bin "bin/${ASSIMP_ARCHITECTURE}")
 
