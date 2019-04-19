@@ -15,13 +15,33 @@ void up::World::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSi
 }
 
 auto up::World::acquireArchetype(view<ComponentId> components) noexcept -> rc<Archetype> {
-    for (rc<Archetype> const& archetype : _archetypes) {
-        if (archetype->matchesExact(components)) {
-            return archetype;
+    return _archetypes[_findArchetypeIndex(components)];
+}
+
+auto up::World::_findArchetypeIndex(view<ComponentId> components) noexcept -> uint32 {
+    uint32 index = 0;
+    for (; index != _archetypes.size(); ++index) {
+        if (_archetypes[index]->matchesExact(components)) {
+            return index;
         }
     }
 
     auto arch = new_shared<Archetype>(components);
-    _archetypes.push_back(arch);
-    return arch;
+    _archetypes.push_back(std::move(arch));
+    return index;
+}
+
+void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept {
+    uint32 index = getEntityIndex(entity);
+    if (index >= _entities.size()) {
+        return nullptr;
+    }
+
+    EntityMapping const& mapping = _entities[index];
+    if (mapping.generation != getEntityGeneration(entity)) {
+        return nullptr;
+    }
+
+    // FIXME: bounds check
+    return _archetypes[mapping.archetype]->unsafeComponentPointer(mapping.index, component);
 }

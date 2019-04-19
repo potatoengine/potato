@@ -49,7 +49,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
 
     DOCTEST_TEST_CASE("chunks") {
         int const count = 100000;
-        Archetype arch{vector{getComponentId<Test1>(), getComponentId<Second>()}};
+        Archetype arch{vector{getComponentId<Test1>(), getComponentId<Second>(), getComponentId<Another>()}};
 
         for (int i = 0; i != count; ++i) {
             arch.allocateEntity();
@@ -57,7 +57,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
 
         size_t chunks = 0;
         size_t total = 0;
-        arch.unsafeSelect(view<ComponentId>({getComponentId<Test1>(), getComponentId<Second>()}), [&](size_t count, view<void*> arrays) {
+        arch.unsafeSelect(view<ComponentId>({getComponentId<Second>()}), [&](size_t count, view<void*> arrays) {
             ++chunks;
             total += count;
         });
