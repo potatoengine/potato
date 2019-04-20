@@ -22,11 +22,11 @@ jobs:
   parameters:
     build_shared: Shared
 
-#- template: scripts/ci/azure/templates/jobs/windows.yml
-#  parameters:
-#    build_shared: Static
-#
-#- template: scripts/ci/azure/templates/jobs/ubuntu.yml
-#
-#- template: scripts/ci/azure/templates/jobs/macos.yml
+- template: scripts/ci/azure/templates/jobs/windows.yml
+  parameters:
+    build_shared: Static
+
+- template: scripts/ci/azure/templates/jobs/ubuntu.yml
+
+- template: scripts/ci/azure/templates/jobs/macos.yml
 
