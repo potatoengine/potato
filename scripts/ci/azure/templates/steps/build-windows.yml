@@ -3,22 +3,24 @@ parameters:
   configuration: RelWithDebInfo
 
 steps:
-- bash: |
-    set -xe
+- script: |
+    echo on
+    setlocal enableextensions enabledelayedexpansion
 
-    build_config='${{parameters.configuration}}'
-    build_shared=$([ '${{parameters.build_shared}}' == 'Shared' ] && echo 'ON' || echo 'OFF')
-    build_dir="build/${build_config}-${{parameters.build_shared}}"
+    set ROOT=%BUILD_SOURCESDIRECTORY%
+    set CONFIG=${{parameters.configuration}}
+    if ${{parameters.build_shared}} EQU Share (set SHARED=ON) else (set SHARED=OFF)
+    set build_dir=build/%CONFIG%-${{parameters.build_shared}}
 
-    mkdir -p "${build_dir}"
+    mkdir "${build_dir}"
     cd "${build_dir}"
 
-    # configure
-    cmake -A x64 -DSDL2_PATH:PATH="${BUILD_SOURCESDIRECTORY}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=${build_shared} -DASSIMP_ROOT_DIR:PATH="${BUILD_SOURCESDIRECTORY}/deps/assimp-4.1.0" "${BUILD_SOURCESDIRECTORY}"
+    rem configure
+    cmake -A x64 -DSDL2_PATH:PATH="%ROOT%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=%SHARED% -DASSIMP_ROOT_DIR:PATH="%ROOT%/deps/assimp-4.1.0" "%ROOT%"
 
-    # build
-    cmake --build . --config "${build_config}" --parallel
+    rem build
+    cmake --build . --config %CONFIG% --parallel
 
-    # run tests
-    ctest -R grimm -C "${build_config}" --verbose
+    rem run tests
+    ctest -R grimm -C %CONFIG% --verbose
   displayName: Build (${{parameters.configuration}} ${{parameters.build_shared}})
