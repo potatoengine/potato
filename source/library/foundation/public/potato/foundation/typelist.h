@@ -35,7 +35,19 @@ namespace up::_detail {
     template <typename T, typename... U>
     struct type_at_impl<0, typelist<T, U...>> { using type = T; };
     template <int N, typename T, typename... U>
-    struct type_at_impl<N, typelist<T, U...>> { using type = typename type_at_impl<N - 1, typelist<U...>>::type; };
+    struct type_at_impl<N, typelist<T, U...>> {
+#if defined(__has_builtin)
+#    if __has_builtin(__type_pack_element)
+#        define _up_HAS_TYPE_PACK_ELEMENT
+#    endif
+#endif
+#if defined(_up_HAS_TYPE_PACK_ELEMENT)
+        using type = __type_pack_element<N, T, U...>;
+#else
+        using type = typename type_at_impl<N - 1, typelist<U...>>::type;
+#endif
+#undef _up_HAS_TYPE_PACK_ELEMENT
+    };
 } // namespace up::_detail
 
 namespace up {
@@ -68,19 +80,8 @@ namespace up {
 
     static_assert(std::is_same_v<typelist_map_t<std::add_const_t, typelist<int, char>>, typelist<int const, char const>>);
     
-#if defined(__has_builtin)
-#    if __has_builtin(__type_pack_element)
-#        define _up_HAS_TYPE_PACK_ELEMENT
-#    endif
-#endif
-#if defined(_up_HAS_TYPE_PACK_ELEMENT)
-    template <int N, typename... T>
-    using typelist_at_t = __type_pack_element<N, T...>;
-#else
     template <int N, typename T>
     using typelist_at_t = typename _detail::type_at_impl<N, T>::type;
-#endif
-#undef _up_HAS_TYPE_PACK_ELEMENT
 
     static_assert(std::is_same_v<int, typelist_at_t<0, typelist<int, char, bool, float, int>>>);
     static_assert(std::is_same_v<bool, typelist_at_t<2, typelist<int, char, bool, float, int>>>);
