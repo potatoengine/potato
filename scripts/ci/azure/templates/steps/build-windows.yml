@@ -7,16 +7,19 @@ steps:
     echo on
     setlocal enableextensions enabledelayedexpansion
 
+    set VCDIR="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise"
     set ROOT=%BUILD_SOURCESDIRECTORY%
     set CONFIG=${{parameters.configuration}}
     if ${{parameters.build_shared}} EQU Share (set SHARED=ON) else (set SHARED=OFF)
-    set BUILDDIR=build/%CONFIG%-${{parameters.build_shared}}
+    set BUILDDIR="%ROOT%/build/%CONFIG%-${{parameters.build_shared}}"
+
+    call "%VCDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
 
     mkdir "%BUILDDIR%"
     cd "%BUILDDIR%"
 
     rem configure
-    cmake -A x64 -DSDL2_PATH:PATH="%ROOT%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=%SHARED% -DASSIMP_ROOT_DIR:PATH="%ROOT%/deps/assimp-4.1.0" "%ROOT%" || exit /b 1
+    cmake -G Ninja -DSDL2_PATH:PATH="%ROOT%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=%SHARED% -DASSIMP_ROOT_DIR:PATH="%ROOT%/deps/assimp-4.1.0" "%ROOT%" || exit /b 1
 
     rem build
     cmake --build . --config %CONFIG% --parallel || exit /b 1

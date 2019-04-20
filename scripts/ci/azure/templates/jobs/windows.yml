@@ -12,6 +12,7 @@ jobs:
       unzip SDL2-devel-2.0.9-VC.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
       curl -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
       unzip assimp-4.1.0.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
+      chocolatey install ninja
     displayName: Installing Dependencies
   - script: |
       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
