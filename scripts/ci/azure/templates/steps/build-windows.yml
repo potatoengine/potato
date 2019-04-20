@@ -16,11 +16,11 @@ steps:
     cd "${build_dir}"
 
     rem configure
-    cmake -A x64 -DSDL2_PATH:PATH="%ROOT%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=%SHARED% -DASSIMP_ROOT_DIR:PATH="%ROOT%/deps/assimp-4.1.0" "%ROOT%"
+    cmake -A x64 -DSDL2_PATH:PATH="%ROOT%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=%SHARED% -DASSIMP_ROOT_DIR:PATH="%ROOT%/deps/assimp-4.1.0" "%ROOT%" || exit /b 1
 
     rem build
-    cmake --build . --config %CONFIG% --parallel
+    cmake --build . --config %CONFIG% --parallel || exit /b 1
 
     rem run tests
-    ctest -R grimm -C %CONFIG% --verbose
+    ctest -R grimm -C %CONFIG% --verbose || exit /b 1
   displayName: Build (${{parameters.configuration}} ${{parameters.build_shared}})
