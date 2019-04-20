@@ -118,9 +118,8 @@ bool up::recon::parseConfigFile(ConverterConfig& config, FileSystem& fileSystem,
 }
 
 bool up::recon::parseConfigString(ConverterConfig& config, string_view json, zstring_view filename, Logger& logger) {
-
     auto jsonRoot = nlohmann::json::parse(json.begin(), json.end(), nullptr, false);
-    if (!jsonRoot) {
+    if (!jsonRoot.is_object()) {
         logger.error("Failed to parse file `{}': {}", filename, "unknown parse error");
         return false;
     }

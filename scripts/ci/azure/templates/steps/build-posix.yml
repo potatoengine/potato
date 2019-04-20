@@ -15,5 +15,5 @@ steps:
 
     cmake --build . --parallel
 
-    ctest -R grimm --verbose
+    ctest -R potato --verbose
   displayName: Build (${{parameters.configuration}} ${{parameters.cxx_compiler}})
