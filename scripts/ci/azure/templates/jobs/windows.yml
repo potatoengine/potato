@@ -12,11 +12,13 @@ jobs:
       unzip SDL2-devel-2.0.9-VC.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
       curl -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
       unzip assimp-4.1.0.zip -d "${BUILD_SOURCESDIRECTORY}/deps"
-      chocolatey install ninja
+      curl -o ninja.zip -L https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip
+      unzip ninja-win.zip -d "${BUILD_SOURCESDIRECTORY}/bin"
     displayName: Installing Dependencies
   - script: |
       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
       cmake --version
+      ninja --version
     displayName: Build Information
 # Takes too long on Azure (~3 mins)
 #  - template: ../steps/build-windows.yml
