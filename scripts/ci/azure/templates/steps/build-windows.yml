@@ -7,11 +7,11 @@ steps:
     echo on
     setlocal enableextensions enabledelayedexpansion
 
-    set VCDIR="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise"
+    set VCDIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise
     set ROOT=%BUILD_SOURCESDIRECTORY%
     set CONFIG=${{parameters.configuration}}
     if ${{parameters.build_shared}} EQU Share (set SHARED=ON) else (set SHARED=OFF)
-    set BUILDDIR="%ROOT%/build/%CONFIG%-${{parameters.build_shared}}"
+    set BUILDDIR=%ROOT%/build/%CONFIG%-${{parameters.build_shared}}
 
     call "%VCDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
 
