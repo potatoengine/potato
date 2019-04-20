@@ -27,22 +27,22 @@ DOCTEST_TEST_SUITE("[potato][foundation] vector") {
     DOCTEST_TEST_CASE("vector push_back") {
         vector<int> vec;
 
-        for (int i = 1; i <= 10; ++i) {
+        for (int i = 1; i <= 10000; ++i) {
             vec.push_back(i * i);
         }
 
-        DOCTEST_CHECK_EQ(vec.size(), 10);
-        DOCTEST_CHECK_GE(vec.capacity(), 10);
+        DOCTEST_CHECK_EQ(vec.size(), 10000);
+        DOCTEST_CHECK_GE(vec.capacity(), 10000);
         DOCTEST_CHECK_FALSE(vec.empty());
 
-        DOCTEST_CHECK_EQ(vec.begin() + 10, vec.end());
+        DOCTEST_CHECK_EQ(vec.begin() + 10000, vec.end());
         DOCTEST_CHECK_EQ(&*vec.begin(), vec.data());
 
         DOCTEST_CHECK_EQ(vec.front(), 1);
         DOCTEST_CHECK_EQ(*vec.begin(), 1);
         DOCTEST_CHECK_EQ(*vec.data(), 1);
 
-        DOCTEST_CHECK_EQ(vec.back(), 100);
+        DOCTEST_CHECK_EQ(vec.back(), 10000 * 10000);
     }
 
     DOCTEST_TEST_CASE("vector erase") {

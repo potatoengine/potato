@@ -8,8 +8,11 @@
 #include "potato/foundation/vector.h"
 #include "potato/foundation/delegate_ref.h"
 #include "potato/foundation/rc.h"
+#include "potato/foundation/box.h"
 
 namespace up {
+    struct Chunk;
+    struct State;
     class Archetype;
 
     using SelectSignature = void(size_t count, view<void*> componentArrays);
@@ -44,8 +47,6 @@ namespace up {
         World(World&&) = delete;
         World& operator=(World&&) = delete;
 
-        void UP_ECS_API unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
-
         template <typename... Components>
         void select(delegate_ref<void(size_t count, Components*... components)> callback) const {
             unsafeSelect(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, view<void*> arrays) {
@@ -53,37 +54,29 @@ namespace up {
             });
         }
 
-        rc<Archetype> UP_ECS_API acquireArchetype(view<ComponentId> components) noexcept;
-
-        view<rc<Archetype>> archetypes() const noexcept { return _archetypes; }
+        UP_ECS_API Archetype const* acquireArchetype(view<ComponentId> components) noexcept;
+        UP_ECS_API view<rc<Archetype>> archetypes() const noexcept;
 
         template <typename... Components>
         EntityId createEntity(Components const&... components) noexcept {
             ComponentId const componentIds[] = {getComponentId<Components>()...};
             void const* componentData[] = {&components...};
 
-            EntityId entity = makeEntityId(static_cast<uint32>(_entities.size()), 0);
-            uint32 archetype = _findArchetypeIndex(componentIds);
-
-            uint32 index = _archetypes[archetype]->unsafeAllocate(componentIds, componentData);
-
-            _entities.push_back({getEntityGeneration(entity), archetype, index});
-
-            return entity;
+            return unsafeCreateEntity(componentIds, componentData);
         }
 
         template <typename Component>
         Component* getComponentSlow(EntityId entity) noexcept {
-            return static_cast<Component*>(getComponentSlowUnsafe(entity, getComponentId<Component>()));
+            return static_cast<Component*>(unsafeGetComponentSlow(entity, getComponentId<Component>()));
         }
 
-        UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
+        UP_ECS_API void unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
+        UP_ECS_API EntityId unsafeCreateEntity(view<ComponentId> components, view<void const*> data);
+        UP_ECS_API void* unsafeGetComponentSlow(EntityId entity, ComponentId component) noexcept;
 
     private:
         UP_ECS_API uint32 _findArchetypeIndex(view<ComponentId> components) noexcept;
 
-        vector<EntityMapping> _entities;
-        vector<rc<Archetype>> _archetypes;
-        vector<uint32> _freeList;
+        box<State> _state;
     };
 } // namespace up

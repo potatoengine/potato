@@ -34,11 +34,11 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
     DOCTEST_TEST_CASE("Archetype selects") {
         Archetype arch{vector{getComponentId<Test1>(), getComponentId<Second>()}};
 
-        arch.allocateEntity();
-        arch.allocateEntity();
-        arch.allocateEntity();
-        arch.allocateEntity();
-        arch.allocateEntity();
+        arch.allocate<Test1, Second>(makeEntityId(0, 0), {}, {});
+        arch.allocate<Test1, Second>(makeEntityId(1, 0), {}, {});
+        arch.allocate<Test1, Second>(makeEntityId(2, 0), {}, {});
+        arch.allocate<Test1, Second>(makeEntityId(3, 0), {}, {});
+        arch.allocate<Test1, Second>(makeEntityId(4, 0), {}, {});
 
         size_t total = 0;
         arch.unsafeSelect(view<ComponentId>({getComponentId<Test1>(), getComponentId<Second>()}), [&total](size_t count, view<void*> arrays) {
@@ -47,12 +47,12 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
         DOCTEST_CHECK_EQ(5, total);
     }
 
-    DOCTEST_TEST_CASE("chunks") {
+    DOCTEST_TEST_CASE("Chunks") {
         int const count = 100000;
         Archetype arch{vector{getComponentId<Test1>(), getComponentId<Second>(), getComponentId<Another>()}};
 
         for (int i = 0; i != count; ++i) {
-            arch.allocateEntity();
+            arch.allocate<Test1, Second, Another>(makeEntityId(i, 0), {}, {}, {});
         }
 
         size_t chunks = 0;
@@ -63,5 +63,22 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
         });
         DOCTEST_CHECK_NE(0, chunks);
         DOCTEST_CHECK_EQ(count, total);
+    }
+
+    DOCTEST_TEST_CASE("Deletes") {
+        Archetype arch{vector{getComponentId<Test1>()}};
+
+        arch.allocate<Test1>(makeEntityId(0, 0), {'a'});
+        arch.allocate<Test1>(makeEntityId(1, 0), {'b'});
+        arch.allocate<Test1>(makeEntityId(2, 0), {'c'});
+        arch.allocate<Test1>(makeEntityId(3, 0), {'d'});
+        arch.allocate<Test1>(makeEntityId(4, 0), {'e'});
+
+        arch.unsafeRemoveEntity(2);
+        arch.unsafeRemoveEntity(0);
+
+        DOCTEST_CHECK_EQ('d', static_cast<Test1*>(arch.unsafeComponentPointer(0, getComponentId<Test1>()))->a);
+        DOCTEST_CHECK_EQ('b', static_cast<Test1*>(arch.unsafeComponentPointer(1, getComponentId<Test1>()))->a);
+        DOCTEST_CHECK_EQ('e', static_cast<Test1*>(arch.unsafeComponentPointer(2, getComponentId<Test1>()))->a);
     }
 }

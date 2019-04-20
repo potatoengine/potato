@@ -27,6 +27,7 @@ namespace up {
     template <typename ComponentT>
     constexpr ComponentId getComponentId() noexcept {
         static_assert(std::is_trivially_copyable_v<ComponentT>, "Component types must be trivially copyable");
+        static_assert(std::is_trivially_destructible_v<ComponentT>, "Component types must be trivially destructible");
 
         constexpr auto componentName = nameof<ComponentT>();
 

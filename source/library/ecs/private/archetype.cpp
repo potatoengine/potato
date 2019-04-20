@@ -1,20 +1,29 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/ecs/archetype.h"
+#include "chunk.h"
+
+static constexpr size_t align(size_t offset, size_t alignment) noexcept {
+    size_t alignmentMinusOne = alignment - 1;
+    return (offset + alignmentMinusOne) & ~alignmentMinusOne;
+}
 
 up::Archetype::Archetype(view<ComponentId> comps) noexcept : _layout(comps.size()) {
     size_t size = 0;
     for (size_t i = 0; i != comps.size(); ++i) {
+        ComponentInfo info(comps[i]);
         _layout[i].component = comps[i];
-        size += ComponentInfo{comps[i]}.size;
+        size = align(size, info.alignment);
+        size += info.size;
     }
+    UP_ASSERT(size <= sizeof(Chunk::data));
 
     if (size == 0) {
         _perChunk = 0;
         return;
     }
 
-    _perChunk = static_cast<uint32>(Chunk::allocatedSize / size);
+    _perChunk = static_cast<uint32>(Chunk::dataSize / size);
 
     size_t offset = 0;
     for (size_t i = 0; i != comps.size(); ++i) {
@@ -22,15 +31,14 @@ up::Archetype::Archetype(view<ComponentId> comps) noexcept : _layout(comps.size(
 
         // align as required (requires alignment to be a power of 2)
         UP_ASSERT((info.alignment & (info.alignment - 1)) == 0);
-        size_t alignmentMinusOne = info.alignment - 1;
-        offset = (offset + alignmentMinusOne) & ~alignmentMinusOne;
+        offset = align(offset, info.alignment);
 
         _layout[i].offset = static_cast<uint32>(offset);
 
         offset += info.size * _perChunk;
     }
 
-    UP_ASSERT(offset <= Chunk::allocatedSize);
+    UP_ASSERT(offset <= sizeof(Chunk::data));
 }
 
 up::Archetype::~Archetype() = default;
@@ -38,7 +46,7 @@ up::Archetype::~Archetype() = default;
 bool up::Archetype::matches(view<ComponentId> components) const noexcept {
     // FIXME: handle Archetypes that have multiple copies of the same component
     for (ComponentId comp : components) {
-        if (find(_layout, comp, {}, [](Layout const& layout) noexcept -> ComponentId { return layout.component; }) == _layout.end()) {
+        if (find(_layout, comp, {}, [](Layout const& layout) noexcept->ComponentId { return layout.component; }) == _layout.end()) {
             return false;
         }
     }
@@ -55,7 +63,7 @@ bool up::Archetype::matchesExact(view<ComponentId> components) const noexcept {
 
 void up::Archetype::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const {
     void* pointers[64];
-    UP_ASSERT(components.size() <= std::size(pointers));    
+    UP_ASSERT(components.size() <= std::size(pointers));
 
     for (size_t i = 0; i < components.size(); ++i) {
         pointers[i] = unsafeComponentPointer(0, components[i]);
@@ -75,28 +83,67 @@ void* up::Archetype::unsafeComponentPointer(uint32 entityIndex, ComponentId comp
     return _chunks[chunkIndex]->data + layoutIter->offset + entityIndex * info.size;
 }
 
-auto up::Archetype::allocateEntity() noexcept -> uint32 {
-    uint32 id = _count++;
+auto up::Archetype::unsafeRemoveEntity(uint32 entityIndex) noexcept -> EntityId {
+    auto chunkIndex = entityIndex / _perChunk;
+    auto subIndex = entityIndex % _perChunk;
 
-    if (_chunks.empty()) {
-        _chunks.push_back(new_box<Chunk>());
+    UP_ASSERT(chunkIndex < _chunks.size());
+    UP_ASSERT(subIndex < _perChunk);
+
+    auto lastChunkIndex = _chunks.size() - 1;
+    auto lastSubIndex = _chunks[lastChunkIndex]->header.count - 1;
+    EntityId lastEntity = _entities.back();
+
+    if (lastChunkIndex != chunkIndex || lastSubIndex != subIndex) {
+        _entities[entityIndex] = _entities.back();
+
+        for (auto const& layout : _layout) {
+            ComponentInfo info(layout.component);
+            void* pointer = _chunks[chunkIndex]->data + layout.offset + subIndex * info.size;
+            void const* lastPointer = _chunks[lastChunkIndex]->data + layout.offset + lastSubIndex * info.size;
+            std::memcpy(pointer, lastPointer, info.size);
+        }
     }
-    else if (_chunks.back()->header.count == _perChunk) {
-        _chunks.push_back(new_box<Chunk>());
+
+    if (--_chunks[lastChunkIndex]->header.count == 0) {
+        _chunks.resize(lastChunkIndex);
     }
-    
-    return id;
+    _entities.pop_back();
+
+    return lastEntity;
 }
 
-auto up::Archetype::unsafeAllocate(view<ComponentId> componentIds, view<void const*> componentData) noexcept -> uint32 {
+auto up::Archetype::unsafeAllocate(EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept -> uint32 {
     UP_ASSERT(componentData.size() == _layout.size());
     UP_ASSERT(componentIds.size() == componentData.size());
 
-    uint32 entityIndex = allocateEntity();
+    uint32 entityIndex = _count++;
+
+    auto chunkIndex = entityIndex / _perChunk;
+    auto subIndex = entityIndex % _perChunk;
+
+    UP_ASSERT(chunkIndex <= _chunks.size());
+
+    _entities.push_back(entity);
+    if (chunkIndex == _chunks.size()) {
+        auto chunk = new_box<Chunk>();
+        _chunks.push_back(std::move(chunk));
+    }
+
+    ++_chunks[chunkIndex]->header.count;
 
     for (uint32 index = 0; index != componentIds.size(); ++index) {
-        ComponentInfo info(componentIds[index]);
-        std::memcpy(unsafeComponentPointer(entityIndex, componentIds[index]), componentData[index], info.size);
+        ComponentId componentId = componentIds[index];
+        ComponentInfo info(componentId);
+
+        auto layoutIter = find(_layout, componentId, {}, [](Layout const& layout) noexcept { return layout.component; });
+        UP_ASSERT(layoutIter != _layout.end());
+
+        void* rawPointer = _chunks[chunkIndex]->data + layoutIter->offset + subIndex * info.size;
+        UP_ASSERT(rawPointer >= _chunks[chunkIndex]->data);
+        UP_ASSERT(rawPointer <= _chunks[chunkIndex]->data + Chunk::dataSize - info.size);
+
+        std::memcpy(rawPointer, componentData[index], info.size);
     }
 
     return entityIndex;
