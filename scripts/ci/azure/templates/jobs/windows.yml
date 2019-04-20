@@ -18,7 +18,7 @@ jobs:
   - script: |
       "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64
       cmake --version
-      ninja --version
+      bin\ninja --version
     displayName: Build Information
 # Takes too long on Azure (~3 mins)
 #  - template: ../steps/build-windows.yml
