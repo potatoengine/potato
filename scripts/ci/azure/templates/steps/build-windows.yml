@@ -16,6 +16,10 @@ steps:
     set PATH=%PATH%;%ROOT%\bin
 
     call "%VCDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+    echo
+
+    set CC=cl.exe
+    set CXX=cl.exe
 
     mkdir "%BUILDDIR%"
     cd "%BUILDDIR%"
