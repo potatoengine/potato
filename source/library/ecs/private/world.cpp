@@ -24,7 +24,7 @@ auto up::World::archetypes() const noexcept -> view<rc<Archetype>> {
     return _state->archetypes;
 }
 
-auto up::World::_findArchetypeIndex(view<ComponentId> components) noexcept -> uint32 {
+auto up::World::_findArchetypeIndex(view<ComponentId> components) noexcept -> up::uint32 {
     uint32 index = 0;
     for (; index != _state->archetypes.size(); ++index) {
         if (_state->archetypes[index]->matchesExact(components)) {

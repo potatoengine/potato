@@ -72,7 +72,7 @@ void up::Archetype::unsafeSelect(view<ComponentId> components, delegate_ref<Sele
     callback(static_cast<size_t>(_count), view<void*>(pointers).first(components.size()));
 }
 
-void* up::Archetype::unsafeComponentPointer(uint32 entityIndex, ComponentId component) const noexcept {
+void* up::Archetype::unsafeComponentPointer(up::uint32 entityIndex, ComponentId component) const noexcept {
     auto layoutIter = find(_layout, component, {}, [](Layout const& layout) noexcept { return layout.component; });
     UP_ASSERT(layoutIter != _layout.end());
     ComponentInfo info(component);
@@ -83,7 +83,7 @@ void* up::Archetype::unsafeComponentPointer(uint32 entityIndex, ComponentId comp
     return _chunks[chunkIndex]->data + layoutIter->offset + entityIndex * info.size;
 }
 
-auto up::Archetype::unsafeRemoveEntity(uint32 entityIndex) noexcept -> EntityId {
+auto up::Archetype::unsafeRemoveEntity(up::uint32 entityIndex) noexcept -> EntityId {
     auto chunkIndex = entityIndex / _perChunk;
     auto subIndex = entityIndex % _perChunk;
 
@@ -113,7 +113,7 @@ auto up::Archetype::unsafeRemoveEntity(uint32 entityIndex) noexcept -> EntityId 
     return lastEntity;
 }
 
-auto up::Archetype::unsafeAllocate(EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept -> uint32 {
+auto up::Archetype::unsafeAllocate(EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept -> up::uint32 {
     UP_ASSERT(componentData.size() == _layout.size());
     UP_ASSERT(componentIds.size() == componentData.size());
 
