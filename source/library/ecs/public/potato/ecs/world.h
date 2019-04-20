@@ -47,10 +47,10 @@ namespace up {
         World(World&&) = delete;
         World& operator=(World&&) = delete;
 
-        template <typename... Components>
-        void select(delegate_ref<void(size_t count, Components*... components)> callback) const {
+        template <typename... Components, typename Callable>
+        void select(Callable&& callback) const {
             unsafeSelect(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, view<void*> arrays) {
-                _detail::selectHelper<Components...>(count, arrays, callback);
+                _detail::selectHelper<Components...>(count, arrays, delegate_ref<void(size_t, Components*...)>(std::forward<Callable>(callback)));
             });
         }
 
