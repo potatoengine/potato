@@ -2,6 +2,7 @@
 
 #include "potato/ecs/archetype.h"
 #include "chunk.h"
+#include <algorithm>
 
 static constexpr size_t align(size_t offset, size_t alignment) noexcept {
     size_t alignmentMinusOne = alignment - 1;
@@ -18,27 +19,30 @@ up::Archetype::Archetype(view<ComponentId> comps) noexcept : _layout(comps.size(
     }
     UP_ASSERT(size <= sizeof(Chunk::data));
 
-    if (size == 0) {
-        _perChunk = 0;
-        return;
+    if (size != 0) {
+        // assign pointer offers by alignment
+        std::sort(_layout.begin(), _layout.end(), [](const auto& l, const auto& r) noexcept { return ComponentInfo(l.component).alignment < ComponentInfo(l.component).alignment; });
+
+        _perChunk = static_cast<uint32>(Chunk::dataSize / size);
+
+        size_t offset = 0;
+        for (size_t i = 0; i != comps.size(); ++i) {
+            ComponentInfo info(comps[i]);
+
+            // align as required (requires alignment to be a power of 2)
+            UP_ASSERT((info.alignment & (info.alignment - 1)) == 0);
+            offset = align(offset, info.alignment);
+
+            _layout[i].offset = static_cast<uint32>(offset);
+
+            offset += info.size * _perChunk;
+        }
+
+        UP_ASSERT(offset <= sizeof(Chunk::data));
     }
 
-    _perChunk = static_cast<uint32>(Chunk::dataSize / size);
-
-    size_t offset = 0;
-    for (size_t i = 0; i != comps.size(); ++i) {
-        ComponentInfo info(comps[i]);
-
-        // align as required (requires alignment to be a power of 2)
-        UP_ASSERT((info.alignment & (info.alignment - 1)) == 0);
-        offset = align(offset, info.alignment);
-
-        _layout[i].offset = static_cast<uint32>(offset);
-
-        offset += info.size * _perChunk;
-    }
-
-    UP_ASSERT(offset <= sizeof(Chunk::data));
+    // layout must be stored by ComponentId
+    std::sort(_layout.begin(), _layout.end(), [](const auto& l, const auto& r) noexcept { return l.component < r.component; });
 }
 
 up::Archetype::~Archetype() = default;
