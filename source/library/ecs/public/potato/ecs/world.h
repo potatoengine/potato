@@ -4,7 +4,6 @@
 
 #include "_export.h"
 #include "potato/ecs/component.h"
-#include "potato/ecs/entity.h"
 #include "potato/foundation/vector.h"
 #include "potato/foundation/delegate_ref.h"
 #include "potato/foundation/rc.h"

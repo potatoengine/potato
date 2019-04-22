@@ -4,36 +4,9 @@
 #include "potato/foundation/find.h"
 #include <algorithm>
 
-struct up::World::Archetype {
-    struct Layout {
-        ComponentId component = ComponentId::Unknown;
-        uint32 offset = 0;
-    };
-
-    vector<EntityId> _entities;
-    vector<box<Chunk>> _chunks;
-    vector<Layout> _layout;
-    uint32 _count = 0;
-    uint32 _perChunk = 0;
-};
-
-struct up::World::Chunk {
-    static constexpr uint32 size = 64 * 1024;
-
-    struct alignas(32) Header {
-        int count = 0;
-    };
-    using Payload = char[size - sizeof(Header)];
-
-    Header header;
-    Payload data;
-};
-
-struct up::World::Entity {
-    uint32 generation = 0;
-    uint32 archetype = 0;
-    uint32 index = 0;
-};
+#include "archetype.h"
+#include "chunk.h"
+#include "entity.h"
 
 static constexpr size_t align(size_t offset, size_t alignment) noexcept {
     size_t alignmentMinusOne = alignment - 1;

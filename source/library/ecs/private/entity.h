@@ -1,8 +1,10 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#pragma once
-
-#include "potato/ecs/common.h"
+struct up::World::Entity {
+    uint32 generation = 0;
+    uint32 archetype = 0;
+    uint32 index = 0;
+};
 
 namespace up {
     constexpr EntityId makeEntityId(uint32 mappingIndex, uint32 generation) noexcept {
