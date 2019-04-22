@@ -63,11 +63,16 @@ namespace up {
         UP_ECS_API void unsafeSelect(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
         UP_ECS_API EntityId unsafeCreateEntity(view<ComponentId> components, view<void const*> data);
         UP_ECS_API void* unsafeGetComponentSlow(EntityId entity, ComponentId component) noexcept;
+        UP_ECS_API EntityId unsafeAllocateEntityId() noexcept;
+        UP_ECS_API void unsafeReturnEntityId(EntityId entity) noexcept;
 
     private:
         UP_ECS_API uint32 _findArchetypeIndex(view<ComponentId> components) noexcept;
 
-        box<EntityDomain> _state;
+        vector<EntityMapping> _entityMapping;
+        vector<rc<Archetype>> _archetypes;
+        vector<box<EntityChunk>> _chunkPool;
+        uint32 _freeEntityHead = static_cast<uint32>(-1);
     };
 
     template <typename... Components, typename Callable>

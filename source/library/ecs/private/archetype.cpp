@@ -9,7 +9,7 @@ static constexpr size_t align(size_t offset, size_t alignment) noexcept {
     return (offset + alignmentMinusOne) & ~alignmentMinusOne;
 }
 
-up::Archetype::Archetype(EntityDomain& domain, view<ComponentId> comps) noexcept : _domain(domain), _layout(comps.size()) {
+up::Archetype::Archetype(view<ComponentId> comps) noexcept : _layout(comps.size()) {
     size_t size = 0;
     for (size_t i = 0; i != comps.size(); ++i) {
         ComponentInfo info(comps[i]);
