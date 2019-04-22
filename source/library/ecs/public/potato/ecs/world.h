@@ -5,14 +5,14 @@
 #include "_export.h"
 #include "potato/ecs/component.h"
 #include "potato/ecs/entity.h"
+#include "potato/ecs/domain.h"
 #include "potato/foundation/vector.h"
 #include "potato/foundation/delegate_ref.h"
 #include "potato/foundation/rc.h"
 #include "potato/foundation/box.h"
 
 namespace up {
-    struct Chunk;
-    struct State;
+    struct EntityChunk;
     class Archetype;
 
     using SelectSignature = void(size_t count, view<void*> componentArrays);
@@ -29,12 +29,6 @@ namespace up {
         }
 
     } // namespace _detail
-
-    struct EntityMapping {
-        uint32 generation = 0;
-        uint32 archetype = 0;
-        uint32 index = 0;
-    };
 
     /// A world contains a collection of entities, archetypes, and their associated components.
     ///
@@ -77,6 +71,6 @@ namespace up {
     private:
         UP_ECS_API uint32 _findArchetypeIndex(view<ComponentId> components) noexcept;
 
-        box<State> _state;
+        box<EntityDomain> _state;
     };
 } // namespace up

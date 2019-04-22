@@ -2,10 +2,9 @@
 
 #include "potato/ecs/world.h"
 #include "potato/ecs/archetype.h"
-#include "chunk.h"
-#include "state.h"
+#include "potato/ecs/domain.h"
 
-up::World::World() : _state(new_box<State>()) {}
+up::World::World() : _state(new_box<EntityDomain>()) {}
 up::World::~World() = default;
 
 void up::World::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const {
@@ -32,7 +31,7 @@ auto up::World::_findArchetypeIndex(view<ComponentId> components) noexcept -> up
         }
     }
 
-    auto arch = new_shared<Archetype>(components);
+    auto arch = new_shared<Archetype>(*_state, components);
     _state->archetypes.push_back(std::move(arch));
     return index;
 }
@@ -40,7 +39,7 @@ auto up::World::_findArchetypeIndex(view<ComponentId> components) noexcept -> up
 auto up::World::unsafeCreateEntity(view<ComponentId> components, view<void const*> data) -> EntityId {
     UP_ASSERT(components.size() == data.size());
 
-    EntityId entity = makeEntityId(static_cast<uint32>(_state->entityMapping.size()), 1);
+    EntityId entity = _state->allocateEntityId();
     uint32 archetype = _findArchetypeIndex(components);
 
     uint32 index = _state->archetypes[archetype]->unsafeAllocate(entity, components, data);

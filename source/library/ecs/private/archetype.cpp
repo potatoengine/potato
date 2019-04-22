@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/ecs/archetype.h"
-#include "chunk.h"
+#include "potato/ecs/domain.h"
 #include <algorithm>
 
 static constexpr size_t align(size_t offset, size_t alignment) noexcept {
@@ -9,7 +9,7 @@ static constexpr size_t align(size_t offset, size_t alignment) noexcept {
     return (offset + alignmentMinusOne) & ~alignmentMinusOne;
 }
 
-up::Archetype::Archetype(view<ComponentId> comps) noexcept : _layout(comps.size()) {
+up::Archetype::Archetype(EntityDomain& domain, view<ComponentId> comps) noexcept : _domain(domain), _layout(comps.size()) {
     size_t size = 0;
     for (size_t i = 0; i != comps.size(); ++i) {
         ComponentInfo info(comps[i]);
@@ -17,13 +17,13 @@ up::Archetype::Archetype(view<ComponentId> comps) noexcept : _layout(comps.size(
         size = align(size, info.alignment);
         size += info.size;
     }
-    UP_ASSERT(size <= sizeof(Chunk::data));
+    UP_ASSERT(size <= sizeof(EntityChunk::data));
 
     if (size != 0) {
         // assign pointer offers by alignment
         std::sort(_layout.begin(), _layout.end(), [](const auto& l, const auto& r) noexcept { return ComponentInfo(l.component).alignment < ComponentInfo(l.component).alignment; });
 
-        _perChunk = static_cast<uint32>(Chunk::dataSize / size);
+        _perChunk = static_cast<uint32>(sizeof(EntityChunk::Payload) / size);
 
         size_t offset = 0;
         for (size_t i = 0; i != comps.size(); ++i) {
@@ -38,7 +38,7 @@ up::Archetype::Archetype(view<ComponentId> comps) noexcept : _layout(comps.size(
             offset += info.size * _perChunk;
         }
 
-        UP_ASSERT(offset <= sizeof(Chunk::data));
+        UP_ASSERT(offset <= sizeof(EntityChunk::data));
     }
 
     // layout must be stored by ComponentId
@@ -110,7 +110,8 @@ auto up::Archetype::unsafeRemoveEntity(up::uint32 entityIndex) noexcept -> Entit
     }
 
     if (--_chunks[lastChunkIndex]->header.count == 0) {
-        _chunks.resize(lastChunkIndex);
+        _domain.returnChunk(std::move(_chunks[lastChunkIndex]));
+        _chunks.pop_back();
     }
     _entities.pop_back();
 
@@ -130,8 +131,7 @@ auto up::Archetype::unsafeAllocate(EntityId entity, view<ComponentId> componentI
 
     _entities.push_back(entity);
     if (chunkIndex == _chunks.size()) {
-        auto chunk = new_box<Chunk>();
-        _chunks.push_back(std::move(chunk));
+        _chunks.push_back(_domain.allocateChunk());
     }
 
     ++_chunks[chunkIndex]->header.count;
@@ -145,7 +145,7 @@ auto up::Archetype::unsafeAllocate(EntityId entity, view<ComponentId> componentI
 
         void* rawPointer = _chunks[chunkIndex]->data + layoutIter->offset + subIndex * info.size;
         UP_ASSERT(rawPointer >= _chunks[chunkIndex]->data);
-        UP_ASSERT(rawPointer <= _chunks[chunkIndex]->data + Chunk::dataSize - info.size);
+        UP_ASSERT(rawPointer <= _chunks[chunkIndex]->data + sizeof(EntityChunk::Payload) - info.size);
 
         std::memcpy(rawPointer, componentData[index], info.size);
     }

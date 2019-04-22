@@ -14,11 +14,8 @@
 #include <utility>
 
 namespace up {
-    struct Chunk;
-    struct Layout {
-        ComponentId component = ComponentId::Unknown;
-        uint32 offset = 0;
-    };
+    struct EntityChunk;
+    class EntityDomain;
 
     using SelectSignature = void(size_t count, view<void*> componentArrays);
 
@@ -28,7 +25,7 @@ namespace up {
     /// Components.
     class Archetype : public shared<Archetype> {
     public:
-        UP_ECS_API explicit Archetype(view<ComponentId> comps) noexcept;
+        UP_ECS_API explicit Archetype(EntityDomain& domain, view<ComponentId> comps) noexcept;
         UP_ECS_API ~Archetype();
 
         Archetype(Archetype&&) = delete;
@@ -51,10 +48,16 @@ namespace up {
         UP_ECS_API uint32 unsafeAllocate(EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept;
 
     private:
+        struct Layout {
+            ComponentId component = ComponentId::Unknown;
+            uint32 offset = 0;
+        };
+
         vector<EntityId> _entities;
-        vector<box<Chunk>> _chunks;
+        vector<box<EntityChunk>> _chunks;
         vector<Layout> _layout;
         uint32 _count = 0;
         uint32 _perChunk = 0;
+        EntityDomain& _domain;
     };
 } // namespace up

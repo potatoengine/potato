@@ -1,4 +1,5 @@
 #include "potato/ecs/archetype.h"
+#include "potato/ecs/domain.h"
 #include <doctest/doctest.h>
 
 struct Test1 {
@@ -17,8 +18,9 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
     using namespace up;
 
     DOCTEST_TEST_CASE("Archetype queries") {
-        Archetype arch1{vector{getComponentId<Test1>(), getComponentId<Second>()}};
-        Archetype arch2{vector{getComponentId<Second>(), getComponentId<Another>()}};
+        EntityDomain domain;
+        Archetype arch1{domain, vector{getComponentId<Test1>(), getComponentId<Second>()}};
+        Archetype arch2{domain, vector{getComponentId<Second>(), getComponentId<Another>()}};
 
         DOCTEST_CHECK(arch1.matches(view<ComponentId>({getComponentId<Test1>()})));
         DOCTEST_CHECK(arch1.matches(view<ComponentId>({getComponentId<Test1>(), getComponentId<Second>()})));
@@ -32,7 +34,8 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
     }
 
     DOCTEST_TEST_CASE("Archetype selects") {
-        Archetype arch{vector{getComponentId<Test1>(), getComponentId<Second>()}};
+        EntityDomain domain;
+        Archetype arch{domain, vector{getComponentId<Test1>(), getComponentId<Second>()}};
 
         arch.allocate<Test1, Second>(makeEntityId(0, 0), {}, {});
         arch.allocate<Test1, Second>(makeEntityId(1, 0), {}, {});
@@ -49,7 +52,8 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
 
     DOCTEST_TEST_CASE("Chunks") {
         int const count = 100000;
-        Archetype arch{vector{getComponentId<Test1>(), getComponentId<Second>(), getComponentId<Another>()}};
+        EntityDomain domain;
+        Archetype arch{domain, vector{getComponentId<Test1>(), getComponentId<Second>(), getComponentId<Another>()}};
 
         for (int i = 0; i != count; ++i) {
             arch.allocate<Test1, Second, Another>(makeEntityId(i, 0), {}, {}, {});
@@ -66,7 +70,8 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
     }
 
     DOCTEST_TEST_CASE("Deletes") {
-        Archetype arch{vector{getComponentId<Test1>()}};
+        EntityDomain domain;
+        Archetype arch{domain, vector{getComponentId<Test1>()}};
 
         arch.allocate<Test1>(makeEntityId(0, 0), {'a'});
         arch.allocate<Test1>(makeEntityId(1, 0), {'b'});
