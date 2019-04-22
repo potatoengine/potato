@@ -65,6 +65,24 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         DOCTEST_CHECK_EQ(-2.f, test->b);
     }
 
+    DOCTEST_TEST_CASE("Chunks") {
+        constexpr int count = 100000;
+        World world;
+
+        for (int i = 0; i != count; ++i) {
+            world.createEntity(Test1{}, Second{}, Another{});
+        }
+
+        size_t chunks = 0;
+        size_t total = 0;
+        world.select<Second>([&](size_t count, Second*) {
+            ++chunks;
+            total += count;
+        });
+        DOCTEST_CHECK_NE(0, chunks);
+        DOCTEST_CHECK_EQ(count, total);
+    }
+
     DOCTEST_TEST_CASE("Creates and Deletes") {
         World world;
 
