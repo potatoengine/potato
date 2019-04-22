@@ -64,4 +64,17 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         DOCTEST_CHECK_EQ('h', test->a);
         DOCTEST_CHECK_EQ(-2.f, test->b);
     }
+
+    DOCTEST_TEST_CASE("Creates and Deletes") {
+        World world;
+
+        EntityId foo = world.createEntity(Test1{'a'});
+        world.createEntity(Test1{'b'});
+        EntityId bar = world.createEntity(Test1{'c'});
+        world.createEntity(Test1{'d'});
+        world.createEntity(Test1{'e'});
+
+        world.deleteEntity(foo);
+        world.deleteEntity(bar);
+    }
 }

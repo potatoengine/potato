@@ -7,12 +7,16 @@
 up::World::World() : _state(new_box<EntityDomain>()) {}
 up::World::~World() = default;
 
-void up::World::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const {
-    for (rc<Archetype> const& archetype : _state->archetypes) {
-        if (archetype->matches(components)) {
-            archetype->unsafeSelect(components, callback);
-        }
-    }
+void up::World::deleteEntity(EntityId entity) noexcept {
+    uint32 index = getEntityIndex(entity);
+
+    UP_ASSERT(index < _state->entityMapping.size());
+
+    EntityMapping const& mapping = _state->entityMapping[index];
+
+    UP_ASSERT(mapping.generation == getEntityGeneration(entity));
+
+    _state->archetypes[mapping.archetype]->unsafeRemoveEntity(mapping.index);
 }
 
 auto up::World::acquireArchetype(view<ComponentId> components) noexcept -> Archetype const* {
@@ -34,6 +38,14 @@ auto up::World::_findArchetypeIndex(view<ComponentId> components) noexcept -> up
     auto arch = new_shared<Archetype>(*_state, components);
     _state->archetypes.push_back(std::move(arch));
     return index;
+}
+
+void up::World::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const {
+    for (rc<Archetype> const& archetype : _state->archetypes) {
+        if (archetype->matches(components)) {
+            archetype->unsafeSelect(components, callback);
+        }
+    }
 }
 
 auto up::World::unsafeCreateEntity(view<ComponentId> components, view<void const*> data) -> EntityId {

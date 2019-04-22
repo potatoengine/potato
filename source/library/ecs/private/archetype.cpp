@@ -87,7 +87,7 @@ void* up::Archetype::unsafeComponentPointer(up::uint32 entityIndex, ComponentId 
     return _chunks[chunkIndex]->data + layoutIter->offset + entityIndex * info.size;
 }
 
-auto up::Archetype::unsafeRemoveEntity(up::uint32 entityIndex) noexcept -> EntityId {
+void up::Archetype::unsafeRemoveEntity(up::uint32 entityIndex) noexcept {
     auto chunkIndex = entityIndex / _perChunk;
     auto subIndex = entityIndex % _perChunk;
 
@@ -99,7 +99,7 @@ auto up::Archetype::unsafeRemoveEntity(up::uint32 entityIndex) noexcept -> Entit
     EntityId lastEntity = _entities.back();
 
     if (lastChunkIndex != chunkIndex || lastSubIndex != subIndex) {
-        _entities[entityIndex] = _entities.back();
+        _entities[entityIndex] = lastEntity;
 
         for (auto const& layout : _layout) {
             ComponentInfo info(layout.component);
@@ -115,7 +115,7 @@ auto up::Archetype::unsafeRemoveEntity(up::uint32 entityIndex) noexcept -> Entit
     }
     _entities.pop_back();
 
-    return lastEntity;
+    _domain.entityMapping[getEntityIndex(lastEntity)].index = entityIndex;
 }
 
 auto up::Archetype::unsafeAllocate(EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept -> up::uint32 {

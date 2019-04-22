@@ -44,7 +44,7 @@ namespace up {
 
         UP_ECS_API void unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
         UP_ECS_API void* unsafeComponentPointer(uint32 entityIndex, ComponentId component) const noexcept;
-        UP_ECS_API EntityId unsafeRemoveEntity(uint32 entityIndex) noexcept;
+        UP_ECS_API void unsafeRemoveEntity(uint32 entityIndex) noexcept;
         UP_ECS_API uint32 unsafeAllocate(EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept;
 
     private:

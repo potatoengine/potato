@@ -38,6 +38,7 @@ namespace up {
         EntityDomain& operator=(EntityDomain const&) = delete;
 
         UP_ECS_API EntityId allocateEntityId() noexcept;
+        UP_ECS_API void returnEntityId(EntityId entity) noexcept;
 
         UP_ECS_API box<EntityChunk> allocateChunk();
         UP_ECS_API void returnChunk(box<EntityChunk> chunk) noexcept;

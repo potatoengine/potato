@@ -42,27 +42,17 @@ namespace up {
         World& operator=(World&&) = delete;
 
         template <typename... Components, typename Callable>
-        void select(Callable&& callback) const {
-            unsafeSelect(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, view<void*> arrays) {
-                _detail::selectHelper<Components...>(count, arrays, delegate_ref<void(size_t, Components*...)>(std::forward<Callable>(callback)));
-            });
-        }
+        void select(Callable&& callback) const;
 
         UP_ECS_API Archetype const* acquireArchetype(view<ComponentId> components) noexcept;
         UP_ECS_API view<rc<Archetype>> archetypes() const noexcept;
 
         template <typename... Components>
-        EntityId createEntity(Components const&... components) noexcept {
-            ComponentId const componentIds[] = {getComponentId<Components>()...};
-            void const* componentData[] = {&components...};
-
-            return unsafeCreateEntity(componentIds, componentData);
-        }
+        EntityId createEntity(Components const&... components) noexcept;
+        UP_ECS_API void deleteEntity(EntityId entity) noexcept;
 
         template <typename Component>
-        Component* getComponentSlow(EntityId entity) noexcept {
-            return static_cast<Component*>(unsafeGetComponentSlow(entity, getComponentId<Component>()));
-        }
+        Component* getComponentSlow(EntityId entity) noexcept;
 
         UP_ECS_API void unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
         UP_ECS_API EntityId unsafeCreateEntity(view<ComponentId> components, view<void const*> data);
@@ -73,4 +63,24 @@ namespace up {
 
         box<EntityDomain> _state;
     };
+
+    template <typename... Components, typename Callable>
+    void World::select(Callable&& callback) const {
+        unsafeSelect(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, view<void*> arrays) {
+            _detail::selectHelper<Components...>(count, arrays, delegate_ref<void(size_t, Components * ...)>(std::forward<Callable>(callback)));
+        });
+    }
+
+    template <typename... Components>
+    EntityId World::createEntity(Components const&... components) noexcept {
+        ComponentId const componentIds[] = {getComponentId<Components>()...};
+        void const* componentData[] = {&components...};
+
+        return unsafeCreateEntity(componentIds, componentData);
+    }
+
+    template <typename Component>
+    Component* World::getComponentSlow(EntityId entity) noexcept {
+        return static_cast<Component*>(unsafeGetComponentSlow(entity, getComponentId<Component>()));
+    }
 } // namespace up

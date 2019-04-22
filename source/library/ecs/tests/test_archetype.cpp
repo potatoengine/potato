@@ -73,11 +73,11 @@ DOCTEST_TEST_SUITE("[potato][ecs] Archetype") {
         EntityDomain domain;
         Archetype arch{domain, vector{getComponentId<Test1>()}};
 
-        arch.allocate<Test1>(makeEntityId(0, 0), {'a'});
-        arch.allocate<Test1>(makeEntityId(1, 0), {'b'});
-        arch.allocate<Test1>(makeEntityId(2, 0), {'c'});
-        arch.allocate<Test1>(makeEntityId(3, 0), {'d'});
-        arch.allocate<Test1>(makeEntityId(4, 0), {'e'});
+        arch.allocate<Test1>(domain.allocateEntityId(), {'a'});
+        arch.allocate<Test1>(domain.allocateEntityId(), {'b'});
+        arch.allocate<Test1>(domain.allocateEntityId(), {'c'});
+        arch.allocate<Test1>(domain.allocateEntityId(), {'d'});
+        arch.allocate<Test1>(domain.allocateEntityId(), {'e'});
 
         arch.unsafeRemoveEntity(2);
         arch.unsafeRemoveEntity(0);
