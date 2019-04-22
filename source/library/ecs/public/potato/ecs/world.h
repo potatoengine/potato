@@ -10,17 +10,19 @@
 #include "potato/foundation/box.h"
 
 namespace up {
-    using SelectSignature = void(size_t count, view<void*> componentArrays);
+    using SelectSignature = void(size_t count, EntityId const* entities, view<void*> componentArrays);
+    template <typename... Components>
+    using TypedSelectSignature = void(size_t count, EntityId const* entities, Components*... components);
 
     namespace _detail {
         template <size_t... Indices, typename... Components>
-        void innerSelectHelper(std::index_sequence<Indices...>, size_t count, view<void*> arrays, delegate_ref<void(size_t count, Components*... components)> callback) {
-            callback(count, static_cast<Components*>(arrays[Indices])...);
+        void innerSelectHelper(std::index_sequence<Indices...>, size_t count, EntityId const* entities, view<void*> arrays, delegate_ref<TypedSelectSignature<Components...>> callback) {
+            callback(count, entities, static_cast<Components*>(arrays[Indices])...);
         }
 
         template <typename... Components>
-        void selectHelper(size_t count, view<void*> arrays, delegate_ref<void(size_t count, Components*... components)> callback) {
-            innerSelectHelper(std::make_index_sequence<sizeof...(Components)>(), count, arrays, callback);
+        void selectHelper(size_t count, EntityId const* entities, view<void*> arrays, delegate_ref<TypedSelectSignature<Components...>> callback) {
+            innerSelectHelper(std::make_index_sequence<sizeof...(Components)>(), count, entities, arrays, callback);
         }
 
     } // namespace _detail
@@ -57,13 +59,13 @@ namespace up {
         UP_ECS_API void* _getComponentSlow(EntityId entity, ComponentId component) noexcept;
         UP_ECS_API void _select(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
         UP_ECS_API EntityId _createEntity(view<ComponentId> components, view<void const*> data);
+        UP_ECS_API EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
 
         void _calculateLayout(uint32 archetypeIndex, view<ComponentId> components);
         void* _getComponentPointer(uint32 archetypeIndex, uint32 entityIndex, ComponentId component) const noexcept;
         bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
         bool _matchArchetypeExact(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
         void _selectArchetype(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
-        EntityId _allocateEntityId() noexcept;
         void _recycleEntityId(EntityId entity) noexcept;
         uint32 _findArchetypeIndex(view<ComponentId> components) noexcept;
         box<Chunk> _allocateChunk();
@@ -77,8 +79,8 @@ namespace up {
 
     template <typename... Components, typename Callable>
     void World::select(Callable&& callback) const {
-        _select(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, view<void*> arrays) {
-            _detail::selectHelper<Components...>(count, arrays, delegate_ref<void(size_t, Components * ...)>(std::forward<Callable>(callback)));
+        _select(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, EntityId const* entities, view<void*> arrays) {
+            _detail::selectHelper<Components...>(count, entities, arrays, delegate_ref<void(size_t, EntityId const*, Components*...)>(std::forward<Callable>(callback)));
         });
     }
 

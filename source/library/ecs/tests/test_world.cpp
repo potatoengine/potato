@@ -31,7 +31,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         size_t entityCount = 0;
         float weight = 0;
 
-        world.select<Second>([&](size_t count, Second* second) {
+        world.select<Second>([&](size_t count, EntityId const*, Second* second) {
             ++invokeCount;
             entityCount += count;
 
@@ -53,15 +53,27 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
     DOCTEST_TEST_CASE("Direct component access") {
         World world;
 
-        world.createEntity(Test1{'f'}, Second{'g', 7.f});
-        world.createEntity(Another{1.f, 2.f}, Second{'g', 9.f});
+        auto i1 = world.createEntity(Test1{'f'}, Second{'g', 7.f});
+        auto i2 = world.createEntity(Another{1.f, 2.f}, Second{'g', 9.f});
         auto id = world.createEntity(Second{'h', -2.f}, Another{2.f, 1.f});
-        world.createEntity(Test1{'j'}, Another{3.f, 4.f});
 
         Second* test = world.getComponentSlow<Second>(id);
         DOCTEST_CHECK(test != nullptr);
         DOCTEST_CHECK_EQ('h', test->a);
         DOCTEST_CHECK_EQ(-2.f, test->b);
+    }
+
+    DOCTEST_TEST_CASE("EntityId management") {
+        World world;
+
+        EntityId first = world.createEntity(Test1{'f'}, Second{'g', 7.f});
+        EntityId second = world.createEntity(Test1{'h'}, Second{'i', -1.f});
+
+        world.select([&](size_t count, EntityId const* ids) {
+            DOCTEST_CHECK_EQ(2, count);
+            DOCTEST_CHECK_EQ(first, ids[0]);
+            DOCTEST_CHECK_EQ(second, ids[1]);
+        });
     }
 
     DOCTEST_TEST_CASE("Chunks") {
@@ -74,7 +86,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
         size_t chunks = 0;
         size_t total = 0;
-        world.select<Second>([&](size_t count, Second*) {
+        world.select<Second>([&](size_t count, EntityId const*, Second*) {
             ++chunks;
             total += count;
         });
