@@ -54,7 +54,13 @@ namespace up {
         template <typename Component>
         Component* getComponentSlow(EntityId entity) noexcept;
 
+        UP_ECS_API bool unsafeMatch(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
+        UP_ECS_API bool unsafeExactMatch(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
+        UP_ECS_API void* unsafeComponentPointer(uint32 archetypeIndex, uint32 entityIndex, ComponentId component) const noexcept;
+        UP_ECS_API void unsafeRemoveEntity(uint32 archetypeIndex, uint32 entityIndex) noexcept;
+        UP_ECS_API uint32 unsafeAllocate(uint32 archetypeIndex, EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept;
         UP_ECS_API void unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
+        UP_ECS_API void unsafeSelect(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
         UP_ECS_API EntityId unsafeCreateEntity(view<ComponentId> components, view<void const*> data);
         UP_ECS_API void* unsafeGetComponentSlow(EntityId entity, ComponentId component) noexcept;
 

@@ -31,23 +31,6 @@ namespace up {
         Archetype(Archetype&&) = delete;
         Archetype& operator=(Archetype&&) = delete;
 
-        UP_ECS_API bool matches(view<ComponentId> components) const noexcept;
-        UP_ECS_API bool matchesExact(view<ComponentId> components) const noexcept;
-
-        template <typename... Components>
-        void allocate(EntityId entity, Components const&... components) noexcept {
-            ComponentId const componentIds[] = {getComponentId<Components>()...};
-            void const* componentData[] = {&components...};
-
-            unsafeAllocate(entity, componentIds, componentData);
-        }
-
-        UP_ECS_API void unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
-        UP_ECS_API void* unsafeComponentPointer(uint32 entityIndex, ComponentId component) const noexcept;
-        UP_ECS_API void unsafeRemoveEntity(uint32 entityIndex) noexcept;
-        UP_ECS_API uint32 unsafeAllocate(EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept;
-
-    private:
         struct Layout {
             ComponentId component = ComponentId::Unknown;
             uint32 offset = 0;
