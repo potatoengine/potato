@@ -54,20 +54,22 @@ namespace up {
         template <typename Component>
         Component* getComponentSlow(EntityId entity) noexcept;
 
-        UP_ECS_API bool unsafeMatch(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
-        UP_ECS_API bool unsafeExactMatch(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
-        UP_ECS_API void* unsafeComponentPointer(uint32 archetypeIndex, uint32 entityIndex, ComponentId component) const noexcept;
-        UP_ECS_API void unsafeRemoveEntity(uint32 archetypeIndex, uint32 entityIndex) noexcept;
-        UP_ECS_API uint32 unsafeAllocate(uint32 archetypeIndex, EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept;
-        UP_ECS_API void unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
-        UP_ECS_API void unsafeSelect(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
-        UP_ECS_API EntityId unsafeCreateEntity(view<ComponentId> components, view<void const*> data);
-        UP_ECS_API void* unsafeGetComponentSlow(EntityId entity, ComponentId component) noexcept;
-        UP_ECS_API EntityId unsafeAllocateEntityId() noexcept;
-        UP_ECS_API void unsafeReturnEntityId(EntityId entity) noexcept;
-
     private:
-        UP_ECS_API uint32 _findArchetypeIndex(view<ComponentId> components) noexcept;
+        UP_ECS_API void* _getComponentPointer(EntityId entity, ComponentId component) noexcept;
+        UP_ECS_API void _select(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
+        UP_ECS_API EntityId _createEntity(view<ComponentId> components, view<void const*> data);
+
+        void* _getComponentPointer(uint32 archetypeIndex, uint32 entityIndex, ComponentId component) const noexcept;
+        bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
+        bool _matchArchetypeExact(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
+        void _deleteEntity(uint32 archetypeIndex, uint32 entityIndex) noexcept;
+        uint32 _createArchetypeEntity(uint32 archetypeIndex, EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept;
+        void _selectArchetype(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
+        EntityId _allocateEntityId() noexcept;
+        void _recycleEntityId(EntityId entity) noexcept;
+        uint32 _findArchetypeIndex(view<ComponentId> components) noexcept;
+        box<EntityChunk> _allocateChunk();
+        void _recycleChunk(box<EntityChunk>);
 
         vector<EntityMapping> _entityMapping;
         vector<rc<Archetype>> _archetypes;
@@ -77,7 +79,7 @@ namespace up {
 
     template <typename... Components, typename Callable>
     void World::select(Callable&& callback) const {
-        unsafeSelect(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, view<void*> arrays) {
+        _select(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, view<void*> arrays) {
             _detail::selectHelper<Components...>(count, arrays, delegate_ref<void(size_t, Components * ...)>(std::forward<Callable>(callback)));
         });
     }
@@ -87,11 +89,11 @@ namespace up {
         ComponentId const componentIds[] = {getComponentId<Components>()...};
         void const* componentData[] = {&components...};
 
-        return unsafeCreateEntity(componentIds, componentData);
+        return _createEntity(componentIds, componentData);
     }
 
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
-        return static_cast<Component*>(unsafeGetComponentSlow(entity, getComponentId<Component>()));
+        return static_cast<Component*>(_getComponentPointer(entity, getComponentId<Component>()));
     }
 } // namespace up

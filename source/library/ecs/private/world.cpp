@@ -16,7 +16,7 @@ void up::World::deleteEntity(EntityId entity) noexcept {
 
     UP_ASSERT(mapping.generation == getEntityGeneration(entity));
 
-    unsafeRemoveEntity(mapping.archetype, mapping.index);
+    _deleteEntity(mapping.archetype, mapping.index);
 }
 
 auto up::World::acquireArchetype(view<ComponentId> components) noexcept -> Archetype const* {
@@ -27,7 +27,7 @@ auto up::World::archetypes() const noexcept -> view<rc<Archetype>> {
     return _archetypes;
 }
 
-bool up::World::unsafeMatch(uint32 archetypeIndex, view<ComponentId> components) const noexcept {
+bool up::World::_matchArchetype(uint32 archetypeIndex, view<ComponentId> components) const noexcept {
     // FIXME: handle Archetypes that have multiple copies of the same component
     Archetype const& archetypeData = *_archetypes[archetypeIndex];
     for (ComponentId component : components) {
@@ -38,17 +38,17 @@ bool up::World::unsafeMatch(uint32 archetypeIndex, view<ComponentId> components)
     return true;
 }
 
-bool up::World::unsafeExactMatch(uint32 archetypeIndex, view<ComponentId> components) const noexcept {
+bool up::World::_matchArchetypeExact(uint32 archetypeIndex, view<ComponentId> components) const noexcept {
     if (components.size() != _archetypes[archetypeIndex]->_layout.size()) {
         return false;
     }
 
-    return unsafeMatch(archetypeIndex, components);
+    return _matchArchetype(archetypeIndex, components);
 }
 
 auto up::World::_findArchetypeIndex(view<ComponentId> components) noexcept -> up::uint32 {
     for (uint32 index = 0; index != _archetypes.size(); ++index) {
-        if (unsafeExactMatch(index, components)) {
+        if (_matchArchetypeExact(index, components)) {
             return index;
         }
     }
@@ -58,28 +58,28 @@ auto up::World::_findArchetypeIndex(view<ComponentId> components) noexcept -> up
     return static_cast<uint32>(_archetypes.size() - 1);
 }
 
-void up::World::unsafeSelect(view<ComponentId> components, delegate_ref<SelectSignature> callback) const {
+void up::World::_select(view<ComponentId> components, delegate_ref<SelectSignature> callback) const {
     for (uint32 index = 0; index != _archetypes.size(); ++index) {
-        if (unsafeMatch(index, components)) {
-            unsafeSelect(index, components, callback);
+        if (_matchArchetype(index, components)) {
+            _selectArchetype(index, components, callback);
         }
     }
 }
 
-auto up::World::unsafeCreateEntity(view<ComponentId> components, view<void const*> data) -> EntityId {
+auto up::World::_createEntity(view<ComponentId> components, view<void const*> data) -> EntityId {
     UP_ASSERT(components.size() == data.size());
 
-    EntityId entity = unsafeAllocateEntityId();
+    EntityId entity = _allocateEntityId();
     uint32 archetypeIndex = _findArchetypeIndex(components);
 
-    uint32 index = unsafeAllocate(archetypeIndex, entity, components, data);
+    uint32 index = _createArchetypeEntity(archetypeIndex, entity, components, data);
 
     _entityMapping.push_back({getEntityGeneration(entity), archetypeIndex, index});
 
     return entity;
 }
 
-void* up::World::unsafeGetComponentSlow(EntityId entity, ComponentId component) noexcept {
+void* up::World::_getComponentPointer(EntityId entity, ComponentId component) noexcept {
     uint32 index = getEntityIndex(entity);
     if (index >= _entityMapping.size()) {
         return nullptr;
@@ -91,21 +91,21 @@ void* up::World::unsafeGetComponentSlow(EntityId entity, ComponentId component) 
     }
 
     // FIXME: bounds check
-    return unsafeComponentPointer(mapping.archetype, mapping.index, component);
+    return _getComponentPointer(mapping.archetype, mapping.index, component);
 }
 
-void up::World::unsafeSelect(up::uint32 archetypeIndex, view<ComponentId> components, delegate_ref<SelectSignature> callback) const {
+void up::World::_selectArchetype(up::uint32 archetypeIndex, view<ComponentId> components, delegate_ref<SelectSignature> callback) const {
     void* pointers[64];
     UP_ASSERT(components.size() <= std::size(pointers));
 
     for (size_t i = 0; i < components.size(); ++i) {
-        pointers[i] = unsafeComponentPointer(archetypeIndex, 0, components[i]);
+        pointers[i] = _getComponentPointer(archetypeIndex, 0, components[i]);
     }
 
     callback(static_cast<size_t>(_archetypes[archetypeIndex]->_count), view<void*>(pointers).first(components.size()));
 }
 
-void* up::World::unsafeComponentPointer(up::uint32 archetypeIndex, up::uint32 entityIndex, ComponentId component) const noexcept {
+void* up::World::_getComponentPointer(up::uint32 archetypeIndex, up::uint32 entityIndex, ComponentId component) const noexcept {
     Archetype& archetype = *_archetypes[archetypeIndex];
 
     auto layoutIter = find(archetype._layout, component, {}, [](auto const& layout) noexcept { return layout.component; });
@@ -118,7 +118,7 @@ void* up::World::unsafeComponentPointer(up::uint32 archetypeIndex, up::uint32 en
     return archetype._chunks[chunkIndex]->data + layoutIter->offset + entityIndex * info.size;
 }
 
-void up::World::unsafeRemoveEntity(up::uint32 archetypeIndex, up::uint32 entityIndex) noexcept {
+void up::World::_deleteEntity(up::uint32 archetypeIndex, up::uint32 entityIndex) noexcept {
     Archetype& archetype = *_archetypes[archetypeIndex];
 
     auto chunkIndex = entityIndex / archetype._perChunk;
@@ -151,7 +151,7 @@ void up::World::unsafeRemoveEntity(up::uint32 archetypeIndex, up::uint32 entityI
     _entityMapping[getEntityIndex(lastEntity)].index = entityIndex;
 }
 
-auto up::World::unsafeAllocate(up::uint32 archetypeIndex, EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept -> up::uint32 {
+auto up::World::_createArchetypeEntity(up::uint32 archetypeIndex, EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept -> up::uint32 {
     Archetype& archetype = *_archetypes[archetypeIndex];
 
     UP_ASSERT(componentData.size() == archetype._layout.size());
@@ -166,17 +166,7 @@ auto up::World::unsafeAllocate(up::uint32 archetypeIndex, EntityId entity, view<
 
     archetype._entities.push_back(entity);
     if (chunkIndex == archetype._chunks.size()) {
-        box<EntityChunk> chunk;
-
-        if (!_chunkPool.empty()) {
-            chunk = std::move(_chunkPool.back());
-            _chunkPool.pop_back();
-        }
-        else {
-            chunk = new_box<EntityChunk>();
-        }
-
-        archetype._chunks.push_back(std::move(chunk));
+        archetype._chunks.push_back(_allocateChunk());
     }
 
     ++archetype._chunks[chunkIndex]->header.count;
@@ -198,7 +188,7 @@ auto up::World::unsafeAllocate(up::uint32 archetypeIndex, EntityId entity, view<
     return entityIndex;
 }
 
-auto up::World::unsafeAllocateEntityId() noexcept -> EntityId {
+auto up::World::_allocateEntityId() noexcept -> EntityId {
     if (_freeEntityHead == static_cast<decltype(_freeEntityHead)>(-1)) {
         // nothing in free list
         uint32 firstGeneration = 1;
@@ -211,11 +201,25 @@ auto up::World::unsafeAllocateEntityId() noexcept -> EntityId {
     return makeEntityId(index, ++_entityMapping[index].generation);
 }
 
-void up::World::unsafeReturnEntityId(EntityId entity) noexcept {
+void up::World::_recycleEntityId(EntityId entity) noexcept {
     uint32 index = getEntityIndex(entity);
 
     ++_entityMapping[index].generation;
     _entityMapping[index].index = _freeEntityHead;
 
     _freeEntityHead = index;
+}
+
+auto up::World::_allocateChunk() -> box<EntityChunk> {
+    if (!_chunkPool.empty()) {
+        auto chunk = std::move(_chunkPool.back());
+        _chunkPool.pop_back();
+        return chunk;
+    }
+
+    return new_box<EntityChunk>();
+}
+
+void up::World::_recycleChunk(box<EntityChunk> chunk) {
+    _chunkPool.push_back(std::move(chunk));
 }
