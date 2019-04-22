@@ -2,14 +2,13 @@
 
 #pragma once
 
+#include "potato/ecs/common.h"
 #include "potato/foundation/string_view.h"
 #include "potato/foundation/nameof.h"
 #include "potato/foundation/hash_fnv1a.h"
 #include "potato/foundation/traits.h"
 
 namespace up {
-    enum class ComponentId : uint64 { Unknown = 0 };
-
     struct ComponentInfo {
         constexpr ComponentInfo() noexcept : hash(0), size(0), alignment(0) {}
         constexpr ComponentInfo(uint64 h, uint32 s, uint32 a) noexcept : hash(h), size(s), alignment(a) {}

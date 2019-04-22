@@ -2,11 +2,9 @@
 
 #pragma once
 
-#include "potato/foundation/int_types.h"
+#include "potato/ecs/common.h"
 
 namespace up {
-    enum class EntityId : uint64 { None = 0 };
-
     constexpr EntityId makeEntityId(uint32 index, uint32 generation) noexcept {
         return static_cast<EntityId>((static_cast<uint64>(generation) << 32) | index);
     }
