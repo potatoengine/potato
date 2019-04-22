@@ -14,7 +14,15 @@ static constexpr size_t align(size_t offset, size_t alignment) noexcept {
 }
 
 up::World::World() = default;
-up::World::~World() = default;
+
+up::World::~World() {
+    while (_freeChunkHead != nullptr) {
+        Chunk* chunk = _freeChunkHead;
+        _freeChunkHead = _freeChunkHead->header.next;
+
+        delete chunk;
+    }
+}
 
 void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentId> components) {
     Archetype& archetype = *_archetypes[archetypeIndex];
@@ -91,7 +99,7 @@ void up::World::deleteEntity(EntityId entity) noexcept {
     }
 
     if (--archetype._chunks[lastChunkIndex]->header.count == 0) {
-        _chunkPool.push_back(std::move(archetype._chunks[lastChunkIndex]));
+        _recycleChunk(std::move(archetype._chunks[lastChunkIndex]));
         archetype._chunks.pop_back();
     }
     archetype._entities.pop_back();
@@ -257,9 +265,9 @@ void up::World::_recycleEntityId(EntityId entity) noexcept {
 auto up::World::_allocateChunk() -> box<Chunk> {
     static_assert(sizeof(up::World::Chunk) == up::World::Chunk::size);
 
-    if (!_chunkPool.empty()) {
-        auto chunk = std::move(_chunkPool.back());
-        _chunkPool.pop_back();
+    if (_freeChunkHead != nullptr) {
+        box<Chunk> chunk(_freeChunkHead);
+        _freeChunkHead = _freeChunkHead->header.next;
         return chunk;
     }
 
@@ -267,5 +275,6 @@ auto up::World::_allocateChunk() -> box<Chunk> {
 }
 
 void up::World::_recycleChunk(box<Chunk> chunk) {
-    _chunkPool.push_back(std::move(chunk));
+    chunk->header.next = _freeChunkHead;
+    _freeChunkHead = chunk.release();
 }

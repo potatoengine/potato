@@ -71,7 +71,7 @@ namespace up {
 
         vector<Entity> _entityMapping;
         vector<box<Archetype>> _archetypes;
-        vector<box<Chunk>> _chunkPool;
+        Chunk* _freeChunkHead = nullptr;
         uint32 _freeEntityHead = static_cast<uint32>(-1);
     };
 
