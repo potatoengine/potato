@@ -1,5 +1,4 @@
 #include "potato/ecs/world.h"
-#include "potato/ecs/archetype.h"
 #include <doctest/doctest.h>
 
 struct Test1 {

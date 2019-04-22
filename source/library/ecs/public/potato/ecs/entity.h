@@ -5,11 +5,11 @@
 #include "potato/ecs/common.h"
 
 namespace up {
-    constexpr EntityId makeEntityId(uint32 index, uint32 generation) noexcept {
-        return static_cast<EntityId>((static_cast<uint64>(generation) << 32) | index);
+    constexpr EntityId makeEntityId(uint32 mappingIndex, uint32 generation) noexcept {
+        return static_cast<EntityId>((static_cast<uint64>(generation) << 32) | mappingIndex);
     }
 
-    constexpr uint32 getEntityIndex(EntityId entity) noexcept {
+    constexpr uint32 getEntityMappingIndex(EntityId entity) noexcept {
         return static_cast<uint64>(entity) & 0xFFFFFFFF;
     }
 

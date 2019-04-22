@@ -5,16 +5,12 @@
 #include "_export.h"
 #include "potato/ecs/component.h"
 #include "potato/ecs/entity.h"
-#include "potato/ecs/domain.h"
 #include "potato/foundation/vector.h"
 #include "potato/foundation/delegate_ref.h"
 #include "potato/foundation/rc.h"
 #include "potato/foundation/box.h"
 
 namespace up {
-    struct EntityChunk;
-    class Archetype;
-
     using SelectSignature = void(size_t count, view<void*> componentArrays);
 
     namespace _detail {
@@ -35,6 +31,10 @@ namespace up {
     /// Entities from different Worlds cannot interact.
     class World {
     public:
+        struct Archetype;
+        struct Chunk;
+        struct Entity;
+
         UP_ECS_API World();
         UP_ECS_API ~World();
 
@@ -45,7 +45,7 @@ namespace up {
         void select(Callable&& callback) const;
 
         UP_ECS_API Archetype const* acquireArchetype(view<ComponentId> components) noexcept;
-        UP_ECS_API view<rc<Archetype>> archetypes() const noexcept;
+        UP_ECS_API view<box<Archetype>> archetypes() const noexcept;
 
         template <typename... Components>
         EntityId createEntity(Components const&... components) noexcept;
@@ -55,25 +55,24 @@ namespace up {
         Component* getComponentSlow(EntityId entity) noexcept;
 
     private:
-        UP_ECS_API void* _getComponentPointer(EntityId entity, ComponentId component) noexcept;
+        UP_ECS_API void* _getComponentSlow(EntityId entity, ComponentId component) noexcept;
         UP_ECS_API void _select(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
         UP_ECS_API EntityId _createEntity(view<ComponentId> components, view<void const*> data);
 
+        void _calculateLayout(uint32 archetypeIndex, view<ComponentId> components);
         void* _getComponentPointer(uint32 archetypeIndex, uint32 entityIndex, ComponentId component) const noexcept;
         bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
         bool _matchArchetypeExact(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
-        void _deleteEntity(uint32 archetypeIndex, uint32 entityIndex) noexcept;
-        uint32 _createArchetypeEntity(uint32 archetypeIndex, EntityId entity, view<ComponentId> componentIds, view<void const*> componentData) noexcept;
         void _selectArchetype(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
         EntityId _allocateEntityId() noexcept;
         void _recycleEntityId(EntityId entity) noexcept;
         uint32 _findArchetypeIndex(view<ComponentId> components) noexcept;
-        box<EntityChunk> _allocateChunk();
-        void _recycleChunk(box<EntityChunk>);
+        box<Chunk> _allocateChunk();
+        void _recycleChunk(box<Chunk>);
 
-        vector<EntityMapping> _entityMapping;
-        vector<rc<Archetype>> _archetypes;
-        vector<box<EntityChunk>> _chunkPool;
+        vector<Entity> _entityMapping;
+        vector<box<Archetype>> _archetypes;
+        vector<box<Chunk>> _chunkPool;
         uint32 _freeEntityHead = static_cast<uint32>(-1);
     };
 
@@ -94,6 +93,6 @@ namespace up {
 
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
-        return static_cast<Component*>(_getComponentPointer(entity, getComponentId<Component>()));
+        return static_cast<Component*>(_getComponentSlow(entity, getComponentId<Component>()));
     }
 } // namespace up
