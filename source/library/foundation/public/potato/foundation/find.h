@@ -38,8 +38,8 @@ namespace up {
     decltype(auto) project(P const& projection, T const& value) noexcept(noexcept(invoke(projection, value))) {
         return invoke(projection, value);
     }
-    template <class T, class C>
-    decltype(auto) project(T C::*member, T const& value) noexcept {
+    template <class T, class M>
+    M project(M T::*member, T const& value) noexcept {
         return value.*member;
     }
 
