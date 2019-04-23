@@ -10,7 +10,7 @@
 #include "potato/foundation/box.h"
 
 namespace up {
-    using SelectSignature = void(size_t count, EntityId const* entities, view<void*> componentArrays);
+    using RawSelectSignature = void(size_t count, EntityId const* entities, view<void*> componentArrays);
     template <typename... Components>
     using TypedSelectSignature = void(size_t count, EntityId const* entities, Components*... components);
 
@@ -45,7 +45,6 @@ namespace up {
         template <typename... Components, typename Callable>
         void select(Callable&& callback) const;
 
-        UP_ECS_API Archetype const* acquireArchetype(view<ComponentId> components) noexcept;
         UP_ECS_API view<box<Archetype>> archetypes() const noexcept;
 
         template <typename... Components>
@@ -54,20 +53,21 @@ namespace up {
 
         template <typename Component>
         Component* getComponentSlow(EntityId entity) noexcept;
+        UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
     private:
-        UP_ECS_API void* _getComponentSlow(EntityId entity, ComponentId component) noexcept;
-        UP_ECS_API void _select(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
-        UP_ECS_API EntityId _createEntity(view<ComponentId> components, view<void const*> data);
+        
+        UP_ECS_API void _selectRaw(view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const;
+        UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
 
-        void _calculateLayout(uint32 archetypeIndex, view<ComponentId> components);
+        void _calculateLayout(uint32 archetypeIndex, view<ComponentMeta const*> components);
         void* _getComponentPointer(uint32 archetypeIndex, uint32 entityIndex, ComponentId component) const noexcept;
         bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
-        bool _matchArchetypeExact(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
-        void _selectArchetype(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
+        bool _matchArchetypeExact(uint32 archetypeIndex, view<ComponentMeta const*> components) const noexcept;
+        void _selectChunksRaw(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const;
         void _recycleEntityId(EntityId entity) noexcept;
-        uint32 _findArchetypeIndex(view<ComponentId> components) noexcept;
+        uint32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
         box<Chunk> _allocateChunk();
         void _recycleChunk(box<Chunk>);
 
@@ -79,21 +79,21 @@ namespace up {
 
     template <typename... Components, typename Callable>
     void World::select(Callable&& callback) const {
-        _select(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, EntityId const* entities, view<void*> arrays) {
+        _selectRaw(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, EntityId const* entities, view<void*> arrays) {
             _detail::selectHelper<Components...>(count, entities, arrays, delegate_ref<void(size_t, EntityId const*, Components*...)>(std::forward<Callable>(callback)));
         });
     }
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentId const componentIds[] = {getComponentId<Components>()...};
+        ComponentMeta const* componentMetas[] = {ComponentMeta::get<Components>()...};
         void const* componentData[] = {&components...};
 
-        return _createEntity(componentIds, componentData);
+        return _createEntityRaw(componentMetas, componentData);
     }
 
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
-        return static_cast<Component*>(_getComponentSlow(entity, getComponentId<Component>()));
+        return static_cast<Component*>(getComponentSlowUnsafe(entity, getComponentId<Component>()));
     }
 } // namespace up

@@ -13,6 +13,10 @@ struct Another {
     float b;
 };
 
+UP_COMPONENT(Test1);
+UP_COMPONENT(Second);
+UP_COMPONENT(Another);
+
 DOCTEST_TEST_SUITE("[potato][ecs] World") {
     using namespace up;
 

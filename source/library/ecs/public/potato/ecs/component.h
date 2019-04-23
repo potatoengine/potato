@@ -7,33 +7,72 @@
 #include "potato/foundation/nameof.h"
 #include "potato/foundation/hash_fnv1a.h"
 #include "potato/foundation/traits.h"
+#include <utility>
+#include <cstring>
 
 namespace up {
-    struct ComponentInfo {
-        constexpr ComponentInfo() noexcept : hash(0), size(0), alignment(0) {}
-        constexpr ComponentInfo(uint64 h, uint32 s, uint32 a) noexcept : hash(h), size(s), alignment(a) {}
+    struct ComponentMeta {
+        using Relocate = void (*)(void* dest, void* source) noexcept;
+        using Destroy = void (*)(void* mem) noexcept;
 
-        constexpr ComponentInfo(ComponentId id) noexcept : hash(uint64(id) >> 18), size(uint64(id) >> 5 & 0x1FFF), alignment(uint64(id) & 31) {}
+        template <typename Component>
+        static constexpr ComponentMeta construct() noexcept;
 
-        constexpr operator ComponentId() noexcept { return ComponentId((hash << 18) | (size << 5) | alignment); }
+        template <typename Component>
+        static constexpr ComponentMeta const* get() noexcept;
 
-        uint64 hash : 46;
-        uint64 size : 13;
-        uint64 alignment : 5;
+        ComponentId id = ComponentId::Unknown;
+        Relocate relocate = nullptr;
+        Destroy destroy = nullptr;
+        uint32 size = 0;
+        uint32 alignment = 0;
+        string_view name;
+
+        template <typename Component>
+        struct holder {
+            static ComponentMeta const meta;
+        };
     };
-    static_assert(sizeof(ComponentInfo) == sizeof(ComponentId));
+
+    namespace _detail {
+        constexpr uint64 hashComponentName(string_view name) noexcept {
+            fnv1a hasher;
+            hasher.append_bytes(name.data(), name.size());
+            return hasher.finalize();
+        }
+
+        template <uint64 hash>
+        constexpr ComponentId componentIdFromHash = static_cast<ComponentId>(hash);
+    }
+
+    template <typename Component>
+    constexpr ComponentMeta ComponentMeta::construct() noexcept {
+        constexpr string_view name = nameof<Component>();
+
+        fnv1a hasher;
+        hasher.append_bytes(name.data(), name.size());
+        uint64 hash = hasher.finalize();
+
+        ComponentMeta meta;
+        meta.id = _detail::componentIdFromHash<_detail::hashComponentName(name)>;
+        meta.relocate = [](void* dest, void* src) noexcept { *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src)); };
+        meta.destroy = [](void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
+        meta.size = sizeof(Component);
+        meta.alignment = alignof(Component);
+        meta.name = name;
+        return meta;
+    }
+
+    template <typename Component>
+    static constexpr ComponentMeta const* ComponentMeta::get() noexcept {
+        return &holder<Component>::meta;
+    }
+
+    #define UP_COMPONENT(ComponentType) \
+        up::ComponentMeta const up::ComponentMeta::holder<ComponentType>::meta = up::ComponentMeta::construct<ComponentType>();
 
     template <typename ComponentT>
     constexpr ComponentId getComponentId() noexcept {
-        static_assert(std::is_trivially_copyable_v<ComponentT>, "Component types must be trivially copyable");
-        static_assert(std::is_trivially_destructible_v<ComponentT>, "Component types must be trivially destructible");
-
-        constexpr auto componentName = nameof<ComponentT>();
-
-        fnv1a hasher;
-        hasher.append_bytes(componentName.data(), componentName.size());
-        uint64 hash = hasher.finalize();
-
-        return ComponentInfo(hash, sizeof(ComponentT), alignof(ComponentT));
+        return _detail::componentIdFromHash<_detail::hashComponentName(nameof<ComponentT>())>;
     }
 } // namespace up

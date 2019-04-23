@@ -2,7 +2,7 @@
 
 struct up::World::Archetype {
     struct Layout {
-        ComponentId component = ComponentId::Unknown;
+        ComponentMeta const* meta = nullptr;
         uint32 offset = 0;
     };
 
