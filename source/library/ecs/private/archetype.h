@@ -6,8 +6,8 @@ struct up::World::Archetype {
         uint32 offset = 0;
     };
 
-    vector<box<Chunk>> _chunks;
-    vector<Layout> _layout;
-    uint32 _count = 0;
-    uint32 _perChunk = 0;
+    vector<box<Chunk>> chunks;
+    vector<Layout> layout;
+    uint32 count = 0;
+    uint32 perChunk = 0;
 };
