@@ -11,4 +11,16 @@ struct up::World::Chunk {
 
     Header header;
     Payload data;
+
+    //constexpr void* pointer(up::uint32 offset, up::uint32 index, up::uint32 width) noexcept {
+    //    return data + offset + index * width;
+    //}
+
+    EntityId* entity(up::uint32 index) noexcept {
+        return reinterpret_cast<EntityId*>(data + index * sizeof(EntityId));
+    }
+
+    constexpr void* pointer(Layout layout, up::uint32 index) noexcept {
+        return data + layout.offset + index * layout.width;
+    }
 };

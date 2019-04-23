@@ -13,10 +13,6 @@ static constexpr size_t align(size_t offset, size_t alignment) noexcept {
     return (offset + alignmentMinusOne) & ~alignmentMinusOne;
 }
 
-static constexpr void* chunkPointer(char* data, up::uint32 offset, up::uint32 index, up::uint32 alignment) noexcept {
-    return data + offset + index * alignment;
-}
-
 up::World::World() = default;
 
 up::World::~World() {
@@ -63,6 +59,7 @@ void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentMeta const
             UP_ASSERT(offset + archetype.perChunk * meta.size + meta.size <= sizeof(Chunk::Payload));
 
             archetype.layout[i].offset = static_cast<uint32>(offset);
+            archetype.layout[i].width = meta.size;
 
             offset += meta.size * archetype.perChunk;
         }
@@ -97,16 +94,15 @@ void up::World::deleteEntity(EntityId entity) noexcept {
 
     // Copy the last element over the to-be-removed element, so we don't have holes in our array
     if (lastChunkIndex != chunkIndex || lastSubIndex != subIndex) {
-        EntityId lastEntity = *reinterpret_cast<EntityId*>(chunkPointer(archetype.chunks[chunkIndex]->data, 0, subIndex, sizeof(EntityId))) =
-            *reinterpret_cast<EntityId const*>(chunkPointer(archetype.chunks[lastChunkIndex]->data, 0, lastSubIndex, sizeof(EntityId)));
+        EntityId lastEntity = *archetype.chunks[chunkIndex]->entity(subIndex) = *archetype.chunks[lastChunkIndex]->entity(lastSubIndex);
         _entityMapping[getEntityMappingIndex(lastEntity)].index = entityIndex;
 
         for (auto const& layout : archetype.layout) {
             ComponentMeta const& meta = *layout.meta;
 
-            void* pointer = chunkPointer(archetype.chunks[chunkIndex]->data, layout.offset, subIndex, meta.size);
-            void* lastPointer = chunkPointer(archetype.chunks[lastChunkIndex]->data, layout.offset, lastSubIndex, meta.size);
-            std::memcpy(pointer, lastPointer, meta.size);
+            void* pointer = archetype.chunks[chunkIndex]->pointer(layout, subIndex);
+            void* lastPointer = archetype.chunks[lastChunkIndex]->pointer(layout, lastSubIndex);
+            std::memcpy(pointer, lastPointer, layout.width);
         }
     }
 
@@ -198,7 +194,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     Chunk& chunk = *archetype.chunks[chunkIndex];
     ++chunk.header.count;
 
-    *reinterpret_cast<EntityId*>(chunkPointer(chunk.data, 0, subIndex, sizeof(EntityId))) = entity;
+    *chunk.entity(subIndex) = entity;
 
     for (uint32 index = 0; index != components.size(); ++index) {
         ComponentMeta const& meta = *components[index];
@@ -206,9 +202,9 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
         auto layoutIter = find(archetype.layout, meta.id, {}, [](auto const& layout) noexcept { return layout.meta->id; });
         UP_ASSERT(layoutIter != archetype.layout.end());
         
-        void* rawPointer = chunkPointer(chunk.data, layoutIter->offset, subIndex, meta.size);
+        void* rawPointer = chunk.pointer(*layoutIter, subIndex);
 
-        std::memcpy(rawPointer, data[index], meta.size);
+        std::memcpy(rawPointer, data[index], layoutIter->width);
     }
 
     uint32 entityMappingIndex = getEntityMappingIndex(entity);
@@ -255,7 +251,7 @@ void* up::World::_getComponentPointer(up::uint32 archetypeIndex, up::uint32 enti
     auto chunkIndex = entityIndex / archetype.perChunk;
     auto subIndex = entityIndex % archetype.perChunk;
 
-    return chunkPointer(archetype.chunks[chunkIndex]->data, layoutIter->offset, entityIndex, layoutIter->meta->size);
+    return archetype.chunks[chunkIndex]->pointer(*layoutIter, entityIndex);
 }
 
 auto up::World::_allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept -> EntityId {

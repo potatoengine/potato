@@ -35,6 +35,8 @@ namespace up {
         struct Archetype;
         struct Chunk;
         struct Entity;
+        struct Layout;
+        struct Location;
 
         UP_ECS_API World();
         UP_ECS_API ~World();
