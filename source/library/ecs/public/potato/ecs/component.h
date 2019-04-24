@@ -64,7 +64,7 @@ namespace up {
     }
 
     template <typename Component>
-    static constexpr ComponentMeta const* ComponentMeta::get() noexcept {
+    constexpr ComponentMeta const* ComponentMeta::get() noexcept {
         return &holder<Component>::meta;
     }
 
