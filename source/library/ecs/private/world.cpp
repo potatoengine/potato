@@ -90,24 +90,38 @@ void up::World::deleteEntity(EntityId entity) noexcept {
 
     UP_ASSERT(chunkIndex < archetype.chunks.size());
 
+    Chunk& chunk = *archetype.chunks[chunkIndex];
+
     auto lastChunkIndex = archetype.chunks.size() - 1;
-    auto lastSubIndex = archetype.chunks[lastChunkIndex]->header.count - 1;
+    Chunk& lastChunk = *archetype.chunks[lastChunkIndex];
 
     // Copy the last element over the to-be-removed element, so we don't have holes in our array
-    if (lastChunkIndex != chunkIndex || lastSubIndex != subIndex) {
-        EntityId lastEntity = *archetype.chunks[chunkIndex]->entity(subIndex) = *archetype.chunks[lastChunkIndex]->entity(lastSubIndex);
+    if (entityIndex == archetype.count - 1) {
+        auto lastSubIndex = lastChunk.header.count - 1;
+
+        EntityId lastEntity = *chunk.entity(subIndex) = *lastChunk.entity(lastSubIndex);
         _entityMapping[getEntityMappingIndex(lastEntity)].index = entityIndex;
 
         for (auto const& layout : archetype.layout) {
             ComponentMeta const& meta = *layout.meta;
 
-            void* pointer = archetype.chunks[chunkIndex]->pointer(layout, subIndex);
-            void* lastPointer = archetype.chunks[lastChunkIndex]->pointer(layout, lastSubIndex);
-            std::memcpy(pointer, lastPointer, layout.width);
+            void* pointer = chunk.pointer(layout, subIndex);
+            void* lastPointer = lastChunk.pointer(layout, lastSubIndex);
+            meta.relocate(pointer, lastPointer);
+            meta.destroy(lastPointer);
+        }
+    }
+    else {
+        // We were already the last element, just just clean up our memory
+        for (auto const& layout : archetype.layout) {
+            ComponentMeta const& meta = *layout.meta;
+
+            void* lastPointer = chunk.pointer(layout, subIndex);
+            meta.destroy(lastPointer);
         }
     }
 
-    if (--archetype.chunks[lastChunkIndex]->header.count == 0) {
+    if (--lastChunk.header.count == 0) {
         _recycleChunk(std::move(archetype.chunks[lastChunkIndex]));
         archetype.chunks.pop_back();
     }
@@ -205,7 +219,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
         
         void* rawPointer = chunk.pointer(*layoutIter, subIndex);
 
-        std::memcpy(rawPointer, data[index], layoutIter->width);
+        meta.copy(rawPointer, data[index]);
     }
 
     uint32 entityMappingIndex = getEntityMappingIndex(entity);

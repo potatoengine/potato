@@ -12,6 +12,7 @@
 
 namespace up {
     struct ComponentMeta {
+        using Copy = void (*)(void* dest, void const* source) noexcept;
         using Relocate = void (*)(void* dest, void* source) noexcept;
         using Destroy = void (*)(void* mem) noexcept;
 
@@ -22,6 +23,7 @@ namespace up {
         static constexpr ComponentMeta const* get() noexcept;
 
         ComponentId id = ComponentId::Unknown;
+        Copy copy = nullptr;
         Relocate relocate = nullptr;
         Destroy destroy = nullptr;
         uint32 size = 0;
@@ -55,6 +57,7 @@ namespace up {
 
         ComponentMeta meta;
         meta.id = _detail::componentIdFromHash<_detail::hashComponentName(name)>;
+        meta.copy = [](void* dest, void const* src) noexcept { *static_cast<Component*>(dest) = *static_cast<Component const*>(src); };
         meta.relocate = [](void* dest, void* src) noexcept { *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src)); };
         meta.destroy = [](void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
         meta.size = sizeof(Component);
