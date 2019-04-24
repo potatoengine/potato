@@ -45,7 +45,8 @@ void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentMeta const
         // assign pointer offers by alignment
         std::sort(archetype.layout.begin(), archetype.layout.end(), [](const auto& l, const auto& r) noexcept { return l.meta->alignment < r.meta->alignment; });
 
-        archetype.perChunk = static_cast<uint32>(sizeof(Chunk::Payload) / size);
+        // FIXME: figure out why we need this size + 1, the arithmetic surprises me
+        archetype.perChunk = static_cast<uint32>(sizeof(Chunk::Payload) / (size + 1));
 
         // we'll always include the EntityId is the layout, so include it as offset
         size_t offset = sizeof(EntityId) * archetype.perChunk;
@@ -230,16 +231,26 @@ void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) 
 }
 
 void up::World::_selectChunksRaw(up::uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const {
+    Layout const* layouts[64];
     void* pointers[64];
     UP_ASSERT(components.size() <= std::size(pointers));
 
-    EntityId const* entities = reinterpret_cast<EntityId const*>(_archetypes[archetypeIndex]->chunks.front()->data);
+    Archetype const& archetype = *_archetypes[archetypeIndex];
 
     for (size_t i = 0; i < components.size(); ++i) {
-        pointers[i] = _getComponentPointer(archetypeIndex, 0, components[i]);
+        layouts[i] = find(archetype.layout, components[i], {}, [](auto const& layout) noexcept { return layout.meta->id; });
+        UP_ASSERT(layouts[i] != archetype.layout.end());
     }
 
-    callback(static_cast<size_t>(_archetypes[archetypeIndex]->count), entities, view<void*>(pointers).first(components.size()));
+    for (box<Chunk> const& chunk : _archetypes[archetypeIndex]->chunks) {
+        EntityId const* entities = chunk->entity(0);
+
+        for (size_t i = 0; i < components.size(); ++i) {
+            pointers[i] = chunk->pointer(*layouts[i], 0);
+        }
+
+        callback(static_cast<size_t>(chunk->header.count), entities, view<void*>(pointers).first(components.size()));
+    }
 }
 
 void* up::World::_getComponentPointer(up::uint32 archetypeIndex, up::uint32 entityIndex, ComponentId component) const noexcept {
@@ -261,8 +272,10 @@ auto up::World::_allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noe
         entity.generation = 1;
         entity.archetype = archetypeIndex;
         entity.index = entityIndex;
+
         uint32 mappingIndex = static_cast<uint32>(_entityMapping.size());
         _entityMapping.push_back(entity);
+
         return makeEntityId(mappingIndex, entity.generation);
     }
 

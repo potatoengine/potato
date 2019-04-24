@@ -12,10 +12,15 @@ struct Another {
     float a;
     float b;
 };
+struct Counter {
+    int value;
+    char padding[128];
+};
 
 UP_COMPONENT(Test1);
 UP_COMPONENT(Second);
 UP_COMPONENT(Another);
+UP_COMPONENT(Counter);
 
 DOCTEST_TEST_SUITE("[potato][ecs] World") {
     using namespace up;
@@ -84,18 +89,25 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         constexpr int count = 100000;
         World world;
 
+        uint64 expectedSum = 0;
         for (int i = 0; i != count; ++i) {
-            world.createEntity(Test1{}, Second{}, Another{});
+            expectedSum += i;
+            world.createEntity(Counter{i});
         }
 
         size_t chunks = 0;
         size_t total = 0;
-        world.select<Second>([&](size_t count, EntityId const*, Second*) {
+        uint64 sum = 0;
+        world.select<Counter>([&](size_t count, EntityId const*, Counter* counters) {
             ++chunks;
             total += count;
+            for (size_t i = 0; i != count; ++i) {
+                sum += counters[i].value;
+            }
         });
         DOCTEST_CHECK_NE(0, chunks);
         DOCTEST_CHECK_EQ(count, total);
+        DOCTEST_CHECK_EQ(expectedSum, sum);
     }
 
     DOCTEST_TEST_CASE("Creates and Deletes") {
