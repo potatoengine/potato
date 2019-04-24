@@ -69,6 +69,7 @@ namespace up {
     }
 
     #define UP_COMPONENT(ComponentType) \
+        template <> \
         up::ComponentMeta const up::ComponentMeta::holder<ComponentType>::meta = up::ComponentMeta::construct<ComponentType>();
 
     template <typename ComponentT>
