@@ -4,7 +4,6 @@
 
 #include "potato/ecs/common.h"
 #include "potato/foundation/string_view.h"
-#include "potato/foundation/nameof.h"
 #include "potato/foundation/hash_fnv1a.h"
 #include "potato/foundation/traits.h"
 #include <utility>
@@ -17,7 +16,7 @@ namespace up {
         using Destroy = void (*)(void* mem) noexcept;
 
         template <typename Component>
-        static constexpr ComponentMeta construct() noexcept;
+        static constexpr ComponentMeta construct(string_view name) noexcept;
 
         template <typename Component>
         static constexpr ComponentMeta const* get() noexcept;
@@ -48,15 +47,13 @@ namespace up {
     }
 
     template <typename Component>
-    constexpr ComponentMeta ComponentMeta::construct() noexcept {
-        constexpr string_view name = nameof<Component>();
-
+    constexpr ComponentMeta ComponentMeta::construct(string_view name) noexcept {
         fnv1a hasher;
         hasher.append_bytes(name.data(), name.size());
         uint64 hash = hasher.finalize();
 
         ComponentMeta meta;
-        meta.id = _detail::componentIdFromHash<_detail::hashComponentName(name)>;
+        meta.id = static_cast<ComponentId>(hash);
         meta.copy = [](void* dest, void const* src) noexcept { *static_cast<Component*>(dest) = *static_cast<Component const*>(src); };
         meta.relocate = [](void* dest, void* src) noexcept { *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src)); };
         meta.destroy = [](void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
@@ -73,10 +70,10 @@ namespace up {
 
     #define UP_COMPONENT(ComponentType) \
         template <> \
-        up::ComponentMeta const up::ComponentMeta::holder<ComponentType>::meta = up::ComponentMeta::construct<ComponentType>();
+        up::ComponentMeta const up::ComponentMeta::holder<ComponentType>::meta = up::ComponentMeta::construct<ComponentType>(#ComponentType);
 
     template <typename ComponentT>
     constexpr ComponentId getComponentId() noexcept {
-        return _detail::componentIdFromHash<_detail::hashComponentName(nameof<ComponentT>())>;
+        return ComponentMeta::holder<ComponentT>::meta.id;
     }
 } // namespace up
