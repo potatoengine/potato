@@ -11,6 +11,15 @@ struct up::World::Archetype {
     vector<Layout> layout;
     uint32 count = 0;
     uint32 perChunk = 0;
+
+    int32 indexOfLayout(ComponentId component) const noexcept {
+        for (int32 i = 0; i != static_cast<int32>(layout.size()); ++i) {
+            if (layout[i].meta->id == component) {
+                return i;
+            }
+        }
+        return -1;
+    }
 };
 
 struct up::World::Location {

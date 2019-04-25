@@ -1,7 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/ecs/world.h"
-#include "potato/foundation/find.h"
 #include <algorithm>
 
 #include "archetype.h"
@@ -132,11 +131,11 @@ auto up::World::archetypes() const noexcept -> view<box<Archetype>> {
 }
 
 bool up::World::_matchArchetype(uint32 archetypeIndex, view<ComponentId> components) const noexcept {
-    Archetype const& archetypeData = *_archetypes[archetypeIndex];
+    Archetype const& archetype = *_archetypes[archetypeIndex];
 
     // FIXME: handle Archetypes that have multiple copies of the same component
     for (ComponentId id : components) {
-        if (find(archetypeData.layout, id, {}, [](auto const& layout) noexcept { return layout.meta->id; }) == archetypeData.layout.end()) {
+        if (archetype.indexOfLayout(id) == -1) {
             return false;
         }
     }
@@ -144,15 +143,15 @@ bool up::World::_matchArchetype(uint32 archetypeIndex, view<ComponentId> compone
 }
 
 bool up::World::_matchArchetypeExact(uint32 archetypeIndex, view<ComponentMeta const*> components) const noexcept {
-    Archetype const& archetypeData = *_archetypes[archetypeIndex];
+    Archetype const& archetype = *_archetypes[archetypeIndex];
 
-    if (components.size() != _archetypes[archetypeIndex]->layout.size()) {
+    if (components.size() != archetype.layout.size()) {
         return false;
     }
 
     // FIXME: handle Archetypes that have multiple copies of the same component
     for (ComponentMeta const* meta : components) {
-        if (find(archetypeData.layout, meta->id, {}, [](auto const& layout) noexcept { return layout.meta->id; }) == archetypeData.layout.end()) {
+        if (archetype.indexOfLayout(meta->id) == -1) {
             return false;
         }
     }
@@ -195,8 +194,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
 
     uint32 entityIndex = archetype.count++;
 
-    EntityId entity = _allocateEntityId(archetypeIndex, entityIndex);
-
+    // Determine destination location Chunk
     auto chunkIndex = entityIndex / archetype.perChunk;
     auto subIndex = entityIndex % archetype.perChunk;
 
@@ -208,23 +206,27 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
 
     Chunk& chunk = *archetype.chunks[chunkIndex];
     ++chunk.header.count;
+    
+    // Allocate EntityId and update mappings
+    EntityId entity = _allocateEntityId(archetypeIndex, entityIndex);
 
     *chunk.entity(subIndex) = entity;
-
-    for (uint32 index = 0; index != components.size(); ++index) {
-        ComponentMeta const& meta = *components[index];
-
-        auto layoutIter = find(archetype.layout, meta.id, {}, [](auto const& layout) noexcept { return layout.meta->id; });
-        UP_ASSERT(layoutIter != archetype.layout.end());
-        
-        void* rawPointer = chunk.pointer(*layoutIter, subIndex);
-
-        meta.copy(rawPointer, data[index]);
-    }
 
     uint32 entityMappingIndex = getEntityMappingIndex(entity);
     _entityMapping[entityMappingIndex].archetype = archetypeIndex;
     _entityMapping[entityMappingIndex].index = entityIndex;
+
+    // Copy component data
+    for (uint32 index = 0; index != components.size(); ++index) {
+        ComponentMeta const& meta = *components[index];
+
+        int32 layoutIndex = archetype.indexOfLayout(meta.id);
+        UP_ASSERT(layoutIndex != -1);
+        
+        void* rawPointer = chunk.pointer(archetype.layout[layoutIndex], subIndex);
+
+        meta.copy(rawPointer, data[index]);
+    }
 
     return entity;
 }
@@ -245,22 +247,23 @@ void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) 
 }
 
 void up::World::_selectChunksRaw(up::uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const {
-    Layout const* layouts[64];
-    void* pointers[64];
-    UP_ASSERT(components.size() <= std::size(pointers));
+    constexpr int maxPointers = 64;
+    int32 layoutIndices[maxPointers];
+    void* pointers[maxPointers];
+    UP_ASSERT(components.size() <= maxPointers);
 
     Archetype const& archetype = *_archetypes[archetypeIndex];
 
     for (size_t i = 0; i < components.size(); ++i) {
-        layouts[i] = find(archetype.layout, components[i], {}, [](auto const& layout) noexcept { return layout.meta->id; });
-        UP_ASSERT(layouts[i] != archetype.layout.end());
+        layoutIndices[i] = archetype.indexOfLayout(components[i]);
+        UP_ASSERT(layoutIndices[i] != -1);
     }
 
     for (box<Chunk> const& chunk : _archetypes[archetypeIndex]->chunks) {
         EntityId const* entities = chunk->entity(0);
 
         for (size_t i = 0; i < components.size(); ++i) {
-            pointers[i] = chunk->pointer(*layouts[i], 0);
+            pointers[i] = chunk->pointer(archetype.layout[layoutIndices[i]], 0);
         }
 
         callback(static_cast<size_t>(chunk->header.count), entities, view<void*>(pointers).first(components.size()));
@@ -270,13 +273,13 @@ void up::World::_selectChunksRaw(up::uint32 archetypeIndex, view<ComponentId> co
 void* up::World::_getComponentPointer(up::uint32 archetypeIndex, up::uint32 entityIndex, ComponentId component) const noexcept {
     Archetype& archetype = *_archetypes[archetypeIndex];
 
-    auto layoutIter = find(archetype.layout, component, {}, [](auto const& layout) noexcept { return layout.meta->id; });
-    UP_ASSERT(layoutIter != archetype.layout.end());
+    int32 layoutIndex = archetype.indexOfLayout(component);
+    UP_ASSERT(layoutIndex != -1);
 
     auto chunkIndex = entityIndex / archetype.perChunk;
     auto subIndex = entityIndex % archetype.perChunk;
 
-    return archetype.chunks[chunkIndex]->pointer(*layoutIter, entityIndex);
+    return archetype.chunks[chunkIndex]->pointer(archetype.layout[layoutIndex], entityIndex);
 }
 
 auto up::World::_allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept -> EntityId {
