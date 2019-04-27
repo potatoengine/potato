@@ -1,6 +1,10 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/ecs/world.h"
+#include "potato/foundation/find.h"
+#include "potato/foundation/hash.h"
+#include "potato/foundation/utility.h"
+#include "potato/foundation/sort.h"
 #include <algorithm>
 
 #include "archetype.h"
@@ -10,6 +14,26 @@
 static constexpr size_t align(size_t offset, size_t alignment) noexcept {
     size_t alignmentMinusOne = alignment - 1;
     return (offset + alignmentMinusOne) & ~alignmentMinusOne;
+}
+
+template <typename Container, typename Projection = up::identity>
+static void sortComponentIds(Container const& cont, up::span<up::ComponentId> output, Projection const& proj = {}) noexcept {
+    UP_ASSERT(output.size() == cont.size());
+
+    for (size_t index = 0; index != cont.size(); ++index) {
+        output[index] = up::project(proj, cont[index]);
+    }
+
+    up::sort(output);
+}
+
+template <typename Type, typename Projection = up::identity>
+static up::uint64 hashComponents(up::span<Type> input, Projection const& proj = {}) noexcept {
+    up::fnv1a hasher;
+    for (size_t index = 0; index != input.size(); ++index) {
+        up::hash_append(hasher, up::project(proj, input[index]));
+    }
+    return hasher.finalize();
 }
 
 up::World::World() = default;
@@ -34,6 +58,7 @@ void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentMeta const
     for (size_t i = 0; i != components.size(); ++i) {
         ComponentMeta const& meta = *components[i];
 
+        archetype.layout[i].component = meta.id;
         archetype.layout[i].meta = &meta;
         size = align(size, meta.alignment);
         size += meta.size;
@@ -42,7 +67,7 @@ void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentMeta const
 
     if (size != 0) {
         // assign pointer offers by alignment
-        std::sort(archetype.layout.begin(), archetype.layout.end(), [](const auto& l, const auto& r) noexcept { return l.meta->alignment < r.meta->alignment; });
+        up::sort(archetype.layout, {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
 
         // FIXME: figure out why we need this size + 1, the arithmetic surprises me
         archetype.perChunk = static_cast<uint32>(sizeof(Chunk::Payload) / (size + 1));
@@ -68,7 +93,10 @@ void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentMeta const
     }
 
     // layout must be stored by ComponentId
-    std::sort(archetype.layout.begin(), archetype.layout.end(), [](const auto& l, const auto& r) noexcept { return l.meta->id < r.meta->id; });
+    up::sort(archetype.layout, {}, &Layout::component);
+
+    // calculate layout hash (must be sorted by ComponentId already!)
+    archetype.layoutHash = hashComponents(span{archetype.layout}, &Layout::component);
 }
 
 void up::World::deleteEntity(EntityId entity) noexcept {
@@ -130,38 +158,47 @@ auto up::World::archetypes() const noexcept -> view<box<Archetype>> {
     return _archetypes;
 }
 
-bool up::World::_matchArchetype(uint32 archetypeIndex, view<ComponentId> components) const noexcept {
+bool up::World::_matchArchetype(uint32 archetypeIndex, view<ComponentId> sortedComponents) const noexcept {
     Archetype const& archetype = *_archetypes[archetypeIndex];
 
-    // FIXME: handle Archetypes that have multiple copies of the same component
-    for (ComponentId id : components) {
-        if (archetype.indexOfLayout(id) == -1) {
+    uint32 layoutIndex = 0;
+    uint32 layoutCount = static_cast<uint32>(archetype.layout.size());
+
+    UP_ASSERT(layoutCount != 0);
+
+    // for each component, find an appropriate entry in the layout (which can only be found once).
+    // algorithm relies on layout components and 
+    for (ComponentId id : sortedComponents) {
+        if (layoutIndex == layoutCount) {
             return false;
         }
-    }
-    return true;
-}
 
-bool up::World::_matchArchetypeExact(uint32 archetypeIndex, view<ComponentMeta const*> components) const noexcept {
-    Archetype const& archetype = *_archetypes[archetypeIndex];
+        // seek forward skipping components in layout not required by request
+        while (archetype.layout[layoutIndex].meta->id < id) {
+            if (++layoutIndex == layoutCount) {
+                return false;
+            }
+        }
 
-    if (components.size() != archetype.layout.size()) {
-        return false;
-    }
-
-    // FIXME: handle Archetypes that have multiple copies of the same component
-    for (ComponentMeta const* meta : components) {
-        if (archetype.indexOfLayout(meta->id) == -1) {
+        // if the next component is not a match, the layout is missing a required component
+        if (archetype.layout[layoutIndex].meta->id > id) {
             return false;
         }
+
+        ++layoutIndex;
     }
 
     return true;
 }
 
 auto up::World::_findArchetypeIndex(view<ComponentMeta const*> components) noexcept -> up::uint32 {
+    ComponentId local[maxArchetypeComponents];
+    span localSized = span{local}.first(components.size());
+    sortComponentIds(components, localSized, [](auto const* meta) noexcept { return meta->id; });
+    uint64 hash = hashComponents(localSized);
+
     for (uint32 index = 0; index != _archetypes.size(); ++index) {
-        if (_matchArchetypeExact(index, components)) {
+        if (_archetypes[index]->layoutHash == hash) {
             return index;
         }
     }
@@ -171,12 +208,18 @@ auto up::World::_findArchetypeIndex(view<ComponentMeta const*> components) noexc
     uint32 archetypeIndex = static_cast<uint32>(_archetypes.size() - 1);
     _calculateLayout(archetypeIndex, components);
 
+    UP_ASSERT(_archetypes[archetypeIndex]->layoutHash == hash);
+
     return archetypeIndex;
 }
 
 void up::World::_selectRaw(view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const {
+    ComponentId local[maxArchetypeComponents];
+    span localSorted = span{local}.first(components.size());
+    sortComponentIds(components, localSorted);
+
     for (uint32 index = 0; index != _archetypes.size(); ++index) {
-        if (_matchArchetype(index, components)) {
+        if (_matchArchetype(index, localSorted)) {
             _selectChunksRaw(index, components, callback);
         }
     }
@@ -206,23 +249,19 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
 
     Chunk& chunk = *archetype.chunks[chunkIndex];
     ++chunk.header.count;
-    
-    // Allocate EntityId and update mappings
+
+    // Allocate EntityId
     EntityId entity = _allocateEntityId(archetypeIndex, entityIndex);
 
+    // Copy component data and Entity data
     *chunk.entity(subIndex) = entity;
 
-    uint32 entityMappingIndex = getEntityMappingIndex(entity);
-    _entityMapping[entityMappingIndex].archetype = archetypeIndex;
-    _entityMapping[entityMappingIndex].index = entityIndex;
-
-    // Copy component data
     for (uint32 index = 0; index != components.size(); ++index) {
         ComponentMeta const& meta = *components[index];
 
         int32 layoutIndex = archetype.indexOfLayout(meta.id);
         UP_ASSERT(layoutIndex != -1);
-        
+
         void* rawPointer = chunk.pointer(archetype.layout[layoutIndex], subIndex);
 
         meta.copy(rawPointer, data[index]);
@@ -247,18 +286,17 @@ void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) 
 }
 
 void up::World::_selectChunksRaw(up::uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const {
-    constexpr int maxPointers = 64;
-    int32 layoutIndices[maxPointers];
-    void* pointers[maxPointers];
-    UP_ASSERT(components.size() <= maxPointers);
+    UP_ASSERT(components.size() <= maxSelectComponents);
 
     Archetype const& archetype = *_archetypes[archetypeIndex];
 
+    int32 layoutIndices[maxSelectComponents];
     for (size_t i = 0; i < components.size(); ++i) {
         layoutIndices[i] = archetype.indexOfLayout(components[i]);
         UP_ASSERT(layoutIndices[i] != -1);
     }
 
+    void* pointers[maxSelectComponents];
     for (box<Chunk> const& chunk : _archetypes[archetypeIndex]->chunks) {
         EntityId const* entities = chunk->entity(0);
 

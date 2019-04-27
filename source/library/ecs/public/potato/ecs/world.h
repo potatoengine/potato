@@ -38,6 +38,9 @@ namespace up {
         struct Layout;
         struct Location;
 
+        static constexpr uint32 maxSelectComponents = 64;
+        static constexpr uint32 maxArchetypeComponents = 256;
+
         UP_ECS_API World();
         UP_ECS_API ~World();
 
@@ -58,15 +61,13 @@ namespace up {
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
     private:
-        
         UP_ECS_API void _selectRaw(view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const;
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
 
         void _calculateLayout(uint32 archetypeIndex, view<ComponentMeta const*> components);
         void* _getComponentPointer(uint32 archetypeIndex, uint32 entityIndex, ComponentId component) const noexcept;
-        bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> components) const noexcept;
-        bool _matchArchetypeExact(uint32 archetypeIndex, view<ComponentMeta const*> components) const noexcept;
+        bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> sortedComponents) const noexcept;
         void _selectChunksRaw(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const;
         void _recycleEntityId(EntityId entity) noexcept;
         uint32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
