@@ -24,7 +24,7 @@ namespace up {
 namespace up {
     template <typename HashAlgorithm, typename T>
     inline enable_if_t<is_contiguous<T>::value, HashAlgorithm&> hash_append(HashAlgorithm& hasher, T const& value) {
-        hasher.append_bytes(&value, sizeof(value));
+        hasher.append_bytes(reinterpret_cast<char const*>(&value), sizeof(value));
         return hasher;
     }
 } // namespace up
