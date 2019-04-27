@@ -35,6 +35,13 @@ namespace up {
         }
     };
 
+    struct less {
+        template <typename T, typename U>
+        constexpr bool operator()(T const& lhs, U const& rhs) const noexcept(noexcept(lhs < rhs)) {
+            return lhs < rhs;
+        }
+    };
+
     template <class T, class P>
     decltype(auto) project(P const& projection, T const& value) noexcept(noexcept(invoke(projection, value))) {
         return invoke(projection, value);
