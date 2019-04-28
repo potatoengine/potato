@@ -50,4 +50,12 @@ namespace up {
     M project(M T::*member, T const& value) noexcept {
         return value.*member;
     }
+
+    template <typename First, typename Last, typename Out, typename Projection = identity>
+    constexpr auto copy(First first, Last last, Out out, Projection const& proj = {}) noexcept(noexcept(*out = project(proj, *first))) -> Out {
+        for (; first != last; ++first) {
+            *out++ = project(proj, *first);
+        }
+        return out;
+    }
 } // namespace up

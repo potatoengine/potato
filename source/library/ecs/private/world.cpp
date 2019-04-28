@@ -17,12 +17,11 @@ static constexpr size_t align(size_t offset, size_t alignment) noexcept {
 }
 
 template <typename Type, typename Projection = up::identity>
-constexpr auto hashComponents(up::span<Type> input, Projection const& proj = {}) noexcept -> up::uint64 {
-    up::uint64 hash = 0;
+constexpr auto hashComponents(up::span<Type> input, Projection const& proj = {}, up::uint64 seed = 0) noexcept -> up::uint64 {
     for (Type const& value : input) {
-        hash ^= static_cast<up::uint64>(up::project(proj, value));
+        seed ^= static_cast<up::uint64>(up::project(proj, value));
     }
-    return hash;
+    return seed;
 }
 
 up::World::World() = default;
@@ -87,6 +86,11 @@ void up::World::deleteEntity(EntityId entity) noexcept {
         return;
     }
 
+    _deleteLocation(location);
+    _recycleEntityId(entity);
+}
+
+void up::World::_deleteLocation(Location const& location) noexcept {
     auto lastChunkIndex = location.archetype->chunks.size() - 1;
     Chunk& lastChunk = *location.archetype->chunks[lastChunkIndex];
 
@@ -120,6 +124,60 @@ void up::World::deleteEntity(EntityId entity) noexcept {
         _recycleChunk(std::move(location.archetype->chunks[lastChunkIndex]));
         location.archetype->chunks.pop_back();
     }
+}
+
+void up::World::removeComponent(EntityId entityId, ComponentId componentId) noexcept {
+    Location location;
+    if (!_tryGetLocation(entityId, location)) {
+        return;
+    }
+
+    // figure out which layout entry is being removed
+    // FIXME: if we have multiples of a component, this assumes the first one only
+    auto iter = find(location.archetype->layout, componentId, {}, &Layout::component);
+    if (iter == location.archetype->layout.end()) {
+        return;
+    }
+
+    // construct the list of components that will exist in the new archetype
+    ComponentMeta const* newComponentMetas[maxArchetypeComponents];
+    copy(location.archetype->layout.begin(), iter, newComponentMetas, &Layout::meta);
+    copy(iter + 1, location.archetype->layout.end(), newComponentMetas, &Layout::meta);
+    span newComponentMetaSpan = span{newComponentMetas}.first(location.archetype->layout.size() - 1);
+
+    // find the target archetype and allocate an entry in it
+    auto newArchetypeIndex = _findArchetypeIndex(newComponentMetaSpan);
+    Archetype& newArchetype = *_archetypes[newArchetypeIndex];
+
+    auto newEntityIndex = newArchetype.count++;
+    auto newChunkIndex = newEntityIndex / newArchetype.perChunk;
+    auto newSubIndex = newEntityIndex % newArchetype.perChunk;
+
+    if (newChunkIndex == newArchetype.chunks.size()) {
+        newArchetype.chunks.push_back(_allocateChunk());
+    }
+
+    Chunk& newChunk = *newArchetype.chunks[newChunkIndex];
+    ++newChunk.header.count;
+
+    // copy components from old entity to new entity
+    *newChunk.entity(newSubIndex) = entityId;
+
+    for (Layout const& layout : newArchetype.layout) {
+        int32 originalLayoutIndex = location.archetype->indexOfLayout(layout.component);
+        UP_ASSERT(originalLayoutIndex != -1);
+
+        void* newRawPointer = newChunk.pointer(layout, newSubIndex);
+        void* originalRawPointer = location.chunk->pointer(location.archetype->layout[originalLayoutIndex], location.subIndex);
+
+        layout.meta->relocate(newRawPointer, originalRawPointer);
+    }
+
+    // remove old entity
+    _deleteLocation(location);
+
+    // update mapping
+    _entityMapping[getEntityMappingIndex(entityId)].index = newEntityIndex;
 }
 
 auto up::World::archetypes() const noexcept -> view<box<Archetype>> {

@@ -128,4 +128,26 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         world.deleteEntity(foo);
         world.deleteEntity(bar);
     }
+
+    DOCTEST_TEST_CASE("Remove Component") {
+        bool found = false;
+        World world;
+        Query<Test1> queryTest1([&found](size_t, EntityId const*, Test1*) { found = true; });
+        Query<Second> querySecond([&found](size_t, EntityId const*, Second*) { found = true; });
+
+        EntityId id = world.createEntity(Test1{}, Second{});
+
+        world.select(querySecond);
+        DOCTEST_CHECK(found);
+
+        world.removeComponent(id, getComponentId<Second>());
+
+        found = false;
+        world.select(querySecond);
+        DOCTEST_CHECK_FALSE(found);
+
+        found = false;
+        world.select(queryTest1);
+        DOCTEST_CHECK(found);
+    }
 }

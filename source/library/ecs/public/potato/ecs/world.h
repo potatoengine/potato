@@ -45,6 +45,10 @@ namespace up {
         UP_ECS_API void deleteEntity(EntityId entity) noexcept;
 
         template <typename Component>
+        void addComponent(EntityId entityId, Component&& component);
+        UP_ECS_API void removeComponent(EntityId entityId, ComponentId componentId) noexcept;
+
+        template <typename Component>
         Component* getComponentSlow(EntityId entity) noexcept;
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
@@ -53,6 +57,7 @@ namespace up {
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
 
+        void _deleteLocation(Location const& location) noexcept;
         void _calculateLayout(uint32 archetypeIndex, view<ComponentMeta const*> components);
         bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> sortedComponents) const noexcept;
         void _selectChunksRaw(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const;
