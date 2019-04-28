@@ -10,28 +10,16 @@
 #include "potato/foundation/box.h"
 
 namespace up {
-    using RawSelectSignature = void(size_t count, EntityId const* entities, view<void*> componentArrays);
     template <typename... Components>
-    using TypedSelectSignature = void(size_t count, EntityId const* entities, Components*... components);
-
-    namespace _detail {
-        template <size_t... Indices, typename... Components>
-        void innerSelectHelper(std::index_sequence<Indices...>, size_t count, EntityId const* entities, view<void*> arrays, delegate_ref<TypedSelectSignature<Components...>> callback) {
-            callback(count, entities, static_cast<Components*>(arrays[Indices])...);
-        }
-
-        template <typename... Components>
-        void selectHelper(size_t count, EntityId const* entities, view<void*> arrays, delegate_ref<TypedSelectSignature<Components...>> callback) {
-            innerSelectHelper(std::make_index_sequence<sizeof...(Components)>(), count, entities, arrays, callback);
-        }
-
-    } // namespace _detail
+    class Query;
 
     /// A world contains a collection of entities, archetypes, and their associated components.
     ///
     /// Entities from different Worlds cannot interact.
     class World {
     public:
+        using RawSelectSignature = void(size_t, EntityId const*, view<void*>);
+
         struct Archetype;
         struct Chunk;
         struct Entity;
@@ -47,8 +35,8 @@ namespace up {
         World(World&&) = delete;
         World& operator=(World&&) = delete;
 
-        template <typename... Components, typename Callable>
-        void select(Callable&& callback) const;
+        template <typename... Components>
+        void select(Query<Components...>& query) const;
 
         UP_ECS_API view<box<Archetype>> archetypes() const noexcept;
 
@@ -61,7 +49,7 @@ namespace up {
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
     private:
-        UP_ECS_API void _selectRaw(view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const;
+        UP_ECS_API void _selectRaw(view<ComponentId> sortedComponents, delegate_ref<RawSelectSignature> callback) const;
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
 
@@ -80,13 +68,6 @@ namespace up {
         uint32 _freeEntityHead = static_cast<uint32>(-1);
     };
 
-    template <typename... Components, typename Callable>
-    void World::select(Callable&& callback) const {
-        _selectRaw(view<ComponentId>({getComponentId<Components>()...}), [&callback](size_t count, EntityId const* entities, view<void*> arrays) {
-            _detail::selectHelper<Components...>(count, entities, arrays, delegate_ref<void(size_t, EntityId const*, Components*...)>(std::forward<Callable>(callback)));
-        });
-    }
-
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
         ComponentMeta const* componentMetas[] = {ComponentMeta::get<Components>()...};
@@ -98,5 +79,12 @@ namespace up {
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
         return static_cast<Component*>(getComponentSlowUnsafe(entity, getComponentId<Component>()));
+    }
+
+    template <typename... Components>
+    void World::select(Query<Components...>& query) const {
+        _selectRaw(query.components(), [&query](size_t count, EntityId const* entities, view<void*> pointers) {
+            query.invokeUnsafe(count, entities, pointers);
+        });
     }
 } // namespace up

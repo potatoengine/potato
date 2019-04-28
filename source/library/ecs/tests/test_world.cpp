@@ -1,4 +1,5 @@
 #include "potato/ecs/world.h"
+#include "potato/ecs/query.h"
 #include <doctest/doctest.h>
 
 struct Test1 {
@@ -40,7 +41,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         size_t entityCount = 0;
         float weight = 0;
 
-        world.select<Second>([&](size_t count, EntityId const*, Second* second) {
+        Query<Second> query([&](size_t count, EntityId const*, Second* second) {
             ++invokeCount;
             entityCount += count;
 
@@ -48,6 +49,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
                 weight += second[index].b;
             }
         });
+        world.select(query);
 
         // Only two archetypes should have matches
         DOCTEST_CHECK_EQ(2, invokeCount);
@@ -78,11 +80,12 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         EntityId first = world.createEntity(Test1{'f'}, Second{'g', 7.f});
         EntityId second = world.createEntity(Test1{'h'}, Second{'i', -1.f});
 
-        world.select([&](size_t count, EntityId const* ids) {
+        Query<> query([&](size_t count, EntityId const* ids) {
             DOCTEST_CHECK_EQ(2, count);
             DOCTEST_CHECK_EQ(first, ids[0]);
             DOCTEST_CHECK_EQ(second, ids[1]);
         });
+        world.select(query);
     }
 
     DOCTEST_TEST_CASE("Chunks") {
@@ -98,13 +101,16 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         size_t chunks = 0;
         size_t total = 0;
         uint64 sum = 0;
-        world.select<Counter>([&](size_t count, EntityId const*, Counter* counters) {
+
+        Query<Counter> query([&](size_t count, EntityId const*, Counter* counters) {
             ++chunks;
             total += count;
             for (size_t i = 0; i != count; ++i) {
                 sum += counters[i].value;
             }
         });
+        world.select(query);
+
         DOCTEST_CHECK_NE(0, chunks);
         DOCTEST_CHECK_EQ(count, total);
         DOCTEST_CHECK_EQ(expectedSum, sum);

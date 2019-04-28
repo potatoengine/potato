@@ -213,14 +213,10 @@ auto up::World::_findArchetypeIndex(view<ComponentMeta const*> components) noexc
     return archetypeIndex;
 }
 
-void up::World::_selectRaw(view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const {
-    ComponentId local[maxArchetypeComponents];
-    span localSorted = span{local}.first(components.size());
-    sortComponentIds(components, localSorted);
-
+void up::World::_selectRaw(view<ComponentId> sortedComponents, delegate_ref<RawSelectSignature> callback) const {
     for (uint32 index = 0; index != _archetypes.size(); ++index) {
-        if (_matchArchetype(index, localSorted)) {
-            _selectChunksRaw(index, components, callback);
+        if (_matchArchetype(index, sortedComponents)) {
+            _selectChunksRaw(index, sortedComponents, callback);
         }
     }
 }
