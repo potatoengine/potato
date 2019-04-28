@@ -35,9 +35,6 @@ namespace up {
         World(World&&) = delete;
         World& operator=(World&&) = delete;
 
-        template <typename... Components>
-        void select(Query<Components...>& query) const;
-
         UP_ECS_API view<box<Archetype>> archetypes() const noexcept;
 
         template <typename... Components>
@@ -52,8 +49,9 @@ namespace up {
         Component* getComponentSlow(EntityId entity) noexcept;
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
+        UP_ECS_API void selectRaw(view<ComponentId> sortedComponents, delegate_ref<RawSelectSignature> callback) const;
+
     private:
-        UP_ECS_API void _selectRaw(view<ComponentId> sortedComponents, delegate_ref<RawSelectSignature> callback) const;
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
@@ -87,13 +85,6 @@ namespace up {
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
         return static_cast<Component*>(getComponentSlowUnsafe(entity, getComponentId<Component>()));
-    }
-
-    template <typename... Components>
-    void World::select(Query<Components...>& query) const {
-        _selectRaw(query.components(), [&query](size_t count, EntityId const* entities, view<void*> pointers) {
-            query.invokeUnsafe(count, entities, pointers);
-        });
     }
 
     template <typename Component>

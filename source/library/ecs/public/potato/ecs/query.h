@@ -16,28 +16,30 @@ namespace up {
     template <typename... Components>
     class Query {
     public:
-        using Function = void(size_t, EntityId const*, Components*...);
-        using Delegate = delegate<Function>;
+        static_assert(sizeof...(Components) != 0, "Empty Query objects are not allowed");
 
-        explicit Query(Delegate delegate);
+        using Function = void(size_t, EntityId const*, Components*...);
+        using Delegate = delegate_ref<Function>;
+
+        Query() noexcept;
 
         view<ComponentId> components() const noexcept { return _components; }
 
-        void invokeUnsafe(size_t count, EntityId const* entities, view<void*> pointers);
-        void invoke(size_t count, EntityId const* entities, Components*... arrays);
+
+        void select(World& world, Delegate callback) const;
 
     private:
+        void _invoke(size_t count, EntityId const* entities, view<void*> pointers, Delegate callback) const;
         template <size_t... Indices>
-        void _invokeHelper(std::index_sequence<Indices...>, size_t, EntityId const*, view<void*>);
+        void _invokeHelper(std::index_sequence<Indices...>, size_t, EntityId const*, view<void*>, Delegate callback) const;
 
-        vector<ComponentId> _components;
-        vector<uint32> _indices;
-        Delegate _delegate;
+        ComponentId _components[sizeof...(Components)];
+        uint32 _indices[sizeof...(Components)];
     };
 
     template <typename... Components>
-    Query<Components...>::Query(Delegate delegate) : _components(sizeof...(Components)), _indices(sizeof...(Components)), _delegate(std::move(delegate)) {
-        ComponentId componentIds[] = {getComponentId<Components>()..., ComponentId::Unknown/*incase components is empty*/};
+    Query<Components...>::Query() noexcept : _components{} {
+        const ComponentId componentIds[] = {getComponentId<Components>()...};
 
         // Generate a sorted set of indices from the main Components list
         for (uint32 index = 0; index != sizeof...(Components); ++index) {
@@ -48,23 +50,25 @@ namespace up {
 
         // Store the sorted ComponentId list for selection usage
         for (size_t index = 0; index != sizeof...(Components); ++index) {
-            _components[0] = componentIds[_indices[index]];
+            _components[index] = componentIds[_indices[index]];
         }
     }
 
     template <typename... Components>
     template <size_t... Indices>
-    void Query<Components...>::_invokeHelper(std::index_sequence<Indices...>, size_t count, EntityId const* entities, view<void*> arrays) {
-        invoke(count, entities, static_cast<Components*>(arrays[_indices[Indices]])...);
+    void Query<Components...>::_invokeHelper(std::index_sequence<Indices...>, size_t count, EntityId const* entities, view<void*> arrays, Delegate callback) const {
+        callback(count, entities, static_cast<Components*>(arrays[_indices[Indices]])...);
     }
 
     template <typename... Components>
-    void Query<Components...>::invokeUnsafe(size_t count, EntityId const* entities, view<void*> pointers) {
-        _invokeHelper(std::make_index_sequence<sizeof...(Components)>(), count, entities, pointers);
+    void Query<Components...>::_invoke(size_t count, EntityId const* entities, view<void*> pointers, Delegate callback) const {
+        _invokeHelper(std::make_index_sequence<sizeof...(Components)>(), count, entities, pointers, callback);
     }
 
     template <typename... Components>
-    void Query<Components...>::invoke(size_t count, EntityId const* entities, Components*... arrays) {
-        _delegate(count, entities, arrays...);
+    void Query<Components...>::select(World &world, Delegate callback) const {
+        world.selectRaw(_components, [&, this](size_t count, EntityId const* entities, view<void*> arrays) {
+            this->_invoke(count, entities, arrays, callback);
+        });
     }
 } // namespace up

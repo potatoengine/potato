@@ -41,7 +41,8 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         size_t entityCount = 0;
         float weight = 0;
 
-        Query<Second> query([&](size_t count, EntityId const*, Second* second) {
+        Query<Second> query;
+        query.select(world, [&](size_t count, EntityId const*, Second* second) {
             ++invokeCount;
             entityCount += count;
 
@@ -49,7 +50,6 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
                 weight += second[index].b;
             }
         });
-        world.select(query);
 
         // Only two archetypes should have matches
         DOCTEST_CHECK_EQ(2, invokeCount);
@@ -80,12 +80,12 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         EntityId first = world.createEntity(Test1{'f'}, Second{'g', 7.f});
         EntityId second = world.createEntity(Test1{'h'}, Second{'i', -1.f});
 
-        Query<> query([&](size_t count, EntityId const* ids) {
+        Query<Test1> query;
+        query.select(world, ([&](size_t count, EntityId const* ids, Test1*) {
             DOCTEST_CHECK_EQ(2, count);
             DOCTEST_CHECK_EQ(first, ids[0]);
             DOCTEST_CHECK_EQ(second, ids[1]);
-        });
-        world.select(query);
+        }));
     }
 
     DOCTEST_TEST_CASE("Chunks") {
@@ -102,14 +102,14 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         size_t total = 0;
         uint64 sum = 0;
 
-        Query<Counter> query([&](size_t count, EntityId const*, Counter* counters) {
+        Query<Counter> query;
+        query.select(world, [&](size_t count, EntityId const*, Counter* counters) {
             ++chunks;
             total += count;
             for (size_t i = 0; i != count; ++i) {
                 sum += counters[i].value;
             }
         });
-        world.select(query);
 
         DOCTEST_CHECK_NE(0, chunks);
         DOCTEST_CHECK_EQ(count, total);
@@ -132,44 +132,44 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
     DOCTEST_TEST_CASE("Remove Component") {
         bool found = false;
         World world;
-        Query<Test1> queryTest1([&found](size_t, EntityId const*, Test1*) { found = true; });
-        Query<Second> querySecond([&found](size_t, EntityId const*, Second*) { found = true; });
+        Query<Test1> queryTest1;
+        Query<Second> querySecond;
 
         EntityId id = world.createEntity(Test1{}, Second{});
 
-        world.select(querySecond);
+        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
         DOCTEST_CHECK(found);
 
         world.removeComponent(id, getComponentId<Second>());
 
         found = false;
-        world.select(querySecond);
+        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
         DOCTEST_CHECK_FALSE(found);
 
         found = false;
-        world.select(queryTest1);
+        queryTest1.select(world, [&found](size_t, EntityId const*, Test1*) { found = true; });
         DOCTEST_CHECK(found);
     }
 
     DOCTEST_TEST_CASE("Add Component") {
         bool found = false;
         World world;
-        Query<Test1> queryTest1([&found](size_t, EntityId const*, Test1*) { found = true; });
-        Query<Second> querySecond([&found](size_t, EntityId const*, Second*) { found = true; });
+        Query<Test1> queryTest1;
+        Query<Second> querySecond;
 
         EntityId id = world.createEntity(Test1{});
 
-        world.select(querySecond);
+        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
         DOCTEST_CHECK_FALSE(found);
 
         world.addComponent(id, Second{});
 
         found = false;
-        world.select(querySecond);
+        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
         DOCTEST_CHECK(found);
 
         found = false;
-        world.select(queryTest1);
+        queryTest1.select(world, [&found](size_t, EntityId const*, Test1*) { found = true; });
         DOCTEST_CHECK(found);
     }
 }
