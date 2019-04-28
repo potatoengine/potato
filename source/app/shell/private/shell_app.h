@@ -13,11 +13,10 @@ namespace up {
     class Renderer;
     class RenderCamera;
     class Node;
-} // namespace up
-
-namespace up {
+    class Model;
     class GpuDevice;
     class GpuSwapChain;
+    class World;
 } // namespace up
 
 class up::ShellApp {
@@ -47,7 +46,9 @@ private:
     rc<GpuSwapChain> _swapChain;
     box<Renderer> _renderer;
     box<RenderCamera> _camera;
+    rc<Model> _cube;
     box<Node> _root;
+    box<World> _world;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     DrawImgui _drawImgui;
     Logger _logger;
