@@ -1,12 +1,14 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
+/// Describes the information about how components are laid out in an Archetype
 struct up::World::Layout {
     ComponentId component = ComponentId::Unknown;
-    uint32 offset = 0;
-    uint32 width = 0;
     ComponentMeta const* meta = nullptr;
+    uint16 offset = 0;
+    uint16 width = 0;
 };
 
+/// Describes the composition and memory layout of an Archetype
 struct up::World::Archetype {
     vector<box<Chunk>> chunks;
     vector<Layout> layout;
@@ -24,6 +26,7 @@ struct up::World::Archetype {
     }
 };
 
+/// Identififies the location of an Entity within the Archetype/Chunk storage
 struct up::World::Location {
     Archetype* archetype = nullptr;
     Chunk* chunk = nullptr;

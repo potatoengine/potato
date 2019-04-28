@@ -13,7 +13,7 @@ namespace up {
     template <typename... Components>
     class Query;
 
-    /// A world contains a collection of entities, archetypes, and their associated components.
+    /// A world contains a collection of Entities, Archetypes, and their associated Components.
     ///
     /// Entities from different Worlds cannot interact.
     class World {
@@ -26,7 +26,10 @@ namespace up {
         struct Layout;
         struct Location;
 
+        /// Maximum number of Components that can be selected (used in a Query)
         static constexpr uint32 maxSelectComponents = 64;
+
+        /// Maximum number of Components that can exist on an Archetype (and hence any single Entity)
         static constexpr uint32 maxArchetypeComponents = 256;
 
         UP_ECS_API World();
@@ -37,16 +40,35 @@ namespace up {
 
         UP_ECS_API view<box<Archetype>> archetypes() const noexcept;
 
+        /// Creates a new Entity with the provided list of Component data
         template <typename... Components>
         EntityId createEntity(Components const&... components) noexcept;
+
+        /// Deletes an existing Entity
         UP_ECS_API void deleteEntity(EntityId entity) noexcept;
 
+        /// Adds a new Component to an existing Entity.
+        ///
+        /// Changes the Entity's Archetype and home Chunk
         template <typename Component>
         void addComponent(EntityId entityId, Component const& component) noexcept;
+
+        /// Removes a Component from an existing Entity.
+        ///
+        /// Changes the Entity's Archetype and home Chunk
         UP_ECS_API void removeComponent(EntityId entityId, ComponentId componentId) noexcept;
 
+        /// Retrieves a pointer to a Component on the specified Entity.
+        ///
+        /// This is typically a slow operation. It will incur several table lookups
+        /// and searches. This should only be used by tools and debug aids, typically,
+        /// and a Query should be used for runtime code.
         template <typename Component>
         Component* getComponentSlow(EntityId entity) noexcept;
+
+        /// Retrieves a pointer to a Component on the specified Entity.
+        ///
+        /// This is a type-unsafe variant of getComponentSlow.
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
         UP_ECS_API void selectRaw(view<ComponentId> sortedComponents, delegate_ref<RawSelectSignature> callback) const;

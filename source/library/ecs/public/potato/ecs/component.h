@@ -10,14 +10,20 @@
 #include <cstring>
 
 namespace up {
+    /// Stores metadata about a Component type. This includes its size and alignment,
+    /// functions for copying and destroying objects of the Component type, and so on.
+    ///
+    /// Todo: replace with a ubiquitous reflection system of some kind
     struct ComponentMeta {
         using Copy = void (*)(void* dest, void const* source) noexcept;
         using Relocate = void (*)(void* dest, void* source) noexcept;
         using Destroy = void (*)(void* mem) noexcept;
 
+        /// Creates a ComponentMeta; should only be used by the UP_COMPONENT macro
         template <typename Component>
         static constexpr ComponentMeta construct(string_view name) noexcept;
 
+        /// Retrieves the ComponentMeta for a given type
         template <typename Component>
         static constexpr ComponentMeta const* get() noexcept;
 
@@ -68,10 +74,12 @@ namespace up {
         return &holder<Component>::meta;
     }
 
+    /// Registers a type as a Component and creates an associated ComponentMeta
     #define UP_COMPONENT(ComponentType) \
         template <> \
         up::ComponentMeta const up::ComponentMeta::holder<ComponentType>::meta = up::ComponentMeta::construct<ComponentType>(#ComponentType);
 
+    /// Finds the unique ComponentId for a given Component type
     template <typename ComponentT>
     constexpr ComponentId getComponentId() noexcept {
         return ComponentMeta::holder<ComponentT>::meta.id;

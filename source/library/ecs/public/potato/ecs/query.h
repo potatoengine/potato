@@ -21,11 +21,18 @@ namespace up {
         using Function = void(size_t, EntityId const*, Components*...);
         using Delegate = delegate_ref<Function>;
 
+        /// Constructs a new Query object.
+        ///
+        /// This is a non-trivial operation and Query objects should be cached and reused.
         Query() noexcept;
 
+        /// Fetches the sorted list of ComponentIds required by this Query.
         view<ComponentId> components() const noexcept { return _components; }
 
-
+        /// Given a World and a callback, finds all matching Archetypes, and invokes the
+        /// callback once for each Chunk belonging to the Archetypes, with appropriate pointers.
+        ///
+        /// This is the primary mechanism for finding or mutating Entities.
         void select(World& world, Delegate callback) const;
 
     private:
