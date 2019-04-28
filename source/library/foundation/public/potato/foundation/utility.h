@@ -42,13 +42,17 @@ namespace up {
         }
     };
 
-    template <class T, class P>
-    decltype(auto) project(P const& projection, T const& value) noexcept(noexcept(invoke(projection, value))) {
+    template <typename Value, typename Projection/*, typename = enable_if_t<!std::is_member_object_pointer_v<Projection>>*/>
+    decltype(auto) project(Projection const& projection, Value const& value) noexcept(noexcept(invoke(projection, value))) {
         return invoke(projection, value);
     }
-    template <class T, class M>
-    M project(M T::*member, T const& value) noexcept {
+    template <typename Class, typename ReturnType>
+    auto project(ReturnType Class::*member, Class const& value) noexcept -> ReturnType {
         return value.*member;
+    }
+    template <typename Class, typename ReturnType>
+    auto project(ReturnType Class::*member, Class const* value) noexcept -> ReturnType {
+        return value->*member;
     }
 
     template <typename First, typename Last, typename Out, typename Projection = identity>
