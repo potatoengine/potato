@@ -177,7 +177,62 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
     _deleteLocation(location);
 
     // update mapping
-    _entityMapping[getEntityMappingIndex(entityId)].index = newEntityIndex;
+    uint32 entityMappingIndex = getEntityMappingIndex(entityId);
+    _entityMapping[entityMappingIndex].archetype = newArchetypeIndex;
+    _entityMapping[entityMappingIndex].index = newEntityIndex;
+}
+
+void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept {
+    Location location;
+    if (!_tryGetLocation(entityId, location)) {
+        return;
+    }
+
+    // construct the list of components that will exist in the new archetype
+    ComponentMeta const* newComponentMetas[maxArchetypeComponents];
+    newComponentMetas[0] = componentMeta;
+    copy(location.archetype->layout.begin(), location.archetype->layout.end(), newComponentMetas + 1, &Layout::meta);
+    span newComponentMetaSpan = span{newComponentMetas}.first(location.archetype->layout.size() + 1);
+
+    // find the target archetype and allocate an entry in it
+    auto newArchetypeIndex = _findArchetypeIndex(newComponentMetaSpan);
+    Archetype& newArchetype = *_archetypes[newArchetypeIndex];
+
+    auto newEntityIndex = newArchetype.count++;
+    auto newChunkIndex = newEntityIndex / newArchetype.perChunk;
+    auto newSubIndex = newEntityIndex % newArchetype.perChunk;
+
+    if (newChunkIndex == newArchetype.chunks.size()) {
+        newArchetype.chunks.push_back(_allocateChunk());
+    }
+
+    Chunk& newChunk = *newArchetype.chunks[newChunkIndex];
+    ++newChunk.header.count;
+
+    // copy components from old entity to new entity
+    *newChunk.entity(newSubIndex) = entityId;
+
+    for (Layout const& layout : newArchetype.layout) {
+        void* newRawPointer = newChunk.pointer(layout, newSubIndex);
+
+        // either copy existing component or install the new one
+        int32 originalLayoutIndex = location.archetype->indexOfLayout(layout.component);
+        if (originalLayoutIndex != -1) {
+            void* originalRawPointer = location.chunk->pointer(location.archetype->layout[originalLayoutIndex], location.subIndex);
+            layout.meta->relocate(newRawPointer, originalRawPointer);
+        }
+        else {
+            layout.meta->copy(newRawPointer, componentData);
+        }
+    }
+
+    // remove old entity
+    _deleteLocation(location);
+
+    // update mapping
+    uint32 entityMappingIndex = getEntityMappingIndex(entityId);
+    _entityMapping[entityMappingIndex].archetype = newArchetypeIndex;
+    _entityMapping[entityMappingIndex].index = newEntityIndex;
 }
 
 auto up::World::archetypes() const noexcept -> view<box<Archetype>> {

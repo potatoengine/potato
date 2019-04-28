@@ -45,7 +45,7 @@ namespace up {
         UP_ECS_API void deleteEntity(EntityId entity) noexcept;
 
         template <typename Component>
-        void addComponent(EntityId entityId, Component&& component);
+        void addComponent(EntityId entityId, Component const& component) noexcept;
         UP_ECS_API void removeComponent(EntityId entityId, ComponentId componentId) noexcept;
 
         template <typename Component>
@@ -56,6 +56,7 @@ namespace up {
         UP_ECS_API void _selectRaw(view<ComponentId> sortedComponents, delegate_ref<RawSelectSignature> callback) const;
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
+        UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
 
         void _deleteLocation(Location const& location) noexcept;
         void _calculateLayout(uint32 archetypeIndex, view<ComponentMeta const*> components);
@@ -93,5 +94,11 @@ namespace up {
         _selectRaw(query.components(), [&query](size_t count, EntityId const* entities, view<void*> pointers) {
             query.invokeUnsafe(count, entities, pointers);
         });
+    }
+
+    template <typename Component>
+    void World::addComponent(EntityId entityId, Component const& component) noexcept {
+        _addComponentRaw(entityId, ComponentMeta::get<Component>(), &component);
+
     }
 } // namespace up

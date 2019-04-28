@@ -150,4 +150,26 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         world.select(queryTest1);
         DOCTEST_CHECK(found);
     }
+
+    DOCTEST_TEST_CASE("Add Component") {
+        bool found = false;
+        World world;
+        Query<Test1> queryTest1([&found](size_t, EntityId const*, Test1*) { found = true; });
+        Query<Second> querySecond([&found](size_t, EntityId const*, Second*) { found = true; });
+
+        EntityId id = world.createEntity(Test1{});
+
+        world.select(querySecond);
+        DOCTEST_CHECK_FALSE(found);
+
+        world.addComponent(id, Second{});
+
+        found = false;
+        world.select(querySecond);
+        DOCTEST_CHECK(found);
+
+        found = false;
+        world.select(queryTest1);
+        DOCTEST_CHECK(found);
+    }
 }
