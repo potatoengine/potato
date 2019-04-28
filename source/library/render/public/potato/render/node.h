@@ -4,6 +4,7 @@
 
 #include "_export.h"
 #include "potato/foundation/box.h"
+#include "potato/foundation/rc.h"
 #include "potato/foundation/vector.h"
 #include <glm/mat4x4.hpp>
 
@@ -18,7 +19,7 @@ namespace up {
 
     class Node {
     public:
-        UP_RENDER_API explicit Node(box<Model> model);
+        UP_RENDER_API explicit Node(rc<Model> model);
         UP_RENDER_API ~Node();
 
         UP_RENDER_API void render(RenderContext& ctx);
@@ -29,7 +30,7 @@ namespace up {
 
     private:
         glm::mat4x4 _transform;
-        box<Model> _model;
+        rc<Model> _model;
         vector<box<Node>> _children;
     };
 } // namespace up
