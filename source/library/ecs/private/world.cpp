@@ -16,24 +16,13 @@ static constexpr size_t align(size_t offset, size_t alignment) noexcept {
     return (offset + alignmentMinusOne) & ~alignmentMinusOne;
 }
 
-template <typename Container, typename Projection = up::identity>
-static void sortComponentIds(Container const& cont, up::span<up::ComponentId> output, Projection const& proj = {}) noexcept {
-    UP_ASSERT(output.size() == cont.size());
-
-    for (size_t index = 0; index != cont.size(); ++index) {
-        output[index] = up::project(proj, cont[index]);
-    }
-
-    up::sort(output);
-}
-
 template <typename Type, typename Projection = up::identity>
-static up::uint64 hashComponents(up::span<Type> input, Projection const& proj = {}) noexcept {
-    up::fnv1a hasher;
-    for (size_t index = 0; index != input.size(); ++index) {
-        up::hash_append(hasher, up::project(proj, input[index]));
+constexpr auto hashComponents(up::span<Type> input, Projection const& proj = {}) noexcept -> up::uint64 {
+    up::uint64 hash = 0;
+    for (Type const& value : input) {
+        hash ^= static_cast<up::uint64>(up::project(proj, value));
     }
-    return hasher.finalize();
+    return hash;
 }
 
 up::World::World() = default;
@@ -65,6 +54,9 @@ void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentMeta const
     }
     UP_ASSERT(size <= sizeof(Chunk::data));
 
+    // calculate layout hash
+    archetype.layoutHash = hashComponents(span{archetype.layout}, &Layout::component);
+
     if (size != 0) {
         // assign pointer offers by alignment
         up::sort(archetype.layout, {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
@@ -92,11 +84,8 @@ void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentMeta const
         UP_ASSERT(offset <= sizeof(Chunk::data));
     }
 
-    // layout must be stored by ComponentId
-    up::sort(archetype.layout, {}, &Layout::component);
-
-    // calculate layout hash (must be sorted by ComponentId already!)
-    archetype.layoutHash = hashComponents(span{archetype.layout}, &Layout::component);
+    // Required for partial match algorithm
+    sort(archetype.layout, {}, &Layout::component);
 }
 
 void up::World::deleteEntity(EntityId entity) noexcept {
@@ -192,10 +181,7 @@ bool up::World::_matchArchetype(uint32 archetypeIndex, view<ComponentId> sortedC
 }
 
 auto up::World::_findArchetypeIndex(view<ComponentMeta const*> components) noexcept -> up::uint32 {
-    ComponentId local[maxArchetypeComponents];
-    span localSized = span{local}.first(components.size());
-    sortComponentIds(components, localSized, [](auto const* meta) noexcept { return meta->id; });
-    uint64 hash = hashComponents(localSized);
+    uint64 hash = hashComponents(components, &ComponentMeta::id);
 
     for (uint32 index = 0; index != _archetypes.size(); ++index) {
         if (_archetypes[index]->layoutHash == hash) {
