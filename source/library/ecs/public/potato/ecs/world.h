@@ -54,13 +54,14 @@ namespace up {
         UP_ECS_API EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
 
         void _calculateLayout(uint32 archetypeIndex, view<ComponentMeta const*> components);
-        void* _getComponentPointer(uint32 archetypeIndex, uint32 entityIndex, ComponentId component) const noexcept;
         bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> sortedComponents) const noexcept;
         void _selectChunksRaw(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const;
         void _recycleEntityId(EntityId entity) noexcept;
         uint32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
         box<Chunk> _allocateChunk();
         void _recycleChunk(box<Chunk>);
+
+        bool _tryGetLocation(EntityId entityId, Location& out) const noexcept;
 
         vector<Entity> _entityMapping;
         vector<box<Archetype>> _archetypes;

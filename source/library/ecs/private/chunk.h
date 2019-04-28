@@ -4,7 +4,7 @@ struct up::World::Chunk {
     static constexpr uint32 size = 64 * 1024;
 
     struct alignas(32) Header {
-        int count = 0;
+        unsigned int count = 0;
         Chunk* next = nullptr;
     };
     using Payload = char[size - sizeof(Header)];
