@@ -63,9 +63,9 @@ public:
         return *this;
     }
 
-    template <typename... InParamTypes>
-    ReturnType operator()(InParamTypes&&... params) const {
-        return _holder._call(_holder._functor, std::forward<InParamTypes>(params)...);
+    //template <typename... InParamTypes>
+    ReturnType operator()(ParamTypes... params) const {
+        return _holder._call(_holder._functor, std::forward<ParamTypes>(params)...);
     }
 
 private:

@@ -56,7 +56,8 @@ public:
     using size_type = std::size_t;
     using index_type = size_type;
 
-    constexpr span() = default;
+    constexpr span() noexcept = default;
+    constexpr span(span&&) noexcept = default;
     template <typename U>
     /*implicit*/ constexpr span(span<U> src) noexcept
         : _begin(src.begin()), _end(src.end()) {}
@@ -69,6 +70,8 @@ public:
         : _begin(src), _end(src + N) {}
     template <typename C, typename = enable_if_t<_detail::has_data_v<C>>>
     /*implicit*/ constexpr span(C&& cont) noexcept : span(cont.data(), cont.size()) {}
+
+    constexpr span& operator=(span&&) noexcept = default;
 
     constexpr iterator begin() const noexcept { return _begin; }
     constexpr sentinel end() const noexcept { return _end; }

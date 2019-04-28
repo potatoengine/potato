@@ -60,10 +60,10 @@
 
 // compiler detection
 #if defined(_MSC_VER)
-#    if _MSC_VER >= 1910
+#    if _MSC_VER >= 1920
 #        define UP_COMPILER_MICROSOFT 1
 #    else
-#        error "Unsupported Visual C++ compiler version (requires 19.10 or higher from Visual Studio 2017)"
+#        error "Unsupported Visual C++ compiler version (requires 19.20 or higher from Visual Studio 2019)"
 #    endif
 #elif defined(__clang__)
 #    define UP_COMPILER_CLANG 1

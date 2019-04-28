@@ -19,7 +19,7 @@ namespace up {
     class Mesh;
     class RenderContext;
 
-    class Model {
+    class Model : public shared<Model> {
     public:
         UP_RENDER_API explicit Model(rc<Mesh> mesh, rc<Material> material);
         UP_RENDER_API ~Model();

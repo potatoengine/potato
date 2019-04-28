@@ -16,10 +16,18 @@ DOCTEST_TEST_SUITE("[potato][foundation] up::nameof") {
     }
 
     DOCTEST_TEST_CASE("class types") {
+#if defined(UP_COMPILER_MICROSOFT)
         DOCTEST_CHECK_EQ("class up::string_view", nameof<string_view>());
+#else
+        DOCTEST_CHECK_EQ("up::string_view", nameof<string_view>());
+#endif
     }
 
     DOCTEST_TEST_CASE("template types") {
+#if defined(UP_COMPILER_MICROSOFT)
         DOCTEST_CHECK_EQ("struct as_template<int>", nameof<as_template<int>>());
+#else
+        DOCTEST_CHECK_EQ("as_template<int>", nameof<as_template<int>>());
+#endif
     }
 }

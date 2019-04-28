@@ -7,18 +7,21 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/debug.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate_ref.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/find.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string_writer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/hash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/hash_fnv1a.h
     ${CMAKE_CURRENT_SOURCE_DIR}/int_types.h
     ${CMAKE_CURRENT_SOURCE_DIR}/memory_util.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nameof.h
     ${CMAKE_CURRENT_SOURCE_DIR}/numeric_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/out_ptr.h
     ${CMAKE_CURRENT_SOURCE_DIR}/platform_windows.h
     ${CMAKE_CURRENT_SOURCE_DIR}/platform.h
     ${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.h
     ${CMAKE_CURRENT_SOURCE_DIR}/rc.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sort.h
     ${CMAKE_CURRENT_SOURCE_DIR}/span.h
     ${CMAKE_CURRENT_SOURCE_DIR}/std_hash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/std_iostream.h
@@ -29,6 +32,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/string_view.h
     ${CMAKE_CURRENT_SOURCE_DIR}/traits.h
     ${CMAKE_CURRENT_SOURCE_DIR}/typelist.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/utility.h
     ${CMAKE_CURRENT_SOURCE_DIR}/vector.h
     ${CMAKE_CURRENT_SOURCE_DIR}/zstring_view.h
 )

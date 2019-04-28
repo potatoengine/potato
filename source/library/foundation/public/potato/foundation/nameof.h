@@ -13,7 +13,7 @@ namespace up {
         constexpr string_view p = __PRETTY_FUNCTION__;
         return string_view(p.data() + 34, p.size() - 34 - 1);
 #elif defined(__GNUC__)
-        string_view p = __PRETTY_FUNCTION__;
+        constexpr string_view p = __PRETTY_FUNCTION__;
         return string_view(p.data() + 49, p.size() - 49 - 1);
 #elif defined(_MSC_VER)
         constexpr string_view p = __FUNCSIG__;

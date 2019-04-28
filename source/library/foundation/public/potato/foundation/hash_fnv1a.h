@@ -5,6 +5,11 @@
 #include "int_types.h"
 #include "platform.h"
 
+#if defined(UP_COMPILER_MICROSOFT)
+// https://stackoverflow.com/questions/37658794/integer-constant-overflow-warning-in-constexpr
+__pragma(warning(disable : 4307))
+#endif
+
 namespace up {
     /// <summary> A uhash-compatible fnv1-a hasher. </summary>
     class fnv1a {

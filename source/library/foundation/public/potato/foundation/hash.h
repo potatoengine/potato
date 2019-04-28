@@ -17,6 +17,9 @@ namespace up {
     template <typename HashAlgorithm = default_hash, typename T>
     auto hash_value(T const& value) -> typename HashAlgorithm::result_type;
 
+    template <class Hash>
+    constexpr Hash hash_combine(Hash left, Hash right) noexcept;
+
     template <typename>
     class vector;
 } // namespace up
@@ -24,7 +27,7 @@ namespace up {
 namespace up {
     template <typename HashAlgorithm, typename T>
     inline enable_if_t<is_contiguous<T>::value, HashAlgorithm&> hash_append(HashAlgorithm& hasher, T const& value) {
-        hasher.append_bytes(&value, sizeof(value));
+        hasher.append_bytes(reinterpret_cast<char const*>(&value), sizeof(value));
         return hasher;
     }
 } // namespace up
@@ -67,4 +70,10 @@ auto up::hash_value(T const& value) -> typename HashAlgorithm::result_type {
     using up::hash_append;
     hash_append(hasher, value);
     return hasher.finalize();
+}
+
+template <class Hash>
+constexpr auto up::hash_combine(Hash left, Hash right) noexcept -> Hash {
+    left ^= right + 0x9e3779b9 + (left << 6) + (left >> 2);
+    return left;
 }

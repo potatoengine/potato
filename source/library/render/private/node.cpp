@@ -7,7 +7,7 @@
 #include "potato/gpu/command_list.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-up::Node::Node(box<Model> model) : _transform(glm::identity<glm::mat4x4>()), _model(std::move(model)) {}
+up::Node::Node(rc<Model> model) : _transform(glm::identity<glm::mat4x4>()), _model(std::move(model)) {}
 
 up::Node::~Node() = default;
 
