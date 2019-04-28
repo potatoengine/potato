@@ -5,7 +5,7 @@ struct up::World::Chunk {
 
     struct alignas(32) Header {
         unsigned int count = 0;
-        Chunk* next = nullptr;
+        box<Chunk> next;
     };
     using Payload = char[size - sizeof(Header)];
 

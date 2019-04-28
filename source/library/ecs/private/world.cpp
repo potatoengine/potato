@@ -27,14 +27,7 @@ constexpr auto hashComponents(up::span<Type> input, Projection const& proj = {})
 
 up::World::World() = default;
 
-up::World::~World() {
-    while (_freeChunkHead != nullptr) {
-        Chunk* chunk = _freeChunkHead;
-        _freeChunkHead = _freeChunkHead->header.next;
-
-        delete chunk;
-    }
-}
+up::World::~World() = default;
 
 void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentMeta const*> components) {
     Archetype& archetype = *_archetypes[archetypeIndex];
@@ -312,8 +305,8 @@ auto up::World::_allocateChunk() -> box<Chunk> {
     static_assert(sizeof(up::World::Chunk) == up::World::Chunk::size);
 
     if (_freeChunkHead != nullptr) {
-        box<Chunk> chunk(_freeChunkHead);
-        _freeChunkHead = _freeChunkHead->header.next;
+        box<Chunk> chunk(std::move(_freeChunkHead));
+        _freeChunkHead = std::move(chunk->header.next);
         return chunk;
     }
 
@@ -321,8 +314,8 @@ auto up::World::_allocateChunk() -> box<Chunk> {
 }
 
 void up::World::_recycleChunk(box<Chunk> chunk) {
-    chunk->header.next = _freeChunkHead;
-    _freeChunkHead = chunk.release();
+    chunk->header.next = std::move(_freeChunkHead);
+    _freeChunkHead = std::move(chunk);
 }
 
 auto up::World::_tryGetLocation(EntityId entityId, Location& location) const noexcept -> bool {
