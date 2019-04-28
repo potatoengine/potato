@@ -270,26 +270,27 @@ void up::World::_selectChunksRaw(up::uint32 archetypeIndex, view<ComponentId> co
 }
 
 auto up::World::_allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept -> EntityId {
-    if (_freeEntityHead == static_cast<decltype(_freeEntityHead)>(-1)) {
-        // nothing in free list
-        Entity entity;
-        entity.generation = 1;
-        entity.archetype = archetypeIndex;
-        entity.index = entityIndex;
+    // if there's a free ID, recycle it
+    if (_freeEntityHead != freeEntityIndex) {
+        uint32 mappingIndex = _freeEntityHead;
+        _freeEntityHead = _entityMapping[mappingIndex].index;
 
-        uint32 mappingIndex = static_cast<uint32>(_entityMapping.size());
-        _entityMapping.push_back(entity);
+        _entityMapping[mappingIndex].archetype = archetypeIndex;
+        _entityMapping[mappingIndex].index = entityIndex;
 
-        return makeEntityId(mappingIndex, entity.generation);
+        return makeEntityId(mappingIndex, _entityMapping[mappingIndex].generation);
     }
 
-    uint32 mappingIndex = _freeEntityHead;
-    _freeEntityHead = _entityMapping[mappingIndex].index;
+    // there was no ID to recycle, so create a new one
+    uint32 mappingIndex = static_cast<uint32>(_entityMapping.size());
 
-    _entityMapping[mappingIndex].archetype = archetypeIndex;
-    _entityMapping[mappingIndex].index = entityIndex;
+    Entity entity;
+    entity.generation = 1;
+    entity.archetype = archetypeIndex;
+    entity.index = entityIndex;
+    _entityMapping.push_back(entity);
 
-    return makeEntityId(mappingIndex, _entityMapping[mappingIndex].generation);
+    return makeEntityId(mappingIndex, entity.generation);
 }
 
 void up::World::_recycleEntityId(EntityId entity) noexcept {

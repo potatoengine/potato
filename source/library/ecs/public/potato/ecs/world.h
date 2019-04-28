@@ -60,13 +60,14 @@ namespace up {
         uint32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
         box<Chunk> _allocateChunk();
         void _recycleChunk(box<Chunk>);
-
         bool _tryGetLocation(EntityId entityId, Location& out) const noexcept;
+
+        static constexpr uint32 freeEntityIndex = static_cast<uint32>(-1);
 
         vector<Entity> _entityMapping;
         vector<box<Archetype>> _archetypes;
         box<Chunk> _freeChunkHead;
-        uint32 _freeEntityHead = static_cast<uint32>(-1);
+        uint32 _freeEntityHead = freeEntityIndex;
     };
 
     template <typename... Components>
