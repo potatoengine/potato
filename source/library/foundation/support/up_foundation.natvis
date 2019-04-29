@@ -32,4 +32,13 @@
       </ArrayItems>
     </Expand>
   </Type>
+
+  <!--
+    up::string_view
+    public/potato/foundation/string_view.h
+   -->
+  <Type Name="up::string_view">
+    <DisplayString>{_data,[_size]s8}</DisplayString>
+    <StringView>_data,[_size]s8</StringView>
+  </Type>
 </AutoVisualizer>
