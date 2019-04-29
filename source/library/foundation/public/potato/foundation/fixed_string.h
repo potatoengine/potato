@@ -7,6 +7,12 @@
 
 namespace up {
     template <size_t Capacity>
+    class fixed_string;
+
+    template <size_t Capacity>
+    fixed_string(char const (&)[Capacity])->fixed_string<Capacity>;
+
+    template <size_t Capacity>
     class fixed_string {
         static_assert(Capacity > 0);
 
@@ -21,6 +27,7 @@ namespace up {
 
         inline fixed_string(fixed_string const& string);
         inline fixed_string(string_view string);
+        inline fixed_string(char const (&string)[Capacity]);
 
         inline fixed_string& operator=(fixed_string const& string);
         inline fixed_string& operator=(string_view string);
@@ -58,6 +65,11 @@ namespace up {
     template <size_t Capacity>
     fixed_string<Capacity>::fixed_string(string_view string) {
         *this = string;
+    }
+
+    template <size_t Capacity>
+    fixed_string<Capacity>::fixed_string(char const (&string)[Capacity]) : _size(Capacity - 1) {
+        std::memcpy(_buffer, string, Capacity);
     }
 
     template <size_t Capacity>
