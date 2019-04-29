@@ -7,6 +7,8 @@ DOCTEST_TEST_SUITE("[potato][foundation] up::fixed_string_writer") {
     DOCTEST_TEST_CASE("default initialization") {
         fixed_string_writer<32> sw;
 
+        static_assert(sizeof(sw) <= 40 /* buffer + 8-byte size */);
+
         DOCTEST_CHECK(sw.empty());
         DOCTEST_CHECK_EQ(sw.size(), 0);
         DOCTEST_CHECK_EQ(sw.capacity(), 31);
