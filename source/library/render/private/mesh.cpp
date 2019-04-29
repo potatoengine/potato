@@ -7,10 +7,10 @@
 #include "potato/gpu/device.h"
 
 up::Mesh::Mesh(vector<up::uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels)
-    : _data(std::move(data)),
-      _buffers(buffers.begin(), buffers.end()),
+    : _buffers(buffers.begin(), buffers.end()),
       _channels(channels.begin(), channels.end()),
-      _indices(std::move(indices)) {
+      _indices(std::move(indices)),
+      _data(std::move(data)) {
 }
 
 up::Mesh::~Mesh() = default;
