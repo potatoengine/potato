@@ -98,4 +98,17 @@
       <Item Name="[capacity]" ExcludeView="simple">$T1</Item>
     </Expand>
   </Type>
+
+  <!--
+    up::string
+    public/potato/foundation/string.h
+   -->
+  <Type Name="up::string">
+    <DisplayString Condition="_size == 0">empty</DisplayString>
+    <DisplayString>{_data,[_size]s8}</DisplayString>
+    <StringView>_data,[_size]s8</StringView>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">_size</Item>
+    </Expand>
+  </Type>
 </AutoVisualizer>
