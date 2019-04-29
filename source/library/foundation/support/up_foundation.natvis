@@ -52,4 +52,18 @@
     <DisplayString>{_str,s8}</DisplayString>
     <StringView>_str,s8</StringView>
   </Type>
+
+  <!--
+    up::fixed_string
+    public/potato/foundation/fixed_string.h
+   -->
+  <Type Name="up::fixed_string&lt;*&gt;">
+    <DisplayString Condition="_size == 0">empty</DisplayString>
+    <DisplayString>{_buffer,[_size]s8}</DisplayString>
+    <StringView>_buffer,[_size]s8</StringView>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">_size</Item>
+      <Item Name="[capacity]" ExcludeView="simple">$T1</Item>
+    </Expand>
+  </Type>
 </AutoVisualizer>
