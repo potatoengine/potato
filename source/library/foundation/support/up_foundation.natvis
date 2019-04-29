@@ -111,4 +111,18 @@
       <Item Name="[size]" ExcludeView="simple">_size</Item>
     </Expand>
   </Type>
+
+  <!--
+    up::string_writer
+    public/potato/foundation/string_writer.h
+   -->
+  <Type Name="up::string_writer">
+    <DisplayString Condition="_size == 0">empty</DisplayString>
+    <DisplayString>{_ptr,[_size]s8}</DisplayString>
+    <StringView>_ptr,[_size]s8</StringView>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">_size</Item>
+      <Item Name="[capacity]" ExcludeView="simple">_capacity</Item>
+    </Expand>
+  </Type>
 </AutoVisualizer>
