@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
   <!--
+    up::box<T>
+    public/potato/foundation/box.h
+   -->
+  <Type Name="up::box&lt;*&gt;">
+    <DisplayString Condition="_ptr == nullptr">empty</DisplayString>
+    <DisplayString>{_ptr}</DisplayString>
+    <Expand>
+      <ExpandedItem Condition="_ptr != nullptr">_ptr</ExpandedItem>
+    </Expand>
+  </Type>
+
+  <!--
     up::span<T>
     public/potato/foundation/span.h
    -->
