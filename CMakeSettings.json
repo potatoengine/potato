@@ -10,7 +10,17 @@
       "buildRoot": "${projectDir}/out/debug/build",
       "installRoot": "${projectDir}/out/debug/root",
       "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON"
+      "environments": [
+        {
+          "CXXFLAGS": "/W3 /WX"
+        }
+      ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "ON"
+        }
+      ]
     },
     {
       "name": "Windows (Debug Static)",
@@ -22,7 +32,17 @@
       "buildRoot": "${projectDir}/out/debug-static/build",
       "installRoot": "${projectDir}/out/debug-static/root",
       "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=OFF"
+      "environments": [
+        {
+          "CXXFLAGS": "/W3 /WX"
+        }
+      ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "OFF"
+        }
+      ]
     },
     {
       "name": "Windows (Release)",
@@ -34,7 +54,17 @@
       "buildRoot": "${projectDir}/out/release/build",
       "installRoot": "${projectDir}/out/release/root",
       "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON"
+      "environments": [
+        {
+          "CXXFLAGS": "/W3 /WX"
+        }
+      ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "ON"
+        }
+      ]
     },
     {
       "name": "Windows (Release Static)",
@@ -46,7 +76,17 @@
       "buildRoot": "${projectDir}/out/release-static/build",
       "installRoot": "${projectDir}/out/release-static/root",
       "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=OFF"
+      "environments": [
+        {
+          "CXXFLAGS": "/W3 /WX"
+        }
+      ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "OFF"
+        }
+      ]
     },
     {
       "name": "Windows MSBuild (Debug)",
@@ -98,7 +138,7 @@
         },
         {
           "name": "CMAKE_CXX_FLAGS",
-          "value": "-stdlib=libc++ -Wall"
+          "value": "-stdlib=libc++ -Wall -Werror"
         }
       ],
       "rsyncCommandArgs": "-t --delete --delete-excluded",
