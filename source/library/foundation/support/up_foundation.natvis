@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <!--
+    up::span<T>
+    public/potato/foundation/span.h
+   -->
   <Type Name="up::span&lt;*&gt;">
     <DisplayString Condition="_begin == _end">empty</DisplayString>
     <DisplayString>{{ size={_end - _begin} }}</DisplayString>
@@ -8,6 +12,23 @@
       <ArrayItems>
         <Size>_end - _begin</Size>
         <ValuePointer>_begin</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!--
+    up::vector<T>
+    public/potato/foundation/vector.h
+   -->
+  <Type Name="up::vector&lt;*&gt;">
+    <DisplayString Condition="_first == _last">empty</DisplayString>
+    <DisplayString>{{ size={_last - _first} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">_last - _first</Item>
+      <Item Name="[capacity]" ExcludeView="simple">_sentinel - _first</Item>
+      <ArrayItems>
+        <Size>_last - _first</Size>
+        <ValuePointer>_first</ValuePointer>
       </ArrayItems>
     </Expand>
   </Type>
