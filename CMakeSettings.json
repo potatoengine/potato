@@ -65,20 +65,27 @@
       "generator": "Ninja",
       "remoteMachineName": "${defaultRemoteMachineName}",
       "configurationType": "Debug",
-      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/linux-debug",
       "cmakeExecutable": "/usr/bin/cmake",
       "buildRoot": "${projectDir}/out/debug-linux/build",
       "installRoot": "${projectDir}/out/debug-linux/root",
-      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/debug",
-      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/debug",
+      "remoteCMakeListsRoot": "/var/tmp/src/${projectDirName}/${workspaceHash}/debug-static",
+      "remoteBuildRoot": "/var/tmp/build/${projectDirName}/${workspaceHash}/debug-static/build/",
+      "remoteInstallRoot": "/var/tmp/build/${projectDirName}/${workspaceHash}/debug-static/install/",
       "remoteCopySources": true,
-      "remoteCopySourcesOutputVerbosity": "Normal",
+      "remoteCopySourcesOutputVerbosity": "Verbose",
       "remoteCopySourcesConcurrentCopies": "10",
-      "remoteCopySourcesMethod": "sftp",
+      "remoteCopySourcesMethod": "rsync",
       "remoteCopySourcesExclusionList": [
         ".vs",
         ".git",
-        "build"
+        "external/doctest/examples",
+        "external/glm/doc",
+        "external/stb/tests",
+        "external/imgui/examples",
+        "external/json/test",
+        "external/litexx/external/*/",
+        "external/formatxx/external/*/",
+        "out"
       ],
       "variables": [
         {
