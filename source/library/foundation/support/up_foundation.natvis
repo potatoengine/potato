@@ -38,7 +38,18 @@
     public/potato/foundation/string_view.h
    -->
   <Type Name="up::string_view">
+    <DisplayString Condition="_size == 0">empty</DisplayString>
     <DisplayString>{_data,[_size]s8}</DisplayString>
     <StringView>_data,[_size]s8</StringView>
+  </Type>
+
+  <!--
+    up::zstring_view
+    public/potato/foundation/zstring_view.h
+   -->
+  <Type Name="up::zstring_view">
+    <DisplayString Condition="_str == nullptr || *_str == 0">empty</DisplayString>
+    <DisplayString>{_str,s8}</DisplayString>
+    <StringView>_str,s8</StringView>
   </Type>
 </AutoVisualizer>
