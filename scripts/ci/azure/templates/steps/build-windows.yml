@@ -21,6 +21,8 @@ steps:
     set CC=cl.exe
     set CXX=cl.exe
 
+    set CXXFLAGS=/W3 /WX
+
     mkdir "%BUILDDIR%"
     cd "%BUILDDIR%"
 
