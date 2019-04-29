@@ -1,26 +1,14 @@
 ﻿{
   "configurations": [
     {
-      "name": "Windows (Release Static)",
+      "name": "Windows (Debug)",
       "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "Debug",
       "inheritEnvironments": [
         "msvc_x64_x64"
       ],
-      "buildRoot": "${projectDir}/out/release-static/build",
-      "installRoot": "${projectDir}/out/release-static/root",
-      "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=OFF"
-    },
-    {
-      "name": "Windows (Release)",
-      "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
-      "inheritEnvironments": [
-        "msvc_x64_x64"
-      ],
-      "buildRoot": "${projectDir}/out/release/build",
-      "installRoot": "${projectDir}/out/release/root",
+      "buildRoot": "${projectDir}/out/debug/build",
+      "installRoot": "${projectDir}/out/debug/root",
       "ctestCommandArgs": "--verbose",
       "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON"
     },
@@ -37,16 +25,28 @@
       "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=OFF"
     },
     {
-      "name": "Windows (Debug)",
+      "name": "Windows (Release)",
       "generator": "Ninja",
-      "configurationType": "Debug",
+      "configurationType": "RelWithDebInfo",
       "inheritEnvironments": [
         "msvc_x64_x64"
       ],
-      "buildRoot": "${projectDir}/out/debug/build",
-      "installRoot": "${projectDir}/out/debug/root",
+      "buildRoot": "${projectDir}/out/release/build",
+      "installRoot": "${projectDir}/out/release/root",
       "ctestCommandArgs": "--verbose",
       "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON"
+    },
+    {
+      "name": "Windows (Release Static)",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
+      "buildRoot": "${projectDir}/out/release-static/build",
+      "installRoot": "${projectDir}/out/release-static/root",
+      "ctestCommandArgs": "--verbose",
+      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=OFF"
     },
     {
       "name": "Windows MSBuild (Debug)",
