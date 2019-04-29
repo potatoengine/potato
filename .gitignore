@@ -1,6 +1,6 @@
 # Build output directory
-build/
+out/
 
 # Local configuration files
-.vs
-.vscode
+.vs/
+.vscode/
