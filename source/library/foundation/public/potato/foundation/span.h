@@ -4,6 +4,7 @@
 
 #include "traits.h"
 #include <initializer_list>
+#include <array>
 #include <cstddef>
 
 namespace up::_detail {
@@ -38,6 +39,10 @@ namespace up {
     span(T (&src)[N])->span<T>;
     template <typename C, typename = enable_if_t<_detail::has_data_v<C>>>
     span(C &&)->span<std::remove_reference_t<decltype(*std::declval<C>().data())>>;
+    template <typename T, std::size_t N>
+    span(std::array<T, N>&)->span<T>;
+    template <typename T, std::size_t N>
+    span(std::array<T, N> const&)->span<T const>;
 
     template <typename T>
     class vector;
@@ -78,6 +83,12 @@ public:
         : _begin(src), _end(src + N) {}
     template <typename C, typename = enable_if_t<_detail::has_data_v<C>>>
     /*implicit*/ constexpr span(C&& cont) noexcept : span(cont.data(), cont.size()) {}
+    template <std::size_t N>
+    /*implicit*/ constexpr span(std::array<T, N> const& array) noexcept
+        : _begin(array.data()), _end(_begin + array.size()) {}
+    template <std::size_t N>
+    /*implicit*/ constexpr span(std::array<T, N>& array) noexcept
+        : _begin(array.data()), _end(_begin + array.size()) {}
 
     constexpr span& operator=(span&&) noexcept = default;
 
