@@ -22,8 +22,8 @@
       "project": "CMakeLists.txt",
       "projectTarget": "shell.exe (bin\\shell.exe)",
       "name": "shell.exe (bin\\shell.exe)",
-      "cwd": "${workspaceRoot}.build",
-      "currentDir": "${workspaceRoot}.build"
+      "cwd": "${workspaceRoot}/out",
+      "currentDir": "${workspaceRoot}/out"
     },
     {
       "type": "default",
