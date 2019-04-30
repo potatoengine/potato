@@ -121,6 +121,8 @@ namespace up {
         operator span<T>() noexcept { return span<T>(_first, _last); }
         operator span<T const>() const noexcept { return span<T const>(_first, _last); }
 
+        span<byte const> as_bytes() const noexcept { return span<byte const>(reinterpret_cast<byte const*>(_first), reinterpret_cast<byte const*>(_last)); }
+
         void pop_back();
 
     public:

@@ -165,7 +165,7 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
         data.push_back(mesh->mTextureCoords[0][i].y);
     }
 
-    return up::new_shared<Mesh>(std::move(indices), vector(span(data).as_bytes()), span{&bufferDesc, 1}, channels);
+    return up::new_shared<Mesh>(std::move(indices), vector(data.as_bytes()), span{&bufferDesc, 1}, channels);
 }
 
 auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
