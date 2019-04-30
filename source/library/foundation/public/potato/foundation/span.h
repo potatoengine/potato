@@ -28,6 +28,9 @@ namespace up {
     struct span;
 
     template <typename T>
+    using view = span<T const>;
+
+    template <typename T>
     span(T*, T*)->span<T>;
     template <typename T>
     span(T*, std::size_t)->span<T>;
@@ -36,11 +39,16 @@ namespace up {
     template <typename C, typename = enable_if_t<_detail::has_data_v<C>>>
     span(C &&)->span<std::remove_reference_t<decltype(*std::declval<C>().data())>>;
 
-    template <typename HashAlgorithm, typename T>
-    inline void hash_append(HashAlgorithm&, up::span<T> const&) noexcept;
+    template <typename T>
+    class vector;
 
     template <typename T>
-    using view = span<T const>;
+    span(vector<T> const&)->span<T const>;
+    template <typename T>
+    span(vector<T>&)->span<T>;
+
+    template <typename HashAlgorithm, typename T>
+    inline void hash_append(HashAlgorithm&, up::span<T> const&) noexcept;
 } // namespace up
 
 /// <summary> A non-owning slice of an array. </summary>

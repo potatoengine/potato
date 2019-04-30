@@ -118,6 +118,9 @@ namespace up {
         span<T const> subspan(size_type index) const noexcept { return span<T const>{_first + index, _last}; }
         span<T const> subspan(size_type index, size_type count) const noexcept { return span<T const>{_first + index, _first + index + count}; }
 
+        operator span<T>() noexcept { return span<T>(_first, _last); }
+        operator span<T const>() const noexcept { return span<T const>(_first, _last); }
+
         void pop_back();
 
     public:
