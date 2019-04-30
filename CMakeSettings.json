@@ -98,7 +98,18 @@
       "buildRoot": "${workspaceRoot}.build/msbuild-debug/build",
       "installRoot": "${workspaceRoot}.build/msbuild-debug/root",
       "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-T v142 -DBUILD_SHARED_LIBS:BOOL=ON"
+      "cmakeCommandArgs": "-T v142",
+      "environments": [
+        {
+          "CXXFLAGS": "/W3 /WX"
+        }
+      ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "ON"
+        }
+      ]
     },
     {
       "name": "Linux (Debug)",
