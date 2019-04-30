@@ -95,8 +95,8 @@
       "inheritEnvironments": [
         "msvc_x64_x64"
       ],
-      "buildRoot": "${workspaceRoot}.build/msbuild-debug/build",
-      "installRoot": "${workspaceRoot}.build/msbuild-debug/root",
+      "buildRoot": "${workspaceRoot}/out/debug-shared-msbuild/build",
+      "installRoot": "${workspaceRoot}/out/debug-shared-msbuild/root",
       "ctestCommandArgs": "--verbose",
       "cmakeCommandArgs": "-T v142",
       "environments": [
