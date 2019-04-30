@@ -112,7 +112,7 @@
       "remoteBuildRoot": "/var/tmp/build/${projectDirName}/${workspaceHash}/debug-static/build/",
       "remoteInstallRoot": "/var/tmp/build/${projectDirName}/${workspaceHash}/debug-static/install/",
       "remoteCopySources": true,
-      "remoteCopySourcesOutputVerbosity": "Verbose",
+      "remoteCopySourcesOutputVerbosity": "Normal",
       "remoteCopySourcesConcurrentCopies": "10",
       "remoteCopySourcesMethod": "rsync",
       "remoteCopySourcesExclusionList": [
