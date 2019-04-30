@@ -15,5 +15,6 @@ target_link_libraries(foundation
 )
 
 add_subdirectory(public/potato/foundation)
+add_subdirectory(support)
 add_subdirectory(private)
 add_subdirectory(tests)

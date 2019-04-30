@@ -49,6 +49,18 @@
       "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON"
     },
     {
+      "name": "Windows MSBuild (Debug)",
+      "generator": "Visual Studio 15 2017 Win64",
+      "configurationType": "Debug",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
+      "buildRoot": "${workspaceRoot}.build/msbuild-debug/build",
+      "installRoot": "${workspaceRoot}.build/msbuild-debug/root",
+      "ctestCommandArgs": "--verbose",
+      "cmakeCommandArgs": "-T v142 -DBUILD_SHARED_LIBS:BOOL=ON"
+    },
+    {
       "name": "Linux (Debug)",
       "generator": "Ninja",
       "remoteMachineName": "${defaultRemoteMachineName}",
