@@ -3,29 +3,15 @@
 #pragma once
 
 #include "traits.h"
-#include <initializer_list>
+#include <array>
 #include <cstddef>
-
-namespace up::_detail {
-    template <typename C>
-    using has_data_member = enable_if_t<std::is_pointer_v<decltype(std::declval<C>().data())>>;
-
-    template <typename C>
-    using has_size_member = enable_if_t<std::is_integral_v<decltype(std::declval<C>().size())>>;
-
-    template <typename C, typename V = void>
-    struct has_data : std::false_type {};
-
-    template <typename C>
-    struct has_data<C, std::void_t<has_data_member<C>, has_size_member<C>>> : std::true_type {};
-
-    template <typename C>
-    constexpr bool has_data_v = has_data<C>::value;
-} // namespace up::_detail
 
 namespace up {
     template <typename T>
     struct span;
+
+    template <typename T>
+    using view = span<T const>;
 
     template <typename T>
     span(T*, T*)->span<T>;
@@ -33,14 +19,21 @@ namespace up {
     span(T*, std::size_t)->span<T>;
     template <typename T, std::size_t N>
     span(T (&src)[N])->span<T>;
-    template <typename C, typename = enable_if_t<_detail::has_data_v<C>>>
-    span(C &&)->span<std::remove_reference_t<decltype(*std::declval<C>().data())>>;
+    template <typename T, std::size_t N>
+    span(std::array<T, N>&)->span<T>;
+    template <typename T, std::size_t N>
+    span(std::array<T, N> const&)->span<T const>;
+
+    template <typename T>
+    class vector;
+
+    template <typename T>
+    span(vector<T> const&)->span<T const>;
+    template <typename T>
+    span(vector<T>&)->span<T>;
 
     template <typename HashAlgorithm, typename T>
     inline void hash_append(HashAlgorithm&, up::span<T> const&) noexcept;
-
-    template <typename T>
-    using view = span<T const>;
 } // namespace up
 
 /// <summary> A non-owning slice of an array. </summary>
@@ -57,6 +50,7 @@ public:
     using index_type = size_type;
 
     constexpr span() noexcept = default;
+    constexpr span(span const&) noexcept = default;
     constexpr span(span&&) noexcept = default;
     template <typename U>
     /*implicit*/ constexpr span(span<U> src) noexcept
@@ -68,8 +62,12 @@ public:
     template <std::size_t N>
     /*implicit*/ constexpr span(T (&src)[N]) noexcept
         : _begin(src), _end(src + N) {}
-    template <typename C, typename = enable_if_t<_detail::has_data_v<C>>>
-    /*implicit*/ constexpr span(C&& cont) noexcept : span(cont.data(), cont.size()) {}
+    template <std::size_t N>
+    /*implicit*/ constexpr span(std::array<T, N> const& array) noexcept
+        : _begin(array.data()), _end(_begin + array.size()) {}
+    template <std::size_t N>
+    /*implicit*/ constexpr span(std::array<T, N>& array) noexcept
+        : _begin(array.data()), _end(_begin + array.size()) {}
 
     constexpr span& operator=(span&&) noexcept = default;
 

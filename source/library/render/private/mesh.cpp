@@ -31,7 +31,7 @@ void up::Mesh::populateLayout(span<GpuInputLayoutElement>& inputLayout) const no
 void up::Mesh::updateVertexBuffers(RenderContext& ctx) {
     if (_ibo == nullptr) {
         _ibo = ctx.device.createBuffer(GpuBufferType::Index, _indices.size() * sizeof(uint16));
-        ctx.commandList.update(_ibo.get(), span{_indices.data(), _indices.size()}.as_bytes(), 0);
+        ctx.commandList.update(_ibo.get(), _indices.as_bytes(), 0);
     }
     if (_vbo == nullptr) {
         _vbo = ctx.device.createBuffer(GpuBufferType::Vertex, _data.size());
