@@ -2,6 +2,8 @@ set(OLD_TIDY ${CMAKE_CXX_CLANG_TIDY})
 set(CMAKE_CXX_CLANG_TIDY "")
 set(CMAKE_FOLDER "external")
 
+include(FetchContent)
+
 add_subdirectory(litexx EXCLUDE_FROM_ALL)
 
 set(FORMATXX_BUILD_TESTS OFF CACHE BOOL "enable formatxx tests")
