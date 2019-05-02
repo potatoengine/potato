@@ -1,28 +1,26 @@
 ﻿{
   "configurations": [
     {
-      "name": "Windows (Release Static)",
+      "name": "Windows (Debug)",
       "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "Debug",
       "inheritEnvironments": [
         "msvc_x64_x64"
       ],
-      "buildRoot": "${workspaceRoot}.build/release-static/build",
-      "installRoot": "${workspaceRoot}.build/release-static/root",
+      "buildRoot": "${projectDir}/out/debug/build",
+      "installRoot": "${projectDir}/out/debug/root",
       "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=OFF"
-    },
-    {
-      "name": "Windows (Release)",
-      "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
-      "inheritEnvironments": [
-        "msvc_x64_x64"
+      "environments": [
+        {
+          "CXXFLAGS": "/W3 /WX"
+        }
       ],
-      "buildRoot": "${workspaceRoot}.build/release/build",
-      "installRoot": "${workspaceRoot}.build/release/root",
-      "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON"
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "ON"
+        }
+      ]
     },
     {
       "name": "Windows (Debug Static)",
@@ -31,22 +29,64 @@
       "inheritEnvironments": [
         "msvc_x64_x64"
       ],
-      "buildRoot": "${workspaceRoot}.build/debug-static/build",
-      "installRoot": "${workspaceRoot}.build/debug-static/root",
+      "buildRoot": "${projectDir}/out/debug-static/build",
+      "installRoot": "${projectDir}/out/debug-static/root",
       "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=OFF"
+      "environments": [
+        {
+          "CXXFLAGS": "/W3 /WX"
+        }
+      ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "OFF"
+        }
+      ]
     },
     {
-      "name": "Windows (Debug)",
+      "name": "Windows (Release)",
       "generator": "Ninja",
-      "configurationType": "Debug",
+      "configurationType": "RelWithDebInfo",
       "inheritEnvironments": [
         "msvc_x64_x64"
       ],
-      "buildRoot": "${workspaceRoot}.build/debug/build",
-      "installRoot": "${workspaceRoot}.build/debug/root",
+      "buildRoot": "${projectDir}/out/release/build",
+      "installRoot": "${projectDir}/out/release/root",
       "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON"
+      "environments": [
+        {
+          "CXXFLAGS": "/W3 /WX"
+        }
+      ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "ON"
+        }
+      ]
+    },
+    {
+      "name": "Windows (Release Static)",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
+      "buildRoot": "${projectDir}/out/release-static/build",
+      "installRoot": "${projectDir}/out/release-static/root",
+      "ctestCommandArgs": "--verbose",
+      "environments": [
+        {
+          "CXXFLAGS": "/W3 /WX"
+        }
+      ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "OFF"
+        }
+      ]
     },
     {
       "name": "Windows MSBuild (Debug)",
@@ -55,30 +95,48 @@
       "inheritEnvironments": [
         "msvc_x64_x64"
       ],
-      "buildRoot": "${workspaceRoot}.build/msbuild-debug/build",
-      "installRoot": "${workspaceRoot}.build/msbuild-debug/root",
+      "buildRoot": "${workspaceRoot}/out/debug-shared-msbuild/build",
+      "installRoot": "${workspaceRoot}/out/debug-shared-msbuild/root",
       "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-T v142 -DBUILD_SHARED_LIBS:BOOL=ON"
+      "cmakeCommandArgs": "-T v142",
+      "environments": [
+        {
+          "CXXFLAGS": "/W3 /WX"
+        }
+      ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "ON"
+        }
+      ]
     },
     {
       "name": "Linux (Debug)",
       "generator": "Ninja",
       "remoteMachineName": "${defaultRemoteMachineName}",
       "configurationType": "Debug",
-      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/linux-debug",
       "cmakeExecutable": "/usr/bin/cmake",
-      "buildRoot": "${workspaceRoot}.build/debug-linux/build",
-      "installRoot": "${workspaceRoot}.build/debug-linux/root",
-      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/debug",
-      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/debug",
+      "buildRoot": "${projectDir}/out/debug-linux/build",
+      "installRoot": "${projectDir}/out/debug-linux/root",
+      "remoteCMakeListsRoot": "/var/tmp/src/${projectDirName}/${workspaceHash}/debug-static",
+      "remoteBuildRoot": "/var/tmp/build/${projectDirName}/${workspaceHash}/debug-static/build/",
+      "remoteInstallRoot": "/var/tmp/build/${projectDirName}/${workspaceHash}/debug-static/install/",
       "remoteCopySources": true,
       "remoteCopySourcesOutputVerbosity": "Normal",
       "remoteCopySourcesConcurrentCopies": "10",
-      "remoteCopySourcesMethod": "sftp",
+      "remoteCopySourcesMethod": "rsync",
       "remoteCopySourcesExclusionList": [
         ".vs",
         ".git",
-        "build"
+        "external/doctest/examples",
+        "external/glm/doc",
+        "external/stb/tests",
+        "external/imgui/examples",
+        "external/json/test",
+        "external/litexx/external/*/",
+        "external/formatxx/external/*/",
+        "out"
       ],
       "variables": [
         {
@@ -91,7 +149,7 @@
         },
         {
           "name": "CMAKE_CXX_FLAGS",
-          "value": "-stdlib=libc++ -Wall"
+          "value": "-stdlib=libc++ -Wall -Werror"
         }
       ],
       "rsyncCommandArgs": "-t --delete --delete-excluded",

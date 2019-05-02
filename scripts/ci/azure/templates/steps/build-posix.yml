@@ -11,6 +11,8 @@ steps:
     mkdir -p "${build_dir}"
     cd "${build_dir}"
 
+    CXXFLAGS="-Wall -Werror"
+
     cmake "-DCMAKE_CXX_COMPILER=${{parameters.cxx_compiler}}" -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{parameters.configuration}}" ../..
 
     cmake --build . --parallel

@@ -11,9 +11,9 @@
         "-source",
         "${workspaceRoot}/resources",
         "-dest",
-        "${workspaceRoot}.build/resources",
+        "${workspaceRoot}/out/resources",
         "-cache",
-        "${workspaceRoot}.build/cache"
+        "${workspaceRoot}/out/cache"
       ],
       "cwd": "${workspaceRoot}"
     },
@@ -22,8 +22,8 @@
       "project": "CMakeLists.txt",
       "projectTarget": "shell.exe (bin\\shell.exe)",
       "name": "shell.exe (bin\\shell.exe)",
-      "cwd": "${workspaceRoot}.build",
-      "currentDir": "${workspaceRoot}.build"
+      "cwd": "${workspaceRoot}/out",
+      "currentDir": "${workspaceRoot}/out"
     },
     {
       "type": "default",

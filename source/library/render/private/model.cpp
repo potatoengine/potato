@@ -22,7 +22,7 @@ namespace {
     };
 } // namespace
 
-up::Model::Model(rc<Mesh> mesh, rc<Material> material) : _mesh(std::move(mesh)), _material(std::move(material)) {}
+up::Model::Model(rc<Mesh> mesh, rc<Material> material) : _material(std::move(material)), _mesh(std::move(mesh)) {}
 
 up::Model::~Model() = default;
 

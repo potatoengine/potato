@@ -119,7 +119,8 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     Assimp::Importer importer;
     aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), 0, "assbin");
     if (scene == nullptr) {
-        zstring_view error = importer.GetErrorString();
+        // FIXME: how to report this?
+        //zstring_view error = importer.GetErrorString();
         return {};
     }
     aiMesh const* mesh = scene->mMeshes[0];

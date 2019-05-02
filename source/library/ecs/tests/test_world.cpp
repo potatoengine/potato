@@ -64,8 +64,8 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
     DOCTEST_TEST_CASE("Direct component access") {
         World world;
 
-        auto i1 = world.createEntity(Test1{'f'}, Second{'g', 7.f});
-        auto i2 = world.createEntity(Another{1.f, 2.f}, Second{'g', 9.f});
+        world.createEntity(Test1{'f'}, Second{'g', 7.f});
+        world.createEntity(Another{1.f, 2.f}, Second{'g', 9.f});
         auto id = world.createEntity(Second{'h', -2.f}, Another{2.f, 1.f});
 
         Second* test = world.getComponentSlow<Second>(id);
