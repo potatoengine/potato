@@ -1,6 +1,0 @@
-[submodule "external/formatxx"]
-	path = external/formatxx
-	url = https://github.com/seanmiddleditch/formatxx.git
-[submodule "external/litexx"]
-	path = external/litexx
-	url = https://github.com/seanmiddleditch/litexx.git
