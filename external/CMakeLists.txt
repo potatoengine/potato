@@ -28,17 +28,37 @@ target_compile_definitions(imgui PUBLIC
 )
 target_link_libraries(imgui PUBLIC potato::foundation)
 
+FetchContent_Populate(glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 0.9.9.5
+    GIT_SHALLOW ON
+    GIT_SUBMODULES ""
+    GIT_PROGRESS ON
+    FETCHCONTENT_UPDATES_DISCONNECTED ON
+    QUIET ON
+    EXCLUDE_FROM_ALL OFF
+)
 set(GLM_QUIET ON CACHE BOOL "quiet glm build")
 set(GLM_TEST_ENABLE OFF CACHE BOOL "disable glm tests")
-add_subdirectory(glm EXCLUDE_FROM_ALL)
+add_subdirectory(${glm_SOURCE_DIR} ${glm_BINARY_DIR} EXCLUDE_FROM_ALL)
 target_compile_definitions(glm INTERFACE GLM_ENABLE_EXPERIMENTAL)
 
 add_library(stb INTERFACE)
 target_include_directories(stb INTERFACE "${CMAKE_CURRENT_LIST_DIR}/stb")
 
+FetchContent_Populate(json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.6.1
+    GIT_SHALLOW ON
+    GIT_SUBMODULES ""
+    GIT_PROGRESS ON
+    FETCHCONTENT_UPDATES_DISCONNECTED ON
+    QUIET ON
+    EXCLUDE_FROM_ALL OFF
+)
 set(JSON_MultipleHeaders ON CACHE INTERNAL "use multiple json header build")
 set(JSON_BuildTests OFF CACHE INTERNAL "disable json tests")
-add_subdirectory(json EXCLUDE_FROM_ALL)
+add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 
 if(WIN32)
     find_package(SDL2 QUIET)
