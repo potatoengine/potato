@@ -13,13 +13,23 @@ set(DOCTEST_WITH_TESTS OFF CACHE BOOL "enable doctest tests")
 set(DOCTEST_WITH_MAIN_IN_STATIC_LIB OFF CACHE BOOL "enable doctest static lib")
 add_subdirectory(doctest EXCLUDE_FROM_ALL)
 
+FetchContent_Populate(imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.69
+    GIT_SHALLOW ON
+    GIT_SUBMODULES ""
+    GIT_PROGRESS ON
+    FETCHCONTENT_UPDATES_DISCONNECTED ON
+    QUIET ON
+    EXCLUDE_FROM_ALL OFF
+)
 add_library(imgui)
-target_include_directories(imgui PUBLIC imgui)
+target_include_directories(imgui PUBLIC "${imgui_SOURCE_DIR}")
 target_sources(imgui PRIVATE
-    imgui/imgui.cpp
-    imgui/imgui_demo.cpp
-    imgui/imgui_draw.cpp
-    imgui/imgui_widgets.cpp
+    "${imgui_SOURCE_DIR}/imgui.cpp"
+    "${imgui_SOURCE_DIR}/imgui_demo.cpp"
+    "${imgui_SOURCE_DIR}/imgui_draw.cpp"
+    "${imgui_SOURCE_DIR}/imgui_widgets.cpp"
 )
 set_target_properties(imgui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_compile_definitions(imgui PUBLIC
