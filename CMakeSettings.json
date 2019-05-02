@@ -89,29 +89,6 @@
       ]
     },
     {
-      "name": "Windows MSBuild (Debug)",
-      "generator": "Visual Studio 15 2017 Win64",
-      "configurationType": "Debug",
-      "inheritEnvironments": [
-        "msvc_x64_x64"
-      ],
-      "buildRoot": "${workspaceRoot}/out/debug-shared-msbuild/build",
-      "installRoot": "${workspaceRoot}/out/debug-shared-msbuild/root",
-      "ctestCommandArgs": "--verbose",
-      "cmakeCommandArgs": "-T v142",
-      "environments": [
-        {
-          "CXXFLAGS": "/W3 /WX"
-        }
-      ],
-      "variables": [
-        {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "ON"
-        }
-      ]
-    },
-    {
       "name": "Linux (Debug)",
       "generator": "Ninja",
       "remoteMachineName": "${defaultRemoteMachineName}",
