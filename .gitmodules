@@ -1,21 +1,6 @@
 [submodule "external/formatxx"]
 	path = external/formatxx
 	url = https://github.com/seanmiddleditch/formatxx.git
-[submodule "external/stb"]
-	path = external/stb
-	url = https://github.com/nothings/stb.git
-[submodule "external/imgui"]
-	path = external/imgui
-	url = https://github.com/ocornut/imgui.git
-[submodule "external/glm"]
-	path = external/glm
-	url = https://github.com/g-truc/glm.git
-[submodule "external/doctest"]
-	path = external/doctest
-	url = https://github.com/onqtam/doctest.git
 [submodule "external/litexx"]
 	path = external/litexx
 	url = https://github.com/seanmiddleditch/litexx.git
-[submodule "external/json"]
-	path = external/json
-	url = https://github.com/nlohmann/json.git
