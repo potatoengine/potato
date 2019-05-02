@@ -4,14 +4,24 @@ set(CMAKE_FOLDER "external")
 
 include(FetchContent)
 
+FetchContent_Populate(doctest
+    GIT_REPOSITORY https://github.com/onqtam/doctest.git
+    GIT_TAG 2.3.1
+    GIT_SHALLOW ON
+    GIT_SUBMODULES ""
+    GIT_PROGRESS ON
+    FETCHCONTENT_UPDATES_DISCONNECTED ON
+    QUIET ON
+    EXCLUDE_FROM_ALL OFF
+)
+set(DOCTEST_WITH_TESTS OFF CACHE BOOL "enable doctest tests")
+set(DOCTEST_WITH_MAIN_IN_STATIC_LIB OFF CACHE BOOL "enable doctest static lib")
+add_subdirectory(${doctest_SOURCE_DIR} ${doctest_BINARY_DIR} EXCLUDE_FROM_ALL)
+
 add_subdirectory(litexx EXCLUDE_FROM_ALL)
 
 set(FORMATXX_BUILD_TESTS OFF CACHE BOOL "enable formatxx tests")
 add_subdirectory(formatxx EXCLUDE_FROM_ALL)
-
-set(DOCTEST_WITH_TESTS OFF CACHE BOOL "enable doctest tests")
-set(DOCTEST_WITH_MAIN_IN_STATIC_LIB OFF CACHE BOOL "enable doctest static lib")
-add_subdirectory(doctest EXCLUDE_FROM_ALL)
 
 FetchContent_Populate(imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
