@@ -1,6 +1,7 @@
 set(OLD_TIDY ${CMAKE_CXX_CLANG_TIDY})
 set(CMAKE_CXX_CLANG_TIDY "")
 set(CMAKE_FOLDER "external")
+set(UP_DEPS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/deps")
 
 include(FetchContent)
 
@@ -116,16 +117,17 @@ if(WIN32)
     if (NOT TARGET SDL2)
         set(SDL2_SDK_URL https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip)
         set(SDL2_SDK_ZIP ${CMAKE_CURRENT_BINARY_DIR}/SDL2-2.0.9.zip)
-        set(SDL2_SDK_PATH ${CMAKE_CURRENT_BINARY_DIR}/SDL2-2.0.9)
+        set(SDL2_SDK_PATH ${UP_DEPS_DIR}/SDL2-2.0.9)
 
         if(NOT IS_DIRECTORY ${SDL2_SDK_PATH})
             message(STATUS "Downloading `${SDL2_SDK_URL}'")
-            file(DOWNLOAD ${SDL2_SDK_URL} ${SDL2_SDK_ZIP})
-
-            message(STATUS "Unpacking `${SDL2_SDK_ZIP}'")
-            execute_process(
-                COMMAND ${CMAKE_COMMAND} -E tar xzf ${SDL2_SDK_ZIP}
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            FetchContent_Populate(
+                SDL2
+                URL "${SDL2_SDK_URL}"
+                SOURCE_DIR ${SDL2_SDK_PATH}
+                FETCHCONTENT_UPDATES_DISCONNECTED ON
+                QUIET
+                EXCLUDE_FROM_ALL OFF
             )
 
             if(NOT IS_DIRECTORY ${SDL2_SDK_PATH})
