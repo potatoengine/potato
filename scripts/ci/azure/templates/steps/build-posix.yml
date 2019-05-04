@@ -13,7 +13,7 @@ steps:
 
     CXXFLAGS="-Wall -Werror"
 
-    cmake "-DCMAKE_CXX_COMPILER=${{parameters.cxx_compiler}}" -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{parameters.configuration}}" "-DFETCHCONTENT_BASE_DIR=${build_dir}/_deps" ../..
+    cmake "-DCMAKE_CXX_COMPILER=${{parameters.cxx_compiler}}" -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{parameters.configuration}}" -DFETCHCONTENT_BASE_DIR=_deps ../..
 
     cmake --build . --parallel
 

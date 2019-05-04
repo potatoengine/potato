@@ -27,7 +27,7 @@ steps:
     cd "%BUILDDIR%"
 
     rem configure
-    cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=%CONFIG% -DSDL2_PATH:PATH="%ROOT%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=%SHARED% -DASSIMP_ROOT_DIR:PATH="%ROOT%/deps/assimp-4.1.0" "-DFETCHCONTENT_BASE_DIR=%BUILDDIR%/_deps" "%ROOT%" || exit /b 1
+    cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=%CONFIG% -DSDL2_PATH:PATH="%ROOT%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=%SHARED% -DASSIMP_ROOT_DIR:PATH="%ROOT%/deps/assimp-4.1.0" -DFETCHCONTENT_BASE_DIR=_deps "%ROOT%" || exit /b 1
 
     rem build
     cmake --build . --parallel || exit /b 1
