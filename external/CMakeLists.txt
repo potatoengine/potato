@@ -42,7 +42,7 @@ FetchContent_Declare(json
     GIT_SHALLOW ON
     GIT_SUBMODULES ""
 )
-FetchContent_Declare(SDL2
+FetchContent_Declare(sdl2_vc_sdk
     URL https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
 )
 
@@ -99,12 +99,12 @@ set(JSON_BuildTests OFF CACHE INTERNAL "disable json tests")
 add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 
 if(WIN32)
-    #find_package(SDL2 QUIET)
+    find_package(SDL2 QUIET)
 
     if (NOT TARGET SDL2)
-        FetchContent_Populate(SDL2)
+        FetchContent_Populate(sdl2_vc_sdk)
 
-        set(SDL2_PATH ${SDL2_SOURCE_PATH} CACHE INTERNAL "local SDL2 path" FORCE)
+        set(SDL2_PATH ${sdl2_vc_sdk_SOURCE_PATH} CACHE PATH "local SDL2 path" FORCE)
         find_package(SDL2 REQUIRED)
     endif()
 endif()
