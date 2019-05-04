@@ -167,7 +167,10 @@ auto up::NativeBackend::removeRecursive(zstring_view path) -> IOResult {
 }
 
 auto up::NativeBackend::currentWorkingDirectory() const noexcept -> string {
-    return getcwd();
+    // FIXME: https://eklitzke.org/path-max-is-tricky
+    char buffer[PATH_MAX] = {0,};
+    getcwd(buffer, sizeof(buffer));
+    return string(buffer);
 }
 
 void up::NativeBackend::currentWorkingDirectory(zstring_view path) {
