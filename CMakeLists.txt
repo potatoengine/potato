@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.11)
 project(grimm VERSION 0.1 LANGUAGES CXX)
 
+if(NOT UP_ROOT_DIR)
+    set(UP_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Root source directory")
+endif()
+if(NOT UP_OUTPUT_DIR)
+    get_filename_component(PARENT_DIR  ${CMAKE_BINARY_DIR} UP_OUTPUT_DIR)
+    set(UP_OUTPUT_DIR "${UP_OUTPUT_DIR}" CACHE PATH "Output directory")
+endif()
+
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -24,3 +32,10 @@ include(GNUInstallDirs)
 
 add_subdirectory(external)
 add_subdirectory(source)
+
+configure_file(
+    scripts/config/tasks.vs.json.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/tasks.vs.json
+    @ONLY
+    
+)

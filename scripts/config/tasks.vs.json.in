@@ -1,0 +1,16 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskName": "[Potato] Convert Resources",
+      "appliesTo": "/",
+      "type": "default",
+      "command": "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@/recon.exe",
+      "args": [
+        "-source", "@UP_ROOT_DIR@/resources",
+        "-dest", "@UP_OUTPUT_DIR@/resources",
+        "-cache", "@UP_OUTPUT_DIR@/cache"
+      ]
+    }
+  ]
+}
