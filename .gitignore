@@ -8,3 +8,4 @@ deps/
 # Local configuration files
 .vs/
 .vscode/
+deps/
