@@ -20,6 +20,7 @@ if(WIN32)
         SDL2
         SDL2main
         imgui
+        nlohmann_json::nlohmann_json
     )
 
     include(up_copy_library_import)

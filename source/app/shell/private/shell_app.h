@@ -34,10 +34,12 @@ public:
     bool isRunning() const { return _running; }
 
 private:
-    void onWindowSizeChanged();
-    void onWindowClosed();
+    void _onWindowSizeChanged();
+    void _onWindowClosed();
 
     void _errorDialog(zstring_view message);
+
+    bool _loadConfig(zstring_view path);
 
 private:
     bool _running = true;
@@ -49,6 +51,7 @@ private:
     rc<Model> _cube;
     box<Node> _root;
     box<World> _world;
+    string _resourceDir;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     DrawImgui _drawImgui;
     Logger _logger;
