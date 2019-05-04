@@ -174,5 +174,5 @@ auto up::NativeBackend::currentWorkingDirectory() const noexcept -> string {
 }
 
 void up::NativeBackend::currentWorkingDirectory(zstring_view path) {
-    chdir(path.c_str()));
+    chdir(path.c_str());
 }
