@@ -4,6 +4,7 @@
 
 #include "_export.h"
 #include "potato/foundation/zstring_view.h"
+#include "potato/foundation/string.h"
 #include "potato/foundation/rc.h"
 #include "common.h"
 
@@ -34,6 +35,9 @@ namespace up {
 
         virtual IOResult remove(zstring_view path) = 0;
         virtual IOResult removeRecursive(zstring_view path) = 0;
+
+        virtual auto currentWorkingDirectory() const noexcept -> string = 0;
+        virtual void currentWorkingDirectory(zstring_view path) = 0;
 
     protected:
         Backend() = default;

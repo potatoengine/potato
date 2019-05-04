@@ -165,3 +165,11 @@ auto up::NativeBackend::removeRecursive(zstring_view path) -> IOResult {
     }
     return IOResult::Success;
 }
+
+auto up::NativeBackend::currentWorkingDirectory() const noexcept -> string {
+    return getcwd();
+}
+
+void up::NativeBackend::currentWorkingDirectory(zstring_view path) {
+    chdir(path.c_str()));
+}
