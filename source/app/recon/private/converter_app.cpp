@@ -20,6 +20,12 @@ up::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSy
 up::recon::ConverterApp::~ConverterApp() = default;
 
 bool up::recon::ConverterApp::run(span<char const*> args) {
+    zstring_view const configFile = "recon.config.json";
+    if (_fileSystem.fileExists(configFile)) {
+        _logger.info("Loading config file `{}'", configFile);
+        parseConfigFile(_config, _fileSystem, configFile, _logger);
+    }
+
     if (!parseArguments(_config, args, _fileSystem, _logger)) {
         _logger.error("Failed to parse arguments");
         return false;

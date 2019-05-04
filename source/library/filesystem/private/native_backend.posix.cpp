@@ -15,6 +15,7 @@
 #include <ftw.h>
 #include <errno.h>
 #include <stdio.h>
+#include <limits.h>
 
 #if !UP_PLATFORM_POSIX
 #    error "Invalid platform"
@@ -164,4 +165,15 @@ auto up::NativeBackend::removeRecursive(zstring_view path) -> IOResult {
         return errnoToResult(errno);
     }
     return IOResult::Success;
+}
+
+auto up::NativeBackend::currentWorkingDirectory() const noexcept -> string {
+    // FIXME: https://eklitzke.org/path-max-is-tricky
+    char buffer[PATH_MAX] = {0,};
+    getcwd(buffer, sizeof(buffer));
+    return string(buffer);
+}
+
+void up::NativeBackend::currentWorkingDirectory(zstring_view path) {
+    chdir(path.c_str());
 }

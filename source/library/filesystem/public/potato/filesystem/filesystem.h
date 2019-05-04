@@ -38,6 +38,9 @@ namespace up {
         [[nodiscard]] IOResult remove(zstring_view path) { return _impl->remove(path); }
         [[nodiscard]] IOResult removeRecursive(zstring_view path) { return _impl->removeRecursive(path); }
 
+        auto currentWorkingDirectory() const noexcept { return _impl->currentWorkingDirectory(); }
+        void currentWorkingDirectory(zstring_view path) { return _impl->currentWorkingDirectory(path); }
+
     private:
         static rc<Backend>& activeDefaultBackend();
 

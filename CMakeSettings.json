@@ -19,6 +19,10 @@
         {
           "name": "BUILD_SHARED_LIBS",
           "value": "ON"
+        },
+        {
+          "name": "UP_OUTPUT_DIR",
+          "value": "${projectDir}/out"
         }
       ]
     },
@@ -41,6 +45,10 @@
         {
           "name": "BUILD_SHARED_LIBS",
           "value": "OFF"
+        },
+        {
+          "name": "UP_OUTPUT_DIR",
+          "value": "${projectDir}/out"
         }
       ]
     },
@@ -63,6 +71,10 @@
         {
           "name": "BUILD_SHARED_LIBS",
           "value": "ON"
+        },
+        {
+          "name": "UP_OUTPUT_DIR",
+          "value": "${projectDir}/out"
         }
       ]
     },
@@ -85,6 +97,10 @@
         {
           "name": "BUILD_SHARED_LIBS",
           "value": "OFF"
+        },
+        {
+          "name": "UP_OUTPUT_DIR",
+          "value": "${projectDir}/out"
         }
       ]
     },

@@ -10,6 +10,8 @@
 #include "potato/foundation/vector.h"
 #include "potato/filesystem/stream.h"
 #include "potato/filesystem/stream_util.h"
+#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/json_util.h"
 #include "potato/gpu/device.h"
 #include "potato/gpu/factory.h"
 #include "potato/gpu/command_list.h"
@@ -38,6 +40,8 @@
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+
+#include <nlohmann/json.hpp>
 
 namespace up::components {
     struct Position {
@@ -73,6 +77,15 @@ up::ShellApp::~ShellApp() {
 
 int up::ShellApp::initialize() {
     using namespace up;
+
+    zstring_view configPath = "shell.config.json";
+    if (_fileSystem.fileExists(configPath)) {
+        _loadConfig(configPath);
+    }
+
+    if (!_resourceDir.empty()) {
+        _fileSystem.currentWorkingDirectory(_resourceDir.c_str());
+    }
 
     _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) {
@@ -188,10 +201,10 @@ void up::ShellApp::run() {
             case SDL_WINDOWEVENT:
                 switch (ev.window.event) {
                 case SDL_WINDOWEVENT_CLOSE:
-                    onWindowClosed();
+                    _onWindowClosed();
                     break;
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
-                    onWindowSizeChanged();
+                    _onWindowSizeChanged();
                     break;
                 }
                 break;
@@ -333,11 +346,11 @@ void up::ShellApp::quit() {
     _running = false;
 }
 
-void up::ShellApp::onWindowClosed() {
+void up::ShellApp::_onWindowClosed() {
     quit();
 }
 
-void up::ShellApp::onWindowSizeChanged() {
+void up::ShellApp::_onWindowSizeChanged() {
     int width, height;
     SDL_GetWindowSize(_window.get(), &width, &height);
     _camera->resetSwapChain(nullptr);
@@ -349,4 +362,32 @@ void up::ShellApp::onWindowSizeChanged() {
 void up::ShellApp::_errorDialog(zstring_view message) {
     _logger.error("Fatal error: {}", message);
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", message.c_str(), _window.get());
+}
+
+bool up::ShellApp::_loadConfig(zstring_view path) {
+    auto stream = _fileSystem.openRead(path, FileOpenMode::Text);
+    if (!stream) {
+        _logger.error("Failed to open `{}'", path.c_str());
+        return false;
+    }
+
+    string text;
+    if (readText(stream, text) != IOResult::Success) {
+        _logger.error("Failed to read `{}'", path.c_str());
+        return false;
+    }
+
+    auto jsonRoot = nlohmann::json::parse(text.begin(), text.end(), nullptr, false);
+    if (!jsonRoot.is_object()) {
+        _logger.error("Failed to parse file `{}': {}", path, "unknown parse error");
+        return false;
+    }
+
+    auto jsonResourceDir = jsonRoot["resourceDir"];
+
+    if (jsonResourceDir.is_string()) {
+        _resourceDir = jsonResourceDir.get<string>();
+    }
+
+    return true;
 }

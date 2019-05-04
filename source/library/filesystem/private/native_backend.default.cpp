@@ -86,3 +86,12 @@ auto up::NativeBackend::removeRecursive(zstring_view path) -> IOResult {
     std::filesystem::remove_all(path.c_str(), ec);
     return errorCodeToResult(ec);
 }
+
+auto up::NativeBackend::currentWorkingDirectory() const noexcept -> string {
+    auto path = std::filesystem::current_path().generic_u8string();
+    return string(path.c_str(), path.size());
+}
+
+void up::NativeBackend::currentWorkingDirectory(zstring_view path) {
+    std::filesystem::current_path(std::filesystem::path(path.c_str()));
+}

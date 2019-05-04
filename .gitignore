@@ -2,10 +2,13 @@
 out/
 build/
 
-# Caches
+# Cache directories
 deps/
 
-# Local configuration files
+# Application directories
 .vs/
 .vscode/
-deps/
+
+# Generated files
+tasks.vs.json
+launch.vs.json
