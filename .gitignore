@@ -4,3 +4,4 @@ out/
 # Local configuration files
 .vs/
 .vscode/
+deps/
