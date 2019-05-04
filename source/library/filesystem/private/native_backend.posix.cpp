@@ -15,6 +15,7 @@
 #include <ftw.h>
 #include <errno.h>
 #include <stdio.h>
+#include <limits.h>
 
 #if !UP_PLATFORM_POSIX
 #    error "Invalid platform"
