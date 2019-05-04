@@ -47,7 +47,7 @@ FetchContent_Declare(sdl2_vc_sdk
 )
 
 # Build dependencies
-message(STATUS "Updating dependencies")
+message(STATUS "Updating dependencies (this might take some time!)")
 
 set(OLD_TIDY ${CMAKE_CXX_CLANG_TIDY})
 set(CMAKE_CXX_CLANG_TIDY "")
