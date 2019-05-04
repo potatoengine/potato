@@ -5,14 +5,6 @@
     {
       "type": "default",
       "project": "CMakeLists.txt",
-      "projectTarget": "shell.exe (bin\\shell.exe)",
-      "name": "shell.exe (bin\\shell.exe)",
-      "cwd": "@UP_OUTPUT_DIR@",
-      "currentDir": "@UP_OUTPUT_DIR@"
-    },
-    {
-      "type": "default",
-      "project": "CMakeLists.txt",
       "projectTarget": "test_grimm_filesystem.exe (bin\\test_grimm_filesystem.exe)",
       "name": "test_grimm_filesystem.exe (bin\\test_grimm_filesystem.exe)",
       "currentDir": "@UP_ROOT_DIR@/source/filesystem/tests/fixtures"

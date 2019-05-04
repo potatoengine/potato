@@ -48,3 +48,8 @@ configure_file(
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/recon.config.json
     @ONLY
 )
+configure_file(
+    scripts/config/shell.config.json.in
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shell.config.json
+    @ONLY
+)
