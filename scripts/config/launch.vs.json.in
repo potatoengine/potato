@@ -5,17 +5,6 @@
     {
       "type": "default",
       "project": "CMakeLists.txt",
-      "projectTarget": "recon.exe (bin\\recon.exe)",
-      "name": "recon.exe (bin\\recon.exe)",
-      "args": [
-        "-source", "@UP_ROOT_DIR@/resources",
-        "-dest", "@UP_OUTPUT_DIR@/resources",
-        "-cache", "@UP_OUTPUT_DIR@/cache"
-      ]
-    },
-    {
-      "type": "default",
-      "project": "CMakeLists.txt",
       "projectTarget": "shell.exe (bin\\shell.exe)",
       "name": "shell.exe (bin\\shell.exe)",
       "cwd": "@UP_OUTPUT_DIR@",

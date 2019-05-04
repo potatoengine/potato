@@ -43,3 +43,8 @@ configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/launch.vs.json
     @ONLY
 )
+configure_file(
+    scripts/config/recon.config.json.in
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/recon.config.json
+    @ONLY
+)
