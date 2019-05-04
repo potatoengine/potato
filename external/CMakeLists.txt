@@ -8,13 +8,13 @@ FetchContent_Declare(doctest
 )
 FetchContent_Declare(litexx
     GIT_REPOSITORY https://github.com/seanmiddleditch/litexx.git
-    GIT_TAG 19c31a3d1cdd7ca5ba99c28b7d634cc9e2e97539
+    GIT_TAG 0.1.0
     GIT_SHALLOW ON
     GIT_SUBMODULES ""
 )
 FetchContent_Declare(formatxx
     GIT_REPOSITORY https://github.com/seanmiddleditch/formatxx.git
-    GIT_TAG 15b7b71e3c1ce23224a7fc1f94121f99f321e0a4
+    GIT_TAG 0.10.0
     GIT_SHALLOW ON
     GIT_SUBMODULES ""
 )
