@@ -1,5 +1,9 @@
 # Build output directory
 out/
+build/
+
+# Caches
+deps/
 
 # Local configuration files
 .vs/
