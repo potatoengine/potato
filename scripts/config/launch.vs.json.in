@@ -8,29 +8,25 @@
       "projectTarget": "recon.exe (bin\\recon.exe)",
       "name": "recon.exe (bin\\recon.exe)",
       "args": [
-        "-source",
-        "${workspaceRoot}/resources",
-        "-dest",
-        "${workspaceRoot}/out/resources",
-        "-cache",
-        "${workspaceRoot}/out/cache"
-      ],
-      "cwd": "${workspaceRoot}"
+        "-source", "@UP_ROOT_DIR@/resources",
+        "-dest", "@UP_OUTPUT_DIR@/resources",
+        "-cache", "@UP_OUTPUT_DIR@/cache"
+      ]
     },
     {
       "type": "default",
       "project": "CMakeLists.txt",
       "projectTarget": "shell.exe (bin\\shell.exe)",
       "name": "shell.exe (bin\\shell.exe)",
-      "cwd": "${workspaceRoot}/out",
-      "currentDir": "${workspaceRoot}/out"
+      "cwd": "@UP_OUTPUT_DIR@",
+      "currentDir": "@UP_OUTPUT_DIR@"
     },
     {
       "type": "default",
       "project": "CMakeLists.txt",
       "projectTarget": "test_grimm_filesystem.exe (bin\\test_grimm_filesystem.exe)",
       "name": "test_grimm_filesystem.exe (bin\\test_grimm_filesystem.exe)",
-      "currentDir": "${workspaceRoot}/source/filesystem/tests/fixtures"
+      "currentDir": "@UP_ROOT_DIR@/source/filesystem/tests/fixtures"
     }
   ]
 }

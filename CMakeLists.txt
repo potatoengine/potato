@@ -37,5 +37,9 @@ configure_file(
     scripts/config/tasks.vs.json.in
     ${CMAKE_CURRENT_SOURCE_DIR}/tasks.vs.json
     @ONLY
-    
+)
+configure_file(
+    scripts/config/launch.vs.json.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/launch.vs.json
+    @ONLY
 )
