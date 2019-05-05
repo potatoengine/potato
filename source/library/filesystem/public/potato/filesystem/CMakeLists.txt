@@ -7,6 +7,5 @@ target_sources(filesystem PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/null.h
     ${CMAKE_CURRENT_SOURCE_DIR}/path_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/stream.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/stream_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/vfs.h
 )

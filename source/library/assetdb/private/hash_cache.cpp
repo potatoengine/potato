@@ -2,7 +2,7 @@
 
 #include "potato/assetdb/hash_cache.h"
 #include "potato/foundation/hash_fnv1a.h"
-#include "potato/filesystem/stream_util.h"
+#include "potato/filesystem/stream.h"
 #include "potato/filesystem/json_util.h"
 #include <nlohmann/json.hpp>
 

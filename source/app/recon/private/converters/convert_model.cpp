@@ -4,7 +4,7 @@
 #include "potato/foundation/std_iostream.h"
 #include "potato/filesystem/path_util.h"
 #include "potato/filesystem/filesystem.h"
-#include "potato/filesystem/stream_util.h"
+#include "potato/filesystem/stream.h"
 #include "potato/logger/logger.h"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>

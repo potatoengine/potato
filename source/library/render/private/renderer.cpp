@@ -15,7 +15,6 @@
 #include "potato/gpu/texture.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/stream.h"
-#include "potato/filesystem/stream_util.h"
 #include "potato/filesystem/json_util.h"
 #include <iostream>
 #include <nlohmann/json.hpp>

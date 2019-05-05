@@ -4,7 +4,7 @@
 #include "potato/foundation/string_view.h"
 #include "potato/foundation/zstring_view.h"
 #include "potato/filesystem/filesystem.h"
-#include "potato/filesystem/stream_util.h"
+#include "potato/filesystem/stream.h"
 #include "potato/filesystem/json_util.h"
 #include "potato/logger/logger.h"
 #include <nlohmann/json.hpp>
