@@ -1,13 +1,13 @@
-#include "potato/filesystem/null_backend.h"
+#include "potato/filesystem/null.h"
 #include "potato/filesystem/stream.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[potato][filesystem] up::NullBackend") {
+DOCTEST_TEST_SUITE("[potato][filesystem] up::NullFileSystem") {
     using namespace up;
     using namespace up;
 
     DOCTEST_TEST_CASE("null abides") {
-        auto null = NullBackend();
+        auto null = NullFileSystem();
 
         DOCTEST_CHECK(!null.fileExists("/test.txt"));
         DOCTEST_CHECK(!null.directoryExists("/"));
