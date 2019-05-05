@@ -12,7 +12,7 @@
       "ctestCommandArgs": "--verbose",
       "environments": [
         {
-          "CXXFLAGS": "/W3 /WX"
+          "CXXFLAGS": "/W3 /WX /FC"
         }
       ],
       "variables": [
@@ -38,7 +38,7 @@
       "ctestCommandArgs": "--verbose",
       "environments": [
         {
-          "CXXFLAGS": "/W3 /WX"
+          "CXXFLAGS": "/W3 /WX /FC"
         }
       ],
       "variables": [
@@ -64,7 +64,7 @@
       "ctestCommandArgs": "--verbose",
       "environments": [
         {
-          "CXXFLAGS": "/W3 /WX"
+          "CXXFLAGS": "/W3 /WX /FC"
         }
       ],
       "variables": [
@@ -90,7 +90,7 @@
       "ctestCommandArgs": "--verbose",
       "environments": [
         {
-          "CXXFLAGS": "/W3 /WX"
+          "CXXFLAGS": "/W3 /WX /FC"
         }
       ],
       "variables": [
