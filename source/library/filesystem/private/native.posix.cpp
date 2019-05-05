@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/filesystem/native.h"
-#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/path.h"
 #include "potato/foundation/platform.h"
 #include "potato/foundation/unique_resource.h"
 #include "potato/foundation/string_writer.h"

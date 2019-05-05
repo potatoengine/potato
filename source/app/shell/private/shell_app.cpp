@@ -9,7 +9,7 @@
 #include "potato/foundation/unique_resource.h"
 #include "potato/foundation/vector.h"
 #include "potato/filesystem/stream.h"
-#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/path.h"
 #include "potato/filesystem/json_util.h"
 #include "potato/filesystem/native.h"
 #include "potato/gpu/device.h"

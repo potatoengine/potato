@@ -2,7 +2,7 @@
 
 #include "convert_copy.h"
 #include "potato/foundation/std_iostream.h"
-#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/path.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/logger/logger.h"
 

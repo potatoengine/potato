@@ -3,7 +3,7 @@
 #include "converter_app.h"
 #include "potato/foundation/string_view.h"
 #include "potato/foundation/std_iostream.h"
-#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/path.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/native.h"
 #include "potato/filesystem/stream.h"

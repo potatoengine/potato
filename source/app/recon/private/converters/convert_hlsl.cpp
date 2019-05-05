@@ -8,7 +8,7 @@
 #include "potato/foundation/std_iostream.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/stream.h"
-#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/path.h"
 #include "potato/logger/logger.h"
 #include <d3d11.h>
 #include <d3dcompiler.h>
