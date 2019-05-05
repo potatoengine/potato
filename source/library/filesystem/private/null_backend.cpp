@@ -22,7 +22,3 @@ auto up::NullBackend::copyFile(zstring_view from, zstring_view to) -> IOResult {
 auto up::NullBackend::remove(zstring_view path) -> IOResult { return IOResult::UnsupportedOperation; }
 
 auto up::NullBackend::removeRecursive(zstring_view path) -> IOResult { return IOResult::UnsupportedOperation; }
-
-auto up::NullBackend::currentWorkingDirectory() const noexcept -> string { return string(); }
-
-void up::NullBackend::currentWorkingDirectory(zstring_view path) {}

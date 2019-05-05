@@ -62,7 +62,7 @@ UP_COMPONENT(up::components::Position);
 UP_COMPONENT(up::components::Transform);
 UP_COMPONENT(up::components::Mesh);
 
-up::ShellApp::ShellApp() : _fileSystem(new_box<NativeBackend>()), _logger("shell"), _world(new_box<World>()) {}
+up::ShellApp::ShellApp() : _logger("shell"), _world(new_box<World>()) {}
 
 up::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
@@ -80,12 +80,12 @@ int up::ShellApp::initialize() {
     using namespace up;
 
     zstring_view configPath = "shell.config.json";
-    if (_fileSystem->fileExists(configPath)) {
+    if (_fileSystem.fileExists(configPath)) {
         _loadConfig(configPath);
     }
 
     if (!_resourceDir.empty()) {
-        _fileSystem->currentWorkingDirectory(_resourceDir.c_str());
+        _fileSystem.currentWorkingDirectory(_resourceDir.c_str());
     }
 
     _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
@@ -117,7 +117,7 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _renderer = new_box<Renderer>(*_fileSystem, _device);
+    _renderer = new_box<Renderer>(_fileSystem, _device);
 
 #if UP_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
@@ -366,7 +366,7 @@ void up::ShellApp::_errorDialog(zstring_view message) {
 }
 
 bool up::ShellApp::_loadConfig(zstring_view path) {
-    auto stream = _fileSystem->openRead(path, FileOpenMode::Text);
+    auto stream = _fileSystem.openRead(path, FileOpenMode::Text);
     if (!stream) {
         _logger.error("Failed to open `{}'", path.c_str());
         return false;

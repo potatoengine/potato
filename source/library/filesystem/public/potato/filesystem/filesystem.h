@@ -35,9 +35,6 @@ namespace up {
         virtual IOResult remove(zstring_view path) = 0;
         virtual IOResult removeRecursive(zstring_view path) = 0;
 
-        virtual auto currentWorkingDirectory() const noexcept -> string = 0;
-        virtual void currentWorkingDirectory(zstring_view path) = 0;
-
     protected:
         FileSystem() = default;
     };

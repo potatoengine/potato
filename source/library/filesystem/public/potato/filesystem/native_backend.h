@@ -27,7 +27,7 @@ namespace up {
         UP_FILESYSTEM_API IOResult remove(zstring_view path) override;
         UP_FILESYSTEM_API IOResult removeRecursive(zstring_view path) override;
 
-        UP_FILESYSTEM_API auto currentWorkingDirectory() const noexcept -> string override;
-        UP_FILESYSTEM_API void currentWorkingDirectory(zstring_view path) override;
+        UP_FILESYSTEM_API auto currentWorkingDirectory() const noexcept -> string;
+        UP_FILESYSTEM_API void currentWorkingDirectory(zstring_view path);
     };
 } // namespace up
