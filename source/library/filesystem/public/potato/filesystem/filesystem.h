@@ -3,47 +3,42 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/rc.h"
 #include "potato/foundation/zstring_view.h"
-#include "potato/foundation/delegate.h"
+#include "potato/foundation/string.h"
+#include "potato/foundation/rc.h"
 #include "common.h"
-#include "backend.h"
 
 namespace up {
-    class Backend;
     class Stream;
 
-    class FileSystem {
+    class FileSystem : public shared<FileSystem> {
     public:
-        UP_FILESYSTEM_API FileSystem();
-        UP_FILESYSTEM_API /*explicit*/ FileSystem(rc<Backend> backend);
-        UP_FILESYSTEM_API ~FileSystem();
+        virtual ~FileSystem() = default;
 
-        static UP_FILESYSTEM_API rc<Backend> swapDefaultBackend(rc<Backend> backend);
+        FileSystem(FileSystem const&) = default;
+        FileSystem& operator=(FileSystem const&) = default;
 
-        bool fileExists(zstring_view path) const noexcept { return _impl->fileExists(path); }
-        bool directoryExists(zstring_view path) const noexcept { return _impl->directoryExists(path); }
+        virtual bool fileExists(zstring_view path) const noexcept = 0;
+        virtual bool directoryExists(zstring_view path) const noexcept = 0;
 
-        [[nodiscard]] IOResult fileStat(zstring_view path, FileStat& outInfo) const { return _impl->fileStat(path, outInfo); }
+        virtual IOResult fileStat(zstring_view path, FileStat& outInfo) const = 0;
 
-        UP_FILESYSTEM_API Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept;
-        UP_FILESYSTEM_API Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const noexcept;
+        virtual Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const = 0;
+        virtual Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) = 0;
 
-        EnumerateResult enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts = EnumerateOptions::None) const { return _impl->enumerate(path, cb, opts); }
+        virtual EnumerateResult enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts = EnumerateOptions::None) const = 0;
 
-        [[nodiscard]] IOResult createDirectories(zstring_view path) { return _impl->createDirectories(path); }
+        virtual IOResult createDirectories(zstring_view path) = 0;
 
-        [[nodiscard]] IOResult copyFile(zstring_view from, zstring_view to) { return _impl->copyFile(from, to); }
+        virtual IOResult copyFile(zstring_view from, zstring_view to) = 0;
 
-        [[nodiscard]] IOResult remove(zstring_view path) { return _impl->remove(path); }
-        [[nodiscard]] IOResult removeRecursive(zstring_view path) { return _impl->removeRecursive(path); }
+        virtual IOResult remove(zstring_view path) = 0;
+        virtual IOResult removeRecursive(zstring_view path) = 0;
 
-        auto currentWorkingDirectory() const noexcept { return _impl->currentWorkingDirectory(); }
-        void currentWorkingDirectory(zstring_view path) { return _impl->currentWorkingDirectory(path); }
+        virtual auto currentWorkingDirectory() const noexcept -> string = 0;
+        virtual void currentWorkingDirectory(zstring_view path) = 0;
 
-    private:
-        static rc<Backend>& activeDefaultBackend();
-
-        rc<Backend> _impl;
+    protected:
+        FileSystem() = default;
     };
 } // namespace up

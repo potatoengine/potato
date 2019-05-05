@@ -5,6 +5,7 @@
 #include "potato/filesystem/path_util.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/stream_util.h"
+#include "potato/logger/logger.h"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/Exporter.hpp>
@@ -20,16 +21,14 @@ bool up::recon::ModelConverter::convert(Context& ctx) {
 
     string destParentAbsolutePath(path::parent(string_view(destAbsolutePath)));
 
-    FileSystem fileSys;
-
-    if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
+    if (!ctx.fileSystem().directoryExists(destParentAbsolutePath.c_str())) {
+        if (ctx.fileSystem().createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }
 
-    auto file = fileSys.openRead(sourceAbsolutePath);
+    auto file = ctx.fileSystem().openRead(sourceAbsolutePath);
 
     vector<byte> contents;
     if (readBinary(file, contents) != IOResult::Success) {
@@ -54,7 +53,7 @@ bool up::recon::ModelConverter::convert(Context& ctx) {
     Assimp::Exporter exporter;
     aiExportDataBlob const* data = exporter.ExportToBlob(scene, "assbin", 0);
 
-    file = fileSys.openWrite(destAbsolutePath);
+    file = ctx.fileSystem().openWrite(destAbsolutePath);
     file.write(span{reinterpret_cast<byte const*>(data->data), data->size});
     file.close();
 

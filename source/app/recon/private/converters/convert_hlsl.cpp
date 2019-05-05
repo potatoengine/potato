@@ -10,6 +10,7 @@
 #include "potato/filesystem/stream.h"
 #include "potato/filesystem/stream_util.h"
 #include "potato/filesystem/path_util.h"
+#include "potato/logger/logger.h"
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <fstream>
@@ -62,11 +63,9 @@ up::recon::HlslConverter::HlslConverter() = default;
 up::recon::HlslConverter::~HlslConverter() = default;
 
 bool up::recon::HlslConverter::convert(Context& ctx) {
-    FileSystem fs;
-
     auto absoluteSourcePath = path::join({string_view(ctx.sourceFolderPath()), ctx.sourceFilePath()});
 
-    auto stream = fs.openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
+    auto stream = ctx.fileSystem().openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
     if (!stream) {
         return false;
     }
@@ -79,8 +78,8 @@ bool up::recon::HlslConverter::convert(Context& ctx) {
 
     stream.close();
 
-    bool success = compile(ctx, fs, absoluteSourcePath, shader, "vertex_main", "vs_5_0");
-    success = compile(ctx, fs, absoluteSourcePath, shader, "pixel_main", "ps_5_0") && success;
+    bool success = compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "vertex_main", "vs_5_0");
+    success = compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "pixel_main", "ps_5_0") && success;
 
     return success;
 }

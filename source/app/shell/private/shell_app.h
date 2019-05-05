@@ -43,7 +43,7 @@ private:
 
 private:
     bool _running = true;
-    FileSystem _fileSystem;
+    box<FileSystem> _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
     box<Renderer> _renderer;

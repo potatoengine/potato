@@ -7,7 +7,7 @@ DOCTEST_TEST_SUITE("[potato][filesystem] up::NullBackend") {
     using namespace up;
 
     DOCTEST_TEST_CASE("null abides") {
-        auto null = NullBackend::create();
+        auto null = NullBackend();
 
         DOCTEST_CHECK(!null.fileExists("/test.txt"));
         DOCTEST_CHECK(!null.directoryExists("/"));

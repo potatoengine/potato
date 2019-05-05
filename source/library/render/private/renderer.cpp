@@ -33,7 +33,7 @@ namespace {
     };
 } // namespace
 
-up::Renderer::Renderer(FileSystem fileSystem, rc<GpuDevice> device) : _device(std::move(device)), _fileSystem(std::move(fileSystem)), _renderThread([this] { _renderMain(); }) {
+up::Renderer::Renderer(FileSystem& fileSystem, rc<GpuDevice> device) : _device(std::move(device)), _fileSystem(fileSystem), _renderThread([this] { _renderMain(); }) {
     _commandList = _device->createCommandList();
 
     _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.json");

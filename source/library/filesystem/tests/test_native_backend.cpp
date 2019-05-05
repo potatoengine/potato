@@ -12,7 +12,7 @@ DOCTEST_TEST_SUITE("[potato][filesystem] up::NativeBackend") {
     using namespace up;
 
     DOCTEST_TEST_CASE("fileExists") {
-        auto native = NativeBackend::create();
+        auto native = NativeBackend();
 
         DOCTEST_CHECK(native.fileExists("test.txt"));
         DOCTEST_CHECK(!native.fileExists("foobar.txt"));
@@ -21,7 +21,7 @@ DOCTEST_TEST_SUITE("[potato][filesystem] up::NativeBackend") {
     }
 
     DOCTEST_TEST_CASE("directoryExists") {
-        auto native = NativeBackend::create();
+        auto native = NativeBackend();
 
         DOCTEST_CHECK(native.directoryExists("parent"));
         DOCTEST_CHECK(native.directoryExists("parent/child"));
@@ -31,7 +31,7 @@ DOCTEST_TEST_SUITE("[potato][filesystem] up::NativeBackend") {
     }
 
     DOCTEST_TEST_CASE("openRead") {
-        auto native = NativeBackend::create();
+        auto native = NativeBackend();
 
         auto inFile = native.openRead("test.txt", FileOpenMode::Text);
         DOCTEST_CHECK(inFile.isOpen());
@@ -51,7 +51,7 @@ DOCTEST_TEST_SUITE("[potato][filesystem] up::NativeBackend") {
             "parent/child/hello.txt"_sv,
             "test.txt"_sv};
 
-        auto native = NativeBackend::create();
+        auto native = NativeBackend();
 
         vector<string> entries;
 
@@ -72,7 +72,7 @@ DOCTEST_TEST_SUITE("[potato][filesystem] up::NativeBackend") {
     }
 
     DOCTEST_TEST_CASE("stat") {
-        auto native = NativeBackend::create();
+        auto native = NativeBackend();
 
         FileStat stat;
         auto rs = native.fileStat("test.txt", stat);

@@ -4,10 +4,6 @@
 #include "potato/filesystem/stream.h"
 #include <fstream>
 
-auto up::NativeBackend::create() -> FileSystem {
-    return FileSystem(rc<NativeBackend>(new NativeBackend));
-}
-
 namespace up {
     namespace {
         struct NativeInputBackend : public Stream::Backend {
