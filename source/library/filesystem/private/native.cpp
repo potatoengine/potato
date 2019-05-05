@@ -1,6 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "potato/filesystem/native_backend.h"
+#include "potato/filesystem/native.h"
 #include "potato/filesystem/stream.h"
 #include <fstream>
 
@@ -93,10 +93,10 @@ namespace up {
     } // namespace
 } // namespace up
 
-auto up::NativeBackend::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
+auto up::NativeFileSystem::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
     return Stream(up::new_box<NativeInputBackend>(std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }
 
-auto up::NativeBackend::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
+auto up::NativeFileSystem::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
     return Stream(up::new_box<NativeOutputBackend>(std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }

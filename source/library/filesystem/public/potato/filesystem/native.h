@@ -6,9 +6,9 @@
 #include "filesystem.h"
 
 namespace up {
-    class NativeBackend : public FileSystem {
+    class NativeFileSystem : public FileSystem {
     public:
-        NativeBackend() noexcept = default;
+        NativeFileSystem() noexcept = default;
 
         UP_FILESYSTEM_API bool fileExists(zstring_view path) const noexcept override;
         UP_FILESYSTEM_API bool directoryExists(zstring_view path) const noexcept override;

@@ -5,7 +5,7 @@
 #include "potato/foundation/std_iostream.h"
 #include "potato/filesystem/path_util.h"
 #include "potato/filesystem/filesystem.h"
-#include "potato/filesystem/native_backend.h"
+#include "potato/filesystem/native.h"
 #include "potato/filesystem/stream.h"
 #include "potato/assetdb/hash_cache.h"
 #include "converters/convert_hlsl.h"
@@ -16,7 +16,7 @@
 #include <set>
 #include <algorithm>
 
-up::recon::ConverterApp::ConverterApp() : _programName("recon"), _fileSystem(new_box<NativeBackend>()), _hashes(*_fileSystem), _logger("recon") {}
+up::recon::ConverterApp::ConverterApp() : _programName("recon"), _fileSystem(new_box<NativeFileSystem>()), _hashes(*_fileSystem), _logger("recon") {}
 
 up::recon::ConverterApp::~ConverterApp() = default;
 

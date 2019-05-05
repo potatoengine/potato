@@ -12,7 +12,7 @@
 #include "potato/filesystem/stream_util.h"
 #include "potato/filesystem/path_util.h"
 #include "potato/filesystem/json_util.h"
-#include "potato/filesystem/native_backend.h"
+#include "potato/filesystem/native.h"
 #include "potato/gpu/device.h"
 #include "potato/gpu/factory.h"
 #include "potato/gpu/command_list.h"
