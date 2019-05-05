@@ -3,7 +3,7 @@
 #include "potato/assetdb/hash_cache.h"
 #include "potato/foundation/hash_fnv1a.h"
 #include "potato/filesystem/stream.h"
-#include "potato/filesystem/json_util.h"
+#include "potato/filesystem/json.h"
 #include <nlohmann/json.hpp>
 
 auto up::HashCache::hashAssetContent(span<up::byte const> contents) noexcept -> up::uint64 {
