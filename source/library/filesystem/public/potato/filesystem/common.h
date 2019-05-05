@@ -14,6 +14,7 @@ namespace up {
         System,
         InvalidArgument,
         UnsupportedOperation,
+        Malformed,
         Unknown,
     };
 

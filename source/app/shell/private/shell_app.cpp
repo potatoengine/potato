@@ -371,15 +371,10 @@ bool up::ShellApp::_loadConfig(zstring_view path) {
         return false;
     }
 
-    string text;
-    if (readText(stream, text) != IOResult::Success) {
-        _logger.error("Failed to read `{}'", path.c_str());
-        return false;
-    }
-
-    auto jsonRoot = nlohmann::json::parse(text.begin(), text.end(), nullptr, false);
+    nlohmann::json jsonRoot;
+    IOResult rs = readJson(stream, jsonRoot);
     if (!jsonRoot.is_object()) {
-        _logger.error("Failed to parse file `{}': {}", path, "unknown parse error");
+        _logger.error("Failed to parse file `{}': {}", path, rs);
         return false;
     }
 
