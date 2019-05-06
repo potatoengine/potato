@@ -3,8 +3,9 @@
 #include "converter_app.h"
 #include "potato/foundation/string_view.h"
 #include "potato/foundation/std_iostream.h"
-#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/path.h"
 #include "potato/filesystem/filesystem.h"
+#include "potato/filesystem/native.h"
 #include "potato/filesystem/stream.h"
 #include "potato/assetdb/hash_cache.h"
 #include "converters/convert_hlsl.h"
@@ -15,18 +16,18 @@
 #include <set>
 #include <algorithm>
 
-up::recon::ConverterApp::ConverterApp() : _programName("recon"), _hashes(_fileSystem), _logger("recon") {}
+up::recon::ConverterApp::ConverterApp() : _programName("recon"), _fileSystem(new_box<NativeFileSystem>()), _hashes(*_fileSystem), _logger("recon") {}
 
 up::recon::ConverterApp::~ConverterApp() = default;
 
 bool up::recon::ConverterApp::run(span<char const*> args) {
     zstring_view const configFile = "recon.config.json";
-    if (_fileSystem.fileExists(configFile)) {
+    if (_fileSystem->fileExists(configFile)) {
         _logger.info("Loading config file `{}'", configFile);
-        parseConfigFile(_config, _fileSystem, configFile, _logger);
+        parseConfigFile(_config, *_fileSystem, configFile, _logger);
     }
 
-    if (!parseArguments(_config, args, _fileSystem, _logger)) {
+    if (!parseArguments(_config, args, *_fileSystem, _logger)) {
         _logger.error("Failed to parse arguments");
         return false;
     }
@@ -35,8 +36,8 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
 
     auto libraryPath = path::join({string_view(_config.destinationFolderPath), "library$.json"});
     _outputs.push_back("library$.json");
-    if (_fileSystem.fileExists(libraryPath.c_str())) {
-        auto libraryReadStream = _fileSystem.openRead(libraryPath.c_str(), FileOpenMode::Text);
+    if (_fileSystem->fileExists(libraryPath.c_str())) {
+        auto libraryReadStream = _fileSystem->openRead(libraryPath.c_str(), FileOpenMode::Text);
         if (!libraryReadStream) {
             _logger.error("Failed to open asset library `{}'", libraryPath);
         }
@@ -48,8 +49,8 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
 
     auto hashCachePath = path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
     _outputs.push_back("hashes$.json");
-    if (_fileSystem.fileExists(hashCachePath.c_str())) {
-        auto hashesReadStream = _fileSystem.openRead(hashCachePath.c_str(), FileOpenMode::Text);
+    if (_fileSystem->fileExists(hashCachePath.c_str())) {
+        auto hashesReadStream = _fileSystem->openRead(hashCachePath.c_str(), FileOpenMode::Text);
         if (!hashesReadStream) {
             _logger.error("Failed to open hash cache `{}'", hashCachePath);
         }
@@ -83,15 +84,15 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
     _logger.info("Destination: `{}'", _config.destinationFolderPath);
     _logger.info("Cache: `{}'", _config.cacheFolderPath);
 
-    if (!_fileSystem.directoryExists(_config.destinationFolderPath.c_str())) {
-        if (_fileSystem.createDirectories(_config.destinationFolderPath.c_str()) != IOResult::Success) {
+    if (!_fileSystem->directoryExists(_config.destinationFolderPath.c_str())) {
+        if (_fileSystem->createDirectories(_config.destinationFolderPath.c_str()) != IOResult::Success) {
             _logger.error("Failed to create `{}'", _config.destinationFolderPath);
             return false;
         }
     }
 
-    if (!_fileSystem.directoryExists(_config.cacheFolderPath.c_str())) {
-        if (_fileSystem.createDirectories(_config.cacheFolderPath.c_str()) != IOResult::Success) {
+    if (!_fileSystem->directoryExists(_config.cacheFolderPath.c_str())) {
+        if (_fileSystem->createDirectories(_config.cacheFolderPath.c_str()) != IOResult::Success) {
             _logger.error("Failed to create `{}'", _config.cacheFolderPath);
             return false;
         }
@@ -102,14 +103,14 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
         _logger.error("Conversion failed");
     }
 
-    auto hashesWriteStream = _fileSystem.openWrite(hashCachePath.c_str(), FileOpenMode::Text);
+    auto hashesWriteStream = _fileSystem->openWrite(hashCachePath.c_str(), FileOpenMode::Text);
     if (!_hashes.serialize(hashesWriteStream)) {
         _logger.error("Failed to write hash cache `{}'", hashCachePath);
         return false;
     }
     hashesWriteStream.close();
 
-    auto libraryWriteStream = _fileSystem.openWrite(libraryPath.c_str(), FileOpenMode::Text);
+    auto libraryWriteStream = _fileSystem->openWrite(libraryPath.c_str(), FileOpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
         _logger.error("Failed to write asset library `{}'", libraryPath);
         return false;
@@ -170,7 +171,7 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         auto name = converter->name();
         _logger.info("Asset `{}' requires import ({} {})", path.c_str(), std::string_view(name.data(), name.size()), converter->revision());
 
-        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), _logger);
+        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
         if (!converter->convert(context)) {
             failed = true;
             _logger.error("Failed conversion for `{}'", path);
@@ -221,7 +222,7 @@ bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
         }
         return EnumerateResult::Recurse;
     };
-    _fileSystem.enumerate(_config.destinationFolderPath.c_str(), cb);
+    _fileSystem->enumerate(_config.destinationFolderPath.c_str(), cb);
 
     vector<string> deleteFiles;
     std::set_difference(foundFiles.begin(), foundFiles.end(), keepFiles.begin(), keepFiles.end(), std::back_inserter(deleteFiles));
@@ -230,7 +231,7 @@ bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
         _logger.info("Stale output file `{}'", deletePath);
         if (!dryRun) {
             string osPath = path::join({_config.destinationFolderPath.c_str(), deletePath.c_str()});
-            auto rs = _fileSystem.remove(osPath.c_str());
+            auto rs = _fileSystem->remove(osPath.c_str());
             if (rs != IOResult::Success) {
                 _logger.error("Failed to remove `{}'", osPath);
             }
@@ -268,7 +269,7 @@ auto up::recon::ConverterApp::findConverter(string_view path) const -> Converter
 }
 
 auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
-    if (!_fileSystem.directoryExists(_config.sourceFolderPath.c_str())) {
+    if (!_fileSystem->directoryExists(_config.sourceFolderPath.c_str())) {
         _logger.error("`{}' does not exist or is not a directory", _config.sourceFolderPath);
         return {};
     }
@@ -284,7 +285,7 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
         }
         return EnumerateResult::Continue;
     };
-    _fileSystem.enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
+    _fileSystem->enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
 
     return files;
 }

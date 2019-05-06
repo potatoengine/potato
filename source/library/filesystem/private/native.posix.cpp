@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "potato/filesystem/native_backend.h"
-#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/native.h"
+#include "potato/filesystem/path.h"
 #include "potato/foundation/platform.h"
 #include "potato/foundation/unique_resource.h"
 #include "potato/foundation/string_writer.h"
@@ -28,7 +28,7 @@ static auto errnoToResult(int error) noexcept -> up::IOResult {
     }
 }
 
-bool up::NativeBackend::fileExists(zstring_view path) const noexcept {
+bool up::NativeFileSystem::fileExists(zstring_view path) const noexcept {
     struct stat st;
     if (::stat(path.c_str(), &st) != 0) {
         return false;
@@ -36,7 +36,7 @@ bool up::NativeBackend::fileExists(zstring_view path) const noexcept {
     return S_ISREG(st.st_mode) != 0;
 }
 
-bool up::NativeBackend::directoryExists(zstring_view path) const noexcept {
+bool up::NativeFileSystem::directoryExists(zstring_view path) const noexcept {
     struct stat st;
     if (::stat(path.c_str(), &st) != 0) {
         return false;
@@ -44,7 +44,7 @@ bool up::NativeBackend::directoryExists(zstring_view path) const noexcept {
     return S_ISDIR(st.st_mode) != 0;
 }
 
-auto up::NativeBackend::fileStat(zstring_view path, FileStat& outInfo) const -> IOResult {
+auto up::NativeFileSystem::fileStat(zstring_view path, FileStat& outInfo) const -> IOResult {
     struct stat st;
     if (stat(path.c_str(), &st) != 0) {
         return errnoToResult(errno);
@@ -101,7 +101,7 @@ static auto enumerateWorker(up::zstring_view path, up::EnumerateCallback cb, up:
     return up::EnumerateResult::Continue;
 }
 
-auto up::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
+auto up::NativeFileSystem::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
     string_writer writer;
 
     if ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath) {
@@ -111,7 +111,7 @@ auto up::NativeBackend::enumerate(zstring_view path, EnumerateCallback cb, Enume
     return enumerateWorker(path, cb, writer);
 }
 
-auto up::NativeBackend::createDirectories(zstring_view path) -> IOResult {
+auto up::NativeFileSystem::createDirectories(zstring_view path) -> IOResult {
     string dir;
 
     while (!path.empty() && strcmp(path.c_str(), "/") != 0 && !directoryExists(path)) {
@@ -126,7 +126,7 @@ auto up::NativeBackend::createDirectories(zstring_view path) -> IOResult {
     return IOResult::Success;
 }
 
-auto up::NativeBackend::copyFile(zstring_view from, zstring_view to) -> IOResult {
+auto up::NativeFileSystem::copyFile(zstring_view from, zstring_view to) -> IOResult {
     up::unique_resource<int, &close> inFile(open(from.c_str(), O_RDONLY));
     up::unique_resource<int, &close> outFile(open(to.c_str(), O_WRONLY | O_CREAT, S_IRWXU));
 
@@ -149,14 +149,14 @@ auto up::NativeBackend::copyFile(zstring_view from, zstring_view to) -> IOResult
     }
 }
 
-auto up::NativeBackend::remove(zstring_view path) -> IOResult {
+auto up::NativeFileSystem::remove(zstring_view path) -> IOResult {
     if (::remove(path.c_str()) != 0) {
         return errnoToResult(errno);
     }
     return IOResult::Success;
 }
 
-auto up::NativeBackend::removeRecursive(zstring_view path) -> IOResult {
+auto up::NativeFileSystem::removeRecursive(zstring_view path) -> IOResult {
     auto cb = [](char const* path, struct stat const* st, int flags, struct FTW* ftw) -> int {
         return ::remove(path);
     };
@@ -167,13 +167,13 @@ auto up::NativeBackend::removeRecursive(zstring_view path) -> IOResult {
     return IOResult::Success;
 }
 
-auto up::NativeBackend::currentWorkingDirectory() const noexcept -> string {
+auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
     // FIXME: https://eklitzke.org/path-max-is-tricky
     char buffer[PATH_MAX] = {0,};
     getcwd(buffer, sizeof(buffer));
     return string(buffer);
 }
 
-void up::NativeBackend::currentWorkingDirectory(zstring_view path) {
+void up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
     chdir(path.c_str());
 }

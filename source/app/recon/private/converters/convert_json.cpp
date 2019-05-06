@@ -2,8 +2,9 @@
 
 #include "convert_json.h"
 #include "potato/foundation/std_iostream.h"
-#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/path.h"
 #include "potato/filesystem/filesystem.h"
+#include "potato/logger/logger.h"
 #include <fstream>
 #include <nlohmann/json.hpp>
 
@@ -18,10 +19,8 @@ bool up::recon::JsonConverter::convert(Context& ctx) {
 
     string destParentAbsolutePath(path::parent(destAbsolutePath));
 
-    FileSystem fileSys;
-
-    if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
+    if (!ctx.fileSystem().directoryExists(destParentAbsolutePath.c_str())) {
+        if (ctx.fileSystem().createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }

@@ -7,8 +7,12 @@
 #include "potato/foundation/vector.h"
 #include "potato/foundation/std_iostream.h"
 #include "potato/assetdb/asset_record.h"
-#include "potato/logger/logger.h"
 #include <string>
+
+namespace up {
+    class FileSystem;
+    class Logger;
+}
 
 namespace up::recon {
     class Context {
@@ -16,10 +20,12 @@ namespace up::recon {
         Context(zstring_view sourceFilePath,
                 zstring_view sourceFolderPath,
                 zstring_view destinationFolderPath,
+                FileSystem& fileSystem,
                 Logger& logger)
             : _sourceFilePath(sourceFilePath),
               _sourceFolderPath(sourceFolderPath),
               _destinationFolderPath(destinationFolderPath),
+              _fileSystem(fileSystem),
               _logger(logger) {}
 
         Context(Context&&) = delete;
@@ -36,6 +42,7 @@ namespace up::recon {
         span<string const> sourceDependencies() const noexcept { return span{_sourceDependencies.data(), _sourceDependencies.size()}; }
         span<string const> outputs() const noexcept { return span{_outputs.data(), _outputs.size()}; }
 
+        FileSystem& fileSystem() noexcept { return _fileSystem; }
         Logger& logger() noexcept { return _logger; }
 
     private:
@@ -46,6 +53,7 @@ namespace up::recon {
         vector<string> _sourceDependencies;
         vector<string> _outputs;
 
+        FileSystem& _fileSystem;
         Logger& _logger;
     };
 } // namespace up::recon

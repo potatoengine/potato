@@ -2,12 +2,18 @@
 
 #pragma once
 
+#include "_export.h"
 #include "potato/foundation/box.h"
 #include "potato/foundation/int_types.h"
 #include "potato/foundation/span.h"
 #include "common.h"
 
 namespace up {
+    class string;
+    class string_view;
+    template <typename>
+    class vector;
+
     class Stream {
     public:
         using size_type = uint64;
@@ -70,4 +76,9 @@ namespace up {
     private:
         box<Backend> _impl;
     };
+
+    [[nodiscard]] UP_FILESYSTEM_API IOResult readBinary(Stream& stream, vector<up::byte>& out);
+    [[nodiscard]] UP_FILESYSTEM_API IOResult readText(Stream& stream, string& out);
+
+    [[nodiscard]] UP_FILESYSTEM_API IOResult writeAllText(Stream& stream, string_view text);
 } // namespace up
