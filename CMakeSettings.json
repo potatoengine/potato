@@ -113,6 +113,32 @@
           "type": "PATH"
         }
       ]
+    },
+    {
+      "name": "Linux via WSL (Debug Shared)",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}/out/wsl-debug-clang-shared/build",
+      "installRoot": "${projectDir}/out/wsl-debug-clang-shared/install",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "--verbose",
+      "inheritEnvironments": [ "linux_x64" ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "FETCHCONTENT_BASE_DIR",
+          "value": "/mnt/c/Users/Sean/Documents/Projects/grimm/deps/wsl",
+          "type": "PATH"
+        }
+      ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0"
     }
   ]
 }
