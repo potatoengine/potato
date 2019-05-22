@@ -89,11 +89,11 @@
       ]
     },
     {
-      "name": "Linux via WSL (Debug Shared)",
+      "name": "Linux via WSL (Debug Static)",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "buildRoot": "${projectDir}/out/wsl-debug-clang-shared/build",
-      "installRoot": "${projectDir}/out/wsl-debug-clang-shared/install",
+      "buildRoot": "${projectDir}/out/wsl-debug-clang-static/build",
+      "installRoot": "${projectDir}/out/wsl-debug-clang-static/install",
       "cmakeExecutable": "/usr/bin/cmake",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
@@ -104,7 +104,7 @@
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
-          "value": "True",
+          "value": "False",
           "type": "BOOL"
         },
         {
