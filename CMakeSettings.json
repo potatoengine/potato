@@ -140,6 +140,11 @@
           "name": "FETCHCONTENT_BASE_DIR",
           "value": "${projectDir}/deps/wsl",
           "type": "PATH"
+        },
+        {
+          "name": "UP_OUTPUT_DIR",
+          "value": "${projectDir}/out",
+          "type": "STRING"
         }
       ],
       "wslPath": "${defaultWSLPath}",
@@ -155,7 +160,13 @@
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "--verbose",
       "inheritEnvironments": [ "clang_cl_x64" ],
-      "variables": []
+      "variables": [
+        {
+          "name": "UP_OUTPUT_DIR",
+          "value": "${projectDir}/out",
+          "type": "PATH"
+        }
+      ]
     }
   ]
 }
