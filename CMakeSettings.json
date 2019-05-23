@@ -5,8 +5,8 @@
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}/out/debug/build",
-      "installRoot": "${projectDir}/out/debug/root",
+      "buildRoot": "${projectDir}/out/msvc-debug/build",
+      "installRoot": "${projectDir}/out/msvc-debug-shared/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "variables": [
@@ -27,8 +27,8 @@
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}/out/debug-static/build",
-      "installRoot": "${projectDir}/out/debug-static/root",
+      "buildRoot": "${projectDir}/out/msvc-debug-static/build",
+      "installRoot": "${projectDir}/out/msvc-debug-static/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "variables": [
@@ -49,8 +49,8 @@
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}/out/release/build",
-      "installRoot": "${projectDir}/out/release/root",
+      "buildRoot": "${projectDir}/out/msvc-release/build",
+      "installRoot": "${projectDir}/out/msvc-release-shared/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "variables": [
@@ -71,8 +71,8 @@
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}/out/release-static/build",
-      "installRoot": "${projectDir}/out/release-static/root",
+      "buildRoot": "${projectDir}/out/msvc-release-static/build",
+      "installRoot": "${projectDir}/out/msvc-release-static/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "variables": [
