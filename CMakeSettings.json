@@ -109,7 +109,7 @@
         },
         {
           "name": "FETCHCONTENT_BASE_DIR",
-          "value": "/mnt/c/Users/Sean/Documents/Projects/grimm/deps/wsl",
+          "value": "${projectDir}/deps/wsl",
           "type": "PATH"
         }
       ]
@@ -133,7 +133,7 @@
         },
         {
           "name": "FETCHCONTENT_BASE_DIR",
-          "value": "/mnt/c/Users/Sean/Documents/Projects/grimm/deps/wsl",
+          "value": "${projectDir}/deps/wsl",
           "type": "PATH"
         }
       ],
