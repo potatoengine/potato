@@ -4,25 +4,21 @@
       "name": "Windows (Debug)",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "inheritEnvironments": [
-        "msvc_x64_x64"
-      ],
-      "buildRoot": "${projectDir}/out/debug/build",
-      "installRoot": "${projectDir}/out/debug/root",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}/out/msvc-debug/build",
+      "installRoot": "${projectDir}/out/msvc-debug-shared/root",
       "ctestCommandArgs": "--verbose",
-      "environments": [
-        {
-          "CXXFLAGS": "/W3 /WX /FC"
-        }
-      ],
+      "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
-          "value": "ON"
+          "value": "ON",
+          "type": "STRING"
         },
         {
           "name": "UP_OUTPUT_DIR",
-          "value": "${projectDir}/out"
+          "value": "${projectDir}/out",
+          "type": "STRING"
         }
       ]
     },
@@ -30,25 +26,21 @@
       "name": "Windows (Debug Static)",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "inheritEnvironments": [
-        "msvc_x64_x64"
-      ],
-      "buildRoot": "${projectDir}/out/debug-static/build",
-      "installRoot": "${projectDir}/out/debug-static/root",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}/out/msvc-debug-static/build",
+      "installRoot": "${projectDir}/out/msvc-debug-static/root",
       "ctestCommandArgs": "--verbose",
-      "environments": [
-        {
-          "CXXFLAGS": "/W3 /WX /FC"
-        }
-      ],
+      "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
-          "value": "OFF"
+          "value": "OFF",
+          "type": "STRING"
         },
         {
           "name": "UP_OUTPUT_DIR",
-          "value": "${projectDir}/out"
+          "value": "${projectDir}/out",
+          "type": "STRING"
         }
       ]
     },
@@ -56,25 +48,21 @@
       "name": "Windows (Release)",
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
-      "inheritEnvironments": [
-        "msvc_x64_x64"
-      ],
-      "buildRoot": "${projectDir}/out/release/build",
-      "installRoot": "${projectDir}/out/release/root",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}/out/msvc-release/build",
+      "installRoot": "${projectDir}/out/msvc-release-shared/root",
       "ctestCommandArgs": "--verbose",
-      "environments": [
-        {
-          "CXXFLAGS": "/W3 /WX /FC"
-        }
-      ],
+      "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
-          "value": "ON"
+          "value": "ON",
+          "type": "STRING"
         },
         {
           "name": "UP_OUTPUT_DIR",
-          "value": "${projectDir}/out"
+          "value": "${projectDir}/out",
+          "type": "STRING"
         }
       ]
     },
@@ -82,75 +70,92 @@
       "name": "Windows (Release Static)",
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
-      "inheritEnvironments": [
-        "msvc_x64_x64"
-      ],
-      "buildRoot": "${projectDir}/out/release-static/build",
-      "installRoot": "${projectDir}/out/release-static/root",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}/out/msvc-release-static/build",
+      "installRoot": "${projectDir}/out/msvc-release-static/root",
       "ctestCommandArgs": "--verbose",
-      "environments": [
-        {
-          "CXXFLAGS": "/W3 /WX /FC"
-        }
-      ],
+      "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
-          "value": "OFF"
+          "value": "OFF",
+          "type": "STRING"
         },
         {
           "name": "UP_OUTPUT_DIR",
-          "value": "${projectDir}/out"
+          "value": "${projectDir}/out",
+          "type": "STRING"
         }
       ]
     },
     {
-      "name": "Linux (Debug)",
+      "name": "Linux via WSL (Debug Static)",
       "generator": "Ninja",
-      "remoteMachineName": "${defaultRemoteMachineName}",
       "configurationType": "Debug",
+      "buildRoot": "${projectDir}/out/wsl-debug-static/build",
+      "installRoot": "${projectDir}/out/wsl-debug-static/install",
       "cmakeExecutable": "/usr/bin/cmake",
-      "buildRoot": "${projectDir}/out/debug-linux/build",
-      "installRoot": "${projectDir}/out/debug-linux/root",
-      "remoteCMakeListsRoot": "/var/tmp/src/${projectDirName}/${workspaceHash}/debug-static",
-      "remoteBuildRoot": "/var/tmp/build/${projectDirName}/${workspaceHash}/debug-static/build/",
-      "remoteInstallRoot": "/var/tmp/build/${projectDirName}/${workspaceHash}/debug-static/install/",
-      "remoteCopySources": true,
-      "remoteCopySourcesOutputVerbosity": "Normal",
-      "remoteCopySourcesConcurrentCopies": "10",
-      "remoteCopySourcesMethod": "rsync",
-      "remoteCopySourcesExclusionList": [
-        ".vs",
-        ".git",
-        "external/doctest/examples",
-        "external/glm/doc",
-        "external/stb/tests",
-        "external/imgui/examples",
-        "external/json/test",
-        "external/litexx/external/*/",
-        "external/formatxx/external/*/",
-        "out"
-      ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "--verbose",
+      "inheritEnvironments": [ "linux_x64" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
       "variables": [
         {
-          "name": "CMAKE_CXX_COMPILER",
-          "value": "clang++-7"
+          "name": "BUILD_SHARED_LIBS",
+          "value": "False",
+          "type": "BOOL"
         },
         {
-          "name": "CMAKE_C_COMPILER",
-          "value": "clang-7"
+          "name": "FETCHCONTENT_BASE_DIR",
+          "value": "${projectDir}/deps/wsl",
+          "type": "PATH"
         },
         {
-          "name": "CMAKE_CXX_FLAGS",
-          "value": "-stdlib=libc++ -Wall -Werror"
+          "name": "UP_OUTPUT_DIR",
+          "value": "${projectDir}/out",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Linux via WSL (Debug Shared)",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}/out/wsl-debug-shared/build",
+      "installRoot": "${projectDir}/out/wsl-debug-shared/install",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "--verbose",
+      "inheritEnvironments": [ "linux_x64" ],
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "FETCHCONTENT_BASE_DIR",
+          "value": "${projectDir}/deps/wsl",
+          "type": "PATH"
         }
       ],
-      "rsyncCommandArgs": "-t --delete --delete-excluded",
-      "remoteCopyBuildOutput": false,
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0"
+    },
+    {
+      "name": "Clang (Debug Static)",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}/out/clang-debug-static/build",
+      "installRoot": "${projectDir}/out/clang-debug-static/install",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
       "ctestCommandArgs": "--verbose",
-      "inheritEnvironments": [
-        "linux_x64"
-      ]
+      "inheritEnvironments": [ "clang_cl_x64" ],
+      "variables": []
     }
   ]
 }
