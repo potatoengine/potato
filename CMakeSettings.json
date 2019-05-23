@@ -111,6 +111,11 @@
           "name": "FETCHCONTENT_BASE_DIR",
           "value": "${projectDir}/deps/wsl",
           "type": "PATH"
+        },
+        {
+          "name": "UP_OUTPUT_DIR",
+          "value": "${projectDir}/out",
+          "type": "STRING"
         }
       ]
     },
