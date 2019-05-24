@@ -17,7 +17,7 @@ namespace up {
         Semaphore& operator=(Semaphore const&) = delete;
 
         UP_FORCEINLINE inline void signal(int count = 1);
-        UP_FORCEINLINE [[nodiscard]] inline bool tryWait();
+        [[nodiscard]] UP_FORCEINLINE inline bool tryWait();
         UP_FORCEINLINE inline void wait();
 
     private:

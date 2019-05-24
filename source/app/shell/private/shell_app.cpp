@@ -61,7 +61,7 @@ UP_COMPONENT(up::components::Position);
 UP_COMPONENT(up::components::Transform);
 UP_COMPONENT(up::components::Mesh);
 
-up::ShellApp::ShellApp() : _logger("shell"), _world(new_box<World>()) {}
+up::ShellApp::ShellApp() : _world(new_box<World>()), _logger("shell") {}
 
 up::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
@@ -166,14 +166,10 @@ void up::ShellApp::run() {
     auto duration = now - now;
     float frameTime = 0;
 
-    float camSpeed = 10;
-    float camRotSpeed = 800;
-
     Camera camera;
     camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
 
     box<CameraController> controller = new_box<ArcBallCameraController>(camera);
-    glm::vec3 arcCenter = {0, 0, 0};
 
     float objRotateInput = 0;
 
@@ -245,8 +241,6 @@ void up::ShellApp::run() {
 
         controller->apply(camera, relativeMovement, relativeMotion, frameTime);
 
-        const float radiansPerSec = 2;
-        const float rotateRads = radiansPerSec * frameTime;
         objRotateInput += frameTime;
         _root->transform(glm::rotate(glm::rotate(glm::translate(glm::identity<glm::mat4x4>(), {0, 5, 0}), objRotateInput, {0, 1, 0}), std::sin(objRotateInput), {1, 0, 0}));
 

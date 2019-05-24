@@ -1,6 +1,6 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#include "D3D11_pipeline_state.h"
+#include "d3d11_pipeline_state.h"
 #include "potato/foundation/assertion.h"
 #include "potato/foundation/out_ptr.h"
 
