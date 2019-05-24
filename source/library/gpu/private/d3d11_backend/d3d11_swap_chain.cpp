@@ -27,7 +27,7 @@ auto up::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3D11De
 
     com_ptr<IDXGISwapChain1> swapChain;
     HRESULT hr = factory->CreateSwapChainForHwnd(device, window, &desc, nullptr, nullptr, out_ptr(swapChain));
-    if (swapChain == nullptr) {
+    if (FAILED(hr) || swapChain == nullptr) {
         return nullptr;
     }
 
