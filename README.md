@@ -17,7 +17,7 @@ Documentation
 Status
 ------
 
-[![Build Status](https://seanmiddleditch.visualstudio.com/potato/_apis/build/status/Potato?branchName=master)](https://seanmiddleditch.visualstudio.com/potato/_build/latest?definitionId=5&branchName=master)
+[![Build Status](https://seanmiddleditch.visualstudio.com/potato/_apis/build/status/Potato?branchName=master)](https://seanmiddleditch.visualstudio.com/potato/_build/latest?definitionId=10&branchName=master)
 
 Authors
 -------
