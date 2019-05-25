@@ -3,6 +3,11 @@ Possibly Known as UnderPotatoes
 
 <img title="Powered by a Potato" src="./documentation/images/potato.svg" width="128"/>
 
+About
+-----
+
+This is a hobby project by a few friends and colleagues. This isn't (yet) a serious engine or in an even remotely usable or exemplary state. You probably won't find anything of interest here and shouldn't consider using this project for anything.
+
 Documentation
 -------------
 
