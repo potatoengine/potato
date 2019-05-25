@@ -7,5 +7,5 @@ indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 
-[*.{json,yml,natvis,xml,json.in}]
+[*.{json,yml,natvis,xml,json.in,vsconfig}]
 indent_size = 2
