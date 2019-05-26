@@ -13,6 +13,7 @@
     "Microsoft.VisualStudio.Component.Debugger.JustInTime",
     "Microsoft.VisualStudio.Component.VC.Redist.14.Latest",
     "Microsoft.VisualStudio.Component.VC.CMake.Project",
+    "Microsoft.VisualStudio.Component.VC.Llvm.Clang",
     "Component.MDD.Linux",
     "Component.Linux.CMake"
   ]

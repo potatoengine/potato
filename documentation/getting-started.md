@@ -36,6 +36,16 @@ Several binary dependencies currently need to be installed manually.
 
 - Install the [AssImp 4.1 SDK Installer](https://github.com/assimp/assimp/releases/download/v4.1.0/assimp-sdk-4.1.0-setup.exe).
 
+Ubuntu in WSL
+-------------
+
+- [Enable Windows Subsystem for Linux and install Ubuntu](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+
+- Open Ubuntu and install required components:
+  ```
+  sudo apt-get install g++-7 ninja-build cmake
+  ```
+
 Building
 --------
 
