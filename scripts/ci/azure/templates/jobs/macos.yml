@@ -20,8 +20,9 @@ jobs:
     parameters:
       configuration: RelWithDebInfo
       cxx_compiler: clang++
+      os: MacOS
   - template: ../steps/build-posix.yml
     parameters:
       configuration: Debug
       cxx_compiler: clang++
-      os: macOS
+      os: MacOS

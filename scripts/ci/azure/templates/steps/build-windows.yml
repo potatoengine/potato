@@ -39,5 +39,5 @@ steps:
   inputs:
     testResultsFormat: cTest
     testResultsFiles: '**/Testing/*/Test.xml'
-    testRunTitle: Test Windows (${{parameters.configuration}} ${{parameters.build_shared}})
+    testRunTitle: Windows (${{parameters.configuration}} ${{parameters.build_shared}})
     searchFolder: build

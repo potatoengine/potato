@@ -24,4 +24,4 @@ steps:
   inputs:
     testResultsFormat: cTest
     testResultsFiles: '**/Testing/*/Test.xml'
-    testRunTitle: Build ${{parameters.os}} (${{parameters.configuration}} ${{parameters.cxx_compiler}})
+    testRunTitle: ${{parameters.os}} (${{parameters.configuration}} ${{parameters.cxx_compiler}})
