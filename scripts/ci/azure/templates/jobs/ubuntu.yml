@@ -24,4 +24,4 @@ jobs:
     parameters:
       configuration: $(configuration)
       cxx_compiler: g++-7
-	  os: Ubuntu
+      os: Ubuntu
