@@ -19,3 +19,7 @@ steps:
 
     ctest -R potato --verbose
   displayName: Build (${{parameters.configuration}} ${{parameters.cxx_compiler}})
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: cTest
+    searchFolder: build

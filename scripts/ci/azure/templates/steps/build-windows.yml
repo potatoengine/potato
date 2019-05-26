@@ -35,3 +35,9 @@ steps:
     rem run tests
     ctest -R potato --verbose || exit /b 1
   displayName: Build (${{parameters.configuration}} ${{parameters.build_shared}})
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: cTest
+    searchFolder: build
+
+
