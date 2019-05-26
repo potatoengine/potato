@@ -1,7 +1,16 @@
 jobs:
 - job: MacOS
+
+  strategy:
+    matrix:
+      release:
+        configuration: RelWithDebInfo
+      debug:
+        configuration: Debug
+
   pool:
     vmImage: 'macOS-10.13'
+
   steps:
   - bash: |
       set -xe
@@ -18,9 +27,6 @@ jobs:
     displayName: Build Information
   - template: ../steps/build-posix.yml
     parameters:
-      configuration: RelWithDebInfo
+      configuration: $(configuration)
       cxx_compiler: clang++
-  - template: ../steps/build-posix.yml
-    parameters:
-      configuration: Debug
-      cxx_compiler: clang++
+      os: MacOS

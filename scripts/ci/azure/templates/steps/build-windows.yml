@@ -33,5 +33,11 @@ steps:
     cmake --build . --parallel || exit /b 1
 
     rem run tests
-    ctest -R potato --verbose || exit /b 1
+    ctest -T test -R potato --verbose || exit /b 1
   displayName: Build (${{parameters.configuration}} ${{parameters.build_shared}})
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: cTest
+    testResultsFiles: '**/Testing/*/Test.xml'
+    testRunTitle: 'Windows (${{parameters.configuration}} ${{parameters.build_shared}})'
+    searchFolder: build
