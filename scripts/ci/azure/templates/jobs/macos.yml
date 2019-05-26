@@ -24,3 +24,4 @@ jobs:
     parameters:
       configuration: Debug
       cxx_compiler: clang++
+      os: macOS

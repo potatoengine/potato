@@ -1,6 +1,7 @@
 parameters:
   configuration: RelWithDebInfo
   cxx_compiler: g++-7
+  os: Ubuntu
 
 steps:
 - bash: |
@@ -23,5 +24,4 @@ steps:
   inputs:
     testResultsFormat: cTest
     testResultsFiles: '**/Testing/*/Test.xml'
-    testRunTitle: Build Posix (${{parameters.configuration}} ${{parameters.cxx_compiler}})
-    searchFolder: build
+    testRunTitle: Build ${{parameters.os}} (${{parameters.configuration}} ${{parameters.cxx_compiler}})
