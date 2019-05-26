@@ -22,4 +22,5 @@ steps:
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: cTest
+    testResultsFiles: '**/Testing/*/Test.xml'
     searchFolder: build
