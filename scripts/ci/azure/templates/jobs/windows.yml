@@ -1,10 +1,21 @@
-parameters:
-  build_shared: Shared
-
 jobs:
-- job: Windows_${{parameters.build_shared}}
+- job: Windows
+
+  strategy:
+    matrix:
+      release_static:
+        configuration: RelWithDebInfo
+        build_shared: Static
+      debug_static:
+        configuration: Debug
+        build_shared: Static
+      debug_shared:
+        configuration: Debug
+        build_shared: Shared
+
   pool:
     vmImage: 'windows-2019'
+
   steps:
   - bash: |
       set -xe
@@ -20,12 +31,7 @@ jobs:
       cmake --version
       bin\ninja --version
     displayName: Build Information
-# Takes too long on Azure (~3 mins)
-#  - template: ../steps/build-windows.yml
-#    parameters:
-#      build_shared: ${{parameters.build_shared}}
-#      configuration: RelWithDebInfo
   - template: ../steps/build-windows.yml
     parameters:
-      build_shared: ${{parameters.build_shared}}
-      configuration: Debug
+      build_shared: $(build_shared)
+      configuration: $(configuration)
