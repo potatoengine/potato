@@ -3,7 +3,7 @@
 #pragma once
 
 #include "_export.h"
-#include "platform.h"
+#include <potato/foundation/platform.h>
 
 #include <cstdlib>
 
@@ -30,7 +30,7 @@ namespace up {
     };
 
     /// Ask the user if they should abort, skip the error, or always skip this error.
-    UP_FOUNDATION_API UP_NOINLINE error_action fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText);
+    UP_CORE_API UP_NOINLINE error_action fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText);
 } // namespace up
 
 #define _up_FAIL(failure, message) \

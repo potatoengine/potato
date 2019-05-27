@@ -2,9 +2,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_export.h
     ${CMAKE_CURRENT_SOURCE_DIR}/assertion.h
     ${CMAKE_CURRENT_SOURCE_DIR}/box.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/callstack.h
     ${CMAKE_CURRENT_SOURCE_DIR}/const_util.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/debug.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate_ref.h
     ${CMAKE_CURRENT_SOURCE_DIR}/find.h

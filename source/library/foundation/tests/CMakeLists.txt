@@ -1,6 +1,5 @@
 add_executable(test_potato_foundation
     main.cpp
-    test_callstack.cpp
     test_delegate.cpp
     test_delegate_ref.cpp
     test_find.cpp

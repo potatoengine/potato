@@ -1,8 +1,8 @@
-#include "potato/foundation/callstack.h"
+#include "potato/core/callstack.h"
 #include <doctest/doctest.h>
 #include <array>
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::callstack") {
+DOCTEST_TEST_SUITE("[potato][core] up::callstack") {
     using namespace up;
     using namespace up::callstack;
 

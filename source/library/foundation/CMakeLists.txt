@@ -11,7 +11,7 @@ target_link_libraries(foundation
     PUBLIC
         formatxx
     PRIVATE
-        doctest
+        core
 )
 
 add_subdirectory(public/potato/foundation)
