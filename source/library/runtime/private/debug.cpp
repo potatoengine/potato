@@ -9,10 +9,10 @@
 
 namespace up::_detail {
     // platform-specific function that must be implemented
-    UP_FOUNDATION_API UP_NOINLINE error_action platform_fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
+    UP_FOUNDATION_API UP_NOINLINE FatalErrorAction handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
 } // namespace up::_detail
 
-auto up::fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText) -> error_action {
+auto up::_detail::raiseFatalError(char const* file, int line, char const* failedConditionText, char const* messageText) -> FatalErrorAction {
     // FIXME: this can be invoked via memory exhaustion, what do?
     string_writer buffer;
 
@@ -43,5 +43,5 @@ auto up::fatal_error(char const* file, int line, char const* failedConditionText
 
     std::cerr << buffer.c_str() << std::flush;
 
-    return _detail::platform_fatal_error(file, line, failedConditionText, messageText, buffer.data());
+    return _detail::handleFatalError(file, line, failedConditionText, messageText, buffer.data());
 }

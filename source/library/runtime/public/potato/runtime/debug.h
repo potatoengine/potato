@@ -20,27 +20,27 @@
 #    error "UP_DEBUG_BREAK: Unsupported platform/compiler"
 #endif
 
-namespace up {
+namespace up::_detail {
     /// Results from error_dialog.
-    enum class error_action {
-        abort,
-        debugger_break,
-        ignore_once,
-        ignore_always,
+    enum class FatalErrorAction {
+        Abort,
+        BreakInDebugger,
+        IgnoreOnce,
+        IgnoreAlways,
     };
 
     /// Ask the user if they should abort, skip the error, or always skip this error.
-    UP_RUNTIME_API UP_NOINLINE error_action fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText);
+    UP_RUNTIME_API UP_NOINLINE FatalErrorAction raiseFatalError(char const* file, int line, char const* failedConditionText, char const* messageText);
 } // namespace up
 
 #define _up_FAIL(failure, message) \
     do { \
-        if (static bool _up_fail_ignore = false; UP_LIKELY(!_up_fail_ignore)) { \
-            switch (::up::fatal_error(__FILE__, __LINE__, (failure), (message))) { \
-            case ::up::error_action::abort: std::abort(); break; \
-            case ::up::error_action::debugger_break: UP_DEBUG_BREAK(); break; \
-            case ::up::error_action::ignore_once: break; \
-            case ::up::error_action::ignore_always: _up_fail_ignore = true; break; \
+        if (static bool _up_IgnoreFailure = false; UP_LIKELY(!_up_IgnoreFailure)) { \
+            switch (::up::_detail::raiseFatalError(__FILE__, __LINE__, (failure), (message))) { \
+            case ::up::_detail::FatalErrorAction::Abort: std::abort(); break; \
+            case ::up::_detail::FatalErrorAction::BreakInDebugger: UP_DEBUG_BREAK(); break; \
+            case ::up::_detail::FatalErrorAction::IgnoreOnce: break; \
+            case ::up::_detail::FatalErrorAction::IgnoreAlways: _up_IgnoreFailure = true; break; \
             } \
         } \
     } while (false)
