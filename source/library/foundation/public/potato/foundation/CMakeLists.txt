@@ -1,6 +1,5 @@
 target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_export.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/assertion.h
     ${CMAKE_CURRENT_SOURCE_DIR}/box.h
     ${CMAKE_CURRENT_SOURCE_DIR}/const_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate.h

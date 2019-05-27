@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "potato/foundation/assertion.h"
+#include <potato/core/assertion.h>
 #include "potato/foundation/box.h"
 #include "potato/foundation/int_types.h"
 #include <atomic>

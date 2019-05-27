@@ -1,8 +1,8 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
 #include "debug.windows.h"
-#include "callstack.h"
-#include "debug.h"
+#include "potato/core/callstack.h"
+#include "potato/core/debug.h"
 #include "potato/foundation/platform_windows.h"
 #include "potato/foundation/string_format.h"
 #include "potato/foundation/fixed_string_writer.h"

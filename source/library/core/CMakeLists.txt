@@ -9,8 +9,6 @@ up_set_common_properties(core)
 
 target_link_libraries(core
     PUBLIC
-        formatxx
-    PRIVATE
         foundation
 )
 

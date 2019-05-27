@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "assertion.h"
+#include <potato/core/assertion.h>
 #include "traits.h"
 
 #include <new>
