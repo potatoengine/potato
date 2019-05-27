@@ -1,5 +1,6 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
+#include <potato/runtime/debug.h>
 #include <cstdio>
 #include <cstdlib>
 
