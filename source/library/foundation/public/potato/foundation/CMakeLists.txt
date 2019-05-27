@@ -33,6 +33,7 @@ target_sources(foundation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/traits.h
     ${CMAKE_CURRENT_SOURCE_DIR}/typelist.h
     ${CMAKE_CURRENT_SOURCE_DIR}/utility.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/uuid.h
     ${CMAKE_CURRENT_SOURCE_DIR}/vector.h
     ${CMAKE_CURRENT_SOURCE_DIR}/zstring_view.h
 )

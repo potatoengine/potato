@@ -12,6 +12,7 @@ target_link_libraries(foundation
         formatxx
     PRIVATE
         doctest
+        rpcrt4.lib
 )
 
 add_subdirectory(public/potato/foundation)
