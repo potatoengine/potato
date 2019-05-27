@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/filesystem/path.h"
-#include <potato/core/assertion.h>
+#include <potato/runtime/assertion.h>
 #include "potato/foundation/string_writer.h"
 
 // returns extension, including dot, e.g. foo.txt -> .txt

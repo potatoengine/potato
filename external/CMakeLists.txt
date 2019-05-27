@@ -79,9 +79,9 @@ target_sources(imgui PRIVATE
 set_target_properties(imgui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_compile_definitions(imgui PUBLIC
     IM_ASSERT=UP_ASSERT
-    IMGUI_USER_CONFIG="potato/core/assertion.h"
+    IMGUI_USER_CONFIG="potato/runtime/assertion.h"
 )
-target_link_libraries(imgui PUBLIC potato::core)
+target_link_libraries(imgui PUBLIC potato::runtime)
 
 FetchContent_Populate(glm)
 set(GLM_QUIET ON CACHE BOOL "quiet glm build")

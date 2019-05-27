@@ -10,7 +10,7 @@ add_library(potato::foundation ALIAS foundation)
 target_link_libraries(foundation
     INTERFACE
         formatxx
-        core
+        runtime
 )
 
 target_include_directories(foundation INTERFACE public/)

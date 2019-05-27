@@ -1,7 +1,7 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
-#include "potato/core/debug.h"
-#include "potato/core/callstack.h"
+#include "potato/runtime/debug.h"
+#include "potato/runtime/callstack.h"
 #include "potato/foundation/string_format.h"
 #include "potato/foundation/string_writer.h"
 #include <iostream>

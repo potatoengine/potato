@@ -1,7 +1,7 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
 #include "d3d11_pipeline_state.h"
-#include <potato/core/assertion.h>
+#include <potato/runtime/assertion.h>
 #include "potato/foundation/out_ptr.h"
 
 up::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {

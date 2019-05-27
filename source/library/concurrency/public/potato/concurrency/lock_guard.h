@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <potato/core/assertion.h>
+#include <potato/runtime/assertion.h>
 #include <atomic>
 #include <thread>
 

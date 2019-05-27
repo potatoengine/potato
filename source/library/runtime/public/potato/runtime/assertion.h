@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <potato/core/debug.h>
+#include <potato/runtime/debug.h>
 #include <potato/foundation/string_format.h>
 #include <potato/foundation/fixed_string_writer.h>
 #include <utility>

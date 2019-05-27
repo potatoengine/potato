@@ -3,7 +3,7 @@
 #pragma once
 
 #include "_export.h"
-#include <potato/core/assertion.h>
+#include <potato/runtime/assertion.h>
 #include "potato/foundation/string_view.h"
 #include "potato/foundation/string.h"
 #include "potato/foundation/span.h"
