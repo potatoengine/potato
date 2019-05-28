@@ -15,6 +15,6 @@ namespace up::callstack {
         int line = 0;
     };
 
-    extern [[nodiscard]] UP_RUNTIME_API auto readTrace(span<uintptr> addresses, uint skip = 0) -> span<uintptr>;
-    extern [[nodiscard]] UP_RUNTIME_API auto resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord>;
+    [[nodiscard]] extern UP_RUNTIME_API auto readTrace(span<uintptr> addresses, uint skip = 0) -> span<uintptr>;
+    [[nodiscard]] extern UP_RUNTIME_API auto resolveTraceRecords(span<uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord>;
 } // namespace up::callstack
