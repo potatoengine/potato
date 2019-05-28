@@ -26,8 +26,8 @@ void up::FlyCameraController::apply(Camera& camera, glm::vec3 relativeMovement, 
 
     glm::vec3 pos = camera.position() + movement * _moveSpeedPerSec * frameTime;
 
-    _yaw = glm::mod(_yaw - relativeMotion.x, glm::two_pi<float>());
-    _pitch = glm::clamp(_pitch - relativeMotion.y, -glm::half_pi<float>() * 0.9f, glm::half_pi<float>() * 0.9f);
+    _yaw = glm::mod(_yaw - relativeMotion.x * _rotateRadiansPerSec, glm::two_pi<float>());
+    _pitch = glm::clamp(_pitch - relativeMotion.y * _rotateRadiansPerSec, -glm::half_pi<float>() * 0.9f, glm::half_pi<float>() * 0.9f);
 
     auto view = glm::rotate(forward, _pitch, right);
     view = glm::rotate(view, _yaw, upward);

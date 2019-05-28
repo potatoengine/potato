@@ -2,7 +2,7 @@
 
 #include "potato/foundation/box.h"
 #include "potato/foundation/unique_resource.h"
-#include "potato/filesystem/filesystem.h"
+#include "potato/filesystem/native.h"
 #include "potato/render/draw_imgui.h"
 #include "potato/logger/logger.h"
 
@@ -43,7 +43,7 @@ private:
 
 private:
     bool _running = true;
-    FileSystem _fileSystem;
+    NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
     box<Renderer> _renderer;

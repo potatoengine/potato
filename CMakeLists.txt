@@ -14,6 +14,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" "${CMAKE_CURRE
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 enable_testing()
+include(Dart)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(FETCHCONTENT_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/deps" CACHE PATH "Dependency cache directory")

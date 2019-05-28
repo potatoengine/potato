@@ -1,4 +1,4 @@
-#include "potato/filesystem/path_util.h"
+#include "potato/filesystem/path.h"
 #include <doctest/doctest.h>
 #include <iostream>
 

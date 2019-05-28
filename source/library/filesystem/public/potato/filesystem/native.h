@@ -3,13 +3,12 @@
 #pragma once
 
 #include "_export.h"
-#include "backend.h"
 #include "filesystem.h"
 
 namespace up {
-    class NullBackend : public Backend {
+    class NativeFileSystem : public FileSystem {
     public:
-        static FileSystem create() { return FileSystem(rc<NullBackend>(new NullBackend)); }
+        NativeFileSystem() noexcept = default;
 
         UP_FILESYSTEM_API bool fileExists(zstring_view path) const noexcept override;
         UP_FILESYSTEM_API bool directoryExists(zstring_view path) const noexcept override;
@@ -28,10 +27,7 @@ namespace up {
         UP_FILESYSTEM_API IOResult remove(zstring_view path) override;
         UP_FILESYSTEM_API IOResult removeRecursive(zstring_view path) override;
 
-        UP_FILESYSTEM_API auto currentWorkingDirectory() const noexcept -> string override;
-        UP_FILESYSTEM_API void currentWorkingDirectory(zstring_view path) override;
-
-    private:
-        NullBackend() = default;
+        UP_FILESYSTEM_API auto currentWorkingDirectory() const noexcept -> string;
+        UP_FILESYSTEM_API void currentWorkingDirectory(zstring_view path);
     };
 } // namespace up

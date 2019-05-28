@@ -1,0 +1,11 @@
+# Integration with Issue Tracker
+#
+# (note that '\' need to be escaped).
+
+[issuetracker "GitHub PRs"]
+  regex = "\\s\\(#(\\d+)\\)$"
+  url = "https://github.com/potatoengine/potato/pull/$1"
+
+[issuetracker "GitHub Issues"]
+  regex = "#(\\d+)"
+  url = "https://github.com/potatoengine/potato/issues/$1"

@@ -4,12 +4,11 @@
 
 #include "_export.h"
 #include "filesystem.h"
-#include "backend.h"
 
 namespace up {
-    class NativeBackend : public Backend {
+    class NullFileSystem : public FileSystem {
     public:
-        static UP_FILESYSTEM_API FileSystem create();
+        NullFileSystem() noexcept = default;
 
         UP_FILESYSTEM_API bool fileExists(zstring_view path) const noexcept override;
         UP_FILESYSTEM_API bool directoryExists(zstring_view path) const noexcept override;
@@ -27,14 +26,5 @@ namespace up {
 
         UP_FILESYSTEM_API IOResult remove(zstring_view path) override;
         UP_FILESYSTEM_API IOResult removeRecursive(zstring_view path) override;
-
-        UP_FILESYSTEM_API auto currentWorkingDirectory() const noexcept -> string override;
-        UP_FILESYSTEM_API void currentWorkingDirectory(zstring_view path) override;
-
-    private:
-        NativeBackend() = default;
-
-        // needed as NativeBackend is the default FileSystem
-        friend class FileSystem;
     };
 } // namespace up

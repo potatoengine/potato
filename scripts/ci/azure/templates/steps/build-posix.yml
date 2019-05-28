@@ -1,6 +1,7 @@
 parameters:
   configuration: RelWithDebInfo
   cxx_compiler: g++-7
+  os: Posix
 
 steps:
 - bash: |
@@ -17,5 +18,10 @@ steps:
 
     cmake --build . --parallel
 
-    ctest -R potato --verbose
+    ctest -T test -R potato --verbose
   displayName: Build (${{parameters.configuration}} ${{parameters.cxx_compiler}})
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: cTest
+    testResultsFiles: '**/Testing/*/Test.xml'
+    testRunTitle: '${{parameters.os}} (${{parameters.configuration}} ${{parameters.cxx_compiler}})'

@@ -132,6 +132,11 @@ auto up::d3d11::DeviceD3D11::createShaderResourceView(GpuTexture* texture) -> bo
         desc.Texture2D.MipLevels = 1;
         desc.Texture2D.MostDetailedMip = 0;
         break;
+    case GpuTextureType::Texture3D:
+    case GpuTextureType::DepthStencil:
+        UP_UNREACHABLE("unsupporte texture type");
+    default:
+        UP_UNREACHABLE("missing");
     }
 
     com_ptr<ID3D11ShaderResourceView> view;

@@ -17,7 +17,7 @@ namespace up {
     class HashCache {
     public:
         HashCache() = default;
-        HashCache(FileSystem fileSystem) : _fileSystem(std::move(fileSystem)) {}
+        HashCache(FileSystem& fileSystem) : _fileSystem(fileSystem) {}
 
         static UP_ASSETDB_API uint64 hashAssetContent(span<byte const> contents) noexcept;
         static UP_ASSETDB_API uint64 hashAssetStream(Stream& stream);
@@ -35,7 +35,7 @@ namespace up {
             uint64 size = 0;
         };
 
-        FileSystem _fileSystem;
+        FileSystem& _fileSystem;
         std::unordered_map<zstring_view, box<HashRecord>, uhash<>> _hashes;
     };
 } // namespace up

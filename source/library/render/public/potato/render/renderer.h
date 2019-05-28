@@ -27,7 +27,7 @@ namespace up {
 
     class Renderer {
     public:
-        UP_RENDER_API explicit Renderer(FileSystem fileSystem, rc<GpuDevice> device);
+        UP_RENDER_API explicit Renderer(FileSystem& fileSystem, rc<GpuDevice> device);
         virtual ~Renderer();
 
         Renderer(Renderer const&) = delete;
@@ -54,7 +54,7 @@ namespace up {
         box<GpuBuffer> _frameDataBuffer;
         rc<Material> _debugLineMaterial;
         box<GpuBuffer> _debugLineBuffer;
-        FileSystem _fileSystem;
+        FileSystem& _fileSystem;
         std::thread _renderThread;
         ConcurrentQueue<RenderTask> _taskQueue;
         uint32 _frameCounter = 0;

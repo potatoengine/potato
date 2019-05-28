@@ -3,18 +3,14 @@ function(up_set_common_properties TARGET)
     string(TOUPPER ${TARGET} TARGET_UPPER)
 
     # Potato requires C++17
-    # However, the cxx_std_17 doesn't seem to be honored
-    # correctly by CMake 3.12, so we also set compiler
-    # flags explicitly
     target_compile_features(${TARGET} PUBLIC
         cxx_std_17
     )
-    target_compile_options(${TARGET} PUBLIC
-        $<$<CXX_COMPILER_ID:MSVC>:/std:c++17>
-        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-std=c++17>
-    )
     set_target_properties(${TARGET} PROPERTIES
         LINKER_LANGUAGE CXX
+        CXX_STANDARD 17
+        CXX_EXTENSIONS OFF
+        CXX_STANDARD_REQUIRED ON
     )
 
     # Trick MSVC into behaving like a standards-complient

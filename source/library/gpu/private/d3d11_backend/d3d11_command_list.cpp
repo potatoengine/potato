@@ -18,7 +18,7 @@ up::d3d11::CommandListD3D11::~CommandListD3D11() = default;
 auto up::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, GpuPipelineState* pipelineState) -> box<CommandListD3D11> {
     com_ptr<ID3D11DeviceContext> context;
     HRESULT hr = device->CreateDeferredContext(0, out_ptr(context));
-    if (context == nullptr) {
+    if (FAILED(hr) || context == nullptr) {
         return nullptr;
     }
 
@@ -209,7 +209,7 @@ auto up::d3d11::CommandListD3D11::map(GpuBuffer* resource, up::uint64 size, up::
     UP_ASSERT(offset < buffer->size());
     UP_ASSERT(size <= buffer->size() - offset);
 
-    bool writeAll = offset == 0 && size == buffer->size();
+    //bool writeAll = offset == 0 && size == buffer->size();
 
     //_context->Map(d3dBuffer, 0, writeAll ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &sub);
     _context->Map(d3dBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &sub);
