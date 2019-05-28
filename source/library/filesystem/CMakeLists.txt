@@ -9,6 +9,7 @@ up_set_common_properties(filesystem)
 
 target_link_libraries(filesystem
     PUBLIC
+        potato::runtime
         potato::foundation
     PRIVATE
         doctest

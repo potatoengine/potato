@@ -16,6 +16,7 @@ if(TARGET assimp AND TARGET SDL2)
 
     target_link_libraries(render
         PUBLIC
+            potato::runtime
             potato::foundation
             potato::gpu
             potato::concurrency

@@ -11,6 +11,7 @@ find_package(Threads REQUIRED)
 
 target_link_libraries(concurrency
     PUBLIC
+        potato::runtime
         potato::foundation
         Threads::Threads
     PRIVATE
