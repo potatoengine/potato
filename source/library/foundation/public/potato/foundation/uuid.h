@@ -29,7 +29,7 @@ namespace up {
         static uuid generate();
         static string toString(const uuid& id);
 
-        static uuid ZERO;
+        static uuid zero();
 
         uuid_t _value;
     };

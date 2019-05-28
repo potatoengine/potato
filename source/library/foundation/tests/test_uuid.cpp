@@ -10,6 +10,6 @@ DOCTEST_TEST_SUITE("[potato][foundation] up::uuid") {
         DOCTEST_CHECK(a.isValid());
 
         uuid zero = uuid({0});
-        DOCTEST_CHECK(zero == uuid::ZERO);
+        DOCTEST_CHECK(zero == uuid::zero());
     }
 }

@@ -5,7 +5,7 @@
 
 using namespace up;
 
-uuid uuid::ZERO = uuid({0});
+
 
 uuid::uuid() noexcept {
     std::memset(&_value, 0, sizeof(_value));
@@ -22,7 +22,7 @@ uuid::uuid(const uuid_t& other) noexcept {
 }
 
 auto uuid::isValid() noexcept -> bool {
-    return *this != uuid::ZERO;
+    return *this != uuid::zero();
 }
 
 uuid uuid::generate() {
@@ -37,6 +37,10 @@ uuid uuid::generate() {
 #endif
 
     return uuid(temp);
+}
+
+uuid uuid::zero() {
+    return uuid({0});
 }
 
 string uuid::toString(const uuid& id) {
