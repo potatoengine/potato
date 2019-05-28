@@ -8,7 +8,6 @@
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/native.h"
 #include "potato/filesystem/stream.h"
-#include "potato/filesystem/stream_util.h"
 #include "potato/assetdb/hash_cache.h"
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"
@@ -295,18 +294,18 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
             fixed_string_writer<256> metaFile;
             metaFile.write(info.path.c_str());
             metaFile.write(".meta");
-            if (!_fileSystem.fileExists(metaFile.c_str())) {
+            if (!_fileSystem->fileExists(metaFile.c_str())) {
                 Converter* conveter = findConverter(info.path);
                 if (conveter) {
                     nlohmann::json root;
                     string id = uuid::toString(uuid::generate());
                     root["id"] = id.c_str();
 
-                    Context context(info.path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), _logger);
+                    Context context(info.path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
                     string settings = conveter->generateSettings(context);
                     root["settings"] = settings;
 
-                    auto stream = _fileSystem.openWrite(metaFile.c_str(), FileOpenMode::Text);
+                    auto stream = _fileSystem->openWrite(metaFile.c_str(), FileOpenMode::Text);
                     auto json = root.dump(2);
 
                     if (writeAllText(stream, {json.data(), json.size()}) != IOResult::Success) {
