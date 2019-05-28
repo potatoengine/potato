@@ -59,6 +59,20 @@ public:
         return *this;
     }
 
+    void append(string_view str) {
+        size_type currSize = _size;
+        size_type newSize = _size + str.size();
+        if (newSize > currSize) {
+            pointer tmp = _copy(_data, newSize);
+            _free(_data, _size);
+            _data = tmp;
+            _size = newSize;
+        }
+
+        std::memcpy(_data + currSize, str.data(), str.size());
+        _data[newSize] = 0;
+    }
+
     const_pointer c_str() const noexcept {
         return _data != nullptr ? _data : _empty;
     }
