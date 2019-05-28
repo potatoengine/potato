@@ -58,13 +58,6 @@ DOCTEST_TEST_SUITE("[potato][foundation] up::string") {
         DOCTEST_CHECK_EQ(s.c_str(), cs);
     }
 
-    DOCTEST_TEST_CASE("append") {
-        string s("This is");
-        s.append(" a test"); 
-
-        DOCTEST_CHECK_EQ(s, "This is a test");
-    }
-
     DOCTEST_TEST_CASE("slicing") {
         string s("this is a test");
 
