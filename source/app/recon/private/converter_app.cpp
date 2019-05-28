@@ -2,16 +2,20 @@
 
 #include "converter_app.h"
 #include "potato/foundation/string_view.h"
+#include "potato/foundation/string_writer.h"
 #include "potato/foundation/std_iostream.h"
+#include "potato/foundation/uuid.h"
 #include "potato/filesystem/path_util.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/stream.h"
+#include "potato/filesystem/stream_util.h"
 #include "potato/assetdb/hash_cache.h"
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"
 #include "converters/convert_json.h"
 #include "converters/convert_ignore.h"
 #include "converters/convert_model.h"
+#include <nlohmann/json.hpp>
 #include <set>
 #include <algorithm>
 
@@ -59,6 +63,7 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
         _logger.info("Loaded hash cache `{}'", hashCachePath);
     }
 
+    // collect all files in the source directory for conversion
     auto sources = collectSourceFiles();
 
     if (sources.empty()) {
@@ -145,6 +150,7 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
     bool failed = false;
 
     for (auto const& path : files) {
+
         auto assetId = _library.pathToAssetId(string_view(path));
         auto record = _library.findRecord(assetId);
 
@@ -275,16 +281,40 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
 
     vector<string> files;
 
-    auto cb = [&files](FileInfo const& info) -> EnumerateResult {
+    auto cb = [&files, this](FileInfo const& info) -> EnumerateResult {
         if (info.type == FileType::Regular) {
             files.push_back(info.path);
-        }
-        else if (info.type == FileType::Directory) {
-            return EnumerateResult::Recurse;
-        }
+
+            // check to see if a meta file exists for this asset -- if it doesn't create one
+            fixed_string_writer<256> metaFile;
+            metaFile.write(info.path.c_str());
+            metaFile.write(".meta");
+            if (!_fileSystem.fileExists(metaFile.c_str())) {
+                Converter* conveter = findConverter(info.path);
+                if (conveter) {
+                    nlohmann::json root;
+                    string id = uuid::toString(uuid::generate());
+                    root["id"] = id.c_str();
+
+                    Context context(info.path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), _logger);
+                    string settings = conveter->generateSettings(context);
+                    root["settings"] = settings;
+
+                    auto stream = _fileSystem.openWrite(metaFile.c_str(), FileOpenMode::Text);
+                    auto json = root.dump(2);
+
+                    if (writeAllText(stream, {json.data(), json.size()}) != IOResult::Success) {
+                        _logger.error("Failed to write meta file for {}", metaFile.c_str());
+                    }
+                }
+            }
+            else if (info.type == FileType::Directory) {
+                return EnumerateResult::Recurse;
+            }
+        };
         return EnumerateResult::Continue;
     };
-    _fileSystem.enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
 
+    _fileSystem.enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
     return files;
-}
+};

@@ -12,6 +12,7 @@ namespace up::recon {
         ~HlslConverter();
 
         bool convert(Context& ctx) override;
+        string generateSettings(Context& ctd) { return ""; }
 
         string_view name() const noexcept override { return "hlsl"; }
         uint64 revision() const noexcept override { return 8; }
