@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <potato/runtime/assertion.h>
+#include "_assertion.h"
 #include "traits.h"
 
 #include <new>
@@ -241,12 +241,12 @@ void up::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::assign(Funct
 
 template <typename ReturnType, typename... ParamTypes>
 auto up::delegate<ReturnType(ParamTypes...)>::operator()(ParamTypes... params) -> ReturnType {
-    UP_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
+    UP_FOUNDATION_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
     return static_cast<vtable_c const*>(this->_vtable)->call(&this->_storage, std::forward<ParamTypes>(params)...);
 }
 
 template <typename ReturnType, typename... ParamTypes>
 auto up::delegate<ReturnType(ParamTypes...) const>::operator()(ParamTypes... params) const -> ReturnType {
-    UP_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
+    UP_FOUNDATION_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
     return static_cast<vtable_c const*>(this->_vtable)->call(const_cast<decltype(this->_storage)*>(&this->_storage), std::forward<ParamTypes>(params)...);
 }
