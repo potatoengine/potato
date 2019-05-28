@@ -11,6 +11,7 @@ namespace up::recon {
         ~JsonConverter();
 
         bool convert(Context& ctx) override;
+        string generateSettings(Context& ctd) { return ""; }
 
         string_view name() const noexcept override { return "json"; }
         uint64 revision() const noexcept override { return 0; }
