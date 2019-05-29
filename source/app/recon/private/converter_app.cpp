@@ -288,10 +288,11 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
 
     auto cb = [&files, this](FileInfo const& info) -> EnumerateResult {
         if (info.type == FileType::Regular) {
-            files.push_back(info.path);
-
             // check to see if a meta file exists for this asset -- if it doesn't create one
             fixed_string_writer<256> metaFile;
+
+            metaFile.write(_config.sourceFolderPath.c_str());
+            metaFile.write("\\");
             metaFile.write(info.path.c_str());
             metaFile.write(".meta");
             if (!_fileSystem->fileExists(metaFile.c_str())) {
@@ -313,10 +314,11 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
                     }
                 }
             }
-            else if (info.type == FileType::Directory) {
-                return EnumerateResult::Recurse;
-            }
-        };
+        }
+        else if (info.type == FileType::Directory) {
+            return EnumerateResult::Recurse;
+        }
+
         return EnumerateResult::Continue;
     };
 
