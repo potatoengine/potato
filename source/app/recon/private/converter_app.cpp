@@ -283,6 +283,7 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
 
     auto cb = [&files, this](FileInfo const& info) -> EnumerateResult {
         if (info.type == FileType::Regular) {
+            files.push_back(info.path);
             // check to see if a meta file exists for this asset -- if it doesn't create one
             fixed_string_writer<256> metaFile;
 
