@@ -46,7 +46,7 @@ Ubuntu in WSL
   sudo add-apt-repository ppa:ubuntu-toolchain-r/test
   sudo add-apt-repository ppa:janisozaur/cmake-update-bionic
   sudo apt-get update
-  sudo apt-get install g++-7 ninja-build cmake
+  sudo apt-get install g++ g++-7 ninja-build cmake
   ```
 
 Building
