@@ -57,6 +57,8 @@ Building
 
 - After the configuration steps are complete, go to the menu bar at click `Project`->`Build All`.
 
+- To build in Ubuntu on WSL, select the `Linux via WSL (Debug Static)` configuration in Visual Studio, assuming you followed the steps above for setting up Ubuntu in WSL.
+
 Running
 -------
 
