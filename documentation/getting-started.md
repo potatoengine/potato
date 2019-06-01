@@ -43,7 +43,10 @@ Ubuntu in WSL
 
 - Open Ubuntu and install required components:
   ```
-  sudo apt-get install g++-7 ninja-build cmake
+  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  sudo add-apt-repository ppa:janisozaur/cmake-update-bionic
+  sudo apt-get update
+  sudo apt-get install g++ g++-7 ninja-build cmake
   ```
 
 Building
@@ -54,6 +57,8 @@ Building
 - Open the folder you just checked out in Visual Studio. If you have the Visual Studio CMake workload installed, it will automatically configure the build for you.
 
 - After the configuration steps are complete, go to the menu bar at click `Project`->`Build All`.
+
+- To build in Ubuntu on WSL, select the `Linux via WSL (Debug Static)` configuration in Visual Studio, assuming you followed the steps above for setting up Ubuntu in WSL.
 
 Running
 -------
