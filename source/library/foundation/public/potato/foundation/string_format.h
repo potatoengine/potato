@@ -2,24 +2,7 @@
 
 #pragma once
 
-#include "debug.h"
 #include "string_view.h"
-
-// needed by fmtlib
-#if !defined(FMT_ASSERT)
-#    define FMT_ASSERT(cond, message) \
-        do { \
-            if (!(cond)) { \
-                ::up::fatal_error(__FILE__, __LINE__, #cond, (message)); \
-                std::abort(); \
-            } \
-        } while (false)
-#endif
-#if !defined(assert)
-#    define assert(cond) \
-        FMT_ASSERT((cond), "assertion failed")
-#endif
-
 #include <formatxx/format.h>
 
 namespace up {

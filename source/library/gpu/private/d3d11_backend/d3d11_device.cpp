@@ -10,7 +10,7 @@
 #include "d3d11_platform.h"
 #include "d3d11_texture.h"
 #include "d3d11_sampler.h"
-#include "potato/foundation/assertion.h"
+#include <potato/runtime/assertion.h>
 #include "potato/foundation/out_ptr.h"
 #include <utility>
 

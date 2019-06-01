@@ -3,7 +3,7 @@
 #include "d3d11_factory.h"
 #include "d3d11_device.h"
 #include "d3d11_platform.h"
-#include "potato/foundation/assertion.h"
+#include <potato/runtime/assertion.h>
 #include "potato/foundation/out_ptr.h"
 
 up::d3d11::FactoryD3D11::FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory)

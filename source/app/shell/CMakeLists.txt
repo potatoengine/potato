@@ -10,6 +10,7 @@ if(WIN32)
     up_set_common_properties(shell)
 
     target_link_libraries(shell PRIVATE
+        potato::runtime
         potato::foundation
         potato::filesystem
         potato::gpu

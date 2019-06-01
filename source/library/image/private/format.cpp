@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/image/pixel_format.h"
-#include "potato/foundation/assertion.h"
+#include <potato/runtime/assertion.h>
 
 bool up::isCompressed(ImagePixelFormat format) noexcept {
     switch (format) {

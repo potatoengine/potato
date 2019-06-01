@@ -1,5 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
+#include <potato/runtime/assertion.h>
 #include "potato/assetdb/asset_record.h"
 
 auto up::assetCategoryNames() noexcept -> span<string_view const> {
