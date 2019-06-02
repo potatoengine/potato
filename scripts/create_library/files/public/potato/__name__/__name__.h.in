@@ -4,4 +4,6 @@
 
 namespace up {
 
+    UP_@NAME_UPPER@_API auto example(int x) noexcept -> int;
+
 } // namespace up
