@@ -24,10 +24,10 @@ def main(argv):
     if args.dest is not None:
         dest_dir = args.dest
     else:
-        dest_dir = os.path.relpath(os.path.join(source_dir, '..', '..', 'sources', 'library'), source_dir)
-    dest_dir = os.path.join(dest_dir, name)
+        dest_dir = os.path.relpath(os.path.join(source_dir, '..', '..', '..', 'source', 'library'))
+    dest_dir = os.path.realpath(os.path.join(dest_dir, name))
 
-    print('Creating `{0}` at `{1}` from `{2}`'.format(name, dest_dir, source_dir))
+    print('Creating `{1}` from `{2}`'.format(name, dest_dir, source_dir))
 
     for source_file in glob.iglob(pathname=os.path.join(source_dir, '**', '*'), recursive=True):
         if os.path.isdir(source_file):
