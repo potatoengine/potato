@@ -9,7 +9,10 @@ DOCTEST_TEST_SUITE("[potato][foundation] up::uuid") {
         uuid a = uuid::generate();
         DOCTEST_CHECK(a.isValid());
 
-        uuid zero = uuid({0});
+        string str = uuid::toString(a);
+
+        uuid zero = uuid();
         DOCTEST_CHECK(zero == uuid::zero());
+        DOCTEST_CHECK_EQ(uuid::toString(zero).c_str(), "00000000-0000-0000-0000-000000000000");
     }
 }
