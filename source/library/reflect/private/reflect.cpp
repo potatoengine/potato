@@ -2,6 +2,6 @@
 
 #include "potato/reflect/reflect.h"
 
-auto up::example(int x) noexcept -> int {
+auto up::reflex::example(int x) noexcept -> int {
     return x;
 }
