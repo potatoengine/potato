@@ -34,6 +34,7 @@ include(GNUInstallDirs)
 
 add_subdirectory(external)
 add_subdirectory(source)
+add_subdirectory(documentation)
 
 configure_file(
     scripts/config/tasks.vs.json.in
