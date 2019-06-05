@@ -40,6 +40,14 @@ Several binary dependencies currently need to be installed manually.
 
 - Install the latest [Doxygen](http://www.doxygen.nl/download.html)
 
+**Sphinx**
+
+- In a terminal, run:
+  ```
+  pip install -U sphinx
+  pip install breathe sphinx_rtd_theme
+  ```
+
 Ubuntu in WSL
 -------------
 
