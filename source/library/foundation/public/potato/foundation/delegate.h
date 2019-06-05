@@ -15,19 +15,19 @@ namespace up {
     delegate(T)->delegate<signature_t<T>>;
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
-    delegate(ClassType& object, ReturnType (ClassType::*method)(ParamTypes...))->delegate<ReturnType(ParamTypes...)>;
+    delegate(ClassType& object, ReturnType (ClassType::*)(ParamTypes...))->delegate<ReturnType(ParamTypes...)>;
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
-    delegate(ClassType const& object, ReturnType (ClassType::*method)(ParamTypes...) const)->delegate<ReturnType(ParamTypes...) const>;
+    delegate(ClassType const& object, ReturnType (ClassType::*)(ParamTypes...) const)->delegate<ReturnType(ParamTypes...) const>;
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
-    delegate(ClassType&& object, ReturnType (ClassType::*method)(ParamTypes...) const)->delegate<ReturnType(ParamTypes...) const>;
+    delegate(ClassType&& object, ReturnType (ClassType::*)(ParamTypes...) const)->delegate<ReturnType(ParamTypes...) const>;
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
-    delegate(ClassType* object, ReturnType (ClassType::*method)(ParamTypes...))->delegate<ReturnType(ParamTypes...)>;
+    delegate(ClassType* object, ReturnType (ClassType::*)(ParamTypes...))->delegate<ReturnType(ParamTypes...)>;
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
-    delegate(ClassType const* object, ReturnType (ClassType::*method)(ParamTypes...) const)->delegate<ReturnType(ParamTypes...) const>;
+    delegate(ClassType const* object, ReturnType (ClassType::*)(ParamTypes...) const)->delegate<ReturnType(ParamTypes...) const>;
 } // namespace up
 
 namespace up::_detail {
