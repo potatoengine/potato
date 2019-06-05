@@ -4,7 +4,7 @@
 #include "potato/foundation/string_view.h"
 #include "potato/foundation/string_writer.h"
 #include "potato/foundation/std_iostream.h"
-#include "potato/foundation/uuid.h"
+#include "potato/runtime/uuid.h"
 #include "potato/filesystem/path.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/native.h"

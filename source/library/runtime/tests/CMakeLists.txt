@@ -1,6 +1,8 @@
 add_executable(test_potato_runtime
     main.cpp
     test_callstack.cpp
+    test_uuid.cpp
+
 )
 
 include(up_set_common_properties)

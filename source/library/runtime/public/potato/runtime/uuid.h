@@ -8,7 +8,7 @@
 
 namespace up {
 
-    class UP_FOUNDATION_API uuid {
+    class UP_RUNTIME_API uuid {
     public:
         using buffer = std::array<up::byte, 16>;
 
