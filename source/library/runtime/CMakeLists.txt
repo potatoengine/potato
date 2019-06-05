@@ -18,8 +18,8 @@ else()
         message(FATAL_ERROR "You might need to run 'sudo apt-get install uuid-dev' or similar")
     endif()
     set(UP_UUID_LIBRARY ${LIBUUID_LIBRARY})
-    target_include_directories(foundation PRIVATE ${LIBUUID_INCLUDE_DIR})
-    target_compile_definitions(foundation PRIVATE GUID_LIBUUID)
+    target_include_directories(runtime PRIVATE ${LIBUUID_INCLUDE_DIR})
+    target_compile_definitions(runtime PRIVATE GUID_LIBUUID)
 endif()
 
 target_link_libraries(runtime
