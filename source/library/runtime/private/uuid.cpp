@@ -1,7 +1,7 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
-#include "potato/foundation/uuid.h"
-#include "potato/foundation/assertion.h"
+#include "potato/runtime/uuid.h"
+#include "potato/runtime/assertion.h"
 
 using namespace up;
 

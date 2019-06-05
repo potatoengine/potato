@@ -14,7 +14,6 @@ add_executable(test_potato_foundation
     test_string_view.cpp
     test_vector.cpp
     test_zstring_view.cpp
-    test_uuid.cpp
 )
 
 include(up_set_common_properties)
