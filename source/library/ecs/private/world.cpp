@@ -1,5 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
+#include <potato/runtime/assertion.h>
 #include "potato/ecs/world.h"
 #include "potato/foundation/find.h"
 #include "potato/foundation/hash.h"

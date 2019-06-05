@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "d3d11_platform.h"
-#include "potato/foundation/assertion.h"
+#include <potato/runtime/assertion.h>
 
 auto up::d3d11::toNative(GpuShaderSemantic semantic) noexcept -> zstring_view {
     switch (semantic) {

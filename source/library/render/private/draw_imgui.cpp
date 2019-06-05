@@ -9,7 +9,7 @@
 #include "potato/gpu/texture.h"
 #include "potato/gpu/resource_view.h"
 #include "potato/gpu/sampler.h"
-#include "potato/foundation/assertion.h"
+#include <potato/runtime/assertion.h>
 #include <imgui.h>
 #include <SDL_events.h>
 #include <SDL_clipboard.h>

@@ -1,8 +1,8 @@
 // Copyright (C) 2014 Sean Middleditch, all rights reserverd.
 
 #include "debug.windows.h"
-#include "potato/foundation/callstack.h"
-#include "potato/foundation/debug.h"
+#include "potato/runtime/callstack.h"
+#include "potato/runtime/debug.h"
 #include "potato/foundation/platform_windows.h"
 #include "potato/foundation/string_format.h"
 #include "potato/foundation/fixed_string_writer.h"
@@ -58,16 +58,16 @@ namespace {
         case WM_COMMAND:
             switch (LOWORD(wparam)) {
             case IDABORT:
-                EndDialog(hwnd, INT_PTR(error_action::abort));
+                EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::Abort));
                 return TRUE;
             case IDBREAK:
-                EndDialog(hwnd, INT_PTR(error_action::debugger_break));
+                EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::BreakInDebugger));
                 return TRUE;
             case IDIGNORE:
-                EndDialog(hwnd, INT_PTR(error_action::ignore_once));
+                EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::IgnoreOnce));
                 return TRUE;
             case IDIGNORE_ALWAYS:
-                EndDialog(hwnd, INT_PTR(error_action::ignore_always));
+                EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::IgnoreAlways));
                 return TRUE;
             case IDCOPY:
                 CopyToClipboard(*reinterpret_cast<DialogData const*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA)));
@@ -76,15 +76,15 @@ namespace {
             break;
         case WM_CLOSE:
             // if the user just tries to close the dialog, assume that they're trying to ignore the message
-            EndDialog(hwnd, INT_PTR(error_action::ignore_once));
+            EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::IgnoreOnce));
             return TRUE;
         }
         return FALSE;
     }
+} // namespace
 
-    UP_NOINLINE up::error_action ShowAssertDialog(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText) {
-        using namespace up;
-
+namespace up::_detail {
+    auto handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText) -> FatalErrorAction {
         fixed_string_writer<128> location_buffer;
         format_into(location_buffer, "{}({})", file, line);
 
@@ -99,12 +99,6 @@ namespace {
         static const LPCWSTR address = L"";
         GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, address, &module);
         INT_PTR rs = DialogBoxParamW(module, MAKEINTRESOURCEW(IDD_ASSERT), GetActiveWindow(), static_cast<DLGPROC>(AssertDialogProc), reinterpret_cast<LPARAM>(&data));
-        return error_action(rs);
-    }
-} // namespace
-
-namespace up::_detail {
-    auto platform_fatal_error(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText) -> error_action {
-        return ShowAssertDialog(file, line, failedConditionText, messageText, callstackText);
+        return FatalErrorAction(rs);
     }
 } // namespace up::_detail

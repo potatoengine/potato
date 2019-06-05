@@ -14,6 +14,7 @@ if(TARGET assimp)
 
     target_link_libraries(recon_lib
         PUBLIC
+            potato::runtime
             potato::foundation
             potato::gpu
             potato::assetdb

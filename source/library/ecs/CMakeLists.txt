@@ -9,6 +9,7 @@ up_set_common_properties(ecs)
 
 target_link_libraries(ecs
     PUBLIC
+        potato::runtime
         potato::foundation
     PRIVATE
         doctest

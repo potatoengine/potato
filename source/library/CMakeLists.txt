@@ -1,4 +1,5 @@
 add_subdirectory(foundation)
+add_subdirectory(runtime)
 add_subdirectory(filesystem)
 add_subdirectory(gpu)
 add_subdirectory(render)

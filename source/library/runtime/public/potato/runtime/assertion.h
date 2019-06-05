@@ -2,10 +2,9 @@
 
 #pragma once
 
-#include "debug.h"
-#include "platform.h"
-#include "string_format.h"
-#include "fixed_string_writer.h"
+#include <potato/runtime/debug.h>
+#include <potato/foundation/string_format.h>
+#include <potato/foundation/fixed_string_writer.h>
 #include <utility>
 
 #if defined(NDEBUG)
@@ -27,15 +26,15 @@
 namespace up::_detail {
     // abstraction to deal with assert instances that don't have a message at all
     template <typename Buffer, typename... Args>
-    void constexpr format_failure(Buffer& buffer, char const* format, Args&&... args) { format_into(buffer, format, std::forward<Args>(args)...); }
+    void constexpr formatAssertion(Buffer& buffer, char const* format, Args&&... args) { format_into(buffer, format, std::forward<Args>(args)...); }
     template <typename Buffer>
-    void constexpr format_failure(Buffer&) {}
+    void constexpr formatAssertion(Buffer&) {}
 } // namespace up::_detail
 
 #    define _up_FORMAT_FAIL(condition_text, ...) \
         do { \
             ::up::fixed_string_writer<512> _up_fail_buffer; \
-            ::up::_detail::format_failure(_up_fail_buffer, ##__VA_ARGS__); \
+            ::up::_detail::formatAssertion(_up_fail_buffer, ##__VA_ARGS__); \
             _up_FAIL((condition_text), _up_fail_buffer.c_str()); \
         } while (false)
 
