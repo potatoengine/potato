@@ -183,6 +183,8 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         _logger.info("Asset `{}' requires import ({} {})", path.c_str(), std::string_view(name.data(), name.size()), converter->revision());
 
         Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
+        checkMetafile(context, path);
+
         if (!converter->convert(context)) {
             failed = true;
             _logger.error("Failed conversion for `{}'", path);
@@ -279,6 +281,36 @@ auto up::recon::ConverterApp::findConverter(string_view path) const -> Converter
     return nullptr;
 }
 
+auto up::recon::ConverterApp::checkMetafile(Context& ctx, string_view filename) -> void {
+    // check to see if a meta file exists for this asset -- if it doesn't create one
+    fixed_string_writer<256> metaFile;
+
+    metaFile.write(filename);
+    metaFile.write(".meta");
+    if (!_fileSystem->fileExists(metaFile.c_str())) {
+        Converter* conveter = findConverter(filename);
+        if (conveter) {
+            nlohmann::json root;
+            string id = uuid::toString(uuid::generate());
+            root["id"] = id.c_str();
+
+            Context context(filename.data(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
+            string settings = conveter->generateSettings(context);
+            root["settings"] = settings;
+
+            auto stream = _fileSystem->openWrite(metaFile.c_str(), FileOpenMode::Text);
+            auto json = root.dump(2);
+
+            if (writeAllText(stream, {json.data(), json.size()}) != IOResult::Success) {
+                _logger.error("Failed to write meta file for {}", metaFile.c_str());
+            }
+        }
+    }
+    // adding meta files to source deps to ensure proper rebuild when meta files change for any reason
+    // (like convert settings for a file)
+    ctx.addSourceDependency(metaFile.c_str());
+}
+
 auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
     if (!_fileSystem->directoryExists(_config.sourceFolderPath.c_str())) {
         _logger.error("`{}' does not exist or is not a directory", _config.sourceFolderPath);
@@ -286,36 +318,9 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
     }
 
     vector<string> files;
-
     auto cb = [&files, this](FileInfo const& info) -> EnumerateResult {
         if (info.type == FileType::Regular) {
             files.push_back(info.path);
-            // check to see if a meta file exists for this asset -- if it doesn't create one
-            fixed_string_writer<256> metaFile;
-
-            metaFile.write(_config.sourceFolderPath.c_str());
-            metaFile.write("\\");
-            metaFile.write(info.path.c_str());
-            metaFile.write(".meta");
-            if (!_fileSystem->fileExists(metaFile.c_str())) {
-                Converter* conveter = findConverter(info.path);
-                if (conveter) {
-                    nlohmann::json root;
-                    string id = uuid::toString(uuid::generate());
-                    root["id"] = id.c_str();
-
-                    Context context(info.path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
-                    string settings = conveter->generateSettings(context);
-                    root["settings"] = settings;
-
-                    auto stream = _fileSystem->openWrite(metaFile.c_str(), FileOpenMode::Text);
-                    auto json = root.dump(2);
-
-                    if (writeAllText(stream, {json.data(), json.size()}) != IOResult::Success) {
-                        _logger.error("Failed to write meta file for {}", metaFile.c_str());
-                    }
-                }
-            }
         }
         else if (info.type == FileType::Directory) {
             return EnumerateResult::Recurse;

@@ -39,6 +39,8 @@ namespace up::recon {
         bool isUpToDate(AssetImportRecord const& record, uint64 contentHash, Converter const& converter) const noexcept;
         bool isUpToDate(span<AssetDependencyRecord const> records);
 
+        void checkMetafile(Context& ctx, string_view filename);
+
         Converter* findConverter(string_view path) const;
 
         struct Mapping {
