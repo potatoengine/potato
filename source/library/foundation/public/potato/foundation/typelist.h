@@ -59,14 +59,17 @@ namespace up {
 
     static_assert(std::is_same_v<typelist_tail_t<typelist<int, float, char>>, typelist<float, char>>);
 
+    // Causing problems with Sphinx
+#if !defined(DOXYGEN_SHOULD_SKIP_THIS)
     template <typename T>
     constexpr std::size_t typelist_size_v = 0;
     template <typename... T>
-    constexpr auto typelist_size_v<typelist<T...>> = sizeof...(T);
-
+    constexpr std::size_t typelist_size_v<typelist<T...>> = sizeof...(T);
+    
     static_assert(typelist_size_v<typelist<>> == 0);
     static_assert(typelist_size_v<typelist<int>> == 1);
     static_assert(typelist_size_v<typelist<int, float, char>> == 3);
+#endif
 
     template <template <class...> class T, typename U>
     using typelist_apply_t = typename _detail::typelist_apply<T, U>::type;
