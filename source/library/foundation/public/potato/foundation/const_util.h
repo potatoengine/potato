@@ -2,18 +2,18 @@
 
 #pragma once
 
-namespace up::_detail {
-    template <template <auto, auto> typename F, auto... V>
-    struct reduce_t;
-
-    template <template <auto, auto> typename F, auto V>
-    struct reduce_t<F, V> { static constexpr auto value = V; };
-
-    template <template <auto, auto> typename F, auto V, auto... R>
-    struct reduce_t<F, V, R...> { static constexpr auto value = F<V, reduce_t<F, R...>::value>::value; };
-} // namespace up::_detail
-
 namespace up {
+    namespace _detail {
+        template <template <auto, auto> typename F, auto... V>
+        struct reduce_t;
+
+        template <template <auto, auto> typename F, auto V>
+        struct reduce_t<F, V> { static constexpr auto value = V; };
+
+        template <template <auto, auto> typename F, auto V, auto... R>
+        struct reduce_t<F, V, R...> { static constexpr auto value = F<V, reduce_t<F, R...>::value>::value; };
+    } // _detail
+
     template <auto L, auto R>
     struct max_f { static constexpr auto value = L < R ? R : L; };
 

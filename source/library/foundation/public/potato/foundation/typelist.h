@@ -7,50 +7,48 @@
 namespace up {
     template <typename... T>
     struct typelist {};
-} // namespace up
 
-namespace up::_detail {
-    template <typename U>
-    struct typelist_head;
-    template <typename T, typename... R>
-    struct typelist_head<typelist<T, R...>> { using type = T; };
+    namespace _detail {
+        template <typename U>
+        struct typelist_head;
+        template <typename T, typename... R>
+        struct typelist_head<typelist<T, R...>> { using type = T; };
 
-    template <typename U>
-    struct typelist_tail;
-    template <typename T, typename... R>
-    struct typelist_tail<typelist<T, R...>> { using type = typelist<R...>; };
+        template <typename U>
+        struct typelist_tail;
+        template <typename T, typename... R>
+        struct typelist_tail<typelist<T, R...>> { using type = typelist<R...>; };
 
-    template <template <class...> class T, typename U>
-    struct typelist_apply;
-    template <template <class...> class T, typename... U>
-    struct typelist_apply<T, typelist<U...>> { using type = T<U...>; };
+        template <template <class...> class T, typename U>
+        struct typelist_apply;
+        template <template <class...> class T, typename... U>
+        struct typelist_apply<T, typelist<U...>> { using type = T<U...>; };
 
-    template <template <class...> class T, typename U>
-    struct typelist_map;
-    template <template <class...> class T, typename... U>
-    struct typelist_map<T, typelist<U...>> { using type = typelist<T<U>...>; };
+        template <template <class...> class T, typename U>
+        struct typelist_map;
+        template <template <class...> class T, typename... U>
+        struct typelist_map<T, typelist<U...>> { using type = typelist<T<U>...>; };
 
-    template <int N, typename... U>
-    struct type_at_impl;
-    template <typename T, typename... U>
-    struct type_at_impl<0, typelist<T, U...>> { using type = T; };
-    template <int N, typename T, typename... U>
-    struct type_at_impl<N, typelist<T, U...>> {
+        template <int N, typename... U>
+        struct type_at_impl;
+        template <typename T, typename... U>
+        struct type_at_impl<0, typelist<T, U...>> { using type = T; };
+        template <int N, typename T, typename... U>
+        struct type_at_impl<N, typelist<T, U...>> {
 #if defined(__has_builtin)
 #    if __has_builtin(__type_pack_element)
 #        define _up_HAS_TYPE_PACK_ELEMENT
 #    endif
 #endif
 #if defined(_up_HAS_TYPE_PACK_ELEMENT)
-        using type = __type_pack_element<N, T, U...>;
+            using type = __type_pack_element<N, T, U...>;
 #else
-        using type = typename type_at_impl<N - 1, typelist<U...>>::type;
+            using type = typename type_at_impl<N - 1, typelist<U...>>::type;
 #endif
 #undef _up_HAS_TYPE_PACK_ELEMENT
-    };
-} // namespace up::_detail
+        };
+    } // _detail
 
-namespace up {
     template <typename T>
     using typelist_head_t = typename _detail::typelist_head<T>::type;
 
