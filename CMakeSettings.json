@@ -19,6 +19,11 @@
           "name": "UP_OUTPUT_DIR",
           "value": "${projectDir}/out",
           "type": "STRING"
+        },
+        {
+          "name": "UP_BUILD_DOCS",
+          "value": "True",
+          "type": "BOOL"
         }
       ]
     },
