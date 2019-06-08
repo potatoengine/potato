@@ -26,8 +26,9 @@ namespace {
 
             _ctx.logger().info("Including `{}'", absolutePath);
 
-            _ctx.addSourceDependency(pFileName);
-
+            auto relPath = absolutePath.substr(_ctx.sourceFolderPath().size() + 1);
+            _ctx.addSourceDependency(relPath.data());
+            
             auto stream = _fileSystem.openRead(absolutePath.c_str(), up::FileOpenMode::Text);
             if (!stream) {
                 return E_FAIL;
