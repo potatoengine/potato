@@ -10,36 +10,36 @@ namespace up {
 
     template <typename T>
     delegate_ref(T)->delegate_ref<signature_t<T>>;
+
+    namespace _detail {
+        template <typename F, typename R, typename... P>
+        R delegate_ref_thunk(void const* obj, P&&... params) {
+            F const& f = *static_cast<F const*>(obj);
+            if constexpr (std::is_void_v<R>) {
+                f(std::forward<P>(params)...);
+            }
+            else {
+                return f(std::forward<P>(params)...);
+            }
+        };
+
+        template <typename ReturnType, typename... ParamTypes>
+        struct delegate_ref_holder {
+            using call_t = ReturnType (*)(void const*, ParamTypes&&...);
+
+            delegate_ref_holder() = delete;
+            template <typename Functor>
+            delegate_ref_holder(Functor&& functor) {
+                using FunctorType = std::remove_reference_t<Functor>;
+                _call = &_detail::delegate_ref_thunk<FunctorType, ReturnType, ParamTypes...>;
+                _functor = &functor;
+            }
+
+            call_t _call = nullptr;
+            void const* _functor = nullptr;
+        };
+    } // namespace _detail
 } // namespace up
-
-namespace up::_detail {
-    template <typename F, typename R, typename... P>
-    R delegate_ref_thunk(void const* obj, P&&... params) {
-        F const& f = *static_cast<F const*>(obj);
-        if constexpr (std::is_void_v<R>) {
-            f(std::forward<P>(params)...);
-        }
-        else {
-            return f(std::forward<P>(params)...);
-        }
-    };
-
-    template <typename ReturnType, typename... ParamTypes>
-    struct delegate_ref_holder {
-        using call_t = ReturnType (*)(void const*, ParamTypes&&...);
-
-        delegate_ref_holder() = delete;
-        template <typename Functor>
-        delegate_ref_holder(Functor&& functor) {
-            using FunctorType = std::remove_reference_t<Functor>;
-            _call = &_detail::delegate_ref_thunk<FunctorType, ReturnType, ParamTypes...>;
-            _functor = &functor;
-        }
-
-        call_t _call = nullptr;
-        void const* _functor = nullptr;
-    };
-} // namespace up::_detail
 
 template <typename ReturnType, typename... ParamTypes>
 class up::delegate_ref<ReturnType(ParamTypes...)> {

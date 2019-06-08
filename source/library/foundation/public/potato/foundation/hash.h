@@ -18,7 +18,7 @@ namespace up {
     auto hash_value(T const& value) -> typename HashAlgorithm::result_type;
 
     template <class Hash>
-    constexpr Hash hash_combine(Hash left, Hash right) noexcept;
+    constexpr auto hash_combine(Hash left, Hash right) noexcept -> Hash;
 
     template <typename>
     class vector;

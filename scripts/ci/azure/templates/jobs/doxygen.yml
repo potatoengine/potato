@@ -1,0 +1,35 @@
+jobs:
+- job: Doxygen
+
+  pool:
+    vmImage: 'ubuntu-16.04'
+
+  steps:
+  - bash: |
+      set -xe
+      sudo apt-get install doxygen
+    displayName: Installing Dependencies
+  - bash: |
+      set -xe
+      g++-7 --version
+      cmake --version
+    displayName: Build Information
+  - script: |
+      mkdir build
+      cd build
+      cmake -DUP_BUILD_DOCS=ON -DFETCHCONTENT_BASE_DIR=_deps ..
+    displayName: Configure
+  - script: |
+      cd build
+      cmake --build . --target doxygen
+    displayName: Doxygen
+  - task: S3Upload@1
+    inputs:
+      awsCredentials: AWS-S3
+      regionName: us-west-1
+      bucketName: potato-docs
+      sourceFolder: build/documentation/doxygen/html
+      targetFolder: $(Build.SourceBranchName)
+      filesAcl: public-read
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    displayName: Publish to S3
