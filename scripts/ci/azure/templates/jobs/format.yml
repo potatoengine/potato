@@ -7,22 +7,22 @@ jobs:
   steps:
   - bash: |
       set -xe
+      sudo add-apt-repository 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main'
+      sudo apt-get update -y
+      sudo apt-get install -y clang-format-8
     displayName: Installing Dependencies
   - bash: |
       set -xe
-      clang-format-7 --version
+      clang-format-8 --version
       cmake --version
     displayName: Build Information
-#  - script: |
-#      mkdir build
-#      cd build
-#      cmake -DUP_BUILD_DOCS=ON -DFETCHCONTENT_BASE_DIR=_deps ..
-#    displayName: Configure
   - script: |
       for dir in source/*/* ; do
         echo "$dir"
-        cd "$dir""
-        clang-format-7 -style=file -output-replacements-xml -verbose $(find . -name '*.h' -o -name '*.cpp') > ~/edits.xml
-        cat ~/edits.xml
+        if ! python scripts/ci/run-clang-format.py --clang-format-executable=clang-format-8 --recursive source/ 2>&1 > ~/clang-format.diff ; then
+          echo "##vso[task.logissue type=error;sourcepath=scripts/ci/run-clang-format.py]Format errors found"
+          echo "##vso[task.uploadfile]$HOME/clang-format.diff"
+          exit 1
+        fi
       done
     displayName: Clang Format
