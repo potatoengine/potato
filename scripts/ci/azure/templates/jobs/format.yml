@@ -1,0 +1,28 @@
+jobs:
+- job: Format
+
+  pool:
+    vmImage: 'ubuntu-16.04'
+
+  steps:
+  - bash: |
+      set -xe
+    displayName: Installing Dependencies
+  - bash: |
+      set -xe
+      clang-format-7 --version
+      cmake --version
+    displayName: Build Information
+#  - script: |
+#      mkdir build
+#      cd build
+#      cmake -DUP_BUILD_DOCS=ON -DFETCHCONTENT_BASE_DIR=_deps ..
+#    displayName: Configure
+  - script: |
+      for dir in source/*/* ; do
+        echo "$dir"
+        cd "$dir""
+        clang-format-7 -style=file -output-replacements-xml -verbose $(find . -name '*.h' -o -name '*.cpp') > ~/edits.xml
+        cat ~/edits.xml
+      done
+    displayName: Clang Format
