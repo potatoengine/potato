@@ -383,14 +383,14 @@ IDL_PROPERTY_SUPPORT   = YES
 # all members of a group must be documented explicitly.
 # The default value is: NO.
 
-DISTRIBUTE_GROUP_DOC   = NO
+DISTRIBUTE_GROUP_DOC   = YES
 
 # If one adds a struct or class to a group and this option is enabled, then also
 # any nested class or struct is added to the same group. By default this option
 # is disabled and one has to add nested compounds explicitly via \ingroup.
 # The default value is: NO.
 
-GROUP_NESTED_COMPOUNDS = NO
+GROUP_NESTED_COMPOUNDS = YES
 
 # Set the SUBGROUPING tag to YES to allow class member groups of the same type
 # (for instance a group of public functions) to be put as a subgroup of that
@@ -410,7 +410,7 @@ SUBGROUPING            = YES
 # SEPARATE_MEMBER_PAGES.
 # The default value is: NO.
 
-INLINE_GROUPED_CLASSES = NO
+INLINE_GROUPED_CLASSES = YES
 
 # When the INLINE_SIMPLE_STRUCTS tag is set to YES, structs, classes, and unions
 # with only public data fields or simple typedef fields will be shown inline in
@@ -524,14 +524,14 @@ HIDE_UNDOC_CLASSES     = NO
 # included in the documentation.
 # The default value is: NO.
 
-HIDE_FRIEND_COMPOUNDS  = NO
+HIDE_FRIEND_COMPOUNDS  = YES
 
 # If the HIDE_IN_BODY_DOCS tag is set to YES, doxygen will hide any
 # documentation blocks found inside the body of a function. If set to NO, these
 # blocks will be appended to the function's detailed documentation block.
 # The default value is: NO.
 
-HIDE_IN_BODY_DOCS      = NO
+HIDE_IN_BODY_DOCS      = YES
 
 # The INTERNAL_DOCS tag determines if documentation that is typed after a
 # \internal command is included. If the tag is set to NO then the documentation
@@ -689,7 +689,7 @@ MAX_INITIALIZER_LINES  = 30
 # list will mention the files that were used to generate the documentation.
 # The default value is: YES.
 
-SHOW_USED_FILES        = NO
+SHOW_USED_FILES        = YES
 
 # Set the SHOW_FILES tag to NO to disable the generation of the Files page. This
 # will remove the Files entry from the Quick Index and from the Folder Tree View
