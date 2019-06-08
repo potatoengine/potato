@@ -26,10 +26,10 @@ jobs:
   - task: S3Upload@1
     inputs:
       awsCredentials: AWS-S3
-      regionName: us-west-1
-      bucketName: potato-docs
+      regionName: $(doxygen-s3-region)
+      bucketName: $(doxygen-s3-bucket)
       sourceFolder: build/documentation/doxygen/html
       targetFolder: $(Build.SourceBranchName)
       filesAcl: public-read
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(succeeded(), or(variables['doxygen-s3-publish'], eq(variables['Build.SourceBranch'], 'refs/heads/master')))
     displayName: Publish to S3
