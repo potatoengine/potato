@@ -8,7 +8,8 @@
 #include "potato/filesystem/json.h"
 #include <nlohmann/json.hpp>
 
-static constexpr up::uint64 libraryRevision = 3;
+// 4. fixing bug in hlsli path generation and adding meta files to source deps
+static constexpr up::uint64 libraryRevision = 4;
 
 up::AssetLibrary::~AssetLibrary() = default;
 
