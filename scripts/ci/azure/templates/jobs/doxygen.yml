@@ -31,5 +31,5 @@ jobs:
       sourceFolder: build/documentation/doxygen/html
       targetFolder: $(Build.SourceBranchName)
       filesAcl: public-read
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(succeeded(), or(variables['doxygen-s3-publish'], eq(variables['Build.SourceBranch'], 'refs/heads/master')))
     displayName: Publish to S3
