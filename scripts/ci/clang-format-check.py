@@ -150,9 +150,8 @@ def print_error_report(error_count, file_errors):
         print "No format error found"
     else:
         for file, errors in file_errors.iteritems():
-            for error in errors:
-                print "##vso[task.logissue type=error;sourcepath={};linenumber={};columnnumber={};] -{}".format(file, error.line + 1, error.column + 1, error.found)
-                print "##vso[task.logissue type=error;sourcepath={};linenumber={};columnnumber={};] +{}".format(file, error.line + 1, error.column + 1, error.expected)
+            if len(errors):
+                print "##vso[task.logissue type=warning;sourcepath={};linenumber={};columnnumber={};]Formatting problem".format(file, errors[0].line + 1, errors[0].column + 1)
         print "##vso[task.logissue type=error;]A total of {} format errors were found".format(error_count)
 
 
