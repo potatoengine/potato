@@ -50,7 +50,7 @@ namespace up {
 
         template <uint64 hash>
         constexpr ComponentId componentIdFromHash = static_cast<ComponentId>(hash);
-    }
+    } // namespace _detail
 
     template <typename Component>
     constexpr ComponentMeta ComponentMeta::construct(string_view name) noexcept {
@@ -74,10 +74,10 @@ namespace up {
         return &holder<Component>::meta;
     }
 
-    /// Registers a type as a Component and creates an associated ComponentMeta
-    #define UP_COMPONENT(ComponentType) \
-        template <> \
-        up::ComponentMeta const up::ComponentMeta::holder<ComponentType>::meta = up::ComponentMeta::construct<ComponentType>(#ComponentType);
+/// Registers a type as a Component and creates an associated ComponentMeta
+#define UP_COMPONENT(ComponentType) \
+    template <> \
+    up::ComponentMeta const up::ComponentMeta::holder<ComponentType>::meta = up::ComponentMeta::construct<ComponentType>(#ComponentType);
 
     /// Finds the unique ComponentId for a given Component type
     template <typename ComponentT>

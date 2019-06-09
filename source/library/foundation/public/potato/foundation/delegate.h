@@ -132,7 +132,7 @@ namespace up {
             template <typename Functor>
             void assign(Functor&& functor);
         };
-    } // namespace up::_detail
+    } // namespace _detail
 } // namespace up
 
 template <typename ReturnType, typename... ParamTypes>

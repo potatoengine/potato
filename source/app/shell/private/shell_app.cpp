@@ -178,8 +178,7 @@ void up::ShellApp::run() {
         _world->createEntity(
             components::Position{{(20 + glm::cos(p * 20.f) * 10.f) * glm::sin(p * 2.f * glm::pi<float>()), 1 + glm::sin(p * 10) * 5, (20 + glm::sin(p * 20.f) * 10.f) * glm::cos(p * 2.f * glm::pi<float>())}},
             components::Transform{},
-            components::Mesh{_cube}
-        );
+            components::Mesh{_cube});
     }
 
     Query<components::Mesh, components::Transform> renderableMeshQuery;

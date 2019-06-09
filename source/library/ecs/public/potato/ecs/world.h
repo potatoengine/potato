@@ -112,6 +112,5 @@ namespace up {
     template <typename Component>
     void World::addComponent(EntityId entityId, Component const& component) noexcept {
         _addComponentRaw(entityId, ComponentMeta::get<Component>(), &component);
-
     }
 } // namespace up

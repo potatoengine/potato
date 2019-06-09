@@ -22,4 +22,4 @@ namespace up {
     constexpr uint32 getEntityGeneration(EntityId entity) noexcept {
         return static_cast<uint64>(entity) >> 32;
     }
-}
+} // namespace up

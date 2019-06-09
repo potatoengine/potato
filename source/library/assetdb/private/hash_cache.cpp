@@ -82,7 +82,7 @@ bool up::HashCache::deserialize(Stream& stream) {
     }
 
     for (auto& member : jsonRoot) {
-        uint64 hash = member["hash"];        
+        uint64 hash = member["hash"];
         uint64 mtime = member["mtime"];
         uint64 size = member["size"];
 

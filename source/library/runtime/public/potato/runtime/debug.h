@@ -31,7 +31,7 @@ namespace up::_detail {
 
     /// Ask the user if they should abort, skip the error, or always skip this error.
     UP_RUNTIME_API UP_NOINLINE FatalErrorAction raiseFatalError(char const* file, int line, char const* failedConditionText, char const* messageText);
-} // namespace up
+} // namespace up::_detail
 
 #define _up_FAIL(failure, message) \
     do { \

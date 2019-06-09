@@ -82,10 +82,10 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
         Query<Test1> query;
         query.select(world, ([&](size_t count, EntityId const* ids, Test1*) {
-            DOCTEST_CHECK_EQ(2, count);
-            DOCTEST_CHECK_EQ(first, ids[0]);
-            DOCTEST_CHECK_EQ(second, ids[1]);
-        }));
+                         DOCTEST_CHECK_EQ(2, count);
+                         DOCTEST_CHECK_EQ(first, ids[0]);
+                         DOCTEST_CHECK_EQ(second, ids[1]);
+                     }));
     }
 
     DOCTEST_TEST_CASE("Chunks") {

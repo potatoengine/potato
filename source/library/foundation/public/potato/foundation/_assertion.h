@@ -3,7 +3,7 @@
 #pragma once
 
 #if defined(UP_FOUNDATION_ASSERT_HEADER)
-#   include UP_FOUNDATION_ASSERT_HEADER
+#    include UP_FOUNDATION_ASSERT_HEADER
 #endif
 
 #if !defined(UP_FOUNDATION_ASSERT)

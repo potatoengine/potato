@@ -73,7 +73,7 @@ namespace up {
     }
 
     template <typename... Components>
-    void Query<Components...>::select(World &world, Delegate callback) const {
+    void Query<Components...>::select(World& world, Delegate callback) const {
         world.selectRaw(_components, [&, this](size_t count, EntityId const* entities, view<void*> arrays) {
             this->_invoke(count, entities, arrays, callback);
         });

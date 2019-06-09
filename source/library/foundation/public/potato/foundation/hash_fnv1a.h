@@ -7,7 +7,7 @@
 
 #if defined(UP_COMPILER_MICROSOFT)
 // https://stackoverflow.com/questions/37658794/integer-constant-overflow-warning-in-constexpr
-__pragma(warning(disable : 4307))
+__pragma(warning(disable : 4307));
 #endif
 
 namespace up {

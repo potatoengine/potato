@@ -42,7 +42,7 @@ bool up::AssetLibrary::serialize(Stream& stream) const {
         nlohmann::json jsonRecord;
 
         auto catName = assetCategoryName(record.category);
-        
+
         jsonRecord["id"] = static_cast<uint64>(record.assetId);
         jsonRecord["path"] = std::string(record.path.data(), record.path.size());
         jsonRecord["contentHash"] = record.contentHash;
@@ -110,15 +110,13 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
         for (auto const& output : record["outputs"]) {
             newRecord.outputs.push_back(AssetOutputRecord{
                 output["path"],
-                output["hash"]
-            });
+                output["hash"]});
         }
 
         for (auto const& output : record["sourceDeps"]) {
             newRecord.sourceDependencies.push_back(AssetDependencyRecord{
                 output["path"],
-                output["hash"]
-            });
+                output["hash"]});
         }
 
         insertRecord(std::move(newRecord));
