@@ -7,15 +7,15 @@ jobs:
   steps:
   - bash: |
       set -xe
-      sudo add-apt-repository 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main'
+      sudo add-apt-repository 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
       sudo apt-get update -y
-      sudo apt-get install -y clang-format-8
+      sudo apt-get install -y clang-format-7
     displayName: Installing Dependencies
   - bash: |
       set -xe
-      clang-format-8 --version
+      clang-format-7 --version
       cmake --version
     displayName: Build Information
   - script: |
-      python scripts/ci/clang-format-check.py --exe=clang-format-8 $(find source/ -name '*.h' -o -name '*.cpp')
+      python scripts/ci/clang-format-check.py --exe=clang-format-7 $(find source/ -name '*.h' -o -name '*.cpp')
     displayName: Clang Format
