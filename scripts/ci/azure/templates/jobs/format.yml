@@ -17,12 +17,5 @@ jobs:
       cmake --version
     displayName: Build Information
   - script: |
-      for dir in source/*/* ; do
-        echo "$dir"
-        if ! python scripts/ci/run-clang-format.py --clang-format-executable=clang-format-8 --recursive source/ 2>&1 > ~/clang-format.diff ; then
-          echo "##vso[task.logissue type=error;sourcepath=scripts/ci/run-clang-format.py;linenumber=10;columnnumber=1]Format errors found"
-          echo "##vso[task.uploadfile]$HOME/clang-format.diff"
-          echo "##vso[task.complete result=Failed]PROBLEMS FOUND"
-        fi
-      done
+      python scripts/ci/clang-format-check.py --exe=clang-format-8 $(find source/ -name '*.h' -o -name '*.cpp')
     displayName: Clang Format
