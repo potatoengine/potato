@@ -66,14 +66,10 @@ def list_files(files, recursive=False, extensions=None, exclude=None):
     return out
 
 
-def make_diff(file, original, reformatted):
-    return list(
-        difflib.unified_diff(
-            original,
-            reformatted,
-            fromfile='{}\t(original)'.format(file),
-            tofile='{}\t(reformatted)'.format(file),
-            n=3))
+def print_errors(file, original, changes):
+    for line in changes:
+        print(line)
+    return 0
 
 
 class DiffError(Exception):
@@ -106,7 +102,7 @@ def run_clang_format_diff(args, file):
             original = f.readlines()
     except IOError as exc:
         raise DiffError(str(exc))
-    invocation = [args.clang_format_executable, file]
+    invocation = [args.clang_format_executable, '-output-replacements-xml', file]
 
     # Use of utf-8 to decode the process output.
     #
@@ -154,7 +150,7 @@ def run_clang_format_diff(args, file):
     if proc.returncode:
         raise DiffError("clang-format exited with status {}: '{}'".format(
             proc.returncode, file), errs)
-    return make_diff(file, original, outs), errs
+    return print_errors(file, original, outs), errs
 
 
 def bold_red(s):
