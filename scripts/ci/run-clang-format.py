@@ -6,6 +6,7 @@ This is an alternative API for the clang-format command line.
 It runs over multiple files and directories in parallel.
 A diff output is produced and a sensible exit code is returned.
 
+Modified for Azure Pipelines to generate annotations
 """
 
 from __future__ import print_function, unicode_literals
