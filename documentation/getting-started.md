@@ -36,6 +36,10 @@ Several binary dependencies currently need to be installed manually.
 
 - Install the [AssImp 4.1 SDK Installer](https://github.com/assimp/assimp/releases/download/v4.1.0/assimp-sdk-4.1.0-setup.exe).
 
+**Doxygen**
+
+- Install the latest [Doxygen](http://www.doxygen.nl/download.html)
+
 Ubuntu in WSL
 -------------
 

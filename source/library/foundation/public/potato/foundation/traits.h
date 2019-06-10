@@ -6,15 +6,15 @@
 #include <type_traits>
 #include <utility>
 
-namespace up::_detail {
-    template <typename V, template <typename...> class C, typename... A>
-    struct detector : std::false_type {};
-
-    template <template <typename...> class C, typename... A>
-    struct detector<std::void_t<C<A...>>, C, A...> : std::true_type {};
-} // namespace up::_detail
-
 namespace up {
+    namespace _detail {
+        template <typename V, template <typename...> class C, typename... A>
+        struct detector : std::false_type {};
+
+        template <template <typename...> class C, typename... A>
+        struct detector<std::void_t<C<A...>>, C, A...> : std::true_type {};
+    } // namespace _detail
+
     template <typename T>
     struct is_contiguous : std::integral_constant<bool, std::is_integral_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>> {};
 

@@ -21,4 +21,5 @@ jobs:
 - template: scripts/ci/azure/templates/jobs/windows.yml
 - template: scripts/ci/azure/templates/jobs/ubuntu.yml
 - template: scripts/ci/azure/templates/jobs/macos.yml
+- template: scripts/ci/azure/templates/jobs/doxygen.yml
 

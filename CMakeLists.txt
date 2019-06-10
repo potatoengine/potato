@@ -12,6 +12,7 @@ endif()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(UP_BUILD_DOCS "Build documentation" OFF)
 
 enable_testing()
 include(Dart)
@@ -34,6 +35,7 @@ include(GNUInstallDirs)
 
 add_subdirectory(external)
 add_subdirectory(source)
+add_subdirectory(documentation)
 
 configure_file(
     scripts/config/tasks.vs.json.in
