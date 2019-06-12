@@ -10,6 +10,8 @@ using namespace up;
 #    include <rpc.h>
 #elif defined UP_PLATFORM_LINUX
 #    include <uuid/uuid.h>
+#elif defined UP_PLATFORM_APPLE
+#    include <CoreFoundation/CFUUID.h>
 #else
 #    error "Unsupported platform"
 #endif
@@ -49,7 +51,7 @@ auto generateGuid() -> uuid::buffer {
     auto bytes = CFUUIDGetUUIDBytes(newId);
     CFRelease(newId);
     static_assert(sizeof(ret) == sizeof(bytes));
-    std::memcpy(ret.data(), &bytes, sizeof(UUID));
+    std::memcpy(ret.data(), &bytes, sizeof(bytes));
 #endif
 
     return ret;
