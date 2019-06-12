@@ -11,7 +11,7 @@ namespace up::recon {
         ~CopyConverter();
 
         bool convert(Context& ctx) override;
-        string generateSettings(Context& ctd) { return ""; }
+        string generateSettings(Context& ctd) override { return ""; }
 
         string_view name() const noexcept override { return "copy"; }
         uint64 revision() const noexcept override { return 0; }

@@ -318,7 +318,7 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
     }
 
     vector<string> files;
-    auto cb = [&files, this](FileInfo const& info) -> EnumerateResult {
+    auto cb = [&files](FileInfo const& info) -> EnumerateResult {
         if (info.type == FileType::Regular) {
             // skip .meta files for now
             size_t length = info.path.size();

@@ -64,7 +64,7 @@ uuid uuid::generate() {
 }
 
 uuid uuid::zero() {
-    static uuid _zero({});
+    static uuid _zero(uuid::buffer({}));
     return _zero;
 }
 

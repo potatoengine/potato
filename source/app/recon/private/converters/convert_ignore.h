@@ -11,7 +11,7 @@ namespace up::recon {
         ~IgnoreConverter() = default;
 
         bool convert(Context& ctx) override { return true; }
-        string generateSettings(Context& ctd) { return ""; }
+        string generateSettings(Context& ctd) override { return ""; }
 
 
         string_view name() const noexcept override { return "ignore"; }
