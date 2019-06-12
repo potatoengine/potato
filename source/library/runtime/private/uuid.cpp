@@ -44,6 +44,12 @@ auto generateGuid() -> uuid::buffer {
 #elif UP_PLATFORM_LINUX
     static_assert(sizeof(ret) == sizeof(uuid));
     uuid_generate((unsigned char*)ret.data());
+#elif UP_PLATFORM_APPLE
+    auto newId = CFUUIDCreate(NULL);
+    auto bytes = CFUUIDGetUUIDBytes(newId);
+    CFRelease(newId);
+    static_assert(sizeof(ret) == sizeof(bytes));
+    std::memcpy(ret.data(), &bytes, sizeof(UUID));
 #endif
 
     return ret;
