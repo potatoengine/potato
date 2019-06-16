@@ -3,6 +3,7 @@
 #include "_export.h"
 #include "_wrapper.h"
 #include "_tag.h"
+#include "metadata.h"
 #include <potato/foundation/zstring_view.h>
 #include <potato/foundation/traits.h>
 
@@ -28,8 +29,11 @@ namespace up::reflex {
 
     /// Defines reflection for a type
     #define UP_REFLECT_TYPE(T) \
+        constexpr ::up::reflex::TypeInfo getTypeInfo(::up::reflex::_detail::TypeTag<T>) noexcept { \
+            return ::up::reflex::TypeInfo{#T, sizeof(T), alignof(T)}; \
+        } \
         template <typename _up_ReflectObject> \
-        void serialize_value(::up::reflex::_detail::TypeTag<T> tag, _up_ReflectObject& reflect, ::up::zstring_view name = #T)
+        void serialize_value(::up::reflex::_detail::TypeTag<T>, _up_ReflectObject& reflect, ::up::zstring_view name = #T)
 
     UP_REFLECT_TYPE(int) { reflect(); }
     UP_REFLECT_TYPE(float) { reflect(); }

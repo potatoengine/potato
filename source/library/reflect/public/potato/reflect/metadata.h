@@ -2,7 +2,8 @@
 
 #include "_tag.h"
 #include <potato/foundation/zstring_view.h>
-#include <potato/foundation/traits.h>
+
+#pragma once
 
 namespace up::reflex {
     /// Metadata about a specific type.
@@ -16,18 +17,17 @@ namespace up::reflex {
 
     namespace _detail {
         template <typename T>
-        constexpr TypeInfo const& getTypeInfo(_detail::TypeTag<T>) noexcept {
-            static constexpr TypeInfo info{
+        constexpr TypeInfo getTypeInfo(_detail::TypeTag<T>) noexcept {
+            return TypeInfo{
                 {},
                 sizeof(T),
                 alignof(T)};
-            return info;
         }
     } // namespace _detail
 
     /// Lookup the metadata for a given type.
     template <typename T>
-    constexpr TypeInfo const& getTypeInfo() noexcept {
+    constexpr TypeInfo getTypeInfo() noexcept {
         using _detail::getTypeInfo;
         return getTypeInfo(_detail::TypeTag<T>{});
     }
