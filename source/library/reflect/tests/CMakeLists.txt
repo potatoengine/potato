@@ -1,5 +1,6 @@
 add_executable(test_potato_reflect
     main.cpp
+    test_metadata.cpp
     test_serialize.cpp
 )
 

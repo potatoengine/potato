@@ -2,6 +2,7 @@
 
 #include "_export.h"
 #include "_wrapper.h"
+#include "_tag.h"
 #include <potato/foundation/zstring_view.h>
 #include <potato/foundation/traits.h>
 
@@ -25,15 +26,7 @@ namespace up::reflex {
     //     void value(Type& value);
     // };
 
-    namespace _detail {
-        // This a selector for the type being serialized, which ignores const-ness
-        //
-        template <typename T>
-        struct TypeTag { using type = T; };
-    } // namespace _detail
-
-    // Defines reflection for a type
-    //
+    /// Defines reflection for a type
     #define UP_REFLECT_TYPE(T) \
         template <typename _up_ReflectObject> \
         void serialize_value(::up::reflex::_detail::TypeTag<T> tag, _up_ReflectObject& reflect, ::up::zstring_view name = #T)
@@ -44,8 +37,7 @@ namespace up::reflex {
 
     UP_REFLECT_TYPE(string_view) { reflect(); }
 
-    // Public entry for serialization
-    //
+    /// Public entry for serialization
     template <typename Type, typename Serializer>
     void serialize(Type& value, Serializer& serializer) {
         using BaseType = up::remove_cvref_t<Type>;
@@ -56,7 +48,7 @@ namespace up::reflex {
         serialize_value<WrapperType>(TagType{}, wrapper);
     }
 
-    // Public entry for reflection
+    /// Public entry for reflection
     template <typename Type, typename Reflector>
     void reflect(Reflector& reflector) {
         using WrapperType = _detail::ReflectorWrapper<Type, Reflector, std::is_class_v<Type>>;
