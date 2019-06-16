@@ -76,6 +76,19 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
 
         DOCTEST_CHECK_EQ(ostr.str(), R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3}})--");
     }
+
+    DOCTEST_TEST_CASE("deserialize from json") {
+        auto root = nlohmann::json::parse(R"--({"x":1,"y":2,"z":3})--");
+
+        JsonStreamDeserializer serializer(root);
+
+        Fields xyz;
+        serialize(xyz, serializer);
+
+        DOCTEST_CHECK_EQ(1, xyz.x);
+        DOCTEST_CHECK_EQ(2, xyz.y);
+        DOCTEST_CHECK_EQ(3, xyz.z);
+    }
 }
 
 DOCTEST_TEST_SUITE("[potato][reflect] reflect") {
