@@ -40,46 +40,6 @@ namespace up::reflex {
         virtual void string(string_view value) {}
     }; // namespace up::reflect
 
-    class XmlStreamSerializer : public StreamSerializer {
-    public:
-        constexpr XmlStreamSerializer(string_writer& writer) noexcept : _writer(writer) {}
-
-        virtual Action enterField(zstring_view name) {
-            format_into(_writer, "<field name=\"{}\">", name);
-            return Action::Enter;
-        }
-        virtual void leaveField() {
-            _writer.write("</field>");
-        }
-
-        virtual Action enterObject() {
-            format_into(_writer, "<object type=\"{}\">", "object");
-            return Action::Enter;
-        }
-        virtual void leaveObject() {
-            _writer.write("</object>");
-        }
-
-        void primitive(int value) override {
-            format_into(_writer, "<int>{}</int>", value);
-        }
-
-        void primitive(float value) override {
-            format_into(_writer, "<float>{}</float>", value);
-        }
-
-        void primitive(double value) override {
-            format_into(_writer, "<double>{}</double>", value);
-        }
-
-        void string(string_view value) override {
-            format_into(_writer, "<string>{}</string>", value);
-        }
-
-    private:
-        string_writer& _writer;
-    };
-
     class JsonStreamSerializer : public StreamSerializer {
     public:
         JsonStreamSerializer(nlohmann::json& root) noexcept : _root(root), _current({&_root}) {}

@@ -50,28 +50,6 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         serialize(i, s);
     }
 
-    DOCTEST_TEST_CASE("serialize to xml") {
-        string_writer xml;
-        XmlStreamSerializer serializer(xml);
-
-        Fields xyz{1, 2, 3};
-
-        serialize(xyz, serializer);
-
-        DOCTEST_CHECK_EQ(xml.c_str(), "<field name=\"x\"><int>1</int></field><field name=\"y\"><int>2</int></field><field name=\"z\"><int>3</int></field>");
-
-        Bigger big{
-            {1, 2, 3},
-            42.f,
-            "bob"};
-
-        xml.clear();
-
-        serialize(big, serializer);
-
-        DOCTEST_CHECK_EQ(xml.c_str(), "<field name=\"xyz\"><field name=\"x\"><int>1</int></field><field name=\"y\"><int>2</int></field><field name=\"z\"><int>3</int></field></field><field name=\"num\"><float>42.000000</float></field><field name=\"name\"><string>bob</string></field>");
-    }
-
     DOCTEST_TEST_CASE("serialize to json") {
         nlohmann::json root = nlohmann::json::object();
         JsonStreamSerializer serializer(root);
