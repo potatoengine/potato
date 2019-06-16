@@ -27,7 +27,7 @@ DOCTEST_TEST_SUITE("[potato][foundation] up::uuid") {
         DOCTEST_CHECK(e == uuid::zero());
         const uuid f = uuid::fromString("955408-4e4100-4098-b470-2125f5eed133f");
         DOCTEST_CHECK(f == uuid::zero());
-        const uuid g = uuid::fromString("955408-4e41K00-4098-bPODR-25f5eed133f");
+        const uuid g = uuid::fromString("9554084e-41K0-4098-PODR-25f5eed133fN");
         DOCTEST_CHECK(g == uuid::zero());
 
     }

@@ -85,30 +85,30 @@ string uuid::toString(const uuid& id) {
 }
 
 static auto isValidChar(const char c) -> bool {
-    if (c >= '0' || c <= '9')
+    if (c >= '0' && c <= '9')
         return true;
 
-    if (c >= 'a' || c <= 'f')
+    if (c >= 'a' && c <= 'f')
         return true;
 
-    if (c >= 'A' || c <= 'F')
+    if (c >= 'A' && c <= 'F')
         return true;
 
     return false;
 }
 
-static auto hexDigitToChar(char ch) -> unsigned char {
+static auto hexDigitToChar(char c) -> unsigned char {
     // 0-9
-    if (ch > '0' && ch < '9')
-        return ch - 48;
+    if (c >= '0' && c <= '9')
+        return c - 48;
 
     // a-f
-    if (ch > 'a' && ch < 'f')
-        return ch - 87;
+    if (c >= 'a' && c <= 'f')
+        return c - 87;
 
     // A-F
-    if (ch > 'A' && ch < 'F')
-        return ch - 55;
+    if (c >= 'A' && c <= 'F')
+        return c - 55;
 
     return 0;
 }
