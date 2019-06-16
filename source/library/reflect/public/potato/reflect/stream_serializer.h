@@ -18,7 +18,7 @@ namespace up::reflex {
         template <typename ClassType, typename FieldType>
         constexpr void field(zstring_view name, ClassType& object, FieldType ClassType::*field) {
             enterField(name);
-            serialize(object.*field, *this);
+            recurse(object.*field);
             leaveField();
         }
 
@@ -27,6 +27,18 @@ namespace up::reflex {
         void value(string_view value) { string(value); }
 
     private:
+        template <typename T>
+        constexpr void recurse(T& value) {
+            if constexpr (std::is_class_v<T> && !std::is_same_v<T, string_view>) {
+                enterObject();
+                serialize(value, *this);
+                leaveObject();
+            }
+            else {
+                serialize(value, *this);
+            }
+        }
+
         virtual Action enterField(zstring_view name) { return Action::Skip; }
         virtual void leaveField() {}
 
@@ -93,5 +105,5 @@ namespace up::reflex {
         nlohmann::json& _root;
         vector<nlohmann::json*> _current;
         zstring_view _fieldName;
-    }; // namespace up::reflex
+    };
 } // namespace up::reflex
