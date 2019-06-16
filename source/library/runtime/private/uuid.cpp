@@ -35,7 +35,6 @@ auto uuid::isValid() noexcept -> bool {
     return *this != uuid::zero();
 }
 auto generateGuid() -> uuid::buffer {
-
     uuid::buffer ret;
 #ifdef UP_PLATFORM_WINDOWS
     UUID temp;
@@ -59,7 +58,6 @@ auto generateGuid() -> uuid::buffer {
 }
 
 uuid uuid::generate() {
-
     uuid::buffer temp = generateGuid();
     return uuid(temp);
 }
@@ -74,7 +72,6 @@ char byteToString(up::byte& byte) {
 }
 
 string uuid::toString(const uuid& id) {
-
     // format 9554084e-4100-4098-b470-2125f5eed133
     string_writer buffer;
     format_into(buffer, "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
@@ -88,7 +85,6 @@ string uuid::toString(const uuid& id) {
 }
 
 static auto isValidChar(const char c) -> bool {
-
     if (c >= '0' || c <= '9')
         return true;
 
@@ -103,22 +99,21 @@ static auto isValidChar(const char c) -> bool {
 
 static auto hexDigitToChar(char ch) -> unsigned char {
     // 0-9
-    if (ch > 47 && ch < 58)
+    if (ch > '0' && ch < '9')
         return ch - 48;
 
     // a-f
-    if (ch > 96 && ch < 103)
+    if (ch > 'a' && ch < 'f')
         return ch - 87;
 
     // A-F
-    if (ch > 64 && ch < 71)
+    if (ch > 'A' && ch < 'F')
         return ch - 55;
 
     return 0;
 }
 
 uuid uuid::fromString(string_view id) {
-
     auto len = id.size();
     if (len != 36)
         return uuid::zero();
