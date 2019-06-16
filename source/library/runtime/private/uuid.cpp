@@ -2,6 +2,7 @@
 
 #include "potato/runtime/uuid.h"
 #include "potato/runtime/assertion.h"
+#include "potato/foundation/string_writer.h"
 
 using namespace up;
 
@@ -68,21 +69,20 @@ uuid uuid::zero() {
     return _zero;
 }
 
+char byteToString(up::byte& byte) {
+    return (char)byte;
+}
+
 string uuid::toString(const uuid& id) {
 
-#ifdef UP_PLATFORM_WINDOWS
-    RPC_CSTR str;
-    const UUID* data = (const UUID*)id._data.data();
-    if (UuidToStringA(data, &str) != RPC_S_OK)
-        return "";
-
-    string s((const char*)str);
-    RpcStringFreeA(&str);
-    return s;
-
-#else
-    char s[37];
-    uuid_unparse((unsigned char*)id._data.data(), s);
-    return s;
-#endif
+    // format 9554084e-4100-4098-b470-2125f5eed133
+    string_writer buffer;
+    format_into(buffer, "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+                id._data[0],id._data[1], id._data[2], id._data[3],
+                id._data[4], id._data[5],
+                id._data[6], id._data[7],
+                id._data[8], id._data[9],
+                id._data[10], id._data[11], id._data[12], id._data[13], id._data[14], id._data[15]);
+        
+    return buffer.c_str();
 }
