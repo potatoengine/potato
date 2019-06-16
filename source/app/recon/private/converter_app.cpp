@@ -321,8 +321,7 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
     auto cb = [&files](FileInfo const& info) -> EnumerateResult {
         if (info.type == FileType::Regular) {
             // skip .meta files for now
-            size_t length = info.path.size();
-            if (length > 5 && info.path.substr(length-5) == ".meta")
+            if (path::extension(info.path) == ".meta")
                 return EnumerateResult::Continue;
                    
             files.push_back(info.path);
