@@ -11,6 +11,7 @@ target_link_libraries(reflect
     PUBLIC
         potato::runtime
         potato::foundation
+        nlohmann_json::nlohmann_json
 )
 
 add_subdirectory(public/potato/reflect)

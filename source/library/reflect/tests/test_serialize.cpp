@@ -1,6 +1,7 @@
 #include "potato/reflect/reflect.h"
 #include "potato/reflect/stream_serializer.h"
 #include <doctest/doctest.h>
+#include <sstream>
 
 namespace {
     struct RecordingSerializer {
@@ -69,6 +70,33 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         serialize(big, serializer);
 
         DOCTEST_CHECK_EQ(xml.c_str(), "<field name=\"xyz\"><field name=\"x\"><int>1</int></field><field name=\"y\"><int>2</int></field><field name=\"z\"><int>3</int></field></field><field name=\"num\"><float>42.000000</float></field><field name=\"name\"><string>bob</string></field>");
+    }
+
+    DOCTEST_TEST_CASE("serialize to json") {
+        nlohmann::json root = nlohmann::json::object();
+        JsonStreamSerializer serializer(root);
+
+        Fields xyz{1, 2, 3};
+
+        serialize(xyz, serializer);
+
+        std::ostringstream ostr;
+        ostr << root;
+
+        DOCTEST_CHECK_EQ(ostr.str(), R"--({"x":1,"y":2,"z":3})--");
+
+        Bigger big{
+            {1, 2, 3},
+            42.f,
+            "bob"};
+
+        root = nlohmann::json::object();
+        serialize(big, serializer);
+
+        ostr = std::ostringstream();
+        ostr << root;
+
+        DOCTEST_CHECK_EQ(ostr.str(), R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3}})--");
     }
 }
 
