@@ -78,11 +78,71 @@ string uuid::toString(const uuid& id) {
     // format 9554084e-4100-4098-b470-2125f5eed133
     string_writer buffer;
     format_into(buffer, "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                id._data[0],id._data[1], id._data[2], id._data[3],
+                id._data[0], id._data[1], id._data[2], id._data[3],
                 id._data[4], id._data[5],
                 id._data[6], id._data[7],
                 id._data[8], id._data[9],
                 id._data[10], id._data[11], id._data[12], id._data[13], id._data[14], id._data[15]);
-        
+
     return buffer.c_str();
+}
+
+static auto isValidChar(const char c) -> bool {
+
+    if (c >= '0' || c <= '9')
+        return true;
+
+    if (c >= 'a' || c <= 'f')
+        return true;
+
+    if (c >= 'A' || c <= 'F')
+        return true;
+
+    return false;
+}
+
+static auto hexDigitToChar(char ch) -> unsigned char {
+    // 0-9
+    if (ch > 47 && ch < 58)
+        return ch - 48;
+
+    // a-f
+    if (ch > 96 && ch < 103)
+        return ch - 87;
+
+    // A-F
+    if (ch > 64 && ch < 71)
+        return ch - 55;
+
+    return 0;
+}
+
+uuid uuid::fromString(string_view id) {
+
+    auto len = id.size();
+    if (len != 36)
+        return uuid::zero();
+
+    char buffer[2]; // reading 2 chars at a time
+    uint32 chidx = 0;
+
+    uuid result;
+    uint32 bidx = 0;
+    for (auto c : id) {
+        if (c == '-')
+            continue;
+
+        if (!isValidChar(c))
+            return uuid::zero();
+
+        buffer[chidx++] = c;
+
+        if (chidx == 2) {
+            byte v = static_cast<byte>(hexDigitToChar(buffer[0]) * 16 + hexDigitToChar(buffer[1]));
+            chidx = 0;
+            result._data[bidx++] = v;
+        }
+    }
+
+    return result;
 }

@@ -18,14 +18,16 @@ namespace up {
 
         bool isValid() noexcept;
 
-        bool operator==(const uuid& other) const { return std::memcmp(&_data, &other._data, sizeof(_data)) == 0; }
+        bool operator==(const uuid& other) const { return _data == other._data; }
         bool operator!=(const uuid& other) const { return !operator==(other); }
 
         static uuid generate();
         static string toString(const uuid& id);
+        static uuid fromString(string_view id);
 
         static uuid zero();
 
+    private:
         buffer _data;
     };
 
