@@ -45,6 +45,7 @@ namespace up {
 
     template <typename T>
     using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+    static_assert(std::is_same_v<int, remove_cvref_t<int const&>>);
 
 #if defined(__cpp_lib_constexpr_invoke)
     using std::invoke;
