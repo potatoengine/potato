@@ -20,6 +20,40 @@ namespace up {
 }
 
 namespace up::reflex {
+    template <typename DerivedType>
+    class SerializerBase  {
+    public:
+        enum class Action {
+            Enter,
+            Skip
+        };
+    
+        template <typename ObjectType, typename ClassType, typename FieldType>
+        constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field) {
+            if (static_cast<DerivedType*>(this)->enterField(name) == Action::Enter) {
+                value(object.*field);
+                static_cast<DerivedType*>(this)->leaveField();
+            }
+        }
+
+        template <typename ValueType>
+        void value(ValueType&& value) {
+            using Type = up::remove_cvref_t<ValueType>;
+            if constexpr (std::is_integral_v<Type> || std::is_floating_point_v<Type>) {
+                static_cast<DerivedType*>(this)->primitive(value);
+            }
+            else if constexpr (std::is_same_v<Type, up::string_view> || std::is_same_v<Type, up::zstring_view> || std::is_same_v<Type, string>) {
+                static_cast<DerivedType*>(this)->string(value);
+            }
+            else if constexpr (std::is_class_v<Type>) {
+                if (static_cast<DerivedType*>(this)->enterObject() == Action::Enter) {
+                    serialize(value, *this);
+                    static_cast<DerivedType*>(this)->leaveObject();
+                }
+            }
+        }
+    };
+
     class StreamSerializer {
     public:
         enum class Action {
@@ -130,22 +164,9 @@ namespace up::reflex {
         zstring_view _fieldName;
     };
 
-    class JsonStreamDeserializer {
+    class JsonStreamDeserializer : public SerializerBase<JsonStreamDeserializer> {
     public:
-        enum class Action {
-            Enter,
-            Skip
-        };
-
         JsonStreamDeserializer(nlohmann::json& root) noexcept : _root(root), _current({&_root}) {}
-
-        template <typename ObjectType, typename ClassType, typename FieldType>
-        constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field) {
-            if (enterField(name) == Action::Enter) {
-                recurse(object.*field);
-                leaveField();
-            }
-        }
 
         template <typename ValueT>
         void value(ValueT& value) {
@@ -164,8 +185,7 @@ namespace up::reflex {
             }
         }
 
-    private:
-        virtual Action enterField(zstring_view name) {
+        Action enterField(zstring_view name) noexcept {
             if (current().contains(name.c_str())) {
                 _fieldName = name;
                 return Action::Enter;
@@ -173,11 +193,11 @@ namespace up::reflex {
             return Action::Skip;
         }
 
-        virtual void leaveField() {
+        constexpr void leaveField() noexcept {
             _fieldName = {};
         }
 
-        virtual Action enterObject() {
+        Action enterObject() {
             if (_fieldName && !_current.empty() && current().is_object()) {
                 auto& obj = current()[_fieldName.c_str()];
                 _current.push_back(&obj);
@@ -186,22 +206,31 @@ namespace up::reflex {
             return Action::Skip;
         }
 
-        virtual void leaveObject() {
+        void leaveObject() noexcept {
             _current.pop_back();
         }
 
         template <typename T>
-        constexpr void recurse(T& value) {
-            if constexpr (std::is_class_v<T> && !std::is_same_v<T, up::string>) {
-                if (enterObject() == Action::Enter) {
-                    serialize(value, *this);
-                    leaveObject();
+        void primitive(T&& value) {
+            if (_fieldName && !_current.empty() && current().is_object()) {
+                auto& field = current()[_fieldName.c_str()];
+                if (field.is_primitive()) {
+                    value = current()[_fieldName.c_str()].get<up::remove_cvref_t<T>>();
                 }
             }
-            else {
-                serialize(value, *this);
+        }
+
+        void string(up::string& value) {
+            if (_fieldName && !_current.empty() && current().is_object()) {
+                auto& field = current()[_fieldName.c_str()];
+                if (field.is_string()) {
+                    value = current()[_fieldName.c_str()].get<up::string>();
+                }
             }
         }
+
+        template <typename T>
+        void string(T&&) {}
 
         nlohmann::json& current() noexcept {
             return *_current.back();
