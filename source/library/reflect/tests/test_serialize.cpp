@@ -27,6 +27,12 @@ namespace {
         up::string_view name;
     };
 
+    struct Complex {
+        Fields xyz;
+        Fields abc;
+        up::string name;
+    };
+
     UP_REFLECT_TYPE(Fields) {
         reflect("x", &Fields::x);
         reflect("y", &Fields::y);
@@ -38,7 +44,13 @@ namespace {
         reflect("num", &Bigger::num);
         reflect("name", &Bigger::name);
     }
-}
+
+    UP_REFLECT_TYPE(Complex) {
+        reflect("xyz", &Complex::xyz);
+        reflect("abc", &Complex::abc);
+        reflect("name", &Complex::name);
+    }
+} // namespace
 
 DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
     using namespace up;
@@ -50,11 +62,11 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         serialize(i, s);
     }
 
-    DOCTEST_TEST_CASE("serialize to json") {
-        nlohmann::json root = nlohmann::json::object();
-        JsonStreamSerializer serializer(root);
+    DOCTEST_TEST_CASE("serialize simple struct to json") {
+        auto root = nlohmann::json::object();
+        auto serializer = JsonStreamSerializer{root};
 
-        Fields xyz{1, 2, 3};
+        auto const xyz = Fields{1, 2, 3};
 
         serialize(xyz, serializer);
 
@@ -62,25 +74,28 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         ostr << root;
 
         DOCTEST_CHECK_EQ(ostr.str(), R"--({"x":1,"y":2,"z":3})--");
+    }
 
-        Bigger big{
+    DOCTEST_TEST_CASE("serialize bigger struct to json") {
+        auto root = nlohmann::json::object();
+        auto serializer = JsonStreamSerializer{root};
+
+        auto const big = Bigger{
             {1, 2, 3},
             42.f,
             "bob"};
 
-        root = nlohmann::json::object();
         serialize(big, serializer);
 
-        ostr = std::ostringstream();
+        std::ostringstream ostr;
         ostr << root;
 
         DOCTEST_CHECK_EQ(ostr.str(), R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3}})--");
     }
 
-    DOCTEST_TEST_CASE("deserialize from json") {
+    DOCTEST_TEST_CASE("deserialize simple struct from json") {
         auto root = nlohmann::json::parse(R"--({"x":1,"y":2,"z":3})--");
-
-        JsonStreamDeserializer serializer(root);
+        auto serializer = JsonStreamDeserializer{root};
 
         Fields xyz;
         serialize(xyz, serializer);
@@ -96,8 +111,11 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         DOCTEST_CHECK_EQ(3, xyz.x);
         DOCTEST_CHECK_EQ(2, xyz.y);
         DOCTEST_CHECK_EQ(7, xyz.z);
+    }
 
-        root = nlohmann::json::parse(R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3}})--");
+    DOCTEST_TEST_CASE("deserialize bigger struct from json") {
+        auto root = nlohmann::json::parse(R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3}})--");
+        auto serializer = JsonStreamDeserializer{root};
 
         Bigger big;
         serialize(big, serializer);
@@ -105,6 +123,18 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         DOCTEST_CHECK_EQ(big.xyz.z, 3);
         DOCTEST_CHECK_EQ(big.num, 42.f);
         DOCTEST_CHECK(big.name.empty());
+    }
+
+    DOCTEST_TEST_CASE("deserialize complex struct from json") {
+        auto root = nlohmann::json::parse(R"--({"name":"bob","abc":{"x":-4,"y":-5,"z":-6},"xyz":{"x":1,"y":2,"z":3}})--");
+        auto serializer = JsonStreamDeserializer{root};
+
+        Complex cmp;
+        serialize(cmp, serializer);
+
+        DOCTEST_CHECK_EQ(cmp.xyz.z, 3);
+        DOCTEST_CHECK_EQ(cmp.abc.z, -6);
+        DOCTEST_CHECK_EQ(cmp.name, "bob");
     }
 }
 

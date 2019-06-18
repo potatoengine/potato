@@ -27,8 +27,8 @@ namespace up::reflex {
             Skip
         };
 
-        template <typename ClassType, typename FieldType>
-        constexpr void field(zstring_view name, ClassType& object, FieldType ClassType::*field) {
+        template <typename ObjectType, typename ClassType, typename FieldType>
+        constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field) {
             if (enterField(name) == Action::Enter) {
                 recurse(object.*field);
                 leaveField();
@@ -38,11 +38,12 @@ namespace up::reflex {
         void value(int value) { primitive(value); }
         void value(float value) { primitive(value); }
         void value(string_view value) { string(value); }
+        void value(string& value) { string(value); }
 
     private:
         template <typename T>
         constexpr void recurse(T& value) {
-            if constexpr (std::is_class_v<T> && !std::is_same_v<T, string_view>) {
+            if constexpr (std::is_class_v<up::remove_cvref_t<T>> && !std::is_same_v<up::remove_cvref_t<T>, string_view>) {
                 if (enterObject() == Action::Enter) {
                     serialize(value, *this);
                     leaveObject();
@@ -64,6 +65,7 @@ namespace up::reflex {
         virtual void primitive(double value) {}
 
         virtual void string(string_view value) {}
+        virtual void string(up::string& value) {}
     }; // namespace up::reflect
 
     class JsonStreamSerializer : public StreamSerializer {
@@ -116,6 +118,12 @@ namespace up::reflex {
             }
         }
 
+        void string(up::string& value) override {
+            if (_fieldName && !_current.empty()) {
+                (*_current.back())[_fieldName.c_str()] = value.c_str();
+            }
+        }
+
     private:
         nlohmann::json& _root;
         vector<nlohmann::json*> _current;
@@ -131,8 +139,8 @@ namespace up::reflex {
 
         JsonStreamDeserializer(nlohmann::json& root) noexcept : _root(root), _current({&_root}) {}
 
-        template <typename ClassType, typename FieldType>
-        constexpr void field(zstring_view name, ClassType& object, FieldType ClassType::*field) {
+        template <typename ObjectType, typename ClassType, typename FieldType>
+        constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field) {
             if (enterField(name) == Action::Enter) {
                 recurse(object.*field);
                 leaveField();
