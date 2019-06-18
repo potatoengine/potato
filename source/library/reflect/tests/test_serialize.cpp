@@ -88,6 +88,23 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         DOCTEST_CHECK_EQ(1, xyz.x);
         DOCTEST_CHECK_EQ(2, xyz.y);
         DOCTEST_CHECK_EQ(3, xyz.z);
+
+        root = nlohmann::json::parse(R"--({"z":7,"x":3})--");
+
+        serialize(xyz, serializer);
+
+        DOCTEST_CHECK_EQ(3, xyz.x);
+        DOCTEST_CHECK_EQ(2, xyz.y);
+        DOCTEST_CHECK_EQ(7, xyz.z);
+
+        root = nlohmann::json::parse(R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3}})--");
+
+        Bigger big;
+        serialize(big, serializer);
+
+        DOCTEST_CHECK_EQ(big.xyz.z, 3);
+        DOCTEST_CHECK_EQ(big.num, 42.f);
+        DOCTEST_CHECK(big.name.empty());
     }
 }
 

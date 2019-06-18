@@ -139,9 +139,30 @@ namespace up::reflex {
             }
         }
 
+        template <typename ValueT>
+        void value(ValueT& value) {
+            if (_fieldName && !_current.empty() && current().is_object()) {
+                auto& field = current()[_fieldName.c_str()];
+                if constexpr (std::is_fundamental_v<ValueT> && (std::is_integral_v<ValueT> || std::is_floating_point_v<ValueT>)) {
+                    if (field.is_primitive()) {
+                        value = current()[_fieldName.c_str()].get<ValueT>();
+                    }
+                }
+                else if constexpr (std::is_same_v<up::string, ValueT>) {
+                    if (field.is_primitive()) {
+                        value = current()[_fieldName.c_str()].get<ValueT>();
+                    }
+                }
+            }
+        }
+
+    private:
         virtual Action enterField(zstring_view name) {
-            _fieldName = name;
-            return Action::Enter;
+            if (current().contains(name.c_str())) {
+                _fieldName = name;
+                return Action::Enter;
+            }
+            return Action::Skip;
         }
 
         virtual void leaveField() {
@@ -149,7 +170,7 @@ namespace up::reflex {
         }
 
         virtual Action enterObject() {
-            if (_fieldName && !_current.empty() && current().contains(_fieldName.c_str())) {
+            if (_fieldName && !_current.empty() && current().is_object()) {
                 auto& obj = current()[_fieldName.c_str()];
                 _current.push_back(&obj);
                 return Action::Enter;
@@ -161,34 +182,9 @@ namespace up::reflex {
             _current.pop_back();
         }
 
-        void value(int& value) {
-            if (_fieldName && !_current.empty()) {
-                value = current()[_fieldName.c_str()].get<int>();
-            }
-        }
-
-        void value(float& value) {
-            if (_fieldName && !_current.empty()) {
-                value = current()[_fieldName.c_str()].get<float>();
-            }
-        }
-
-        void value(double& value) {
-            if (_fieldName && !_current.empty()) {
-                value = current()[_fieldName.c_str()].get<double>();
-            }
-        }
-
-        void value(string& value) {
-            if (_fieldName && !_current.empty()) {
-                value = current()[_fieldName.c_str()].get<up::string>();
-            }
-        }
-
-    private:
         template <typename T>
         constexpr void recurse(T& value) {
-            if constexpr (std::is_class_v<T> && !std::is_same_v<T, string>) {
+            if constexpr (std::is_class_v<T> && !std::is_same_v<T, up::string>) {
                 if (enterObject() == Action::Enter) {
                     serialize(value, *this);
                     leaveObject();
