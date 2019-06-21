@@ -1,6 +1,7 @@
 // Copyright (C) 2019 Potato Engine authors and contributors, all rights reserverd.
 
-#include "_export.h"
+#pragma once
+
 #include <potato/foundation/zstring_view.h>
 #include <potato/foundation/traits.h>
 

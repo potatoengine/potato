@@ -1,9 +1,9 @@
 // Copyright (C) 2019 Potato Engine authors and contributors, all rights reserverd.
 
+#pragma once
+
 #include "_tag.h"
 #include <potato/foundation/zstring_view.h>
-
-#pragma once
 
 namespace up::reflex {
     /// Metadata about a specific type.

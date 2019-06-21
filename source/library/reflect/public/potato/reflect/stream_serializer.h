@@ -2,18 +2,7 @@
 
 #pragma once
 
-#include "_export.h"
-#include "metadata.h"
-
-// temporary - FIXME remove
-namespace up {
-    class string_view;
-    class zstring_view;
-    class string;
-
-    template <typename T>
-    constexpr bool is_string_v = std::is_same_v<T, up::string_view> || std::is_same_v<T, up::zstring_view> || std::is_same_v<T, up::string>;
-} // namespace up
+#include "traits.h"
 
 namespace up::reflex {
     template <typename DerivedType>
