@@ -47,6 +47,11 @@ namespace up {
     using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
     static_assert(std::is_same_v<int, remove_cvref_t<int const&>>);
 
+    template <typename T>
+    constexpr bool is_numeric_v = std::is_integral_v<T> || std::is_floating_point_v<T>;
+    static_assert(is_numeric_v<bool> && is_numeric_v<char> && is_numeric_v<float>);
+    static_assert(!is_numeric_v<int*> && !is_numeric_v<float&> && !is_numeric_v<std::nullptr_t>);
+
 #if defined(__cpp_lib_constexpr_invoke)
     using std::invoke;
 #else

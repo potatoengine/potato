@@ -42,11 +42,8 @@ namespace up::reflex {
         template <typename ValueType>
         void value(ValueType&& value) {
             using Type = up::remove_cvref_t<ValueType>;
-            if constexpr (std::is_integral_v<Type> || std::is_floating_point_v<Type>) {
-                static_cast<DerivedType*>(this)->primitive(value);
-            }
-            else if constexpr (is_string_v<Type>) {
-                static_cast<DerivedType*>(this)->string(value);
+            if constexpr (is_numeric_v<Type> || is_string_v<Type>) {
+                static_cast<DerivedType*>(this)->handle(value);
             }
             else if constexpr (std::is_class_v<Type>) {
                 if (static_cast<DerivedType*>(this)->enterObject() == Action::Enter) {
@@ -89,22 +86,18 @@ namespace up::reflex {
         }
 
         template <typename T>
-        void primitive(T const& value) {
+        void handle(T&& value) {
+            using BaseT = remove_cvref_t<T>;
             if (_fieldName && !_current.empty()) {
-                (*_current.back())[_fieldName.c_str()] = value;
-            }
-        }
-
-        void string(string_view value) {
-            if (_fieldName && !_current.empty()) {
-                (*_current.back())[_fieldName.c_str()] = std::string(value.begin(), value.end());
-            }
-        }
-
-        template <typename T>
-        void string(T&& value) {
-            if (_fieldName && !_current.empty()) {
-                (*_current.back())[_fieldName.c_str()] = value.c_str();
+                if constexpr (std::is_same_v<up::string_view, BaseT>) {
+                    (*_current.back())[_fieldName.c_str()] = std::string(value.begin(), value.end());
+                }
+                else if constexpr (is_string_v<BaseT>) {
+                    (*_current.back())[_fieldName.c_str()] = value.c_str();
+                }
+                else if constexpr (is_numeric_v<BaseT>) {
+                    (*_current.back())[_fieldName.c_str()] = value;
+                }
             }
         }
 
@@ -149,16 +142,19 @@ namespace up::reflex {
         }
 
         template <typename T>
-        void primitive(T&& value) {
-            if (_fieldName && !_current.empty() && current().is_object()) {
-                auto& field = current()[_fieldName.c_str()];
-                if (field.is_primitive()) {
-                    value = current()[_fieldName.c_str()].get<up::remove_cvref_t<T>>();
+        void handle(T&& value) {
+            using BaseT = remove_cvref_t<T>;
+            if constexpr (is_numeric_v<BaseT>) {
+                if (_fieldName && !_current.empty() && current().is_object()) {
+                    auto& field = current()[_fieldName.c_str()];
+                    if (field.is_primitive()) {
+                        value = current()[_fieldName.c_str()].get<BaseT>();
+                    }
                 }
             }
         }
 
-        void string(up::string& value) {
+        void handle(up::string& value) {
             if (_fieldName && !_current.empty() && current().is_object()) {
                 auto& field = current()[_fieldName.c_str()];
                 if (field.is_string()) {
@@ -166,9 +162,6 @@ namespace up::reflex {
                 }
             }
         }
-
-        template <typename T>
-        void string(T&&) {}
 
         nlohmann::json& current() noexcept {
             return *_current.back();
