@@ -66,6 +66,4 @@ namespace up::reflex {
         auto wrapper = WrapperType(reflector);
         serialize_value<WrapperType>(TagType{}, wrapper);
     }
-    
-    UP_REFLECT_API auto example(int x) noexcept -> int;
 } // namespace up

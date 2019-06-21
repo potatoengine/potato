@@ -2,6 +2,9 @@
 
 #include "potato/reflect/reflect.h"
 
-auto up::reflex::example(int x) noexcept -> int {
+// temporarily here because SHARED libraries on Windows must have
+// at least one symbol; remove this when we add a real one or when
+// we decide to just make this an INTERFACE library
+static auto something(int x) noexcept -> int {
     return x;
 }
