@@ -1,5 +1,5 @@
-#include "potato/reflect/metadata.h"
-#include "potato/reflect/reflect.h"
+#include "potato/reflex/metadata.h"
+#include "potato/reflex/reflect.h"
 #include <doctest/doctest.h>
 
 namespace {

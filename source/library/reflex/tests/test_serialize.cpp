@@ -1,6 +1,6 @@
-#include "potato/reflect/reflect.h"
-#include "potato/reflect/stream_serializer.h"
-#include "potato/reflect/json_serializer.h"
+#include "potato/reflex/reflect.h"
+#include "potato/reflex/stream_serializer.h"
+#include "potato/reflex/json_serializer.h"
 #include <doctest/doctest.h>
 #include <sstream>
 
