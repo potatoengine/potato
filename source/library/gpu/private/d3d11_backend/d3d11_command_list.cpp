@@ -109,10 +109,10 @@ void up::d3d11::CommandListD3D11::bindShaderResource(up::uint32 slot, GpuResourc
     ID3D11ShaderResourceView* srv = static_cast<ID3D11ShaderResourceView*>(buffer->getView().get());
 
     if ((uint32(stage) & uint32(GpuShaderStage::Vertex)) != 0) {
-        _context->VSSetShaderResources(0, 1, &srv);
+        _context->VSSetShaderResources(slot, 1, &srv);
     }
     if ((uint32(stage) & uint32(GpuShaderStage::Pixel)) != 0) {
-        _context->PSSetShaderResources(0, 1, &srv);
+        _context->PSSetShaderResources(slot, 1, &srv);
     }
 }
 
