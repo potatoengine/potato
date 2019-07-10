@@ -92,7 +92,8 @@ bool up::recon::HlslConverter::compile(Context& ctx, FileSystem& fileSys, zstrin
     com_ptr<ID3DBlob> errors;
     HRESULT hr = D3DCompile2(source.data(), source.size(), ctx.sourceFilePath().c_str(), nullptr, &includeHandler, entryName.c_str(), targetProfileName.c_str(), D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS, 0, 0, nullptr, 0, out_ptr(blob), out_ptr(errors));
     if (!SUCCEEDED(hr)) {
-        ctx.logger().error("Compilation failed for `{}':{} ({))", ctx.sourceFilePath(), entryName, targetProfileName);
+        ctx.logger().error("Compilation failed for `{}':{} ({})", ctx.sourceFilePath(), entryName, targetProfileName);
+        ctx.logger().error(string_view{static_cast<char const*>(errors->GetBufferPointer()), errors->GetBufferSize()});
         return false;
     }
 
