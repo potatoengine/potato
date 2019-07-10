@@ -39,7 +39,7 @@ bool up::recon::ModelConverter::convert(Context& ctx) {
     file.close();
 
     Assimp::Importer importer;
-    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), aiProcess_FlipWindingOrder | aiProcessPreset_TargetRealtime_Fast);
+    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), aiProcess_FlipWindingOrder | aiProcess_CalcTangentSpace | aiProcessPreset_TargetRealtime_Fast);
     if (scene == nullptr) {
         ctx.logger().error("Failed to decode");
         return false;

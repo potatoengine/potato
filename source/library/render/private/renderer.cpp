@@ -127,10 +127,12 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     MeshChannel channels[] = {
         {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Position},
         {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Color},
+        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Normal},
+        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Tangent},
         {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::TexCoord},
     };
 
-    uint16 stride = sizeof(float) * 8;
+    uint16 stride = sizeof(float) * 14;
     uint32 size = mesh->mNumVertices * stride;
 
     MeshBuffer bufferDesc = {size, 0, stride};
@@ -151,6 +153,15 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
         data.push_back(mesh->mVertices[i].x);
         data.push_back(mesh->mVertices[i].y);
         data.push_back(mesh->mVertices[i].z);
+
+        data.push_back(mesh->mNormals[i].x);
+        data.push_back(mesh->mNormals[i].y);
+        data.push_back(mesh->mNormals[i].z);
+
+        data.push_back(mesh->mTangents[i].x);
+        data.push_back(mesh->mTangents[i].y);
+        data.push_back(mesh->mTangents[i].z);
+
         if (mesh->GetNumColorChannels() >= 1) {
             data.push_back(mesh->mColors[0][i].r);
             data.push_back(mesh->mColors[0][i].g);
