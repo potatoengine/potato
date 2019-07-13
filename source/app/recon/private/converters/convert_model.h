@@ -13,6 +13,6 @@ namespace up::recon {
         bool convert(Context& ctx) override;
 
         string_view name() const noexcept override { return "model"; }
-        uint64 revision() const noexcept override { return 0; }
+        uint64 revision() const noexcept override { return 1; }
     };
 } // namespace up::recon
