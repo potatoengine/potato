@@ -127,10 +127,12 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     MeshChannel channels[] = {
         {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Position},
         {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Color},
-        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::TexCoord},
+        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Normal},
+        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Tangent},
+        {0, GpuFormat::R32G32Float, GpuShaderSemantic::TexCoord},
     };
 
-    uint16 stride = sizeof(float) * 8;
+    uint16 stride = sizeof(float) * 14;
     uint32 size = mesh->mNumVertices * stride;
 
     MeshBuffer bufferDesc = {size, 0, stride};
@@ -151,6 +153,7 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
         data.push_back(mesh->mVertices[i].x);
         data.push_back(mesh->mVertices[i].y);
         data.push_back(mesh->mVertices[i].z);
+
         if (mesh->GetNumColorChannels() >= 1) {
             data.push_back(mesh->mColors[0][i].r);
             data.push_back(mesh->mColors[0][i].g);
@@ -161,8 +164,37 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
             data.push_back(1.f);
             data.push_back(1.f);
         }
-        data.push_back(mesh->mTextureCoords[0][i].x);
-        data.push_back(mesh->mTextureCoords[0][i].y);
+
+        if (mesh->HasNormals()) {
+            data.push_back(mesh->mNormals[i].x);
+            data.push_back(mesh->mNormals[i].y);
+            data.push_back(mesh->mNormals[i].z);
+        }
+        else {
+            data.push_back(0.f);
+            data.push_back(0.f);
+            data.push_back(0.f);
+        }
+
+        if (mesh->HasTangentsAndBitangents()) {
+            data.push_back(mesh->mTangents[i].x);
+            data.push_back(mesh->mTangents[i].y);
+            data.push_back(mesh->mTangents[i].z);
+        }
+        else {
+            data.push_back(0.f);
+            data.push_back(0.f);
+            data.push_back(0.f);
+        }
+
+        if (mesh->HasTextureCoords(0)) {
+            data.push_back(mesh->mTextureCoords[0][i].x);
+            data.push_back(mesh->mTextureCoords[0][i].y);
+        }
+        else {
+            data.push_back(0.f);
+            data.push_back(0.f);
+        }
     }
 
     return up::new_shared<Mesh>(std::move(indices), vector(data.as_bytes()), span{&bufferDesc, 1}, channels);

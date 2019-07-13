@@ -128,7 +128,7 @@ int up::ShellApp::initialize() {
 
     _camera = new_box<RenderCamera>(_swapChain);
 
-    auto material = _renderer->loadMaterialSync("resources/materials/basic.json");
+    auto material = _renderer->loadMaterialSync("resources/materials/full.json");
     if (material == nullptr) {
         _errorDialog("Failed to load basic material");
         return 1;

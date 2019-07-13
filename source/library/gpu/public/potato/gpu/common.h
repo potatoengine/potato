@@ -18,6 +18,8 @@ namespace up {
     enum class GpuShaderSemantic {
         Position,
         Color,
+        Normal,
+        Tangent,
         TexCoord
     };
 

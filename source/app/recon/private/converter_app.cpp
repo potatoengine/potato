@@ -138,6 +138,8 @@ void up::recon::ConverterApp::registerConverters() {
                            new_box<JsonConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".png"; },
                            new_box<CopyConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".jpg"; },
+                           new_box<CopyConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".obj"; },
                            new_box<ModelConverter>()});
 }
