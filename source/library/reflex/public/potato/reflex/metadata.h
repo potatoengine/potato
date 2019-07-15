@@ -4,6 +4,7 @@
 
 #include "_tag.h"
 #include <potato/foundation/zstring_view.h>
+#include <potato/foundation/traits.h>
 
 namespace up::reflex {
     /// Metadata about a specific type.
@@ -17,7 +18,8 @@ namespace up::reflex {
 
     namespace _detail {
         template <typename T>
-        constexpr TypeInfo getTypeInfo(_detail::TypeTag<T>) noexcept {
+        constexpr auto getTypeInfo(_detail::TypeTag<T>) noexcept -> TypeInfo {
+            static_assert(std::is_same_v<T, remove_cvref_t<T>>);
             return TypeInfo{
                 {},
                 sizeof(T),
@@ -27,8 +29,17 @@ namespace up::reflex {
 
     /// Lookup the metadata for a given type.
     template <typename T>
-    constexpr TypeInfo getTypeInfo() noexcept {
+    constexpr auto getTypeInfo() noexcept -> TypeInfo {
         using _detail::getTypeInfo;
-        return getTypeInfo(_detail::TypeTag<T>{});
+        return getTypeInfo(_detail::TypeTag<remove_cvref_t<T>>{});
     }
+
+    /// Wrapper for a type
+    template <typename T>
+    struct TypedInfo {
+        constexpr auto get() noexcept -> TypeInfo {
+            using _detail::getTypeInfo;
+            return getTypeInfo(_detail::TypeTag<remove_cvref_t<T>>{});
+        }
+    };
 } // namespace up::reflex

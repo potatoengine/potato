@@ -3,6 +3,7 @@
 #pragma once
 
 #include "traits.h"
+#include "metadata.h"
 
 namespace up::reflex {
     template <typename DerivedType>
@@ -15,9 +16,10 @@ namespace up::reflex {
 
         template <typename ObjectType, typename ClassType, typename FieldType>
         constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field) {
-            if (static_cast<DerivedType*>(this)->enterField(name) == Action::Enter) {
+            auto typeInfo = getTypeInfo<FieldType>();
+            if (static_cast<DerivedType*>(this)->enterField(name, typeInfo) == Action::Enter) {
                 value(object.*field);
-                static_cast<DerivedType*>(this)->leaveField();
+                static_cast<DerivedType*>(this)->leaveField(name, typeInfo);
             }
         }
 
@@ -28,9 +30,10 @@ namespace up::reflex {
                 static_cast<DerivedType*>(this)->handle(value);
             }
             else if constexpr (std::is_class_v<Type>) {
-                if (static_cast<DerivedType*>(this)->enterObject() == Action::Enter) {
+                auto typeInfo = getTypeInfo<Type>();
+                if (static_cast<DerivedType*>(this)->enterObject(typeInfo) == Action::Enter) {
                     serialize(value, *static_cast<DerivedType*>(this));
-                    static_cast<DerivedType*>(this)->leaveObject();
+                    static_cast<DerivedType*>(this)->leaveObject(typeInfo);
                 }
             }
             else {

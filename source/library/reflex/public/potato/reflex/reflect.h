@@ -33,7 +33,7 @@ namespace up::reflex {
 
     /// Defines reflection for a type
     #define UP_REFLECT_TYPE(T) \
-        constexpr ::up::reflex::TypeInfo getTypeInfo(::up::reflex::_detail::TypeTag<up::remove_cvref_t<T>>) noexcept { \
+        constexpr auto getTypeInfo(::up::reflex::_detail::TypeTag<up::remove_cvref_t<T>>) noexcept->::up::reflex::TypeInfo { \
             return ::up::reflex::TypeInfo{#T, sizeof(up::remove_cvref_t<T>), alignof(up::remove_cvref_t<T>)}; \
         } \
         template <typename _up_ReflectObject> \

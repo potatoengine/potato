@@ -21,6 +21,7 @@ namespace up {
 } // namespace up
 
 namespace up::reflex {
+    /// Writes JSON from objects
     class JsonStreamSerializer : public SerializerBase<JsonStreamSerializer> {
     public:
         JsonStreamSerializer(nlohmann::json& root) noexcept : _root(root), _current({&_root}) {}
@@ -28,16 +29,16 @@ namespace up::reflex {
         friend class SerializerBase<JsonStreamSerializer>;
 
     private:
-        Action enterField(zstring_view name) noexcept {
+        Action enterField(zstring_view name, TypeInfo info) noexcept {
             _fieldName = name;
             return Action::Enter;
         }
 
-        void leaveField() noexcept {
+        void leaveField(zstring_view name, TypeInfo info) noexcept {
             _fieldName = {};
         }
 
-        Action enterObject() {
+        Action enterObject(TypeInfo info) {
             if (_fieldName && !_current.empty()) {
                 auto& obj = (*_current.back())[_fieldName.c_str()] = nlohmann::json::object();
                 _current.push_back(&obj);
@@ -45,7 +46,7 @@ namespace up::reflex {
             return Action::Enter;
         }
 
-        void leaveObject() noexcept {
+        void leaveObject(TypeInfo info) noexcept {
             _current.pop_back();
         }
 
@@ -71,6 +72,7 @@ namespace up::reflex {
         zstring_view _fieldName;
     };
 
+    /// Populates objects from JSON
     class JsonStreamDeserializer : public SerializerBase<JsonStreamDeserializer> {
     public:
         JsonStreamDeserializer(nlohmann::json& root) noexcept : _root(root), _current({&_root}) {}
@@ -78,7 +80,7 @@ namespace up::reflex {
         friend class SerializerBase<JsonStreamDeserializer>;
 
     private:
-        Action enterField(zstring_view name) noexcept {
+        Action enterField(zstring_view name, TypeInfo info) noexcept {
             if (current().contains(name.c_str())) {
                 _fieldName = name;
                 return Action::Enter;
@@ -86,11 +88,11 @@ namespace up::reflex {
             return Action::Skip;
         }
 
-        constexpr void leaveField() noexcept {
+        constexpr void leaveField(zstring_view name, TypeInfo info) noexcept {
             _fieldName = {};
         }
 
-        Action enterObject() {
+        Action enterObject(TypeInfo info) {
             if (_fieldName && !_current.empty() && current().is_object()) {
                 auto& obj = current()[_fieldName.c_str()];
                 if (obj.is_object()) {
@@ -101,7 +103,7 @@ namespace up::reflex {
             return Action::Skip;
         }
 
-        void leaveObject() noexcept {
+        void leaveObject(TypeInfo info) noexcept {
             _current.pop_back();
         }
 
