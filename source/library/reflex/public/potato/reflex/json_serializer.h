@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "stream_serializer.h"
+#include "serializer.h"
 #include <potato/foundation/string_writer.h>
 #include <potato/foundation/string_format.h>
 #include <potato/foundation/string.h>
