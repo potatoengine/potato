@@ -1,0 +1,11 @@
+{
+  "shaders": {
+    "vertex": "resources/shaders/full.vs_5_0.cbo",
+    "pixel": "resources/shaders/full.ps_5_0.cbo"
+  },
+  "textures": [
+    "resources/textures/rock_d.jpg",
+    "resources/textures/rock_n.jpg",
+    "resources/textures/rock_ao.jpg"
+  ]
+}

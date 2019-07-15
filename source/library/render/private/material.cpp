@@ -21,6 +21,8 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
         GpuInputLayoutElement layout[] = {
             {GpuFormat::R32G32B32Float, GpuShaderSemantic::Position, 0, 0},
             {GpuFormat::R32G32B32Float, GpuShaderSemantic::Color, 0, 0},
+            {GpuFormat::R32G32B32Float, GpuShaderSemantic::Normal, 0, 0},
+            {GpuFormat::R32G32B32Float, GpuShaderSemantic::Tangent, 0, 0},
             {GpuFormat::R32G32Float, GpuShaderSemantic::TexCoord, 0, 0},
         };
 

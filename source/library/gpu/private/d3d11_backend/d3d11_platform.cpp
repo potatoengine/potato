@@ -7,6 +7,8 @@ auto up::d3d11::toNative(GpuShaderSemantic semantic) noexcept -> zstring_view {
     switch (semantic) {
     case GpuShaderSemantic::Position: return "POSITION";
     case GpuShaderSemantic::Color: return "COLOR";
+    case GpuShaderSemantic::Normal: return "NORMAL";
+    case GpuShaderSemantic::Tangent: return "TANGENT";
     case GpuShaderSemantic::TexCoord: return "TEXCOORD";
     default: UP_UNREACHABLE("Unknown Semantic"); return "UNKNOWN";
     }
