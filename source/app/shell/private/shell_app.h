@@ -17,6 +17,7 @@ namespace up {
     class GpuDevice;
     class GpuSwapChain;
     class World;
+    class Scene;
 } // namespace up
 
 class up::ShellApp {
@@ -48,9 +49,7 @@ private:
     rc<GpuSwapChain> _swapChain;
     box<Renderer> _renderer;
     box<RenderCamera> _camera;
-    rc<Model> _cube;
-    box<Node> _root;
-    box<World> _world;
+    box<Scene> _scene;
     string _resourceDir;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     DrawImgui _drawImgui;

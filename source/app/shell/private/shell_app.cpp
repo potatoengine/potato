@@ -3,6 +3,7 @@
 #include "shell_app.h"
 #include "camera.h"
 #include "camera_controller.h"
+#include "scene.h"
 
 #include "potato/foundation/box.h"
 #include "potato/foundation/platform.h"
@@ -43,31 +44,12 @@
 
 #include <nlohmann/json.hpp>
 
-namespace up::components {
-    struct Position {
-        glm::vec3 xyz;
-    };
-
-    struct Transform {
-        glm::mat4x4 trans;
-    };
-
-    struct Mesh {
-        rc<up::Model> model;
-    };
-} // namespace up::components
-
-UP_COMPONENT(up::components::Position);
-UP_COMPONENT(up::components::Transform);
-UP_COMPONENT(up::components::Mesh);
-
-up::ShellApp::ShellApp() : _world(new_box<World>()), _logger("shell") {}
+up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell") {}
 
 up::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
 
     _renderer.reset();
-    _root.reset();
     _camera.reset();
     _swapChain.reset();
     _window.reset();
@@ -140,9 +122,7 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _cube = new_shared<Model>(std::move(mesh), std::move(material));
-    _root = new_box<Node>(_cube);
-    _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 5, 0}));
+    _scene->create(new_shared<Model>(std::move(mesh), std::move(material)));
 
     auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
     auto imguiPixelShader = _renderer->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
@@ -170,21 +150,6 @@ void up::ShellApp::run() {
     camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
 
     box<CameraController> controller = new_box<ArcBallCameraController>(camera);
-
-    float objRotateInput = 0;
-
-    for (size_t i = 0; i != 100; ++i) {
-        float p = i / 100.0f;
-        _world->createEntity(
-            components::Position{{(20 + glm::cos(p * 20.f) * 10.f) * glm::sin(p * 2.f * glm::pi<float>()), 1 + glm::sin(p * 10) * 5, (20 + glm::sin(p * 20.f) * 10.f) * glm::cos(p * 2.f * glm::pi<float>())}},
-            components::Transform{},
-            components::Mesh{_cube}
-        );
-    }
-
-    Query<components::Mesh, components::Transform> renderableMeshQuery;
-    Query<components::Position, components::Transform> transformUpdateQuery;
-    Query<components::Position> rotationQuery;
 
     while (isRunning()) {
         int wheelAction = 0;
@@ -241,20 +206,7 @@ void up::ShellApp::run() {
 
         controller->apply(camera, relativeMovement, relativeMotion, frameTime);
 
-        objRotateInput += frameTime;
-        _root->transform(glm::rotate(glm::rotate(glm::translate(glm::identity<glm::mat4x4>(), {0, 5, 0}), objRotateInput, {0, 1, 0}), std::sin(objRotateInput), {1, 0, 0}));
-
-        rotationQuery.select(*_world, [frameTime](size_t count, EntityId const*, components::Position* positions) {
-            for (size_t i = 0; i != count; ++i) {
-                positions[i].xyz = glm::rotateY(positions[i].xyz, frameTime);
-            }
-        });
-
-        transformUpdateQuery.select(*_world, [](size_t count, EntityId const*, components::Position* positions, components::Transform* transforms) {
-            for (size_t i = 0; i != count; ++i) {
-                transforms[i].trans = glm::translate(glm::identity<glm::mat4x4>(), positions[i].xyz);
-            }
-        });
+        _scene->tick(frameTime);
 
         GpuViewportDesc viewport;
         int width, height;
@@ -315,13 +267,7 @@ void up::ShellApp::run() {
         _renderer->beginFrame();
         auto ctx = _renderer->context();
         _camera->beginFrame(ctx, camera.matrix());
-        _root->render(ctx);
-
-        renderableMeshQuery.select(*_world, [&](size_t count, EntityId const*, components::Mesh* meshes, components::Transform* transforms) {
-            for (size_t i = 0; i != count; ++i) {
-                meshes[i].model->render(ctx, transforms[i].trans);
-            }
-        });
+        _scene->render(ctx);
 
         _drawImgui.endFrame(*_device, _renderer->commandList());
 
