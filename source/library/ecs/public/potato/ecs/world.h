@@ -71,7 +71,7 @@ namespace up {
         /// This is a type-unsafe variant of getComponentSlow.
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
-        UP_ECS_API void selectRaw(view<ComponentId> sortedComponents, delegate_ref<RawSelectSignature> callback) const;
+        UP_ECS_API void selectRaw(view<ComponentId> sortedComponents, view<ComponentId> callbackComponents, delegate_ref<RawSelectSignature> callback) const;
 
     private:
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);

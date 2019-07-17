@@ -292,10 +292,10 @@ auto up::World::_findArchetypeIndex(view<ComponentMeta const*> components) noexc
     return archetypeIndex;
 }
 
-void up::World::selectRaw(view<ComponentId> sortedComponents, delegate_ref<RawSelectSignature> callback) const {
+void up::World::selectRaw(view<ComponentId> sortedComponents, view<ComponentId> callbackComponents, delegate_ref<RawSelectSignature> callback) const {
     for (uint32 index = 0; index != _archetypes.size(); ++index) {
         if (_matchArchetype(index, sortedComponents)) {
-            _selectChunksRaw(index, sortedComponents, callback);
+            _selectChunksRaw(index, callbackComponents, callback);
         }
     }
 }

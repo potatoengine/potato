@@ -41,30 +41,29 @@ namespace up {
         void _invokeHelper(std::index_sequence<Indices...>, size_t, EntityId const*, view<void*>, Delegate callback) const;
 
         ComponentId _components[sizeof...(Components)];
-        uint32 _indices[sizeof...(Components)];
+        ComponentId _sortedComponents[sizeof...(Components)];
     };
 
     template <typename... Components>
-    Query<Components...>::Query() noexcept : _components{} {
-        const ComponentId componentIds[] = {getComponentId<Components>()...};
-
+    Query<Components...>::Query() noexcept : _components{getComponentId<Components>()...} {
         // Generate a sorted set of indices from the main Components list
+        uint32 indices[sizeof...(Components)];
         for (uint32 index = 0; index != sizeof...(Components); ++index) {
-            _indices[index] = index;
+            indices[index] = index;
         }
 
-        sort(_indices, {}, [&componentIds](uint32 index) noexcept { return componentIds[index]; });
+        sort(indices, {}, [this](uint32 index) noexcept { return _components[index]; });
 
         // Store the sorted ComponentId list for selection usage
         for (size_t index = 0; index != sizeof...(Components); ++index) {
-            _components[index] = componentIds[_indices[index]];
+            _sortedComponents[index] = _components[indices[index]];
         }
     }
 
     template <typename... Components>
     template <size_t... Indices>
     void Query<Components...>::_invokeHelper(std::index_sequence<Indices...>, size_t count, EntityId const* entities, view<void*> arrays, Delegate callback) const {
-        callback(count, entities, static_cast<Components*>(arrays[_indices[Indices]])...);
+        callback(count, entities, static_cast<Components*>(arrays[Indices])...);
     }
 
     template <typename... Components>
@@ -74,7 +73,7 @@ namespace up {
 
     template <typename... Components>
     void Query<Components...>::select(World &world, Delegate callback) const {
-        world.selectRaw(_components, [&, this](size_t count, EntityId const* entities, view<void*> arrays) {
+        world.selectRaw(_sortedComponents, _components, [&, this](size_t count, EntityId const* entities, view<void*> arrays) {
             this->_invoke(count, entities, arrays, callback);
         });
     }
