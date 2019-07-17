@@ -18,8 +18,8 @@ namespace up {
         Scene& operator=(Scene const&) = delete;
 
         void create(rc<Model> cube);
-        void render(RenderContext& ctx);
         void tick(float frameTime);
+        void render(RenderContext& ctx);
 
     private:
         rc<Model> _cube;
