@@ -88,6 +88,7 @@ set(GLM_QUIET ON CACHE BOOL "quiet glm build")
 set(GLM_TEST_ENABLE OFF CACHE BOOL "disable glm tests")
 add_subdirectory(${glm_SOURCE_DIR} ${glm_BINARY_DIR} EXCLUDE_FROM_ALL)
 target_compile_definitions(glm INTERFACE GLM_ENABLE_EXPERIMENTAL)
+include(glm_natvis.cmake)
 
 FetchContent_Populate(stb)
 add_library(stb INTERFACE)
