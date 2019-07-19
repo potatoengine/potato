@@ -6,11 +6,11 @@ struct Test1 {
     char a;
 };
 struct Second {
-    char a;
     float b;
+    char a;
 };
 struct Another {
-    float a;
+    double a;
     float b;
 };
 struct Counter {
@@ -29,9 +29,9 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
     DOCTEST_TEST_CASE("Archetype selects") {
         World world;
 
-        world.createEntity(Test1{'f'}, Second{'g', 7.f});
-        world.createEntity(Another{1.f, 2.f}, Second{'g', 9.f});
-        world.createEntity(Second{'h', -2.f}, Another{2.f, 1.f});
+        world.createEntity(Test1{'f'}, Second{7.f, 'g'});
+        world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
+        world.createEntity(Second{-2.f, 'h'}, Another{2.f, 1.f});
         world.createEntity(Test1{'j'}, Another{3.f, 4.f});
 
         // Exactly two of the entities should be in the same archetype
@@ -64,9 +64,9 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
     DOCTEST_TEST_CASE("Direct component access") {
         World world;
 
-        world.createEntity(Test1{'f'}, Second{'g', 7.f});
-        world.createEntity(Another{1.f, 2.f}, Second{'g', 9.f});
-        auto id = world.createEntity(Second{'h', -2.f}, Another{2.f, 1.f});
+        world.createEntity(Test1{'f'}, Second{7.f, 'g'});
+        world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
+        auto id = world.createEntity(Second{-2.f, 'h'}, Another{2.f, 1.f});
 
         Second* test = world.getComponentSlow<Second>(id);
         DOCTEST_CHECK(test != nullptr);
@@ -77,8 +77,8 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
     DOCTEST_TEST_CASE("EntityId management") {
         World world;
 
-        EntityId first = world.createEntity(Test1{'f'}, Second{'g', 7.f});
-        EntityId second = world.createEntity(Test1{'h'}, Second{'i', -1.f});
+        EntityId first = world.createEntity(Test1{'f'}, Second{7.f, 'g'});
+        EntityId second = world.createEntity(Test1{'h'}, Second{-1.f, 'i'});
 
         Query<Test1> query;
         query.select(world, ([&](size_t count, EntityId const* ids, Test1*) {
