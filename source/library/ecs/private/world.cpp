@@ -29,7 +29,7 @@ up::World::World() = default;
 
 up::World::~World() = default;
 
-void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentMeta const*> components) {
+void up::World::_populateArchetype(uint32 archetypeIndex, view<ComponentMeta const*> components) {
     Archetype& archetype = *_archetypes[archetypeIndex];
 
     archetype.layout.resize(components.size());
@@ -47,38 +47,42 @@ void up::World::_calculateLayout(uint32 archetypeIndex, view<ComponentMeta const
     }
     UP_ASSERT(size <= sizeof(Chunk::data));
 
-    // calculate layout hash
-    archetype.layoutHash = hashComponents(span{archetype.layout}, &Layout::component);
-
     if (size != 0) {
-        // assign pointer offers by alignment
-        up::sort(archetype.layout, {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
-
-        // FIXME: figure out why we need this size + 1, the arithmetic surprises me
-        archetype.perChunk = static_cast<uint32>(sizeof(Chunk::Payload) / (size + 1));
-
-        // we'll always include the EntityId is the layout, so include it as offset
-        size_t offset = sizeof(EntityId) * archetype.perChunk;
-
-        for (size_t i = 0; i != components.size(); ++i) {
-            ComponentMeta const& meta = *components[i];
-
-            // align as required (requires alignment to be a power of 2)
-            UP_ASSERT((meta.alignment & (meta.alignment - 1)) == 0);
-            offset = align(offset, meta.alignment);
-            UP_ASSERT(offset + archetype.perChunk * meta.size + meta.size <= sizeof(Chunk::Payload));
-
-            archetype.layout[i].offset = static_cast<uint32>(offset);
-            archetype.layout[i].width = meta.size;
-
-            offset += meta.size * archetype.perChunk;
-        }
-
-        UP_ASSERT(offset <= sizeof(Chunk::data));
+        _calculateLayout(archetype, size);
     }
 
     // Required for partial match algorithm
     sort(archetype.layout, {}, &Layout::component);
+}
+
+void up::World::_calculateLayout(Archetype& archetype, size_t size) {
+    // calculate layout hash
+    archetype.layoutHash = hashComponents(span{archetype.layout}, &Layout::component);
+
+    // assign pointer offers by alignment
+    up::sort(archetype.layout, {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
+
+    // FIXME: figure out why we need this size + 1, the arithmetic surprises me
+    archetype.perChunk = static_cast<uint32>(sizeof(Chunk::Payload) / (size + 1));
+
+    // we'll always include the EntityId is the layout, so include it as offset
+    size_t offset = sizeof(EntityId) * archetype.perChunk;
+
+    for (size_t i = 0; i != archetype.layout.size(); ++i) {
+        ComponentMeta const& meta = *archetype.layout[i].meta;
+
+        // align as required (requires alignment to be a power of 2)
+        UP_ASSERT((meta.alignment & (meta.alignment - 1)) == 0);
+        offset = align(offset, meta.alignment);
+        UP_ASSERT(offset + archetype.perChunk * meta.size + meta.size <= sizeof(Chunk::Payload));
+
+        archetype.layout[i].offset = static_cast<uint32>(offset);
+        archetype.layout[i].width = meta.size;
+
+        offset += meta.size * archetype.perChunk;
+    }
+
+    UP_ASSERT(offset <= sizeof(Chunk::data));
 }
 
 void up::World::deleteEntity(EntityId entity) noexcept {
@@ -285,7 +289,7 @@ auto up::World::_findArchetypeIndex(view<ComponentMeta const*> components) noexc
     auto arch = new_box<Archetype>();
     _archetypes.push_back(std::move(arch));
     uint32 archetypeIndex = static_cast<uint32>(_archetypes.size() - 1);
-    _calculateLayout(archetypeIndex, components);
+    _populateArchetype(archetypeIndex, components);
 
     UP_ASSERT(_archetypes[archetypeIndex]->layoutHash == hash);
 
@@ -335,6 +339,8 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
         ComponentMeta const& meta = *components[index];
 
         int32 layoutIndex = archetype.indexOfLayout(meta.id);
+        UP_ASSERT(archetype.layout[layoutIndex].meta == &meta);
+        UP_ASSERT(archetype.layout[layoutIndex].width == meta.size);
         UP_ASSERT(layoutIndex != -1);
 
         void* rawPointer = chunk.pointer(archetype.layout[layoutIndex], subIndex);

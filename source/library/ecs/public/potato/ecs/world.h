@@ -79,7 +79,8 @@ namespace up {
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
 
         void _deleteLocation(Location const& location) noexcept;
-        void _calculateLayout(uint32 archetypeIndex, view<ComponentMeta const*> components);
+        void _populateArchetype(uint32 archetypeIndex, view<ComponentMeta const*> components);
+        static void _calculateLayout(Archetype& archetype, size_t size);
         bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> sortedComponents) const noexcept;
         void _selectChunksRaw(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const;
         void _recycleEntityId(EntityId entity) noexcept;

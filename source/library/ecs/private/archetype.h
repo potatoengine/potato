@@ -18,7 +18,7 @@ struct up::World::Archetype {
 
     int32 indexOfLayout(ComponentId component) const noexcept {
         for (int32 i = 0; i != static_cast<int32>(layout.size()); ++i) {
-            if (layout[i].meta->id == component) {
+            if (layout[i].component == component) {
                 return i;
             }
         }
