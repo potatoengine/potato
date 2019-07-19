@@ -26,7 +26,6 @@ namespace up::components {
 
     struct Animation {
         float offset;
-        float time;
     };
 } // namespace up::components
 
@@ -49,7 +48,7 @@ void up::Scene::create(rc<Model> cube) {
             },
             components::Transform{},
             components::Mesh{cube},
-            components::Animation{p, 0}
+            components::Animation{1 + 5 * glm::sin(p * 2.f)}
         );
     }
 }
@@ -64,10 +63,8 @@ void up::Scene::tick(float frameTime) {
 
     tickQuery.select(*_world, [&](size_t count, EntityId const*, components::Position* positions, components::Transform* transforms, components::Animation* animations) {
         for (size_t i = 0; i != count; ++i) {
-            //animations[i].time += frameTime;
-
             positions[i].xyz = glm::rotateY(positions[i].xyz, frameTime);
-            //positions[i].xyz.y = 1 + animations[i].offset * 5 * sin(animations[i].time / 4.f);
+            positions[i].xyz.y = animations[i].offset;
             transforms[i].trans = glm::translate(glm::identity<glm::mat4x4>(), positions[i].xyz);
         }
     });
@@ -78,7 +75,7 @@ void up::Scene::render(RenderContext& ctx) {
 
     renderableMeshQuery.select(*_world, [&](size_t count, EntityId const*, components::Mesh* meshes, components::Transform* transforms) {
         for (size_t i = 0; i != count; ++i) {
-            meshes[i].model->render(ctx, transforms[i].trans);
-        }
+                meshes[i].model->render(ctx, transforms[i].trans);
+            }
     });
 }
