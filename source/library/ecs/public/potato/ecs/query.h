@@ -36,9 +36,8 @@ namespace up {
         void select(World& world, Delegate callback) const;
 
     private:
-        void _invoke(size_t count, EntityId const* entities, view<void*> pointers, Delegate callback) const;
         template <size_t... Indices>
-        void _invokeHelper(std::index_sequence<Indices...>, size_t, EntityId const*, view<void*>, Delegate callback) const;
+        void _invoke(std::index_sequence<Indices...>, size_t, EntityId const*, view<void*>, Delegate& callback) const;
 
         ComponentId _components[sizeof...(Components)];
         ComponentId _sortedComponents[sizeof...(Components)];
@@ -62,19 +61,14 @@ namespace up {
 
     template <typename... Components>
     template <size_t... Indices>
-    void Query<Components...>::_invokeHelper(std::index_sequence<Indices...>, size_t count, EntityId const* entities, view<void*> arrays, Delegate callback) const {
+    void Query<Components...>::_invoke(std::index_sequence<Indices...>, size_t count, EntityId const* entities, view<void*> arrays, Delegate& callback) const {
         callback(count, entities, static_cast<Components*>(arrays[Indices])...);
-    }
-
-    template <typename... Components>
-    void Query<Components...>::_invoke(size_t count, EntityId const* entities, view<void*> pointers, Delegate callback) const {
-        _invokeHelper(std::make_index_sequence<sizeof...(Components)>(), count, entities, pointers, callback);
     }
 
     template <typename... Components>
     void Query<Components...>::select(World &world, Delegate callback) const {
         world.selectRaw(_sortedComponents, _components, [&, this](size_t count, EntityId const* entities, view<void*> arrays) {
-            this->_invoke(count, entities, arrays, callback);
+            this->_invoke(std::make_index_sequence<sizeof...(Components)>(), count, entities, arrays, callback);
         });
     }
 } // namespace up
