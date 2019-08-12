@@ -144,7 +144,8 @@ void up::ShellApp::run() {
 
     auto now = clock.now();
     auto duration = now - now;
-    float frameTime = 0;
+    auto enableTicks = true;
+    auto frameTime = 0.f;
 
     Camera camera;
     camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
@@ -206,7 +207,9 @@ void up::ShellApp::run() {
 
         controller->apply(camera, relativeMovement, relativeMotion, frameTime);
 
-        _scene->tick(frameTime);
+        if (enableTicks) {
+            _scene->tick(frameTime);
+        }
 
         GpuViewportDesc viewport;
         int width, height;
@@ -221,6 +224,12 @@ void up::ShellApp::run() {
             if (ImGui::BeginMenu("Potato")) {
                 if (ImGui::MenuItem("Quit")) {
                     return;
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Scene")) {
+                if (ImGui::MenuItem(enableTicks ? "Pause" : "Play")) {
+                    enableTicks = !enableTicks;
                 }
                 ImGui::EndMenu();
             }
