@@ -50,7 +50,7 @@ up::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
 
     _renderer.reset();
-    _camera.reset();
+    _renderCamera.reset();
     _swapChain.reset();
     _window.reset();
 
@@ -108,7 +108,7 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _camera = new_box<RenderCamera>(_swapChain);
+    _renderCamera = new_box<RenderCamera>(_swapChain);
 
     auto material = _renderer->loadMaterialSync("resources/materials/full.json");
     if (material == nullptr) {
@@ -134,6 +134,9 @@ int up::ShellApp::initialize() {
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
     _drawImgui.createResources(*_device);
 
+    _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+    _cameraController = new_box<ArcBallCameraController>(_camera);
+
     return 0;
 }
 
@@ -143,150 +146,16 @@ void up::ShellApp::run() {
     std::chrono::high_resolution_clock clock;
 
     auto now = clock.now();
-    auto duration = now - now;
-    auto enableTicks = true;
-    auto frameTime = 0.f;
-
-    Camera camera;
-    camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-
-    box<CameraController> controller = new_box<ArcBallCameraController>(camera);
+    _lastFrameDuration = now - now;
 
     while (isRunning()) {
-        int wheelAction = 0;
-
-        SDL_Event ev;
-        while (SDL_PollEvent(&ev)) {
-            switch (ev.type) {
-            case SDL_QUIT:
-                return;
-            case SDL_WINDOWEVENT:
-                switch (ev.window.event) {
-                case SDL_WINDOWEVENT_CLOSE:
-                    _onWindowClosed();
-                    break;
-                case SDL_WINDOWEVENT_SIZE_CHANGED:
-                    _onWindowSizeChanged();
-                    break;
-                }
-                break;
-            case SDL_KEYDOWN:
-                if (ev.key.keysym.scancode == SDL_SCANCODE_F) {
-                    controller = new_box<FlyCameraController>(camera);
-                }
-                if (ev.key.keysym.scancode == SDL_SCANCODE_B) {
-                    controller = new_box<ArcBallCameraController>(camera);
-                }
-                break;
-            case SDL_MOUSEWHEEL:
-                wheelAction += (ev.wheel.y > 0 ? 1 : ev.wheel.y < 0 ? -1 : 0) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1 : 1);
-                break;
-            }
-            _drawImgui.handleEvent(ev);
-        }
-
-        glm::vec3 relativeMovement = {0, 0, 0};
-        glm::vec3 relativeMotion = {0, 0, 0};
-
-        if (!imguiIO.WantCaptureKeyboard) {
-            auto keys = SDL_GetKeyboardState(nullptr);
-            relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
-                                static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LCTRL]),
-                                static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
-        }
-
-        int relx, rely;
-        int buttons = SDL_GetRelativeMouseState(&relx, &rely);
-        bool isMouseMove = buttons != 0 && !imguiIO.WantCaptureMouse;
-        SDL_SetRelativeMouseMode(isMouseMove ? SDL_TRUE : SDL_FALSE);
-        if (isMouseMove) {
-            relativeMotion.x = static_cast<float>(relx) / 800;
-            relativeMotion.y = static_cast<float>(rely) / 600;
-        }
-        relativeMotion.z = static_cast<float>(wheelAction);
-
-        controller->apply(camera, relativeMovement, relativeMotion, frameTime);
-
-        if (enableTicks) {
-            _scene->tick(frameTime);
-        }
-
-        GpuViewportDesc viewport;
-        int width, height;
-        SDL_GetWindowSize(_window.get(), &width, &height);
-        viewport.width = static_cast<float>(width);
-        viewport.height = static_cast<float>(height);
-
-        imguiIO.DisplaySize.x = viewport.width;
-        imguiIO.DisplaySize.y = viewport.height;
-        _drawImgui.beginFrame();
-        if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("Potato")) {
-                if (ImGui::MenuItem("Quit")) {
-                    return;
-                }
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("Scene")) {
-                if (ImGui::MenuItem(enableTicks ? "Pause" : "Play")) {
-                    enableTicks = !enableTicks;
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
-        }
-
-        if (ImGui::Begin("Camera")) {
-            auto pos = camera.position();
-            auto view = camera.view();
-            auto right = camera.right();
-            auto up = camera.up();
-            ImGui::InputFloat3("Position", &pos.x);
-            ImGui::InputFloat3("View", &view.x);
-            ImGui::InputFloat3("Right", &right.x);
-            ImGui::InputFloat3("Up", &up.x);
-            camera.lookAt(pos, pos + view, up);
-            if (ImGui::Button("Fly")) {
-                controller = new_box<FlyCameraController>(camera);
-            }
-            else if (ImGui::Button("ArcBall")) {
-                controller = new_box<ArcBallCameraController>(camera);
-            }
-        }
-        ImGui::End();
-
-        if (ImGui::Begin("Statistics")) {
-            auto micro = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
-
-            fixed_string_writer<128> buffer;
-            format_into(buffer, "{}us", micro);
-            ImGui::LabelText("Frametime", "%s", buffer.c_str());
-            buffer.clear();
-            format_into(buffer, "{}", 1 / frameTime);
-            ImGui::LabelText("FPS", "%s", buffer.c_str());
-        }
-        ImGui::End();
-
-        for (int i = -10; i <= 10; ++i) {
-            drawDebugLine({-10, 0, i}, {10, 0, i}, i == 0 ? glm::vec4{1, 0, 0, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
-            drawDebugLine({i, 0, -10}, {i, 0, 10}, i == 0 ? glm ::vec4{0, 0, 1, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
-        }
-        drawDebugLine({0, -10, 0}, {0, +10, 0}, {0, 1, 0, 1});
-
-        _renderer->beginFrame();
-        auto ctx = _renderer->context();
-        _camera->beginFrame(ctx, camera.matrix());
-        _scene->render(ctx);
-
-        _drawImgui.endFrame(*_device, _renderer->commandList());
-
-        _camera->endFrame(ctx);
-        _renderer->endFrame(frameTime);
-        _swapChain->present();
+        _processEvents();
+        _tick();
+        _render();
 
         auto endFrame = clock.now();
-        duration = endFrame - now;
-        frameTime = static_cast<float>(duration.count() / 1000000000.0);
+        _lastFrameDuration = endFrame - now;
+        _lastFrameTime = static_cast<float>(_lastFrameDuration.count() / 1000000000.0);
         now = endFrame;
     }
 }
@@ -302,10 +171,157 @@ void up::ShellApp::_onWindowClosed() {
 void up::ShellApp::_onWindowSizeChanged() {
     int width, height;
     SDL_GetWindowSize(_window.get(), &width, &height);
-    _camera->resetSwapChain(nullptr);
+    _renderCamera->resetSwapChain(nullptr);
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
-    _camera->resetSwapChain(_swapChain);
+    _renderCamera->resetSwapChain(_swapChain);
+}
+
+void up::ShellApp::_processEvents() {
+    auto& imguiIO = ImGui::GetIO();
+
+    int wheelAction = 0;
+    glm::vec3 relativeMovement = {0, 0, 0};
+    glm::vec3 relativeMotion = {0, 0, 0};
+
+    SDL_Event ev;
+    while (SDL_PollEvent(&ev)) {
+        switch (ev.type) {
+        case SDL_QUIT:
+            return;
+        case SDL_WINDOWEVENT:
+            switch (ev.window.event) {
+            case SDL_WINDOWEVENT_CLOSE:
+                _onWindowClosed();
+                break;
+            case SDL_WINDOWEVENT_SIZE_CHANGED:
+                _onWindowSizeChanged();
+                break;
+            }
+            break;
+        case SDL_KEYDOWN:
+            if (ev.key.keysym.scancode == SDL_SCANCODE_F) {
+                _cameraController = new_box<FlyCameraController>(_camera);
+            }
+            if (ev.key.keysym.scancode == SDL_SCANCODE_B) {
+                _cameraController = new_box<ArcBallCameraController>(_camera);
+            }
+            if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
+                _paused = !_paused;
+            }
+            break;
+        case SDL_MOUSEWHEEL:
+            wheelAction += (ev.wheel.y > 0 ? 1 : ev.wheel.y < 0 ? -1 : 0) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1 : 1);
+            break;
+        }
+        _drawImgui.handleEvent(ev);
+    }
+
+    if (!imguiIO.WantCaptureKeyboard) {
+        auto keys = SDL_GetKeyboardState(nullptr);
+        relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
+                            static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LCTRL]),
+                            static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
+    }
+
+    int relx, rely;
+    int buttons = SDL_GetRelativeMouseState(&relx, &rely);
+    bool isMouseMove = buttons != 0 && !imguiIO.WantCaptureMouse;
+    SDL_SetRelativeMouseMode(isMouseMove ? SDL_TRUE : SDL_FALSE);
+    if (isMouseMove) {
+        relativeMotion.x = static_cast<float>(relx) / 800;
+        relativeMotion.y = static_cast<float>(rely) / 600;
+    }
+    relativeMotion.z = static_cast<float>(wheelAction);
+
+    _cameraController->apply(_camera, relativeMovement, relativeMotion, _lastFrameTime);
+}
+
+void up::ShellApp::_tick() {
+    if (!_paused) {
+        _scene->tick(_lastFrameTime);
+    }
+}
+
+void up::ShellApp::_render() {
+    GpuViewportDesc viewport;
+    int width, height;
+    SDL_GetWindowSize(_window.get(), &width, &height);
+    viewport.width = static_cast<float>(width);
+    viewport.height = static_cast<float>(height);
+
+    auto& imguiIO = ImGui::GetIO();
+    imguiIO.DisplaySize.x = viewport.width;
+    imguiIO.DisplaySize.y = viewport.height;
+
+    _drawUI();
+
+    for (int i = -10; i <= 10; ++i) {
+        drawDebugLine({-10, 0, i}, {10, 0, i}, i == 0 ? glm::vec4{1, 0, 0, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
+        drawDebugLine({i, 0, -10}, {i, 0, 10}, i == 0 ? glm ::vec4{0, 0, 1, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
+    }
+    drawDebugLine({0, -10, 0}, {0, +10, 0}, {0, 1, 0, 1});
+
+    _renderer->beginFrame();
+    auto ctx = _renderer->context();
+    _renderCamera->beginFrame(ctx, _camera.matrix());
+    _scene->render(ctx);
+
+    _drawImgui.endFrame(*_device, _renderer->commandList());
+
+    _renderCamera->endFrame(ctx);
+    _renderer->endFrame(_lastFrameTime);
+    _swapChain->present();
+}
+
+void up::ShellApp::_drawUI() {
+    _drawImgui.beginFrame();
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("Potato")) {
+            if (ImGui::MenuItem("Quit")) {
+                return;
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Scene")) {
+            if (ImGui::MenuItem(!_paused ? "Pause" : "Play")) {
+                _paused = !_paused;
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+
+    if (ImGui::Begin("Camera")) {
+        auto pos = _camera.position();
+        auto view = _camera.view();
+        auto right = _camera.right();
+        auto up = _camera.up();
+        ImGui::InputFloat3("Position", &pos.x);
+        ImGui::InputFloat3("View", &view.x);
+        ImGui::InputFloat3("Right", &right.x);
+        ImGui::InputFloat3("Up", &up.x);
+        _camera.lookAt(pos, pos + view, up);
+        if (ImGui::Button("Fly")) {
+            _cameraController = new_box<FlyCameraController>(_camera);
+        }
+        else if (ImGui::Button("ArcBall")) {
+            _cameraController = new_box<ArcBallCameraController>(_camera);
+        }
+    }
+    ImGui::End();
+
+    if (ImGui::Begin("Statistics")) {
+        auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
+
+        fixed_string_writer<128> buffer;
+        format_into(buffer, "{}us", micro);
+        ImGui::LabelText("Frametime", "%s", buffer.c_str());
+        buffer.clear();
+        format_into(buffer, "{}", 1.f / _lastFrameTime);
+        ImGui::LabelText("FPS", "%s", buffer.c_str());
+    }
+    ImGui::End();
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {
