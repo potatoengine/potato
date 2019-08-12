@@ -51,6 +51,8 @@ private:
     bool _loadConfig(zstring_view path);
 
 private:
+    struct InputState;
+
     bool _running = true;
     bool _paused = false;
     NativeFileSystem _fileSystem;
@@ -65,6 +67,7 @@ private:
     Logger _logger;
     Camera _camera;
     box<CameraController> _cameraController;
+    box<InputState> _inputState;
     float _lastFrameTime = 0.f;
     std::chrono::nanoseconds _lastFrameDuration;
 };

@@ -44,7 +44,12 @@
 
 #include <nlohmann/json.hpp>
 
-up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell") {}
+struct up::ShellApp::InputState {
+    glm::vec3 relativeMovement = {0, 0, 0};
+    glm::vec3 relativeMotion = {0, 0, 0};
+};
+
+up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell"), _inputState(new_box<InputState>()) {}
 
 up::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
@@ -180,9 +185,8 @@ void up::ShellApp::_onWindowSizeChanged() {
 void up::ShellApp::_processEvents() {
     auto& imguiIO = ImGui::GetIO();
 
-    int wheelAction = 0;
-    glm::vec3 relativeMovement = {0, 0, 0};
-    glm::vec3 relativeMotion = {0, 0, 0};
+    _inputState->relativeMotion = {0, 0, 0};
+    _inputState->relativeMovement = {0, 0, 0};
 
     SDL_Event ev;
     while (SDL_PollEvent(&ev)) {
@@ -211,7 +215,7 @@ void up::ShellApp::_processEvents() {
             }
             break;
         case SDL_MOUSEWHEEL:
-            wheelAction += (ev.wheel.y > 0 ? 1 : ev.wheel.y < 0 ? -1 : 0) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1 : 1);
+            _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
             break;
         }
         _drawImgui.handleEvent(ev);
@@ -219,7 +223,7 @@ void up::ShellApp::_processEvents() {
 
     if (!imguiIO.WantCaptureKeyboard) {
         auto keys = SDL_GetKeyboardState(nullptr);
-        relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
+        _inputState->relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
                             static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LCTRL]),
                             static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
     }
@@ -229,15 +233,14 @@ void up::ShellApp::_processEvents() {
     bool isMouseMove = buttons != 0 && !imguiIO.WantCaptureMouse;
     SDL_SetRelativeMouseMode(isMouseMove ? SDL_TRUE : SDL_FALSE);
     if (isMouseMove) {
-        relativeMotion.x = static_cast<float>(relx) / 800;
-        relativeMotion.y = static_cast<float>(rely) / 600;
+        _inputState->relativeMotion.x = static_cast<float>(relx) / 800;
+        _inputState->relativeMotion.y = static_cast<float>(rely) / 600;
     }
-    relativeMotion.z = static_cast<float>(wheelAction);
-
-    _cameraController->apply(_camera, relativeMovement, relativeMotion, _lastFrameTime);
 }
 
 void up::ShellApp::_tick() {
+    _cameraController->apply(_camera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
+
     if (!_paused) {
         _scene->tick(_lastFrameTime);
     }
@@ -279,7 +282,7 @@ void up::ShellApp::_drawUI() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("Potato")) {
             if (ImGui::MenuItem("Quit")) {
-                return;
+                _running = false;
             }
             ImGui::EndMenu();
         }
