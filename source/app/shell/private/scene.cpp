@@ -7,6 +7,7 @@
 #include "potato/ecs/query.h"
 
 #include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
@@ -14,6 +15,10 @@
 namespace up::components {
     struct Position {
         glm::vec3 xyz;
+    };
+
+    struct Rotation {
+        glm::quat rot;
     };
 
     struct Transform {
@@ -24,17 +29,22 @@ namespace up::components {
         rc<up::Model> model;
     };
 
-    struct Animation {
-        float offset;
-        float speedScale;
+    struct Wave {
         float time;
+        float offset;
+    };
+
+    struct Spin {
+        float radians;
     };
 } // namespace up::components
 
 UP_COMPONENT(up::components::Position);
+UP_COMPONENT(up::components::Rotation);
 UP_COMPONENT(up::components::Transform);
 UP_COMPONENT(up::components::Mesh);
-UP_COMPONENT(up::components::Animation);
+UP_COMPONENT(up::components::Wave);
+UP_COMPONENT(up::components::Spin);
 
 up::Scene::Scene() : _world(new_box<World>()) {
 }
@@ -48,17 +58,20 @@ void up::Scene::create(rc<Model> cube) {
         _world->createEntity(
             components::Position{{
                 (20 + glm::cos(r) * 10.f) * glm::sin(r),
-                1 + glm::sin(r * 10) * 5,
+                1 + glm::sin(r * 10.f) * 5.f,
                 (20 + glm::sin(r) * 10.f) * glm::cos(r)}
             },
+            components::Rotation{glm::identity<glm::quat>()},
             components::Transform{},
             components::Mesh{cube},
-            components::Animation{glm::sin(r * 10.f), .2f + glm::sin(r), 0}
+            components::Wave{0, r},
+            components::Spin{glm::sin(r * 10.f) * 2.f - 1.f}
         );
     }
 
     _world->createEntity(
         components::Position{{0, 5, 0}},
+        components::Rotation{glm::identity<glm::quat>()},
         components::Transform(),
         components::Mesh{cube}
     );
@@ -69,20 +82,34 @@ up::Scene::~Scene() {
 }
 
 void up::Scene::tick(float frameTime) {
-    Query<components::Position, components::Animation> tickQuery;
-    Query<components::Position, components::Transform> transformQuery;
+    Query<components::Position, components::Wave> waveQuery;
+    Query<components::Position> orbitQuery;
+    Query<components::Rotation, components::Spin> spinQuery;
+    Query<components::Rotation, components::Position, components::Transform> transformQuery;
 
-    tickQuery.select(*_world, [&](size_t count, EntityId const*, components::Position* positions, components::Animation* animations) {
+    waveQuery.select(*_world, [&](size_t count, EntityId const*, components::Position* positions, components::Wave* waves) {
         for (size_t i = 0; i != count; ++i) {
-            animations[i].time += frameTime * animations[i].speedScale;
-            positions[i].xyz = glm::rotateY(positions[i].xyz, frameTime);
-            positions[i].xyz.y = 1 + 10 * glm::sin(animations[i].offset + 2.f * glm::pi<float>() * animations[i].time);
+            waves[i].offset += frameTime * .2f;
+            positions[i].xyz.y = 1 + 5 * glm::sin(waves[i].offset * 10);
         }
     });
 
-    transformQuery.select(*_world, [&](size_t count, EntityId const*, components::Position* positions, components::Transform* transforms) {
+    orbitQuery.select(*_world, [&](size_t count, EntityId const*, components::Position* positions) {
         for (size_t i = 0; i != count; ++i) {
-            transforms[i].trans = glm::translate(glm::identity<glm::mat4x4>(), positions[i].xyz);
+            positions[i].xyz = glm::rotateY(positions[i].xyz, frameTime);
+        }
+    });
+
+
+    spinQuery.select(*_world, [&](size_t count, EntityId const*, components::Rotation* rotations, components::Spin* spins) {
+        for (size_t i = 0; i != count; ++i) {
+            rotations[i].rot = glm::angleAxis(spins[i].radians * frameTime, glm::vec3(0.f, 1.f, 0.f)) * rotations[i].rot;
+        }
+    });
+
+    transformQuery.select(*_world, [&](size_t count, EntityId const*, components::Rotation* rotations, components::Position* positions, components::Transform* transforms) {
+        for (size_t i = 0; i != count; ++i) {
+            transforms[i].trans = glm::translate(positions[i].xyz) * glm::mat4_cast(rotations[i].rot);
         }
     });
 }
