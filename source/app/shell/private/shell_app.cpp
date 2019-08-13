@@ -204,10 +204,10 @@ void up::ShellApp::_processEvents() {
             }
             break;
         case SDL_KEYDOWN:
-            if (ev.key.keysym.scancode == SDL_SCANCODE_F) {
+            if (ev.key.keysym.scancode == SDL_SCANCODE_F && (ev.key.keysym.mod & KMOD_CTRL) != 0) {
                 _cameraController = new_box<FlyCameraController>(_camera);
             }
-            if (ev.key.keysym.scancode == SDL_SCANCODE_B) {
+            if (ev.key.keysym.scancode == SDL_SCANCODE_B && (ev.key.keysym.mod & KMOD_CTRL) != 0) {
                 _cameraController = new_box<ArcBallCameraController>(_camera);
             }
             if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
@@ -224,8 +224,8 @@ void up::ShellApp::_processEvents() {
     if (!imguiIO.WantCaptureKeyboard) {
         auto keys = SDL_GetKeyboardState(nullptr);
         _inputState->relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
-                            static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LCTRL]),
-                            static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
+                                         static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
+                                         static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
     }
 
     int relx, rely;
@@ -261,7 +261,7 @@ void up::ShellApp::_render() {
 
     for (int i = -10; i <= 10; ++i) {
         drawDebugLine({-10, 0, i}, {10, 0, i}, i == 0 ? glm::vec4{1, 0, 0, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
-        drawDebugLine({i, 0, -10}, {i, 0, 10}, i == 0 ? glm ::vec4{0, 0, 1, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
+        drawDebugLine({i, 0, -10}, {i, 0, 10}, i == 0 ? glm::vec4{0, 0, 1, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
     }
     drawDebugLine({0, -10, 0}, {0, +10, 0}, {0, 1, 0, 1});
 
@@ -278,23 +278,40 @@ void up::ShellApp::_render() {
 }
 
 void up::ShellApp::_drawUI() {
+    ImVec2 menuSize;
+
     _drawImgui.beginFrame();
     if (ImGui::BeginMainMenuBar()) {
+        menuSize = ImGui::GetWindowSize();
+
         if (ImGui::BeginMenu("Potato")) {
-            if (ImGui::MenuItem("Quit")) {
+            if (ImGui::MenuItem("Quit", "ESC")) {
                 _running = false;
             }
             ImGui::EndMenu();
         }
+
         if (ImGui::BeginMenu("Scene")) {
-            if (ImGui::MenuItem(!_paused ? "Pause" : "Play")) {
+            if (ImGui::MenuItem(!_paused ? "Pause" : "Play", "F5")) {
                 _paused = !_paused;
             }
             ImGui::EndMenu();
         }
+
+        if (ImGui::BeginMenu("Camera")) {
+            if (ImGui::MenuItem("Fly", "ctrl-f")) {
+                _cameraController = new_box<FlyCameraController>(_camera);
+            }
+            if (ImGui::MenuItem("ArcBall", "ctrl-b")) {
+                _cameraController = new_box<ArcBallCameraController>(_camera);
+            }
+            ImGui::EndMenu();
+        }
+
         ImGui::EndMainMenuBar();
     }
 
+    ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Camera")) {
         auto pos = _camera.position();
         auto view = _camera.view();
@@ -314,15 +331,13 @@ void up::ShellApp::_drawUI() {
     }
     ImGui::End();
 
-    if (ImGui::Begin("Statistics")) {
+    ImGui::SetNextWindowPos({0, menuSize.y});
+    if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
         auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 
         fixed_string_writer<128> buffer;
-        format_into(buffer, "{}us", micro);
-        ImGui::LabelText("Frametime", "%s", buffer.c_str());
-        buffer.clear();
-        format_into(buffer, "{}", 1.f / _lastFrameTime);
-        ImGui::LabelText("FPS", "%s", buffer.c_str());
+        format_into(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
+        ImGui::Text("%s", buffer.c_str());
     }
     ImGui::End();
 }
