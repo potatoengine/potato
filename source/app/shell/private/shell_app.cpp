@@ -244,6 +244,8 @@ void up::ShellApp::_tick() {
     if (!_paused) {
         _scene->tick(_lastFrameTime);
     }
+
+    _scene->flush();
 }
 
 void up::ShellApp::_render() {

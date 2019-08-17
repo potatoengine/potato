@@ -3,9 +3,10 @@
 #pragma once
 
 #include "_export.h"
+#include "world.h"
 #include "potato/foundation/typelist.h"
 #include "potato/foundation/vector.h"
-#include "potato/foundation/delegate.h"
+#include "potato/foundation/delegate_ref.h"
 #include "potato/foundation/span.h"
 #include "potato/foundation/sort.h"
 #include "potato/ecs/component.h"
