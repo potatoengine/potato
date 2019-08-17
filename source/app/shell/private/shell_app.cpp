@@ -137,6 +137,15 @@ int up::ShellApp::initialize() {
     }
 
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
+    auto fontStream = _fileSystem.openRead("resources/fonts/fontawesome5/fa-solid-900.ttf");
+    if (!fontStream) {
+        _errorDialog("Failed to open FontAwesome font");
+        return 1;
+    }
+    if (!_drawImgui.loadFontAwesome5(std::move(fontStream))) {
+        _errorDialog("Failed to load FontAwesome font");
+        return 1;
+    }
     _drawImgui.createResources(*_device);
 
     _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
@@ -316,7 +325,7 @@ void up::ShellApp::_drawUI() {
         ImGui::Spacing();
         ImGui::Spacing();
 
-        if (ImGui::MenuItem(!_paused ? "Pause" : "Play", "F5")) {
+        if (ImGui::MenuItem(!_paused ? u8"\uf04c Pause" : u8"\uf04b Play", "F5")) {
             _paused = !_paused;
         }
 
