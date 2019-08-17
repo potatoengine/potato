@@ -54,7 +54,7 @@ private:
     struct InputState;
 
     bool _running = true;
-    bool _paused = false;
+    bool _paused = true;
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
