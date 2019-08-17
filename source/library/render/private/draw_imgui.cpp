@@ -66,6 +66,31 @@ bool up::DrawImgui::createResources(GpuDevice& device) {
     return true;
 }
 
+auto up::DrawImgui::loadFontAwesome5(Stream fontFile) -> bool {
+    static constexpr auto s_minGlyph = 0xf000;
+    static constexpr auto s_maxGlyph = 0xf897;
+    static constexpr ImWchar s_ranges[] = {s_minGlyph, s_maxGlyph, 0};
+
+    _ensureContext();
+
+    ImGui::SetCurrentContext(_context.get());
+    auto& io = ImGui::GetIO();
+
+    vector<byte> fontData;
+    if (readBinary(fontFile, fontData) != IOResult::Success) {
+        return false;
+    }
+
+    
+    ImFontConfig config; // = {.MergeMode = true, .PixelSnapH = true};
+    config.MergeMode = true;
+    config.PixelSnapH = true;
+    config.FontDataOwnedByAtlas = false;
+
+    auto font = io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 13.0f, &config, s_ranges);
+    return font != nullptr;
+}
+
 void up::DrawImgui::releaseResources() {
     _indexBuffer.reset();
     _vertexBuffer.reset();
@@ -263,6 +288,8 @@ void up::DrawImgui::_ensureContext() {
     _context = ImGui::CreateContext();
     ImGui::SetCurrentContext(_context.get());
     auto& io = ImGui::GetIO();
+
+    io.Fonts->AddFontDefault();
 
     io.BackendPlatformName = "potato::grui";
     io.IniFilename = nullptr;

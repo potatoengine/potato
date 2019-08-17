@@ -7,6 +7,7 @@
 #include "potato/foundation/rc.h"
 #include "potato/foundation/unique_resource.h"
 #include "potato/foundation/string.h"
+#include "potato/filesystem/stream.h"
 
 namespace up {
     class GpuBuffer;
@@ -36,6 +37,8 @@ namespace up {
 
         UP_RENDER_API bool createResources(GpuDevice& device);
         UP_RENDER_API void releaseResources();
+
+        UP_RENDER_API bool loadFontAwesome5(Stream fontFile);
 
         UP_RENDER_API bool handleEvent(SDL_Event const& ev);
 
