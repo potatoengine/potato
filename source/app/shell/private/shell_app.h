@@ -5,6 +5,7 @@
 #include "potato/filesystem/native.h"
 #include "potato/render/draw_imgui.h"
 #include "potato/logger/logger.h"
+#include "camera.h"
 
 #include <SDL.h>
 
@@ -17,6 +18,9 @@ namespace up {
     class GpuDevice;
     class GpuSwapChain;
     class World;
+    class Scene;
+    class Camera;
+    class CameraController;
 } // namespace up
 
 class up::ShellApp {
@@ -37,22 +41,33 @@ private:
     void _onWindowSizeChanged();
     void _onWindowClosed();
 
+    void _processEvents();
+    void _tick();
+    void _render();
+    void _drawUI();
+
     void _errorDialog(zstring_view message);
 
     bool _loadConfig(zstring_view path);
 
 private:
+    struct InputState;
+
     bool _running = true;
+    bool _paused = true;
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
     box<Renderer> _renderer;
-    box<RenderCamera> _camera;
-    rc<Model> _cube;
-    box<Node> _root;
-    box<World> _world;
+    box<RenderCamera> _renderCamera;
+    box<Scene> _scene;
     string _resourceDir;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     DrawImgui _drawImgui;
     Logger _logger;
+    Camera _camera;
+    box<CameraController> _cameraController;
+    box<InputState> _inputState;
+    float _lastFrameTime = 0.f;
+    std::chrono::nanoseconds _lastFrameDuration;
 };

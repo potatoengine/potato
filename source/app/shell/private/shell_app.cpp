@@ -3,6 +3,7 @@
 #include "shell_app.h"
 #include "camera.h"
 #include "camera_controller.h"
+#include "scene.h"
 
 #include "potato/foundation/box.h"
 #include "potato/foundation/platform.h"
@@ -43,32 +44,18 @@
 
 #include <nlohmann/json.hpp>
 
-namespace up::components {
-    struct Position {
-        glm::vec3 xyz;
-    };
+struct up::ShellApp::InputState {
+    glm::vec3 relativeMovement = {0, 0, 0};
+    glm::vec3 relativeMotion = {0, 0, 0};
+};
 
-    struct Transform {
-        glm::mat4x4 trans;
-    };
-
-    struct Mesh {
-        rc<up::Model> model;
-    };
-} // namespace up::components
-
-UP_COMPONENT(up::components::Position);
-UP_COMPONENT(up::components::Transform);
-UP_COMPONENT(up::components::Mesh);
-
-up::ShellApp::ShellApp() : _world(new_box<World>()), _logger("shell") {}
+up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell"), _inputState(new_box<InputState>()) {}
 
 up::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
 
     _renderer.reset();
-    _root.reset();
-    _camera.reset();
+    _renderCamera.reset();
     _swapChain.reset();
     _window.reset();
 
@@ -126,7 +113,7 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _camera = new_box<RenderCamera>(_swapChain);
+    _renderCamera = new_box<RenderCamera>(_swapChain);
 
     auto material = _renderer->loadMaterialSync("resources/materials/full.json");
     if (material == nullptr) {
@@ -140,9 +127,7 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _cube = new_shared<Model>(std::move(mesh), std::move(material));
-    _root = new_box<Node>(_cube);
-    _root->transform(translate(glm::identity<glm::mat4x4>(), {0, 5, 0}));
+    _scene->create(new_shared<Model>(std::move(mesh), std::move(material)));
 
     auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
     auto imguiPixelShader = _renderer->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
@@ -154,6 +139,9 @@ int up::ShellApp::initialize() {
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
     _drawImgui.createResources(*_device);
 
+    _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+    _cameraController = new_box<ArcBallCameraController>(_camera);
+
     return 0;
 }
 
@@ -163,175 +151,16 @@ void up::ShellApp::run() {
     std::chrono::high_resolution_clock clock;
 
     auto now = clock.now();
-    auto duration = now - now;
-    float frameTime = 0;
-
-    Camera camera;
-    camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-
-    box<CameraController> controller = new_box<ArcBallCameraController>(camera);
-
-    float objRotateInput = 0;
-
-    for (size_t i = 0; i != 100; ++i) {
-        float p = i / 100.0f;
-        _world->createEntity(
-            components::Position{{(20 + glm::cos(p * 20.f) * 10.f) * glm::sin(p * 2.f * glm::pi<float>()), 1 + glm::sin(p * 10) * 5, (20 + glm::sin(p * 20.f) * 10.f) * glm::cos(p * 2.f * glm::pi<float>())}},
-            components::Transform{},
-            components::Mesh{_cube}
-        );
-    }
-
-    Query<components::Mesh, components::Transform> renderableMeshQuery;
-    Query<components::Position, components::Transform> transformUpdateQuery;
-    Query<components::Position> rotationQuery;
+    _lastFrameDuration = now - now;
 
     while (isRunning()) {
-        int wheelAction = 0;
-
-        SDL_Event ev;
-        while (SDL_PollEvent(&ev)) {
-            switch (ev.type) {
-            case SDL_QUIT:
-                return;
-            case SDL_WINDOWEVENT:
-                switch (ev.window.event) {
-                case SDL_WINDOWEVENT_CLOSE:
-                    _onWindowClosed();
-                    break;
-                case SDL_WINDOWEVENT_SIZE_CHANGED:
-                    _onWindowSizeChanged();
-                    break;
-                }
-                break;
-            case SDL_KEYDOWN:
-                if (ev.key.keysym.scancode == SDL_SCANCODE_F) {
-                    controller = new_box<FlyCameraController>(camera);
-                }
-                if (ev.key.keysym.scancode == SDL_SCANCODE_B) {
-                    controller = new_box<ArcBallCameraController>(camera);
-                }
-                break;
-            case SDL_MOUSEWHEEL:
-                wheelAction += (ev.wheel.y > 0 ? 1 : ev.wheel.y < 0 ? -1 : 0) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1 : 1);
-                break;
-            }
-            _drawImgui.handleEvent(ev);
-        }
-
-        glm::vec3 relativeMovement = {0, 0, 0};
-        glm::vec3 relativeMotion = {0, 0, 0};
-
-        if (!imguiIO.WantCaptureKeyboard) {
-            auto keys = SDL_GetKeyboardState(nullptr);
-            relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
-                                static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LCTRL]),
-                                static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
-        }
-
-        int relx, rely;
-        int buttons = SDL_GetRelativeMouseState(&relx, &rely);
-        bool isMouseMove = buttons != 0 && !imguiIO.WantCaptureMouse;
-        SDL_SetRelativeMouseMode(isMouseMove ? SDL_TRUE : SDL_FALSE);
-        if (isMouseMove) {
-            relativeMotion.x = static_cast<float>(relx) / 800;
-            relativeMotion.y = static_cast<float>(rely) / 600;
-        }
-        relativeMotion.z = static_cast<float>(wheelAction);
-
-        controller->apply(camera, relativeMovement, relativeMotion, frameTime);
-
-        objRotateInput += frameTime;
-        _root->transform(glm::rotate(glm::rotate(glm::translate(glm::identity<glm::mat4x4>(), {0, 5, 0}), objRotateInput, {0, 1, 0}), std::sin(objRotateInput), {1, 0, 0}));
-
-        rotationQuery.select(*_world, [frameTime](size_t count, EntityId const*, components::Position* positions) {
-            for (size_t i = 0; i != count; ++i) {
-                positions[i].xyz = glm::rotateY(positions[i].xyz, frameTime);
-            }
-        });
-
-        transformUpdateQuery.select(*_world, [](size_t count, EntityId const*, components::Position* positions, components::Transform* transforms) {
-            for (size_t i = 0; i != count; ++i) {
-                transforms[i].trans = glm::translate(glm::identity<glm::mat4x4>(), positions[i].xyz);
-            }
-        });
-
-        GpuViewportDesc viewport;
-        int width, height;
-        SDL_GetWindowSize(_window.get(), &width, &height);
-        viewport.width = static_cast<float>(width);
-        viewport.height = static_cast<float>(height);
-
-        imguiIO.DisplaySize.x = viewport.width;
-        imguiIO.DisplaySize.y = viewport.height;
-        _drawImgui.beginFrame();
-        if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("Potato")) {
-                if (ImGui::MenuItem("Quit")) {
-                    return;
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
-        }
-
-        if (ImGui::Begin("Camera")) {
-            auto pos = camera.position();
-            auto view = camera.view();
-            auto right = camera.right();
-            auto up = camera.up();
-            ImGui::InputFloat3("Position", &pos.x);
-            ImGui::InputFloat3("View", &view.x);
-            ImGui::InputFloat3("Right", &right.x);
-            ImGui::InputFloat3("Up", &up.x);
-            camera.lookAt(pos, pos + view, up);
-            if (ImGui::Button("Fly")) {
-                controller = new_box<FlyCameraController>(camera);
-            }
-            else if (ImGui::Button("ArcBall")) {
-                controller = new_box<ArcBallCameraController>(camera);
-            }
-        }
-        ImGui::End();
-
-        if (ImGui::Begin("Statistics")) {
-            auto micro = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
-
-            fixed_string_writer<128> buffer;
-            format_into(buffer, "{}us", micro);
-            ImGui::LabelText("Frametime", "%s", buffer.c_str());
-            buffer.clear();
-            format_into(buffer, "{}", 1 / frameTime);
-            ImGui::LabelText("FPS", "%s", buffer.c_str());
-        }
-        ImGui::End();
-
-        for (int i = -10; i <= 10; ++i) {
-            drawDebugLine({-10, 0, i}, {10, 0, i}, i == 0 ? glm::vec4{1, 0, 0, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
-            drawDebugLine({i, 0, -10}, {i, 0, 10}, i == 0 ? glm ::vec4{0, 0, 1, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
-        }
-        drawDebugLine({0, -10, 0}, {0, +10, 0}, {0, 1, 0, 1});
-
-        _renderer->beginFrame();
-        auto ctx = _renderer->context();
-        _camera->beginFrame(ctx, camera.matrix());
-        _root->render(ctx);
-
-        renderableMeshQuery.select(*_world, [&](size_t count, EntityId const*, components::Mesh* meshes, components::Transform* transforms) {
-            for (size_t i = 0; i != count; ++i) {
-                meshes[i].model->render(ctx, transforms[i].trans);
-            }
-        });
-
-        _drawImgui.endFrame(*_device, _renderer->commandList());
-
-        _camera->endFrame(ctx);
-        _renderer->endFrame(frameTime);
-        _swapChain->present();
+        _processEvents();
+        _tick();
+        _render();
 
         auto endFrame = clock.now();
-        duration = endFrame - now;
-        frameTime = static_cast<float>(duration.count() / 1000000000.0);
+        _lastFrameDuration = endFrame - now;
+        _lastFrameTime = static_cast<float>(_lastFrameDuration.count() / 1000000000.0);
         now = endFrame;
     }
 }
@@ -347,10 +176,162 @@ void up::ShellApp::_onWindowClosed() {
 void up::ShellApp::_onWindowSizeChanged() {
     int width, height;
     SDL_GetWindowSize(_window.get(), &width, &height);
-    _camera->resetSwapChain(nullptr);
+    _renderCamera->resetSwapChain(nullptr);
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
-    _camera->resetSwapChain(_swapChain);
+    _renderCamera->resetSwapChain(_swapChain);
+}
+
+void up::ShellApp::_processEvents() {
+    auto& imguiIO = ImGui::GetIO();
+
+    _inputState->relativeMotion = {0, 0, 0};
+    _inputState->relativeMovement = {0, 0, 0};
+
+    SDL_Event ev;
+    while (SDL_PollEvent(&ev)) {
+        switch (ev.type) {
+        case SDL_QUIT:
+            return;
+        case SDL_WINDOWEVENT:
+            switch (ev.window.event) {
+            case SDL_WINDOWEVENT_CLOSE:
+                _onWindowClosed();
+                break;
+            case SDL_WINDOWEVENT_SIZE_CHANGED:
+                _onWindowSizeChanged();
+                break;
+            }
+            break;
+        case SDL_KEYDOWN:
+            if (ev.key.keysym.scancode == SDL_SCANCODE_F && (ev.key.keysym.mod & KMOD_CTRL) != 0) {
+                _cameraController = new_box<FlyCameraController>(_camera);
+            }
+            if (ev.key.keysym.scancode == SDL_SCANCODE_B && (ev.key.keysym.mod & KMOD_CTRL) != 0) {
+                _cameraController = new_box<ArcBallCameraController>(_camera);
+            }
+            if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
+                _paused = !_paused;
+            }
+            break;
+        case SDL_MOUSEWHEEL:
+            _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
+            break;
+        }
+        _drawImgui.handleEvent(ev);
+    }
+
+    if (!imguiIO.WantCaptureKeyboard) {
+        auto keys = SDL_GetKeyboardState(nullptr);
+        _inputState->relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
+                                         static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
+                                         static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
+    }
+
+    int relx, rely;
+    int buttons = SDL_GetRelativeMouseState(&relx, &rely);
+    bool isMouseMove = buttons != 0 && !imguiIO.WantCaptureMouse;
+    SDL_SetRelativeMouseMode(isMouseMove ? SDL_TRUE : SDL_FALSE);
+    if (isMouseMove) {
+        _inputState->relativeMotion.x = static_cast<float>(relx) / 800;
+        _inputState->relativeMotion.y = static_cast<float>(rely) / 600;
+    }
+}
+
+void up::ShellApp::_tick() {
+    _cameraController->apply(_camera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
+
+    if (!_paused) {
+        _scene->tick(_lastFrameTime);
+    }
+
+    _scene->flush();
+}
+
+void up::ShellApp::_render() {
+    GpuViewportDesc viewport;
+    int width, height;
+    SDL_GetWindowSize(_window.get(), &width, &height);
+    viewport.width = static_cast<float>(width);
+    viewport.height = static_cast<float>(height);
+
+    auto& imguiIO = ImGui::GetIO();
+    imguiIO.DisplaySize.x = viewport.width;
+    imguiIO.DisplaySize.y = viewport.height;
+
+    _drawUI();
+
+    for (int i = -10; i <= 10; ++i) {
+        drawDebugLine({-10, 0, i}, {10, 0, i}, i == 0 ? glm::vec4{1, 0, 0, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
+        drawDebugLine({i, 0, -10}, {i, 0, 10}, i == 0 ? glm::vec4{0, 0, 1, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
+    }
+    drawDebugLine({0, -10, 0}, {0, +10, 0}, {0, 1, 0, 1});
+
+    _renderer->beginFrame();
+    auto ctx = _renderer->context();
+    _renderCamera->beginFrame(ctx, _camera.matrix());
+    _scene->render(ctx);
+
+    _drawImgui.endFrame(*_device, _renderer->commandList());
+
+    _renderCamera->endFrame(ctx);
+    _renderer->endFrame(_lastFrameTime);
+    _swapChain->present();
+}
+
+void up::ShellApp::_drawUI() {
+    ImVec2 menuSize;
+
+    _drawImgui.beginFrame();
+    if (ImGui::BeginMainMenuBar()) {
+        menuSize = ImGui::GetWindowSize();
+
+        if (ImGui::BeginMenu("Potato")) {
+            if (ImGui::MenuItem("Quit", "ESC")) {
+                _running = false;
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("View")) {
+            if (ImGui::BeginMenu("Camera")) {
+                if (ImGui::MenuItem("Fly", "ctrl-f")) {
+                    _cameraController = new_box<FlyCameraController>(_camera);
+                }
+                if (ImGui::MenuItem("ArcBall", "ctrl-b")) {
+                    _cameraController = new_box<ArcBallCameraController>(_camera);
+                }
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::MenuItem("Reset")) {
+                _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+                _cameraController = new_box<ArcBallCameraController>(_camera);
+            }
+
+            ImGui::EndMenu();
+        }
+
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+
+        if (ImGui::MenuItem(!_paused ? "Pause" : "Play", "F5")) {
+            _paused = !_paused;
+        }
+
+        ImGui::EndMainMenuBar();
+    }
+
+    ImGui::SetNextWindowPos({0, menuSize.y});
+    if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
+        auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
+
+        fixed_string_writer<128> buffer;
+        format_into(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
+        ImGui::Text("%s", buffer.c_str());
+    }
+    ImGui::End();
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {
