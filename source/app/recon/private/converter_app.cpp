@@ -134,11 +134,15 @@ void up::recon::ConverterApp::registerConverters() {
 #endif
     _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsli"; },
                            new_box<IgnoreConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".txt"; },
+                           new_box<IgnoreConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".json"; },
                            new_box<JsonConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".png"; },
                            new_box<CopyConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".jpg"; },
+                           new_box<CopyConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".ttf"; },
                            new_box<CopyConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".obj"; },
                            new_box<ModelConverter>()});
