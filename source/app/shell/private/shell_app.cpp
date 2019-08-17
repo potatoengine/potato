@@ -293,45 +293,35 @@ void up::ShellApp::_drawUI() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Scene")) {
-            if (ImGui::MenuItem(!_paused ? "Pause" : "Play", "F5")) {
-                _paused = !_paused;
+        if (ImGui::BeginMenu("View")) {
+            if (ImGui::BeginMenu("Camera")) {
+                if (ImGui::MenuItem("Fly", "ctrl-f")) {
+                    _cameraController = new_box<FlyCameraController>(_camera);
+                }
+                if (ImGui::MenuItem("ArcBall", "ctrl-b")) {
+                    _cameraController = new_box<ArcBallCameraController>(_camera);
+                }
+                ImGui::EndMenu();
             }
+
+            if (ImGui::MenuItem("Reset")) {
+                _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+                _cameraController = new_box<ArcBallCameraController>(_camera);
+            }
+
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Camera")) {
-            if (ImGui::MenuItem("Fly", "ctrl-f")) {
-                _cameraController = new_box<FlyCameraController>(_camera);
-            }
-            if (ImGui::MenuItem("ArcBall", "ctrl-b")) {
-                _cameraController = new_box<ArcBallCameraController>(_camera);
-            }
-            ImGui::EndMenu();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+
+        if (ImGui::MenuItem(!_paused ? "Pause" : "Play", "F5")) {
+            _paused = !_paused;
         }
 
         ImGui::EndMainMenuBar();
     }
-
-    ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("Camera")) {
-        auto pos = _camera.position();
-        auto view = _camera.view();
-        auto right = _camera.right();
-        auto up = _camera.up();
-        ImGui::InputFloat3("Position", &pos.x);
-        ImGui::InputFloat3("View", &view.x);
-        ImGui::InputFloat3("Right", &right.x);
-        ImGui::InputFloat3("Up", &up.x);
-        _camera.lookAt(pos, pos + view, up);
-        if (ImGui::Button("Fly")) {
-            _cameraController = new_box<FlyCameraController>(_camera);
-        }
-        else if (ImGui::Button("ArcBall")) {
-            _cameraController = new_box<ArcBallCameraController>(_camera);
-        }
-    }
-    ImGui::End();
 
     ImGui::SetNextWindowPos({0, menuSize.y});
     if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
