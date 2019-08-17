@@ -295,14 +295,14 @@ void up::ShellApp::_drawUI() {
     if (ImGui::BeginMainMenuBar()) {
         menuSize = ImGui::GetWindowSize();
 
-        if (ImGui::BeginMenu("Potato")) {
-            if (ImGui::MenuItem("Quit", "ESC")) {
+        if (ImGui::BeginMenu(u8"\uf094 Potato")) {
+            if (ImGui::MenuItem(u8"\uf52b Quit", "ESC")) {
                 _running = false;
             }
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("View")) {
+        if (ImGui::BeginMenu(u8"\uf06e View")) {
             if (ImGui::BeginMenu("Camera")) {
                 if (ImGui::MenuItem("Fly", "ctrl-f")) {
                     _cameraController = new_box<FlyCameraController>(_camera);
