@@ -75,6 +75,11 @@ void up::Renderer::beginFrame() {
 }
 
 void up::Renderer::endFrame(float frameTime) {
+    _commandList->finish();
+    _device->execute(_commandList.get());
+}
+
+void up::Renderer::flushDebugDraw(float frameTime) {
     static constexpr uint32 bufferSize = 64 * 1024;
     static constexpr uint32 maxVertsPerChunk = bufferSize / sizeof(DebugDrawVertex);
 
@@ -103,10 +108,7 @@ void up::Renderer::endFrame(float frameTime) {
         }
     });
 
-    flushDebugDraw(frameTime);
-
-    _commandList->finish();
-    _device->execute(_commandList.get());
+    up::flushDebugDraw(frameTime);
 }
 
 auto up::Renderer::context() -> RenderContext {
