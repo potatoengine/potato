@@ -1,15 +1,20 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "scene.h"
+#include <potato/filesystem/json.h>
 #include <potato/render/model.h>
 #include "potato/ecs/world.h"
 #include "potato/ecs/query.h"
+#include "potato/reflex/reflect.h"
+#include "potato/reflex/json_serializer.h"
 
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+
+#include <nlohmann/json.hpp>
 
 namespace up::components {
     struct Position {
@@ -51,6 +56,10 @@ UP_DEFINE_COMPONENT(up::components::Transform);
 UP_DEFINE_COMPONENT(up::components::Mesh);
 UP_DEFINE_COMPONENT(up::components::Wave);
 UP_DEFINE_COMPONENT(up::components::Spin);
+
+UP_REFLECT_TYPE(up::components::Position) {
+    reflect("xyz", &up::components::Position::xyz);
+}
 
 up::Scene::Scene() : _world(new_box<World>()) {
 }
@@ -112,4 +121,19 @@ void up::Scene::render(RenderContext& ctx) {
     _renderableMeshQuery.select(*_world, [&](components::Mesh& mesh, components::Transform const& trans) {
         mesh.model->render(ctx, trans.trans);
     });
+}
+
+auto up::Scene::load(Stream file) -> bool {
+    nlohmann::json doc;
+    if (readJson(file, doc) != IOResult::Success) {
+        return false;
+    }
+
+    return false;
+}
+
+void up::Scene::save(Stream file) {
+    auto doc = nlohmann::json::object();
+
+    reflex::JsonStreamSerializer serializer(doc);
 }

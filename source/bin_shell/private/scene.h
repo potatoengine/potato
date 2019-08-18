@@ -2,6 +2,7 @@
 
 #include <potato/spud/box.h>
 #include <potato/spud/rc.h>
+#include <potato/filesystem/stream.h>
 #include <potato/ecs/query.h>
 
 namespace up::components {
@@ -30,6 +31,9 @@ namespace up {
         void tick(float frameTime);
         void flush();
         void render(RenderContext& ctx);
+
+        bool load(Stream file);
+        void save(Stream file);
 
     private:
         rc<Model> _cube;
