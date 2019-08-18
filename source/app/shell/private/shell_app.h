@@ -45,6 +45,7 @@ private:
     void _tick();
     void _render();
     void _drawUI();
+    void _drawGrid();
 
     void _errorDialog(zstring_view message);
 

@@ -269,12 +269,7 @@ void up::ShellApp::_render() {
     imguiIO.DisplaySize.y = viewport.height;
 
     _drawUI();
-
-    for (int i = -10; i <= 10; ++i) {
-        drawDebugLine({-10, 0, i}, {10, 0, i}, i == 0 ? glm::vec4{1, 0, 0, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
-        drawDebugLine({i, 0, -10}, {i, 0, 10}, i == 0 ? glm::vec4{0, 0, 1, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
-    }
-    drawDebugLine({0, -10, 0}, {0, +10, 0}, {0, 1, 0, 1});
+    _drawGrid();
 
     _renderer->beginFrame();
     auto ctx = _renderer->context();
@@ -341,6 +336,29 @@ void up::ShellApp::_drawUI() {
         ImGui::Text("%s", buffer.c_str());
     }
     ImGui::End();
+}
+
+void up::ShellApp::_drawGrid() {
+    constexpr int lineCount = 1000;
+    constexpr int lineSpacing = 3;
+
+    for (int i = -lineCount; i < 0; ++i) {
+        int offset = i * lineSpacing;
+        drawDebugLine({-lineCount, 0, offset}, {lineCount, 0, offset}, {0.3f, 0.3f, 0.3f, 1.f});
+        drawDebugLine({offset, 0, -lineCount}, {offset, 0, lineCount}, {0.3f, 0.3f, 0.3f, 1.f});
+    }
+
+    for (int i = 1; i <= lineCount; ++i) {
+        int offset = i * lineSpacing;
+        drawDebugLine({-lineCount, 0, offset}, {lineCount, 0, offset}, {0.3f, 0.3f, 0.3f, 1.f});
+        drawDebugLine({offset, 0, -lineCount}, {offset, 0, lineCount}, {0.3f, 0.3f, 0.3f, 1.f});
+    }
+
+
+    // x, y, z axes
+    drawDebugLine({-lineCount, 0, 0}, {+lineCount, 0, 0}, {1, 0, 0, 1});
+    drawDebugLine({0, -lineCount, 0}, {0, +lineCount, 0}, {0, 1, 0, 1});
+    drawDebugLine({0, 0, -lineCount}, {0, 0, +lineCount}, {0, 0, 1, 1});
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {
