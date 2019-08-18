@@ -1,5 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
+#include "potato/foundation/numeric_util.h"
 #include "potato/render/renderer.h"
 #include "potato/render/render_task.h"
 #include "potato/render/context.h"
@@ -74,25 +75,30 @@ void up::Renderer::beginFrame() {
 }
 
 void up::Renderer::endFrame(float frameTime) {
+    static constexpr uint32 bufferSize = 64 * 1024;
+    static constexpr uint32 maxVertsPerChunk = bufferSize / sizeof(DebugDrawVertex);
+
     if (_debugLineBuffer == nullptr) {
-        _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, 64 * 1024);
+        _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, bufferSize);
     }
-
-    uint32 debugVertexCount = 0;
-    dumpDebugDraw([this, &debugVertexCount](auto debugVertices) {
-        if (debugVertices.empty()) {
-            return;
-        }
-
-        _commandList->update(_debugLineBuffer.get(), debugVertices.as_bytes());
-        debugVertexCount = static_cast<uint32>(debugVertices.size());
-    });
 
     auto ctx = context();
     _debugLineMaterial->bindMaterialToRender(ctx);
     _commandList->bindVertexBuffer(0, _debugLineBuffer.get(), sizeof(DebugDrawVertex));
     _commandList->setPrimitiveTopology(GpuPrimitiveTopology::Lines);
-    _commandList->draw(debugVertexCount);
+
+    dumpDebugDraw([this](auto debugVertices) {
+        if (debugVertices.empty()) {
+            return;
+        }
+
+        uint32 vertCount = 0;
+        for (uint32 offset = 0; offset < debugVertices.size(); vertCount = min(static_cast<uint32>(debugVertices.size()) - offset, maxVertsPerChunk), offset += vertCount) {
+            _commandList->update(_debugLineBuffer.get(), debugVertices.subspan(offset, vertCount).as_bytes());
+            _commandList->draw(vertCount);
+        }
+
+    });
 
     flushDebugDraw(frameTime);
 
