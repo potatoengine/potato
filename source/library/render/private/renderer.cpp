@@ -92,12 +92,15 @@ void up::Renderer::endFrame(float frameTime) {
             return;
         }
 
-        uint32 vertCount = 0;
-        for (uint32 offset = 0; offset < debugVertices.size(); vertCount = min(static_cast<uint32>(debugVertices.size()) - offset, maxVertsPerChunk), offset += vertCount) {
+        uint32 vertCount = min(static_cast<uint32>(debugVertices.size()), maxVertsPerChunk);
+        uint32 offset = 0;
+        while (offset < debugVertices.size()) {
             _commandList->update(_debugLineBuffer.get(), debugVertices.subspan(offset, vertCount).as_bytes());
             _commandList->draw(vertCount);
-        }
 
+            offset += vertCount;
+            vertCount = min(static_cast<uint32>(debugVertices.size()) - offset, maxVertsPerChunk);
+        }
     });
 
     flushDebugDraw(frameTime);
