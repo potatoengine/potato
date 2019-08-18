@@ -275,10 +275,12 @@ void up::ShellApp::_render() {
     auto ctx = _renderer->context();
     _renderCamera->beginFrame(ctx, _camera.matrix());
     _scene->render(ctx);
+    _renderCamera->endFrame(ctx);
+
+    _renderer->flushDebugDraw(_lastFrameTime);
 
     _drawImgui.endFrame(*_device, _renderer->commandList());
-
-    _renderCamera->endFrame(ctx);
+    
     _renderer->endFrame(_lastFrameTime);
     _swapChain->present();
 }
@@ -339,26 +341,27 @@ void up::ShellApp::_drawUI() {
 }
 
 void up::ShellApp::_drawGrid() {
-    constexpr int lineCount = 1000;
-    constexpr int lineSpacing = 3;
+    constexpr int lineCount = 100;
 
-    for (int i = -lineCount; i < 0; ++i) {
-        int offset = i * lineSpacing;
-        drawDebugLine({-lineCount, 0, offset}, {lineCount, 0, offset}, {0.3f, 0.3f, 0.3f, 1.f});
-        drawDebugLine({offset, 0, -lineCount}, {offset, 0, lineCount}, {0.3f, 0.3f, 0.3f, 1.f});
+    for (int i = -lineCount; i <= lineCount; ++i) {
+        glm::vec4 color = i == 0 ?
+            glm::vec4{1, 0, 0, 1} :
+            i % 5 == 0 ? glm::vec4{0.4f, 0.4f, 0.3f, 1.f} :
+            glm::vec4{0.3f, 0.3f, 0.3f, 1.f};
+
+        drawDebugLine({-lineCount, 0, i}, {lineCount, 0, i}, color);
     }
 
-    for (int i = 1; i <= lineCount; ++i) {
-        int offset = i * lineSpacing;
-        drawDebugLine({-lineCount, 0, offset}, {lineCount, 0, offset}, {0.3f, 0.3f, 0.3f, 1.f});
-        drawDebugLine({offset, 0, -lineCount}, {offset, 0, lineCount}, {0.3f, 0.3f, 0.3f, 1.f});
+    for (int i = -lineCount; i <= lineCount; ++i) {
+        glm::vec4 color = i == 0 ?
+            glm::vec4{0, 0, 1, 1} :
+            i % 5 == 0 ? glm::vec4{0.4f, 0.4f, 0.3f, 1.f} :
+            glm::vec4{0.3f, 0.3f, 0.3f, 1.f};
+
+        drawDebugLine({i, 0, -lineCount}, {i, 0, lineCount}, color);
     }
 
-
-    // x, y, z axes
-    drawDebugLine({-lineCount, 0, 0}, {+lineCount, 0, 0}, {1, 0, 0, 1});
-    drawDebugLine({0, -lineCount, 0}, {0, +lineCount, 0}, {0, 1, 0, 1});
-    drawDebugLine({0, 0, -lineCount}, {0, 0, +lineCount}, {0, 0, 1, 1});
+    drawDebugLine({0, -lineCount, 0}, {0, lineCount, 0}, {0, 1, 0, 1});
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {
