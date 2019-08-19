@@ -11,14 +11,34 @@
 static std::mutex debugLock;
 static up::vector<up::DebugDrawVertex> debugVertices;
 
-void UP_VECTORCALL up::drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color, float lingerSeconds) {
-    std::unique_lock _(debugLock);
-
+static void UP_VECTORCALL _drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color, float lingerSeconds = 0) {
     debugVertices.push_back({start, color, lingerSeconds});
     debugVertices.push_back({end, color, lingerSeconds});
 }
 
-//GpuDevice &device, GpuCommandList &commandList, GpuBuffer &buffer
+static void UP_VECTORCALL _drawDebugRay(glm::vec3 start, glm::vec3 direction, float length, glm::vec4 color, float lingerSeconds = 0) {
+    debugVertices.push_back({start, color, lingerSeconds});
+    debugVertices.push_back({start + direction * length, color, lingerSeconds});
+}
+
+void UP_VECTORCALL up::drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color, float lingerSeconds) {
+    std::unique_lock _(debugLock);
+    _drawDebugLine(start, end, color, lingerSeconds);
+}
+
+void UP_VECTORCALL up::drawDebugGrid(DebugDrawGrid const& grid) {
+    std::unique_lock _(debugLock);
+
+    auto const xStart = grid.offset - grid.xAxis * static_cast<float>(grid.halfWidth);
+    auto const yStart = grid.offset - grid.yAxis * static_cast<float>(grid.halfWidth);
+    auto const width = static_cast<float>(grid.halfWidth + grid.halfWidth);
+
+    for (int i = -grid.halfWidth; i <= grid.halfWidth; i += grid.spacing) {
+        auto const color = i % grid.guidelineSpacing != 0 ? grid.lineColor : grid.guidelineColor;
+        _drawDebugRay(xStart + grid.yAxis * static_cast<float>(i), grid.xAxis, width, color);
+        _drawDebugRay(yStart + grid.xAxis * static_cast<float>(i), grid.yAxis, width, color);
+    }
+}
 
 void up::dumpDebugDraw(delegate_ref<void(view<DebugDrawVertex>)> callback) {
     std::unique_lock _(debugLock);

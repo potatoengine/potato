@@ -350,27 +350,9 @@ void up::ShellApp::_drawUI() {
 }
 
 void up::ShellApp::_drawGrid() {
-    constexpr int lineCount = 100;
-
-    for (int i = -lineCount; i <= lineCount; ++i) {
-        glm::vec4 color = i == 0 ?
-            glm::vec4{1, 0, 0, 1} :
-            i % 5 == 0 ? glm::vec4{0.4f, 0.4f, 0.3f, 1.f} :
-            glm::vec4{0.3f, 0.3f, 0.3f, 1.f};
-
-        drawDebugLine({-lineCount, 0, i}, {lineCount, 0, i}, color);
-    }
-
-    for (int i = -lineCount; i <= lineCount; ++i) {
-        glm::vec4 color = i == 0 ?
-            glm::vec4{0, 0, 1, 1} :
-            i % 5 == 0 ? glm::vec4{0.4f, 0.4f, 0.3f, 1.f} :
-            glm::vec4{0.3f, 0.3f, 0.3f, 1.f};
-
-        drawDebugLine({i, 0, -lineCount}, {i, 0, lineCount}, color);
-    }
-
-    drawDebugLine({0, -lineCount, 0}, {0, lineCount, 0}, {0, 1, 0, 1});
+    DebugDrawGrid grid;
+    grid.yAxis = {0, 0, 1};
+    drawDebugGrid(grid);
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {

@@ -18,7 +18,20 @@ namespace up {
         float linger;
     };
 
+    struct DebugDrawGrid {
+        glm::vec4 lineColor = {0.3f, 0.3f, 0.3f, 1.f};
+        glm::vec4 guidelineColor = {0.6f, 0.6f, 0.5f, 1.f};
+        glm::vec3 offset = {0.f, 0.f, 0.f};
+        glm::vec3 xAxis = {1.f, 0.f, 0.f};
+        glm::vec3 yAxis = {0.f, 1.f, 0.f};
+        int halfWidth = 100;
+        int spacing = 1;
+        int guidelineSpacing = 10;
+    };
+
     UP_RENDER_API void UP_VECTORCALL drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color = {1, 0, 0, 1}, float lingerSeconds = 0.f);
+    UP_RENDER_API void UP_VECTORCALL drawDebugGrid(DebugDrawGrid const& grid);
+
     UP_RENDER_API void dumpDebugDraw(delegate_ref<void(view<DebugDrawVertex>)> callback);
     UP_RENDER_API void flushDebugDraw(float frameTime);
 
