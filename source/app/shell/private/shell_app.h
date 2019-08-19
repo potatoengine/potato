@@ -56,6 +56,7 @@ private:
 
     bool _running = true;
     bool _paused = true;
+    bool _grid = true;
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;

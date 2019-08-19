@@ -269,7 +269,9 @@ void up::ShellApp::_render() {
     imguiIO.DisplaySize.y = viewport.height;
 
     _drawUI();
-    _drawGrid();
+    if (_grid) {
+        _drawGrid();
+    }
 
     _renderer->beginFrame();
     auto ctx = _renderer->context();
@@ -280,7 +282,7 @@ void up::ShellApp::_render() {
     _renderer->flushDebugDraw(_lastFrameTime);
 
     _drawImgui.endFrame(*_device, _renderer->commandList());
-    
+
     _renderer->endFrame(_lastFrameTime);
     _swapChain->present();
 }
@@ -306,6 +308,13 @@ void up::ShellApp::_drawUI() {
                 }
                 if (ImGui::MenuItem("ArcBall", "ctrl-b")) {
                     _cameraController = new_box<ArcBallCameraController>(_camera);
+                }
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Options")) {
+                if (ImGui::MenuItem("Grid")) {
+                    _grid = !_grid;
                 }
                 ImGui::EndMenu();
             }
