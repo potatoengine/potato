@@ -350,7 +350,7 @@ void up::ShellApp::_drawUI() {
 }
 
 void up::ShellApp::_drawGrid() {
-    auto constexpr guidelines = 5;
+    auto constexpr guidelines = 10;
 
     // The real intent here is to keep the grid roughly the same spacing in
     // pixels on the screen; this doesn't really accomplish that, though.
