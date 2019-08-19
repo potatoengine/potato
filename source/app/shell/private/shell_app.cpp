@@ -350,8 +350,22 @@ void up::ShellApp::_drawUI() {
 }
 
 void up::ShellApp::_drawGrid() {
+    auto constexpr guidelines = 5;
+
+    // The real intent here is to keep the grid roughly the same spacing in
+    // pixels on the screen; this doesn't really accomplish that, though.
+    // Improvements welcome.
+    //
+    auto const cameraPos = _camera.position();
+    auto const cameraToOriginDist = glm::distance(_camera.position(), {});
+    auto const logDist = std::log2(cameraToOriginDist);
+    auto const spacing = std::max(1, static_cast<int>(logDist) - 3);
+
     DebugDrawGrid grid;
-    grid.yAxis = {0, 0, 1};
+    grid.axis2 = {0, 0, 1};
+    grid.halfWidth = 100;
+    grid.spacing = spacing;
+    grid.guidelineSpacing = guidelines * spacing;
     drawDebugGrid(grid);
 }
 

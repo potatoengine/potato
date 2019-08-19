@@ -22,8 +22,8 @@ namespace up {
         glm::vec4 lineColor = {0.3f, 0.3f, 0.3f, 1.f};
         glm::vec4 guidelineColor = {0.6f, 0.6f, 0.5f, 1.f};
         glm::vec3 offset = {0.f, 0.f, 0.f};
-        glm::vec3 xAxis = {1.f, 0.f, 0.f};
-        glm::vec3 yAxis = {0.f, 1.f, 0.f};
+        glm::vec3 axis1 = {1.f, 0.f, 0.f};
+        glm::vec3 axis2 = {0.f, 1.f, 0.f};
         int halfWidth = 100;
         int spacing = 1;
         int guidelineSpacing = 10;

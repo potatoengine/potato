@@ -29,14 +29,17 @@ void UP_VECTORCALL up::drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 c
 void UP_VECTORCALL up::drawDebugGrid(DebugDrawGrid const& grid) {
     std::unique_lock _(debugLock);
 
-    auto const xStart = grid.offset - grid.xAxis * static_cast<float>(grid.halfWidth);
-    auto const yStart = grid.offset - grid.yAxis * static_cast<float>(grid.halfWidth);
+    auto const start1 = grid.offset - grid.axis1 * static_cast<float>(grid.halfWidth);
+    auto const start2 = grid.offset - grid.axis2 * static_cast<float>(grid.halfWidth);
     auto const width = static_cast<float>(grid.halfWidth + grid.halfWidth);
 
-    for (int i = -grid.halfWidth; i <= grid.halfWidth; i += grid.spacing) {
+    for (int i = 0; i <= grid.halfWidth; i += grid.spacing) {
         auto const color = i % grid.guidelineSpacing != 0 ? grid.lineColor : grid.guidelineColor;
-        _drawDebugRay(xStart + grid.yAxis * static_cast<float>(i), grid.xAxis, width, color);
-        _drawDebugRay(yStart + grid.xAxis * static_cast<float>(i), grid.yAxis, width, color);
+        auto const f = static_cast<float>(i);
+        _drawDebugRay(start1 + grid.axis2 * f, grid.axis1, width, color);
+        _drawDebugRay(start1 - grid.axis2 * f, grid.axis1, width, color);
+        _drawDebugRay(start2 + grid.axis1 * f, grid.axis2, width, color);
+        _drawDebugRay(start2 - grid.axis1 * f, grid.axis2, width, color);
     }
 }
 
