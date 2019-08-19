@@ -8,6 +8,7 @@
 #include "camera.h"
 
 #include <SDL.h>
+#include <chrono>
 
 namespace up {
     class ShellApp;
