@@ -34,6 +34,7 @@ namespace up {
         Renderer& operator=(Renderer const&) = delete;
 
         UP_RENDER_API void beginFrame();
+        UP_RENDER_API void flushDebugDraw(float frameTime);
         UP_RENDER_API void endFrame(float frameTime);
 
         UP_RENDER_API RenderContext context();

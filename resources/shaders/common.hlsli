@@ -10,6 +10,9 @@ cbuffer cameraData : register(b1) {
     float4x4 worldViewProjection;
     float4x4 worldView;
     float4x4 viewProjection;
+    float3 cameraPosition;
+    float nearZ;
+    float farZ;
 };
 
 cbuffer modelData : register(b2) {

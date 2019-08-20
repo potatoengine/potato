@@ -224,7 +224,7 @@ void up::ShellApp::_processEvents() {
             }
             break;
         case SDL_MOUSEWHEEL:
-            _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
+                _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
             break;
         }
         _drawImgui.handleEvent(ev);
@@ -269,21 +269,20 @@ void up::ShellApp::_render() {
     imguiIO.DisplaySize.y = viewport.height;
 
     _drawUI();
-
-    for (int i = -10; i <= 10; ++i) {
-        drawDebugLine({-10, 0, i}, {10, 0, i}, i == 0 ? glm::vec4{1, 0, 0, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
-        drawDebugLine({i, 0, -10}, {i, 0, 10}, i == 0 ? glm::vec4{0, 0, 1, 1} : glm::vec4{0.3f, 0.3f, 0.3f, 1.f});
+    if (_grid) {
+        _drawGrid();
     }
-    drawDebugLine({0, -10, 0}, {0, +10, 0}, {0, 1, 0, 1});
 
     _renderer->beginFrame();
     auto ctx = _renderer->context();
-    _renderCamera->beginFrame(ctx, _camera.matrix());
+    _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
     _scene->render(ctx);
+    _renderCamera->endFrame(ctx);
+
+    _renderer->flushDebugDraw(_lastFrameTime);
 
     _drawImgui.endFrame(*_device, _renderer->commandList());
 
-    _renderCamera->endFrame(ctx);
     _renderer->endFrame(_lastFrameTime);
     _swapChain->present();
 }
@@ -309,6 +308,13 @@ void up::ShellApp::_drawUI() {
                 }
                 if (ImGui::MenuItem("ArcBall", "ctrl-b")) {
                     _cameraController = new_box<ArcBallCameraController>(_camera);
+                }
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Options")) {
+                if (ImGui::MenuItem("Grid")) {
+                    _grid = !_grid;
                 }
                 ImGui::EndMenu();
             }
@@ -341,6 +347,30 @@ void up::ShellApp::_drawUI() {
         ImGui::Text("%s", buffer.c_str());
     }
     ImGui::End();
+}
+
+void up::ShellApp::_drawGrid() {
+    auto constexpr guidelines = 10;
+
+    // The real intent here is to keep the grid roughly the same spacing in
+    // pixels on the screen; this doesn't really accomplish that, though.
+    // Improvements welcome.
+    //
+    auto const cameraPos = _camera.position();
+    auto const logDist = std::log2(cameraPos.y);
+    auto const spacing = std::max(1, static_cast<int>(logDist) - 3);
+
+    int guideSpacing = guidelines * spacing;
+    float x = static_cast<float>(static_cast<int>(cameraPos.x / guideSpacing) * guideSpacing);
+    float z = static_cast<float>(static_cast<int>(cameraPos.z / guideSpacing) * guideSpacing);
+
+    DebugDrawGrid grid;
+    grid.axis2 = {0, 0, 1};
+    grid.offset = {x, 0, z};
+    grid.halfWidth = 1000;
+    grid.spacing = spacing;
+    grid.guidelineSpacing = guidelines;
+    drawDebugGrid(grid);
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {

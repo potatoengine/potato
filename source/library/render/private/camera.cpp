@@ -15,6 +15,8 @@ namespace {
         glm::mat4x4 worldViewProjection;
         glm::mat4x4 worldView;
         glm::mat4x4 viewProjection;
+        glm::vec3 cameraPosition;
+        glm::vec2 nearFar;
     };
 } // namespace
 
@@ -30,7 +32,7 @@ void up::RenderCamera::resetSwapChain(rc<GpuSwapChain> swapChain) {
     _dsv.reset();
 }
 
-void up::RenderCamera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform) {
+void up::RenderCamera::beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, glm::mat4x4 cameraTransform) {
     if (_rtv == nullptr && _swapChain != nullptr) {
         _backBuffer = _swapChain->getBuffer(0);
         _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
@@ -58,8 +60,8 @@ void up::RenderCamera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransfor
     viewport.minDepth = 0;
     viewport.maxDepth = 1;
 
-    float farZ = 4000.f;
-    float nearZ = 2.f;
+    float farZ = 400.f;
+    float nearZ = .2f;
 
     auto projection = glm::perspectiveFovRH_ZO(glm::radians(75.f), viewport.width, viewport.height, nearZ, farZ);
 
@@ -67,6 +69,8 @@ void up::RenderCamera::beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransfor
     data.worldView = transpose(cameraTransform);
     data.viewProjection = transpose(projection);
     data.worldViewProjection = cameraTransform * projection;
+    data.cameraPosition = cameraPosition;
+    data.nearFar = {nearZ, farZ};
 
     ctx.commandList.update(_cameraDataBuffer.get(), span{&data, 1}.as_bytes());
 

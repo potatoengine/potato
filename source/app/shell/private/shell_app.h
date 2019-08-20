@@ -8,6 +8,7 @@
 #include "camera.h"
 
 #include <SDL.h>
+#include <chrono>
 
 namespace up {
     class ShellApp;
@@ -45,6 +46,7 @@ private:
     void _tick();
     void _render();
     void _drawUI();
+    void _drawGrid();
 
     void _errorDialog(zstring_view message);
 
@@ -55,6 +57,7 @@ private:
 
     bool _running = true;
     bool _paused = true;
+    bool _grid = true;
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
