@@ -224,7 +224,7 @@ void up::ShellApp::_processEvents() {
             }
             break;
         case SDL_MOUSEWHEEL:
-            _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
+                _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
             break;
         }
         _drawImgui.handleEvent(ev);

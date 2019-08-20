@@ -24,6 +24,7 @@ namespace up {
         float _rotateRadiansPerSec = 1;
         float _yaw = 0;
         float _pitch = 0;
+        float _speed = 1;
     };
 
     class ArcBallCameraController : public CameraController {
