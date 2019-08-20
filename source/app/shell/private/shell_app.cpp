@@ -363,7 +363,7 @@ void up::ShellApp::_drawGrid() {
 
     DebugDrawGrid grid;
     grid.axis2 = {0, 0, 1};
-    grid.halfWidth = 100;
+    grid.halfWidth = 1000;
     grid.spacing = spacing;
     grid.guidelineSpacing = guidelines * spacing;
     drawDebugGrid(grid);
