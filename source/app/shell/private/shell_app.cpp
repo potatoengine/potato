@@ -357,12 +357,16 @@ void up::ShellApp::_drawGrid() {
     // Improvements welcome.
     //
     auto const cameraPos = _camera.position();
-    auto const cameraToOriginDist = glm::distance(_camera.position(), {});
-    auto const logDist = std::log2(cameraToOriginDist);
+    auto const logDist = std::log2(cameraPos.y);
     auto const spacing = std::max(1, static_cast<int>(logDist) - 3);
+
+    int guideSpacing = guidelines * spacing;
+    float x = static_cast<float>(static_cast<int>(cameraPos.x / guideSpacing) * guideSpacing);
+    float z = static_cast<float>(static_cast<int>(cameraPos.z / guideSpacing) * guideSpacing);
 
     DebugDrawGrid grid;
     grid.axis2 = {0, 0, 1};
+    grid.offset = {x, 0, z};
     grid.halfWidth = 1000;
     grid.spacing = spacing;
     grid.guidelineSpacing = guidelines * spacing;
