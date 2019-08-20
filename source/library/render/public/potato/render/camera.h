@@ -26,7 +26,7 @@ namespace up {
 
         UP_RENDER_API void resetSwapChain(rc<GpuSwapChain> swapChain);
 
-        UP_RENDER_API void beginFrame(RenderContext& ctx, glm::mat4x4 cameraTransform);
+        UP_RENDER_API void beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, glm::mat4x4 cameraTransform);
         UP_RENDER_API void endFrame(RenderContext& ctx);
 
     private:

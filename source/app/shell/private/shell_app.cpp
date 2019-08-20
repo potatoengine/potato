@@ -275,7 +275,7 @@ void up::ShellApp::_render() {
 
     _renderer->beginFrame();
     auto ctx = _renderer->context();
-    _renderCamera->beginFrame(ctx, _camera.matrix());
+    _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
     _scene->render(ctx);
     _renderCamera->endFrame(ctx);
 
