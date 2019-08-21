@@ -357,7 +357,7 @@ void up::ShellApp::_drawGrid() {
     // Improvements welcome.
     //
     auto const cameraPos = _camera.position();
-    auto const logDist = std::log2(cameraPos.y);
+    auto const logDist = std::log2(std::abs(cameraPos.y));
     auto const spacing = std::max(1, static_cast<int>(logDist) - 3);
 
     int guideSpacing = guidelines * spacing;
