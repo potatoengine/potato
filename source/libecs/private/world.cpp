@@ -296,13 +296,39 @@ auto up::World::_findArchetypeIndex(view<ComponentMeta const*> components) noexc
     return archetypeIndex;
 }
 
-void up::World::selectRaw(view<ComponentId> sortedComponents, view<ComponentId> callbackComponents, delegate_ref<RawSelectSignature> callback) const {
-    for (uint32 index = 0; index != _archetypes.size(); ++index) {
-        if (_matchArchetype(index, sortedComponents)) {
-            _selectChunksRaw(index, callbackComponents, callback);
-        }
+void up::World::selectRaw(ArchetypeId archetype, view<ComponentId> callbackComponents, delegate_ref<RawSelectSignature> callback) const {
+    void* pointerStorage[maxArchetypeComponents];
+    auto pointers = span{pointerStorage}.subspan(0, callbackComponents.size());
+    size_t count;
+
+    for (uint32 chunkIndex = 0; chunkIndex != _archetypes[static_cast<uint32>(archetype)]->chunks.size(); ++chunkIndex) {
+        _selectChunksRaw(static_cast<uint32>(archetype), chunkIndex, callbackComponents, count, pointers);
+        callback(count, nullptr, pointers);
     }
 }
+
+auto up::World::selectArchetypes(view<ComponentId> componentIds, vector<ArchetypeId>& inout_matchedArchetypes) const -> int {
+    auto const match = [this, &componentIds](Archetype const& archetype) -> bool {
+        for (ComponentId id : componentIds) {
+            if (archetype.indexOfLayout(id) == -1) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    int matches = 0;
+    for (uint32 index = 0; index != _archetypes.size(); ++index) {
+        if (match(*_archetypes[index])) {
+            ++matches;
+            inout_matchedArchetypes.push_back(ArchetypeId(index));
+        }
+    }
+
+    return matches;
+}
+
 
 auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<void const*> data) -> EntityId {
     UP_ASSERT(components.size() == data.size());
@@ -366,7 +392,7 @@ void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) 
     return location.chunk->pointer(layout, location.subIndex);
 }
 
-void up::World::_selectChunksRaw(up::uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const {
+void up::World::_selectChunksRaw(up::uint32 archetypeIndex, up::uint32 chunkIndex, view<ComponentId> components, size_t& out_count, span<void*> outputPointers) const {
     UP_ASSERT(components.size() <= maxSelectComponents);
 
     Archetype const& archetype = *_archetypes[archetypeIndex];
@@ -377,16 +403,16 @@ void up::World::_selectChunksRaw(up::uint32 archetypeIndex, view<ComponentId> co
         UP_ASSERT(layoutIndices[i] != -1);
     }
 
-    void* pointers[maxSelectComponents];
-    for (box<Chunk> const& chunk : _archetypes[archetypeIndex]->chunks) {
-        EntityId const* entities = chunk->entity(0);
+    box<Chunk> const& chunk = _archetypes[archetypeIndex]->chunks[chunkIndex];
 
-        for (size_t i = 0; i < components.size(); ++i) {
-            pointers[i] = chunk->pointer(archetype.layout[layoutIndices[i]], 0);
-        }
+    EntityId const* entities = chunk->entity(0);
 
-        callback(static_cast<size_t>(chunk->header.count), entities, view<void*>(pointers).first(components.size()));
+    for (size_t i = 0; i < components.size(); ++i) {
+        outputPointers[i] = chunk->pointer(archetype.layout[layoutIndices[i]], 0);
     }
+
+    out_count = static_cast<size_t>(chunk->header.count);
+    //callback(static_cast<size_t>(chunk->header.count), entities, view<void*>(pointers).first(components.size()));
 }
 
 auto up::World::_allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept -> EntityId {

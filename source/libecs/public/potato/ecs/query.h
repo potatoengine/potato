@@ -8,7 +8,6 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/span.h"
-#include "potato/spud/sort.h"
 #include "potato/ecs/component.h"
 
 namespace up {
@@ -37,28 +36,22 @@ namespace up {
         void select(World& world, Delegate callback) const;
 
     private:
+        struct MatchedLayout {
+            int offsets[sizeof...(Components)];
+        };
+
         template <size_t... Indices>
         void _invoke(std::index_sequence<Indices...>, size_t, EntityId const*, view<void*>, Delegate& callback) const;
 
-        ComponentId _components[sizeof...(Components)] = {};
-        ComponentId _sortedComponents[sizeof...(Components)] = {};
+        void _match(World& world) const;
+
+        mutable vector<ArchetypeId> _matchedArchetypes;
+        mutable vector<MatchedLayout> _matchedLayouts;
+        ComponentId _components[sizeof...(Components)];
     };
 
     template <typename... Components>
-    Query<Components...>::Query() noexcept : _components{getComponentId<Components>()...} {
-        // Generate a sorted set of indices from the main Components list
-        uint32 indices[sizeof...(Components)];
-        for (uint32 index = 0; index != sizeof...(Components); ++index) {
-            indices[index] = index;
-        }
-
-        sort(indices, {}, [this](uint32 index) noexcept { return _components[index]; });
-
-        // Store the sorted ComponentId list for selection usage
-        for (size_t index = 0; index != sizeof...(Components); ++index) {
-            _sortedComponents[index] = _components[indices[index]];
-        }
-    }
+    Query<Components...>::Query() noexcept : _components{getComponentId<Components>()...} {}
 
     template <typename... Components>
     template <size_t... Indices>
@@ -68,8 +61,18 @@ namespace up {
 
     template <typename... Components>
     void Query<Components...>::select(World &world, Delegate callback) const {
-        world.selectRaw(_sortedComponents, _components, [&, this](size_t count, EntityId const* entities, view<void*> arrays) {
-            this->_invoke(std::make_index_sequence<sizeof...(Components)>(), count, entities, arrays, callback);
-        });
+        _match(world);
+
+        for (ArchetypeId id : _matchedArchetypes) {
+            world.selectRaw(id, _components, [&, this](size_t count, EntityId const* entities, view<void*> arrays) {
+                this->_invoke(std::make_index_sequence<sizeof...(Components)>(), count, entities, arrays, callback);
+            });
+        }
+    }
+
+    template <typename... Components>
+    void Query<Components...>::_match(World& world) const {
+        _matchedArchetypes.clear();
+        world.selectArchetypes(_components, _matchedArchetypes);
     }
 } // namespace up

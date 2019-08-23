@@ -71,7 +71,17 @@ namespace up {
         /// This is a type-unsafe variant of getComponentSlow.
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
-        UP_ECS_API void selectRaw(view<ComponentId> sortedComponents, view<ComponentId> callbackComponents, delegate_ref<RawSelectSignature> callback) const;
+        /// Invoke a callback for each chunk in an archetype.
+        ///
+        UP_ECS_API void selectRaw(ArchetypeId archetype, view<ComponentId> callbackComponents, delegate_ref<RawSelectSignature> callback) const;
+
+        /// Find matching archetypes.
+        ///
+        /// Adds any Archetypes that match the requested component list to the provided vector.
+        ///
+        /// @return the number of matched archetypes.
+        ///
+        UP_ECS_API int selectArchetypes(view<ComponentId> callbackComponents, vector<ArchetypeId>& inout_matchedArchetypes) const;
 
     private:
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
@@ -82,7 +92,7 @@ namespace up {
         void _populateArchetype(uint32 archetypeIndex, view<ComponentMeta const*> components);
         static void _calculateLayout(Archetype& archetype, size_t size);
         bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> sortedComponents) const noexcept;
-        void _selectChunksRaw(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const;
+        void _selectChunksRaw(uint32 archetypeIndex, uint32 chunkIndex, view<ComponentId> components, size_t& out_count, span<void*> outputPointers) const;
         void _recycleEntityId(EntityId entity) noexcept;
         uint32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
         box<Chunk> _allocateChunk();

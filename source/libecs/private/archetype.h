@@ -16,6 +16,10 @@ struct up::World::Archetype {
     uint32 count = 0;
     uint32 perChunk = 0;
 
+    /// Returns index of the Layout for a Component.
+    ///
+    /// @return index of component or -1 if no match.
+    ///
     int32 indexOfLayout(ComponentId component) const noexcept {
         for (int32 i = 0; i != static_cast<int32>(layout.size()); ++i) {
             if (layout[i].component == component) {
