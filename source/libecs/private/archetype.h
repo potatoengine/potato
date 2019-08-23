@@ -1,17 +1,11 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-/// Describes the information about how components are laid out in an Archetype
-struct up::World::Layout {
-    ComponentId component = ComponentId::Unknown;
-    ComponentMeta const* meta = nullptr;
-    uint16 offset = 0;
-    uint16 width = 0;
-};
+#include "potato/ecs/chunk.h"
 
 /// Describes the composition and memory layout of an Archetype
 struct up::World::Archetype {
     vector<box<Chunk>> chunks;
-    vector<Layout> layout;
+    vector<ChunkLayout> layout;
     uint64 layoutHash = 0;
     uint32 count = 0;
     uint32 perChunk = 0;

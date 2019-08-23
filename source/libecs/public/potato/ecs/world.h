@@ -3,6 +3,7 @@
 #pragma once
 
 #include "_export.h"
+#include "chunk.h"
 #include "potato/ecs/component.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
@@ -18,10 +19,10 @@ namespace up {
     /// Entities from different Worlds cannot interact.
     class World {
     public:
-        using RawSelectSignature = void(size_t, EntityId const*, view<void*>);
+        using ForEachChunkSignature = void(Chunk*);
+        using SelectSignature = void(ArchetypeId, view<int>);
 
         struct Archetype;
-        struct Chunk;
         struct Entity;
         struct Layout;
         struct Location;
@@ -37,6 +38,8 @@ namespace up {
 
         World(World&&) = delete;
         World& operator=(World&&) = delete;
+
+        uint32 version() const noexcept { return _version; }
 
         UP_ECS_API view<box<Archetype>> archetypes() const noexcept;
 
@@ -73,15 +76,13 @@ namespace up {
 
         /// Invoke a callback for each chunk in an archetype.
         ///
-        UP_ECS_API void selectRaw(ArchetypeId archetype, view<ComponentId> callbackComponents, delegate_ref<RawSelectSignature> callback) const;
+        UP_ECS_API void forEachChunk(ArchetypeId archetype, delegate_ref<ForEachChunkSignature> callback) const;
 
         /// Find matching archetypes.
         ///
-        /// Adds any Archetypes that match the requested component list to the provided vector.
-        ///
         /// @return the number of matched archetypes.
         ///
-        UP_ECS_API int selectArchetypes(view<ComponentId> callbackComponents, vector<ArchetypeId>& inout_matchedArchetypes) const;
+        UP_ECS_API int selectArchetypes(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
 
     private:
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
@@ -91,26 +92,32 @@ namespace up {
         void _deleteLocation(Location const& location) noexcept;
         void _populateArchetype(uint32 archetypeIndex, view<ComponentMeta const*> components);
         static void _calculateLayout(Archetype& archetype, size_t size);
-        bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> sortedComponents) const noexcept;
         void _selectChunksRaw(uint32 archetypeIndex, uint32 chunkIndex, view<ComponentId> components, size_t& out_count, span<void*> outputPointers) const;
         void _recycleEntityId(EntityId entity) noexcept;
         uint32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
+
+        bool _tryGetLocation(EntityId entityId, Location& out) const noexcept;
+
         box<Chunk> _allocateChunk();
         void _recycleChunk(box<Chunk>);
-        bool _tryGetLocation(EntityId entityId, Location& out) const noexcept;
+
+        static void* _stream(char* data, uint32 offset, uint32 width, uint32 index) noexcept { return data + offset + width * index; }
+        template <typename T> static auto _stream(char* data, uint32 offset, uint32 index) noexcept -> T* { return static_cast<T*>(static_cast<void*>(data + offset + sizeof(T) * index)); }
+        static void* _stream(char* data, uint32 offset) noexcept { return data + offset; }
 
         static constexpr uint32 freeEntityIndex = static_cast<uint32>(-1);
 
+        uint32 _version = 0;
         vector<Entity> _entityMapping;
         vector<box<Archetype>> _archetypes;
-        box<Chunk> _freeChunkHead;
+        vector<box<Chunk>> _freeChunks;
         uint32 _freeEntityHead = freeEntityIndex;
     };
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentMeta const* componentMetas[] = {ComponentMeta::get<Components>()...};
-        void const* componentData[] = {&components...};
+        ComponentMeta const* const componentMetas[] = {ComponentMeta::get<Components>()...};
+        void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
     }
