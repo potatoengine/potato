@@ -5,6 +5,7 @@
 #include "_export.h"
 #include "chunk.h"
 #include "entity_mapper.h"
+#include "archetype.h"
 #include "potato/ecs/component.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
@@ -12,21 +13,14 @@
 #include "potato/spud/box.h"
 
 namespace up {
-    struct Archetype;
-
-    template <typename... Components>
-    class Query;
-
     /// A world contains a collection of Entities, Archetypes, and their associated Components.
     ///
     /// Entities from different Worlds cannot interact.
     ///
     class World {
     public:
-        using ForEachChunkSignature = void(Chunk*);
         using SelectSignature = void(ArchetypeId, view<int>);
 
-        struct Layout;
         struct Location;
 
         UP_ECS_API World();
@@ -35,7 +29,11 @@ namespace up {
         World(World&&) = delete;
         World& operator=(World&&) = delete;
 
-        uint32 version() const noexcept { return _version; }
+        /// Indicates the structure of the World (archetypes) has changed
+        ///
+        /// Does *not* indicate anything about the creation or moving of entities
+        ///
+        UP_ECS_API uint32 version() const noexcept;
 
         UP_ECS_API view<box<Archetype>> archetypes() const noexcept;
 
@@ -93,17 +91,10 @@ namespace up {
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
 
         void _deleteLocation(Location const& location) noexcept;
-        void _populateArchetype(uint32 archetypeIndex, view<ComponentMeta const*> components);
-        static void _calculateLayout(Archetype& archetype, size_t size);
-
-        int32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
-        static int32 _indexOfLayout(Archetype const& archetype, ComponentId component) noexcept;
-
         bool _tryGetLocation(EntityId entityId, Location& out) const noexcept;
 
-        uint32 _version = 0;
         EntityMapper _entities;
-        vector<box<Archetype>> _archetypes;
+        ArchetypeMapper _archetypes;
         ChunkAllocator _chunks;
     };
 
@@ -123,6 +114,5 @@ namespace up {
     template <typename Component>
     void World::addComponent(EntityId entityId, Component const& component) noexcept {
         _addComponentRaw(entityId, ComponentMeta::get<Component>(), &component);
-
     }
 } // namespace up

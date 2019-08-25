@@ -3,6 +3,8 @@
 #pragma once
 
 #include "potato/foundation/vector.h"
+#include "potato/foundation/box.h"
+#include "potato/foundation/delegate_ref.h"
 #include "potato/ecs/common.h"
 #include "potato/ecs/chunk.h"
 
@@ -12,10 +14,33 @@ namespace up {
     /// Archetypes are a common type of Entity with identical Component layout.
     ///
     struct Archetype {
+        ArchetypeId id = ArchetypeId::Unknown;
+        uint32 entityCount = 0;
         vector<Chunk*> chunks;
         vector<ChunkRowDesc> chunkLayout;
         uint64 layoutHash = 0;
-        uint32 entityCount = 0;
         uint32 maxEntitiesPerChunk = 0;
+    };
+
+    /// Manages the known list of Archetypes
+    ///
+    class ArchetypeMapper {
+    public:
+        using SelectSignature = void(ArchetypeId, view<int>);
+
+        uint32 version() const noexcept { return _version;  }
+        view<box<Archetype>> archetypes() const noexcept { return _archetypes; }
+
+        auto getArchetype(ArchetypeId arch) const noexcept -> Archetype*;
+        auto findArchetype(view<ComponentId> components) const noexcept -> Archetype const*;
+        auto createArchetype(view<ComponentMeta const*> components) -> Archetype*;
+        auto selectArchetypes(view<ComponentId> components, delegate_ref<SelectSignature> callback) const noexcept -> int;
+
+    private:
+        static void _populateArchetype(Archetype& archetype, view<ComponentMeta const*> components) noexcept;
+        static void _calculateLayout(Archetype& archetype, size_t size) noexcept;
+
+        uint32 _version = 0;
+        vector<box<Archetype>> _archetypes;
     };
 } // namespace up
