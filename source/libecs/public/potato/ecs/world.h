@@ -106,15 +106,11 @@ namespace up {
         void _deleteLocation(Location const& location) noexcept;
         void _populateArchetype(uint32 archetypeIndex, view<ComponentMeta const*> components);
         static void _calculateLayout(Archetype& archetype, size_t size);
-        void _selectChunksRaw(uint32 archetypeIndex, uint32 chunkIndex, view<ComponentId> components, size_t& out_count, span<void*> outputPointers) const;
 
         int32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
         static int32 _indexOfLayout(Archetype const& archetype, ComponentId component) noexcept;
 
         bool _tryGetLocation(EntityId entityId, Location& out) const noexcept;
-
-        box<Chunk> _allocateChunk();
-        void _recycleChunk(box<Chunk>);
 
         static void* _stream(char* data, uint32 offset, uint32 width, uint32 index) noexcept { return data + offset + width * index; }
         template <typename T> static auto _stream(char* data, uint32 offset, uint32 index) noexcept -> T* { return static_cast<T*>(static_cast<void*>(data + offset + sizeof(T) * index)); }
@@ -125,7 +121,7 @@ namespace up {
         uint32 _version = 0;
         vector<Entity> _entityMapping;
         vector<box<Archetype>> _archetypes;
-        vector<box<Chunk>> _freeChunks;
+        ChunkAllocator _chunks;
         uint32 _freeEntityHead = freeEntityIndex;
     };
 

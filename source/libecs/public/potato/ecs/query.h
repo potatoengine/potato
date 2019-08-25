@@ -78,7 +78,7 @@ namespace up {
             int const* offsets = match.offsets;
 
             for (auto const& chunk : arch->chunks) {
-                callback(chunk->header.count, static_cast<EntityId const*>(static_cast<void*>(chunk->data)), static_cast<Components*>(static_cast<void*>(chunk->data + offsets[Indices]))...);
+                callback(chunk->header.entities, static_cast<EntityId const*>(static_cast<void*>(chunk->data)), static_cast<Components*>(static_cast<void*>(chunk->data + offsets[Indices]))...);
             }
         }
     }

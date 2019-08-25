@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "potato/foundation/box.h"
 #include "potato/foundation/vector.h"
 #include "potato/ecs/common.h"
 #include "potato/ecs/chunk.h"
@@ -11,7 +10,7 @@ namespace up {
     /// Archetypes are a common type of Entity with identical Component layout.
     ///
     struct Archetype {
-        vector<box<Chunk>> chunks;
+        vector<Chunk*> chunks;
         vector<ChunkLayout> chunkLayout;
         uint64 layoutHash = 0;
         uint32 entityCount = 0;

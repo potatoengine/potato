@@ -4,9 +4,11 @@
 
 #include "common.h"
 #include <potato/foundation/box.h>
+#include <potato/foundation/vector.h>
 
 namespace up {
     struct ComponentMeta;
+    struct Chunk;
 
     /// Describes the information about how components are laid out in an Archetype
     ///
@@ -24,7 +26,8 @@ namespace up {
     /// The fixed header at the beginning of every Chunk
     ///
     struct alignas(32) ChunkHeader {
-        unsigned int count = 0;
+        unsigned int entities = 0;
+        Chunk* next = nullptr;
     };
 
     /// The payload (non-header data) of a Chunk.
@@ -41,4 +44,16 @@ namespace up {
     };
 
     static_assert(sizeof(up::Chunk) == up::ChunkSizeBytes, "Chunk has incorrect size; possibly unexpected member padding");
+
+    /// Chunk allocator
+    ///
+    class ChunkAllocator {
+    public:
+        auto allocate() -> Chunk*;
+        void recycle(Chunk* chunk);
+
+    private:
+        vector<box<Chunk>> _chunks;
+        Chunk* _freeChunkHead = nullptr;
+    };
 } // namespace up
