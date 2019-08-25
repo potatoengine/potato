@@ -29,6 +29,16 @@ up::World::World() = default;
 
 up::World::~World() = default;
 
+auto up::World::getArchetype(ArchetypeId arch) const noexcept -> Archetype const* {
+    auto const index = to_underlying(arch);
+
+    if (index < 0 || index >= _archetypes.size()) {
+        return nullptr;
+    }
+
+    return _archetypes[index].get();
+}
+
 void up::World::_populateArchetype(uint32 archetypeIndex, view<ComponentMeta const*> components) {
     Archetype& archetype = *_archetypes[archetypeIndex];
 
@@ -171,7 +181,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
     *_stream<EntityId>(newChunk.data, 0, newSubIndex) = entityId;
 
     for (ChunkLayout const& layout : newArchetype.chunkLayout) {
-        int32 originalLayoutIndex = location.archetype->indexOfLayout(layout.component);
+        int32 originalLayoutIndex = _indexOfLayout(*location.archetype, layout.component);
         UP_ASSERT(originalLayoutIndex != -1);
 
         auto const originalLayout = location.archetype->chunkLayout[originalLayoutIndex];
@@ -225,7 +235,7 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* compone
         void* newRawPointer = _stream(newChunk.data, layout.offset, layout.width, newSubIndex);
 
         // either copy existing component or install the new one
-        int32 originalLayoutIndex = location.archetype->indexOfLayout(layout.component);
+        int32 originalLayoutIndex = _indexOfLayout(*location.archetype, layout.component);
         if (originalLayoutIndex != -1) {
             auto const originalLayout = location.archetype->chunkLayout[originalLayoutIndex];
 
@@ -251,7 +261,7 @@ auto up::World::archetypes() const noexcept -> view<box<Archetype>> {
     return _archetypes;
 }
 
-auto up::World::_findArchetypeIndex(view<ComponentMeta const*> components) noexcept -> up::uint32 {
+auto up::World::_findArchetypeIndex(view<ComponentMeta const*> components) noexcept -> up::int32 {
     uint64 hash = hashComponents(components, &ComponentMeta::id);
 
     for (uint32 index = 0; index != _archetypes.size(); ++index) {
@@ -274,12 +284,13 @@ auto up::World::_findArchetypeIndex(view<ComponentMeta const*> components) noexc
     return archetypeIndex;
 }
 
-void up::World::forEachChunk(ArchetypeId archetypeId, delegate_ref<ForEachChunkSignature> callback) const {
-    Archetype const& archetype = *_archetypes[static_cast<uint32>(archetypeId)];
-
-    for (uint32 chunkIndex = 0; chunkIndex != archetype.chunks.size(); ++chunkIndex) {
-        callback(archetype.chunks[chunkIndex].get());
+auto up::World::_indexOfLayout(Archetype const& archetype, ComponentId component) noexcept -> up::int32 {
+    for (int32 i = 0; i != static_cast<int32>(archetype.chunkLayout.size()); ++i) {
+        if (archetype.chunkLayout[i].component == component) {
+            return i;
+        }
     }
+    return -1;
 }
 
 auto up::World::selectArchetypes(view<ComponentId> componentIds, delegate_ref<SelectSignature> callback) const -> int {
@@ -290,7 +301,7 @@ auto up::World::selectArchetypes(view<ComponentId> componentIds, delegate_ref<Se
         bool matched = true;
 
         for (int component = 0; component != componentIds.size(); ++component) {
-            auto const layoutIndex = archetype.indexOfLayout(componentIds[component]);
+            auto const layoutIndex = _indexOfLayout(archetype, componentIds[component]);
             if (layoutIndex == -1) {
                 matched = false;
                 break;
@@ -341,7 +352,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     for (uint32 index = 0; index != components.size(); ++index) {
         ComponentMeta const& meta = *components[index];
 
-        int32 layoutIndex = archetype.indexOfLayout(meta.id);
+        int32 layoutIndex = _indexOfLayout(archetype, meta.id);
         UP_ASSERT(archetype.chunkLayout[layoutIndex].meta == &meta);
         UP_ASSERT(archetype.chunkLayout[layoutIndex].width == meta.size);
         UP_ASSERT(layoutIndex != -1);
@@ -362,7 +373,7 @@ void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) 
         return nullptr;
     }
 
-    int32 layoutIndex = location.archetype->indexOfLayout(component);
+    int32 layoutIndex = _indexOfLayout(*location.archetype, component);
     if (layoutIndex == -1) {
         return nullptr;
     }
@@ -379,7 +390,7 @@ void up::World::_selectChunksRaw(up::uint32 archetypeIndex, up::uint32 chunkInde
 
     int32 layoutIndices[maxSelectComponents];
     for (size_t i = 0; i < components.size(); ++i) {
-        layoutIndices[i] = archetype.indexOfLayout(components[i]);
+        layoutIndices[i] = _indexOfLayout(archetype, components[i]);
         UP_ASSERT(layoutIndices[i] != -1);
     }
 

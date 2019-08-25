@@ -4,6 +4,7 @@
 
 #include "_export.h"
 #include "world.h"
+#include "archetype.h"
 #include "potato/spud/typelist.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
@@ -27,23 +28,19 @@ namespace up {
         void select(World& world, delegate_ref<SelectSignature> callback);
 
     private:
-        struct MatchedLayout {
+        struct Match {
+            ArchetypeId archetype;
             int offsets[sizeof...(Components)];
         };
 
+        void _query(World& world);
+
         template <size_t... Indices>
-        void _invoke(std::index_sequence<Indices...>, size_t, EntityId const*, int const* offsets, char* chunkData, delegate_ref<SelectSignature> callback) const;
+        void _execute(World& world, delegate_ref<SelectSignature> callback, std::index_sequence<Indices...>) const;
 
         uint32 _worldVersion = 0;
-        vector<ArchetypeId> _matchedArchetypes;
-        vector<MatchedLayout> _matchedLayouts;
+        vector<Match> _matches;
     };
-
-    template <typename... Components>
-    template <size_t... Indices>
-    void Query<Components...>::_invoke(std::index_sequence<Indices...>, size_t count, EntityId const* entities, int const* offsets, char* chunkData, delegate_ref<SelectSignature> callback) const {
-        callback(count, entities, static_cast<Components*>(static_cast<void*>(chunkData + offsets[Indices]))...);
-    }
 
     template <typename... Components>
     void Query<Components...>::select(World& world, delegate_ref<SelectSignature> callback) {
@@ -52,21 +49,37 @@ namespace up {
         if (_worldVersion != world.version()) {
             _worldVersion = world.version();
 
-            _matchedArchetypes.clear();
-            _matchedLayouts.clear();
-
-            world.selectArchetypes(components, [this](ArchetypeId arch, view<int> offsets) {
-                _matchedArchetypes.push_back(arch);
-                _matchedLayouts.emplace_back();
-
-                std::memcpy(&_matchedLayouts.back(), offsets.data(), sizeof(MatchedLayout));
-            });
+            _query(world);
         }
 
-        for (int index = 0; index != _matchedArchetypes.size(); ++index) {
-            world.forEachChunk(_matchedArchetypes[index], [this, callback, index](Chunk* chunk) {
-                this->_invoke(std::make_index_sequence<sizeof...(Components)>(), chunk->header.count, nullptr, _matchedLayouts[index].offsets, chunk->data, callback);
-            });
+        _execute(world, callback, std::make_index_sequence<sizeof...(Components)>{});
+    }
+
+    template <typename... Components>
+    void Query<Components...>::_query(World& world) {
+        static ComponentId const components[sizeof...(Components)] = {getComponentId<Components>()...};
+
+        _matches.clear();
+
+        world.selectArchetypes(components, [this](ArchetypeId arch, view<int> offsets) {
+            _matches.emplace_back();
+            Match& match = _matches.back();
+
+            match.archetype = arch;
+            std::memcpy(&match.offsets, offsets.data(), sizeof(Match::offsets));
+        });
+    }
+
+    template <typename... Components>
+    template <size_t... Indices>
+    void Query<Components...>::_execute(World& world, delegate_ref<SelectSignature> callback, std::index_sequence<Indices...>) const {
+        for (auto const& match : _matches) {
+            Archetype const* arch = world.getArchetype(match.archetype);
+            int const* offsets = match.offsets;
+
+            for (auto const& chunk : arch->chunks) {
+                callback(chunk->header.count, static_cast<EntityId const*>(static_cast<void*>(chunk->data)), static_cast<Components*>(static_cast<void*>(chunk->data + offsets[Indices]))...);
+            }
         }
     }
 } // namespace up

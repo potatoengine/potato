@@ -63,8 +63,8 @@ namespace up {
         return out;
     }
 
-    template <typename T>
-    constexpr auto to_underlying(T const& value) noexcept {
-        return static_cast<std::underlying_type_t<T>>(value);
+    template <typename Enum>
+    constexpr auto to_underlying(Enum value) noexcept -> std::underlying_type_t<Enum> {
+        return static_cast<std::underlying_type_t<Enum>>(value);
     }
 } // namespace up

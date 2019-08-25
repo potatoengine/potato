@@ -47,6 +47,12 @@ namespace up {
 
         UP_ECS_API view<box<Archetype>> archetypes() const noexcept;
 
+        /// Retrieve a specific Archetype
+        ///
+        /// @returns nullptr if the ArchetypeId is invalid
+        ///
+        UP_ECS_API auto getArchetype(ArchetypeId arch) const noexcept -> Archetype const*;
+
         /// Creates a new Entity with the provided list of Component data
         ///
         template <typename... Components>
@@ -84,10 +90,6 @@ namespace up {
         ///
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
-        /// Invoke a callback for each chunk in an archetype.
-        ///
-        UP_ECS_API void forEachChunk(ArchetypeId archetype, delegate_ref<ForEachChunkSignature> callback) const;
-
         /// Find matching archetypes.
         ///
         /// @return the number of matched archetypes.
@@ -95,16 +97,19 @@ namespace up {
         UP_ECS_API int selectArchetypes(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
 
     private:
+        EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
+        void _recycleEntityId(EntityId entity) noexcept;
+
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
-        UP_ECS_API EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
 
         void _deleteLocation(Location const& location) noexcept;
         void _populateArchetype(uint32 archetypeIndex, view<ComponentMeta const*> components);
         static void _calculateLayout(Archetype& archetype, size_t size);
         void _selectChunksRaw(uint32 archetypeIndex, uint32 chunkIndex, view<ComponentId> components, size_t& out_count, span<void*> outputPointers) const;
-        void _recycleEntityId(EntityId entity) noexcept;
-        uint32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
+
+        int32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
+        static int32 _indexOfLayout(Archetype const& archetype, ComponentId component) noexcept;
 
         bool _tryGetLocation(EntityId entityId, Location& out) const noexcept;
 
