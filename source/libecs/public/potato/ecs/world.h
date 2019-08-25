@@ -29,14 +29,6 @@ namespace up {
         struct Layout;
         struct Location;
 
-        /// Maximum number of Components that can be selected (used in a Query)
-        ///
-        static constexpr uint32 maxSelectComponents = 64;
-
-        /// Maximum number of Components that can exist on an Archetype (and hence any single Entity)
-        ///
-        static constexpr uint32 maxArchetypeComponents = 256;
-
         UP_ECS_API World();
         UP_ECS_API ~World();
 
@@ -108,10 +100,6 @@ namespace up {
         static int32 _indexOfLayout(Archetype const& archetype, ComponentId component) noexcept;
 
         bool _tryGetLocation(EntityId entityId, Location& out) const noexcept;
-
-        static void* _stream(char* data, uint32 offset, uint32 width, uint32 index) noexcept { return data + offset + width * index; }
-        template <typename T> static auto _stream(char* data, uint32 offset, uint32 index) noexcept -> T* { return static_cast<T*>(static_cast<void*>(data + offset + sizeof(T) * index)); }
-        static void* _stream(char* data, uint32 offset) noexcept { return data + offset; }
 
         uint32 _version = 0;
         EntityMapper _entities;

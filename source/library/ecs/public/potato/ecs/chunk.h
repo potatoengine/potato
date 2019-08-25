@@ -12,7 +12,7 @@ namespace up {
 
     /// Describes the information about how components are laid out in an Archetype
     ///
-    struct ChunkLayout {
+    struct ChunkRowDesc {
         ComponentId component = ComponentId::Unknown;
         ComponentMeta const* meta = nullptr;
         uint16 offset = 0;
