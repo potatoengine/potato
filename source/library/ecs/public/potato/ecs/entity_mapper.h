@@ -10,14 +10,13 @@ namespace up {
     ///
     class EntityMapper {
     public:
-        auto allocate(ArchetypeId archetype, uint32 index) -> EntityId;
+        auto allocate(ArchetypeId archetype, uint16 chunk, uint16 index) -> EntityId;
         void recycle(EntityId entity) noexcept;
 
-        auto getIndex(EntityId entity) const noexcept -> uint32;
-        auto tryParse(EntityId entity, ArchetypeId& out_archetype, uint32& out_index) const noexcept -> bool;
+        auto tryParse(EntityId entity, ArchetypeId& out_archetype, uint16& out_chunk, uint16& out_index) const noexcept -> bool;
 
-        void setArchetype(EntityId entity, ArchetypeId newArchetype, uint32 newIndex) noexcept;
-        void setIndex(EntityId entity, uint32 newIndex) noexcept;
+        void setArchetype(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept;
+        void setIndex(EntityId entity, uint16 newChunk, uint16 newIndex) noexcept;
 
     private:
         static constexpr uint32 freeEntityIndex = static_cast<uint32>(-1);

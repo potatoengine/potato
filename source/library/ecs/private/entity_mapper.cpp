@@ -16,24 +16,32 @@ namespace up {
         return static_cast<uint64>(entity) >> 32;
     }
 
-    static constexpr auto makeMapped(uint32 generation, uint32 archetypeIndex, uint32 entityIndex) -> uint64 {
-        return (static_cast<uint64>(generation & 0xFFFF) << 48) | (static_cast<uint64>(archetypeIndex & 0xFFFF) << 32) | static_cast<uint64>(entityIndex);
+    static constexpr auto makeMapped(uint16 generation, uint16 archetypeIndex, uint16 chunkIndex, uint16 entityIndex) -> uint64 {
+        return (static_cast<uint64>(generation) << 48) | (static_cast<uint64>(archetypeIndex) << 32) | (static_cast<uint64>(chunkIndex) << 16) | static_cast<uint64>(entityIndex);
     }
 
-    static constexpr auto getMappedIndex(uint64 mapping) noexcept -> uint32 {
-        return static_cast<uint32>(mapping & 0xFFFFFFFF);
+    static constexpr auto getMappedChunk(uint64 mapping) noexcept -> uint16 {
+        return static_cast<uint16>(mapping >> 16);
+    }
+
+    static constexpr auto getMappedIndex(uint64 mapping) noexcept -> uint16 {
+        return static_cast<uint16>(mapping);
     }
 
     static constexpr auto getMappedGeneration(uint64 mapping) noexcept -> uint32 {
         return static_cast<uint32>(mapping >> 48);
     }
 
-    static constexpr auto getMappedArchetype(uint64 mapping) noexcept -> uint32 {
-        return static_cast<uint32>(mapping >> 32) & 0xFFFF;
+    static constexpr auto getMappedArchetype(uint64 mapping) noexcept -> uint16 {
+        return static_cast<uint16>(mapping >> 32);
+    }
+
+    static constexpr auto makeFreeEntry(uint16 generation, uint32 index) noexcept -> uint64 {
+        return (static_cast<uint64>(generation) << 48) | static_cast<uint64>(index);
     }
 } // namespace up
 
-auto up::EntityMapper::allocate(ArchetypeId archetype, uint32 index) -> EntityId {
+auto up::EntityMapper::allocate(ArchetypeId archetype, uint16 chunk, uint16 index) -> EntityId {
     // if there's a free ID, recycle it
     if (_freeEntityHead != freeEntityIndex) {
         auto const mappingIndex = _freeEntityHead;
@@ -42,7 +50,7 @@ auto up::EntityMapper::allocate(ArchetypeId archetype, uint32 index) -> EntityId
 
         _freeEntityHead = getMappedIndex(_entityMapping[mappingIndex]);
         
-        _entityMapping[mappingIndex] = makeMapped(generation, to_underlying(archetype), index);
+        _entityMapping[mappingIndex] = makeMapped(generation, to_underlying(archetype), chunk, index);
 
         return makeEntityId(mappingIndex, generation);
     }
@@ -50,7 +58,7 @@ auto up::EntityMapper::allocate(ArchetypeId archetype, uint32 index) -> EntityId
     // there was no ID to recycle, so create a new one
     uint32 const mappingIndex = static_cast<uint32>(_entityMapping.size());
 
-    _entityMapping.push_back(makeMapped(1, to_underlying(archetype), index));
+    _entityMapping.push_back(makeMapped(1, to_underlying(archetype), chunk, index));
 
     return makeEntityId(mappingIndex, 1);
 }
@@ -59,16 +67,12 @@ void up::EntityMapper::recycle(EntityId entity) noexcept {
     uint32 const entityMappingIndex = getEntityMappingIndex(entity);
     uint32 const newGeneration = getEntityGeneration(entity) + 1;
 
-    _entityMapping[entityMappingIndex] = makeMapped(newGeneration != 0 ? newGeneration : 1, 0, _freeEntityHead);
+    _entityMapping[entityMappingIndex] = makeFreeEntry(newGeneration != 0 ? newGeneration : 1, _freeEntityHead);
 
     _freeEntityHead = entityMappingIndex;
 }
 
-auto up::EntityMapper::getIndex(EntityId entity) const noexcept -> uint32 {
-    return getEntityMappingIndex(entity);
-}
-
-auto up::EntityMapper::tryParse(EntityId entity, ArchetypeId& out_archetype, uint32& out_index) const noexcept -> bool {
+auto up::EntityMapper::tryParse(EntityId entity, ArchetypeId& out_archetype, uint16& out_chunk, uint16& out_index) const noexcept -> bool {
     auto const entityMappingIndex = getEntityMappingIndex(entity);
     if (entityMappingIndex >= _entityMapping.size()) {
         return false;
@@ -81,18 +85,19 @@ auto up::EntityMapper::tryParse(EntityId entity, ArchetypeId& out_archetype, uin
     }
 
     out_archetype = ArchetypeId(getMappedArchetype(mapped));
+    out_chunk = getMappedChunk(mapped);
     out_index = getMappedIndex(mapped);
     return true;
 }
 
-void up::EntityMapper::setArchetype(EntityId entity, ArchetypeId newArchetype, uint32 newIndex) noexcept {
+void up::EntityMapper::setArchetype(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept {
     auto const entityMappingIndex = getEntityMappingIndex(entity);
     auto const mapped = _entityMapping[entityMappingIndex];
-    _entityMapping[entityMappingIndex] = makeMapped(getMappedGeneration(mapped), to_underlying(newArchetype), newIndex);
+    _entityMapping[entityMappingIndex] = makeMapped(getMappedGeneration(mapped), to_underlying(newArchetype), newChunk, newIndex);
 }
 
-void up::EntityMapper::setIndex(EntityId entity, uint32 newIndex) noexcept {
+void up::EntityMapper::setIndex(EntityId entity, uint16 newChunk, uint16 newIndex) noexcept {
     auto const entityMappingIndex = getEntityMappingIndex(entity);
     auto const mapped = _entityMapping[entityMappingIndex];
-    _entityMapping[entityMappingIndex] = makeMapped(getMappedGeneration(mapped), getMappedArchetype(mapped), newIndex);
+    _entityMapping[entityMappingIndex] = makeMapped(getMappedGeneration(mapped), getMappedArchetype(mapped), newChunk, newIndex);
 }

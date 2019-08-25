@@ -27,6 +27,51 @@ namespace up {
         }
         return true;
     };
+
+    static void calculateLayout(Archetype& archetype, view<ComponentMeta const*> components) {
+        archetype.chunkLayout.reserve(components.size() + 1);
+
+        // we'll always include the EntityId in the layout
+        //
+        auto const entityMeta = ComponentMeta::get<Entity>();
+        archetype.chunkLayout.push_back({entityMeta->id, entityMeta, 0, static_cast<uint16>(entityMeta->size)});
+        archetype.chunkLayout[0].meta = entityMeta;
+
+        // append all the other components
+        //
+        for (ComponentMeta const* meta : components) {
+            archetype.chunkLayout.push_back({meta->id, meta, 0, static_cast<uint16>(meta->size)});
+        }
+
+        // sort rows by alignment for ideal packing
+        //
+        up::sort(
+            archetype.chunkLayout, {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
+
+        // calculate total size of all components
+        //
+        size_t size = 0;
+        size_t padding = 0;
+        for (auto const& row : archetype.chunkLayout) {
+            padding += align_to(size, row.meta->alignment) - size;
+            size += row.width;
+        }
+
+        // calculate how many entities with this layout can fit in a single chunk
+        //
+        archetype.maxEntitiesPerChunk = static_cast<uint32>((sizeof(ChunkPayload) - padding) / size);
+        UP_ASSERT(archetype.maxEntitiesPerChunk > 0);
+
+        // calculate the row offets for the layout
+        //
+        size_t offset = 0;
+        for (auto& row : archetype.chunkLayout) {
+            offset = align_to(offset, row.meta->alignment);
+            row.offset = static_cast<uint32>(offset);
+            offset += row.width * archetype.maxEntitiesPerChunk;
+            UP_ASSERT(offset <= sizeof(Chunk::data));
+        }
+    }
 } // namespace up
 
 auto up::ArchetypeMapper::getArchetype(ArchetypeId arch) const noexcept -> Archetype* {
@@ -60,15 +105,14 @@ auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components)
     //
     ++_version;
 
-    _archetypes.push_back(new_box<Archetype>());
-    Archetype& arch = *_archetypes.back().get();
-    arch.id = ArchetypeId(_archetypes.size());
+    auto arch = new_box<Archetype>();
+    arch->id = ArchetypeId(_archetypes.size() + 1);
+    arch->layoutHash = hash;
+    calculateLayout(*arch, components);
 
-    _populateArchetype(arch, components);
+    _archetypes.push_back(std::move(arch));
 
-    UP_ASSERT(arch.layoutHash == hash);
-
-    return &arch;
+    return _archetypes.back().get();
 }
 
 auto up::ArchetypeMapper::selectArchetypes(view<ComponentId> componentIds, delegate_ref<SelectSignature> callback) const noexcept -> int {
@@ -85,65 +129,4 @@ auto up::ArchetypeMapper::selectArchetypes(view<ComponentId> componentIds, deleg
     }
 
     return matches;
-}
-
-void up::ArchetypeMapper::_populateArchetype(Archetype& archetype, view<ComponentMeta const*> components) noexcept {
-    archetype.chunkLayout.resize(components.size() + 1);
-
-    size_t size = 0;
-
-    // we'll always include the EntityId in the layout
-    auto const entityMeta = ComponentMeta::get<Entity>();
-    archetype.chunkLayout[0].component = entityMeta->id;
-    archetype.chunkLayout[0].meta = entityMeta;
-    size += entityMeta->size;
-
-    for (size_t i = 0; i != components.size(); ++i) {
-        ComponentMeta const& meta = *components[i];
-
-        auto const rowIndex = i + 1;
-        ChunkRowDesc& row = archetype.chunkLayout[rowIndex];
-        row.component = meta.id;
-        row.meta = &meta;
-        size = align_to(size, meta.alignment);
-        size += meta.size;
-    }
-    UP_ASSERT(size <= sizeof(Chunk::data));
-
-    if (size != 0) {
-        _calculateLayout(archetype, size);
-    }
-
-    // Required for partial match algorithm
-    sort(archetype.chunkLayout, {}, &ChunkRowDesc::component);
-}
-
-void up::ArchetypeMapper::_calculateLayout(Archetype& archetype, size_t size) noexcept {
-    // calculate layout hash
-    archetype.layoutHash = hashComponents(span{archetype.chunkLayout}, &ChunkRowDesc::component);
-
-    // assign pointer offers by alignment
-    up::sort(
-        archetype.chunkLayout, {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
-
-    // FIXME: figure out why we need this size + 1, the arithmetic surprises me
-    archetype.maxEntitiesPerChunk = static_cast<uint32>(sizeof(ChunkPayload) / (size + 1));
-
-    size_t offset = 0;
-
-    for (size_t i = 0; i != archetype.chunkLayout.size(); ++i) {
-        ComponentMeta const& meta = *archetype.chunkLayout[i].meta;
-
-        // align as required (requires alignment to be a power of 2)
-        UP_ASSERT((meta.alignment & (meta.alignment - 1)) == 0);
-        offset = align_to(offset, meta.alignment);
-        UP_ASSERT(offset + archetype.maxEntitiesPerChunk * meta.size + meta.size <= sizeof(ChunkPayload));
-
-        archetype.chunkLayout[i].offset = static_cast<uint32>(offset);
-        archetype.chunkLayout[i].width = meta.size;
-
-        offset += meta.size * archetype.maxEntitiesPerChunk;
-    }
-
-    UP_ASSERT(offset <= sizeof(Chunk::data));
 }

@@ -11,6 +11,5 @@ struct up::World::Location {
     Archetype* archetype = nullptr;
     Chunk* chunk = nullptr;
     uint16 chunkIndex = 0;
-    uint32 subIndex = 0;
-    uint32 entityIndex = 0;
+    uint16 subIndex = 0;
 };

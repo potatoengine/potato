@@ -66,7 +66,7 @@ void up::World::_deleteLocation(Location const& location) noexcept {
     Chunk& lastChunk = *location.archetype->chunks[lastChunkIndex];
 
     // Copy the last element over the to-be-removed element, so we don't have holes in our array
-    if (location.entityIndex == location.archetype->entityCount) {
+    if (location.chunkIndex != lastChunkIndex && location.subIndex != lastChunk.header.entities) {
         auto lastSubIndex = lastChunk.header.entities - 1;
 
         for (auto const& layout : location.archetype->chunkLayout) {
@@ -77,7 +77,7 @@ void up::World::_deleteLocation(Location const& location) noexcept {
 
             // ensure EntityId index is updated
             if (layout.component == getComponentId<Entity>()) {
-                _entities.setIndex(static_cast<Entity const*>(lastPointer)->id, location.entityIndex);
+                _entities.setIndex(static_cast<Entity const*>(lastPointer)->id, location.chunkIndex, location.subIndex);
             }
 
             meta.relocate(pointer, lastPointer);
@@ -147,7 +147,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
     _deleteLocation(location);
 
     // update mapping
-    _entities.setArchetype(entityId, newArchetype->id, newEntityIndex);
+    _entities.setArchetype(entityId, newArchetype->id, newChunkIndex, newSubIndex);
 }
 
 void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept {
@@ -195,7 +195,7 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* compone
     _deleteLocation(location);
 
     // update mapping
-    _entities.setArchetype(entityId, newArchetype->id, newEntityIndex);
+    _entities.setArchetype(entityId, newArchetype->id, newChunkIndex, location.subIndex);
 }
 
 auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<void const*> data) -> EntityId {
@@ -222,7 +222,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     ++chunk.header.entities;
 
     // Allocate EntityId
-    auto const entity = _entities.allocate(archetype.id, entityIndex);
+    auto const entity = _entities.allocate(archetype.id, chunkIndex, subIndex);
     auto const entityLayout = findLayout(archetype, getComponentId<Entity>());
     void* rawEntityPointer = rowAt(chunk.data, entityLayout->offset, entityLayout->width, subIndex);
     static_cast<Entity*>(rawEntityPointer)->id = entity;
@@ -259,18 +259,12 @@ void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) 
 
 auto up::World::_tryGetLocation(EntityId entityId, Location& location) const noexcept -> bool {
     ArchetypeId archetype;
-    uint32 index;
-
-    if (!_entities.tryParse(entityId, archetype, index)) {
+    if (!_entities.tryParse(entityId, archetype, location.chunkIndex, location.subIndex)) {
         return false;
     }
 
     location.archetype = _archetypes.getArchetype(archetype);
     UP_ASSERT(location.archetype != nullptr);
-
-    uint32 perChunk = location.archetype->maxEntitiesPerChunk;
-    location.chunkIndex = index / perChunk;
-    location.subIndex = index % perChunk;
 
     UP_ASSERT(location.chunkIndex < location.archetype->chunks.size());
     location.chunk = location.archetype->chunks[location.chunkIndex];

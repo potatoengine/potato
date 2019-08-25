@@ -37,9 +37,6 @@ namespace up {
         auto selectArchetypes(view<ComponentId> components, delegate_ref<SelectSignature> callback) const noexcept -> int;
 
     private:
-        static void _populateArchetype(Archetype& archetype, view<ComponentMeta const*> components) noexcept;
-        static void _calculateLayout(Archetype& archetype, size_t size) noexcept;
-
         uint32 _version = 0;
         vector<box<Archetype>> _archetypes;
     };
