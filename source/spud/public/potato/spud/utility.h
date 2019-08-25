@@ -67,4 +67,9 @@ namespace up {
     constexpr auto to_underlying(Enum value) noexcept -> std::underlying_type_t<Enum> {
         return static_cast<std::underlying_type_t<Enum>>(value);
     }
+
+    constexpr auto align_to(size_t value, size_t alignment) noexcept -> size_t {
+        auto const alignLessOne = alignment - 1;
+        return (value + alignLessOne) & ~alignLessOne;
+    }
 } // namespace up

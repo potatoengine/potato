@@ -11,11 +11,6 @@
 
 #include "location.h"
 
-static constexpr size_t align(size_t offset, size_t alignment) noexcept {
-    size_t alignmentMinusOne = alignment - 1;
-    return (offset + alignmentMinusOne) & ~alignmentMinusOne;
-}
-
 template <typename Type, typename Projection = up::identity>
 static constexpr auto hashComponents(up::span<Type> input, Projection const& proj = {}, up::uint64 seed = 0) noexcept -> up::uint64 {
     for (Type const& value : input) {
@@ -51,7 +46,7 @@ void up::World::_populateArchetype(uint32 archetypeIndex, view<ComponentMeta con
 
         archetype.chunkLayout[i].component = meta.id;
         archetype.chunkLayout[i].meta = &meta;
-        size = align(size, meta.alignment);
+        size = align_to(size, meta.alignment);
         size += meta.size;
     }
     UP_ASSERT(size <= sizeof(Chunk::data));
@@ -83,7 +78,7 @@ void up::World::_calculateLayout(Archetype& archetype, size_t size) {
 
         // align as required (requires alignment to be a power of 2)
         UP_ASSERT((meta.alignment & (meta.alignment - 1)) == 0);
-        offset = align(offset, meta.alignment);
+        offset = align_to(offset, meta.alignment);
         UP_ASSERT(offset + archetype.maxEntitiesPerChunk * meta.size + meta.size <= sizeof(ChunkPayload));
 
         archetype.chunkLayout[i].offset = static_cast<uint32>(offset);
