@@ -4,6 +4,7 @@
 
 #include "_export.h"
 #include "chunk.h"
+#include "entity_mapper.h"
 #include "potato/ecs/component.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
@@ -25,7 +26,6 @@ namespace up {
         using ForEachChunkSignature = void(Chunk*);
         using SelectSignature = void(ArchetypeId, view<int>);
 
-        struct Entity;
         struct Layout;
         struct Location;
 
@@ -97,9 +97,6 @@ namespace up {
         UP_ECS_API int selectArchetypes(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
 
     private:
-        EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
-        void _recycleEntityId(EntityId entity) noexcept;
-
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
 
@@ -116,13 +113,10 @@ namespace up {
         template <typename T> static auto _stream(char* data, uint32 offset, uint32 index) noexcept -> T* { return static_cast<T*>(static_cast<void*>(data + offset + sizeof(T) * index)); }
         static void* _stream(char* data, uint32 offset) noexcept { return data + offset; }
 
-        static constexpr uint32 freeEntityIndex = static_cast<uint32>(-1);
-
         uint32 _version = 0;
-        vector<Entity> _entityMapping;
+        EntityMapper _entities;
         vector<box<Archetype>> _archetypes;
         ChunkAllocator _chunks;
-        uint32 _freeEntityHead = freeEntityIndex;
     };
 
     template <typename... Components>

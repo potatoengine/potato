@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "location.h"
-#include "entity.h"
 
 static constexpr size_t align(size_t offset, size_t alignment) noexcept {
     size_t alignmentMinusOne = alignment - 1;
@@ -18,7 +17,7 @@ static constexpr size_t align(size_t offset, size_t alignment) noexcept {
 }
 
 template <typename Type, typename Projection = up::identity>
-constexpr auto hashComponents(up::span<Type> input, Projection const& proj = {}, up::uint64 seed = 0) noexcept -> up::uint64 {
+static constexpr auto hashComponents(up::span<Type> input, Projection const& proj = {}, up::uint64 seed = 0) noexcept -> up::uint64 {
     for (Type const& value : input) {
         seed ^= static_cast<up::uint64>(up::project(proj, value));
     }
@@ -70,7 +69,8 @@ void up::World::_calculateLayout(Archetype& archetype, size_t size) {
     archetype.layoutHash = hashComponents(span{archetype.chunkLayout}, &ChunkLayout::component);
 
     // assign pointer offers by alignment
-    up::sort(archetype.chunkLayout, {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
+    up::sort(
+        archetype.chunkLayout, {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
 
     // FIXME: figure out why we need this size + 1, the arithmetic surprises me
     archetype.maxEntitiesPerChunk = static_cast<uint32>(sizeof(ChunkPayload) / (size + 1));
@@ -102,7 +102,7 @@ void up::World::deleteEntity(EntityId entity) noexcept {
     }
 
     _deleteLocation(location);
-    _recycleEntityId(entity);
+    _entities.recycle(entity);
 }
 
 void up::World::_deleteLocation(Location const& location) noexcept {
@@ -114,7 +114,7 @@ void up::World::_deleteLocation(Location const& location) noexcept {
         auto lastSubIndex = lastChunk.header.entities - 1;
 
         EntityId lastEntity = *_stream<EntityId>(location.chunk->data, 0, location.subIndex) = *_stream<EntityId>(lastChunk.data, 0, lastSubIndex);
-        _entityMapping[getEntityMappingIndex(lastEntity)].index = location.entityIndex;
+        _entities.setIndex(lastEntity, location.entityIndex);
 
         for (auto const& layout : location.archetype->chunkLayout) {
             ComponentMeta const& meta = *layout.meta;
@@ -196,9 +196,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
     _deleteLocation(location);
 
     // update mapping
-    uint32 entityMappingIndex = getEntityMappingIndex(entityId);
-    _entityMapping[entityMappingIndex].archetype = newArchetypeIndex;
-    _entityMapping[entityMappingIndex].index = newEntityIndex;
+    _entities.setArchetype(entityId, ArchetypeId(newArchetypeIndex), newEntityIndex);
 }
 
 void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept {
@@ -252,9 +250,7 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* compone
     _deleteLocation(location);
 
     // update mapping
-    uint32 entityMappingIndex = getEntityMappingIndex(entityId);
-    _entityMapping[entityMappingIndex].archetype = newArchetypeIndex;
-    _entityMapping[entityMappingIndex].index = newEntityIndex;
+    _entities.setArchetype(entityId, ArchetypeId(newArchetypeIndex), newEntityIndex);
 }
 
 auto up::World::archetypes() const noexcept -> view<box<Archetype>> {
@@ -317,7 +313,6 @@ auto up::World::selectArchetypes(view<ComponentId> componentIds, delegate_ref<Se
     return 0;
 }
 
-
 auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<void const*> data) -> EntityId {
     UP_ASSERT(components.size() == data.size());
 
@@ -344,7 +339,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     ++chunk.header.entities;
 
     // Allocate EntityId
-    EntityId entity = _allocateEntityId(archetypeIndex, entityIndex);
+    EntityId entity = _entities.allocate(ArchetypeId(archetypeIndex), entityIndex);
 
     // Copy component data and Entity data
     *_stream<EntityId>(chunk.data, 0, subIndex) = entity;
@@ -383,58 +378,21 @@ void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) 
     return _stream(location.chunk->data, layout.offset, layout.width, location.subIndex);
 }
 
-auto up::World::_allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept -> EntityId {
-    // if there's a free ID, recycle it
-    if (_freeEntityHead != freeEntityIndex) {
-        uint32 mappingIndex = _freeEntityHead;
-        _freeEntityHead = _entityMapping[mappingIndex].index;
-
-        _entityMapping[mappingIndex].archetype = archetypeIndex;
-        _entityMapping[mappingIndex].index = entityIndex;
-
-        return makeEntityId(mappingIndex, _entityMapping[mappingIndex].generation);
-    }
-
-    // there was no ID to recycle, so create a new one
-    uint32 mappingIndex = static_cast<uint32>(_entityMapping.size());
-
-    Entity entity;
-    entity.generation = 1;
-    entity.archetype = archetypeIndex;
-    entity.index = entityIndex;
-    _entityMapping.push_back(entity);
-
-    return makeEntityId(mappingIndex, entity.generation);
-}
-
-void up::World::_recycleEntityId(EntityId entity) noexcept {
-    uint32 entityMappingIndex = getEntityMappingIndex(entity);
-
-    ++_entityMapping[entityMappingIndex].generation;
-    _entityMapping[entityMappingIndex].index = _freeEntityHead;
-
-    _freeEntityHead = entityMappingIndex;
-}
-
 auto up::World::_tryGetLocation(EntityId entityId, Location& location) const noexcept -> bool {
-    uint32 entityMappingIndex = getEntityMappingIndex(entityId);
-    if (entityMappingIndex >= _entityMapping.size()) {
+    ArchetypeId archetype;
+    uint32 index;
+
+    if (!_entities.tryParse(entityId, archetype, index)) {
         return false;
     }
 
-    Entity const& entity = _entityMapping[entityMappingIndex];
-
-    if (entity.generation != getEntityGeneration(entityId)) {
-        return false;
-    }
-
-    location.archetypeIndex = entity.archetype;
+    location.archetypeIndex = to_underlying(archetype);
     UP_ASSERT(location.archetypeIndex < _archetypes.size());
     location.archetype = _archetypes[location.archetypeIndex].get();
 
     uint32 perChunk = location.archetype->maxEntitiesPerChunk;
-    location.chunkIndex = entity.index / perChunk;
-    location.subIndex = entity.index % perChunk;
+    location.chunkIndex = index / perChunk;
+    location.subIndex = index % perChunk;
 
     UP_ASSERT(location.chunkIndex < location.archetype->chunks.size());
     location.chunk = location.archetype->chunks[location.chunkIndex];
