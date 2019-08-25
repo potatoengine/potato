@@ -2,6 +2,7 @@
 
 #include "potato/ecs/archetype.h"
 #include "potato/ecs/component.h"
+#include "potato/ecs/entity.h"
 #include "potato/foundation/utility.h"
 #include "potato/foundation/sort.h"
 #include "potato/foundation/find.h"
@@ -35,7 +36,7 @@ auto up::ArchetypeMapper::getArchetype(ArchetypeId arch) const noexcept -> Arche
 }
 
 auto up::ArchetypeMapper::findArchetype(view<ComponentId> components) const noexcept -> Archetype const* {
-    uint64 const hash = hashComponents(components);
+    uint64 const hash = hashComponents(components, {}, to_underlying(getComponentId<Entity>()));
 
     for (box<Archetype> const& arch : _archetypes) {
         if (arch->layoutHash == hash) {
@@ -47,7 +48,7 @@ auto up::ArchetypeMapper::findArchetype(view<ComponentId> components) const noex
 }
 
 auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components) -> Archetype* {
-    uint64 const hash = hashComponents(components, &ComponentMeta::id);
+    uint64 const hash = hashComponents(components, &ComponentMeta::id, to_underlying(getComponentId<Entity>()));
 
     for (box<Archetype> const& arch : _archetypes) {
         if (arch->layoutHash == hash) {
@@ -87,16 +88,23 @@ auto up::ArchetypeMapper::selectArchetypes(view<ComponentId> componentIds, deleg
 }
 
 void up::ArchetypeMapper::_populateArchetype(Archetype& archetype, view<ComponentMeta const*> components) noexcept {
-    archetype.chunkLayout.resize(components.size());
+    archetype.chunkLayout.resize(components.size() + 1);
 
-    // we'll always include the EntityId is the layout, so include its size
-    size_t size = sizeof(EntityId);
+    size_t size = 0;
+
+    // we'll always include the EntityId in the layout
+    auto const entityMeta = ComponentMeta::get<Entity>();
+    archetype.chunkLayout[0].component = entityMeta->id;
+    archetype.chunkLayout[0].meta = entityMeta;
+    size += entityMeta->size;
 
     for (size_t i = 0; i != components.size(); ++i) {
         ComponentMeta const& meta = *components[i];
 
-        archetype.chunkLayout[i].component = meta.id;
-        archetype.chunkLayout[i].meta = &meta;
+        auto const rowIndex = i + 1;
+        ChunkRowDesc& row = archetype.chunkLayout[rowIndex];
+        row.component = meta.id;
+        row.meta = &meta;
         size = align_to(size, meta.alignment);
         size += meta.size;
     }
@@ -121,8 +129,7 @@ void up::ArchetypeMapper::_calculateLayout(Archetype& archetype, size_t size) no
     // FIXME: figure out why we need this size + 1, the arithmetic surprises me
     archetype.maxEntitiesPerChunk = static_cast<uint32>(sizeof(ChunkPayload) / (size + 1));
 
-    // we'll always include the EntityId is the layout, so include it as offset
-    size_t offset = sizeof(EntityId) * archetype.maxEntitiesPerChunk;
+    size_t offset = 0;
 
     for (size_t i = 0; i != archetype.chunkLayout.size(); ++i) {
         ComponentMeta const& meta = *archetype.chunkLayout[i].meta;

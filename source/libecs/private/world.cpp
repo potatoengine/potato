@@ -3,6 +3,7 @@
 #include <potato/runtime/assertion.h>
 #include "potato/ecs/world.h"
 #include "potato/ecs/archetype.h"
+#include "potato/ecs/entity.h"
 #include "potato/spud/find.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/utility.h"
@@ -23,11 +24,6 @@ namespace up {
 
     static constexpr auto rowAt(char* data, uint32 offset, uint32 width, uint32 index) noexcept -> void* {
         return data + offset + width * index;
-    }
-
-    template <typename T>
-    static constexpr auto rowAt(char* data, uint32 offset, uint32 index) noexcept -> T* {
-        return static_cast<T*>(static_cast<void*>(data + offset + sizeof(T) * index));
     }
 
     static constexpr auto rowAt(char* data, uint32 offset) noexcept -> void* {
@@ -73,21 +69,23 @@ void up::World::_deleteLocation(Location const& location) noexcept {
     if (location.entityIndex == location.archetype->entityCount) {
         auto lastSubIndex = lastChunk.header.entities - 1;
 
-        EntityId lastEntity = *rowAt<EntityId>(location.chunk->data, 0, location.subIndex) = *rowAt<EntityId>(lastChunk.data, 0, lastSubIndex);
-        _entities.setIndex(lastEntity, location.entityIndex);
-
         for (auto const& layout : location.archetype->chunkLayout) {
             ComponentMeta const& meta = *layout.meta;
 
             void* pointer = rowAt(location.chunk->data, layout.offset, layout.width, location.subIndex);
             void* lastPointer = rowAt(lastChunk.data, layout.offset, layout.width, lastSubIndex);
 
+            // ensure EntityId index is updated
+            if (layout.component == getComponentId<Entity>()) {
+                _entities.setIndex(static_cast<Entity const*>(lastPointer)->id, location.entityIndex);
+            }
+
             meta.relocate(pointer, lastPointer);
             meta.destroy(lastPointer);
         }
     }
     else {
-        // We were already the last element, just just clean up our memory
+        // We were already the last element, just clean up our memory
         for (auto const& layout : location.archetype->chunkLayout) {
             ComponentMeta const& meta = *layout.meta;
 
@@ -110,7 +108,6 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
     }
 
     // figure out which layout entry is being removed
-    // FIXME: if we have multiples of a component, this assumes the first one only
     auto iter = find(location.archetype->chunkLayout, componentId, {}, &ChunkRowDesc::component);
     if (iter == location.archetype->chunkLayout.end()) {
         return;
@@ -118,8 +115,8 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
 
     // construct the list of components that will exist in the new archetype
     ComponentMeta const* newComponentMetas[ArchetypeComponentLimit];
-    copy(location.archetype->chunkLayout.begin(), iter, newComponentMetas, &ChunkRowDesc::meta);
-    copy(iter + 1, location.archetype->chunkLayout.end(), newComponentMetas, &ChunkRowDesc::meta);
+    auto out = copy(location.archetype->chunkLayout.begin(), iter, newComponentMetas, &ChunkRowDesc::meta);
+    copy(iter + 1, location.archetype->chunkLayout.end(), out, &ChunkRowDesc::meta);
     span newComponentMetaSpan = span{newComponentMetas}.first(location.archetype->chunkLayout.size() - 1);
 
     // find the target archetype and allocate an entry in it
@@ -135,9 +132,6 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
 
     Chunk& newChunk = *newArchetype->chunks[newChunkIndex];
     ++newChunk.header.entities;
-
-    // copy components from old entity to new entity
-    *rowAt<EntityId>(newChunk.data, 0, newSubIndex) = entityId;
 
     for (ChunkRowDesc const& layout : newArchetype->chunkLayout) {
         auto const originalLayout = findLayout(*location.archetype, layout.component);
@@ -182,9 +176,6 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* compone
     Chunk& newChunk = *newArchetype->chunks[newChunkIndex];
     ++newChunk.header.entities;
 
-    // copy components from old entity to new entity
-    *rowAt<EntityId>(newChunk.data, 0, newSubIndex) = entityId;
-
     for (ChunkRowDesc const& layout : newArchetype->chunkLayout) {
         void* newRawPointer = rowAt(newChunk.data, layout.offset, layout.width, newSubIndex);
 
@@ -210,16 +201,16 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* compone
 auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<void const*> data) -> EntityId {
     UP_ASSERT(components.size() == data.size());
 
-    Archetype& archetype = *_archetypes.createArchetype(components);
+    auto& archetype = *_archetypes.createArchetype(components);
 
-    UP_ASSERT(components.size() == archetype.chunkLayout.size());
+    UP_ASSERT(components.size() == archetype.chunkLayout.size() - 1);
     UP_ASSERT(components.size() == data.size());
 
-    uint32 entityIndex = archetype.entityCount++;
+    auto const entityIndex = archetype.entityCount++;
 
     // Determine destination location Chunk
-    auto chunkIndex = entityIndex / archetype.maxEntitiesPerChunk;
-    auto subIndex = entityIndex % archetype.maxEntitiesPerChunk;
+    auto const chunkIndex = entityIndex / archetype.maxEntitiesPerChunk;
+    auto const subIndex = entityIndex % archetype.maxEntitiesPerChunk;
 
     UP_ASSERT(chunkIndex <= archetype.chunks.size());
 
@@ -231,10 +222,10 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     ++chunk.header.entities;
 
     // Allocate EntityId
-    EntityId entity = _entities.allocate(archetype.id, entityIndex);
-
-    // Copy component data and Entity data
-    *rowAt<EntityId>(chunk.data, 0, subIndex) = entity;
+    auto const entity = _entities.allocate(archetype.id, entityIndex);
+    auto const entityLayout = findLayout(archetype, getComponentId<Entity>());
+    void* rawEntityPointer = rowAt(chunk.data, entityLayout->offset, entityLayout->width, subIndex);
+    static_cast<Entity*>(rawEntityPointer)->id = entity;
 
     for (uint32 index = 0; index != components.size(); ++index) {
         ComponentMeta const& meta = *components[index];

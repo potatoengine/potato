@@ -19,7 +19,7 @@ namespace up {
     public:
         static_assert(sizeof...(Components) != 0, "Empty Query objects are not allowed");
 
-        using SelectSignature = void(size_t, EntityId const*, Components*...);
+        using SelectSignature = void(size_t, Components*...);
 
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
         /// callback once for each Chunk belonging to the Archetypes, with appropriate pointers.
@@ -57,7 +57,7 @@ namespace up {
 
     template <typename... Components>
     void Query<Components...>::_query(World& world) {
-        static ComponentId const components[sizeof...(Components)] = {getComponentId<Components>()...};
+        static constexpr ComponentId components[sizeof...(Components)] = {getComponentId<Components>()...};
 
         _matches.clear();
 
@@ -78,7 +78,7 @@ namespace up {
             int const* offsets = match.offsets;
 
             for (auto const& chunk : arch->chunks) {
-                callback(chunk->header.entities, static_cast<EntityId const*>(static_cast<void*>(chunk->data)), static_cast<Components*>(static_cast<void*>(chunk->data + offsets[Indices]))...);
+                callback(chunk->header.entities, static_cast<Components*>(static_cast<void*>(chunk->data + offsets[Indices]))...);
             }
         }
     }

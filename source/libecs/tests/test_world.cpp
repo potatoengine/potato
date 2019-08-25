@@ -1,5 +1,6 @@
 #include "potato/ecs/world.h"
 #include "potato/ecs/query.h"
+#include "potato/ecs/entity.h"
 #include <doctest/doctest.h>
 
 struct Test1 {
@@ -42,7 +43,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         float weight = 0;
 
         Query<Second> query;
-        query.select(world, [&](size_t count, EntityId const*, Second* second) {
+        query.select(world, [&](size_t count, Second* second) {
             ++invokeCount;
             entityCount += count;
 
@@ -80,11 +81,11 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         EntityId first = world.createEntity(Test1{'f'}, Second{7.f, 'g'});
         EntityId second = world.createEntity(Test1{'h'}, Second{-1.f, 'i'});
 
-        Query<Test1> query;
-        query.select(world, ([&](size_t count, EntityId const* ids, Test1*) {
+        Query<Entity const, Test1> query;
+        query.select(world, ([&](size_t count, Entity const* entities, Test1*) {
             DOCTEST_CHECK_EQ(2, count);
-            DOCTEST_CHECK_EQ(first, ids[0]);
-            DOCTEST_CHECK_EQ(second, ids[1]);
+            DOCTEST_CHECK_EQ(first, entities[0].id);
+            DOCTEST_CHECK_EQ(second, entities[1].id);
         }));
     }
 
@@ -103,7 +104,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         uint64 sum = 0;
 
         Query<Counter> query;
-        query.select(world, [&](size_t count, EntityId const*, Counter* counters) {
+        query.select(world, [&](size_t count, Counter* counters) {
             ++chunks;
             total += count;
             for (size_t i = 0; i != count; ++i) {
@@ -137,17 +138,17 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
         EntityId id = world.createEntity(Test1{}, Second{});
 
-        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
+        querySecond.select(world, [&found](size_t, Second*) { found = true; });
         DOCTEST_CHECK(found);
 
         world.removeComponent(id, getComponentId<Second>());
 
         found = false;
-        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
+        querySecond.select(world, [&found](size_t, Second*) { found = true; });
         DOCTEST_CHECK_FALSE(found);
 
         found = false;
-        queryTest1.select(world, [&found](size_t, EntityId const*, Test1*) { found = true; });
+        queryTest1.select(world, [&found](size_t, Test1*) { found = true; });
         DOCTEST_CHECK(found);
     }
 
@@ -159,17 +160,17 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
         EntityId id = world.createEntity(Test1{});
 
-        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
+        querySecond.select(world, [&found](size_t, Second*) { found = true; });
         DOCTEST_CHECK_FALSE(found);
 
         world.addComponent(id, Second{});
 
         found = false;
-        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
+        querySecond.select(world, [&found](size_t, Second*) { found = true; });
         DOCTEST_CHECK(found);
 
         found = false;
-        queryTest1.select(world, [&found](size_t, EntityId const*, Test1*) { found = true; });
+        queryTest1.select(world, [&found](size_t, Test1*) { found = true; });
         DOCTEST_CHECK(found);
     }
 }

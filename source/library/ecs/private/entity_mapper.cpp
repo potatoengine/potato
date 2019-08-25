@@ -48,7 +48,7 @@ auto up::EntityMapper::allocate(ArchetypeId archetype, uint32 index) -> EntityId
     }
 
     // there was no ID to recycle, so create a new one
-    uint32 mappingIndex = static_cast<uint32>(_entityMapping.size());
+    uint32 const mappingIndex = static_cast<uint32>(_entityMapping.size());
 
     _entityMapping.push_back(makeMapped(1, to_underlying(archetype), index));
 
@@ -56,9 +56,10 @@ auto up::EntityMapper::allocate(ArchetypeId archetype, uint32 index) -> EntityId
 }
 
 void up::EntityMapper::recycle(EntityId entity) noexcept {
-    uint32 entityMappingIndex = getEntityMappingIndex(entity);
+    uint32 const entityMappingIndex = getEntityMappingIndex(entity);
+    uint32 const newGeneration = getEntityGeneration(entity) + 1;
 
-    _entityMapping[entityMappingIndex] = makeMapped(getEntityGeneration(entity) + 1, 0, _freeEntityHead);
+    _entityMapping[entityMappingIndex] = makeMapped(newGeneration != 0 ? newGeneration : 1, 0, _freeEntityHead);
 
     _freeEntityHead = entityMappingIndex;
 }

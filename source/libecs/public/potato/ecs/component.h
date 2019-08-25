@@ -2,12 +2,10 @@
 
 #pragma once
 
-#include "potato/ecs/common.h"
+#include "common.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/hash_fnv1a.h"
 #include "potato/spud/traits.h"
-#include <utility>
-#include <cstring>
 
 namespace up {
     /// Stores metadata about a Component type. This includes its size and alignment,
@@ -21,11 +19,11 @@ namespace up {
 
         /// Creates a ComponentMeta; should only be used by the UP_COMPONENT macro
         template <typename Component>
-        static constexpr ComponentMeta construct(string_view name) noexcept;
+        static constexpr auto construct(string_view name) noexcept -> ComponentMeta;
 
         /// Retrieves the ComponentMeta for a given type
         template <typename Component>
-        static constexpr ComponentMeta const* get() noexcept;
+        static constexpr auto get() noexcept -> ComponentMeta const*;
 
         ComponentId id = ComponentId::Unknown;
         Copy copy = nullptr;
@@ -34,15 +32,10 @@ namespace up {
         uint32 size = 0;
         uint32 alignment = 0;
         string_view name;
-
-        template <typename Component>
-        struct holder {
-            static ComponentMeta const meta;
-        };
     };
 
     namespace _detail {
-        constexpr uint64 hashComponentName(string_view name) noexcept {
+        constexpr auto hashComponentName(string_view name) noexcept -> uint64 {
             fnv1a hasher;
             hasher.append_bytes(name.data(), name.size());
             return hasher.finalize();
@@ -50,6 +43,16 @@ namespace up {
 
         template <uint64 hash>
         constexpr ComponentId componentIdFromHash = static_cast<ComponentId>(hash);
+
+        template <typename Component>
+        struct ComponentOperations {
+            static constexpr void copyComponent(void* dest, void const* src) noexcept { *static_cast<Component*>(dest) = *static_cast<Component const*>(src); };
+            static constexpr void moveComponent(void* dest, void* src) noexcept { *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src)); };
+            static constexpr void destroyComponent(void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
+        };
+
+        template <typename Component>
+        struct MetaHolder;
     }
 
     template <typename Component>
@@ -60,28 +63,30 @@ namespace up {
 
         ComponentMeta meta;
         meta.id = static_cast<ComponentId>(hash);
-        meta.copy = [](void* dest, void const* src) noexcept { *static_cast<Component*>(dest) = *static_cast<Component const*>(src); };
-        meta.relocate = [](void* dest, void* src) noexcept { *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src)); };
-        meta.destroy = [](void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
+        meta.copy = _detail::ComponentOperations<Component>::copyComponent;
+        meta.relocate = _detail::ComponentOperations<Component>::moveComponent;
+        meta.destroy = _detail::ComponentOperations<Component>::destroyComponent;
         meta.size = sizeof(Component);
         meta.alignment = alignof(Component);
         meta.name = name;
         return meta;
     }
 
-    template <typename Component>
-    constexpr ComponentMeta const* ComponentMeta::get() noexcept {
-        return &holder<Component>::meta;
+    template <typename ComponentT>
+    constexpr auto ComponentMeta::get() noexcept -> ComponentMeta const* {
+        return &_detail::MetaHolder<litexx::remove_cvref_t<ComponentT>>::meta;
     }
 
     /// Registers a type as a Component and creates an associated ComponentMeta
-    #define UP_COMPONENT(ComponentType) \
+    #define UP_COMPONENT(ComponentType, ...) \
         template <> \
-        up::ComponentMeta const up::ComponentMeta::holder<ComponentType>::meta = up::ComponentMeta::construct<ComponentType>(#ComponentType);
+        struct up::_detail::MetaHolder<ComponentType> { \
+            __VA_ARGS__ static constexpr up::ComponentMeta meta = up::ComponentMeta::construct<ComponentType>(#ComponentType); \
+        };
 
     /// Finds the unique ComponentId for a given Component type
     template <typename ComponentT>
-    constexpr ComponentId getComponentId() noexcept {
-        return ComponentMeta::holder<ComponentT>::meta.id;
+    constexpr auto getComponentId() noexcept -> ComponentId {
+        return _detail::MetaHolder<litexx::remove_cvref_t<ComponentT>>::meta.id;
     }
 } // namespace up
