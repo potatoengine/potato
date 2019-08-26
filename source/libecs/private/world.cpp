@@ -64,30 +64,34 @@ void up::World::_deleteEntity(EntityId entity) {
     auto [archetypeId, chunkIndex, index] = _entities.parse(entity);
 
     Archetype& archetype = *_archetypes.getArchetype(archetypeId);
-    auto lastChunkIndex = archetype.chunks.size() - 1;
-    Chunk& lastChunk = *archetype.chunks[lastChunkIndex];
-
     Chunk& chunk = *archetype.chunks[chunkIndex];
 
     // Copy the last element over the to-be-removed element, so we don't have holes in our array
-    if (chunkIndex != lastChunkIndex || index != lastChunk.header.entities) {
-        auto const lastSubIndex = lastChunk.header.entities - 1;
-
-        _moveTo(archetype, chunk, index, lastChunk, lastSubIndex);
+    //
+    auto const lastIndex = chunk.header.entities;
+    if (index != lastIndex) {
+        _moveTo(archetype, chunk, index, chunk, lastIndex);
 
         auto const entityLayout = findLayout(archetype, getComponentId<Entity>());
-        auto const movedEntity = static_cast<Entity const*>(static_cast<void*>(lastChunk.data + entityLayout->offset + entityLayout->width * lastSubIndex))->id;
+        auto const movedEntity = static_cast<Entity const*>(static_cast<void*>(chunk.data + entityLayout->offset + entityLayout->width * lastIndex))->id;
         _entities.setIndex(movedEntity, chunkIndex, index);
 
-        _destroyAt(archetype, lastChunk, lastSubIndex);
+        _destroyAt(archetype, chunk, lastIndex);
     }
     else {
         // We were already the last element, just clean up our memory
-        _destroyAt(archetype, lastChunk, lastChunk.header.entities - 1);
+        //
+        _destroyAt(archetype, chunk, lastIndex);
     }
 
-    if (--lastChunk.header.entities == 0) {
-        _chunks.recycle(std::move(archetype.chunks[lastChunkIndex]));
+    // if this was the last entity, deallocate the whole chunk
+    //
+    if (--chunk.header.entities == 0) {
+        _chunks.recycle(std::move(archetype.chunks[chunkIndex]));
+
+        // copy-and-pop should be safe, since chunk order doesn't matter
+        //
+        archetype.chunks[chunkIndex] = archetype.chunks.back();
         archetype.chunks.pop_back();
     }
 }
