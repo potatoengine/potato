@@ -26,6 +26,7 @@ namespace up {
     /// The fixed header at the beginning of every Chunk
     ///
     struct alignas(32) ChunkHeader {
+        ArchetypeId archetype = ArchetypeId::Unknown;
         unsigned int entities = 0;
         Chunk* next = nullptr;
     };
@@ -49,7 +50,7 @@ namespace up {
     ///
     class ChunkAllocator {
     public:
-        auto allocate() -> Chunk*;
+        auto allocate(ArchetypeId archetype) -> Chunk*;
         void recycle(Chunk* chunk);
 
     private:

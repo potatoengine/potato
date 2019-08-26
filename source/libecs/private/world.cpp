@@ -168,7 +168,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
 
 auto up::World::_allocateEntity(Archetype& archetype) -> AllocatedLocation {
     if (archetype.chunks.empty() || archetype.chunks.back()->header.entities == archetype.maxEntitiesPerChunk) {
-        archetype.chunks.push_back(_chunks.allocate());
+        archetype.chunks.push_back(_chunks.allocate(archetype.id));
     }
 
     Chunk* chunk = archetype.chunks.back();
