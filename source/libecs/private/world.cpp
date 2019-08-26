@@ -159,7 +159,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     auto const entity = _entities.allocate(newArchetype->id, newChunkIndex, newIndex);
     _copyTo(*newArchetype, newChunk, newIndex, getComponentId<Entity>(), &entity);
 
-    for (uint32 index = 0; index != components.size(); ++index) {
+    for (auto index : sequence(components.size())) {
         _copyTo(*newArchetype, newChunk, newIndex, components[index]->id, data[index]);
     }
 
