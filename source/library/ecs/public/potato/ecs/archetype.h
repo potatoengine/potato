@@ -15,7 +15,6 @@ namespace up {
     ///
     struct Archetype {
         ArchetypeId id = ArchetypeId::Unknown;
-        uint32 entityCount = 0;
         vector<Chunk*> chunks;
         vector<ChunkRowDesc> chunkLayout;
         uint64 layoutHash = 0;

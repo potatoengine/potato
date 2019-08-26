@@ -19,6 +19,7 @@ void up::ChunkAllocator::recycle(Chunk* chunk) {
         return;
     }
 
+    chunk->header.entities = 0;
     chunk->header.next = _freeChunkHead;
     _freeChunkHead = chunk;
 }

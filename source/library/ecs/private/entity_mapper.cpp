@@ -72,22 +72,24 @@ void up::EntityMapper::recycle(EntityId entity) noexcept {
     _freeEntityHead = entityMappingIndex;
 }
 
-auto up::EntityMapper::tryParse(EntityId entity, ArchetypeId& out_archetype, uint16& out_chunk, uint16& out_index) const noexcept -> bool {
-    auto const entityMappingIndex = getEntityMappingIndex(entity);
-    if (entityMappingIndex >= _entityMapping.size()) {
-        return false;
+auto up::EntityMapper::isValid(EntityId entity) const noexcept -> bool {
+    auto const mappingIndex = getEntityMappingIndex(entity);
+    return mappingIndex < _entityMapping.size() && getMappedGeneration(_entityMapping[mappingIndex]) == getEntityGeneration(entity);
+}
+
+auto up::EntityMapper::parse(EntityId entity) const noexcept -> ParseLocation {
+    auto const mapped = _entityMapping[getEntityMappingIndex(entity)];
+
+    return {ArchetypeId(getMappedArchetype(mapped)), getMappedChunk(mapped), getMappedIndex(mapped)};
+}
+
+auto up::EntityMapper::tryParse(EntityId entity) const noexcept -> TryParseLocation {
+    if (isValid(entity)) {
+        auto const mapped = _entityMapping[getEntityMappingIndex(entity)];
+
+        return {true, ArchetypeId(getMappedArchetype(mapped)), getMappedChunk(mapped), getMappedIndex(mapped)};
     }
-
-    auto const mapped = _entityMapping[entityMappingIndex];
-
-    if (getMappedGeneration(mapped) != getEntityGeneration(entity)) {
-        return false;
-    }
-
-    out_archetype = ArchetypeId(getMappedArchetype(mapped));
-    out_chunk = getMappedChunk(mapped);
-    out_index = getMappedIndex(mapped);
-    return true;
+    return {false};
 }
 
 void up::EntityMapper::setArchetype(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept {

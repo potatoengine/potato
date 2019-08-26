@@ -10,10 +10,25 @@ namespace up {
     ///
     class EntityMapper {
     public:
+        struct ParseLocation {
+            ArchetypeId archetype = ArchetypeId::Unknown;
+            uint16 chunk = 0;
+            uint16 index = 0;
+        };
+
+        struct TryParseLocation {
+            bool success = false;
+            ArchetypeId archetype = ArchetypeId::Unknown;
+            uint16 chunk = 0;
+            uint16 index = 0;
+        };
+
         auto allocate(ArchetypeId archetype, uint16 chunk, uint16 index) -> EntityId;
         void recycle(EntityId entity) noexcept;
 
-        auto tryParse(EntityId entity, ArchetypeId& out_archetype, uint16& out_chunk, uint16& out_index) const noexcept -> bool;
+        auto isValid(EntityId) const noexcept -> bool;
+        auto parse(EntityId entity) const noexcept -> ParseLocation;
+        auto tryParse(EntityId entity) const noexcept -> TryParseLocation;
 
         void setArchetype(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept;
         void setIndex(EntityId entity, uint16 newChunk, uint16 newIndex) noexcept;

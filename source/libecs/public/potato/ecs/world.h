@@ -21,8 +21,6 @@ namespace up {
     public:
         using SelectSignature = void(ArchetypeId, view<int>);
 
-        struct Location;
-
         UP_ECS_API World();
         UP_ECS_API ~World();
 
@@ -87,11 +85,23 @@ namespace up {
         UP_ECS_API int selectArchetypes(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
 
     private:
+        struct AllocatedLocation {
+            Chunk& chunk;
+            uint16 chunkIndex;
+            uint16 index;
+        };
+
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
 
-        void _deleteLocation(Location const& location) noexcept;
-        bool _tryGetLocation(EntityId entityId, Location& out) const noexcept;
+        struct AllocatedLocation;
+        auto _allocateEntity(Archetype& archetype) -> AllocatedLocation;
+        void _deleteEntity(EntityId entity);
+
+        void _moveTo(Archetype const& destArch, Chunk& destChunk, int destIndex, Archetype const& srcArch, Chunk& srcChunk, int srcIndex);
+        void _moveTo(Archetype const& destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex);
+        void _copyTo(Archetype const& destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData);
+        void _destroyAt(Archetype const& arch, Chunk& chunk, int index);
 
         EntityMapper _entities;
         ArchetypeMapper _archetypes;

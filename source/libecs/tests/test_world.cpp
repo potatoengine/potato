@@ -120,14 +120,32 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
     DOCTEST_TEST_CASE("Creates and Deletes") {
         World world;
 
+        // create some dummy entities
+        //
         EntityId foo = world.createEntity(Test1{'a'});
         world.createEntity(Test1{'b'});
         EntityId bar = world.createEntity(Test1{'c'});
         world.createEntity(Test1{'d'});
-        world.createEntity(Test1{'e'});
+        EntityId last = world.createEntity(Test1{'e'});
 
+        // delete some entities (not the last one!)
+        //
         world.deleteEntity(foo);
         world.deleteEntity(bar);
+
+        // ensure deleted entities are gone
+        //
+        DOCTEST_CHECK_EQ(nullptr, world.getComponentSlow<Test1>(foo));
+        DOCTEST_CHECK_EQ(nullptr, world.getComponentSlow<Test1>(bar));
+
+        // overwrite emptied locations
+        //
+        world.createEntity(Test1{'x'});
+        world.createEntity(Test1{'x'});
+
+        // ensure that the last entity was moved properly
+        //
+        DOCTEST_CHECK_EQ('e', world.getComponentSlow<Test1>(last)->a);
     }
 
     DOCTEST_TEST_CASE("Remove Component") {
