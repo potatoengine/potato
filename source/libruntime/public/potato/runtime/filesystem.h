@@ -11,7 +11,7 @@
 namespace up {
     class Stream;
 
-    class FileSystem : public shared<FileSystem> {
+    class FileSystem {
     public:
         virtual ~FileSystem() = default;
 
