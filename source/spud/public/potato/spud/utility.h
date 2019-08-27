@@ -43,7 +43,7 @@ namespace up {
     };
 
     template <typename Value, typename Projection/*, typename = enable_if_t<!std::is_member_object_pointer_v<Projection>>*/>
-    auto project(Projection const& projection, Value const& value) noexcept(noexcept(invoke(projection, value))) -> decltype(invoke(projection, value)) {
+    decltype(auto) project(Projection const& projection, Value const& value) noexcept(noexcept(invoke(projection, value))) {
         return invoke(projection, value);
     }
     template <typename Class, typename ReturnType>

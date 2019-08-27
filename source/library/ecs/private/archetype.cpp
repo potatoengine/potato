@@ -17,7 +17,7 @@ namespace up {
         return seed;
     }
 
-    static constexpr auto matchArchetype(Archetype const& arch, view<ComponentId> componentIds, int* offsets) noexcept -> bool {
+    static auto matchArchetype(Archetype const& arch, view<ComponentId> componentIds, int* offsets) noexcept -> bool {
         for (ComponentId const component : componentIds) {
             auto const layout = find(arch.chunkLayout, component, {}, &ChunkRowDesc::component);
             if (layout == arch.chunkLayout.end()) {
