@@ -33,13 +33,13 @@ namespace up {
         ///
         UP_ECS_API uint32 version() const noexcept;
 
-        UP_ECS_API view<box<Archetype>> archetypes() const noexcept;
+        UP_ECS_API view<Archetype> archetypes() const noexcept;
 
         /// Retrieve a specific Archetype
         ///
         /// @returns nullptr if the ArchetypeId is invalid
         ///
-        UP_ECS_API auto getArchetype(ArchetypeId arch) const noexcept -> Archetype const*;
+        UP_ECS_API auto getArchetype(ArchetypeId arch) noexcept -> Archetype const*;
 
         /// Creates a new Entity with the provided list of Component data
         ///

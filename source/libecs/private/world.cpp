@@ -29,11 +29,11 @@ auto up::World::version() const noexcept -> uint32 {
     return _archetypes.version();
 }
 
-auto up::World::archetypes() const noexcept -> view<box<Archetype>> {
+auto up::World::archetypes() const noexcept -> view<Archetype> {
     return _archetypes.archetypes();
 }
 
-auto up::World::getArchetype(ArchetypeId arch) const noexcept -> Archetype const* {
+auto up::World::getArchetype(ArchetypeId arch) noexcept -> Archetype const* {
     return _archetypes.getArchetype(arch);
 }
 

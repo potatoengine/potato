@@ -3,7 +3,6 @@
 #pragma once
 
 #include "potato/foundation/vector.h"
-#include "potato/foundation/box.h"
 #include "potato/foundation/delegate_ref.h"
 #include "potato/ecs/common.h"
 #include "potato/ecs/chunk.h"
@@ -28,15 +27,15 @@ namespace up {
         using SelectSignature = void(ArchetypeId, view<int>);
 
         uint32 version() const noexcept { return _version;  }
-        view<box<Archetype>> archetypes() const noexcept { return _archetypes; }
+        view<Archetype> archetypes() const noexcept { return _archetypes; }
 
-        auto getArchetype(ArchetypeId arch) const noexcept -> Archetype*;
+        auto getArchetype(ArchetypeId arch) noexcept -> Archetype*;
         auto findArchetype(view<ComponentId> components) const noexcept -> Archetype const*;
         auto createArchetype(view<ComponentMeta const*> components) -> Archetype*;
         auto selectArchetypes(view<ComponentId> components, delegate_ref<SelectSignature> callback) const noexcept -> int;
 
     private:
         uint32 _version = 0;
-        vector<box<Archetype>> _archetypes;
+        vector<Archetype> _archetypes;
     };
 } // namespace up

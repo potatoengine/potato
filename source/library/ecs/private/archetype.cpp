@@ -74,18 +74,18 @@ namespace up {
     }
 } // namespace up
 
-auto up::ArchetypeMapper::getArchetype(ArchetypeId arch) const noexcept -> Archetype* {
+auto up::ArchetypeMapper::getArchetype(ArchetypeId arch) noexcept -> Archetype* {
     auto const index = to_underlying(arch);
     UP_ASSERT(index >= 1 && index <= _archetypes.size());
-    return _archetypes[index - 1].get();
+    return &_archetypes[index - 1];
 }
 
 auto up::ArchetypeMapper::findArchetype(view<ComponentId> components) const noexcept -> Archetype const* {
     uint64 const hash = hashComponents(components, {}, to_underlying(getComponentId<Entity>()));
 
-    for (box<Archetype> const& arch : _archetypes) {
-        if (arch->layoutHash == hash) {
-            return arch.get();
+    for (Archetype const& arch : _archetypes) {
+        if (arch.layoutHash == hash) {
+            return &arch;
         }
     }
 
@@ -95,9 +95,9 @@ auto up::ArchetypeMapper::findArchetype(view<ComponentId> components) const noex
 auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components) -> Archetype* {
     uint64 const hash = hashComponents(components, &ComponentMeta::id, to_underlying(getComponentId<Entity>()));
 
-    for (box<Archetype> const& arch : _archetypes) {
-        if (arch->layoutHash == hash) {
-            return arch.get();
+    for (Archetype& arch : _archetypes) {
+        if (arch.layoutHash == hash) {
+            return &arch;
         }
     }
 
@@ -105,26 +105,24 @@ auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components)
     //
     ++_version;
 
-    auto arch = new_box<Archetype>();
-    arch->id = ArchetypeId(_archetypes.size() + 1);
-    arch->layoutHash = hash;
-    calculateLayout(*arch, components);
+    auto arch = Archetype{};
+    arch.id = ArchetypeId(_archetypes.size() + 1);
+    arch.layoutHash = hash;
+    calculateLayout(arch, components);
 
     _archetypes.push_back(std::move(arch));
 
-    return _archetypes.back().get();
+    return &_archetypes.back();
 }
 
 auto up::ArchetypeMapper::selectArchetypes(view<ComponentId> componentIds, delegate_ref<SelectSignature> callback) const noexcept -> int {
     int offsets[ArchetypeComponentLimit];
     int matches = 0;
 
-    for (box<Archetype> const& arch : _archetypes) {
-        auto const& archetype = *arch;
-
-        if (matchArchetype(*arch, componentIds, offsets)) {
+    for (Archetype const& arch : _archetypes) {
+        if (matchArchetype(arch, componentIds, offsets)) {
             ++matches;
-            callback(archetype.id, span{offsets}.first(componentIds.size()));
+            callback(arch.id, span{offsets}.first(componentIds.size()));
         }
     }
 
