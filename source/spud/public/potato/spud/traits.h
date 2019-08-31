@@ -16,7 +16,10 @@ namespace up {
     } // namespace _detail
 
     template <typename T>
-    struct is_contiguous : std::integral_constant<bool, std::is_integral_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>> {};
+    struct is_contiguous { static constexpr bool value = std::is_integral_v<T> || std::is_enum_v<T> || std::is_pointer_v<T>; };
+
+    template <typename T>
+    constexpr bool is_contiguous_v = is_contiguous<T>::value;
 
     template <typename F>
     struct signature;
@@ -24,9 +27,6 @@ namespace up {
     struct function_params;
     template <typename S>
     struct function_result;
-
-    template <typename T>
-    constexpr bool is_contiguous_v = is_contiguous<T>::value;
 
     template <typename F>
     using signature_t = typename signature<F>::type;
@@ -76,6 +76,20 @@ namespace up {
     static_assert(is_invocable_v<decltype(_detail::is_invocable_func_test)>);
     static_assert(!is_invocable_v<int>);
 #endif
+
+    template <typename T, typename Arguments, typename = void>
+    struct is_braces_constructible { static constexpr bool value = false; };
+
+    template <typename T, typename... A>
+    struct is_braces_constructible<T, typelist<A...>, std::void_t<decltype(T{std::declval<A>()...})>> { static constexpr bool value = true; };
+
+    template <typename T, typename... A>
+    constexpr bool is_braces_constructible_v = is_braces_constructible<T, typelist<A...>>::value;
+
+    struct any_type {
+        template <typename T>
+        constexpr operator T();
+    };
 } // namespace up
 
 #if defined(UP_PLATFORM_WINDOWS)
