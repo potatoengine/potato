@@ -27,7 +27,7 @@ jobs:
           curl -o ninja-win.zip -L https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip
           unzip ninja-win.zip -d ${HOME}/bin
         shell: bash
-      - name: Configure
+      - name: Configure and Build
         run: |
           echo on
           setlocal enableextensions enabledelayedexpansion
@@ -43,9 +43,6 @@ jobs:
           mkdir build
           cd build
           cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DSDL2_PATH:PATH="%DEPS%/SDL2-2.0.9" -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%DEPS%/assimp-4.1.0" .. || exit /b 1
-      - name: Build
-        run: |
-          cd build
           cmake --build . -j
       - name: Test
         run: |
