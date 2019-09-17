@@ -13,7 +13,7 @@ jobs:
         config: [ Debug, Release ]
 
     name: 'Build (${{ matrix.config }})'
-    runs-on: windows-latest
+    runs-on: 'windows-latest'
 
     steps:
       - uses: actions/checkout@master
@@ -53,6 +53,10 @@ jobs:
       matrix:
         config: [ Debug, Release ]
         cxx_compiler: [ g++, clang++ ]
+
+    
+    name: 'Build (${{ matrix.config }})'
+    runs-on: 'ubuntu-latest'
 
     steps:
       - uses: actions/checkout@master
