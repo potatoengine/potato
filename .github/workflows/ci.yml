@@ -30,25 +30,16 @@ jobs:
       - name: Configure
         run: |
           setlocal enableextensions enabledelayedexpansion
-          
           set VCDIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
           set ROOT=%BUILD_SOURCESDIRECTORY%
           set CONFIG=${{parameters.configuration}}
-          rem if ${{parameters.build_shared}} EQU Share (set SHARED=ON) else (set SHARED=OFF)
-
           set PATH=%PATH%;%HOME%\bin
-
           call "%VCDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
-          echo
-
           set CC=cl.exe
           set CXX=cl.exe
-
           set CXXFLAGS=/W3 /WX
-
           mkdir build
           cd build
-
           cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=%CONFIG% -DSDL2_PATH:PATH="%HOME%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%HOME%/deps/assimp-4.1.0" -DFETCHCONTENT_BASE_DIR=_deps .. || exit /b 1
       - name: Build
         run: |
