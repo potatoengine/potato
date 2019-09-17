@@ -14,7 +14,7 @@ jobs:
         config: [ Debug ]
 
     name: 'Build (${{ matrix.config }} ${{ matrix.platform }})'
-    runs-on: ${{ matrix.platform }}
+    runs-on: '${{ matrix.platform }}'
 
     steps:
       - uses: actions/checkout@master
