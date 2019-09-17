@@ -36,6 +36,7 @@ jobs:
           set PATH=%PATH%;%HOME%\bin
           set DEPS=%HOME%\deps
           call "%VCDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+          echo on
           set CC=cl.exe
           set CXX=cl.exe
           set CXXFLAGS=/W3 /WX
