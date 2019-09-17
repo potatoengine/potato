@@ -29,16 +29,18 @@ jobs:
         shell: bash
       - name: Configure
         run: |
+          echo on
           setlocal enableextensions enabledelayedexpansion
           set VCDIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
           set PATH=%PATH%;%HOME%\bin
+          set DEPS=%HOMEPATH%\deps
           call "%VCDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
           set CC=cl.exe
           set CXX=cl.exe
           set CXXFLAGS=/W3 /WX
           mkdir build
           cd build
-          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DSDL2_PATH:PATH="%HOME%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%HOME%/deps/assimp-4.1.0" -DFETCHCONTENT_BASE_DIR=_deps .. || exit /b 1
+          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DSDL2_PATH:PATH="%DEPS%/SDL2-2.0.9" -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%DEPS%/assimp-4.1.0" .. || exit /b 1
       - name: Build
         run: |
           cd build
