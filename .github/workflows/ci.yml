@@ -18,14 +18,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
-      - name: Install Tools
+      - name: Install Dependencies
         run: |
-          choco install ninja
+          curl -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+          unzip SDL2-devel-2.0.9-VC.zip -d ${HOME}/deps
+          curl -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
+          unzip assimp-4.1.0.zip -d ${HOME}/deps
+          curl -o ninja-win.zip -L https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip
+          unzip ninja-win.zip -d ${HOME}/bin
       - name: Configure
         run: |
           mkdir build
           cd build
-          cmake .. -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          cmake -G Ninja -CMAKE_MAKE_PROGRAM=${HOME}/bin/ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DSDL2_PATH:PATH="${HOME}/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="${HOME}/deps/assimp-4.1.0" -DFETCHCONTENT_BASE_DIR=${HOME}/fetched ..
+        shell: bash
       - name: Build
         run: |
           cd build
