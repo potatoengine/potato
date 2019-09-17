@@ -16,6 +16,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
+      - name: Install Tools
+        run: |
+          choco install ninja
       - name: Configure
         run: |
           mkdir build
