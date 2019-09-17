@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         platform: [ 'windows-latest' ]
-        config: [ Debug, Release ]
+        config: [ Debug ]
 
     name: 'Build (${{ matrix.config }} ${{ matrix.platform }})'
     runs-on: ${{ matrix.platform }}
