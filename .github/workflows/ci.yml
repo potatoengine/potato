@@ -1,0 +1,27 @@
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [ 'windows-latest' ]
+        config: [ Debug, Release ]
+
+    name: 'Build (${{ matrix.config }} ${{ matrix.platform }})'
+    runs-in: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake .. -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+      - name: Build
+        run: |
+          cd build
+          cmake --build . -j
+      - name: Test
+        run: |
+          cd build
+          ctest
