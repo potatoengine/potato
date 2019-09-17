@@ -26,6 +26,7 @@ jobs:
           unzip assimp-4.1.0.zip -d ${HOME}/deps
           curl -o ninja-win.zip -L https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip
           unzip ninja-win.zip -d ${HOME}/bin
+        shell: bash
       - name: Configure
         run: |
           mkdir build
