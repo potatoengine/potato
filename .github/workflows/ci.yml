@@ -38,7 +38,7 @@ jobs:
           set CXXFLAGS=/W3 /WX
           mkdir build
           cd build
-          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matirx.config }} -DSDL2_PATH:PATH="%HOME%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%HOME%/deps/assimp-4.1.0" -DFETCHCONTENT_BASE_DIR=_deps .. || exit /b 1
+          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DSDL2_PATH:PATH="%HOME%/deps/SDL2-2.0.9" -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%HOME%/deps/assimp-4.1.0" -DFETCHCONTENT_BASE_DIR=_deps .. || exit /b 1
       - name: Build
         run: |
           cd build
