@@ -7,14 +7,13 @@ on:
   pull_request: []
 
 jobs:
-  build:
+  Windows:
     strategy:
       matrix:
-        platform: [ 'windows-latest' ]
-        config: [ Debug ]
+        config: [ Debug, Release ]
 
-    name: 'Build (${{ matrix.config }} ${{ matrix.platform }})'
-    runs-on: '${{ matrix.platform }}'
+    name: 'Build (${{ matrix.config }})'
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@master
@@ -43,8 +42,31 @@ jobs:
           mkdir build
           cd build
           cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DSDL2_PATH:PATH="%DEPS%/SDL2-2.0.9" -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%DEPS%/assimp-4.1.0" .. || exit /b 1
-          cmake --build . -j
+          cmake --build . --parallel
       - name: Test
         run: |
           cd build
-          ctest
+          ctest -T test -R potato --verbose
+
+  Ubuntu:
+    strategy:
+      matrix:
+        config: [ Debug, Release ]
+        cxx_compiler: [ g++, clang++ ]
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Configure
+        run: |
+          mkdir -p build
+          cd build
+          CXXFLAGS="-Wall -Werror"
+          cmake "-DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }}" -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+      - name: Build
+        run: |
+          cd build
+          cmake --build . --parallel
+      - name: Test
+        run: |
+          cd build
+          ctest -T test -R potato --verbose
