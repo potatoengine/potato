@@ -52,10 +52,9 @@ jobs:
     strategy:
       matrix:
         config: [ Debug, Release ]
-        cxx_compiler: [ g++, clang++ ]
-
+        cxx: [ 'g++-7' ]
     
-    name: 'Build Ubuntu (${{ matrix.config }})'
+    name: 'Build Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-latest'
 
     steps:
@@ -65,7 +64,7 @@ jobs:
           mkdir -p build
           cd build
           CXXFLAGS="-Wall -Werror"
-          cmake "-DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }}" -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+          cmake "-DCMAKE_CXX_COMPILER=${{ matrix.cxx }}" -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
       - name: Build
         run: |
           cd build
