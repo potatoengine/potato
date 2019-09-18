@@ -47,7 +47,7 @@ jobs:
           git remote add origin "${REPO_URL}"
           git fetch --depth 1 origin master || exit 1
           git checkout -b "${BRANCH}" || exit 1
-          git pull || exit 1
+          git pull origin "${BRANCH}" || exit 1
           rsync -a --delete --exclude=/.git "${GITHUB_WORKSPACE}/${SOURCE_FOLDER}/" . || exit 1
           git add . || exit 1
           git commit -a -m "Publish from ${GITHUB_WORKFLOW} at ${GITHUB_REPOSITORY}" --author="${AUTHOR}" || exit 1
