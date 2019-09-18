@@ -104,7 +104,7 @@ jobs:
           REPO_NAME="github.com/${REPOSITORY}.git/${BRANCH}"
           REPO_URL="https://${{ secrets.GH_PAT }}@${REPO_NAME}"
           echo "Publishing ${SOURCE_FOLDER} to ${REPO_NAME}"
-          git checkout "${REPO_URL}" __work__ || exit 1
+          git clone "${REPO_URL}" __work__ || exit 1
           rsync --recursive --delete "${SOURCE_FOLDER}" __work__ || exit 1
           cd __work__
           git commit -a -m "Publish from ${GITHUB_WORKFLOW} at ${GITHUB_REPOSITORY}" || exit 1
