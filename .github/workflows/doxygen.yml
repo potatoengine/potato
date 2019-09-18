@@ -12,9 +12,10 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
-      - uses: actions/checkout@master
       - name: Install Doxygen
         run: sudo apt-get -yq install doxygen
+      - name: Checkout
+        uses: actions/checkout@master
       - name: Configure
         run: |
           mkdir build
@@ -24,11 +25,12 @@ jobs:
         run: |
           cd build
           cmake --build . --target doxygen
-#      - name: Artifact
-#        uses: actions/upload-artifact@master
-#        with:
-#          name: html-docs
-#          path: build/documentation/doxygen/html
+      - name: Artifact
+        if: false
+        uses: actions/upload-artifact@master
+        with:
+          name: html-docs
+          path: build/documentation/doxygen/html
       - name: Publish
         run: |
           REPOSITORY=potatoengine/potatoengine.github.io
@@ -39,10 +41,10 @@ jobs:
           echo "Publishing ${SOURCE_FOLDER} to ${REPO_URL}:${BRANCH}"
           git config --global user.email "you@example.com"
           git config --global user.name "Your Name"
-          git clone --depth 1 --single-branch --no-tags --branch "${BRANCH}" "${REPO_URL}" __work__ || exit 1
+          git clone --depth 1 --branch "${BRANCH}" "${REPO_URL}" __work__ || exit 1
           rsync -a --delete "${SOURCE_FOLDER}/" __work__ || exit 1
-          cd __work__
-          git add -v * || exit 1
+          cd __work__ && pwd
+          git add -v . || exit 1
           git commit -a -m "Publish from ${GITHUB_WORKFLOW} at ${GITHUB_REPOSITORY}" --author="${AUTHOR}" || exit 1
           git status
-          echo git push --force
+          git push --force
