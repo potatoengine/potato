@@ -97,10 +97,10 @@ jobs:
           name: html-docs
           path: build/documentation/doxygen/html
       - name: Publish
-        uses: alex-page/blazing-fast-gh-pages-deploy@v1.0.0
-        with:
-          repo-token: '${{ secrets.GH_PAT }}'
-          site-directory: 'build/documentation/doxygen/html'
-          commit-message: Doxygen
-          deploy-branch: master
+        uses: maxheld83/ghpages@v0.2.1
+        env:
+          GITHUB_REPOSITORY: potatoengine/potatoengine.github.io
+          GH_PAT: '${{ secrets.GH_PAT }}'
+          REMOTE_BRANCH: master
+          GITHUB_ACTOR: doxygen-build
         if: true || endsWith(github.ref, '/master')
