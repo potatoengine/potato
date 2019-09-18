@@ -53,4 +53,4 @@ jobs:
           git add "${REF_BRANCH}" || exit 1
           git commit -m "Publish from ${GITHUB_WORKFLOW} at ${GITHUB_REPOSITORY}:${REF_BRANCH}" --author="${AUTHOR}" || exit 1
           git push origin "${REMOTE_BRANCH}"
-        #if: success() && github.event == 'push')
+        if: success() #&& github.event == 'push'
