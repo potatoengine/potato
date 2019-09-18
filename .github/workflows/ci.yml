@@ -97,7 +97,7 @@ jobs:
           name: html-docs
           path: build/documentation/doxygen/html
       - name: Publish
-        uses: icChan03/action-build-deploy-ghpages@v2.1.0
+        uses: EdricChan03/action-build-deploy-ghpages@v2.1.0
         with:
           github_token: '${{ secrets.GITHUB_TOKEN }}'
           gh_pages_token: '${{ secrets.GH_PAT }}'
