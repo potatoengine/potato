@@ -37,7 +37,8 @@ jobs:
           SOURCE_FOLDER=build/documentation/doxygen/html
           REPO_URL="https://${{ secrets.GH_PAT }}@github.com/${REPOSITORY}.git"
           AUTHOR="${GITHUB_ACTOR} <${GITHUB_ACTOR}@users.noreply.github.com>"
-          REF_BRANCH=$(echo "${{ github.ref }}" | rev | cut -d/ -f1 | rev)
+          REF="${GITHUB_BASE_REF:-${GITHUB_REF}}"
+          REF_BRANCH=$(echo "${REF}" | rev | cut -d/ -f1 | rev)
           [ -z "$REF_BRANCH"] && echo "No ref branch" && echo 1
           echo "Publishing ${SOURCE_FOLDER} to ${REPO_URL}:${REMOTE_BRANCH}"
           mkdir __work__ && cd __work__
