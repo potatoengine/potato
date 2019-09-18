@@ -103,4 +103,5 @@ jobs:
           GH_PAT: '${{ secrets.GH_PAT }}'
           REMOTE_BRANCH: master
           GITHUB_ACTOR: doxygen-build
+          BUILD_DIR: build/documentation/doxygen/html
         if: true || endsWith(github.ref, '/master')
