@@ -75,6 +75,7 @@ jobs:
           ctest -T test -R potato --verbose
 
   Doxygen:
+    name: Documentation
     runs-on: 'ubuntu-latest'
 
     steps:
@@ -95,8 +96,11 @@ jobs:
         with:
           name: html-docs
           path: build/documentation/doxygen/html
-#      - name: Publish
-#        uses: actions/aws/cli@master
-#          with:
-#            args: 's3 sync build/documentation/doxygen/html s3://${{ secrets.doxygen_s3_region }}-${{ secrets.doxygen_s3_bucket }}/ --acl public-read'
-#        if: false && github.refs.endsWith('/master')
+      - name: Publish
+        uses: alex-page/blazing-fast-gh-pages-deploy@v1.0.0
+        with:
+          repo-token: '${{ secrets.GH_PAT }}'
+          site-directory: 'build/documentation/doxygen/html'
+          commit-message: Doxygen
+          deploy-branch: master
+        if: true || github.ref.endsWith('/master')
