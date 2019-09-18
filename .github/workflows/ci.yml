@@ -97,12 +97,19 @@ jobs:
           name: html-docs
           path: build/documentation/doxygen/html
       - name: Publish
-        uses: EdricChan03/action-build-deploy-ghpages@v2.1.0
-        with:
-          github_token: '${{ secrets.GITHUB_TOKEN }}'
-          gh_pages_branch: master
-          gh_pages_dist_folder: potatoengine/potatoengine.github.io
-          remote_repo: 'https://x-access-token:${{ secrets.GH_PAT }}@github.com/potatoengine/potatoengine.github.io.git'
+        run: |
+          REPOSITORY="${REPOSITORY:-${GITHUB_REPOSITORY}}"
+          BRANCH="${REPOSITORY:-gh-pages}"
+          REPO_NAME="github.com/${REPOSITORY}/${BRANCH}.git"
+          REPO_URL="https://${ACCES_TOKEN}@${REPO_NAME}"
+          echo "Publishing ${SOURCE_FOLDER} to ${REPO_NAME}"
+          git checkout "${REPO_URL}/${BRANCH}" __work__
+          rsync --recursive --delete "${SOURCE_FOLDER}" __work__
+          cd __work__
+          git commit -a -m "Publish from ${GITHUB_WORKFLOW} at ${GITHUB_REPOSITORY}"
+          echo git push --force
         env:
-          gh_pages_token: '${{ secrets.GH_PAT }}'
-        if: true || endsWith(github.ref, '/master')
+          repository: potatoengine/potatoengine.github.io
+          branch: master
+          source_folder: build/documentation/doxygen/html
+          access_token: '${{ secrets.GH_PAT }}'
