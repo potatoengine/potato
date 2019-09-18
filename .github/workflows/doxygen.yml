@@ -35,9 +35,9 @@ jobs:
           git config --global user.email "you@example.com"
           git config --global user.name "Your Name"
           git clone --depth 1 --single-branch --no-tags --branch "${BRANCH}" "${REPO_URL}" __work__ || exit 1
-          rsync --recursive --delete "${SOURCE_FOLDER}/" __work__ || exit 1
           cd __work__
-          git add .
+          rsync --quiet --recursive --delete "${SOURCE_FOLDER}/" . || exit 1
+          git add -v * || exit 1
           git commit -a -m "Publish from ${GITHUB_WORKFLOW} at ${GITHUB_REPOSITORY}" --author="${AUTHOR}" || exit 1
           git status
           echo git push --force
