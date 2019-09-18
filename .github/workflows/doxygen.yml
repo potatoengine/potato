@@ -26,30 +26,30 @@ jobs:
           cd build
           cmake --build . --target doxygen
       - name: Artifact
-        if: false
         uses: actions/upload-artifact@master
         with:
           name: html-docs
           path: build/documentation/doxygen/html
       - name: Publish
         run: |
-          set -o xtrace
           REPOSITORY=potatoengine/potatoengine.github.io
-          BRANCH=master
+          REMOTE_BRANCH=master
           SOURCE_FOLDER=build/documentation/doxygen/html
           REPO_URL="https://${{ secrets.GH_PAT }}@github.com/${REPOSITORY}.git"
           AUTHOR="${GITHUB_ACTOR} <${GITHUB_ACTOR}@users.noreply.github.com>"
-          echo "Publishing ${SOURCE_FOLDER} to ${REPO_URL}:${BRANCH}"
+          REF_BRANCH=$(echo "${{ github.ref }}" | rev | cut -d/ -f1 | rev)
+          [ -z "$REF_BRANCH"] && echo "No ref branch" && echo 1
+          echo "Publishing ${SOURCE_FOLDER} to ${REPO_URL}:${REMOTE_BRANCH}"
           mkdir __work__ && cd __work__
           git init || exit 1
           git config --local user.email "you@example.com"
           git config --local user.name "Your Name"
           git remote add origin "${REPO_URL}"
           git fetch --depth 1 origin master || exit 1
-          git checkout -b "${BRANCH}" || exit 1
-          git pull origin "${BRANCH}" || exit 1
-          rsync -a --delete --exclude=/.git "${GITHUB_WORKSPACE}/${SOURCE_FOLDER}/" . || exit 1
-          git add . || exit 1
-          git commit -a -m "Publish from ${GITHUB_WORKFLOW} at ${GITHUB_REPOSITORY}" --author="${AUTHOR}" || exit 1
-          git status || exit 1
-          git push origin "${BRANCH}"
+          git checkout -b "${REMOTE_BRANCH}" || exit 1
+          git pull origin "${REMOTE_BRANCH}" || exit 1
+          rsync -a --delete "${GITHUB_WORKSPACE}/${SOURCE_FOLDER}/" "${REF_BRANCH}" || exit 1
+          git add "${REF_BRANCH}" || exit 1
+          git commit -m "Publish from ${GITHUB_WORKFLOW} at ${GITHUB_REPOSITORY}:${REF_BRANCH}" --author="${AUTHOR}" || exit 1
+          git push origin "${REMOTE_BRANCH}"
+        #if: success() && github.event == 'push')
