@@ -97,11 +97,11 @@ jobs:
           name: html-docs
           path: build/documentation/doxygen/html
       - name: Publish
-        uses: maxheld83/ghpages@v0.2.1
-        env:
-          GITHUB_REPOSITORY: potatoengine/potatoengine.github.io
-          GH_PAT: '${{ secrets.GH_PAT }}'
-          REMOTE_BRANCH: master
-          GITHUB_ACTOR: doxygen-build
-          BUILD_DIR: build/documentation/doxygen/html
+        uses: icChan03/action-build-deploy-ghpages@v2.1.0
+        with:
+          github_token: '${{ secrets.GITHUB_TOKEN }}'
+          gh_pages_token: '${{ secrets.GH_PAT }}'
+          gh_pages_branch: master
+          gh_pages_dist_folder: potatoengine/potatoengine.github.io
+          remote_repo: 'https://x-access-token:${{ secrets.GH_PAT }}@github.com/potatoengine/potatoengine.github.io.git'
         if: true || endsWith(github.ref, '/master')
