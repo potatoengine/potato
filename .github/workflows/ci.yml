@@ -73,3 +73,30 @@ jobs:
         run: |
           cd build
           ctest -T test -R potato --verbose
+
+  Doxygen:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Install Doxygen
+        run: sudo apt-get install -y doxygen
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake -DUP_BUILD_DOCS=ON ..
+      - name: Build Docs
+        run: |
+          cd build
+          cmake --build . --target doxygen
+      - name: Package
+        uses: actions/upload-artifact@master
+        with:
+          name: html-docs
+          path: build/documentation/doxygen/html
+#      - name: Publish
+#        uses: actions/aws/cli@master
+#          with:
+#            args: 's3 sync build/documentation/doxygen/html s3://${{ secrets.doxygen_s3_region }}-${{ secrets.doxygen_s3_bucket }}/ --acl public-read'
+#        if: false && github.refs.endsWith('/master')
