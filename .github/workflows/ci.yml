@@ -81,7 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Install Doxygen
-        run: sudo apt-get install -y doxygen
+        run: sudo apt-get -yq install doxygen
       - name: Configure
         run: |
           mkdir build
@@ -100,8 +100,9 @@ jobs:
         uses: EdricChan03/action-build-deploy-ghpages@v2.1.0
         with:
           github_token: '${{ secrets.GITHUB_TOKEN }}'
-          gh_pages_token: '${{ secrets.GH_PAT }}'
           gh_pages_branch: master
           gh_pages_dist_folder: potatoengine/potatoengine.github.io
           remote_repo: 'https://x-access-token:${{ secrets.GH_PAT }}@github.com/potatoengine/potatoengine.github.io.git'
+        env:
+          gh_pages_token: '${{ secrets.GH_PAT }}'
         if: true || endsWith(github.ref, '/master')
