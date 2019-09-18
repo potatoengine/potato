@@ -101,10 +101,9 @@ jobs:
           REPOSITORY=potatoengine/potatoengine.github.io
           BRANCH=master
           SOURCE_FOLDER=build/documentation/doxygen/html
-          REPO_NAME="github.com/${REPOSITORY}.git/${BRANCH}"
-          REPO_URL="https://${{ secrets.GH_PAT }}@${REPO_NAME}"
-          echo "Publishing ${SOURCE_FOLDER} to ${REPO_NAME}"
-          git clone "${REPO_URL}" __work__ || exit 1
+          REPO_URL="https://${{ secrets.GH_PAT }}@github.com/${REPOSITORY}.git"
+          echo "Publishing ${SOURCE_FOLDER} to ${REPO_URL}:${BRANCH}"
+          git clone --depth 1 --single-branch --no-tags --branch "${BRANCH}" "${REPO_URL}" __work__ || exit 1
           rsync --recursive --delete "${SOURCE_FOLDER}" __work__ || exit 1
           cd __work__
           git commit -a -m "Publish from ${GITHUB_WORKFLOW} at ${GITHUB_REPOSITORY}" || exit 1
