@@ -31,7 +31,7 @@ jobs:
           name: html-docs
           path: build/documentation/doxygen/html
       - name: Publish
-        uses: potatoengine/ghactions/publish-to-git@master
+        uses: potatoengine/ghactions/publish-to-git@v1
         with:
           repository: potatoengine/potatoengine.github.io
           branch: master
@@ -39,4 +39,4 @@ jobs:
           github_pat: '${{ secrets.GH_PAT }}'
           source_folder: build/documentation/doxygen/html
           target_folder: master
-        if: success() ##&& github.event == 'push'
+        if: success() && github.event == 'push'
