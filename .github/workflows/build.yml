@@ -75,18 +75,21 @@ jobs:
           echo ::set-env name=CC::${{ matrix.cc }}
       - name: Install SDL2
         if: contains(matrix.os, 'windows')
+        shell: bash
         run: |
           curl -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
           unzip SDL2-devel-2.0.9-VC.zip -d ${HOME}/deps
           echo ::set-env name=SDL2DIR::${HOME}/deps/SDL2-2.0.9
       - name: Install Assimp
         if: contains(matrix.os, 'windows')
+        shell: bash
         run: |
           curl -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
           unzip assimp-4.1.0.zip -d ${HOME}/deps
           echo ::set-env name=ASSIMPDIR::${HOME}/deps/assimp-4.1.0
       - name: Install Ninja
         if: contains(matrix.os, 'windows')
+        shell: bash
         run: |
           curl -o ninja-win.zip -L https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip
           unzip ninja-win.zip -d ${HOME}/bin
@@ -97,7 +100,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G "${{ matrix.generator }}" "-DBUILD_SHARED_LIBS=${{ matrix.shared }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" "-DCMAKE_INSTALL_PREFIX:PATH=${HOME}/install" ..
+          cmake -G "${{ matrix.generator }}" "-DBUILD_SHARED_LIBS=${{ matrix.shared }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" "-DCMAKE_INSTALL_PREFIX:PATH=/install" ..
       - name: Build
         run: |
           cd build
