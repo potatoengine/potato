@@ -27,10 +27,7 @@ jobs:
           unzip assimp-4.1.0.zip -d %DEPS%
           echo ::set-env name=DEPS::%DEPS%
       - name: Install Ninja
-        run: |
-          curl -o ninja-win.zip -L https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip
-          unzip ninja-win.zip -d %HOME%\bin
-          echo ::add-path::%HOME%\bin
+        uses: potatoengine/ghactions/setup-ninja@setup-ninja
       - uses: potatoengine/ghactions/setup-vsdevenv@v2
       - name: Configure
         env:
