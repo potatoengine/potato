@@ -80,6 +80,8 @@ jobs:
           CXX: '${{ matrix.cxx }}'
           CC: '${{ matrix.cc }}'
         run: |
+          echo $(which ninja)
+          echo $(./ninja-build/ninja -v)
           mkdir -p build
           cd build
           cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
