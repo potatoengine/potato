@@ -5,14 +5,15 @@
 
 // STB has some code issues
 //
-#if UP_COMPILER_GCC
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#if defined(UP_COMPILER_GCC)
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#    pragma GCC diagnostic ignored "-Wuninitialized"
 #endif
 
 #include <stb_image.h>
 #include <stb_dxt.h>
 
-#if UP_COMPILER_GCC
-#   pragma GCC diagnostic pop
+#if defined(UP_COMPILER_GCC)
+#    pragma GCC diagnostic pop
 #endif
