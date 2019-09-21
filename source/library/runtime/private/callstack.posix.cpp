@@ -28,7 +28,7 @@ auto up::callstack::resolveTraceRecords(span<uintptr const> addresses, span<Trac
     void* const addrs = const_cast<uintptr*>(addresses.data());
     char** symbols = backtrace_symbols(&addrs, addresses.size());
 
-    for (auto index = 0; index != max; ++index) {
+    for (auto index = 0u; index != max; ++index) {
         auto& record = records[index];
         record.address = addresses[index];
         record.symbol = string_view(symbols[index]);
