@@ -92,6 +92,8 @@ auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
     return string(path.c_str(), path.size());
 }
 
-void up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
-    std::filesystem::current_path(std::filesystem::path(path.c_str()));
+bool up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
+    std::error_code ec;
+    std::filesystem::current_path(std::filesystem::path(path.c_str()), ec);
+    return (bool)ec;
 }
