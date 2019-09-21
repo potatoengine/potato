@@ -65,13 +65,13 @@ jobs:
             cc: clang
     
     name: 'Build ${{ matrix.name }} (${{ matrix.config }} ${{ matrix.cxx }})'
-    runs-on: 'ubuntu-latest'
+    runs-on: '${{ matrix.os }}'
 
     steps:
       - uses: actions/checkout@master
       - name: Select XCode
         run: sudo /usr/bin/xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
-        if: contains(matrix.os, 'macOS')
+        if: runner.os == 'macOS'
       - name: Configure
         env:
           CXXFLAGS: -Wall -Werror
