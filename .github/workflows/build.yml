@@ -21,9 +21,9 @@ jobs:
       - name: Install Dependencies
         run: |
           set DEPS=%HOME%\deps
-          curl -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+          curl -s -S -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
           unzip SDL2-devel-2.0.9-VC.zip -d %DEPS%
-          curl -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
+          curl -s -S -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
           unzip assimp-4.1.0.zip -d %DEPS%
           echo ::set-env name=DEPS::%DEPS%
       - name: Install Ninja
