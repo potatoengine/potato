@@ -56,11 +56,13 @@ jobs:
         include:
           - name: Ubuntu
             os: ubuntu-latest
+            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
             cxx: g++-7
             cc: gcc-7
           - name: macOS
             os: macos-latest
             xcode: 10.3
+            cxxflags: -Wall -Werror
             cxx: clang++
             cc: clang
     
@@ -74,7 +76,7 @@ jobs:
         if: runner.os == 'macOS'
       - name: Configure
         env:
-          CXXFLAGS: -Wall -Werror
+          CXXFLAGS: '${{ matrix.cxxflags }}'
           CXX: '${{ matrix.cxx }}'
           CC: '${{ matrix.cc }}'
         run: |
