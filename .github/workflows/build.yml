@@ -60,7 +60,7 @@ jobs:
             cc: gcc-7
           - name: macOS
             os: macos-latest
-            xcode: 11
+            xcode: 10.3
             cxx: clang++
             cc: clang
     
