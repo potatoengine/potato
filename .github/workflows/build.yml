@@ -28,7 +28,8 @@ jobs:
           echo ::set-env name=DEPS::%DEPS%
       - name: Install Ninja
         uses: potatoengine/ghactions/setup-ninja@setup-ninja
-      - uses: potatoengine/ghactions/setup-vsdevenv@v2
+      - name: Setup VS Environment
+        uses: potatoengine/ghactions/setup-vsdevenv@v2
       - name: Configure
         env:
           CXXFLAGS: /W3 /WX
@@ -68,6 +69,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
+      - name: Install Ninja
+        uses: potatoengine/ghactions/setup-ninja@setup-ninja
       - name: Select XCode
         run: sudo /usr/bin/xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
         if: runner.os == 'macOS'
@@ -79,7 +82,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+          cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
       - name: Build
         run: cmake --build build --parallel
       - name: Test
