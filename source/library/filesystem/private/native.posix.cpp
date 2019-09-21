@@ -171,7 +171,7 @@ auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
     // FIXME: https://eklitzke.org/path-max-is-tricky
     char buffer[PATH_MAX] = {0,};
     char* result = getcwd(buffer, sizeof(buffer));
-    return result != null ? string(buffer) : string{};
+    return result != nullptr ? string(buffer) : string{};
 }
 
 bool up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
