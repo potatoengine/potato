@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ 'windows-latest', 'ubuntu-latest', 'macOS-latest' ]
+        os: [ 'windows-latest' ]#, 'ubuntu-latest', 'macOS-latest' ]
         config: [ Release, Debug ]
         include:
           - name: Windows Debug
@@ -24,46 +24,46 @@ jobs:
             cxxflags: '/W3 /WX'
             shared: YES
             generator: Ninja
-          - name: Windows Release
-            os: 'windows-latest'
-            config: Release
-            cxx: 'cl.exe'
-            cc: 'cl.exe'
-            cxxflags: '/W3 /WX'
-            shared: YES
-            generator: Ninja
-          - name: Ubuntu Debug
-            os: 'ubuntu-latest'
-            config: Debug
-            cxx: g++-7
-            cc: gcc-7
-            cxxflags: -Wall -Werror
-            shared: NO
-            generator: Unix Makefiles
-          - name: Ubuntu Release
-            os: 'ubuntu-latest'
-            config: Release
-            cxx: g++-7
-            cc: gcc-7
-            cxxflags: -Wall -Werror
-            shared: NO
-            generator: Unix Makefiles
-          - name: MacOS Debug
-            os: 'macOS-latest'
-            config: Debug
-            cxx: clang++
-            cc: clang
-            cxxflags: -Wall -Werror
-            shared: NO
-            generator: Unix Makefiles
-          - name: MacOS Release
-            os: 'macOS-latest'
-            config: Release
-            cxx: clang++
-            cc: clang
-            cxxflags: -Wall -Werror
-            shared: NO
-            generator: Unix Makefiles
+#          - name: Windows Release
+#            os: 'windows-latest'
+#            config: Release
+#            cxx: 'cl.exe'
+#            cc: 'cl.exe'
+#            cxxflags: '/W3 /WX'
+#            shared: YES
+#            generator: Ninja
+#          - name: Ubuntu Debug
+#            os: 'ubuntu-latest'
+#            config: Debug
+#            cxx: g++-7
+#            cc: gcc-7
+#            cxxflags: -Wall -Werror
+#            shared: NO
+#            generator: Unix Makefiles
+#          - name: Ubuntu Release
+#            os: 'ubuntu-latest'
+#            config: Release
+#            cxx: g++-7
+#            cc: gcc-7
+#            cxxflags: -Wall -Werror
+#            shared: NO
+#            generator: Unix Makefiles
+#          - name: MacOS Debug
+#            os: 'macOS-latest'
+#            config: Debug
+#            cxx: clang++
+#            cc: clang
+#            cxxflags: -Wall -Werror
+#            shared: NO
+#            generator: Unix Makefiles
+#          - name: MacOS Release
+#            os: 'macOS-latest'
+#            config: Release
+#            cxx: clang++
+#            cc: clang
+#            cxxflags: -Wall -Werror
+#            shared: NO
+#            generator: Unix Makefiles
 
     steps:
       - name: Checkout
@@ -75,31 +75,29 @@ jobs:
           echo ::set-env name=CC::${{ matrix.cc }}
       - name: Install SDL2
         if: contains(matrix.os, 'windows')
-        shell: bash
         run: |
           curl -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
-          unzip SDL2-devel-2.0.9-VC.zip -d ${HOME}/deps
-          echo ::set-env name=SDL2DIR::${HOME}/deps/SDL2-2.0.9
+          unzip SDL2-devel-2.0.9-VC.zip -d \deps
+          echo ::set-env name=SDL2DIR::\deps\SDL2-2.0.9
       - name: Install Assimp
         if: contains(matrix.os, 'windows')
-        shell: bash
         run: |
           curl -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
-          unzip assimp-4.1.0.zip -d ${HOME}/deps
-          echo ::set-env name=ASSIMPDIR::${HOME}/deps/assimp-4.1.0
+          unzip assimp-4.1.0.zip -d \deps
+          echo ::set-env name=ASSIMPDIR::\deps\assimp-4.1.0
       - name: Install Ninja
         if: contains(matrix.os, 'windows')
-        shell: bash
         run: |
           curl -o ninja-win.zip -L https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip
-          unzip ninja-win.zip -d ${HOME}/bin
-          echo "::add-path::${HOME}/bin"
+          unzip ninja-win.zip -d /bin
+          echo "::add-path::/bin"
       - uses: potatoengine/ghactions/setup-vsdevenv@v2
         if: contains(matrix.os, 'windows')
       - name: Configure
         run: |
           mkdir build
           cd build
+          dir %SDL2DIR%
           cmake -G "${{ matrix.generator }}" "-DBUILD_SHARED_LIBS=${{ matrix.shared }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" "-DCMAKE_INSTALL_PREFIX:PATH=/install" ..
       - name: Build
         run: |
