@@ -68,7 +68,7 @@ jobs:
       - uses: actions/checkout@master
       - name: Configure
         env:
-          CXXFLAGS: -Werror
+          CXXFLAGS: -Wall -Werror
         run: |
           mkdir -p build
           cd build

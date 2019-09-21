@@ -57,7 +57,7 @@ bool up::HashCache::serialize(Stream& stream) const {
     for (auto const& [key, value] : _hashes) {
         nlohmann::json jsonRecord;
 
-        jsonRecord["name"] = std::string(value->osPath.data(), value->osPath.size());
+        jsonRecord["name"] = std::string(key.data(), key.size());
         jsonRecord["hash"] = value->hash;
         jsonRecord["mtime"] = value->mtime;
         jsonRecord["size"] = value->size;

@@ -7,9 +7,10 @@
 #include "potato/foundation/string.h"
 #include "potato/foundation/span.h"
 #include "potato/foundation/vector.h"
+#include "potato/foundation/int_types.h"
 
 namespace up {
-    enum class AssetCategory {
+    enum class AssetCategory : uint8 {
         Source, // lives in resources/
         Intermediate, // lives in build/cache/
         Output // lives in build/resources/
@@ -18,7 +19,7 @@ namespace up {
     UP_ASSETDB_API string_view assetCategoryName(AssetCategory category) noexcept;
     UP_ASSETDB_API AssetCategory assetCategoryFromName(string_view name) noexcept;
 
-    enum class AssetDependencyType {
+    enum class AssetDependencyType : uint8 {
         Source,
         Runtime,
         Tool
