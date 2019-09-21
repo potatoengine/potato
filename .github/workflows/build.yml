@@ -52,23 +52,31 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest', 'macos-latest' ]
-        config: [ Debug, Release ]
+        config: [ 'Debug', 'Release' ]
         include:
           - name: Ubuntu
             os: ubuntu-latest
-            cxx: clang++
+            cxx: g++-7
+            cc: gcc-7
           - name: macOS
             os: macos-latest
-            cxx: g++-7
+            xcode: 11
+            cxx: clang++
+            cc: clang
     
     name: 'Build ${{ matrix.name }} (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-latest'
 
     steps:
       - uses: actions/checkout@master
+      - name: Select XCode
+        run: sudo /usr/bin/xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
+        if: contains(matrix.os, 'macOS')
       - name: Configure
         env:
           CXXFLAGS: -Wall -Werror
+          CXX: '${{ matrix.cxx }}'
+          CC: '${{ matrix.cc }}'
         run: |
           mkdir -p build
           cd build
