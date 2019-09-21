@@ -43,7 +43,7 @@ bool up::AssetLibrary::serialize(Stream& stream) const {
 
         auto catName = assetCategoryName(record.category);
         
-        jsonRecord["id"] = static_cast<uint64>(record.assetId);
+        jsonRecord["id"] = static_cast<uint64>(assetId);
         jsonRecord["path"] = std::string(record.path.data(), record.path.size());
         jsonRecord["contentHash"] = record.contentHash;
         jsonRecord["category"] = std::string(catName.data(), catName.size());
