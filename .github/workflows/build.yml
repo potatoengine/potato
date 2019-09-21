@@ -35,6 +35,8 @@ jobs:
       - name: Configure
         env:
           CXXFLAGS: /W3 /WX
+          CXX: cl.exe
+          CC: cl.exe
         run: |
           mkdir build
           cd build
@@ -66,7 +68,7 @@ jobs:
       - uses: actions/checkout@master
       - name: Configure
         env:
-          CXXFLAGS: -Wall -Werror
+          CXXFLAGS: -Werror
         run: |
           mkdir -p build
           cd build
