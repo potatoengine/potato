@@ -30,9 +30,9 @@ jobs:
           curl -s -S -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
           unzip assimp-4.1.0.zip -d %DEPS%
       - name: Install Ninja
-        uses: potatoengine/ghactions/setup-ninja@v3
+        uses: seanmiddleditch/gha-setup-ninja@master
       - name: Setup VS Environment
-        uses: potatoengine/ghactions/setup-vsdevenv@v3
+        uses: seanmiddleditch/gha-setup-vsdevenv@master
       - name: Configure
         env:
           CXXFLAGS: /W3 /WX
@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Install Ninja
-        uses: potatoengine/ghactions/setup-ninja@v3
+        uses: seanmiddleditch/gha-setup-ninja@master
       - name: Select XCode
         run: sudo /usr/bin/xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
         if: success() && runner.os == 'macOS'
@@ -134,7 +134,7 @@ jobs:
           path: html
         if: success() && github.event == 'push'
       - name: Publish to potatoengine.github.io
-        uses: potatoengine/ghactions/publish-to-git@v1
+        uses: seanmiddleditch/gha-publish-to-git@master
         with:
           repository: potatoengine/potatoengine.github.io
           branch: master
