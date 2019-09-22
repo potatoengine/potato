@@ -107,6 +107,9 @@ jobs:
         run: sudo apt-get -yq install doxygen
       - name: Checkout
         uses: actions/checkout@master
+      - name: Install uuid-dev
+        run: sudo apt-get -yq install uuid-dev
+        if: success() && runner.os == 'linux'
       - name: Configure
         run: |
           mkdir build
