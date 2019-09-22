@@ -114,22 +114,22 @@ jobs:
           name: html-docs
           path: build/documentation/doxygen/html
 
-  publish-doxygen:
-    name: Publish Docs
+  build-all:
+    name: All
+    needs: [ 'build-windows', 'build-posix', 'doxygen' ]
     runs-on: 'ubuntu-latest'
-    needs: [ 'doxygen', 'build-windows', 'build-posix' ]
 
     steps:
-      - name: Determine branch
+      - name: Determine Branch
         id: branch
         shell: bash
         run: 'echo ::set-output name=branch::$(echo "${GITHUB_BASE_REF:-GITHUB_REF}" | rev | cut -d/ -f1 | rev)'
-      - name: Fetch Artifacts
+      - name: Fetch Documentation Artifacts
         uses: actions/download-artifact@master
         with:
           name: html-docs
           path: html
-        if: github.event == 'push'
+        if: success() && github.event == 'push'
       - name: Publish to potatoengine.github.io
         uses: potatoengine/ghactions/publish-to-git@v1
         with:
@@ -140,11 +140,4 @@ jobs:
           source_folder: html
           target_folder: '${{ steps.branch.outputs.branch }}'
         if: success() && github.event == 'push'
-
-  build-all:
-    name: All
-    needs: [ 'build-windows', 'build-posix', 'publish-doxygen' ]
-    runs-on: 'ubuntu-latest'
-
-    steps:
       - run: echo "Build Complete"
