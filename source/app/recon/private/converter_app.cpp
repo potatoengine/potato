@@ -334,6 +334,6 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
         return EnumerateResult::Continue;
     };
 
-    _fileSystem.enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
+    _fileSystem->enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
     return files;
 };
