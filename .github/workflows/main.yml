@@ -1,0 +1,146 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request: []
+
+jobs:
+  build-windows:
+    strategy:
+      matrix:
+        config: [ Debug, Release ]
+
+    name: 'Windows (${{ matrix.config }} msvc)'
+    runs-on: 'windows-latest'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Set Environment
+        run: echo ::set-env name=DEPS::%HOME%\deps
+      - name: Install SDL2 SDK
+        run: |
+          curl -s -S -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+          unzip SDL2-devel-2.0.9-VC.zip -d %DEPS%
+          echo ::set-env name=SDL2DIR::%DEPS%\SDL2-2.0.9
+      - name: Install Assimp SDK
+        run: |
+          curl -s -S -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
+          unzip assimp-4.1.0.zip -d %DEPS%
+      - name: Install Ninja
+        uses: potatoengine/ghactions/setup-ninja@v3
+      - name: Setup VS Environment
+        uses: potatoengine/ghactions/setup-vsdevenv@v3
+      - name: Configure
+        env:
+          CXXFLAGS: /W3 /WX
+          CXX: cl.exe
+          CC: cl.exe
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%DEPS%/assimp-4.1.0" .. || exit /b 1
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: |
+          cd build
+          ctest -T test -R potato --verbose
+
+  build-posix:
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest', 'macos-latest' ]
+        config: [ 'Debug', 'Release' ]
+        include:
+          - name: Ubuntu
+            os: ubuntu-latest
+            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
+            cxx: g++-7
+            cc: gcc-7
+          - name: macOS
+            os: macos-latest
+            xcode: 10.3
+            cxxflags: -Wall -Werror
+            cxx: clang++
+            cc: clang
+    
+    name: '${{ matrix.name }} (${{ matrix.config }} ${{ matrix.cxx }})'
+    runs-on: '${{ matrix.os }}'
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Install Ninja
+        uses: potatoengine/ghactions/setup-ninja@v3
+      - name: Select XCode
+        run: sudo /usr/bin/xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
+        if: success() && runner.os == 'macOS'
+      - name: Configure
+        env:
+          CXXFLAGS: '${{ matrix.cxxflags }}'
+          CXX: '${{ matrix.cxx }}'
+          CC: '${{ matrix.cc }}'
+        run: |
+          echo $(which ninja)
+          echo $(./ninja-build/ninja -v)
+          mkdir -p build
+          cd build
+          cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: |
+          cd build
+          ctest -T test -R potato --verbose
+
+  doxygen:
+    name: Documentation
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - name: Install Doxygen
+        run: sudo apt-get -yq install doxygen
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake -DUP_BUILD_DOCS=ON ..
+      - name: Build Docs
+        run: cmake --build build --target doxygen
+      - name: Post Artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: html-docs
+          path: build/documentation/doxygen/html
+
+  build-all:
+    name: All
+    needs: [ 'build-windows', 'build-posix', 'doxygen' ]
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - name: Determine Branch
+        id: branch
+        shell: bash
+        run: 'echo ::set-output name=branch::$(echo "${GITHUB_BASE_REF:-GITHUB_REF}" | rev | cut -d/ -f1 | rev)'
+      - name: Fetch Documentation Artifacts
+        uses: actions/download-artifact@master
+        with:
+          name: html-docs
+          path: html
+        if: success() && github.event == 'push'
+      - name: Publish to potatoengine.github.io
+        uses: potatoengine/ghactions/publish-to-git@v1
+        with:
+          repository: potatoengine/potatoengine.github.io
+          branch: master
+          github_token: '${{ secrets.GITHUB_TOKEN  }}'
+          github_pat: '${{ secrets.GH_PAT }}'
+          source_folder: html
+          target_folder: '${{ steps.branch.outputs.branch }}'
+        if: success() && github.event == 'push'
+      - run: echo "Build Complete"

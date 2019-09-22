@@ -170,10 +170,10 @@ auto up::NativeFileSystem::removeRecursive(zstring_view path) -> IOResult {
 auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
     // FIXME: https://eklitzke.org/path-max-is-tricky
     char buffer[PATH_MAX] = {0,};
-    getcwd(buffer, sizeof(buffer));
-    return string(buffer);
+    char* result = getcwd(buffer, sizeof(buffer));
+    return result != nullptr ? string(buffer) : string{};
 }
 
-void up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
-    chdir(path.c_str());
+bool up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
+    return 0 == chdir(path.c_str());
 }

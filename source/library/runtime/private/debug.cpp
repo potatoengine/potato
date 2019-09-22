@@ -23,10 +23,11 @@ auto up::_detail::raiseFatalError(char const* file, int line, char const* failed
     }
 
     std::array<uintptr, 64> addresses = {};
+
+#if !defined(NDEBUG)
     std::array<callstack::TraceRecord, 64> records = {};
     auto stack = callstack::readTrace(addresses);
 
-#if !defined(NDEBUG)
     auto resolvedRecords = callstack::resolveTraceRecords(stack, records);
     if (!resolvedRecords.empty()) {
         for (auto const& record : resolvedRecords) {
