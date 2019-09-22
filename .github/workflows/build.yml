@@ -12,7 +12,7 @@ jobs:
       matrix:
         config: [ Debug, Release ]
 
-    name: 'Build Windows (${{ matrix.config }})'
+    name: 'Windows (${{ matrix.config }} msvc)'
     runs-on: 'windows-latest'
 
     steps:
@@ -64,7 +64,7 @@ jobs:
             cxx: clang++
             cc: clang
     
-    name: 'Build ${{ matrix.name }} (${{ matrix.config }} ${{ matrix.cxx }})'
+    name: '${{ matrix.name }} (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: '${{ matrix.os }}'
 
     steps:
