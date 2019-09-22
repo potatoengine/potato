@@ -73,7 +73,7 @@ jobs:
         uses: potatoengine/ghactions/setup-ninja@v3
       - name: Select XCode
         run: sudo /usr/bin/xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
-        if: runner.os == 'macOS'
+        if: success() && runner.os == 'macOS'
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
