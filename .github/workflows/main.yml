@@ -18,14 +18,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@master
-      - name: Install Dependencies
+      - name: Set Environment
+        run: echo ::set-env name=DEPS::%HOME%\deps
+      - name: Install SDL2 SDK
         run: |
-          set DEPS=%HOME%\deps
           curl -s -S -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
           unzip SDL2-devel-2.0.9-VC.zip -d %DEPS%
+          echo ::set-env name=SDL2DIR::%DEPS%\SDL2-2.0.9
+      - name: Install Assimp SDK
+        run: |
           curl -s -S -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
           unzip assimp-4.1.0.zip -d %DEPS%
-          echo ::set-env name=DEPS::%DEPS%
       - name: Install Ninja
         uses: potatoengine/ghactions/setup-ninja@v3
       - name: Setup VS Environment
@@ -38,7 +41,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DSDL2_PATH:PATH="%DEPS%/SDL2-2.0.9" -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%DEPS%/assimp-4.1.0" .. || exit /b 1
+          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%DEPS%/assimp-4.1.0" .. || exit /b 1
       - name: Build
         run: cmake --build build --parallel
       - name: Test
