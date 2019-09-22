@@ -91,3 +91,11 @@ jobs:
         run: |
           cd build
           ctest -T test -R potato --verbose
+
+  build-all:
+    name: All
+    needs: [ 'build-windows', 'build-posix' ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "Build Complete"
