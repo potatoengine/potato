@@ -27,9 +27,9 @@ jobs:
           unzip assimp-4.1.0.zip -d %DEPS%
           echo ::set-env name=DEPS::%DEPS%
       - name: Install Ninja
-        uses: potatoengine/ghactions/setup-ninja@master
+        uses: potatoengine/ghactions/setup-ninja@v3
       - name: Setup VS Environment
-        uses: potatoengine/ghactions/setup-vsdevenv@master
+        uses: potatoengine/ghactions/setup-vsdevenv@v3
       - name: Configure
         env:
           CXXFLAGS: /W3 /WX
@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Install Ninja
-        uses: potatoengine/ghactions/setup-ninja@master
+        uses: potatoengine/ghactions/setup-ninja@v3
       - name: Select XCode
         run: sudo /usr/bin/xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
         if: runner.os == 'macOS'
