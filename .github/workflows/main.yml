@@ -77,6 +77,9 @@ jobs:
       - name: Select XCode
         run: sudo /usr/bin/xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
         if: success() && runner.os == 'macOS'
+      - name: Install uuid-dev
+        run: sudo apt-get -yq install uuid-dev
+        if: success() && runner.os == 'linux'
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
