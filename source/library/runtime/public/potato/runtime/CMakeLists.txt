@@ -6,9 +6,14 @@ target_sources(runtime PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/debug.h
     ${CMAKE_CURRENT_SOURCE_DIR}/filesystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/json.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/log_receiver.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/log_severity.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/logger.h
     ${CMAKE_CURRENT_SOURCE_DIR}/native.h
     ${CMAKE_CURRENT_SOURCE_DIR}/null.h
     ${CMAKE_CURRENT_SOURCE_DIR}/path.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/standard_stream_receiver.h
     ${CMAKE_CURRENT_SOURCE_DIR}/stream.h
     ${CMAKE_CURRENT_SOURCE_DIR}/vfs.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/win32_debug_receiver.h
 )

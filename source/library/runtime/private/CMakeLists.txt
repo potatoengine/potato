@@ -21,14 +21,22 @@ target_sources(runtime PRIVATE
     $<$<BOOL:${UNIX}>:${CMAKE_CURRENT_SOURCE_DIR}/native.posix.cpp>
 )
 
+# Logger backends
+#
+target_sources(runtime PRIVATE
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/win32_debug_receiver.windows.cpp>
+)
+
 # General runtime code
 #
 target_sources(runtime PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/debug.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/json.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/logger.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/path.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/native.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/null.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/standard_stream_receiver.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/stream.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/uuid.cpp
 )

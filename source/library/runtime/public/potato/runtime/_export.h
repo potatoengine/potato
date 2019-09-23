@@ -11,3 +11,5 @@
 #else
 #    define UP_RUNTIME_API
 #endif
+
+#define UP_LOGGER_API UP_RUNTIME_API
