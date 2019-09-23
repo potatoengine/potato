@@ -11,7 +11,6 @@ target_link_libraries(image
     PUBLIC
         potato::runtime
         potato::spud
-        potato::filesystem
         stb
     PRIVATE
         doctest

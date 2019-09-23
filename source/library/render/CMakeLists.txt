@@ -21,7 +21,6 @@ if(TARGET assimp AND TARGET SDL2)
             potato::gpu
             potato::concurrency
             potato::image
-            potato::filesystem
             glm
         PRIVATE
             imgui
