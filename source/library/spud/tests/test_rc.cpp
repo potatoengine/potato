@@ -16,7 +16,7 @@ namespace {
     };
 } // namespace
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::rc") {
+DOCTEST_TEST_SUITE("[potato][spud] up::rc") {
     using namespace up;
 
     DOCTEST_TEST_CASE("empty rc") {

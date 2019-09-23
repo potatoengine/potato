@@ -10,7 +10,7 @@ namespace {
     };
 } // namespace
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::delegate") {
+DOCTEST_TEST_SUITE("[potato][spud] up::delegate") {
     using namespace up;
 
     DOCTEST_TEST_CASE("empty delegate") {

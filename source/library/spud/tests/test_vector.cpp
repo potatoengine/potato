@@ -2,7 +2,7 @@
 #include "potato/spud/string.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[potato][foundation] vector") {
+DOCTEST_TEST_SUITE("[potato][spud] vector") {
     using namespace up;
 
     DOCTEST_TEST_CASE("vector default initialization") {

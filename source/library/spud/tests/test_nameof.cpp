@@ -6,7 +6,7 @@ static_assert(up::nameof<int>() == "int");
 template <typename T>
 struct as_template {};
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::nameof") {
+DOCTEST_TEST_SUITE("[potato][spud] up::nameof") {
     using namespace up;
 
     DOCTEST_TEST_CASE("builtin types") {

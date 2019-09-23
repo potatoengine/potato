@@ -4,7 +4,7 @@
 #include "potato/spud/span.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::hash") {
+DOCTEST_TEST_SUITE("[potato][spud] up::hash") {
     using namespace up;
 
     DOCTEST_TEST_CASE("default hash_value") {

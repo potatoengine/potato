@@ -2,7 +2,7 @@
 #include <doctest/doctest.h>
 #include <ostream>
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::string") {
+DOCTEST_TEST_SUITE("[potato][spud] up::string") {
     using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {

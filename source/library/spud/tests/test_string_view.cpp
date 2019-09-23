@@ -3,7 +3,7 @@
 #include <ostream>
 #include <cstring>
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::string_view") {
+DOCTEST_TEST_SUITE("[potato][spud] up::string_view") {
     using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {

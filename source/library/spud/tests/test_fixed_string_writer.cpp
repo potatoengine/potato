@@ -1,7 +1,7 @@
 #include "potato/spud/fixed_string_writer.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::fixed_string_writer") {
+DOCTEST_TEST_SUITE("[potato][spud] up::fixed_string_writer") {
     using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {
