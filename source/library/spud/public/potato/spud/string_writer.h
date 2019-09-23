@@ -40,7 +40,7 @@ namespace up {
         const_pointer data() const noexcept { return _ptr; }
 
         const_pointer c_str() const noexcept {
-            UP_FOUNDATION_ASSERT(_ptr[_size] == '\0', "acquire() operation did not commit()");
+            UP_SPUD_ASSERT(_ptr[_size] == '\0', "acquire() operation did not commit()");
             return _ptr;
         }
 
@@ -98,7 +98,7 @@ void up::string_writer::write(const_pointer data, size_type length) {
 void up::string_writer::reserve(size_type capacity) {
     if (capacity >= _capacity) {
         size_type newCapacity = capacity + 1;
-        UP_FOUNDATION_ASSERT(newCapacity > capacity, "overflow");
+        UP_SPUD_ASSERT(newCapacity > capacity, "overflow");
 
         auto newBuffer = new value_type[newCapacity];
 
@@ -119,8 +119,8 @@ auto up::string_writer::acquire(size_type size) -> span<char> {
 }
 
 void up::string_writer::commit(span<char const> data) {
-    UP_FOUNDATION_ASSERT(data.data() == _ptr + _size, "commit() does not match acquire()d buffer");
-    UP_FOUNDATION_ASSERT(data.size() <= _capacity - 1 - _size, "commit() size exceeds acquired()d buffer");
+    UP_SPUD_ASSERT(data.data() == _ptr + _size, "commit() does not match acquire()d buffer");
+    UP_SPUD_ASSERT(data.size() <= _capacity - 1 - _size, "commit() size exceeds acquired()d buffer");
 
     _size += data.size();
     _ptr[_size] = '\0';

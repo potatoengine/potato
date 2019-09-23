@@ -2,11 +2,11 @@
 
 #pragma once
 
-#if defined(UP_FOUNDATION_ASSERT_HEADER)
-#   include UP_FOUNDATION_ASSERT_HEADER
+#if defined(UP_SPUD_ASSERT_HEADER)
+#   include UP_SPUD_ASSERT_HEADER
 #endif
 
-#if !defined(UP_FOUNDATION_ASSERT)
+#if !defined(UP_SPUD_ASSERT)
 #    include <cassert>
-#    define UP_FOUNDATION_ASSERT(condition, message) assert((condition) && (message))
+#    define UP_SPUD_ASSERT(condition, message) assert((condition) && (message))
 #endif

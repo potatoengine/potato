@@ -156,7 +156,7 @@ public:
         : delegate([object, method](ParamTypes&&... params) { return (object->*method)(std::forward<ParamTypes>(params)...); }) {}
 
     auto operator()(ParamTypes... params) -> ReturnType {
-        UP_FOUNDATION_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
+        UP_SPUD_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
         return static_cast<vtable_c const*>(this->_vtable)->call(&this->_storage, std::forward<ParamTypes>(params)...);
     }
 };
@@ -178,7 +178,7 @@ public:
         : delegate([object, method](ParamTypes&&... params) { return (object->*method)(std::forward<ParamTypes>(params)...); }) {}
 
     auto operator()(ParamTypes... params) const -> ReturnType {
-        UP_FOUNDATION_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
+        UP_SPUD_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
         return static_cast<vtable_c const*>(this->_vtable)->call(&this->_storage, std::forward<ParamTypes>(params)...);
     }
 };

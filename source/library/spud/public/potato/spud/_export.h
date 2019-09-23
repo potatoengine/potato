@@ -4,10 +4,10 @@
 
 #if defined(UP_FOUNDATION_EXPORTS)
 #    if defined(_WINDOWS)
-#        define UP_FOUNDATION_API __declspec(dllexport)
+#        define UP_SPUD_API __declspec(dllexport)
 #    else
-#        define UP_FOUNDATION_API [[gnu::visibility("default")]]
+#        define UP_SPUD_API [[gnu::visibility("default")]]
 #    endif
 #else
-#    define UP_FOUNDATION_API
+#    define UP_SPUD_API
 #endif

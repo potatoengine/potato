@@ -201,7 +201,7 @@ namespace up {
 
     template <typename T>
     T* vector<T>::release() {
-        UP_FOUNDATION_ASSERT(_last == _sentinel, "Releasing memory from a vector that has uninitialized capacity; call resize(capacity()) first!");
+        UP_SPUD_ASSERT(_last == _sentinel, "Releasing memory from a vector that has uninitialized capacity; call resize(capacity()) first!");
         T* tmp = _first;
         _first = _last = _sentinel = nullptr;
         return tmp;
@@ -387,7 +387,7 @@ namespace up {
     template <typename IteratorT, typename SentinelT>
     auto vector<T>::insert(const_iterator pos, IteratorT begin, SentinelT end) -> iterator {
         if constexpr (std::is_same_v<pointer, IteratorT> || std::is_same_v<const_pointer, IteratorT>) {
-            UP_FOUNDATION_ASSERT(begin < _first || begin >= _last, "Inserting a sub-range of a vector into itself is not supported");
+            UP_SPUD_ASSERT(begin < _first || begin >= _last, "Inserting a sub-range of a vector into itself is not supported");
         }
 
         auto const count = end - begin;

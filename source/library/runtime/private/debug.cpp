@@ -9,7 +9,7 @@
 
 namespace up::_detail {
     // platform-specific function that must be implemented
-    UP_FOUNDATION_API UP_NOINLINE FatalErrorAction handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
+    UP_RUNTIME_API UP_NOINLINE FatalErrorAction handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
 } // namespace up::_detail
 
 auto up::_detail::raiseFatalError(char const* file, int line, char const* failedConditionText, char const* messageText) -> FatalErrorAction {
