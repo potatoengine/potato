@@ -11,9 +11,9 @@ namespace up {
     class string;
     class Stream;
 
-    extern auto UP_FILESYSTEM_API readJson(Stream& stream, nlohmann::json& json) -> IOResult;
+    extern auto UP_RUNTIME_API readJson(Stream& stream, nlohmann::json& json) -> IOResult;
 
     // nlohmann overloads
-    extern void UP_FILESYSTEM_API to_json(nlohmann::json& json, string_view str) noexcept;
-    extern void UP_FILESYSTEM_API from_json(const nlohmann::json& json, string& str) noexcept;
+    extern void UP_RUNTIME_API to_json(nlohmann::json& json, string_view str) noexcept;
+    extern void UP_RUNTIME_API from_json(const nlohmann::json& json, string& str) noexcept;
 } // namespace up

@@ -77,8 +77,8 @@ namespace up {
         box<Backend> _impl;
     };
 
-    [[nodiscard]] UP_FILESYSTEM_API IOResult readBinary(Stream& stream, vector<up::byte>& out);
-    [[nodiscard]] UP_FILESYSTEM_API IOResult readText(Stream& stream, string& out);
+    [[nodiscard]] UP_RUNTIME_API IOResult readBinary(Stream& stream, vector<up::byte>& out);
+    [[nodiscard]] UP_RUNTIME_API IOResult readText(Stream& stream, string& out);
 
-    [[nodiscard]] UP_FILESYSTEM_API IOResult writeAllText(Stream& stream, string_view text);
+    [[nodiscard]] UP_RUNTIME_API IOResult writeAllText(Stream& stream, string_view text);
 } // namespace up
