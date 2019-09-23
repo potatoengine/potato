@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "_export.h"
 #include "_assertion.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/string.h"
