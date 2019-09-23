@@ -3,10 +3,10 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/box.h"
-#include "potato/foundation/rc.h"
-#include "potato/foundation/unique_resource.h"
-#include "potato/foundation/string.h"
+#include "potato/spud/box.h"
+#include "potato/spud/rc.h"
+#include "potato/spud/unique_resource.h"
+#include "potato/spud/string.h"
 #include "potato/filesystem/stream.h"
 
 namespace up {

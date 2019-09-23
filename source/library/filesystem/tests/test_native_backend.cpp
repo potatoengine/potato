@@ -1,5 +1,5 @@
-#include "potato/foundation/vector.h"
-#include "potato/foundation/string.h"
+#include "potato/spud/vector.h"
+#include "potato/spud/string.h"
 #include "potato/filesystem/native.h"
 #include "potato/filesystem/stream.h"
 #include <doctest/doctest.h>

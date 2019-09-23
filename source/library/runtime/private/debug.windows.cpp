@@ -3,9 +3,9 @@
 #include "debug.windows.h"
 #include "potato/runtime/callstack.h"
 #include "potato/runtime/debug.h"
-#include "potato/foundation/platform_windows.h"
-#include "potato/foundation/string_format.h"
-#include "potato/foundation/fixed_string_writer.h"
+#include "potato/spud/platform_windows.h"
+#include "potato/spud/string_format.h"
+#include "potato/spud/fixed_string_writer.h"
 
 namespace {
     struct DialogData {

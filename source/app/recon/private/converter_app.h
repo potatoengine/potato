@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "potato/foundation/box.h"
-#include "potato/foundation/delegate.h"
-#include "potato/foundation/span.h"
-#include "potato/foundation/string.h"
-#include "potato/foundation/string_view.h"
-#include "potato/foundation/zstring_view.h"
-#include "potato/foundation/vector.h"
+#include "potato/spud/box.h"
+#include "potato/spud/delegate.h"
+#include "potato/spud/span.h"
+#include "potato/spud/string.h"
+#include "potato/spud/string_view.h"
+#include "potato/spud/zstring_view.h"
+#include "potato/spud/vector.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/recon/converter.h"
 #include "potato/recon/converter_config.h"

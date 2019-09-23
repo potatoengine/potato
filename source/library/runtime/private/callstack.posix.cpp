@@ -1,9 +1,9 @@
 // Copyright (C) 22015 Sean Middleditch, all rights reserverd.
 
 #include <potato/runtime/callstack.h>
-#include "potato/foundation/platform.h"
-#include "potato/foundation/string.h"
-#include "potato/foundation/numeric_util.h"
+#include "potato/spud/platform.h"
+#include "potato/spud/string.h"
+#include "potato/spud/numeric_util.h"
 
 #include <cstring>
 #include <cstdlib>

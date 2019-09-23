@@ -2,7 +2,7 @@
 
 #include "potato/filesystem/path.h"
 #include <potato/runtime/assertion.h>
-#include "potato/foundation/string_writer.h"
+#include "potato/spud/string_writer.h"
 
 // returns extension, including dot, e.g. foo.txt -> .txt
 // only the last extension is returned, e.g. foo.txt.gz -> .gz

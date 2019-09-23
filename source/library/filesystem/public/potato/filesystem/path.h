@@ -3,9 +3,9 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/string.h"
-#include "potato/foundation/zstring_view.h"
-#include "potato/foundation/int_types.h"
+#include "potato/spud/string.h"
+#include "potato/spud/zstring_view.h"
+#include "potato/spud/int_types.h"
 #include <initializer_list>
 
 namespace up::path {

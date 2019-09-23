@@ -3,9 +3,9 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/box.h"
-#include "potato/foundation/rc.h"
-#include "potato/foundation/vector.h"
+#include "potato/spud/box.h"
+#include "potato/spud/rc.h"
+#include "potato/spud/vector.h"
 
 namespace up {
     class CommandList;

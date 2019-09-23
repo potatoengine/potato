@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "potato/foundation/string.h"
-#include "potato/foundation/zstring_view.h"
-#include "potato/foundation/vector.h"
-#include "potato/foundation/std_iostream.h"
+#include "potato/spud/string.h"
+#include "potato/spud/zstring_view.h"
+#include "potato/spud/vector.h"
+#include "potato/spud/std_iostream.h"
 #include "potato/assetdb/asset_record.h"
 #include <string>
 

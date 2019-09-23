@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "potato/foundation/span.h"
-#include "potato/foundation/int_types.h"
+#include "potato/spud/span.h"
+#include "potato/spud/int_types.h"
 
 namespace up {
     enum class GpuFormat {

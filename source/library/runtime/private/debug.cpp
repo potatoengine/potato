@@ -2,8 +2,8 @@
 
 #include "potato/runtime/debug.h"
 #include "potato/runtime/callstack.h"
-#include "potato/foundation/string_format.h"
-#include "potato/foundation/string_writer.h"
+#include "potato/spud/string_format.h"
+#include "potato/spud/string_writer.h"
 #include <iostream>
 #include <array>
 

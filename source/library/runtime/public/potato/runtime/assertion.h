@@ -3,8 +3,8 @@
 #pragma once
 
 #include <potato/runtime/debug.h>
-#include <potato/foundation/string_format.h>
-#include <potato/foundation/fixed_string_writer.h>
+#include <potato/spud/string_format.h>
+#include <potato/spud/fixed_string_writer.h>
 #include <utility>
 
 #if defined(NDEBUG)

@@ -4,10 +4,10 @@
 
 #include "_export.h"
 #include "potato/ecs/component.h"
-#include "potato/foundation/vector.h"
-#include "potato/foundation/delegate_ref.h"
-#include "potato/foundation/rc.h"
-#include "potato/foundation/box.h"
+#include "potato/spud/vector.h"
+#include "potato/spud/delegate_ref.h"
+#include "potato/spud/rc.h"
+#include "potato/spud/box.h"
 
 namespace up {
     template <typename... Components>

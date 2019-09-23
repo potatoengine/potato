@@ -3,8 +3,8 @@
 #pragma once
 
 #include <potato/runtime/assertion.h>
-#include "potato/foundation/box.h"
-#include "potato/foundation/int_types.h"
+#include "potato/spud/box.h"
+#include "potato/spud/int_types.h"
 #include <atomic>
 #include <thread>
 #include <mutex>

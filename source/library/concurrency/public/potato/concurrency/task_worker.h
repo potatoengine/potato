@@ -5,8 +5,8 @@
 #include "_export.h"
 #include "thread_util.h"
 #include "concurrent_queue.h"
-#include "potato/foundation/zstring_view.h"
-#include "potato/foundation/delegate.h"
+#include "potato/spud/zstring_view.h"
+#include "potato/spud/delegate.h"
 #include <thread>
 
 namespace up {

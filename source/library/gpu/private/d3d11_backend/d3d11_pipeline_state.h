@@ -4,7 +4,7 @@
 
 #include "d3d11_platform.h"
 #include "potato/gpu/com_ptr.h"
-#include "potato/foundation/box.h"
+#include "potato/spud/box.h"
 #include "potato/gpu/pipeline_state.h"
 
 namespace up::d3d11 {

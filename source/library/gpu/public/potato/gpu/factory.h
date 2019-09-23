@@ -3,9 +3,9 @@
 #pragma once
 
 #include "common.h"
-#include "potato/foundation/box.h"
-#include "potato/foundation/delegate.h"
-#include "potato/foundation/rc.h"
+#include "potato/spud/box.h"
+#include "potato/spud/delegate.h"
+#include "potato/spud/rc.h"
 
 #include "_export.h"
 

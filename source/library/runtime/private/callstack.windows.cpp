@@ -1,15 +1,15 @@
 // Copyright (C) 22015 Sean Middleditch, all rights reserverd.
 
 #include "potato/runtime/callstack.h"
-#include "potato/foundation/platform.h"
-#include "potato/foundation/int_types.h"
+#include "potato/spud/platform.h"
+#include "potato/spud/int_types.h"
 
 #if !defined(UP_PLATFORM_WINDOWS)
 #    error "Unsupported platform"
 #endif
 
-#include "potato/foundation/numeric_util.h"
-#include "potato/foundation/platform_windows.h"
+#include "potato/spud/numeric_util.h"
+#include "potato/spud/platform_windows.h"
 
 #pragma warning(disable : 4091)
 #include <dbghelp.h>

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/box.h"
-#include "potato/foundation/int_types.h"
-#include "potato/foundation/span.h"
+#include "potato/spud/box.h"
+#include "potato/spud/int_types.h"
+#include "potato/spud/span.h"
 #include "common.h"
 
 namespace up {

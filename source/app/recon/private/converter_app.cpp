@@ -1,9 +1,9 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "converter_app.h"
-#include "potato/foundation/string_view.h"
-#include "potato/foundation/string_writer.h"
-#include "potato/foundation/std_iostream.h"
+#include "potato/spud/string_view.h"
+#include "potato/spud/string_writer.h"
+#include "potato/spud/std_iostream.h"
 #include "potato/runtime/uuid.h"
 #include "potato/filesystem/path.h"
 #include "potato/filesystem/filesystem.h"

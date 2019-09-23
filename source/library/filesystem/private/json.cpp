@@ -2,8 +2,8 @@
 
 #include "potato/filesystem/json.h"
 #include "potato/filesystem/stream.h"
-#include "potato/foundation/string.h"
-#include "potato/foundation/string_view.h"
+#include "potato/spud/string.h"
+#include "potato/spud/string_view.h"
 #include <nlohmann/json.hpp>
 
 auto up::readJson(Stream& stream, nlohmann::json& json) -> IOResult {

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "potato/ecs/common.h"
-#include "potato/foundation/string_view.h"
-#include "potato/foundation/hash_fnv1a.h"
-#include "potato/foundation/traits.h"
+#include "potato/spud/string_view.h"
+#include "potato/spud/hash_fnv1a.h"
+#include "potato/spud/traits.h"
 #include <utility>
 #include <cstring>
 

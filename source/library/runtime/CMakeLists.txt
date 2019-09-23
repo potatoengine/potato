@@ -24,7 +24,7 @@ endif()
 
 target_link_libraries(runtime
     PUBLIC
-        foundation
+        potato::spud
         ${UP_UUID_LIBRARY}
 )
 

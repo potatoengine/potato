@@ -7,9 +7,9 @@
 #include "d3d11_platform.h"
 #include "d3d11_texture.h"
 #include "d3d11_sampler.h"
-#include "potato/foundation/int_types.h"
+#include "potato/spud/int_types.h"
 #include <potato/runtime/assertion.h>
-#include "potato/foundation/out_ptr.h"
+#include "potato/spud/out_ptr.h"
 
 up::d3d11::CommandListD3D11::CommandListD3D11(com_ptr<ID3D11DeviceContext> context) : _context(std::move(context)) {}
 

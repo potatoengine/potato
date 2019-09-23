@@ -4,11 +4,11 @@
 
 #include "_export.h"
 #include "world.h"
-#include "potato/foundation/typelist.h"
-#include "potato/foundation/vector.h"
-#include "potato/foundation/delegate_ref.h"
-#include "potato/foundation/span.h"
-#include "potato/foundation/sort.h"
+#include "potato/spud/typelist.h"
+#include "potato/spud/vector.h"
+#include "potato/spud/delegate_ref.h"
+#include "potato/spud/span.h"
+#include "potato/spud/sort.h"
 #include "potato/ecs/component.h"
 
 namespace up {

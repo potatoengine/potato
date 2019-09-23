@@ -3,8 +3,8 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/box.h"
-#include "potato/foundation/rc.h"
+#include "potato/spud/box.h"
+#include "potato/spud/rc.h"
 #include "potato/image/image.h"
 
 namespace up {

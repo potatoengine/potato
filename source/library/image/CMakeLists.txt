@@ -10,7 +10,7 @@ up_set_common_properties(image)
 target_link_libraries(image
     PUBLIC
         potato::runtime
-        potato::foundation
+        potato::spud
         potato::filesystem
         stb
     PRIVATE

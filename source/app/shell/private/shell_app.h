@@ -1,7 +1,7 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#include "potato/foundation/box.h"
-#include "potato/foundation/unique_resource.h"
+#include "potato/spud/box.h"
+#include "potato/spud/unique_resource.h"
 #include "potato/filesystem/native.h"
 #include "potato/render/draw_imgui.h"
 #include "potato/logger/logger.h"

@@ -3,8 +3,8 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/span.h"
-#include "potato/foundation/platform.h"
+#include "potato/spud/span.h"
+#include "potato/spud/platform.h"
 #include <atomic>
 
 namespace up {

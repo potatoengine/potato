@@ -10,7 +10,7 @@ up_set_common_properties(assetdb)
 target_link_libraries(assetdb
     PUBLIC
         potato::runtime
-        potato::foundation
+        potato::spud
         potato::filesystem
     PRIVATE
         doctest

@@ -4,8 +4,8 @@
 #include "d3d11_texture.h"
 #include "d3d11_platform.h"
 #include "potato/gpu/com_ptr.h"
-#include "potato/foundation/box.h"
-#include "potato/foundation/out_ptr.h"
+#include "potato/spud/box.h"
+#include "potato/spud/out_ptr.h"
 #include <utility>
 
 up::d3d11::SwapChainD3D11::SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain) : _swapChain(std::move(swapChain)) {}

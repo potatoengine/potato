@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "potato/foundation/int_types.h"
+#include "potato/spud/int_types.h"
 
 namespace up {
     /// Unique identifier for an Archetype

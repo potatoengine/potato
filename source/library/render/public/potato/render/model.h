@@ -3,9 +3,9 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/box.h"
-#include "potato/foundation/rc.h"
-#include "potato/foundation/platform.h"
+#include "potato/spud/box.h"
+#include "potato/spud/rc.h"
+#include "potato/spud/platform.h"
 #include <glm/mat4x4.hpp>
 
 namespace up {

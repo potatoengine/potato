@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/logger/standard_stream_receiver.h"
-#include "potato/foundation/std_iostream.h"
+#include "potato/spud/std_iostream.h"
 #include "potato/concurrency/lock_guard.h"
 #include <iostream>
 

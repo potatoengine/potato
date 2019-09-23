@@ -4,9 +4,9 @@
 
 #include "_export.h"
 #include "render_task.h"
-#include "potato/foundation/box.h"
-#include "potato/foundation/rc.h"
-#include "potato/foundation/zstring_view.h"
+#include "potato/spud/box.h"
+#include "potato/spud/rc.h"
+#include "potato/spud/zstring_view.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/concurrency/concurrent_queue.h"
 #include <thread>
