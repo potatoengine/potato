@@ -3,12 +3,12 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/span.h"
-#include "potato/foundation/string.h"
-#include "potato/foundation/zstring_view.h"
-#include "potato/foundation/box.h"
-#include "potato/foundation/int_types.h"
-#include "potato/foundation/hash.h"
+#include "potato/spud/span.h"
+#include "potato/spud/string.h"
+#include "potato/spud/zstring_view.h"
+#include "potato/spud/box.h"
+#include "potato/spud/int_types.h"
+#include "potato/spud/hash.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/stream.h"
 #include <unordered_map>

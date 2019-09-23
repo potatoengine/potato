@@ -11,7 +11,7 @@
 #include "d3d11_texture.h"
 #include "d3d11_sampler.h"
 #include <potato/runtime/assertion.h>
-#include "potato/foundation/out_ptr.h"
+#include "potato/spud/out_ptr.h"
 #include <utility>
 
 up::d3d11::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context)

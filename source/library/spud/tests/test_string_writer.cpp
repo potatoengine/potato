@@ -1,8 +1,8 @@
-#include "potato/foundation/string_writer.h"
-#include "potato/foundation/string.h"
+#include "potato/spud/string_writer.h"
+#include "potato/spud/string.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::string_writer") {
+DOCTEST_TEST_SUITE("[potato][spud] up::string_writer") {
     using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {

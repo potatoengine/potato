@@ -3,7 +3,7 @@
 #pragma once
 
 #include "_export.h"
-#include <potato/foundation/platform.h>
+#include <potato/spud/platform.h>
 
 #include <cstdlib>
 

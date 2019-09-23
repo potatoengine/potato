@@ -2,12 +2,12 @@
 
 #include "potato/runtime/uuid.h"
 #include "potato/runtime/assertion.h"
-#include "potato/foundation/string_writer.h"
+#include "potato/spud/string_writer.h"
 
 using namespace up;
 
 #ifdef UP_PLATFORM_WINDOWS
-#    include "potato/foundation/platform_windows.h"
+#    include "potato/spud/platform_windows.h"
 #    include <rpc.h>
 #elif defined UP_PLATFORM_LINUX
 #    include <uuid/uuid.h>

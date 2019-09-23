@@ -4,8 +4,8 @@
 
 #include "_export.h"
 #include "pixel_format.h"
-#include "potato/foundation/int_types.h"
-#include "potato/foundation/vector.h"
+#include "potato/spud/int_types.h"
+#include "potato/spud/vector.h"
 
 namespace up {
     class Stream;

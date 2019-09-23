@@ -4,8 +4,8 @@
 
 #include "_export.h"
 #include "potato/logger/common.h"
-#include "potato/foundation/string_view.h"
-#include "potato/foundation/rc.h"
+#include "potato/spud/string_view.h"
+#include "potato/spud/rc.h"
 #include <utility>
 
 namespace up {

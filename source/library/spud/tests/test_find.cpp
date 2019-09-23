@@ -1,5 +1,5 @@
-#include "potato/foundation/find.h"
-#include "potato/foundation/vector.h"
+#include "potato/spud/find.h"
+#include "potato/spud/vector.h"
 #include <doctest/doctest.h>
 #include <iostream>
 
@@ -8,7 +8,7 @@ namespace {
     constexpr bool is_negative(int val) noexcept { return val < 0; }
 }
 
-DOCTEST_TEST_SUITE("[potato][foundation] find algorithms") {
+DOCTEST_TEST_SUITE("[potato][spud] find algorithms") {
     using namespace up;
 
     int array[] = {4, 7, 9, 2, 1, 0, 900};

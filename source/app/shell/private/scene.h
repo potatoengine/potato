@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include <potato/foundation/box.h>
-#include <potato/foundation/rc.h>
+#include <potato/spud/box.h>
+#include <potato/spud/rc.h>
 #include <potato/ecs/query.h>
 
 namespace up::components {

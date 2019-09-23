@@ -1,4 +1,4 @@
-#include "potato/foundation/delegate.h"
+#include "potato/spud/delegate.h"
 #include <doctest/doctest.h>
 
 namespace {
@@ -10,7 +10,7 @@ namespace {
     };
 } // namespace
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::delegate") {
+DOCTEST_TEST_SUITE("[potato][spud] up::delegate") {
     using namespace up;
 
     DOCTEST_TEST_CASE("empty delegate") {

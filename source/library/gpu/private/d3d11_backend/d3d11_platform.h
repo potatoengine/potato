@@ -3,8 +3,8 @@
 #pragma once
 
 #include "potato/gpu/common.h"
-#include "potato/foundation/zstring_view.h"
-#include "potato/foundation/platform_windows.h"
+#include "potato/spud/zstring_view.h"
+#include "potato/spud/platform_windows.h"
 #include <d3d11.h>
 #include <dxgi1_2.h>
 

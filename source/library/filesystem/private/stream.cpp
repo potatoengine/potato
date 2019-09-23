@@ -1,9 +1,9 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/filesystem/stream.h"
-#include "potato/foundation/string_writer.h"
-#include "potato/foundation/vector.h"
-#include "potato/foundation/string.h"
+#include "potato/spud/string_writer.h"
+#include "potato/spud/vector.h"
+#include "potato/spud/string.h"
 
 auto up::readBinary(Stream& stream, vector<up::byte>& out) -> IOResult {
     if (!stream.canRead() || !stream.canSeek()) {

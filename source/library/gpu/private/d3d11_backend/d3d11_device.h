@@ -4,7 +4,7 @@
 
 #include "d3d11_platform.h"
 #include "potato/gpu/com_ptr.h"
-#include "potato/foundation/unique_resource.h"
+#include "potato/spud/unique_resource.h"
 #include "potato/gpu/device.h"
 
 namespace up::d3d11 {

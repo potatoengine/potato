@@ -11,7 +11,7 @@ if(WIN32)
 
     target_link_libraries(shell PRIVATE
         potato::runtime
-        potato::foundation
+        potato::spud
         potato::filesystem
         potato::gpu
         potato::render

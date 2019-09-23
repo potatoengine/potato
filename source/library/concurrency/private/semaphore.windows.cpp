@@ -4,7 +4,7 @@
 //   https://github.com/preshing/cpp11-on-multicore
 
 #include "potato/concurrency/semaphore.h"
-#include "potato/foundation/platform_windows.h"
+#include "potato/spud/platform_windows.h"
 #include <limits>
 
 up::Semaphore::Semaphore(int initial) : _counter(initial), _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {

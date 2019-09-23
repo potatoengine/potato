@@ -1,4 +1,4 @@
-#include "potato/foundation/rc.h"
+#include "potato/spud/rc.h"
 #include <doctest/doctest.h>
 
 namespace {
@@ -16,7 +16,7 @@ namespace {
     };
 } // namespace
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::rc") {
+DOCTEST_TEST_SUITE("[potato][spud] up::rc") {
     using namespace up;
 
     DOCTEST_TEST_CASE("empty rc") {

@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/assetdb/hash_cache.h"
-#include "potato/foundation/hash_fnv1a.h"
+#include "potato/spud/hash_fnv1a.h"
 #include "potato/filesystem/stream.h"
 #include "potato/filesystem/json.h"
 #include <nlohmann/json.hpp>

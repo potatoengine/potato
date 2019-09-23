@@ -10,7 +10,7 @@ up_set_common_properties(gpu)
 target_link_libraries(gpu
     PUBLIC
         potato::runtime
-        potato::foundation
+        potato::spud
         glm
     PRIVATE
         doctest

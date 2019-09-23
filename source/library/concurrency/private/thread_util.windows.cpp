@@ -1,7 +1,7 @@
 // Copyright (C) 2016,2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/concurrency/thread_util.h"
-#include "potato/foundation/platform_windows.h"
+#include "potato/spud/platform_windows.h"
 
 // https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
 void up::setCurrentThreadName(zstring_view name) {

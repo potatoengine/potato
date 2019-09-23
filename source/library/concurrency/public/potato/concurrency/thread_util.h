@@ -3,8 +3,8 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/int_types.h"
-#include "potato/foundation/zstring_view.h"
+#include "potato/spud/int_types.h"
+#include "potato/spud/zstring_view.h"
 
 namespace up {
 

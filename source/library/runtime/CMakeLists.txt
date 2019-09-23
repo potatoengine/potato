@@ -24,14 +24,14 @@ endif()
 
 target_link_libraries(runtime
     PUBLIC
-        foundation
+        potato::spud
         ${UP_UUID_LIBRARY}
 )
 
 target_compile_definitions(runtime
     PUBLIC
-        UP_FOUNDATION_ASSERT_HEADER="potato/runtime/assertion.h"
-        UP_FOUNDATION_ASSERT=UP_ASSERT
+        UP_SPUD_ASSERT_HEADER="potato/runtime/assertion.h"
+        UP_SPUD_ASSERT=UP_ASSERT
 )
 
 add_subdirectory(public/potato/runtime)

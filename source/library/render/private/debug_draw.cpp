@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/render/debug_draw.h"
-#include "potato/foundation/vector.h"
+#include "potato/spud/vector.h"
 #include "potato/gpu/buffer.h"
 #include "potato/gpu/command_list.h"
 #include "potato/gpu/device.h"

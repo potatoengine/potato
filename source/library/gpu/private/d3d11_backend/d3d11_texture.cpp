@@ -3,7 +3,7 @@
 #include "d3d11_texture.h"
 #include "d3d11_platform.h"
 #include "potato/gpu/com_ptr.h"
-#include "potato/foundation/out_ptr.h"
+#include "potato/spud/out_ptr.h"
 #include <potato/runtime/assertion.h>
 
 up::d3d11::TextureD3D11::TextureD3D11(com_ptr<ID3D11Resource> texture) : _texture(std::move(texture)) {

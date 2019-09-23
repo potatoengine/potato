@@ -10,7 +10,7 @@ up_set_common_properties(filesystem)
 target_link_libraries(filesystem
     PUBLIC
         potato::runtime
-        potato::foundation
+        potato::spud
     PRIVATE
         doctest
         nlohmann_json::nlohmann_json

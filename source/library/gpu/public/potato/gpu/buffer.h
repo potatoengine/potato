@@ -3,8 +3,8 @@
 #pragma once
 
 #include "common.h"
-#include "potato/foundation/int_types.h"
-#include "potato/foundation/span.h"
+#include "potato/spud/int_types.h"
+#include "potato/spud/span.h"
 
 namespace up {
     class GpuBuffer {

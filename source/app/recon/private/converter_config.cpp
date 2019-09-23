@@ -1,8 +1,8 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/recon/converter_config.h"
-#include "potato/foundation/string_view.h"
-#include "potato/foundation/zstring_view.h"
+#include "potato/spud/string_view.h"
+#include "potato/spud/zstring_view.h"
 #include "potato/filesystem/filesystem.h"
 #include "potato/filesystem/stream.h"
 #include "potato/filesystem/json.h"

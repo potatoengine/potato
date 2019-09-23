@@ -3,10 +3,10 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/foundation/box.h"
-#include "potato/foundation/platform.h"
-#include "potato/foundation/delegate_ref.h"
-#include "potato/foundation/span.h"
+#include "potato/spud/box.h"
+#include "potato/spud/platform.h"
+#include "potato/spud/delegate_ref.h"
+#include "potato/spud/span.h"
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 

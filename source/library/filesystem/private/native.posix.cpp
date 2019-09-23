@@ -2,10 +2,10 @@
 
 #include "potato/filesystem/native.h"
 #include "potato/filesystem/path.h"
-#include "potato/foundation/platform.h"
-#include "potato/foundation/unique_resource.h"
-#include "potato/foundation/string_writer.h"
-#include "potato/foundation/span.h"
+#include "potato/spud/platform.h"
+#include "potato/spud/unique_resource.h"
+#include "potato/spud/string_writer.h"
+#include "potato/spud/span.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

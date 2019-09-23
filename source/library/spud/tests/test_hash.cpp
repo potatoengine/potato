@@ -1,10 +1,10 @@
-#include "potato/foundation/hash.h"
-#include "potato/foundation/string_view.h"
-#include "potato/foundation/zstring_view.h"
-#include "potato/foundation/span.h"
+#include "potato/spud/hash.h"
+#include "potato/spud/string_view.h"
+#include "potato/spud/zstring_view.h"
+#include "potato/spud/span.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::hash") {
+DOCTEST_TEST_SUITE("[potato][spud] up::hash") {
     using namespace up;
 
     DOCTEST_TEST_CASE("default hash_value") {

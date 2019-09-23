@@ -2,8 +2,8 @@
 
 #include "potato/assetdb/_export.h"
 #include "potato/assetdb/asset_library.h"
-#include "potato/foundation/hash_fnv1a.h"
-#include "potato/foundation/hash.h"
+#include "potato/spud/hash_fnv1a.h"
+#include "potato/spud/hash.h"
 #include "potato/filesystem/stream.h"
 #include "potato/filesystem/json.h"
 #include <nlohmann/json.hpp>

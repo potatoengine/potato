@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "potato/foundation/box.h"
-#include "potato/foundation/rc.h"
+#include "potato/spud/box.h"
+#include "potato/spud/rc.h"
 
 namespace up {
     class GpuTexture;

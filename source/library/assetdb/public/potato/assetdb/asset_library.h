@@ -5,8 +5,8 @@
 #include "_export.h"
 #include "common.h"
 #include "asset_record.h"
-#include "potato/foundation/string_view.h"
-#include "potato/foundation/vector.h"
+#include "potato/spud/string_view.h"
+#include "potato/spud/vector.h"
 #include <unordered_map>
 
 namespace up {

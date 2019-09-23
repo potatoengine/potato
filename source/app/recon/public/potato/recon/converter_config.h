@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "potato/foundation/span.h"
-#include "potato/foundation/string.h"
-#include "potato/foundation/string_view.h"
-#include "potato/foundation/zstring_view.h"
-#include "potato/foundation/std_iostream.h"
+#include "potato/spud/span.h"
+#include "potato/spud/string.h"
+#include "potato/spud/string_view.h"
+#include "potato/spud/zstring_view.h"
+#include "potato/spud/std_iostream.h"
 #include "potato/logger/logger.h"
 
 namespace up {

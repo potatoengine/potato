@@ -3,9 +3,9 @@
 #pragma once
 
 #include "_export.h"
-#include <potato/foundation/span.h>
-#include <potato/foundation/fixed_string.h>
-#include <potato/foundation/int_types.h>
+#include <potato/spud/span.h>
+#include <potato/spud/fixed_string.h>
+#include <potato/spud/int_types.h>
 
 namespace up::callstack {
     struct TraceRecord {
