@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "potato/foundation/string_view.h"
+#include "potato/spud/string_view.h"
 #include <string_view>
 
 namespace up {

@@ -1,4 +1,4 @@
-#include "potato/foundation/delegate.h"
+#include "potato/spud/delegate.h"
 #include <doctest/doctest.h>
 
 namespace {

@@ -1,4 +1,4 @@
-#include "potato/foundation/span.h"
+#include "potato/spud/span.h"
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][foundation] up::span") {

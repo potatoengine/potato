@@ -1,4 +1,4 @@
-#include "potato/foundation/fixed_string_writer.h"
+#include "potato/spud/fixed_string_writer.h"
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][foundation] up::fixed_string_writer") {

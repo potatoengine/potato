@@ -1,4 +1,4 @@
-#include "potato/foundation/string_view.h"
+#include "potato/spud/string_view.h"
 #include <doctest/doctest.h>
 #include <ostream>
 #include <cstring>

@@ -1,4 +1,4 @@
-#include "potato/foundation/fixed_string.h"
+#include "potato/spud/fixed_string.h"
 #include <doctest/doctest.h>
 #include <iostream>
 

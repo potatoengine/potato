@@ -2,7 +2,7 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
   <!--
     up::box<T>
-    public/potato/foundation/box.h
+    public/potato/spud/box.h
    -->
   <Type Name="up::box&lt;*&gt;">
     <DisplayString Condition="_ptr == nullptr">empty</DisplayString>
@@ -14,7 +14,7 @@
 
   <!--
     up::rc<T>
-    public/potato/foundation/rc.h
+    public/potato/spud/rc.h
    -->
   <Type Name="up::rc&lt;*&gt;">
     <DisplayString Condition="_ptr == nullptr">empty</DisplayString>
@@ -26,7 +26,7 @@
   
   <!--
     up::shared<Derived>
-    public/potato/foundation/rc.h
+    public/potato/spud/rc.h
    -->
   <Type Name="up::shared&lt;*&gt;">
     <DisplayString>{{ refs={_refs} }}</DisplayString>
@@ -34,7 +34,7 @@
 
   <!--
     up::span<T>
-    public/potato/foundation/span.h
+    public/potato/spud/span.h
    -->
   <Type Name="up::span&lt;*&gt;">
     <DisplayString Condition="_begin == _end">empty</DisplayString>
@@ -50,7 +50,7 @@
 
   <!--
     up::vector<T>
-    public/potato/foundation/vector.h
+    public/potato/spud/vector.h
    -->
   <Type Name="up::vector&lt;*&gt;">
     <DisplayString Condition="_first == _last">empty</DisplayString>
@@ -67,7 +67,7 @@
 
   <!--
     up::string_view
-    public/potato/foundation/string_view.h
+    public/potato/spud/string_view.h
    -->
   <Type Name="up::string_view">
     <DisplayString Condition="_size == 0">empty</DisplayString>
@@ -77,7 +77,7 @@
 
   <!--
     up::zstring_view
-    public/potato/foundation/zstring_view.h
+    public/potato/spud/zstring_view.h
    -->
   <Type Name="up::zstring_view">
     <DisplayString Condition="_str == nullptr || *_str == 0">empty</DisplayString>
@@ -87,7 +87,7 @@
 
   <!--
     up::fixed_string
-    public/potato/foundation/fixed_string.h
+    public/potato/spud/fixed_string.h
    -->
   <Type Name="up::fixed_string&lt;*&gt;">
     <DisplayString Condition="_size == 0">empty</DisplayString>
@@ -101,7 +101,7 @@
 
   <!--
     up::string
-    public/potato/foundation/string.h
+    public/potato/spud/string.h
    -->
   <Type Name="up::string">
     <DisplayString Condition="_size == 0">empty</DisplayString>
@@ -114,7 +114,7 @@
 
   <!--
     up::string_writer
-    public/potato/foundation/string_writer.h
+    public/potato/spud/string_writer.h
    -->
   <Type Name="up::string_writer">
     <DisplayString Condition="_size == 0">empty</DisplayString>
@@ -128,7 +128,7 @@
 
   <!--
     up::fixed_string_writer
-    public/potato/foundation/fixed_string_writer.h
+    public/potato/spud/fixed_string_writer.h
    -->
   <Type Name="up::fixed_string_writer&lt;*&gt;">
     <DisplayString Condition="_size == 0">empty</DisplayString>

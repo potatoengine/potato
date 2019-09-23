@@ -4,9 +4,9 @@
 
 #include "_export.h"
 #include "_assertion.h"
-#include "potato/foundation/string_view.h"
-#include "potato/foundation/string.h"
-#include "potato/foundation/span.h"
+#include "potato/spud/string_view.h"
+#include "potato/spud/string.h"
+#include "potato/spud/span.h"
 #include <cstring>
 
 namespace up {

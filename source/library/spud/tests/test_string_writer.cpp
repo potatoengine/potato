@@ -1,5 +1,5 @@
-#include "potato/foundation/string_writer.h"
-#include "potato/foundation/string.h"
+#include "potato/spud/string_writer.h"
+#include "potato/spud/string.h"
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][foundation] up::string_writer") {

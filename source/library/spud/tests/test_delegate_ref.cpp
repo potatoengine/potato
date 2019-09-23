@@ -1,4 +1,4 @@
-#include "potato/foundation/delegate_ref.h"
+#include "potato/spud/delegate_ref.h"
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][foundation] up::delegate_ref") {

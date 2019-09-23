@@ -1,5 +1,5 @@
-#include "potato/foundation/find.h"
-#include "potato/foundation/vector.h"
+#include "potato/spud/find.h"
+#include "potato/spud/vector.h"
 #include <doctest/doctest.h>
 #include <iostream>
 

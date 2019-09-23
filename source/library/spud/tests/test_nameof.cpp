@@ -1,4 +1,4 @@
-#include "potato/foundation/nameof.h"
+#include "potato/spud/nameof.h"
 #include <doctest/doctest.h>
 
 static_assert(up::nameof<int>() == "int");

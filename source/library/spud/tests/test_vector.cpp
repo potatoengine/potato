@@ -1,5 +1,5 @@
-#include "potato/foundation/vector.h"
-#include "potato/foundation/string.h"
+#include "potato/spud/vector.h"
+#include "potato/spud/string.h"
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][foundation] vector") {
