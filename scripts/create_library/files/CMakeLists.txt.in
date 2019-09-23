@@ -10,7 +10,7 @@ up_set_common_properties(@NAME@)
 target_link_libraries(@NAME@
     PUBLIC
         potato::runtime
-        potato::foundation
+        potato::spud
 )
 
 add_subdirectory(public/potato/@NAME@)
