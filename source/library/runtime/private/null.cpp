@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "potato/filesystem/null.h"
-#include "potato/filesystem/stream.h"
+#include "potato/runtime/null.h"
+#include "potato/runtime/stream.h"
 
 bool up::NullFileSystem::fileExists(zstring_view path) const noexcept { return false; }
 

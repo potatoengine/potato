@@ -1,5 +1,5 @@
-#include "potato/filesystem/null.h"
-#include "potato/filesystem/stream.h"
+#include "potato/runtime/null.h"
+#include "potato/runtime/stream.h"
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][filesystem] up::NullFileSystem") {

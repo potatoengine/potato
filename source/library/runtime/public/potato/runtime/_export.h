@@ -11,3 +11,5 @@
 #else
 #    define UP_RUNTIME_API
 #endif
+
+#define UP_FILESYSTEM_API UP_RUNTIME_API

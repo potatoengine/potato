@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "potato/filesystem/json.h"
-#include "potato/filesystem/stream.h"
+#include "potato/runtime/json.h"
+#include "potato/runtime/stream.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
 #include <nlohmann/json.hpp>

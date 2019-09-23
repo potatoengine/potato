@@ -2,9 +2,9 @@
 
 #include "convert_model.h"
 #include "potato/spud/std_iostream.h"
-#include "potato/filesystem/path.h"
-#include "potato/filesystem/filesystem.h"
-#include "potato/filesystem/stream.h"
+#include "potato/runtime/path.h"
+#include "potato/runtime/filesystem.h"
+#include "potato/runtime/stream.h"
 #include "potato/logger/logger.h"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>

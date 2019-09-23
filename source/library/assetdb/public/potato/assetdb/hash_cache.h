@@ -9,8 +9,8 @@
 #include "potato/spud/box.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/hash.h"
-#include "potato/filesystem/filesystem.h"
-#include "potato/filesystem/stream.h"
+#include "potato/runtime/filesystem.h"
+#include "potato/runtime/stream.h"
 #include <unordered_map>
 
 namespace up {

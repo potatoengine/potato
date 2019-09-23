@@ -1,6 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "potato/filesystem/stream.h"
+#include "potato/runtime/stream.h"
 #include "potato/spud/string_writer.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/string.h"

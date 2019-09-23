@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "potato/filesystem/native.h"
-#include "potato/filesystem/stream.h"
+#include "potato/runtime/native.h"
+#include "potato/runtime/stream.h"
 #include <fstream>
 
 namespace up {

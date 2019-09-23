@@ -7,7 +7,7 @@
 #include "potato/spud/rc.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/string.h"
-#include "potato/filesystem/stream.h"
+#include "potato/runtime/stream.h"
 
 namespace up {
     class GpuBuffer;

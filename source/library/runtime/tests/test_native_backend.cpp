@@ -1,7 +1,7 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/string.h"
-#include "potato/filesystem/native.h"
-#include "potato/filesystem/stream.h"
+#include "potato/runtime/native.h"
+#include "potato/runtime/stream.h"
 #include <doctest/doctest.h>
 #include <string>
 #include <iostream>
