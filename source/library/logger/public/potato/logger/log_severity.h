@@ -7,12 +7,6 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up {
-    struct LogLocation {
-        zstring_view file;
-        zstring_view function;
-        int line = 0;
-    };
-
     enum class LogSeverity {
         Info,
         Error

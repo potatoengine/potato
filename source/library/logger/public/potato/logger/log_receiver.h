@@ -3,12 +3,18 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/logger/common.h"
+#include "potato/logger/log_severity.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/rc.h"
 #include <utility>
 
 namespace up {
+    struct LogLocation {
+        zstring_view file;
+        zstring_view function;
+        int line = 0;
+    };
+
     class LogReceiver : public shared<LogReceiver> {
     public:
         virtual ~LogReceiver() = default;
