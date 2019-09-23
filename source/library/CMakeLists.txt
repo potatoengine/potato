@@ -1,6 +1,5 @@
 add_subdirectory(spud)
 add_subdirectory(runtime)
-add_subdirectory(filesystem)
 add_subdirectory(gpu)
 add_subdirectory(render)
 add_subdirectory(image)

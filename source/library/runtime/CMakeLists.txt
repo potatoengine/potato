@@ -26,6 +26,8 @@ target_link_libraries(runtime
     PUBLIC
         potato::spud
         ${UP_UUID_LIBRARY}
+    PRIVATE
+        nlohmann_json::nlohmann_json
 )
 
 target_compile_definitions(runtime
