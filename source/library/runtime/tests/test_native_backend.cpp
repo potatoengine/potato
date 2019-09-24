@@ -7,7 +7,7 @@
 #include <iostream>
 #include <algorithm>
 
-DOCTEST_TEST_SUITE("[potato][filesystem] up::NativeFileSystem") {
+DOCTEST_TEST_SUITE("[potato][runtime] up::NativeFileSystem") {
     using namespace up;
     using namespace up;
 

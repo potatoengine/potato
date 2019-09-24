@@ -2,7 +2,7 @@
 #include <doctest/doctest.h>
 #include <iostream>
 
-DOCTEST_TEST_SUITE("[potato][filesystem] up::path") {
+DOCTEST_TEST_SUITE("[potato][runtime] up::path") {
     using namespace up;
     using namespace up::path;
 

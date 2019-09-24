@@ -2,7 +2,7 @@
 #include <doctest/doctest.h>
 #include <array>
 
-DOCTEST_TEST_SUITE("[potato][foundation] up::uuid") {
+DOCTEST_TEST_SUITE("[potato][runtime] up::uuid") {
     using namespace up;
 
     DOCTEST_TEST_CASE("basic uuid") {

@@ -2,7 +2,7 @@
 #include "potato/runtime/stream.h"
 #include <doctest/doctest.h>
 
-DOCTEST_TEST_SUITE("[potato][filesystem] up::NullFileSystem") {
+DOCTEST_TEST_SUITE("[potato][runtime] up::NullFileSystem") {
     using namespace up;
     using namespace up;
 

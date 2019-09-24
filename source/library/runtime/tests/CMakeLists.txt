@@ -1,6 +1,16 @@
 add_executable(test_potato_runtime
     main.cpp
     test_callstack.cpp
+    test_concurrent_queue.cpp
+    test_native_backend.cpp
+    test_null_backend.cpp
+    test_path_util.cpp
+    test_lock_free_queue.cpp
+    test_rwlock.cpp
+    test_semaphore.cpp
+    test_stream.cpp
+    test_task_worker.cpp
+    test_thread_util.cpp
     test_uuid.cpp
 
 )
