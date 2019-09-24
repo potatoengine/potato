@@ -6,10 +6,10 @@
 #include "potato/spud/string_view.h"
 #include "potato/spud/string_writer.h"
 #include "potato/spud/std_iostream.h"
-#include "potato/filesystem/filesystem.h"
-#include "potato/filesystem/stream.h"
-#include "potato/filesystem/path.h"
-#include "potato/logger/logger.h"
+#include "potato/runtime/filesystem.h"
+#include "potato/runtime/stream.h"
+#include "potato/runtime/path.h"
+#include "potato/runtime/logger.h"
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <fstream>

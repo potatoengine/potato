@@ -22,10 +22,15 @@ elseif(UNIX)
     target_compile_definitions(runtime PRIVATE GUID_LIBUUID)
 endif()
 
+find_package(Threads REQUIRED)
+
 target_link_libraries(runtime
     PUBLIC
         potato::spud
         ${UP_UUID_LIBRARY}
+        Threads::Threads
+    PRIVATE
+        nlohmann_json::nlohmann_json
 )
 
 target_compile_definitions(runtime

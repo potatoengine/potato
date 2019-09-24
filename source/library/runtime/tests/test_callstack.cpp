@@ -2,7 +2,7 @@
 #include <doctest/doctest.h>
 #include <array>
 
-DOCTEST_TEST_SUITE("[potato][core] up::callstack") {
+DOCTEST_TEST_SUITE("[potato][runtime] up::callstack") {
     using namespace up;
     using namespace up::callstack;
 

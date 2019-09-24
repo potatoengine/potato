@@ -12,10 +12,8 @@ if(WIN32)
     target_link_libraries(shell PRIVATE
         potato::runtime
         potato::spud
-        potato::filesystem
         potato::gpu
         potato::render
-        potato::logger
         potato::ecs
         glm
         SDL2

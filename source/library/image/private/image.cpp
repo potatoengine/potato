@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/image/image.h"
-#include "potato/filesystem/stream.h"
+#include "potato/runtime/stream.h"
 #include <stb_image.h>
 
 static int stb_read(void* user, char* data, int size) {

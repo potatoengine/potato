@@ -11,7 +11,6 @@ target_link_libraries(assetdb
     PUBLIC
         potato::runtime
         potato::spud
-        potato::filesystem
     PRIVATE
         doctest
         nlohmann_json::nlohmann_json
