@@ -22,4 +22,12 @@ target_link_libraries(test_potato_runtime PRIVATE
     runtime doctest
 )
 
-add_test(NAME test_potato_runtime COMMAND test_potato_runtime)
+add_test(	
+    NAME test_potato_runtime	
+    COMMAND test_potato_runtime	
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fixtures"	
+)
+
+# because concurrency tests can deadlock (which is a test failure)
+#
+set_tests_properties(test_potato_runtime PROPERTIES TIMEOUT 10) 
