@@ -3,8 +3,8 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/logger/log_severity.h"
-#include "potato/logger/log_receiver.h"
+#include "potato/runtime/log_severity.h"
+#include "potato/runtime/log_receiver.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/zstring_view.h"

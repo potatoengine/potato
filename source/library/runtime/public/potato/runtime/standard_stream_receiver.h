@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "potato/logger/logger.h"
+#include "logger.h"
 #include "potato/concurrency/spinlock.h"
 
 namespace up {

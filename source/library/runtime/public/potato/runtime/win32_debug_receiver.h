@@ -8,7 +8,7 @@
 #    error "win32_debug_receiver.h can only be used on Windows platforms"
 #endif
 
-#include "potato/logger/logger.h"
+#include "logger.h"
 
 namespace up {
     class Win32DebugReceiver : public LogReceiver {

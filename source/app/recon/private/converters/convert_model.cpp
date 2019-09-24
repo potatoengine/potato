@@ -5,7 +5,7 @@
 #include "potato/runtime/path.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
-#include "potato/logger/logger.h"
+#include "potato/runtime/logger.h"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/Exporter.hpp>

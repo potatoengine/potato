@@ -3,7 +3,7 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/logger/log_severity.h"
+#include "log_severity.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/rc.h"
 #include <utility>
