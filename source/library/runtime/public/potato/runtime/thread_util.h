@@ -10,8 +10,8 @@ namespace up {
 
     using SmallThreadId = uint16;
 
-    UP_CONCURRENCY_API SmallThreadId currentSmallThreadId() noexcept;
+    UP_RUNTIME_API SmallThreadId currentSmallThreadId() noexcept;
 
-    UP_CONCURRENCY_API void setCurrentThreadName(zstring_view name);
+    UP_RUNTIME_API void setCurrentThreadName(zstring_view name);
 
 } // namespace up

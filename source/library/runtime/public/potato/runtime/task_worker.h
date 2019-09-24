@@ -15,8 +15,8 @@ namespace up {
 
     class TaskWorker {
     public:
-        UP_CONCURRENCY_API explicit TaskWorker(TaskQueue& queue, zstring_view name);
-        UP_CONCURRENCY_API ~TaskWorker();
+        UP_RUNTIME_API explicit TaskWorker(TaskQueue& queue, zstring_view name);
+        UP_RUNTIME_API ~TaskWorker();
 
         TaskWorker(TaskWorker&&) = default;
         TaskWorker& operator=(TaskWorker&&) = default;

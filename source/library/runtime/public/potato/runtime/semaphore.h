@@ -10,8 +10,8 @@
 namespace up {
     class Semaphore {
     public:
-        UP_CONCURRENCY_API Semaphore(int initial = 0);
-        UP_CONCURRENCY_API ~Semaphore();
+        UP_RUNTIME_API Semaphore(int initial = 0);
+        UP_RUNTIME_API ~Semaphore();
 
         Semaphore(Semaphore const&) = delete;
         Semaphore& operator=(Semaphore const&) = delete;
@@ -21,8 +21,8 @@ namespace up {
         UP_FORCEINLINE inline void wait();
 
     private:
-        UP_CONCURRENCY_API void _signal(int n);
-        UP_CONCURRENCY_API void _wait();
+        UP_RUNTIME_API void _signal(int n);
+        UP_RUNTIME_API void _wait();
 
         std::atomic<int> _counter = 0;
         void* _handle = nullptr;

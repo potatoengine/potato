@@ -6,7 +6,7 @@
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
 #include "potato/runtime/json.h"
-#include "potato/logger/logger.h"
+#include "potato/runtime/logger.h"
 #include <nlohmann/json.hpp>
 
 bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, FileSystem& fileSystem, Logger& logger) {

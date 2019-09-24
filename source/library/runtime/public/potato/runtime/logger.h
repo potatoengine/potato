@@ -3,8 +3,10 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/runtime/log_severity.h"
-#include "potato/runtime/log_receiver.h"
+#include "log_severity.h"
+#include "log_receiver.h"
+#include "rwlock.h"
+#include "lock_guard.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/zstring_view.h"
@@ -12,8 +14,6 @@
 #include "potato/spud/fixed_string_writer.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/rc.h"
-#include "potato/concurrency/rwlock.h"
-#include "potato/concurrency/lock_guard.h"
 #include <utility>
 
 namespace up {

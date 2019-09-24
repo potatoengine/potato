@@ -3,7 +3,7 @@
 // Inspired by the technique in the "LightweightSemaphore" at
 //   https://github.com/preshing/cpp11-on-multicore
 
-#include "potato/concurrency/semaphore.h"
+#include "potato/runtime/semaphore.h"
 #include "potato/spud/platform_windows.h"
 #include <limits>
 

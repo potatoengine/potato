@@ -1,6 +1,6 @@
 // Copyright (C) 2016,2019 Sean Middleditch, all rights reserverd.
 
-#include "potato/concurrency/thread_util.h"
+#include "potato/runtime/thread_util.h"
 #include <potato/runtime/assertion.h>
 #include <atomic>
 #include <limits>

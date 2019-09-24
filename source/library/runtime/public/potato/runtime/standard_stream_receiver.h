@@ -3,7 +3,7 @@
 #pragma once
 
 #include "logger.h"
-#include "potato/concurrency/spinlock.h"
+#include "spinlock.h"
 
 namespace up {
     class StandardStreamReceiver : public LogReceiver {

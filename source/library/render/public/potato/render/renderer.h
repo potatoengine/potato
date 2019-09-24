@@ -8,7 +8,7 @@
 #include "potato/spud/rc.h"
 #include "potato/spud/zstring_view.h"
 #include "potato/runtime/filesystem.h"
-#include "potato/concurrency/concurrent_queue.h"
+#include "potato/runtime/concurrent_queue.h"
 #include <thread>
 #include <atomic>
 
