@@ -19,8 +19,8 @@
 namespace up {
     class Logger {
     public:
-        UP_LOGGER_API Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
-        UP_LOGGER_API Logger(string name, rc<LogReceiver> receiver, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
+        UP_RUNTIME_API Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
+        UP_RUNTIME_API Logger(string name, rc<LogReceiver> receiver, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
 
         constexpr bool isEnabledFor(LogSeverity severity) const noexcept {
             return severity >= _minimumSeverity;
@@ -34,8 +34,8 @@ namespace up {
         void error(string_view format, T const&... args) { _formatDispatch(LogSeverity::Error, format, args...); }
         void error(string_view message) noexcept { _dispatch(LogSeverity::Error, message, {}); }
 
-        void UP_LOGGER_API attach(rc<LogReceiver> receiver) noexcept;
-        void UP_LOGGER_API detach(LogReceiver* remove) noexcept;
+        void UP_RUNTIME_API attach(rc<LogReceiver> receiver) noexcept;
+        void UP_RUNTIME_API detach(LogReceiver* remove) noexcept;
 
     protected:
         template <typename... T>
@@ -50,7 +50,7 @@ namespace up {
             _dispatch(severity, writer, {});
         }
 
-        void UP_LOGGER_API _dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept;
+        void UP_RUNTIME_API _dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept;
 
     private:
         string _name;
