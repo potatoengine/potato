@@ -14,7 +14,6 @@ if(WIN32)
         potato::spud
         potato::gpu
         potato::render
-        potato::logger
         potato::ecs
         glm
         SDL2

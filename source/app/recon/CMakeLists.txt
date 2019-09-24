@@ -19,7 +19,6 @@ if(TARGET assimp)
             potato::gpu
             potato::assetdb
             potato::image
-            potato::logger
             stb
             assimp
         PRIVATE
