@@ -19,7 +19,6 @@ if(TARGET assimp AND TARGET SDL2)
             potato::runtime
             potato::spud
             potato::gpu
-            potato::concurrency
             potato::image
             glm
         PRIVATE
