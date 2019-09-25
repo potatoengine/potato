@@ -13,11 +13,11 @@ if(WIN32)
     up_set_common_properties(potato_shell)
 
     target_link_libraries(potato_shell PRIVATE
-        potato::runtime
+        potato::libruntime
         potato::spud
-        potato::gpu
-        potato::render
-        potato::ecs
+        potato::libgpu
+        potato::librender
+        potato::libecs
         glm
         SDL2
         SDL2main

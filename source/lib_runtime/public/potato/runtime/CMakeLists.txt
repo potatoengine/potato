@@ -1,4 +1,4 @@
-target_sources(runtime PRIVATE
+target_sources(potato_libruntime PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_export.h
     ${CMAKE_CURRENT_SOURCE_DIR}/assertion.h
     ${CMAKE_CURRENT_SOURCE_DIR}/callstack.h

@@ -5,21 +5,21 @@ find_package(Assimp)
 find_package(SDL2)
 
 if(TARGET assimp AND TARGET SDL2)
-    add_library(render)
-    add_library(potato::render ALIAS render)
+    add_library(potato_librender)
+    add_library(potato::librender ALIAS potato_librender)
 
     include(up_set_common_properties)
-    up_set_common_properties(render)
+    up_set_common_properties(potato_librender)
 
     include(up_copy_library_import)
-    up_copy_library_import(assimp render)
+    up_copy_library_import(assimp potato_librender)
 
-    target_link_libraries(render
+    target_link_libraries(potato_librender
         PUBLIC
-            potato::runtime
+            potato::libruntime
             potato::spud
-            potato::gpu
-            potato::image
+            potato::libgpu
+            potato::libimage
             glm
         PRIVATE
             imgui

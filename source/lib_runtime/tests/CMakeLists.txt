@@ -1,4 +1,4 @@
-add_executable(test_potato_runtime
+add_executable(potato_runtime_test
     main.cpp
     test_callstack.cpp
     test_concurrent_queue.cpp
@@ -16,18 +16,19 @@ add_executable(test_potato_runtime
 )
 
 include(up_set_common_properties)
-up_set_common_properties(test_potato_runtime)
+up_set_common_properties(potato_runtime_test)
 
-target_link_libraries(test_potato_runtime PRIVATE
-    runtime doctest
+target_link_libraries(potato_runtime_test PRIVATE
+    potato::libruntime
+    doctest
 )
 
 add_test(	
-    NAME test_potato_runtime	
-    COMMAND test_potato_runtime	
+    NAME potato_runtime_test	
+    COMMAND potato_runtime_test	
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fixtures"	
 )
 
 # because concurrency tests can deadlock (which is a test failure)
 #
-set_tests_properties(test_potato_runtime PROPERTIES TIMEOUT 10) 
+set_tests_properties(potato_runtime_test PROPERTIES TIMEOUT 10) 

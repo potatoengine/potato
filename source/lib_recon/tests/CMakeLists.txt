@@ -1,13 +1,14 @@
-add_executable(test_potato_recon
+add_executable(potato_librecon_test
     main.cpp
     test_converter_config.cpp
 )
 
 include(up_set_common_properties)
-up_set_common_properties(test_potato_recon)
+up_set_common_properties(potato_librecon_test)
 
-target_link_libraries(test_potato_recon PRIVATE
-    potato::librecon doctest
+target_link_libraries(potato_librecon_test PRIVATE
+    potato::librecon
+    doctest
 )
 
-add_test(NAME test_potato_recon COMMAND test_potato_recon)
+add_test(NAME potato_librecon_test COMMAND potato_librecon_test)

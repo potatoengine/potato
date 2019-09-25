@@ -1,4 +1,4 @@
-target_sources(render PRIVATE
+target_sources(potato_librender PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/camera.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/debug_draw.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/draw_imgui.cpp

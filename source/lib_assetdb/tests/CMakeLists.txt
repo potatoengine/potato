@@ -1,12 +1,13 @@
-add_executable(test_potato_assetdb
+add_executable(potato_libassetdb_test
     main.cpp
 )
 
 include(up_set_common_properties)
-up_set_common_properties(test_potato_assetdb)
+up_set_common_properties(potato_libassetdb_test)
 
-target_link_libraries(test_potato_assetdb PRIVATE
-    assetdb doctest
+target_link_libraries(potato_libassetdb_test PRIVATE
+    potato::libassetdb
+    doctest
 )
 
-add_test(NAME potato_assetdb COMMAND test_potato_assetdb)
+add_test(NAME potato_assetdb COMMAND potato_libassetdb_test)

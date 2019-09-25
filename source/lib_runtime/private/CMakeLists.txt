@@ -1,13 +1,13 @@
 # Callstack implementations
 #
-target_sources(runtime PRIVATE
+target_sources(potato_libruntime PRIVATE
     $<$<NOT:$<PLATFORM_ID:Windows>>:${CMAKE_CURRENT_SOURCE_DIR}/callstack.posix.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/callstack.windows.cpp>
 )
 
 # Debug handling implementations
 #
-target_sources(runtime PRIVATE
+target_sources(potato_libruntime PRIVATE
     $<$<NOT:$<PLATFORM_ID:Windows>>:${CMAKE_CURRENT_SOURCE_DIR}/debug.posix.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/debug.windows.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/debug.windows.h>
@@ -16,27 +16,27 @@ target_sources(runtime PRIVATE
 
 # Filesystem implementations
 #
-target_sources(runtime PRIVATE
+target_sources(potato_libruntime PRIVATE
     $<$<NOT:$<BOOL:${UNIX}>>:${CMAKE_CURRENT_SOURCE_DIR}/native.default.cpp>
     $<$<BOOL:${UNIX}>:${CMAKE_CURRENT_SOURCE_DIR}/native.posix.cpp>
 )
 
 # Logger backends
 #
-target_sources(runtime PRIVATE
+target_sources(potato_libruntime PRIVATE
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/win32_debug_receiver.windows.cpp>
 )
 
 # Semaphore implementations
 #
-target_sources(runtime PRIVATE
+target_sources(potato_libruntime PRIVATE
     $<$<BOOL:${UNIX}>:${CMAKE_CURRENT_SOURCE_DIR}/semaphore.posix.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/semaphore.windows.cpp>
 )
 
 # Threading backends
 #
-target_sources(runtime PRIVATE
+target_sources(potato_libruntime PRIVATE
     $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/thread_util.darwin.cpp>
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/thread_util.linux.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/thread_util.windows.cpp>
@@ -44,7 +44,7 @@ target_sources(runtime PRIVATE
 
 # General runtime code
 #
-target_sources(runtime PRIVATE
+target_sources(potato_libruntime PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/debug.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/json.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/logger.cpp

@@ -13,18 +13,18 @@ if(TARGET assimp)
 
     target_link_libraries(potato_librecon
         PUBLIC
-            potato::runtime
+            potato::libruntime
             potato::spud
-            potato::gpu
-            potato::assetdb
-            potato::image
+            potato::libgpu
+            potato::libassetdb
+            potato::libimage
             stb
             assimp
         PRIVATE
             nlohmann_json::nlohmann_json
     )
 
-    get_target_property(UP_GPU_ENABLE_D3D11 gpu UP_GPU_ENABLE_D3D11)
+    get_target_property(UP_GPU_ENABLE_D3D11 potato::libgpu UP_GPU_ENABLE_D3D11)
     if(UP_GPU_ENABLE_D3D11)
         target_link_libraries(potato_librecon PRIVATE d3dcompiler)
     endif(UP_GPU_ENABLE_D3D11)

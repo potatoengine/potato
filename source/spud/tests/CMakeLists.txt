@@ -1,4 +1,4 @@
-add_executable(test_potato_spud
+add_executable(potato_spud_test
     main.cpp
     test_delegate.cpp
     test_delegate_ref.cpp
@@ -17,10 +17,11 @@ add_executable(test_potato_spud
 )
 
 include(up_set_common_properties)
-up_set_common_properties(test_potato_spud)
+up_set_common_properties(potato_spud_test)
 
-target_link_libraries(test_potato_spud PRIVATE
-    spud doctest
+target_link_libraries(potato_spud_test PRIVATE
+    potato::spud
+    doctest
 )
 
-add_test(NAME test_potato_spud COMMAND test_potato_spud)
+add_test(NAME potato_spud_test COMMAND potato_spud_test)

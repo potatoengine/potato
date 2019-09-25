@@ -14,4 +14,4 @@ target_compile_definitions(imgui PUBLIC
     IM_ASSERT=UP_ASSERT
     IMGUI_USER_CONFIG="potato/runtime/assertion.h"
 )
-target_link_libraries(imgui PUBLIC potato::runtime)
+target_link_libraries(imgui PUBLIC potato::libruntime)

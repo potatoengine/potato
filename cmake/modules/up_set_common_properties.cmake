@@ -1,5 +1,10 @@
 function(up_set_common_properties TARGET)
-    string(TOUPPER ${TARGET} TARGET_UPPER)
+    # Potato targets must start with potato_
+    #
+    if(NOT ${TARGET} MATCHES "^potato_")
+        message(FATAL_ERROR "Target '${TARGET}' must start with potato_ prefix")
+    endif()
+    string(REGEX REPLACE "^(potato_)" "" SHORT_NAME ${TARGET})
 
     # Potato requires C++17
     #
@@ -13,37 +18,36 @@ function(up_set_common_properties TARGET)
         CXX_STANDARD_REQUIRED ON
     )
 
-    # Detect type of target
+    # Detect type of target and enforce some naming rules for hygiene.
     #
     get_target_property(TARGET_TYPE ${TARGET} TYPE)
     if (${TARGET} MATCHES "^test_")
         set(TYPE "test")
+        if(NOT ${SHORT_NAME} MATCHES "_test$")
+            message(FATAL_ERROR "Test executable target '${TARGET}' should be named 'potato_{SHORT_NAME}_test'")
+        endif()
+        string(REGEX REPLACE "_test$" "" TEST_TARGET ${TARGET})
+        if(NOT TARGET ${TEST_TARGET})
+            message(FATAL_ERROR "Test executable target '${TARGET}' expects there to be a target '${TEST_TARGET}'")
+        endif()
     elseif (${TARGET_TYPE} STREQUAL "EXECUTABLE")
         set(TYPE "executable")
     elseif(${TARGET_TYPE} MATCHES "_LIBRARY")
         set(TYPE "library")
+        if(NOT ${SHORT_NAME} MATCHES "^lib")
+            message(FATAL_ERROR "Library target '${TARGET}' should be named 'potato_lib${SHORT_NAME}'")
+        endif()
     else()
-        message(ERROR "Target '${TARGET}' has unknown type '${TARGET_TYPE}'")
+        message(FATAL_ERROR "Target '${TARGET}' has unknown type '${TARGET_TYPE}'")
     endif()
 
     # Set output name
     #
-    string(REGEX REPLACE "^(test_|potato_|app_|lib_?)" "" UNPREFIXED_SHORT_NAME ${TARGET})
-    if(${TYPE} STREQUAL "library")
-        set_target_properties(${TARGET} PROPERTIES
-            ARCHIVE_OUTPUT_NAME "libup-${UNPREFIXED_SHORT_NAME}"
-            LIBRARY_OUTPUT_NAME "libup-${UNPREFIXED_SHORT_NAME}"
-            RUNTIME_OUTPUT_NAME "libup-${UNPREFIXED_SHORT_NAME}"
-        )
-    elseif(${TYPE} STREQUAL "test")
-        set_target_properties(${TARGET} PROPERTIES
-            RUNTIME_OUTPUT_NAME "${UNPREFIXED_SHORT_NAME}_test"
-        )
-    else()
-        set_target_properties(${TARGET} PROPERTIES
-            RUNTIME_OUTPUT_NAME "${UNPREFIXED_SHORT_NAME}"
-        )
-    endif()
+    set_target_properties(${TARGET} PROPERTIES
+        ARCHIVE_OUTPUT_NAME "${SHORT_NAME}"
+        LIBRARY_OUTPUT_NAME "${SHORT_NAME}"
+        RUNTIME_OUTPUT_NAME "${SHORT_NAME}"
+    )
 
     # Trick MSVC into behaving like a standards-complient
     # compiler.
@@ -75,8 +79,10 @@ function(up_set_common_properties TARGET)
     # Set visibility hidden on *nix targets to mimic
     # Windows', and also for smaller symbol tables during
     # the linking stage
+    string(REGEX REPLACE "^lib|_test$" "" EXPORT_NAME ${SHORT_NAME})
+    string(TOUPPER ${EXPORT_NAME} EXPORT_NAME)
     set_target_properties(${TARGET} PROPERTIES
-        DEFINE_SYMBOL "UP_${TARGET_UPPER}_EXPORTS"
+        DEFINE_SYMBOL "UP_${EXPORT_NAME}_EXPORTS"
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
     )

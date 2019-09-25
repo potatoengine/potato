@@ -1,4 +1,4 @@
-target_sources(gpu PRIVATE
+target_sources(potato_libgpu PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_export.h
     ${CMAKE_CURRENT_SOURCE_DIR}/buffer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/com_ptr.h

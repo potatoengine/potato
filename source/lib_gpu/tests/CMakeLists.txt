@@ -1,14 +1,14 @@
-add_executable(test_potato_gpu
+add_executable(potato_libgpu_test
     main.cpp
     null.cpp
 )
 
 include(up_set_common_properties)
-up_set_common_properties(test_potato_gpu)
+up_set_common_properties(potato_libgpu_test)
 
-target_link_libraries(test_potato_gpu PRIVATE
-    gpu
+target_link_libraries(potato_libgpu_test PRIVATE
+    potato::libgpu
     doctest
 )
 
-add_test(NAME test_potato_gpu COMMAND test_potato_gpu)
+add_test(NAME potato_libgpu_test COMMAND potato_libgpu_test)

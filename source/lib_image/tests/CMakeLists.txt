@@ -1,13 +1,13 @@
-add_executable(test_potato_image
+add_executable(potato_libimage_test
     main.cpp
 )
 
 include(up_set_common_properties)
-up_set_common_properties(test_potato_image)
+up_set_common_properties(potato_libimage_test)
 
-target_link_libraries(test_potato_image PRIVATE
-    image
+target_link_libraries(potato_libimage_test PRIVATE
+    potato::libimage
     doctest
 )
 
-add_test(NAME test_potato_image COMMAND test_potato_image)
+add_test(NAME potato_libimage_test COMMAND potato_libimage_test)

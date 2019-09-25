@@ -1,4 +1,4 @@
-target_sources(foundation PRIVATE
+target_sources(potato_spud PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_assertion.h
     ${CMAKE_CURRENT_SOURCE_DIR}/box.h
     ${CMAKE_CURRENT_SOURCE_DIR}/const_util.h

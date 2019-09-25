@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.11)
 project(runtime VERSION 0.1 LANGUAGES CXX)
 
-add_library(runtime)
-add_library(potato::runtime ALIAS runtime)
+add_library(potato_libruntime)
+add_library(potato::libruntime ALIAS potato_libruntime)
 
 include(up_set_common_properties)
-up_set_common_properties(runtime)
+up_set_common_properties(potato_libruntime)
 
 # setup uuid libs for different oses
 if (WIN32)
@@ -18,13 +18,13 @@ elseif(UNIX)
         message(FATAL_ERROR "You might need to run 'sudo apt-get install uuid-dev' or similar")
     endif()
     set(UP_UUID_LIBRARY ${LIBUUID_LIBRARY})
-    target_include_directories(runtime PRIVATE ${LIBUUID_INCLUDE_DIR})
-    target_compile_definitions(runtime PRIVATE GUID_LIBUUID)
+    target_include_directories(potato_libruntime PRIVATE ${LIBUUID_INCLUDE_DIR})
+    target_compile_definitions(potato_libruntime PRIVATE GUID_LIBUUID)
 endif()
 
 find_package(Threads REQUIRED)
 
-target_link_libraries(runtime
+target_link_libraries(potato_libruntime
     PUBLIC
         potato::spud
         ${UP_UUID_LIBRARY}
@@ -33,7 +33,7 @@ target_link_libraries(runtime
         nlohmann_json::nlohmann_json
 )
 
-target_compile_definitions(runtime
+target_compile_definitions(potato_libruntime
     PUBLIC
         UP_SPUD_ASSERT_HEADER="potato/runtime/assertion.h"
         UP_SPUD_ASSERT=UP_ASSERT
