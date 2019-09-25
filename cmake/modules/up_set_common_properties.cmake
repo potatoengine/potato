@@ -74,4 +74,9 @@ function(up_set_common_properties TARGET)
         PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/private
     )
+
+    # Set test output directory
+    if (${TARGET} MATCHES "^test_")
+        set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${UP_TEST_OUTPUT_DIRECTORY})
+    endif()
 endfunction()
