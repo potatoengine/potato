@@ -1,7 +1,0 @@
-add_subdirectory(spud)
-add_subdirectory(lib_runtime)
-add_subdirectory(lib_gpu)
-add_subdirectory(lib_render)
-add_subdirectory(lib_image)
-add_subdirectory(lib_assetdb)
-add_subdirectory(lib_ecs)
