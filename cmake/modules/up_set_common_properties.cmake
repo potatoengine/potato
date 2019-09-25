@@ -111,10 +111,13 @@ function(up_set_common_properties TARGET)
             ${CMAKE_CURRENT_SOURCE_DIR}/private
     )
 
-    # Set test output directory
-    if (${TYPE} STREQUAL "test")
-        set_target_properties(${TARGET} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY ${UP_TEST_OUTPUT_DIRECTORY}
-        )
-    endif()
+    ## Set test output directory.
+    ## Not actually a good idea without figuring out how to place
+    ## runtime libraries next to the tests.
+    ##
+    #if (${TYPE} STREQUAL "test")
+    #    set_target_properties(${TARGET} PROPERTIES
+    #        RUNTIME_OUTPUT_DIRECTORY ${UP_TEST_OUTPUT_DIRECTORY}
+    #    )
+    #endif()
 endfunction()
