@@ -1,4 +1,4 @@
-target_sources(shell PRIVATE
+target_sources(potato_shell PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/camera.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/camera.h"
     "${CMAKE_CURRENT_LIST_DIR}/camera_controller.cpp"

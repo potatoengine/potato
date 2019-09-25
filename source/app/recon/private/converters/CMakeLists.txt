@@ -1,4 +1,4 @@
-target_sources(recon_lib PRIVATE
+target_sources(potato_librecon PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/convert_copy.h"
     "${CMAKE_CURRENT_LIST_DIR}/convert_copy.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/convert_json.h"
@@ -9,7 +9,7 @@ target_sources(recon_lib PRIVATE
 
 # FIXME just mark these as header-only once I can make that work
 if(UP_GPU_ENABLE_D3D11)
-    target_sources(recon_lib PRIVATE
+    target_sources(potato_librecon PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/convert_hlsl.h"
         "${CMAKE_CURRENT_LIST_DIR}/convert_hlsl.cpp"
     )
