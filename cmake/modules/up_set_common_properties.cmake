@@ -21,11 +21,9 @@ function(up_set_common_properties TARGET)
     # Detect type of target and enforce some naming rules for hygiene.
     #
     get_target_property(TARGET_TYPE ${TARGET} TYPE)
-    if (${TARGET} MATCHES "^test_")
+    if (${TARGET} MATCHES "_test$")
         set(TYPE "test")
-        if(NOT ${SHORT_NAME} MATCHES "_test$")
-            message(FATAL_ERROR "Test executable target '${TARGET}' should be named 'potato_{SHORT_NAME}_test'")
-        endif()
+
         string(REGEX REPLACE "_test$" "" TEST_TARGET ${TARGET})
         if(NOT TARGET ${TEST_TARGET})
             message(FATAL_ERROR "Test executable target '${TARGET}' expects there to be a target '${TEST_TARGET}'")
@@ -34,6 +32,7 @@ function(up_set_common_properties TARGET)
         set(TYPE "executable")
     elseif(${TARGET_TYPE} MATCHES "_LIBRARY")
         set(TYPE "library")
+
         if(NOT ${SHORT_NAME} MATCHES "^lib")
             message(FATAL_ERROR "Library target '${TARGET}' should be named 'potato_lib${SHORT_NAME}'")
         endif()
@@ -71,6 +70,7 @@ function(up_set_common_properties TARGET)
     # The goal is to ensure here we don't accidentally use
     # an unadorned function with our usual string types and
     # have things Just Compile(tm) incorrectly.
+    #
     target_compile_definitions(${TARGET} PUBLIC
         $<$<PLATFORM_ID:Windows>:UNICODE>
         $<$<PLATFORM_ID:Windows>:_UNICODE>
@@ -78,7 +78,8 @@ function(up_set_common_properties TARGET)
 
     # Set visibility hidden on *nix targets to mimic
     # Windows', and also for smaller symbol tables during
-    # the linking stage
+    # the linking stage.
+    #
     string(REGEX REPLACE "^lib|_test$" "" EXPORT_NAME ${SHORT_NAME})
     string(TOUPPER ${EXPORT_NAME} EXPORT_NAME)
     set_target_properties(${TARGET} PROPERTIES
@@ -87,18 +88,21 @@ function(up_set_common_properties TARGET)
         VISIBILITY_INLINES_HIDDEN ON
     )
 
-    # Doctest settings to make things work well
+    # Doctest settings to make things work well.
+    #
     target_compile_definitions(${TARGET} PRIVATE
         DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
         DOCTEST_CONFIG_SUPER_FAST_ASSERTS
         DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
     )
 
-    # Folder category
+    # Folder category for IDE solution builds.
+    #
     set_target_properties(${TARGET} PROPERTIES FOLDER ${TYPE})
 
     # Library public include paths and private paths
     # for both library and executable targets
+    #
     target_include_directories(${TARGET}
         PUBLIC
             $<INSTALL_INTERFACE:public>
