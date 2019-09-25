@@ -1,6 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "converter_app.h"
+#include "potato/recon/converter_app.h"
 #include <iostream>
 
 int main(int argc, char const** argv) {

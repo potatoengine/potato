@@ -1,6 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "converter_app.h"
+#include "potato/recon/converter_app.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/string_writer.h"
 #include "potato/spud/std_iostream.h"
