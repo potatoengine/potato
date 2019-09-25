@@ -1,8 +1,8 @@
 function(up_set_common_properties TARGET)
-    get_target_property(TYPE ${TARGET} TYPE)
     string(TOUPPER ${TARGET} TARGET_UPPER)
 
     # Potato requires C++17
+    #
     target_compile_features(${TARGET} PUBLIC
         cxx_std_17
     )
@@ -12,6 +12,38 @@ function(up_set_common_properties TARGET)
         CXX_EXTENSIONS OFF
         CXX_STANDARD_REQUIRED ON
     )
+
+    # Detect type of target
+    #
+    get_target_property(TARGET_TYPE ${TARGET} TYPE)
+    if (${TARGET} MATCHES "^test_")
+        set(TYPE "test")
+    elseif (${TARGET_TYPE} STREQUAL "EXECUTABLE")
+        set(TYPE "executable")
+    elseif(${TARGET_TYPE} MATCHES "_LIBRARY")
+        set(TYPE "library")
+    else()
+        message(ERROR "Target '${TARGET}' has unknown type '${TARGET_TYPE}'")
+    endif()
+
+    # Set output name
+    #
+    string(REGEX REPLACE "^(test_|potato_|app_|lib_?)" "" UNPREFIXED_SHORT_NAME ${TARGET})
+    if(${TYPE} STREQUAL "library")
+        set_target_properties(${TARGET} PROPERTIES
+            ARCHIVE_OUTPUT_NAME "libup-${UNPREFIXED_SHORT_NAME}"
+            LIBRARY_OUTPUT_NAME "libup-${UNPREFIXED_SHORT_NAME}"
+            RUNTIME_OUTPUT_NAME "libup-${UNPREFIXED_SHORT_NAME}"
+        )
+    elseif(${TYPE} STREQUAL "test")
+        set_target_properties(${TARGET} PROPERTIES
+            RUNTIME_OUTPUT_NAME "${UNPREFIXED_SHORT_NAME}_test"
+        )
+    else()
+        set_target_properties(${TARGET} PROPERTIES
+            RUNTIME_OUTPUT_NAME "${UNPREFIXED_SHORT_NAME}"
+        )
+    endif()
 
     # Trick MSVC into behaving like a standards-complient
     # compiler.
@@ -57,13 +89,7 @@ function(up_set_common_properties TARGET)
     )
 
     # Folder category
-    if (${TARGET} MATCHES "^test_")
-        set_target_properties(${TARGET} PROPERTIES FOLDER tests)
-    elseif (${TYPE} STREQUAL "EXECUTABLE")
-        set_target_properties(${TARGET} PROPERTIES FOLDER tools)
-    else()
-        set_target_properties(${TARGET} PROPERTIES FOLDER libraries)
-    endif()
+    set_target_properties(${TARGET} PROPERTIES FOLDER ${TYPE})
 
     # Library public include paths and private paths
     # for both library and executable targets
@@ -76,7 +102,9 @@ function(up_set_common_properties TARGET)
     )
 
     # Set test output directory
-    if (${TARGET} MATCHES "^test_")
-        set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${UP_TEST_OUTPUT_DIRECTORY})
+    if (${TYPE} STREQUAL "test")
+        set_target_properties(${TARGET} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${UP_TEST_OUTPUT_DIRECTORY}
+        )
     endif()
 endfunction()
