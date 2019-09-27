@@ -1,8 +1,13 @@
 function(up_set_common_properties TARGET)
-    get_target_property(TYPE ${TARGET} TYPE)
-    string(TOUPPER ${TARGET} TARGET_UPPER)
+    # Potato targets must start with potato_
+    #
+    if(NOT ${TARGET} MATCHES "^potato_")
+        message(FATAL_ERROR "Target '${TARGET}' must start with potato_ prefix")
+    endif()
+    string(REGEX REPLACE "^(potato_)" "" SHORT_NAME ${TARGET})
 
     # Potato requires C++17
+    #
     target_compile_features(${TARGET} PUBLIC
         cxx_std_17
     )
@@ -11,6 +16,36 @@ function(up_set_common_properties TARGET)
         CXX_STANDARD 17
         CXX_EXTENSIONS OFF
         CXX_STANDARD_REQUIRED ON
+    )
+
+    # Detect type of target and enforce some naming rules for hygiene.
+    #
+    get_target_property(TARGET_TYPE ${TARGET} TYPE)
+    if (${TARGET} MATCHES "_test$")
+        set(TYPE "test")
+
+        string(REGEX REPLACE "_test$" "" TEST_TARGET ${TARGET})
+        if(NOT TARGET ${TEST_TARGET})
+            message(FATAL_ERROR "Test executable target '${TARGET}' expects there to be a target '${TEST_TARGET}'")
+        endif()
+    elseif (${TARGET_TYPE} STREQUAL "EXECUTABLE")
+        set(TYPE "executable")
+    elseif(${TARGET_TYPE} MATCHES "_LIBRARY")
+        set(TYPE "library")
+
+        if(NOT ${SHORT_NAME} MATCHES "^lib")
+            message(FATAL_ERROR "Library target '${TARGET}' should be named 'potato_lib${SHORT_NAME}'")
+        endif()
+    else()
+        message(FATAL_ERROR "Target '${TARGET}' has unknown type '${TARGET_TYPE}'")
+    endif()
+
+    # Set output name
+    #
+    set_target_properties(${TARGET} PROPERTIES
+        ARCHIVE_OUTPUT_NAME "${SHORT_NAME}"
+        LIBRARY_OUTPUT_NAME "${SHORT_NAME}"
+        RUNTIME_OUTPUT_NAME "${SHORT_NAME}"
     )
 
     # Trick MSVC into behaving like a standards-complient
@@ -35,6 +70,7 @@ function(up_set_common_properties TARGET)
     # The goal is to ensure here we don't accidentally use
     # an unadorned function with our usual string types and
     # have things Just Compile(tm) incorrectly.
+    #
     target_compile_definitions(${TARGET} PUBLIC
         $<$<PLATFORM_ID:Windows>:UNICODE>
         $<$<PLATFORM_ID:Windows>:_UNICODE>
@@ -42,31 +78,31 @@ function(up_set_common_properties TARGET)
 
     # Set visibility hidden on *nix targets to mimic
     # Windows', and also for smaller symbol tables during
-    # the linking stage
+    # the linking stage.
+    #
+    string(REGEX REPLACE "^lib|_test$" "" EXPORT_NAME ${SHORT_NAME})
+    string(TOUPPER ${EXPORT_NAME} EXPORT_NAME)
     set_target_properties(${TARGET} PROPERTIES
-        DEFINE_SYMBOL "UP_${TARGET_UPPER}_EXPORTS"
+        DEFINE_SYMBOL "UP_${EXPORT_NAME}_EXPORTS"
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
     )
 
-    # Doctest settings to make things work well
+    # Doctest settings to make things work well.
+    #
     target_compile_definitions(${TARGET} PRIVATE
         DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
         DOCTEST_CONFIG_SUPER_FAST_ASSERTS
         DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
     )
 
-    # Folder category
-    if (${TARGET} MATCHES "^test_")
-        set_target_properties(${TARGET} PROPERTIES FOLDER tests)
-    elseif (${TYPE} STREQUAL "EXECUTABLE")
-        set_target_properties(${TARGET} PROPERTIES FOLDER tools)
-    else()
-        set_target_properties(${TARGET} PROPERTIES FOLDER libraries)
-    endif()
+    # Folder category for IDE solution builds.
+    #
+    set_target_properties(${TARGET} PROPERTIES FOLDER ${TYPE})
 
     # Library public include paths and private paths
     # for both library and executable targets
+    #
     target_include_directories(${TARGET}
         PUBLIC
             $<INSTALL_INTERFACE:public>
@@ -74,4 +110,14 @@ function(up_set_common_properties TARGET)
         PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/private
     )
+
+    ## Set test output directory.
+    ## Not actually a good idea without figuring out how to place
+    ## runtime libraries next to the tests.
+    ##
+    #if (${TYPE} STREQUAL "test")
+    #    set_target_properties(${TARGET} PROPERTIES
+    #        RUNTIME_OUTPUT_DIRECTORY ${UP_TEST_OUTPUT_DIRECTORY}
+    #    )
+    #endif()
 endfunction()
