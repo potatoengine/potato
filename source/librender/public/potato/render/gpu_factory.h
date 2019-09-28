@@ -25,8 +25,8 @@ namespace up {
         virtual rc<GpuDevice> createDevice(int index) = 0;
     };
 
-    UP_GPU_API box<GpuDeviceFactory> CreateFactoryNull();
+    UP_RENDER_API box<GpuDeviceFactory> CreateFactoryNull();
 #if defined(UP_GPU_ENABLE_D3D11)
-    UP_GPU_API box<GpuDeviceFactory> CreateFactoryD3D11();
+    UP_RENDER_API box<GpuDeviceFactory> CreateFactoryD3D11();
 #endif
 } // namespace up

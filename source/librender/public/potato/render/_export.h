@@ -11,5 +11,3 @@
 #else
 #    define UP_RENDER_API
 #endif
-
-#define UP_GPU_API UP_RENDER_API
