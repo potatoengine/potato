@@ -18,9 +18,9 @@ if(TARGET assimp AND TARGET SDL2)
         PUBLIC
             potato::libruntime
             potato::spud
-            potato::libimage
             glm
         PRIVATE
+            stb
             imgui
             SDL2
             doctest

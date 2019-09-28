@@ -33,5 +33,5 @@ namespace up {
         ImageHeader _header;
     };
 
-    UP_IMAGE_API Image loadImage(Stream& stream);
+    UP_RENDER_API Image loadImage(Stream& stream);
 } // namespace up

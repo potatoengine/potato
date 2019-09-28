@@ -1,6 +1,6 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include "potato/image/image.h"
+#include "potato/render/image.h"
 #include "potato/runtime/stream.h"
 #include <stb_image.h>
 

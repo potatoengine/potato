@@ -3,9 +3,11 @@ target_sources(potato_librender PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/camera.h
     ${CMAKE_CURRENT_SOURCE_DIR}/debug_draw.h
     ${CMAKE_CURRENT_SOURCE_DIR}/draw_imgui.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/image.h
     ${CMAKE_CURRENT_SOURCE_DIR}/material.h
     ${CMAKE_CURRENT_SOURCE_DIR}/mesh.h
     ${CMAKE_CURRENT_SOURCE_DIR}/model.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/pixel_format.h
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/shader.h
     ${CMAKE_CURRENT_SOURCE_DIR}/texture.h

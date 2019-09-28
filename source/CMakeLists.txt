@@ -1,7 +1,6 @@
 add_subdirectory(spud)
 add_subdirectory(libruntime)
 add_subdirectory(librender)
-add_subdirectory(libimage)
 add_subdirectory(libassetdb)
 add_subdirectory(libecs)
 add_subdirectory(librecon)

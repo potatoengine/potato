@@ -16,7 +16,6 @@ if(TARGET assimp)
             potato::libruntime
             potato::spud
             potato::libassetdb
-            potato::libimage
             stb
             assimp
         PRIVATE
