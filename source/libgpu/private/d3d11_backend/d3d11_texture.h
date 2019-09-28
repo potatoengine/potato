@@ -5,7 +5,7 @@
 #include "d3d11_platform.h"
 #include "potato/gpu/com_ptr.h"
 #include "potato/spud/box.h"
-#include "potato/gpu/texture.h"
+#include "potato/gpu/gpu_texture.h"
 
 namespace up::d3d11 {
     class TextureD3D11 final : public GpuTexture {

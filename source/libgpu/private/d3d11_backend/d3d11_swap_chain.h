@@ -5,7 +5,7 @@
 #include "d3d11_platform.h"
 #include "potato/gpu/com_ptr.h"
 #include "potato/spud/box.h"
-#include "potato/gpu/swap_chain.h"
+#include "potato/gpu/gpu_swap_chain.h"
 
 namespace up::d3d11 {
     class SwapChainD3D11 : public GpuSwapChain {

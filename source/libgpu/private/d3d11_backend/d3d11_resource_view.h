@@ -5,7 +5,7 @@
 #include "d3d11_platform.h"
 #include "potato/gpu/com_ptr.h"
 #include "potato/spud/box.h"
-#include "potato/gpu/resource_view.h"
+#include "potato/gpu/gpu_resource_view.h"
 
 namespace up::d3d11 {
     class ResourceViewD3D11 final : public GpuResourceView {

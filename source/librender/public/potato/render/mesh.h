@@ -8,7 +8,7 @@
 #include "potato/spud/rc.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/int_types.h"
-#include "potato/gpu/common.h"
+#include "potato/gpu/gpu_common.h"
 
 namespace up {
     class GpuBuffer;

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "common.h"
+#include "gpu_common.h"
 #include "potato/spud/span.h"
 #include "potato/spud/int_types.h"
 #include <glm/vec4.hpp>

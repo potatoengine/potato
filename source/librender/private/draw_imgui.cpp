@@ -2,13 +2,13 @@
 
 #include "potato/render/draw_imgui.h"
 #include "potato/render/shader.h"
-#include "potato/gpu/buffer.h"
-#include "potato/gpu/command_list.h"
-#include "potato/gpu/device.h"
-#include "potato/gpu/pipeline_state.h"
-#include "potato/gpu/texture.h"
-#include "potato/gpu/resource_view.h"
-#include "potato/gpu/sampler.h"
+#include "potato/gpu/gpu_buffer.h"
+#include "potato/gpu/gpu_command_list.h"
+#include "potato/gpu/gpu_device.h"
+#include "potato/gpu/gpu_pipeline_state.h"
+#include "potato/gpu/gpu_texture.h"
+#include "potato/gpu/gpu_resource_view.h"
+#include "potato/gpu/gpu_sampler.h"
 #include <potato/runtime/assertion.h>
 #include <imgui.h>
 #include <SDL_events.h>

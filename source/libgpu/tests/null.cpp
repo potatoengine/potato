@@ -1,9 +1,9 @@
 #include <doctest/doctest.h>
 
-#include "potato/gpu/factory.h"
-#include "potato/gpu/device.h"
-#include "potato/gpu/swap_chain.h"
-#include "potato/gpu/pipeline_state.h"
+#include "potato/gpu/gpu_factory.h"
+#include "potato/gpu/gpu_device.h"
+#include "potato/gpu/gpu_swap_chain.h"
+#include "potato/gpu/gpu_pipeline_state.h"
 
 DOCTEST_TEST_SUITE("[potato][gpu] DeviceNull") {
     using namespace up;

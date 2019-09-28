@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "common.h"
+#include "gpu_common.h"
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/rc.h"

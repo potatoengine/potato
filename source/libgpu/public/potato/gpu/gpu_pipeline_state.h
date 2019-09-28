@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "common.h"
+#include "gpu_common.h"
 
 namespace up {
     class GpuPipelineState {

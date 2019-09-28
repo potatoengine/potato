@@ -4,7 +4,7 @@
 
 #include "d3d11_platform.h"
 #include "potato/gpu/com_ptr.h"
-#include "potato/gpu/buffer.h"
+#include "potato/gpu/gpu_buffer.h"
 
 namespace up::d3d11 {
     class BufferD3D11 final : public GpuBuffer {

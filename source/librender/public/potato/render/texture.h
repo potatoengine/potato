@@ -12,8 +12,6 @@ namespace up {
 }
 
 namespace up {
-    class RenderContext;
-
     class Texture : public shared<Texture> {
     public:
         UP_RENDER_API explicit Texture(Image image, box<GpuTexture> texture);
