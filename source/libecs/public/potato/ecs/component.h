@@ -46,7 +46,7 @@ namespace up {
 
         template <typename Component>
         struct ComponentOperations {
-            static constexpr void copyComponent(void* dest, void const* src) noexcept { *static_cast<Component*>(dest) = *static_cast<Component const*>(src); };
+            static constexpr void copyComponent(void* dest, void const* src) noexcept { new(dest) Component(*static_cast<Component const*>(src)); };
             static constexpr void moveComponent(void* dest, void* src) noexcept { *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src)); };
             static constexpr void destroyComponent(void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
         };
