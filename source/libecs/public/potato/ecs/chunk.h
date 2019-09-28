@@ -3,8 +3,8 @@
 #pragma once
 
 #include "common.h"
-#include <potato/foundation/box.h>
-#include <potato/foundation/vector.h>
+#include <potato/spud/box.h>
+#include <potato/spud/vector.h>
 
 namespace up {
     struct ComponentMeta;

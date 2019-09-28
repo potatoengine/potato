@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "potato/foundation/vector.h"
-#include "potato/foundation/delegate_ref.h"
+#include "potato/spud/vector.h"
+#include "potato/spud/delegate_ref.h"
 #include "potato/ecs/common.h"
 #include "potato/ecs/chunk.h"
 

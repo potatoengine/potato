@@ -3,7 +3,7 @@
 #pragma once
 
 #include "common.h"
-#include "potato/foundation/vector.h"
+#include "potato/spud/vector.h"
 
 namespace up {
     /// Manages EntityIds and their mappings to archetypes and chunks

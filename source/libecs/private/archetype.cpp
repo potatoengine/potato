@@ -3,9 +3,9 @@
 #include "potato/ecs/archetype.h"
 #include "potato/ecs/component.h"
 #include "potato/ecs/entity.h"
-#include "potato/foundation/utility.h"
-#include "potato/foundation/sort.h"
-#include "potato/foundation/find.h"
+#include "potato/spud/utility.h"
+#include "potato/spud/sort.h"
+#include "potato/spud/find.h"
 #include "potato/runtime/assertion.h"
 
 namespace up {

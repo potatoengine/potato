@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/ecs/entity_mapper.h"
-#include "potato/foundation/utility.h"
+#include "potato/spud/utility.h"
 
 namespace up {
     static constexpr auto makeEntityId(uint32 mappingIndex, uint32 generation) noexcept -> EntityId {
