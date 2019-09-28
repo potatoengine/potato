@@ -2,7 +2,6 @@
 
 #include "potato/spud/numeric_util.h"
 #include "potato/render/renderer.h"
-#include "potato/render/render_task.h"
 #include "potato/render/context.h"
 #include "potato/render/material.h"
 #include "potato/render/mesh.h"
@@ -33,24 +32,14 @@ namespace {
     };
 } // namespace
 
-up::Renderer::Renderer(FileSystem& fileSystem, rc<GpuDevice> device) : _device(std::move(device)), _fileSystem(fileSystem), _renderThread([this] { _renderMain(); }) {
+up::Renderer::Renderer(FileSystem& fileSystem, rc<GpuDevice> device) : _device(std::move(device)), _fileSystem(fileSystem) {
     _commandList = _device->createCommandList();
 
     _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.json");
     _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, 64 * 1024);
 }
 
-up::Renderer::~Renderer() {
-    _taskQueue.close();
-    _renderThread.join();
-}
-
-void up::Renderer::_renderMain() {
-    RenderTask task;
-    while (_taskQueue.dequeWait(task)) {
-        task();
-    }
-}
+up::Renderer::~Renderer() = default;
 
 void up::Renderer::beginFrame() {
     if (_frameDataBuffer == nullptr) {

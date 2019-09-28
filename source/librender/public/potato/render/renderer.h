@@ -3,7 +3,6 @@
 #pragma once
 
 #include "_export.h"
-#include "render_task.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/zstring_view.h"
@@ -48,16 +47,12 @@ namespace up {
         GpuCommandList& commandList() const noexcept { return *_commandList; }
 
     private:
-        void _renderMain();
-
         rc<GpuDevice> _device;
         box<GpuCommandList> _commandList;
         box<GpuBuffer> _frameDataBuffer;
         rc<Material> _debugLineMaterial;
         box<GpuBuffer> _debugLineBuffer;
         FileSystem& _fileSystem;
-        std::thread _renderThread;
-        ConcurrentQueue<RenderTask> _taskQueue;
         uint32 _frameCounter = 0;
         uint64 _startTimestamp = 0;
         double _frameTimestamp = 0;
