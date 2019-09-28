@@ -15,7 +15,6 @@ if(WIN32)
     target_link_libraries(potato_shell PRIVATE
         potato::libruntime
         potato::spud
-        potato::libgpu
         potato::librender
         potato::libecs
         glm

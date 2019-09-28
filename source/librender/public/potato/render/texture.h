@@ -5,15 +5,13 @@
 #include "_export.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
-#include "potato/image/image.h"
+#include "potato/render/image.h"
 
 namespace up {
     class GpuTexture;
 }
 
 namespace up {
-    class RenderContext;
-
     class Texture : public shared<Texture> {
     public:
         UP_RENDER_API explicit Texture(Image image, box<GpuTexture> texture);

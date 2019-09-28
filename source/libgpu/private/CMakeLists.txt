@@ -1,2 +1,0 @@
-add_subdirectory(null_backend)
-add_subdirectory(d3d11_backend)

@@ -2,18 +2,17 @@
 
 #include "potato/spud/numeric_util.h"
 #include "potato/render/renderer.h"
-#include "potato/render/render_task.h"
 #include "potato/render/context.h"
 #include "potato/render/material.h"
 #include "potato/render/mesh.h"
 #include "potato/render/shader.h"
 #include "potato/render/texture.h"
 #include "potato/render/debug_draw.h"
-#include "potato/gpu/buffer.h"
-#include "potato/gpu/command_list.h"
-#include "potato/gpu/device.h"
-#include "potato/gpu/swap_chain.h"
-#include "potato/gpu/texture.h"
+#include "potato/render/gpu_buffer.h"
+#include "potato/render/gpu_command_list.h"
+#include "potato/render/gpu_device.h"
+#include "potato/render/gpu_swap_chain.h"
+#include "potato/render/gpu_texture.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
 #include "potato/runtime/json.h"
@@ -33,24 +32,14 @@ namespace {
     };
 } // namespace
 
-up::Renderer::Renderer(FileSystem& fileSystem, rc<GpuDevice> device) : _device(std::move(device)), _fileSystem(fileSystem), _renderThread([this] { _renderMain(); }) {
+up::Renderer::Renderer(FileSystem& fileSystem, rc<GpuDevice> device) : _device(std::move(device)), _fileSystem(fileSystem) {
     _commandList = _device->createCommandList();
 
     _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.json");
     _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, 64 * 1024);
 }
 
-up::Renderer::~Renderer() {
-    _taskQueue.close();
-    _renderThread.join();
-}
-
-void up::Renderer::_renderMain() {
-    RenderTask task;
-    while (_taskQueue.dequeWait(task)) {
-        task();
-    }
-}
+up::Renderer::~Renderer() = default;
 
 void up::Renderer::beginFrame() {
     if (_frameDataBuffer == nullptr) {

@@ -3,6 +3,7 @@ target_sources(potato_libruntime PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/assertion.h
     ${CMAKE_CURRENT_SOURCE_DIR}/callstack.h
     ${CMAKE_CURRENT_SOURCE_DIR}/common.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/com_ptr.h
     ${CMAKE_CURRENT_SOURCE_DIR}/concurrent_queue.h
     ${CMAKE_CURRENT_SOURCE_DIR}/debug.h
     ${CMAKE_CURRENT_SOURCE_DIR}/filesystem.h

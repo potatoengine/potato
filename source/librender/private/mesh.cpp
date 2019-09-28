@@ -2,9 +2,9 @@
 
 #include "potato/render/mesh.h"
 #include "potato/render/context.h"
-#include "potato/gpu/buffer.h"
-#include "potato/gpu/command_list.h"
-#include "potato/gpu/device.h"
+#include "potato/render/gpu_buffer.h"
+#include "potato/render/gpu_command_list.h"
+#include "potato/render/gpu_device.h"
 
 up::Mesh::Mesh(vector<up::uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels)
     : _buffers(buffers.begin(), buffers.end()),

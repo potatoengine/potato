@@ -2,10 +2,10 @@
 
 #include "potato/render/debug_draw.h"
 #include "potato/spud/vector.h"
-#include "potato/gpu/buffer.h"
-#include "potato/gpu/command_list.h"
-#include "potato/gpu/device.h"
-#include "potato/gpu/pipeline_state.h"
+#include "potato/render/gpu_buffer.h"
+#include "potato/render/gpu_command_list.h"
+#include "potato/render/gpu_device.h"
+#include "potato/render/gpu_pipeline_state.h"
 #include <mutex>
 
 static std::mutex debugLock;
