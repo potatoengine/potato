@@ -13,7 +13,7 @@ namespace up {
 
 namespace up {
     struct ImageHeader {
-        ImagePixelFormat pixelFormat = ImagePixelFormat::Unknown;
+        PixelFormat pixelFormat = PixelFormat::Unknown;
         int width = 0, height = 0, stride = 0;
     };
 
@@ -34,5 +34,4 @@ namespace up {
     };
 
     UP_IMAGE_API Image loadImage(Stream& stream);
-    UP_IMAGE_API bool saveDDS(Image const& image, Stream& stream);
 } // namespace up

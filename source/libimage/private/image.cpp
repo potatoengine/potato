@@ -43,13 +43,13 @@ auto up::loadImage(Stream& stream) -> Image {
 
     switch (channels) {
     case 1:
-        header.pixelFormat = ImagePixelFormat::R8_UNORM;
+        header.pixelFormat = PixelFormat::R8UnsignedNormalized;
         break;
     case 3:
-        header.pixelFormat = ImagePixelFormat::RGB8_UNORM;
+        header.pixelFormat = PixelFormat::R8G8B8UnsignedNormalized;
         break;
     case 4:
-        header.pixelFormat = ImagePixelFormat::RGBA8_UNORM;
+        header.pixelFormat = PixelFormat::R8G8B8A8UnsignedNormalized;
         break;
     }
 

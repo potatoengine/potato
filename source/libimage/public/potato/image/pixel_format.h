@@ -2,18 +2,49 @@
 
 #pragma once
 
-#include "_export.h"
-
 namespace up {
-    enum class ImagePixelFormat {
+    enum class PixelFormat {
         Unknown,
-        RGBA8_UNORM,
-        RGB8_UNORM,
-        R8_UNORM,
+        R8G8B8A8UnsignedNormalized,
+        R8G8B8UnsignedNormalized,
+        R8UnsignedNormalized,
         DXT5
     };
 
-    UP_IMAGE_API bool isCompressed(ImagePixelFormat format) noexcept;
-    UP_IMAGE_API int channelCount(ImagePixelFormat format) noexcept;
-    UP_IMAGE_API int bytesPerPixel(ImagePixelFormat format) noexcept;
+    constexpr bool isCompressed(PixelFormat format) noexcept {
+        switch (format) {
+        case PixelFormat::DXT5:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    constexpr int channelCount(PixelFormat format) noexcept {
+        switch (format) {
+        case PixelFormat::R8G8B8A8UnsignedNormalized:
+        case PixelFormat::DXT5:
+            return 4;
+        case PixelFormat::R8G8B8UnsignedNormalized:
+            return 3;
+        case PixelFormat::R8UnsignedNormalized:
+            return 1;
+        default:
+            return 0;
+        }
+    }
+
+    constexpr int bytesPerPixel(PixelFormat format) noexcept {
+        switch (format) {
+        case PixelFormat::R8G8B8A8UnsignedNormalized:
+            return 4;
+        case PixelFormat::R8G8B8UnsignedNormalized:
+            return 3;
+        case PixelFormat::R8UnsignedNormalized:
+        case PixelFormat::DXT5:
+            return 1;
+        default:
+            return 0;
+        }
+    }
 } // namespace up
