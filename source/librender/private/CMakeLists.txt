@@ -8,3 +8,6 @@ target_sources(potato_librender PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/texture.cpp
 )
+
+add_subdirectory(null_backend)
+add_subdirectory(d3d11_backend)

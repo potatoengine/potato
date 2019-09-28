@@ -4,11 +4,11 @@
 #include "potato/render/context.h"
 #include "potato/render/shader.h"
 #include "potato/render/texture.h"
-#include "potato/gpu/gpu_command_list.h"
-#include "potato/gpu/gpu_pipeline_state.h"
-#include "potato/gpu/gpu_resource_view.h"
-#include "potato/gpu/gpu_device.h"
-#include "potato/gpu/gpu_sampler.h"
+#include "potato/render/gpu_command_list.h"
+#include "potato/render/gpu_pipeline_state.h"
+#include "potato/render/gpu_resource_view.h"
+#include "potato/render/gpu_device.h"
+#include "potato/render/gpu_sampler.h"
 
 up::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures) : _vertexShader(std::move(vertexShader)), _pixelShader(std::move(pixelShader)), _textures(std::move(textures)), _srvs(_textures.size()), _samplers(_textures.size()) {}
 

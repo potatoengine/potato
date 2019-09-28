@@ -2,7 +2,7 @@
 
 #include "potato/render/texture.h"
 #include "potato/render/context.h"
-#include "potato/gpu/gpu_texture.h"
+#include "potato/render/gpu_texture.h"
 
 up::Texture::Texture(Image image, box<GpuTexture> texture) : _texture(std::move(texture)), _image(std::move(image)) {}
 

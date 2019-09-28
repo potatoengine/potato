@@ -2,11 +2,11 @@
 
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
-#include "potato/gpu/gpu_command_list.h"
-#include "potato/gpu/gpu_buffer.h"
-#include "potato/gpu/gpu_device.h"
-#include "potato/gpu/gpu_texture.h"
-#include "potato/gpu/gpu_resource_view.h"
+#include "potato/render/gpu_command_list.h"
+#include "potato/render/gpu_buffer.h"
+#include "potato/render/gpu_device.h"
+#include "potato/render/gpu_texture.h"
+#include "potato/render/gpu_resource_view.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

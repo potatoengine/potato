@@ -23,8 +23,8 @@ set(UP_GPU_D3D11_SOURCES
 
 if(UP_GPU_ENABLE_D3D11)
     message(STATUS "ENABLED Direct3D 11 support")
-    target_sources(potato_libgpu PRIVATE ${UP_GPU_D3D11_SOURCES})
-    target_compile_definitions(potato_libgpu PUBLIC UP_GPU_ENABLE_D3D11)
+    target_sources(potato_librender PRIVATE ${UP_GPU_D3D11_SOURCES})
+    target_compile_definitions(potato_librender PUBLIC UP_GPU_ENABLE_D3D11)
 else()
     message(STATUS "DISABLED Direct3D 11 support")
 
@@ -33,6 +33,6 @@ else()
     # but unbuilt
 
     #set_source_files_properties(${UP_GPU_D3D11_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
-    add_library(potato_libgpu_d3d11 INTERFACE)
-    target_sources(potato_libgpu_d3d11 INTERFACE ${UP_GPU_D3D11_SOURCES})
+    add_library(potato_librender_d3d11 INTERFACE)
+    target_sources(potato_librender_d3d11 INTERFACE ${UP_GPU_D3D11_SOURCES})
 endif()

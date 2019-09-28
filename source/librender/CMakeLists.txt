@@ -18,7 +18,6 @@ if(TARGET assimp AND TARGET SDL2)
         PUBLIC
             potato::libruntime
             potato::spud
-            potato::libgpu
             potato::libimage
             glm
         PRIVATE
