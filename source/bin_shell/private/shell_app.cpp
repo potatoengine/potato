@@ -21,7 +21,6 @@
 #include "potato/render/renderer.h"
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
-#include "potato/render/node.h"
 #include "potato/render/model.h"
 #include "potato/render/mesh.h"
 #include "potato/render/material.h"

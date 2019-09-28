@@ -2,7 +2,6 @@
 
 #include "scene.h"
 #include <potato/render/model.h>
-#include <potato/render/node.h>
 #include "potato/ecs/world.h"
 #include "potato/ecs/query.h"
 
