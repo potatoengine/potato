@@ -3,7 +3,7 @@
 #pragma once
 
 #include "common.h"
-#include "potato/spud/string_view.h"
+#include "potato/spud/zstring_view.h"
 #include "potato/spud/hash_fnv1a.h"
 #include "potato/spud/traits.h"
 
@@ -19,7 +19,7 @@ namespace up {
 
         /// Creates a ComponentMeta; should only be used by the UP_COMPONENT macro
         template <typename Component>
-        static constexpr auto construct(string_view name) noexcept -> ComponentMeta;
+        static constexpr auto construct(zstring_view name) noexcept -> ComponentMeta;
 
         /// Retrieves the ComponentMeta for a given type
         template <typename Component>
@@ -31,11 +31,11 @@ namespace up {
         Destroy destroy = nullptr;
         uint32 size = 0;
         uint32 alignment = 0;
-        string_view name;
+        zstring_view name;
     };
 
     namespace _detail {
-        constexpr auto hashComponentName(string_view name) noexcept -> uint64 {
+        constexpr auto hashComponentName(zstring_view name) noexcept -> uint64 {
             fnv1a hasher;
             hasher.append_bytes(name.data(), name.size());
             return hasher.finalize();
@@ -56,7 +56,7 @@ namespace up {
     }
 
     template <typename Component>
-    constexpr ComponentMeta ComponentMeta::construct(string_view name) noexcept {
+    constexpr ComponentMeta ComponentMeta::construct(zstring_view name) noexcept {
         fnv1a hasher;
         hasher.append_bytes(name.data(), name.size());
         uint64 hash = hasher.finalize();
