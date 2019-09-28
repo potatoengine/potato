@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "convert_hlsl.h"
-#include "potato/gpu/com_ptr.h"
+#include "potato/runtime/com_ptr.h"
 #include "potato/spud/out_ptr.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/string_writer.h"

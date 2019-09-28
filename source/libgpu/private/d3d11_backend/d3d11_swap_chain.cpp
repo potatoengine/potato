@@ -3,7 +3,7 @@
 #include "d3d11_swap_chain.h"
 #include "d3d11_texture.h"
 #include "d3d11_platform.h"
-#include "potato/gpu/com_ptr.h"
+#include "potato/runtime/com_ptr.h"
 #include "potato/spud/box.h"
 #include "potato/spud/out_ptr.h"
 #include <utility>

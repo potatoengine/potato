@@ -1,6 +1,6 @@
 // Copyright (C) 2018 Sean Middleditch, all rights reserverd.
 
-#include "potato/gpu/com_ptr.h"
+#include "potato/runtime/com_ptr.h"
 #include "d3d11_device.h"
 #include "d3d11_command_list.h"
 #include "d3d11_pipeline_state.h"

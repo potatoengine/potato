@@ -3,7 +3,7 @@
 #pragma once
 
 #include "d3d11_platform.h"
-#include "potato/gpu/com_ptr.h"
+#include "potato/runtime/com_ptr.h"
 #include "potato/spud/box.h"
 #include "potato/gpu/gpu_texture.h"
 
