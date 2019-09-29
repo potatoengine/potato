@@ -61,7 +61,9 @@ namespace up {
 
         _matches.clear();
 
-        world.selectArchetypes(components, [this](ArchetypeId arch, view<int> offsets) {
+        int offsets[sizeof...(Components)];
+
+        world.selectArchetypes(components, offsets, [this](ArchetypeId arch, view<int> offsets) {
             _matches.emplace_back();
             Match& match = _matches.back();
 

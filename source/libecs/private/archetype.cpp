@@ -9,21 +9,16 @@
 #include "potato/runtime/assertion.h"
 
 namespace up {
-    template <typename Type, typename Projection = up::identity>
-    static constexpr auto hashComponents(span<Type> input, Projection const& proj = {}, uint64 seed = 0) noexcept -> uint64 {
-        for (Type const& value : input) {
-            seed ^= static_cast<up::uint64>(project(proj, value));
-        }
-        return seed;
-    }
+    static auto matchArchetype(Archetype const& arch, view<ComponentId> componentIds, span<int> offsets) noexcept -> bool {
+        UP_ASSERT(componentIds.size() == offsets.size());
 
-    static auto matchArchetype(Archetype const& arch, view<ComponentId> componentIds, int* offsets) noexcept -> bool {
         for (ComponentId const component : componentIds) {
             auto const layout = find(arch.chunkLayout, component, {}, &ChunkRowDesc::component);
             if (layout == arch.chunkLayout.end()) {
                 return false;
             }
-            *offsets++ = layout->offset;
+            offsets.front() = layout->offset;
+            offsets.pop_front();
         }
         return true;
     };
@@ -80,11 +75,9 @@ auto up::ArchetypeMapper::getArchetype(ArchetypeId arch) noexcept -> Archetype* 
     return &_archetypes[index - 1];
 }
 
-auto up::ArchetypeMapper::findArchetype(view<ComponentId> components) const noexcept -> Archetype const* {
-    uint64 const hash = hashComponents(components, {}, to_underlying(getComponentId<Entity>()));
-
+auto up::ArchetypeMapper::findArchetype(ArchetypeLayoutId layoutHash) const noexcept -> Archetype const* {
     for (Archetype const& arch : _archetypes) {
-        if (arch.layoutHash == hash) {
+        if (arch.layoutHash == layoutHash) {
             return &arch;
         }
     }
@@ -92,14 +85,14 @@ auto up::ArchetypeMapper::findArchetype(view<ComponentId> components) const noex
     return nullptr;
 }
 
-auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components) -> Archetype* {
-    uint64 const hash = hashComponents(components, &ComponentMeta::id, to_underlying(getComponentId<Entity>()));
-
-    for (Archetype& arch : _archetypes) {
-        if (arch.layoutHash == hash) {
-            return &arch;
-        }
+auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components) -> Archetype const* {
+    ArchetypeComponentHasher hasher;
+    for (auto meta : components) {
+        hasher.hash(meta->id);
     }
+    auto const hash = hasher.finalize();
+
+    UP_ASSERT(findArchetype(hash) == nullptr);
 
     // bump so Query objects know that the list of archetypes has changed
     //
@@ -115,14 +108,13 @@ auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components)
     return &_archetypes.back();
 }
 
-auto up::ArchetypeMapper::selectArchetypes(view<ComponentId> componentIds, delegate_ref<SelectSignature> callback) const noexcept -> int {
-    int offsets[ArchetypeComponentLimit];
+auto up::ArchetypeMapper::selectArchetypes(view<ComponentId> componentIds, span<int> offsetsBuffer, delegate_ref<SelectSignature> callback) const noexcept -> int {
     int matches = 0;
 
     for (Archetype const& arch : _archetypes) {
-        if (matchArchetype(arch, componentIds, offsets)) {
+        if (matchArchetype(arch, componentIds, offsetsBuffer)) {
             ++matches;
-            callback(arch.id, span{offsets}.first(componentIds.size()));
+            callback(arch.id, offsetsBuffer.first(componentIds.size()));
         }
     }
 

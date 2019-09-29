@@ -5,9 +5,6 @@
 #include "potato/ecs/archetype.h"
 #include "potato/ecs/entity.h"
 #include "potato/spud/find.h"
-#include "potato/spud/hash.h"
-#include "potato/spud/utility.h"
-#include "potato/spud/sort.h"
 #include <algorithm>
 
 namespace up {
@@ -37,8 +34,10 @@ auto up::World::getArchetype(ArchetypeId arch) noexcept -> Archetype const* {
     return _archetypes.getArchetype(arch);
 }
 
-auto up::World::selectArchetypes(view<ComponentId> componentIds, delegate_ref<SelectSignature> callback) const -> int {
-    return _archetypes.selectArchetypes(componentIds, callback);
+auto up::World::selectArchetypes(view<ComponentId> componentIds, span<int> offsetsBuffer, delegate_ref<SelectSignature> callback) const -> int {
+    UP_ASSERT(componentIds.size() == offsetsBuffer.size());
+
+    return _archetypes.selectArchetypes(componentIds, offsetsBuffer, callback);
 }
 
 void up::World::deleteEntity(EntityId entity) noexcept {
@@ -114,7 +113,16 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
         span newComponentMetaSpan = span{newComponentMetas}.first(archetype.chunkLayout.size() - 1);
 
         // find the target archetype and allocate an entry in it
-        Archetype* newArchetype = _archetypes.createArchetype(newComponentMetaSpan);
+        ArchetypeComponentHasher hasher;
+        for (auto const& row : archetype.chunkLayout) {
+            hasher.hash(row.component);
+        }
+        auto const newArchetypeHash = hasher.finalize();
+
+        Archetype const* newArchetype = _archetypes.findArchetype(newArchetypeHash);
+        if (newArchetype == nullptr) {
+            newArchetype = _archetypes.createArchetype(newComponentMetaSpan);
+        }
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(*newArchetype);
 
         _moveTo(*newArchetype, newChunk, newIndex, archetype, chunk, index);
@@ -139,7 +147,7 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* compone
         span newComponentMetaSpan = span{newComponentMetas}.first(archetype.chunkLayout.size() + 1);
 
         // find the target archetype and allocate an entry in it
-        Archetype* newArchetype = _archetypes.createArchetype(newComponentMetaSpan);
+        Archetype const* newArchetype = _archetypes.createArchetype(newComponentMetaSpan);
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(*newArchetype);
 
         _moveTo(*newArchetype, newChunk, newIndex, archetype, chunk, index);
@@ -156,7 +164,16 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* compone
 auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<void const*> data) -> EntityId {
     UP_ASSERT(components.size() == data.size());
 
-    auto newArchetype = _archetypes.createArchetype(components);
+    ArchetypeComponentHasher hasher;
+    for (auto const* meta : components) {
+        hasher.hash(meta->id);
+    }
+    auto const archetypeHash = hasher.finalize();
+
+    Archetype const* newArchetype = _archetypes.findArchetype(archetypeHash);
+    if (newArchetype == nullptr) {
+        newArchetype = _archetypes.createArchetype(components);
+    }
     auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(*newArchetype);
 
     // Allocate EntityId
@@ -170,7 +187,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     return entity;
 }
 
-auto up::World::_allocateEntity(Archetype& archetype) -> AllocatedLocation {
+auto up::World::_allocateEntity(Archetype const& archetype) -> AllocatedLocation {
     if (archetype.chunks.empty() || archetype.chunks.back()->header.entities == archetype.maxEntitiesPerChunk) {
         archetype.chunks.push_back(_chunks.allocate(archetype.id));
     }

@@ -82,7 +82,7 @@ namespace up {
         ///
         /// @return the number of matched archetypes.
         ///
-        UP_ECS_API int selectArchetypes(view<ComponentId> components, delegate_ref<SelectSignature> callback) const;
+        UP_ECS_API int selectArchetypes(view<ComponentId> components, span<int> offsetsBuffer, delegate_ref<SelectSignature> callback) const;
 
     private:
         struct AllocatedLocation {
@@ -95,7 +95,7 @@ namespace up {
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
 
         struct AllocatedLocation;
-        auto _allocateEntity(Archetype& archetype) -> AllocatedLocation;
+        auto _allocateEntity(Archetype const& archetype) -> AllocatedLocation;
         void _deleteEntity(EntityId entity);
 
         void _moveTo(Archetype const& destArch, Chunk& destChunk, int destIndex, Archetype const& srcArch, Chunk& srcChunk, int srcIndex);
