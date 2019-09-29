@@ -4,7 +4,7 @@
 
 #include "d3d11_platform.h"
 #include "potato/runtime/com_ptr.h"
-#include "potato/gpu/gpu_factory.h"
+#include "potato/render/gpu_factory.h"
 
 namespace up::d3d11 {
     class FactoryD3D11 final : public GpuDeviceFactory {
