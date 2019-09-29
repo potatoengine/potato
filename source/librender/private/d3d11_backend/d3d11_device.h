@@ -5,7 +5,7 @@
 #include "d3d11_platform.h"
 #include "potato/runtime/com_ptr.h"
 #include "potato/spud/unique_resource.h"
-#include "potato/gpu/gpu_device.h"
+#include "potato/render/gpu_device.h"
 
 namespace up::d3d11 {
     class DeviceD3D11 final : public GpuDevice {
