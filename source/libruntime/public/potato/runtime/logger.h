@@ -19,7 +19,7 @@
 namespace up {
     class Logger {
     public:
-        UP_RUNTIME_API Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
+        UP_RUNTIME_API Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info);
         UP_RUNTIME_API Logger(string name, rc<LogReceiver> receiver, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
 
         constexpr bool isEnabledFor(LogSeverity severity) const noexcept {

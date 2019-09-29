@@ -28,11 +28,11 @@ public:
 
     static constexpr size_type npos = ~size_type{0};
 
-    string() = default;
+    string() noexcept = default;
     ~string() { _free(_data, _size); }
 
     /*implicit*/ string(string const& str) : _data(_copy(str._data, str._size)), _size(str._size) {}
-    string(string&& rhs) : _data(rhs._data), _size(rhs._size) {
+    string(string&& rhs) noexcept : _data(rhs._data), _size(rhs._size) {
         rhs._data = nullptr;
         rhs._size = 0;
     }
@@ -41,7 +41,7 @@ public:
     /*implicit*/ string(zstring_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
     /*implicit*/ string(string_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
 
-    static string take_ownership(pointer str, size_type length) {
+    static string take_ownership(pointer str, size_type length) noexcept {
         string s;
         s._data = str;
         s._size = length;

@@ -11,8 +11,8 @@
 #include "logger.h"
 
 namespace up {
-    class Win32DebugReceiver : public LogReceiver {
+    class Win32DebugReceiver final : public LogReceiver {
     public:
-        virtual void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept override;
+        void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept override;
     };
 } // namespace up

@@ -27,7 +27,7 @@ namespace up {
         UP_RUNTIME_API IOResult remove(zstring_view path) override;
         UP_RUNTIME_API IOResult removeRecursive(zstring_view path) override;
 
-        UP_RUNTIME_API auto currentWorkingDirectory() const noexcept -> string;
+        UP_RUNTIME_API auto currentWorkingDirectory() const -> string;
         UP_RUNTIME_API bool currentWorkingDirectory(zstring_view path);
     };
 } // namespace up

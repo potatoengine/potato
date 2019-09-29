@@ -6,9 +6,9 @@
 #include "spinlock.h"
 
 namespace up {
-    class StandardStreamReceiver : public LogReceiver {
+    class StandardStreamReceiver final : public LogReceiver {
     public:
-        virtual void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept override;
+        void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept override;
 
     private:
         Spinlock _lock;

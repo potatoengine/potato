@@ -24,14 +24,14 @@ namespace {
     };
 } // namespace
 
-up::Semaphore::Semaphore(int initial) : _counter(initial), _handle(new SemaphoreImplementation) {
+up::Semaphore::Semaphore(int initial) noexcept : _counter(initial), _handle(new SemaphoreImplementation) {
 }
 
-up::Semaphore::~Semaphore() {
+up::Semaphore::~Semaphore() noexcept {
     delete static_cast<SemaphoreImplementation*>(_handle);
 }
 
-void up::Semaphore::_signal(int n) {
+void up::Semaphore::_signal(int n) noexcept {
     auto sema = static_cast<SemaphoreImplementation*>(_handle);
 
     {
@@ -47,7 +47,7 @@ void up::Semaphore::_signal(int n) {
     }
 }
 
-void up::Semaphore::_wait() {
+void up::Semaphore::_wait() noexcept {
     if (_counter.fetch_sub(1, std::memory_order_acquire) <= 0) {
         auto sema = static_cast<SemaphoreImplementation*>(_handle);
         std::unique_lock lock(sema->lock);

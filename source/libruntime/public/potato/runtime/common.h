@@ -5,6 +5,7 @@
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/zstring_view.h"
 #include "potato/spud/int_types.h"
+#include "potato/spud/utility.h"
 
 namespace up {
     enum class IOResult {
@@ -59,10 +60,10 @@ namespace up {
         FullPath = 1 << 0,
     };
     inline constexpr EnumerateOptions operator|(EnumerateOptions lhs, EnumerateOptions rhs) noexcept {
-        return EnumerateOptions(std::underlying_type_t<EnumerateOptions>(lhs) | std::underlying_type_t<EnumerateOptions>(rhs));
+        return EnumerateOptions{to_underlying(lhs) | to_underlying(rhs)};
     }
     inline constexpr EnumerateOptions operator&(EnumerateOptions lhs, EnumerateOptions rhs) noexcept {
-        return EnumerateOptions(std::underlying_type_t<EnumerateOptions>(lhs) & std::underlying_type_t<EnumerateOptions>(rhs));
+        return EnumerateOptions{to_underlying(lhs) & to_underlying(rhs)};
     }
 
     using EnumerateCallback = up::delegate_ref<EnumerateResult(FileInfo const&)>;

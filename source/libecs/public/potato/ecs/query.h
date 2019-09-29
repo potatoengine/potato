@@ -40,8 +40,8 @@ namespace up {
         template <size_t... Indices>
         void _invoke(std::index_sequence<Indices...>, size_t, EntityId const*, view<void*>, Delegate& callback) const;
 
-        ComponentId _components[sizeof...(Components)];
-        ComponentId _sortedComponents[sizeof...(Components)];
+        ComponentId _components[sizeof...(Components)] = {};
+        ComponentId _sortedComponents[sizeof...(Components)] = {};
     };
 
     template <typename... Components>

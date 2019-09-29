@@ -6,7 +6,7 @@
 
 namespace up {
     namespace {
-        struct NativeInputBackend : public Stream::Backend {
+        struct NativeInputBackend final : public Stream::Backend {
             NativeInputBackend(std::ifstream stream) : _stream(std::move(stream)) {}
 
             bool isOpen() const noexcept override { return _stream.is_open(); }
@@ -55,7 +55,7 @@ namespace up {
             mutable std::ifstream _stream;
         };
 
-        struct NativeOutputBackend : public Stream::Backend {
+        struct NativeOutputBackend final : public Stream::Backend {
             NativeOutputBackend(std::ofstream stream) : _stream(std::move(stream)) {}
 
             bool isOpen() const noexcept override { return _stream.is_open(); }
@@ -67,10 +67,10 @@ namespace up {
             IOResult seek(SeekPosition position, Stream::difference_type offset) override {
                 return IOResult::UnsupportedOperation;
             }
-            Stream::difference_type tell() const override {
+            Stream::difference_type tell() const noexcept override {
                 return 0;
             }
-            Stream::difference_type remaining() const override {
+            Stream::difference_type remaining() const noexcept override {
                 return 0;
             }
 

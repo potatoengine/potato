@@ -25,14 +25,17 @@ public:
 
     static constexpr size_type npos = ~size_type{0};
 
-    constexpr string_view() = default;
-    ~string_view() = default;
+    constexpr string_view() noexcept = default;
 
-    constexpr string_view(string_view const&) = default;
+    constexpr string_view(string_view const&) noexcept = default;
+    constexpr string_view(string_view&&) noexcept = default;
+
     /*implicit*/ constexpr string_view(pointer zstr) noexcept : _data(zstr), _size(zstr != nullptr ? stringLength(zstr) : 0) {}
     /*implicit*/ constexpr string_view(pointer data, size_type size) noexcept : _data(data), _size(size) {}
 
-    constexpr string_view& operator=(string_view const&) = default;
+    constexpr string_view& operator=(string_view const&) noexcept = default;
+    constexpr string_view& operator=(string_view&&) noexcept = default;
+
     constexpr string_view& operator=(pointer zstr) noexcept {
         _data = zstr;
         _size = zstr != nullptr ? stringLength(zstr) : 0;
@@ -98,7 +101,7 @@ public:
         if (offset > _size) {
             offset = _size;
         }
-        auto remaining = _size - offset;
+        auto const remaining = _size - offset;
         if (count > remaining) {
             count = remaining;
         }
@@ -148,8 +151,8 @@ public:
         return lhs.size() != rhs.size() || stringCompare(lhs.data(), rhs.data(), lhs.size()) != 0;
     }
     friend bool constexpr operator<(string_view lhs, string_view rhs) noexcept {
-        auto len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
-        auto rs = stringCompare(lhs.data(), rhs.data(), len);
+        auto const len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
+        auto const rs = stringCompare(lhs.data(), rhs.data(), len);
         if (rs < 0) {
             return true;
         }

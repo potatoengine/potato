@@ -49,8 +49,8 @@ namespace up {
 
         template <typename F>
         struct delegate_vtable_impl {
-            static void move(void* dst, void* src) { new (dst) F(std::move(*static_cast<F*>(src))); }
-            static void destruct(void* obj) { static_cast<F*>(obj)->~F(); }
+            static void move(void* dst, void* src) noexcept { new (dst) F(std::move(*static_cast<F*>(src))); }
+            static void destruct(void* obj) noexcept { static_cast<F*>(obj)->~F(); }
             template <typename R, typename... P>
             static R call(std::conditional_t<std::is_const_v<F>, void const*, void*> obj, P&&... params) {
                 F& f = *static_cast<F*>(obj);
@@ -74,15 +74,15 @@ namespace up {
             using storage_t = std::aligned_storage_t<_detail::delegate_size_c * sizeof(void*), std::alignment_of<double>::value>;
 
         public:
-            delegate_base() = default;
+            delegate_base() noexcept = default;
 
             delegate_base(const delegate_base&) = delete;
             delegate_base& operator=(const delegate_base&) = delete;
 
-            inline delegate_base(delegate_base&&);
-            inline delegate_base& operator=(delegate_base&&);
+            inline delegate_base(delegate_base&&) noexcept;
+            inline delegate_base& operator=(delegate_base&&) noexcept;
 
-            /*implicit*/ delegate_base(std::nullptr_t) {}
+            /*implicit*/ delegate_base(std::nullptr_t) noexcept {}
             delegate_base& operator=(std::nullptr_t) {
                 reset();
                 return *this;
@@ -90,25 +90,25 @@ namespace up {
 
             /// <summary> Check if the delegate is currently bound to a function. </summary>
             /// <returns> True if a delegate is bound. </returns>
-            explicit operator bool() const { return _vtable != nullptr; }
+            explicit operator bool() const noexcept { return _vtable != nullptr; }
 
             /// <summary> Check if the delegate is not bound to a function. </summary>
             /// <returns> True if no delegate. </returns>
-            bool empty() const { return _vtable == nullptr; }
+            bool empty() const noexcept { return _vtable == nullptr; }
 
             inline void reset(std::nullptr_t = nullptr);
 
-            bool operator!=(std::nullptr_t) const { return _vtable != nullptr; }
-            bool operator==(std::nullptr_t) const { return _vtable == nullptr; }
+            bool operator!=(std::nullptr_t) const noexcept { return _vtable != nullptr; }
+            bool operator==(std::nullptr_t) const noexcept { return _vtable == nullptr; }
 
         protected:
-            delegate_base(delegate_vtable_base const* vtable) : _vtable(vtable) {}
+            delegate_base(delegate_vtable_base const* vtable) noexcept : _vtable(vtable) {}
             ~delegate_base() = default;
 
         protected:
             // we will overwrite this with an object with just a vtable - if we are nullptr, we have no real vtable
             delegate_vtable_base const* _vtable = nullptr;
-            storage_t _storage;
+            storage_t _storage = {};
         };
 
         template <typename ReturnType, bool Const, typename... ParamTypes>
@@ -144,15 +144,15 @@ public:
     using _detail::delegate_typed<ReturnType, false, ParamTypes...>::delegate_typed;
 
     template <typename ClassType>
-    delegate(ClassType& object, ReturnType (ClassType::*method)(ParamTypes...))
+    delegate(ClassType& object, ReturnType (ClassType::*method)(ParamTypes...)) noexcept
         : delegate([&object, method](ParamTypes&&... params) { return (object.*method)(std::forward<ParamTypes>(params)...); }) {}
 
     template <typename ClassType>
-    delegate(ClassType&& object, ReturnType (ClassType::*method)(ParamTypes...) const)
+    delegate(ClassType&& object, ReturnType (ClassType::*method)(ParamTypes...) const) noexcept
         : delegate([object = std::forward<ClassType>(object), method](ParamTypes&&... params) { return (object.*method)(std::forward<ParamTypes>(params)...); }) {}
 
     template <typename ClassType>
-    delegate(ClassType* object, ReturnType (ClassType::*method)(ParamTypes...))
+    delegate(ClassType* object, ReturnType (ClassType::*method)(ParamTypes...)) noexcept
         : delegate([object, method](ParamTypes&&... params) { return (object->*method)(std::forward<ParamTypes>(params)...); }) {}
 
     auto operator()(ParamTypes... params) -> ReturnType {
@@ -183,7 +183,7 @@ public:
     }
 };
 
-up::_detail::delegate_base::delegate_base(delegate_base&& rhs) : _vtable(rhs._vtable) {
+up::_detail::delegate_base::delegate_base(delegate_base&& rhs) noexcept : _vtable(rhs._vtable) {
     if (_vtable != nullptr) {
         _vtable->move(&_storage, &rhs._storage);
         _vtable->destruct(&rhs._storage);
@@ -192,7 +192,7 @@ up::_detail::delegate_base::delegate_base(delegate_base&& rhs) : _vtable(rhs._vt
     }
 }
 
-auto up::_detail::delegate_base::operator=(delegate_base&& rhs) -> delegate_base& {
+auto up::_detail::delegate_base::operator=(delegate_base&& rhs) noexcept -> delegate_base& {
     if (this != &rhs) {
         if (_vtable != nullptr) {
             _vtable->destruct(&_storage);

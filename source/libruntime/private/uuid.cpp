@@ -62,13 +62,13 @@ uuid uuid::generate() {
     return uuid(temp);
 }
 
-uuid uuid::zero() {
+uuid uuid::zero() noexcept {
     static uuid _zero(uuid::buffer({}));
     return _zero;
 }
 
-char byteToString(up::byte& byte) {
-    return (char)byte;
+constexpr char byteToString(up::byte byte) noexcept {
+    return static_cast<char>(byte);
 }
 
 string uuid::toString(const uuid& id) {

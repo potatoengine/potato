@@ -7,7 +7,7 @@
 // returns extension, including dot, e.g. foo.txt -> .txt
 // only the last extension is returned, e.g. foo.txt.gz -> .gz
 up::zstring_view up::path::extension(zstring_view path) noexcept {
-    auto pos = path.find_last_of("/\\.");
+    auto const pos = path.find_last_of("/\\.");
     if (pos != zstring_view::npos && path[pos] == '.') {
         return path.substr(pos);
     }
@@ -15,7 +15,7 @@ up::zstring_view up::path::extension(zstring_view path) noexcept {
 }
 
 up::string_view up::path::extension(string_view path) noexcept {
-    auto pos = path.find_last_of("/\\.");
+    auto const pos = path.find_last_of("/\\.");
     if (pos != string_view::npos && path[pos] == '.') {
         return path.substr(pos);
     }
@@ -27,10 +27,8 @@ auto up::path::changeExtension(string_view path, string_view extension) -> strin
 
     UP_ASSERT(extension.empty() || extension.front() == '.');
 
-    auto pos = path.find_last_of("/\\.");
-    if (pos == string_view::npos || path[pos] != '.') {
-        pos = path.size();
-    }
+    auto const sepPos = path.find_last_of("/\\.");
+    auto const pos = sepPos == string_view::npos || path[sepPos] != '.' ? path.size() : sepPos;
 
     string_writer result;
     result.reserve(pos + extension.size());
@@ -41,7 +39,7 @@ auto up::path::changeExtension(string_view path, string_view extension) -> strin
 
 // returns the filename of a path, e.g. foo/bar.txt -> bar.txt
 up::string_view up::path::filename(string_view path) noexcept {
-    auto pos = path.find_last_of("/\\");
+    auto const pos = path.find_last_of("/\\");
     if (pos != string_view::npos) {
         return path.substr(pos + 1);
     }
@@ -50,9 +48,9 @@ up::string_view up::path::filename(string_view path) noexcept {
 
 // returns the basename of a path, e.g. foo/bar.txt -> bar
 up::string_view up::path::filebasename(string_view path) noexcept {
-    auto ext = extension(path);
-    auto pathWithoutExt = path.substr(0, path.size() - ext.size());
-    auto pos = pathWithoutExt.find_last_of("/\\");
+    auto const ext = extension(path);
+    auto const pathWithoutExt = path.substr(0, path.size() - ext.size());
+    auto const pos = pathWithoutExt.find_last_of("/\\");
     if (pos != string_view::npos) {
         return pathWithoutExt.substr(pos + 1);
     }
@@ -63,7 +61,7 @@ up::string_view up::path::parent(string_view path) noexcept {
     if (path.empty()) {
         return path;
     }
-    auto pos = path.find_last_of("/\\");
+    auto const pos = path.find_last_of("/\\");
     if (pos == 0) {
         return path.substr(0, 1);
     }
@@ -79,28 +77,28 @@ bool up::path::isNormalized(string_view path) noexcept {
         return false;
     }
 
-    enum {
+    enum class Part {
         Component,
         Slash,
         Dot
-    } mode = Slash;
+    } mode = Part::Slash;
 
-    for (auto ch : path.substr(1)) {
+    for (auto const ch : path.substr(1)) {
         if (ch == '\\') {
             // no back-slashes allowed
             return false;
         }
 
         switch (mode) {
-        case Component:
+        case Part::Component:
             if (ch == '/') {
-                mode = Slash;
+                mode = Part::Slash;
             }
             else if (ch == '.') {
-                mode = Dot;
+                mode = Part::Dot;
             }
             break;
-        case Slash:
+        case Part::Slash:
             if (ch == '/') {
                 // no duplicate slashes allowed
                 return false;
@@ -109,9 +107,9 @@ bool up::path::isNormalized(string_view path) noexcept {
                 // no leading dots allowed
                 return false;
             }
-            mode = Component;
+            mode = Part::Component;
             break;
-        case Dot:
+        case Part::Dot:
             if (ch == '.') {
                 // no duplicate dots allowed
                 return false;
@@ -121,13 +119,13 @@ bool up::path::isNormalized(string_view path) noexcept {
                 return false;
             }
             else {
-                mode = Component;
+                mode = Part::Component;
             }
             break;
         }
     }
 
-    if (mode != Component) {
+    if (mode != Part::Component) {
         // no trailing slash or dot
         return false;
     }
@@ -143,26 +141,26 @@ auto up::path::normalize(string_view path) -> string {
     string_writer result;
     result.reserve(path.size());
 
-    enum {
+    enum class Part {
         Component,
         Slash,
         Dot
-    } mode = Slash;
+    } mode = Part::Slash;
 
-    for (auto ch : path) {
+    for (auto const ch : path) {
         switch (mode) {
-        case Component:
+        case Part::Component:
             if (ch == '/' || ch == '\\') {
-                mode = Slash;
+                mode = Part::Slash;
             }
             else if (ch == '.') {
-                mode = Dot;
+                mode = Part::Dot;
             }
             else {
                 result.write(ch);
             }
             break;
-        case Slash:
+        case Part::Slash:
             if (ch == '/' || ch == '\\') {
                 // ignore duplicate slash
                 break;
@@ -174,22 +172,22 @@ auto up::path::normalize(string_view path) -> string {
             else {
                 result.write('/');
                 result.write(ch);
-                mode = Component;
+                mode = Part::Component;
             }
             break;
-        case Dot:
+        case Part::Dot:
             if (ch == '.') {
                 // ignore duplicate dots
                 break;
             }
             else if (ch == '/' || ch == '\\') {
                 // ignore trailing dots
-                mode = Slash;
+                mode = Part::Slash;
             }
             else {
                 result.write('.');
                 result.write(ch);
-                mode = Component;
+                mode = Part::Component;
             }
             break;
         }

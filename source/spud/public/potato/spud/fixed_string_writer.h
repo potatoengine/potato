@@ -26,31 +26,32 @@ namespace up {
         explicit operator bool() const noexcept { return _size != 0; }
 
         size_type size() const noexcept { return _size; }
-        size_type capacity() const { return Capacity - 1 /*NUL byte*/; }
+        size_type capacity() const noexcept { return Capacity - 1 /*NUL byte*/; }
         const_pointer data() const noexcept { return _buffer; }
 
         const_pointer c_str() const noexcept { return _buffer; }
 
         /*implicit*/ operator string_view() const noexcept { return {_buffer, _size}; }
 
-        void write(string_view str) {
+        void write(string_view str) noexcept {
             size_type available = capacity() - _size;
             size_type writeLen = available < str.size() ? available : str.size();
             std::memmove(_buffer + _size, str.data(), writeLen);
             _buffer[_size += writeLen] = 0;
         }
 
-        void write(value_type ch) {
+        void write(value_type ch) noexcept {
             if (_size < capacity()) {
+                [[gsl::suppress(bounds .4)]]
                 _buffer[_size] = ch;
                 _buffer[++_size] = 0;
             }
         }
 
         // for back_inserter/fmt support
-        void push_back(value_type ch) { write(ch); }
+        void push_back(value_type ch) noexcept { write(ch); }
 
-        void clear() {
+        void clear() noexcept {
             *_buffer = 0;
             _size = 0;
         }

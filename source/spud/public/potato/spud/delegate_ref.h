@@ -29,7 +29,7 @@ namespace up {
 
             delegate_ref_holder() = delete;
             template <typename Functor>
-            delegate_ref_holder(Functor&& functor) {
+            delegate_ref_holder(Functor&& functor) noexcept {
                 using FunctorType = std::remove_reference_t<Functor>;
                 _call = &_detail::delegate_ref_thunk<FunctorType, ReturnType, ParamTypes...>;
                 _functor = &functor;
@@ -51,14 +51,14 @@ private:
 
 public:
     delegate_ref() = delete;
-    delegate_ref(delegate_ref const&) = default;
-    delegate_ref& operator=(delegate_ref const&) = default;
+    delegate_ref(delegate_ref const&) noexcept = default;
+    delegate_ref& operator=(delegate_ref const&) noexcept = default;
 
     template <typename Functor, typename = enable_if_t<is_compatible_v<Functor>>>
-    /*implicit*/ delegate_ref(Functor&& functor) : _holder(std::forward<Functor>(functor)) {}
+    /*implicit*/ delegate_ref(Functor&& functor) noexcept : _holder(std::forward<Functor>(functor)) {}
 
     template <typename Functor, typename = enable_if_t<is_compatible_v<Functor>>>
-    delegate_ref& operator=(Functor&& functor) {
+    delegate_ref& operator=(Functor&& functor) noexcept {
         _holder = holder_t(std::forward<Functor>(functor));
         return *this;
     }

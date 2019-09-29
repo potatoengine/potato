@@ -12,6 +12,6 @@ namespace up {
 
     UP_RUNTIME_API SmallThreadId currentSmallThreadId() noexcept;
 
-    UP_RUNTIME_API void setCurrentThreadName(zstring_view name);
+    UP_RUNTIME_API void setCurrentThreadName(zstring_view name) noexcept;
 
 } // namespace up

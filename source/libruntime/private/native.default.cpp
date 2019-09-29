@@ -16,18 +16,28 @@ static auto errorCodeToResult(std::error_code ec) noexcept -> up::IOResult {
 }
 
 bool up::NativeFileSystem::fileExists(zstring_view path) const noexcept {
-    return std::filesystem::is_regular_file(std::string_view(path.c_str(), path.size()));
+    std::error_code ec;
+    try {
+        return std::filesystem::is_regular_file(std::string_view(path.c_str(), path.size()), ec) && ec;
+    } catch (...) {
+        return false;
+    }
 }
 
 bool up::NativeFileSystem::directoryExists(zstring_view path) const noexcept {
-    return std::filesystem::is_directory(std::string_view(path.c_str(), path.size()));
+    std::error_code ec;
+    try {
+        return std::filesystem::is_directory(std::string_view(path.c_str(), path.size()), ec) && ec;
+    } catch (...) {
+        return false;
+    }
 }
 
 auto up::NativeFileSystem::fileStat(zstring_view path, FileStat& outInfo) const -> IOResult {
     std::error_code ec;
     outInfo.size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
     outInfo.mtime = std::chrono::duration_cast<std::chrono::microseconds>(std::filesystem::last_write_time(std::string_view(path.c_str(), path.size()), ec).time_since_epoch()).count();
-    auto status = std::filesystem::status(std::string_view(path.c_str(), path.size()), ec);
+    auto const status = std::filesystem::status(std::string_view(path.c_str(), path.size()), ec);
     outInfo.type =
         status.type() == std::filesystem::file_type::regular ? FileType::Regular : status.type() == std::filesystem::file_type::directory ? FileType::Directory : status.type() == std::filesystem::file_type::symlink ? FileType::SymbolicLink : FileType::Other;
     return errorCodeToResult(ec);
@@ -87,9 +97,10 @@ auto up::NativeFileSystem::removeRecursive(zstring_view path) -> IOResult {
     return errorCodeToResult(ec);
 }
 
-auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
-    auto path = std::filesystem::current_path().generic_u8string();
-    return string(path.c_str(), path.size());
+auto up::NativeFileSystem::currentWorkingDirectory() const -> string {
+    std::error_code ec;
+    auto path = std::filesystem::current_path(ec).generic_u8string();
+    return ec ? string(path.c_str(), path.size()) : string();
 }
 
 bool up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {

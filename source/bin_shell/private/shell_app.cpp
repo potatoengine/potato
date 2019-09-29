@@ -86,7 +86,7 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-#if UP_GPU_ENABLE_D3D11
+#if defined(UP_GPU_ENABLE_D3D11)
     if (_device == nullptr) {
         auto factory = CreateFactoryD3D11();
         _device = factory->createDevice(0);

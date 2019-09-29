@@ -7,15 +7,15 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_view") {
     using namespace up;
 
     DOCTEST_TEST_CASE("default initialization") {
-        string_view sv;
+        string_view const sv;
 
         DOCTEST_CHECK(sv.empty());
         DOCTEST_CHECK_EQ(sv.size(), 0);
     }
 
     DOCTEST_TEST_CASE("std::string initialization") {
-        std::string s = "this is a test";
-        string_view sv(s.data(), s.size());
+        std::string const s = "this is a test";
+        string_view const sv(s.data(), s.size());
 
         DOCTEST_CHECK(!sv.empty());
         DOCTEST_CHECK_EQ(sv.size(), s.size());
@@ -23,7 +23,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_view") {
     }
 
     DOCTEST_TEST_CASE("literal initialization") {
-        string_view sv = "this is a test";
+        string_view const sv = "this is a test";
 
         DOCTEST_CHECK(!sv.empty());
         DOCTEST_CHECK_EQ(sv.size(), 14);
@@ -32,7 +32,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_view") {
 
     DOCTEST_TEST_CASE("C string initialization") {
         char const* cs = "this is a test";
-        string_view sv = cs;
+        string_view const sv = cs;
 
         DOCTEST_CHECK(!sv.empty());
         DOCTEST_CHECK_EQ(sv.size(), std::strlen(cs));
@@ -40,7 +40,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_view") {
     }
 
     DOCTEST_TEST_CASE("slicing") {
-        string_view sv = "this is a test";
+        string_view const sv = "this is a test";
 
         DOCTEST_CHECK_EQ(sv.first(7), "this is");
         DOCTEST_CHECK_EQ(sv.last(6), "a test");
@@ -52,7 +52,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_view") {
     }
 
     DOCTEST_TEST_CASE("searching") {
-        string_view sv = "this is a test";
+        string_view const sv = "this is a test";
 
         DOCTEST_CHECK_EQ(sv.find('a'), 8);
         DOCTEST_CHECK_EQ(sv.find('z'), string_view::npos);

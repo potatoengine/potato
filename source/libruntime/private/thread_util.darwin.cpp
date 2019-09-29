@@ -3,6 +3,6 @@
 #include "potato/runtime/thread_util.h"
 #include <pthread.h>
 
-void up::setCurrentThreadName(zstring_view name) {
+void up::setCurrentThreadName(zstring_view name) noexcept {
     pthread_setname_np(name.c_str());
 }

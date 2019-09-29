@@ -9,7 +9,7 @@
 namespace up::d3d11 {
     class BufferD3D11 final : public GpuBuffer {
     public:
-        BufferD3D11(GpuBufferType type, uint64 size, com_ptr<ID3D11Buffer> buffer);
+        BufferD3D11(GpuBufferType type, uint64 size, com_ptr<ID3D11Buffer> buffer) noexcept;
         ~BufferD3D11();
 
         GpuBufferType type() const noexcept override { return _type; }
