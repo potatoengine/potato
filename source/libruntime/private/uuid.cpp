@@ -46,7 +46,7 @@ auto up::UUID::fromString(string_view id) noexcept -> UUID {
 
         int digit = ascii::from_hex(c);
         if (digit == -1) {
-            return UUID::zero();
+            return UUID{};
         }
 
         next <<= 4;
@@ -54,7 +54,7 @@ auto up::UUID::fromString(string_view id) noexcept -> UUID {
 
         if (octect) {
             if (bidx == 16) {
-                return zero();
+                return UUID{};
             }
             result._data.ub[bidx++] = next;
         }
@@ -63,7 +63,7 @@ auto up::UUID::fromString(string_view id) noexcept -> UUID {
     }
 
     if (bidx != 16 || octect) {
-        return zero();
+        return UUID{};
     }
 
     return result;

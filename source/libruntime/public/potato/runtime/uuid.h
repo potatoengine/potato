@@ -27,8 +27,6 @@ namespace up {
         static auto toString(const UUID& id) -> string;
         static auto fromString(string_view id) noexcept -> UUID;
 
-        static constexpr UUID zero() noexcept { return UUID{}; }
-
     private:
         struct HighLow {
             uint64 high = 0;
