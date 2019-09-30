@@ -28,6 +28,8 @@ namespace up {
         static uuid zero() noexcept;
 
     private:
+        static auto _generate() noexcept -> buffer;
+
         buffer _data;
     };
 
