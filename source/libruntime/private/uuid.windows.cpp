@@ -9,13 +9,13 @@
 #    error "Unsupported platform"
 #endif
 
-auto up::uuid::generate() noexcept -> uuid {
-    UUID temp;
+auto up::UUID::generate() noexcept -> UUID {
+    ::GUID temp;
     if (RPC_S_OK != UuidCreate(&temp)) {
         UP_ASSERT(false, "Failed to generate unique ID.");
     }
 
-    uuid ret;
+    UUID ret;
     static_assert(sizeof(ret) == sizeof(UUID));
     std::memcpy(ret._data.ub, &temp, sizeof(UUID));
     return ret;

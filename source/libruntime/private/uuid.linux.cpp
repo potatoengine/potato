@@ -8,8 +8,8 @@
 #    error "Unsupported platform"
 #endif
 
-auto up::uuid::generate() noexcept -> uuid {
-    uuid ret;
+auto up::UUID::generate() noexcept -> UUID {
+    UUID ret;
     uuid_generate(static_cast<char*>(ret._data.ub));
     return ret;
 }

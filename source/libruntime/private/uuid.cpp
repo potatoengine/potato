@@ -4,7 +4,7 @@
 #include "potato/runtime/assertion.h"
 #include "potato/spud/string_writer.h"
 
-up::uuid::uuid(up::byte const (&bytes)[16]) noexcept : _data{HighLow{}} {
+up::UUID::UUID(up::byte const (&bytes)[16]) noexcept : _data{HighLow{}} {
     for (int i = 0; i != 16; ++i) {
         _data.ub[i] = bytes[i];
     }
@@ -14,7 +14,7 @@ constexpr char byteToString(up::byte byte) noexcept {
     return static_cast<char>(byte);
 }
 
-auto up::uuid::toString(const uuid& id) -> string {
+auto up::UUID::toString(const UUID& id) -> string {
     // format 9554084e-4100-4098-b470-2125f5eed133
     string_writer buffer;
     format_into(buffer, "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
@@ -56,22 +56,22 @@ static auto hexDigitToChar(char c) -> unsigned char {
     return 0;
 }
 
-auto up::uuid::fromString(string_view id) noexcept -> uuid {
+auto up::UUID::fromString(string_view id) noexcept -> UUID {
     auto len = id.size();
     if (len != 36)
-        return uuid::zero();
+        return UUID::zero();
 
     char buffer[2]; // reading 2 chars at a time
     uint32 chidx = 0;
 
-    uuid result;
+    UUID result;
     uint32 bidx = 0;
     for (auto c : id) {
         if (c == '-')
             continue;
 
         if (!isValidChar(c))
-            return uuid::zero();
+            return UUID::zero();
 
         buffer[chidx++] = c;
 
