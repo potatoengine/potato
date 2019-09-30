@@ -2,6 +2,7 @@
 
 #include "potato/runtime/uuid.h"
 #include "potato/spud/platform.h"
+#include <CoreFoundation/CFUUID.h>
 
 #if !defined(UP_PLATFORM_APPLE)
 #    error "Unsupported platform"
