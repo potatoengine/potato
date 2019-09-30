@@ -11,13 +11,13 @@ namespace up {
     constexpr string_view nameof() {
 #ifdef __clang__
         constexpr string_view p = __PRETTY_FUNCTION__;
-        return string_view(p.data() + 34, p.size() - 34 - 1);
+        return p.substr(34, p.size() - 34 - 1);
 #elif defined(__GNUC__)
         constexpr string_view p = __PRETTY_FUNCTION__;
-        return string_view(p.data() + 49, p.size() - 49 - 1);
+        return p.substr(49, p.size() - 49 - 1);
 #elif defined(_MSC_VER)
         constexpr string_view p = __FUNCSIG__;
-        return string_view(p.data() + 41, p.size() - 41 - 7);
+        return p.substr(41, p.size() - 41 - 7);
 #endif
     }
 } // namespace up

@@ -10,8 +10,8 @@ auto up::readBinary(Stream& stream, vector<up::byte>& out) -> IOResult {
         return IOResult::UnsupportedOperation;
     }
 
-    auto size = stream.remaining();
-    auto offset = out.size();
+    auto const size = stream.remaining();
+    auto const offset = out.size();
     out.resize(offset + size);
 
     auto read = out.subspan(offset);
@@ -23,13 +23,13 @@ auto up::readText(Stream& stream, string& out) -> IOResult {
         return IOResult::UnsupportedOperation;
     }
 
-    auto size = stream.remaining();
+    auto const size = stream.remaining();
     string_writer writer;
 
-    auto uncommitted = writer.acquire(size);
+    auto const uncommitted = writer.acquire(size);
     auto bytes = uncommitted.as_bytes();
 
-    auto rs = stream.read(bytes);
+    auto const rs = stream.read(bytes);
 
     writer.commit(uncommitted.first(bytes.size()));
 
@@ -43,6 +43,6 @@ auto up::writeAllText(Stream& stream, string_view text) -> IOResult {
         return IOResult::UnsupportedOperation;
     }
 
-    span<char const> textSpan(text.data(), text.size());
+    auto const textSpan = span(text.data(), text.size());
     return stream.write(textSpan.as_bytes());
 }

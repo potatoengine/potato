@@ -4,7 +4,7 @@
 #include "potato/spud/platform_windows.h"
 
 // https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
-void up::setCurrentThreadName(zstring_view name) {
+void up::setCurrentThreadName(zstring_view name) noexcept {
     constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
 
 #pragma pack(push, 8)
@@ -25,7 +25,7 @@ void up::setCurrentThreadName(zstring_view name) {
 #pragma warning(push)
 #pragma warning(disable : 6320 6322)
     __try {
-        RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+        RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), reinterpret_cast<ULONG_PTR*>(&info));
     } __except (EXCEPTION_EXECUTE_HANDLER) {
     }
 #pragma warning(pop)

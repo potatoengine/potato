@@ -6,16 +6,6 @@
 
 using namespace up;
 
-#ifdef UP_PLATFORM_WINDOWS
-#    include "potato/spud/platform_windows.h"
-#    include <rpc.h>
-#elif defined UP_PLATFORM_LINUX
-#    include <uuid/uuid.h>
-#elif defined UP_PLATFORM_APPLE
-#    include <CoreFoundation/CFUUID.h>
-#else
-#    error "Unsupported platform"
-#endif
 
 uuid::uuid() noexcept {
     std::memset(&_data, 0, sizeof(_data));
@@ -34,41 +24,18 @@ uuid::uuid(const buffer& value) noexcept {
 auto uuid::isValid() noexcept -> bool {
     return *this != uuid::zero();
 }
-auto generateGuid() -> uuid::buffer {
-    uuid::buffer ret;
-#ifdef UP_PLATFORM_WINDOWS
-    UUID temp;
-    if (RPC_S_OK != UuidCreate(&temp))
-        UP_ASSERT(false, "Failed to generate unique ID.");
 
-    static_assert(sizeof(ret) == sizeof(UUID));
-    std::memcpy(ret.data(), &temp, sizeof(UUID));
-#elif UP_PLATFORM_LINUX
-    static_assert(sizeof(ret) == sizeof(uuid));
-    uuid_generate((unsigned char*)ret.data());
-#elif UP_PLATFORM_APPLE
-    auto newId = CFUUIDCreate(NULL);
-    auto bytes = CFUUIDGetUUIDBytes(newId);
-    CFRelease(newId);
-    static_assert(sizeof(ret) == sizeof(bytes));
-    std::memcpy(ret.data(), &bytes, sizeof(bytes));
-#endif
-
-    return ret;
+uuid uuid::generate() noexcept {
+    return uuid(_generate());
 }
 
-uuid uuid::generate() {
-    uuid::buffer temp = generateGuid();
-    return uuid(temp);
-}
-
-uuid uuid::zero() {
+uuid uuid::zero() noexcept {
     static uuid _zero(uuid::buffer({}));
     return _zero;
 }
 
-char byteToString(up::byte& byte) {
-    return (char)byte;
+constexpr char byteToString(up::byte byte) noexcept {
+    return static_cast<char>(byte);
 }
 
 string uuid::toString(const uuid& id) {
@@ -113,7 +80,7 @@ static auto hexDigitToChar(char c) -> unsigned char {
     return 0;
 }
 
-uuid uuid::fromString(string_view id) {
+uuid uuid::fromString(string_view id) noexcept {
     auto len = id.size();
     if (len != 36)
         return uuid::zero();

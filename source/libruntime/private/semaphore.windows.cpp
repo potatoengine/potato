@@ -7,18 +7,18 @@
 #include "potato/spud/platform_windows.h"
 #include <limits>
 
-up::Semaphore::Semaphore(int initial) : _counter(initial), _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {
+up::Semaphore::Semaphore(int initial) noexcept  : _counter(initial), _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {
 }
 
-up::Semaphore::~Semaphore() {
+up::Semaphore::~Semaphore() noexcept  {
     CloseHandle(_handle);
 }
 
-void up::Semaphore::_signal(int n) {
+void up::Semaphore::_signal(int n) noexcept {
     ReleaseSemaphore(_handle, n, nullptr);
 }
 
-void up::Semaphore::_wait() {
+void up::Semaphore::_wait() noexcept {
     constexpr int kMaxSpin = 10000;
 
     // keep spinning for a while since OS sychronization is expensive

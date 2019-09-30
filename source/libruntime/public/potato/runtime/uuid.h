@@ -18,16 +18,18 @@ namespace up {
 
         bool isValid() noexcept;
 
-        bool operator==(const uuid& other) const { return _data == other._data; }
-        bool operator!=(const uuid& other) const { return !operator==(other); }
+        bool operator==(const uuid& other) const noexcept { return _data == other._data; }
+        bool operator!=(const uuid& other) const noexcept { return !operator==(other); }
 
-        static uuid generate();
+        static uuid generate() noexcept;
         static string toString(const uuid& id);
-        static uuid fromString(string_view id);
+        static uuid fromString(string_view id) noexcept;
 
-        static uuid zero();
+        static uuid zero() noexcept;
 
     private:
+        static auto _generate() noexcept -> buffer;
+
         buffer _data;
     };
 

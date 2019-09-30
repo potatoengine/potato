@@ -22,28 +22,27 @@ namespace up {
         using size_type = size_t;
         static constexpr auto effective_capacity = Capacity - 1;
 
-        fixed_string() = default;
-        ~fixed_string() = default;
+        constexpr fixed_string() noexcept = default;
 
-        inline fixed_string(fixed_string const& string);
-        inline fixed_string(string_view string);
-        inline fixed_string(char const (&string)[Capacity]);
+        constexpr fixed_string(fixed_string const& string) noexcept;
+        constexpr fixed_string(string_view string) noexcept;
+        constexpr fixed_string(char const (&string)[Capacity]) noexcept;
 
-        inline fixed_string& operator=(fixed_string const& string);
-        inline fixed_string& operator=(string_view string);
+        constexpr fixed_string& operator=(fixed_string const& string) noexcept;
+        constexpr fixed_string& operator=(string_view string) noexcept;
 
-        /*implicit*/ operator string_view() const { return {_buffer, _size}; }
+        constexpr /*implicit*/ operator string_view() const noexcept { return {_buffer, _size}; }
 
-        explicit operator bool() const { return _size != 0; }
-        bool empty() const { return _size == 0; }
+        constexpr explicit operator bool() const noexcept { return _size != 0; }
+        constexpr bool empty() const noexcept { return _size == 0; }
 
-        size_type size() const { return _size; }
-        size_type capacity() const { return effective_capacity; }
+        constexpr size_type size() const noexcept { return _size; }
+        constexpr size_type capacity() const noexcept { return effective_capacity; }
 
-        pointer data() const { return _buffer; }
-        pointer c_str() const { return _buffer; }
+        constexpr pointer data() const noexcept { return _buffer; }
+        constexpr pointer c_str() const noexcept { return _buffer; }
 
-        inline void clear();
+        constexpr void clear() noexcept;
 
         template <typename Writer, typename Spec>
         friend void format_value(Writer& writer, fixed_string const& fs, Spec const& options) noexcept {
@@ -58,22 +57,22 @@ namespace up {
     };
 
     template <size_t Capacity>
-    fixed_string<Capacity>::fixed_string(fixed_string const& string) : _size(string._size) {
+    constexpr fixed_string<Capacity>::fixed_string(fixed_string const& string) noexcept : _size(string._size) {
         std::memcpy(_buffer, string._buffer, _size + 1);
     }
 
     template <size_t Capacity>
-    fixed_string<Capacity>::fixed_string(string_view string) {
+    constexpr fixed_string<Capacity>::fixed_string(string_view string) noexcept {
         *this = string;
     }
 
     template <size_t Capacity>
-    fixed_string<Capacity>::fixed_string(char const (&string)[Capacity]) : _size(Capacity - 1) {
+    constexpr fixed_string<Capacity>::fixed_string(char const (&string)[Capacity]) noexcept : _size(Capacity - 1) {
         std::memcpy(_buffer, string, Capacity);
     }
 
     template <size_t Capacity>
-    auto fixed_string<Capacity>::operator=(fixed_string const& string) -> fixed_string& {
+    constexpr auto fixed_string<Capacity>::operator=(fixed_string const& string) noexcept -> fixed_string& {
         if (this != &string) {
             _size = string._size;
             std::memcpy(_buffer, string._buffer, _size + 1);
@@ -82,7 +81,7 @@ namespace up {
     }
 
     template <size_t Capacity>
-    auto fixed_string<Capacity>::operator=(string_view string) -> fixed_string& {
+    constexpr auto fixed_string<Capacity>::operator=(string_view string) noexcept -> fixed_string& {
         size_t newSize = effective_capacity < string.size() ? effective_capacity : string.size();
         _size = newSize;
 
@@ -97,7 +96,7 @@ namespace up {
     }
 
     template <size_t Capacity>
-    void fixed_string<Capacity>::clear() {
+    constexpr void fixed_string<Capacity>::clear() noexcept {
         _size = 0;
         _buffer[0] = '\0';
     }

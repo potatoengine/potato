@@ -42,6 +42,14 @@ target_sources(potato_libruntime PRIVATE
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/thread_util.windows.cpp>
 )
 
+# UUID generation
+#
+target_sources(potato_libruntime PRIVATE
+    $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/uuid.darwin.cpp>
+    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/uuid.linux.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/uuid.windows.cpp>
+)
+
 # General runtime code
 #
 target_sources(potato_libruntime PRIVATE

@@ -16,11 +16,11 @@ namespace up {
         com_ptr() = default;
         ~com_ptr() { _decRef(); }
 
-        explicit com_ptr(T* ptr) : _ptr(ptr) {}
-        com_ptr(std::nullptr_t) {}
+        explicit com_ptr(T* ptr) noexcept : _ptr(ptr) {}
+        com_ptr(std::nullptr_t) noexcept {}
 
         com_ptr(com_ptr const& rhs) : _ptr(rhs._ptr) { _addRef(); }
-        com_ptr(com_ptr&& rhs) : _ptr(rhs._ptr) { rhs._ptr = nullptr; }
+        com_ptr(com_ptr&& rhs) noexcept : _ptr(rhs._ptr) { rhs._ptr = nullptr; }
 
         template <typename To>
         com_ptr<To> as() const noexcept {
@@ -35,23 +35,23 @@ namespace up {
         inline com_ptr& operator=(com_ptr&& rhs);
         inline com_ptr& operator=(std::nullptr_t);
 
-        explicit operator bool() const { return _ptr != nullptr; }
-        bool empty() const { return _ptr == nullptr; }
+        explicit operator bool() const noexcept { return _ptr != nullptr; }
+        bool empty() const noexcept { return _ptr == nullptr; }
 
         inline void reset(pointer ptr = pointer{});
 
-        [[nodiscard]] inline pointer release();
+        [[nodiscard]] inline pointer release() noexcept;
 
-        pointer get() const { return _ptr; }
-        pointer operator->() const { return _ptr; }
-        reference operator*() const { return *_ptr; }
+        pointer get() const noexcept { return _ptr; }
+        pointer operator->() const noexcept { return _ptr; }
+        reference operator*() const noexcept { return *_ptr; }
 
-        friend bool operator==(com_ptr const& lhs, com_ptr const& rhs) { return lhs.get() == rhs.get(); }
-        friend bool operator!=(com_ptr const& lhs, com_ptr const& rhs) { return lhs.get() != rhs.get(); }
-        friend bool operator==(com_ptr const& lhs, std::nullptr_t) { return lhs.get() == nullptr; }
-        friend bool operator!=(com_ptr const& lhs, std::nullptr_t) { return lhs.get() != nullptr; }
-        friend bool operator==(std::nullptr_t, com_ptr const& rhs) { return nullptr == rhs.get(); }
-        friend bool operator!=(std::nullptr_t, com_ptr const& rhs) { return nullptr != rhs.get(); }
+        friend bool operator==(com_ptr const& lhs, com_ptr const& rhs) noexcept { return lhs.get() == rhs.get(); }
+        friend bool operator!=(com_ptr const& lhs, com_ptr const& rhs) noexcept { return lhs.get() != rhs.get(); }
+        friend bool operator==(com_ptr const& lhs, std::nullptr_t) noexcept{ return lhs.get() == nullptr; }
+        friend bool operator!=(com_ptr const& lhs, std::nullptr_t) noexcept{ return lhs.get() != nullptr; }
+        friend bool operator==(std::nullptr_t, com_ptr const& rhs) noexcept{ return nullptr == rhs.get(); }
+        friend bool operator!=(std::nullptr_t, com_ptr const& rhs) noexcept{ return nullptr != rhs.get(); }
 
     private:
         void _addRef() const {
@@ -102,7 +102,7 @@ namespace up {
     }
 
     template <typename T>
-    auto com_ptr<T>::release() -> pointer {
+    auto com_ptr<T>::release() noexcept -> pointer {
         pointer tmp = _ptr;
         _ptr = nullptr;
         return tmp;

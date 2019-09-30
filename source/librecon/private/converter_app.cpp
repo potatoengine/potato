@@ -9,6 +9,7 @@
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/native.h"
 #include "potato/runtime/stream.h"
+#include "potato/runtime/json.h"
 #include "potato/assetdb/hash_cache.h"
 #include "converters/convert_hlsl.h"
 #include "converters/convert_copy.h"

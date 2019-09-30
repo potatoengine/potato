@@ -12,7 +12,7 @@ auto up::HashCache::hashAssetContent(span<up::byte const> contents) noexcept -> 
 
 auto up::HashCache::hashAssetStream(Stream& stream) -> up::uint64 {
     auto hasher = fnv1a();
-    up::byte buffer[32768];
+    up::byte buffer[8*1024];
     while (!stream.isEof()) {
         span<up::byte> read(buffer, sizeof(buffer));
         stream.read(read);

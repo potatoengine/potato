@@ -19,12 +19,12 @@ namespace up {
     };
 
     constexpr LogSeverityMask toMask(LogSeverity severity) noexcept {
-        return static_cast<LogSeverityMask>(1 << (int)severity);
+        return static_cast<LogSeverityMask>(1 << static_cast<int>(severity));
     }
 
     constexpr LogSeverityMask toInclusiveMask(LogSeverity severity) noexcept {
-        unsigned high = 1 << (int)severity;
-        unsigned rest = high - 1;
+        unsigned const high = 1 << static_cast<int>(severity);
+        unsigned const rest = high - 1;
         return static_cast<LogSeverityMask>(high | rest);
     }
 

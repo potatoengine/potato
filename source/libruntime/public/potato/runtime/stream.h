@@ -71,7 +71,7 @@ namespace up {
         IOResult write(span<byte const> buffer) { return _impl->write(buffer); }
         IOResult flush() { return _impl->flush(); }
 
-        void close() { _impl.reset(); }
+        void close() noexcept { _impl.reset(); }
 
     private:
         box<Backend> _impl;

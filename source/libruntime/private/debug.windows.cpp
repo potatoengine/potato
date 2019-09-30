@@ -15,7 +15,7 @@ namespace {
         char const* callstack = nullptr;
     };
 
-    void CopyToClipboard(DialogData const& data) {
+    void CopyToClipboard(DialogData const& data) noexcept {
         // copy into clipboard
         if (OpenClipboard(nullptr) == TRUE) {
             EmptyClipboard();
@@ -24,11 +24,13 @@ namespace {
             up::format_into(buffer, "ASSERTION FAILED: {}\r\n{}\r\n{}\r\n{}", data.condition, data.message, data.location, data.callstack);
 
             if (HANDLE handle = GlobalAlloc(GMEM_MOVEABLE, buffer.size() + 1)) {
-                void* data = GlobalLock(handle);
-                std::memcpy(data, buffer.data(), buffer.size());
-                GlobalUnlock(handle);
+                void* lockedData = GlobalLock(handle);
+                if (lockedData != nullptr) {
+                    std::memcpy(lockedData, buffer.data(), buffer.size());
+                    GlobalUnlock(handle);
 
-                SetClipboardData(CF_TEXT, handle);
+                    SetClipboardData(CF_TEXT, handle);
+                }
             }
             CloseClipboard();
         }

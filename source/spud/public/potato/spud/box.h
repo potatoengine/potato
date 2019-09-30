@@ -35,43 +35,43 @@ public:
     using pointer = typename up::_detail::box_traits<T>::pointer;
     using reference = typename up::_detail::box_traits<T>::reference;
 
-    box() = default;
+    box() noexcept = default;
     ~box() { reset(); }
 
-    box(std::nullptr_t) {}
-    box& operator=(std::nullptr_t) {
+    box(std::nullptr_t) noexcept {}
+    box& operator=(std::nullptr_t) noexcept {
         reset();
         return *this;
     }
 
-    explicit box(pointer ptr) : _ptr(ptr) {}
+    explicit box(pointer ptr) noexcept : _ptr(ptr) {}
 
-    box(box&& src) : _ptr(src.release()) {}
-    box& operator=(box&& src) {
+    box(box&& src) noexcept : _ptr(src.release()) {}
+    box& operator=(box&& src) noexcept {
         if (this != &src)
             reset(src.release());
         return *this;
     }
 
     template <typename U>
-    box(box<U>&& src) : _ptr(src.release()) {}
+    box(box<U>&& src) noexcept : _ptr(src.release()) {}
     template <typename U>
-    enable_if_t<std::is_assignable_v<T*, U*>, box&> operator=(box<U>&& src) {
+    enable_if_t<std::is_assignable_v<T*, U*>, box&> operator=(box<U>&& src) noexcept {
         if (this != &src)
             reset(src.release());
         return *this;
     }
 
-    pointer get() const { return _ptr; }
-    pointer operator->() const { return _ptr; }
+    pointer get() const noexcept { return _ptr; }
+    pointer operator->() const noexcept { return _ptr; }
 
-    reference operator*() const { return *_ptr; }
+    reference operator*() const noexcept { return *_ptr; }
 
-    explicit operator bool() const { return _ptr != nullptr; }
-    bool empty() const { return _ptr == nullptr; }
+    explicit operator bool() const noexcept { return _ptr != nullptr; }
+    bool empty() const noexcept { return _ptr == nullptr; }
 
-    inline void reset(pointer ptr = pointer{});
-    [[nodiscard]] pointer release() {
+    inline void reset(pointer ptr = pointer{}) noexcept;
+    [[nodiscard]] pointer release() noexcept {
         pointer tmp = _ptr;
         _ptr = nullptr;
         return tmp;
@@ -81,48 +81,48 @@ public:
     friend class box;
 
     template <typename U>
-    friend bool operator==(box const& lhs, box<U> const& rhs) { return lhs._ptr == rhs._ptr; }
+    friend bool operator==(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr == rhs._ptr; }
     template <typename U>
-    friend bool operator!=(box const& lhs, box<U> const& rhs) { return lhs._ptr != rhs._ptr; }
+    friend bool operator!=(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr != rhs._ptr; }
     template <typename U>
-    friend bool operator<=(box const& lhs, box<U> const& rhs) { return lhs._ptr <= rhs._ptr; }
+    friend bool operator<=(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr <= rhs._ptr; }
     template <typename U>
-    friend bool operator<(box const& lhs, box<U> const& rhs) { return lhs._ptr < rhs._ptr; }
+    friend bool operator<(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr < rhs._ptr; }
 
     template <typename U>
-    friend bool operator==(box const& lhs, U const* rhs) { return lhs._ptr == rhs; }
+    friend bool operator==(box const& lhs, U const* rhs) noexcept { return lhs._ptr == rhs; }
     template <typename U>
-    friend bool operator!=(box const& lhs, U const* rhs) { return lhs._ptr != rhs; }
+    friend bool operator!=(box const& lhs, U const* rhs) noexcept { return lhs._ptr != rhs; }
     template <typename U>
-    friend bool operator<=(box const& lhs, U const* rhs) { return lhs._ptr <= rhs; }
+    friend bool operator<=(box const& lhs, U const* rhs) noexcept { return lhs._ptr <= rhs; }
     template <typename U>
-    friend bool operator<(box const& lhs, U const* rhs) { return lhs._ptr < rhs; }
+    friend bool operator<(box const& lhs, U const* rhs) noexcept { return lhs._ptr < rhs; }
 
     template <typename U>
-    friend bool operator==(U const* lhs, box const& rhs) { return lhs == rhs._ptr; }
+    friend bool operator==(U const* lhs, box const& rhs) noexcept { return lhs == rhs._ptr; }
     template <typename U>
-    friend bool operator!=(U const* lhs, box const& rhs) { return lhs != rhs._ptr; }
+    friend bool operator!=(U const* lhs, box const& rhs) noexcept { return lhs != rhs._ptr; }
     template <typename U>
-    friend bool operator<=(U const* lhs, box const& rhs) { return lhs <= rhs._ptr; }
+    friend bool operator<=(U const* lhs, box const& rhs) noexcept { return lhs <= rhs._ptr; }
     template <typename U>
-    friend bool operator<(U const* lhs, box const& rhs) { return lhs < rhs._ptr; }
+    friend bool operator<(U const* lhs, box const& rhs) noexcept { return lhs < rhs._ptr; }
 
-    friend bool operator==(box const& lhs, std::nullptr_t) { return lhs._ptr == nullptr; }
-    friend bool operator!=(box const& lhs, std::nullptr_t) { return lhs._ptr != nullptr; }
-    friend bool operator<=(box const& lhs, std::nullptr_t) { return lhs._ptr == nullptr; }
-    friend bool operator<(box const&, std::nullptr_t) { return false; }
+    friend bool operator==(box const& lhs, std::nullptr_t) noexcept { return lhs._ptr == nullptr; }
+    friend bool operator!=(box const& lhs, std::nullptr_t) noexcept { return lhs._ptr != nullptr; }
+    friend bool operator<=(box const& lhs, std::nullptr_t) noexcept { return lhs._ptr == nullptr; }
+    friend bool operator<(box const&, std::nullptr_t) noexcept { return false; }
 
-    friend bool operator==(std::nullptr_t, box const& rhs) { return rhs._ptr == nullptr; }
-    friend bool operator!=(std::nullptr_t, box const& rhs) { return rhs._ptr != nullptr; }
-    friend bool operator<=(std::nullptr_t, box const&) { return true; }
-    friend bool operator<(std::nullptr_t, box const& rhs) { return rhs._ptr != nullptr; }
+    friend bool operator==(std::nullptr_t, box const& rhs) noexcept { return rhs._ptr == nullptr; }
+    friend bool operator!=(std::nullptr_t, box const& rhs) noexcept { return rhs._ptr != nullptr; }
+    friend bool operator<=(std::nullptr_t, box const&) noexcept { return true; }
+    friend bool operator<(std::nullptr_t, box const& rhs) noexcept { return rhs._ptr != nullptr; }
 
 private:
     pointer _ptr = nullptr;
 };
 
 template <typename T>
-void up::box<T>::reset(pointer ptr) {
+void up::box<T>::reset(pointer ptr) noexcept {
     static_assert(sizeof(T) > 0, "box can not delete incomplete type");
     this->_deallocate(_ptr);
     _ptr = ptr;

@@ -38,7 +38,7 @@ namespace up {
         using size_type = size_t;
         using difference_type = ptrdiff_t;
 
-        vector() = default;
+        vector() noexcept = default;
 
         template <typename IteratorT, typename SentinelT>
         inline explicit vector(IteratorT begin, SentinelT end);
@@ -52,39 +52,39 @@ namespace up {
         vector(vector const&) = delete;
         vector& operator=(vector const&) = delete;
 
-        inline vector(vector&& src);
-        inline vector& operator=(vector&& src);
+        inline vector(vector&& src) noexcept;
+        inline vector& operator=(vector&& src) noexcept;
 
         inline ~vector();
 
-        static vector acquire(T* memory, size_type count);
+        static vector acquire(T* memory, size_type count) noexcept;
 
-        iterator begin() { return _first; }
-        iterator end() { return _last; }
+        iterator begin() noexcept { return _first; }
+        iterator end() noexcept { return _last; }
 
-        const_iterator begin() const { return _first; }
-        const_iterator end() const { return _last; }
+        const_iterator begin() const noexcept { return _first; }
+        const_iterator end() const noexcept { return _last; }
 
-        const_iterator cbegin() const { return _first; }
-        const_iterator cend() const { return _last; }
+        const_iterator cbegin() const noexcept { return _first; }
+        const_iterator cend() const noexcept { return _last; }
 
-        pointer data() { return _first; }
-        const_pointer data() const { return _first; }
+        pointer data() noexcept { return _first; }
+        const_pointer data() const noexcept { return _first; }
 
-        pointer release();
+        pointer release() noexcept;
 
-        bool empty() const { return _first == _last; }
-        size_type size() const { return _last - _first; }
-        size_type capacity() const { return _sentinel - _first; }
+        bool empty() const noexcept { return _first == _last; }
+        size_type size() const noexcept { return _last - _first; }
+        size_type capacity() const noexcept { return _sentinel - _first; }
 
-        reference operator[](size_type index) { return _first[index]; }
-        const_reference operator[](size_type index) const { return _first[index]; }
+        reference operator[](size_type index) noexcept { return _first[index]; }
+        const_reference operator[](size_type index) const noexcept { return _first[index]; }
 
-        reference front() { return *_first; }
-        const_reference front() const { return *_first; }
+        reference front() noexcept { return *_first; }
+        const_reference front() const noexcept { return *_first; }
 
-        reference back() { return *(_last - 1); }
-        const_reference back() const { return *(_last - 1); }
+        reference back() noexcept { return *(_last - 1); }
+        const_reference back() const noexcept { return *(_last - 1); }
 
         void reserve(size_type required);
         void resize(size_type new_size);
@@ -166,7 +166,7 @@ namespace up {
     }
 
     template <typename T>
-    vector<T>::vector(vector&& src) : _first(src._first), _last(src._last), _sentinel(src._sentinel) {
+    vector<T>::vector(vector&& src) noexcept : _first(src._first), _last(src._last), _sentinel(src._sentinel) {
         src._sentinel = src._last = src._first = nullptr;
     }
 
@@ -177,7 +177,7 @@ namespace up {
     }
 
     template <typename T>
-    auto vector<T>::operator=(vector&& src) -> vector& {
+    auto vector<T>::operator=(vector&& src) noexcept -> vector& {
         if (this != &src) {
             clear();
             shrink_to_fit();
@@ -192,7 +192,7 @@ namespace up {
     }
 
     template <typename T>
-    auto vector<T>::acquire(T* memory, size_type count) -> vector {
+    auto vector<T>::acquire(T* memory, size_type count) noexcept -> vector {
         vector rs;
         rs._first = memory;
         rs._last = rs._sentinel = count;
@@ -200,7 +200,7 @@ namespace up {
     }
 
     template <typename T>
-    T* vector<T>::release() {
+    T* vector<T>::release() noexcept {
         UP_SPUD_ASSERT(_last == _sentinel, "Releasing memory from a vector that has uninitialized capacity; call resize(capacity()) first!");
         T* tmp = _first;
         _first = _last = _sentinel = nullptr;

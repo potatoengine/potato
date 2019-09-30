@@ -27,7 +27,7 @@ namespace up {
         std::aligned_storage_t<sizeof(T), alignof(T)> _buffer[kBufferSize];
 
     public:
-        inline LockFreeQueue();
+        inline LockFreeQueue() noexcept;
         LockFreeQueue(LockFreeQueue const&) = delete;
         LockFreeQueue& operator=(LockFreeQueue const&) = delete;
 
@@ -37,7 +37,7 @@ namespace up {
     };
 
     template <typename T, std::size_t Size, std::size_t CacheLineWidth>
-    LockFreeQueue<T, Size, CacheLineWidth>::LockFreeQueue() {
+    LockFreeQueue<T, Size, CacheLineWidth>::LockFreeQueue() noexcept {
         _enque.store(0, std::memory_order_relaxed);
         _deque.store(0, std::memory_order_relaxed);
         for (std::uint32_t i = 0; i != kBufferSize; ++i)

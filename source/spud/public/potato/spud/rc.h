@@ -46,51 +46,51 @@ namespace up {
         using pointer = T*;
         using reference = T&;
 
-        rc() = default;
-        explicit rc(pointer ptr) : _ptr(ptr) {}
-        ~rc() { _removeRef(); }
+        rc() noexcept = default;
+        explicit rc(pointer ptr) noexcept : _ptr(ptr) {}
+        ~rc() noexcept { _removeRef(); }
 
-        rc(rc const& rhs) : _ptr(rhs._ptr) { _addRef(); }
-        rc(rc&& rhs) : _ptr(rhs.release()) {}
+        rc(rc const& rhs) noexcept : _ptr(rhs._ptr) { _addRef(); }
+        rc(rc&& rhs) noexcept : _ptr(rhs.release()) {}
         template <typename U>
-        /*implicit*/ rc(rc<U> const& rhs) : _ptr(rhs.get()) { _addRef(); }
+        /*implicit*/ rc(rc<U> const& rhs) noexcept : _ptr(rhs.get()) { _addRef(); }
         template <typename U>
-        /*implicit*/ rc(rc<U>&& rhs) : _ptr(rhs.release()) {}
-        /*implicit*/ rc(std::nullptr_t) {}
+        /*implicit*/ rc(rc<U>&& rhs) noexcept : _ptr(rhs.release()) {}
+        /*implicit*/ rc(std::nullptr_t) noexcept {}
 
-        inline rc& operator=(rc const& rhs);
-        inline rc& operator=(rc&& rhs);
+        inline rc& operator=(rc const& rhs) noexcept;
+        inline rc& operator=(rc&& rhs) noexcept;
         template <typename U>
-        inline rc& operator=(rc<U> const& rhs);
+        inline rc& operator=(rc<U> const& rhs) noexcept;
         template <typename U>
-        inline rc& operator=(rc<U>&& rhs);
-        inline rc& operator=(std::nullptr_t);
+        inline rc& operator=(rc<U>&& rhs) noexcept;
+        inline rc& operator=(std::nullptr_t) noexcept;
 
-        explicit operator bool() const { return _ptr != nullptr; }
-        bool empty() const { return _ptr == nullptr; }
+        explicit operator bool() const noexcept { return _ptr != nullptr; }
+        bool empty() const noexcept { return _ptr == nullptr; }
 
-        inline void reset(pointer ptr = pointer{});
+        inline void reset(pointer ptr = pointer{}) noexcept;
 
-        [[nodiscard]] inline pointer release();
+        [[nodiscard]] inline pointer release() noexcept;
 
-        pointer get() const { return _ptr; }
-        pointer operator->() const { return _ptr; }
-        reference operator*() const { return *_ptr; }
+        pointer get() const noexcept { return _ptr; }
+        pointer operator->() const noexcept { return _ptr; }
+        reference operator*() const noexcept { return *_ptr; }
 
-        friend bool operator==(rc const& lhs, rc const& rhs) { return lhs.get() == rhs.get(); }
-        friend bool operator!=(rc const& lhs, rc const& rhs) { return lhs.get() != rhs.get(); }
-        friend bool operator==(rc const& lhs, std::nullptr_t) { return lhs.get() == nullptr; }
-        friend bool operator!=(rc const& lhs, std::nullptr_t) { return lhs.get() != nullptr; }
-        friend bool operator==(std::nullptr_t, rc const& rhs) { return nullptr == rhs.get(); }
-        friend bool operator!=(std::nullptr_t, rc const& rhs) { return nullptr != rhs.get(); }
+        friend bool operator==(rc const& lhs, rc const& rhs) noexcept { return lhs.get() == rhs.get(); }
+        friend bool operator!=(rc const& lhs, rc const& rhs) noexcept { return lhs.get() != rhs.get(); }
+        friend bool operator==(rc const& lhs, std::nullptr_t) noexcept{ return lhs.get() == nullptr; }
+        friend bool operator!=(rc const& lhs, std::nullptr_t) noexcept{ return lhs.get() != nullptr; }
+        friend bool operator==(std::nullptr_t, rc const& rhs) noexcept{ return nullptr == rhs.get(); }
+        friend bool operator!=(std::nullptr_t, rc const& rhs) noexcept{ return nullptr != rhs.get(); }
 
     private:
-        void _addRef() {
+        void _addRef() noexcept {
             if (_ptr != nullptr) {
                 _ptr->addRef();
             }
         }
-        void _removeRef() {
+        void _removeRef() noexcept {
             if (_ptr != nullptr) {
                 _ptr->removeRef();
             }
@@ -100,7 +100,7 @@ namespace up {
     };
 
     template <typename T>
-    auto rc<T>::operator=(rc const& rhs) -> rc& {
+    auto rc<T>::operator=(rc const& rhs) noexcept -> rc& {
         if (this != std::addressof(rhs)) {
             _removeRef();
             _ptr = rhs._ptr;
@@ -111,7 +111,7 @@ namespace up {
 
     template <typename T>
     template <typename U>
-    auto rc<T>::operator=(rc<U> const& rhs) -> rc& {
+    auto rc<T>::operator=(rc<U> const& rhs) noexcept -> rc& {
         if (this != std::addressof(rhs)) {
             _removeRef();
             _ptr = rhs.get();
@@ -121,7 +121,7 @@ namespace up {
     }
 
     template <typename T>
-    auto rc<T>::operator=(rc&& rhs) -> rc& {
+    auto rc<T>::operator=(rc&& rhs) noexcept -> rc& {
         if (this != std::addressof(rhs)) {
             _removeRef();
             _ptr = rhs.release();
@@ -131,7 +131,7 @@ namespace up {
 
     template <typename T>
     template <typename U>
-    auto rc<T>::operator=(rc<U>&& rhs) -> rc& {
+    auto rc<T>::operator=(rc<U>&& rhs) noexcept -> rc& {
         if (this != std::addressof(rhs)) {
             _removeRef();
             _ptr = rhs.release();
@@ -140,14 +140,14 @@ namespace up {
     }
 
     template <typename T>
-    auto rc<T>::operator=(std::nullptr_t) -> rc& {
+    auto rc<T>::operator=(std::nullptr_t) noexcept -> rc& {
         _removeRef();
         _ptr = nullptr;
         return *this;
     }
 
     template <typename T>
-    void rc<T>::reset(pointer ptr) {
+    void rc<T>::reset(pointer ptr) noexcept {
         if (ptr != _ptr) {
             _removeRef();
             _ptr = ptr;
@@ -155,7 +155,7 @@ namespace up {
     }
 
     template <typename T>
-    auto rc<T>::release() -> pointer {
+    auto rc<T>::release() noexcept -> pointer {
         pointer tmp = _ptr;
         _ptr = nullptr;
         return tmp;

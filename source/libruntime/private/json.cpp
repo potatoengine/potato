@@ -8,7 +8,7 @@
 
 auto up::readJson(Stream& stream, nlohmann::json& json) -> IOResult {
     string text;
-    IOResult rs = readText(stream, text);
+    IOResult const rs = readText(stream, text);
     if (rs != IOResult::Success) {
         return rs;
     }
@@ -22,6 +22,10 @@ auto up::readJson(Stream& stream, nlohmann::json& json) -> IOResult {
 }
 
 void up::to_json(nlohmann::json& json, string_view str) noexcept {
+    json = std::string(str.data(), str.size());
+}
+
+void up::to_json(nlohmann::json& json, string const& str) noexcept {
     json = std::string(str.data(), str.size());
 }
 

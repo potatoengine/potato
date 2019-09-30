@@ -25,10 +25,10 @@ auto up::_detail::raiseFatalError(char const* file, int line, char const* failed
     std::array<uintptr, 64> addresses = {};
 
 #if !defined(NDEBUG)
-    std::array<callstack::TraceRecord, 64> records = {};
-    auto stack = callstack::readTrace(addresses);
+    auto records = std::array<callstack::TraceRecord, 20>{};
+    auto const stack = callstack::readTrace(addresses);
 
-    auto resolvedRecords = callstack::resolveTraceRecords(stack, records);
+    auto const resolvedRecords = callstack::resolveTraceRecords(stack, records);
     if (!resolvedRecords.empty()) {
         for (auto const& record : resolvedRecords) {
             format_into(buffer, "[{:016X}] ({}:{}) {}\r\n", record.address, record.filename.c_str(), record.line, record.symbol.c_str());
@@ -37,7 +37,7 @@ auto up::_detail::raiseFatalError(char const* file, int line, char const* failed
     else
 #endif // !defined(NDEBUG)
     {
-        for (uintptr addr : addresses) {
+        for (auto const addr : addresses) {
             format_into(buffer, "{:016X}\r\n", addr);
         }
     }

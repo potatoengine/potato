@@ -3,14 +3,14 @@
 
 namespace {
     struct TestCounted {
-        void addRef() { ++refs; }
-        void removeRef() { --refs; }
+        void addRef() noexcept { ++refs; }
+        void removeRef() noexcept { --refs; }
         int refs = 1;
     };
 
     struct TestShared : up::shared<TestShared> {
-        TestShared(bool& bind) : active(bind) { active = true; }
-        ~TestShared() { active = false; }
+        TestShared(bool& bind) noexcept : active(bind) { active = true; }
+        ~TestShared() noexcept { active = false; }
 
         bool& active;
     };
