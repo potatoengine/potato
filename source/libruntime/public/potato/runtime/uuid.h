@@ -10,27 +10,39 @@ namespace up {
 
     class UP_RUNTIME_API uuid {
     public:
-        using buffer = std::array<up::byte, 16>;
+        constexpr uuid() noexcept : _data{HighLow{}} {}
+        constexpr uuid(uuid const& rhs) noexcept : _data{rhs._data.u64} {}
+        uuid(up::byte const (&bytes)[16]) noexcept;
 
-        uuid() noexcept;
-        uuid(const uuid& other) noexcept;
-        uuid(const buffer& value) noexcept;
+        constexpr bool isValid() noexcept { return _data.u64.high != 0 && _data.u64.low != 0; }
 
-        bool isValid() noexcept;
+        constexpr bool operator==(uuid const& rhs) const noexcept {
+            return _data.u64.high == rhs._data.u64.high && _data.u64.low == rhs._data.u64.low;
+        }
+        constexpr bool operator!=(uuid const& rhs) const noexcept {
+            return _data.u64.high != rhs._data.u64.high || _data.u64.low != rhs._data.u64.low;
+        }
 
-        bool operator==(const uuid& other) const noexcept { return _data == other._data; }
-        bool operator!=(const uuid& other) const noexcept { return !operator==(other); }
+        static auto generate() noexcept -> uuid;
+        static auto toString(const uuid& id) -> string;
+        static auto fromString(string_view id) noexcept -> uuid;
 
-        static uuid generate() noexcept;
-        static string toString(const uuid& id);
-        static uuid fromString(string_view id) noexcept;
-
-        static uuid zero() noexcept;
+        static constexpr uuid zero() noexcept { return uuid{}; }
 
     private:
-        static auto _generate() noexcept -> buffer;
+        struct HighLow {
+            uint64 high = 0;
+            uint64 low = 0;
+        };
 
-        buffer _data;
+        union Storage {
+            HighLow u64;
+            byte ub[16];
+        };
+
+        Storage _data;
     };
+
+    static_assert(sizeof(uuid) == 16, "sizeof(uuid) must be 16 octects");
 
 } // namespace up

@@ -8,13 +8,12 @@
 #    error "Unsupported platform"
 #endif
 
-auto up::uuid::_generate() noexcept -> uuid::buffer {
-
+auto up::uuid::generate() noexcept -> uuid {
     auto newId = CFUUIDCreate(NULL);
     auto bytes = CFUUIDGetUUIDBytes(newId);
     CFRelease(newId);
 
-    uuid::buffer ret;
+    uuid ret;
     static_assert(sizeof(ret) == sizeof(bytes));
     std::memcpy(ret.data(), &bytes, sizeof(bytes));
     return ret;
