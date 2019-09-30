@@ -57,7 +57,7 @@ auto generateGuid() -> uuid::buffer {
     return ret;
 }
 
-uuid uuid::generate() {
+uuid uuid::generate() noexcept {
     uuid::buffer temp = generateGuid();
     return uuid(temp);
 }
@@ -113,7 +113,7 @@ static auto hexDigitToChar(char c) -> unsigned char {
     return 0;
 }
 
-uuid uuid::fromString(string_view id) {
+uuid uuid::fromString(string_view id) noexcept {
     auto len = id.size();
     if (len != 36)
         return uuid::zero();
