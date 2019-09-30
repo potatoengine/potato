@@ -7,13 +7,13 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::UUID") {
 
     DOCTEST_TEST_CASE("basic uuid") {
         UUID zero = UUID();
-        DOCTEST_CHECK_EQ(UUID::toString(zero).c_str(), "00000000-0000-0000-0000-000000000000");
         DOCTEST_CHECK(zero == UUID{});
+        DOCTEST_CHECK_EQ(zero.toString().c_str(), "00000000-0000-0000-0000-000000000000");
 
         UUID a = UUID::generate();
         DOCTEST_CHECK(a.isValid());
 
-        string str = UUID::toString(a);
+        string str = a.toString();
         UUID b = UUID::fromString(str);
         DOCTEST_CHECK_EQ(b, a);
 
@@ -35,7 +35,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::UUID") {
 
         string_view const input = "9554084e-4100-4098-b470-2125f5eed133";
         const UUID i = UUID::fromString(input);
-        string const output = UUID::toString(i);
+        string const output = i.toString();
         DOCTEST_CHECK_EQ(static_cast<string_view>(output), input);
     }
 }

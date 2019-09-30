@@ -15,15 +15,15 @@ constexpr char byteToString(up::byte byte) noexcept {
     return static_cast<char>(byte);
 }
 
-auto up::UUID::toString(const UUID& id) -> string {
+auto up::UUID::toString() const -> string {
     // format 9554084e-4100-4098-b470-2125f5eed133
     string_writer buffer;
     format_into(buffer, "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                id._data.ub[0], id._data.ub[1], id._data.ub[2], id._data.ub[3],
-                id._data.ub[4], id._data.ub[5],
-                id._data.ub[6], id._data.ub[7],
-                id._data.ub[8], id._data.ub[9],
-                id._data.ub[10], id._data.ub[11], id._data.ub[12], id._data.ub[13], id._data.ub[14], id._data.ub[15]);
+                _data.ub[0], _data.ub[1], _data.ub[2], _data.ub[3],
+                _data.ub[4], _data.ub[5],
+                _data.ub[6], _data.ub[7],
+                _data.ub[8], _data.ub[9],
+                _data.ub[10], _data.ub[11], _data.ub[12], _data.ub[13], _data.ub[14], _data.ub[15]);
 
     return buffer.c_str();
 }

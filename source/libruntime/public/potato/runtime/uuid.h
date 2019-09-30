@@ -23,8 +23,9 @@ namespace up {
             return _data.u64.high != rhs._data.u64.high || _data.u64.low != rhs._data.u64.low;
         }
 
+        auto toString() const -> string;
+
         static auto generate() noexcept -> UUID;
-        static auto toString(const UUID& id) -> string;
         static auto fromString(string_view id) noexcept -> UUID;
 
     private:
