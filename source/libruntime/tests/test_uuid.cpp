@@ -32,5 +32,10 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::UUID") {
 
         const UUID h = UUID::fromString("{10000000-0000-0000-0000-000000000002}");
         DOCTEST_CHECK(h.isValid());
+
+        string_view const input = "9554084e-4100-4098-b470-2125f5eed133";
+        const UUID i = UUID::fromString(input);
+        string const output = UUID::toString(i);
+        DOCTEST_CHECK_EQ(static_cast<string_view>(output), input);
     }
 }
