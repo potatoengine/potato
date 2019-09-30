@@ -80,6 +80,12 @@ auto up::UUID::fromString(string_view id) noexcept -> UUID {
             chidx = 0;
             result._data.ub[bidx++] = v;
         }
+
+        octect = !octect;
+    }
+
+    if (bidx != 16 || octect) {
+        return zero();
     }
 
     return result;

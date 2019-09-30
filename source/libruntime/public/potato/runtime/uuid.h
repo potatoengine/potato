@@ -14,7 +14,7 @@ namespace up {
         constexpr UUID(UUID const& rhs) noexcept : _data{rhs._data.u64} {}
         UUID(up::byte const (&bytes)[16]) noexcept;
 
-        constexpr bool isValid() noexcept { return _data.u64.high != 0 && _data.u64.low != 0; }
+        constexpr bool isValid() const noexcept { return _data.u64.high != 0 || _data.u64.low != 0; }
 
         constexpr bool operator==(UUID const& rhs) const noexcept {
             return _data.u64.high == rhs._data.u64.high && _data.u64.low == rhs._data.u64.low;
