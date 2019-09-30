@@ -16,21 +16,13 @@ static auto errorCodeToResult(std::error_code ec) noexcept -> up::IOResult {
 }
 
 bool up::NativeFileSystem::fileExists(zstring_view path) const noexcept {
-    std::error_code ec;
-    try {
-        return std::filesystem::is_regular_file(std::string_view(path.c_str(), path.size()), ec) && ec;
-    } catch (...) {
-        return false;
-    }
+    [[maybe_unused]] std::error_code ec;
+    return std::filesystem::is_regular_file(std::string_view(path.c_str(), path.size()), ec);
 }
 
 bool up::NativeFileSystem::directoryExists(zstring_view path) const noexcept {
-    std::error_code ec;
-    try {
-        return std::filesystem::is_directory(std::string_view(path.c_str(), path.size()), ec) && ec;
-    } catch (...) {
-        return false;
-    }
+    [[maybe_unused]] std::error_code ec;
+    return std::filesystem::is_directory(std::string_view(path.c_str(), path.size()), ec);
 }
 
 auto up::NativeFileSystem::fileStat(zstring_view path, FileStat& outInfo) const -> IOResult {
@@ -97,7 +89,7 @@ auto up::NativeFileSystem::removeRecursive(zstring_view path) -> IOResult {
     return errorCodeToResult(ec);
 }
 
-auto up::NativeFileSystem::currentWorkingDirectory() const -> string {
+auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
     std::error_code ec;
     auto path = std::filesystem::current_path(ec).generic_u8string();
     return ec ? string(path.c_str(), path.size()) : string();
