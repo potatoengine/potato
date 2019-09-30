@@ -42,7 +42,6 @@ namespace up {
 
         void write(value_type ch) noexcept {
             if (_size < capacity()) {
-                [[gsl::suppress(bounds .4)]]
                 _buffer[_size] = ch;
                 _buffer[++_size] = 0;
             }
