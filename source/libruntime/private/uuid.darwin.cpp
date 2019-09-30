@@ -15,6 +15,6 @@ auto up::UUID::generate() noexcept -> UUID {
 
     UUID ret;
     static_assert(sizeof(ret) == sizeof(bytes));
-    std::memcpy(ret.data(), &bytes, sizeof(bytes));
+    std::memcpy(ret._data.ub, &bytes, sizeof(bytes));
     return ret;
 }
