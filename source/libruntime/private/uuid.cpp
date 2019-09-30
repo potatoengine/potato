@@ -3,6 +3,7 @@
 #include "potato/runtime/uuid.h"
 #include "potato/runtime/assertion.h"
 #include "potato/spud/string_writer.h"
+#include "potato/spud/ascii.h"
 
 up::UUID::UUID(up::byte const (&bytes)[16]) noexcept : _data{HighLow{}} {
     for (int i = 0; i != 16; ++i) {
@@ -27,58 +28,31 @@ auto up::UUID::toString(const UUID& id) -> string {
     return buffer.c_str();
 }
 
-static auto isValidChar(const char c) -> bool {
-    if (c >= '0' && c <= '9')
-        return true;
-
-    if (c >= 'a' && c <= 'f')
-        return true;
-
-    if (c >= 'A' && c <= 'F')
-        return true;
-
-    return false;
-}
-
-static auto hexDigitToChar(char c) -> unsigned char {
-    // 0-9
-    if (c >= '0' && c <= '9')
-        return c - 48;
-
-    // a-f
-    if (c >= 'a' && c <= 'f')
-        return c - 87;
-
-    // A-F
-    if (c >= 'A' && c <= 'F')
-        return c - 55;
-
-    return 0;
-}
-
 auto up::UUID::fromString(string_view id) noexcept -> UUID {
-    auto len = id.size();
-    if (len != 36)
-        return UUID::zero();
-
-    char buffer[2]; // reading 2 chars at a time
-    uint32 chidx = 0;
+    byte next = {};
+    bool octect = false;
 
     UUID result;
-    uint32 bidx = 0;
+    int bidx = 0;
+
     for (auto c : id) {
-        if (c == '-')
+        if (c == '-') {
             continue;
+        }
 
-        if (!isValidChar(c))
+        int digit = ascii::from_hex(c);
+        if (digit == -1) {
             return UUID::zero();
+        }
 
-        buffer[chidx++] = c;
+        next <<= 4;
+        next |= byte{digit};
 
-        if (chidx == 2) {
-            byte v = static_cast<byte>(hexDigitToChar(buffer[0]) * 16 + hexDigitToChar(buffer[1]));
-            chidx = 0;
-            result._data.ub[bidx++] = v;
+        if (octect) {
+            if (bidx == 16) {
+                return zero();
+            }
+            result._data.ub[bidx++] = next;
         }
 
         octect = !octect;
