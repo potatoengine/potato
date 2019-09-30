@@ -29,6 +29,10 @@ auto up::UUID::toString(const UUID& id) -> string {
 }
 
 auto up::UUID::fromString(string_view id) noexcept -> UUID {
+    if (!id.empty() && id.front() == '{' && id.back() == '}') {
+        id = id.substr(1, id.size() - 2);
+    }
+
     byte next = {};
     bool octect = false;
 
