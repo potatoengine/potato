@@ -9,7 +9,11 @@
 #endif
 
 auto up::UUID::generate() noexcept -> UUID {
+    uuid_t temp;
+    uuid_generate(temp);
+
     UUID ret;
-    uuid_generate(static_cast<char*>(ret._data.ub));
+    static_assert(sizeof(ret) == sizeof(temp));
+    std::memcpy(ret._data.ub, &temp, sizeof(ret));
     return ret;
 }
