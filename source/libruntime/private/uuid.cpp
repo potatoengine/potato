@@ -50,7 +50,7 @@ auto up::UUID::fromString(string_view id) noexcept -> UUID {
         }
 
         next <<= 4;
-        next |= byte{digit};
+        next |= static_cast<byte>(digit);
 
         if (octect) {
             if (bidx == 16) {
