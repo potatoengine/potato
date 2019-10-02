@@ -1,6 +1,7 @@
 add_subdirectory(libformat)
 add_subdirectory(spud)
 add_subdirectory(libruntime)
+add_subdirectory(reflex)
 add_subdirectory(librender)
 add_subdirectory(libassetdb)
 add_subdirectory(libecs)

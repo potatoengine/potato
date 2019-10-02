@@ -2,7 +2,7 @@
 
 #include <potato/spud/box.h>
 #include <potato/spud/rc.h>
-#include <potato/filesystem/stream.h>
+#include <potato/runtime/stream.h>
 #include <potato/ecs/query.h>
 
 namespace up::components {

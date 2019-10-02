@@ -1,4 +1,4 @@
-target_sources(reflex PRIVATE
+target_sources(potato_reflex PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/_export.h
     ${CMAKE_CURRENT_SOURCE_DIR}/_wrapper.h
     ${CMAKE_CURRENT_SOURCE_DIR}/metadata.h

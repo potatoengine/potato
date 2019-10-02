@@ -3,8 +3,8 @@
 #pragma once
 
 #include "_tag.h"
-#include <potato/foundation/zstring_view.h>
-#include <potato/foundation/traits.h>
+#include <potato/spud/zstring_view.h>
+#include <potato/spud/traits.h>
 
 namespace up::reflex {
     /// Metadata about a specific type.

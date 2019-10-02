@@ -3,10 +3,10 @@
 #pragma once
 
 #include "serializer.h"
-#include <potato/foundation/string_writer.h>
-#include <potato/foundation/string_format.h>
-#include <potato/foundation/string.h>
-#include <potato/foundation/vector.h>
+#include <potato/spud/string_writer.h>
+#include <potato/spud/string_format.h>
+#include <potato/spud/string.h>
+#include <potato/spud/vector.h>
 #include <nlohmann/json.hpp>
 
 // temporary - FIXME remove
