@@ -292,7 +292,7 @@ auto up::recon::ConverterApp::checkMetafile(Context& ctx, string_view filename) 
         Converter* conveter = findConverter(filename);
         if (conveter) {
             nlohmann::json root;
-            string id = uuid::toString(uuid::generate());
+            string id = UUID::generate().toString();
             root["id"] = id.c_str();
 
             Context context(filename.data(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);

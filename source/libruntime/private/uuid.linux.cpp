@@ -8,8 +8,12 @@
 #    error "Unsupported platform"
 #endif
 
-auto up::uuid::_generate() noexcept -> uuid::buffer {
-    uuid::buffer ret;
-    uuid_generate((unsigned char*)ret.data());
+auto up::UUID::generate() noexcept -> UUID {
+    uuid_t temp;
+    uuid_generate(temp);
+
+    UUID ret;
+    static_assert(sizeof(ret) == sizeof(temp));
+    std::memcpy(ret._data.ub, &temp, sizeof(ret));
     return ret;
 }

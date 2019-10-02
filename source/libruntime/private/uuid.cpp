@@ -3,107 +3,67 @@
 #include "potato/runtime/uuid.h"
 #include "potato/runtime/assertion.h"
 #include "potato/spud/string_writer.h"
+#include "potato/spud/ascii.h"
 
-using namespace up;
-
-
-uuid::uuid() noexcept {
-    std::memset(&_data, 0, sizeof(_data));
-}
-
-uuid::uuid(const uuid& other) noexcept {
-    if (this == &other)
-        return;
-    std::memcpy(&_data, &other._data, sizeof(_data));
-}
-
-uuid::uuid(const buffer& value) noexcept {
-    std::memcpy(_data.data(), value.data(), sizeof(_data));
-}
-
-auto uuid::isValid() noexcept -> bool {
-    return *this != uuid::zero();
-}
-
-uuid uuid::generate() noexcept {
-    return uuid(_generate());
-}
-
-uuid uuid::zero() noexcept {
-    static uuid _zero(uuid::buffer({}));
-    return _zero;
+up::UUID::UUID(up::byte const (&bytes)[16]) noexcept : _data{HighLow{}} {
+    for (int i = 0; i != 16; ++i) {
+        _data.ub[i] = bytes[i];
+    }
 }
 
 constexpr char byteToString(up::byte byte) noexcept {
     return static_cast<char>(byte);
 }
 
-string uuid::toString(const uuid& id) {
+auto up::UUID::toString() const -> string {
     // format 9554084e-4100-4098-b470-2125f5eed133
     string_writer buffer;
     format_into(buffer, "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                id._data[0], id._data[1], id._data[2], id._data[3],
-                id._data[4], id._data[5],
-                id._data[6], id._data[7],
-                id._data[8], id._data[9],
-                id._data[10], id._data[11], id._data[12], id._data[13], id._data[14], id._data[15]);
+                _data.ub[0], _data.ub[1], _data.ub[2], _data.ub[3],
+                _data.ub[4], _data.ub[5],
+                _data.ub[6], _data.ub[7],
+                _data.ub[8], _data.ub[9],
+                _data.ub[10], _data.ub[11], _data.ub[12], _data.ub[13], _data.ub[14], _data.ub[15]);
 
     return buffer.c_str();
 }
 
-static auto isValidChar(const char c) -> bool {
-    if (c >= '0' && c <= '9')
-        return true;
+auto up::UUID::fromString(string_view id) noexcept -> UUID {
+    if (!id.empty() && id.front() == '{' && id.back() == '}') {
+        id = id.substr(1, id.size() - 2);
+    }
 
-    if (c >= 'a' && c <= 'f')
-        return true;
+    byte next = {};
+    bool octect = false;
 
-    if (c >= 'A' && c <= 'F')
-        return true;
+    UUID result;
+    int bidx = 0;
 
-    return false;
-}
-
-static auto hexDigitToChar(char c) -> unsigned char {
-    // 0-9
-    if (c >= '0' && c <= '9')
-        return c - 48;
-
-    // a-f
-    if (c >= 'a' && c <= 'f')
-        return c - 87;
-
-    // A-F
-    if (c >= 'A' && c <= 'F')
-        return c - 55;
-
-    return 0;
-}
-
-uuid uuid::fromString(string_view id) noexcept {
-    auto len = id.size();
-    if (len != 36)
-        return uuid::zero();
-
-    char buffer[2]; // reading 2 chars at a time
-    uint32 chidx = 0;
-
-    uuid result;
-    uint32 bidx = 0;
     for (auto c : id) {
-        if (c == '-')
+        if (c == '-') {
             continue;
-
-        if (!isValidChar(c))
-            return uuid::zero();
-
-        buffer[chidx++] = c;
-
-        if (chidx == 2) {
-            byte v = static_cast<byte>(hexDigitToChar(buffer[0]) * 16 + hexDigitToChar(buffer[1]));
-            chidx = 0;
-            result._data[bidx++] = v;
         }
+
+        int digit = ascii::from_hex(c);
+        if (digit == -1) {
+            return UUID{};
+        }
+
+        next <<= 4;
+        next |= static_cast<byte>(digit);
+
+        if (octect) {
+            if (bidx == 16) {
+                return UUID{};
+            }
+            result._data.ub[bidx++] = next;
+        }
+
+        octect = !octect;
+    }
+
+    if (bidx != 16 || octect) {
+        return UUID{};
     }
 
     return result;
