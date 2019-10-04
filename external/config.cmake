@@ -32,3 +32,6 @@ FetchContent_Declare(sdl2_vc_sdk
     URL https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
     URL_HASH SHA1=0b4d2a9bd0c66847d669ae664c5b9e2ae5cc8f00
 )
+FetchContent_Declare(flatbuffers
+    URL https://github.com/google/flatbuffers/archive/9e7e8cbe9f675123dd41b7c62868acad39188cae.zip
+)

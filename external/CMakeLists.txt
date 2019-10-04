@@ -12,6 +12,7 @@ set(EXTERNALS
     glm
     stb
     json
+    flatbuffers
     sdl2_vc
 )
 
