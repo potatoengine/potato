@@ -43,6 +43,7 @@ if(TARGET assimp AND TARGET SDL2)
         UP_GPU_ENABLE_D3D11 ${UP_GPU_ENABLE_D3D11}
     )
 
+    add_subdirectory(extra)
     add_subdirectory(private)
     add_subdirectory(tests)
 endif()

@@ -1,0 +1,6 @@
+namespace potato;
+
+table Material {
+    shaders:[string];
+    textures:[string];
+}
