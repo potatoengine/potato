@@ -1,0 +1,26 @@
+namespace up.schema;
+
+struct Vec3 {
+    x : float;
+    y : float;
+    z : float;
+}
+
+struct Vec2 {
+    x : float;
+    y : float;
+}
+
+table Mesh {
+    vertices : [Vec3];
+    normals : [Vec3];
+    tangents : [Vec3];
+    uvs : [Vec2];
+    colors : [Vec3];
+}
+
+table Model {
+    meshes : [Mesh];
+}
+
+root_type Model;

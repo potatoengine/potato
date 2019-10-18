@@ -1,19 +1,22 @@
-function(up_compile_flat_schema TARGET HEADERS FILES)
-    set(GEN_TGT "generate_${TARGET}_${NAME}")
+function(up_compile_flat_schema TARGET)
+    cmake_parse_arguments(ARG "" "NAME" "SCHEMAS" ${ARGN})
+
+    set(GEN_TGT "generate_schemas_${TARGET}")
     set(OUT_FILES)
 
-    foreach(FILE ${FILES})
+    set(OUT_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
+    set(OUT_HEADER_DIR "${OUT_ROOT_DIR}/potato/${ARG_NAME}")
+
+    foreach(FILE ${ARG_SCHEMAS})
         get_filename_component(DIR ${FILE} PATH)
         get_filename_component(NAME ${FILE} NAME)
         string(REGEX REPLACE "\\.fbs$" "_generated.h" GEN_HEADER_NAME ${NAME})
 
-        set(OUT_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
-        set(OUT_HEADER_DIR "${OUT_ROOT_DIR}/potato/${HEADERS}")
         set(OUT_FILE "${OUT_HEADER_DIR}/${GEN_HEADER_NAME}")
 
         list(APPEND OUT_FILES ${OUT_FILE})
 
-        message(STATUS "${TARGET} ${FILE} ${DIR} ${NAME} ${GEN_HEADER_NAME} ${OUT_FILE}")
+        message(STATUS "Compiling schema ${FILE} to ${OUT_FILE}")
 
         add_custom_command(
             OUTPUT "${OUT_FILE}"
