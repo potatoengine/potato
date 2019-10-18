@@ -1,31 +1,41 @@
-function(up_compile_flat_schema TARGET FILE)
-    get_filename_component(DIR ${FILE} PATH)
-    get_filename_component(NAME ${FILE} NAME)
-    string(REGEX REPLACE "\\.fbs$" "_generated.h" GEN_HEADER_NAME ${NAME})
-
-    set(OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-    set(OUT_FILE "${OUT_DIR}/${GEN_HEADER_NAME}")
+function(up_compile_flat_schema TARGET FILES)
     set(GEN_TGT "generate_${TARGET}_${NAME}")
+    set(OUT_FILES)
 
-    message(STATUS "${TARGET} ${FILE} ${DIR} ${NAME} ${GEN_HEADER_NAME} ${OUT_FILE}")
+    foreach(FILE ${FILES})
+        get_filename_component(DIR ${FILE} PATH)
+        get_filename_component(NAME ${FILE} NAME)
+        string(REGEX REPLACE "\\.fbs$" "_generated.h" GEN_HEADER_NAME ${NAME})
 
-    add_custom_command(
-        OUTPUT "${OUT_FILE}"
-        COMMAND flatbuffers::flatc -c
-                --scoped-enums
-                --gen-object-api -o "${OUT_DIR}/${GEN_HEADER_NAME}"
-                --cpp-ptr-type up::box
-                --reflect-names "${OPT}"
-                -I "${CMAKE_CURRENT_SOURCE_DIR}"
-                "${FILE}"
-        #MAIN_DEPENDENCY "${FILE}"
-        #DEPENDS flatbuffers::flatc "${FILE}"
+        set(OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+        set(OUT_FILE "${OUT_DIR}/${GEN_HEADER_NAME}")
+
+        list(APPEND OUT_FILES ${OUT_FILE})
+
+        message(STATUS "${TARGET} ${FILE} ${DIR} ${NAME} ${GEN_HEADER_NAME} ${OUT_FILE}")
+
+        add_custom_command(
+            OUTPUT "${OUT_FILE}"
+            COMMAND flatbuffers::flatc --cpp -o "${OUT_DIR}"
+                    --scoped-enums
+                    --cpp-ptr-type up::box
+                    --cpp-str-type up::string
+                    --cpp-str-flex-ctor
+                    -I "${CMAKE_CURRENT_SOURCE_DIR}"
+                    "${FILE}"
+            MAIN_DEPENDENCY "${FILE}"
+            DEPENDS flatbuffers::flatc "${FILE}"
+        )
+
+    endforeach()
+
+    add_custom_target("${GEN_TGT}"
+        DEPENDS ${OUT_FILES}
     )
-    add_custom_target("generate_${TARGET}_${NAME}"
-        DEPENDS "${OUT_FILE}"
-    )
 
-    target_include_directories(${TARGET} PRIVATE "${OUT_DIR}")
+    cmake_policy(SET CMP0079 NEW)
+    target_include_directories(${TARGET} PUBLIC "${OUT_DIR}")
+    target_link_libraries(${TARGET} PRIVATE flatbuffers::flatlib)
     add_dependencies(${TARGET} ${GEN_TGT})
 
 endfunction()
