@@ -1,4 +1,4 @@
-function(up_compile_flat_schema TARGET FILES)
+function(up_compile_flat_schema TARGET HEADERS FILES)
     set(GEN_TGT "generate_${TARGET}_${NAME}")
     set(OUT_FILES)
 
@@ -7,8 +7,9 @@ function(up_compile_flat_schema TARGET FILES)
         get_filename_component(NAME ${FILE} NAME)
         string(REGEX REPLACE "\\.fbs$" "_generated.h" GEN_HEADER_NAME ${NAME})
 
-        set(OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-        set(OUT_FILE "${OUT_DIR}/${GEN_HEADER_NAME}")
+        set(OUT_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
+        set(OUT_HEADER_DIR "${OUT_ROOT_DIR}/potato/${HEADERS}")
+        set(OUT_FILE "${OUT_HEADER_DIR}/${GEN_HEADER_NAME}")
 
         list(APPEND OUT_FILES ${OUT_FILE})
 
@@ -16,7 +17,7 @@ function(up_compile_flat_schema TARGET FILES)
 
         add_custom_command(
             OUTPUT "${OUT_FILE}"
-            COMMAND flatbuffers::flatc --cpp -o "${OUT_DIR}"
+            COMMAND flatbuffers::flatc --cpp -o "${OUT_HEADER_DIR}"
                     --scoped-enums
                     --cpp-ptr-type up::box
                     --cpp-str-type up::string
@@ -34,7 +35,10 @@ function(up_compile_flat_schema TARGET FILES)
     )
 
     cmake_policy(SET CMP0079 NEW)
-    target_include_directories(${TARGET} PUBLIC "${OUT_DIR}")
+    target_include_directories(${TARGET}
+        PUBLIC "${OUT_ROOT_DIR}"
+        PRIVATE "${OUT_HEADER_DIR}"
+    )
     target_link_libraries(${TARGET} PRIVATE flatbuffers::flatlib)
     add_dependencies(${TARGET} ${GEN_TGT})
 

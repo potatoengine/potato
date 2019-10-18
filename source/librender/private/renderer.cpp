@@ -211,7 +211,7 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
 
     input.close();
 
-    auto material = up::GetFlatMaterial(data.data());
+    auto material = up::schema::GetMaterial(data.data());
 
     rc<Shader> vertex;
     rc<Shader> pixel;

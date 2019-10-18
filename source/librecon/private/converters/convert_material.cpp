@@ -6,7 +6,7 @@
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/json.h"
-#include "material_generated.h"
+#include "potato/render/material_generated.h"
 #include <fstream>
 #include <nlohmann/json.hpp>
 
@@ -51,7 +51,7 @@ bool up::recon::MaterialConverter::convert(Context& ctx) {
 
     flatbuffers::FlatBufferBuilder builder;
 
-    auto shader = CreateFlatMaterialShaderDirect(builder, vertexPath.c_str(), pixelPath.c_str());
+    auto shader = schema::CreateMaterialShaderDirect(builder, vertexPath.c_str(), pixelPath.c_str());
 
     std::vector<flatbuffers::Offset<flatbuffers::String>> textures;
 
@@ -61,7 +61,7 @@ bool up::recon::MaterialConverter::convert(Context& ctx) {
         textures.push_back(builder.CreateString(texturePath.c_str()));
     }
 
-    auto mat = CreateFlatMaterialDirect(builder, shader, &textures);
+    auto mat = schema::CreateMaterialDirect(builder, shader, &textures);
 
     builder.Finish(mat);
 
