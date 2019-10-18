@@ -5,7 +5,7 @@ include(config.cmake)
 
 FetchContent_Populate(flatbuffers)
 
-add_library(flatbuffers_flatlib STATIC EXCLUDE_FROM_ALL)
+add_library(flatbuffers_flatlib STATIC)
 add_library(flatbuffers::flatlib ALIAS flatbuffers_flatlib)
 target_include_directories(flatbuffers_flatlib
     PUBLIC ${flatbuffers_SOURCE_DIR}/include

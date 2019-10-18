@@ -1,6 +1,14 @@
-namespace potato;
+namespace up;
 
-table Material {
-    shaders:[string];
+
+table FlatMaterialShader {
+    vertex:string;
+    pixel:string;
+}
+
+table FlatMaterial {
+    shader:FlatMaterialShader;
     textures:[string];
 }
+
+root_type FlatMaterial;

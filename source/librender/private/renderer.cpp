@@ -15,9 +15,7 @@
 #include "potato/render/gpu_texture.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
-#include "potato/runtime/json.h"
-#include <iostream>
-#include <nlohmann/json.hpp>
+#include "material_generated.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -35,7 +33,7 @@ namespace {
 up::Renderer::Renderer(FileSystem& fileSystem, rc<GpuDevice> device) : _device(std::move(device)), _fileSystem(fileSystem) {
     _commandList = _device->createCommandList();
 
-    _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.json");
+    _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.mat");
     _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, 64 * 1024);
 }
 
@@ -201,38 +199,34 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
 }
 
 auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
-    std::ifstream inFile(path.c_str());
-    if (!inFile) {
+    Stream input = _fileSystem.openRead(path);
+    if (!input) {
         return nullptr;
     }
 
-    auto jsonRoot = nlohmann::json::parse(inFile);
-    inFile.close();
+    vector<byte> data;
+    if (auto rs = readBinary(input, data); rs != IOResult::Success) {
+        return nullptr;
+    }
+
+    input.close();
+
+    auto material = up::GetFlatMaterial(data.data());
 
     rc<Shader> vertex;
     rc<Shader> pixel;
     vector<rc<Texture>> textures;
 
-    auto jsonShaders = jsonRoot["shaders"];
-    if (jsonShaders.is_object()) {
-        auto vertexPath = jsonShaders["vertex"].get<string>();
-        auto pixelPath = jsonShaders["pixel"].get<string>();
-
-        vertex = loadShaderSync(vertexPath);
-        pixel = loadShaderSync(pixelPath);
+    auto shader = material->shader();
+    if (shader == nullptr) {
+        return nullptr;
     }
+    
+    auto vertexPath = shader->vertex();
+    auto pixelPath = shader->pixel();
 
-    auto jsonTextures = jsonRoot["textures"];
-    for (auto jsonTexture : jsonTextures) {
-        auto texturePath = jsonTexture.get<string>();
-
-        auto tex = loadTextureSync(texturePath);
-        if (!tex) {
-            return nullptr;
-        }
-
-        textures.push_back(std::move(tex));
-    }
+    vertex = loadShaderSync(string(vertexPath->c_str(), vertexPath->size()));
+    pixel = loadShaderSync(string(pixelPath->c_str(), pixelPath->size()));
 
     if (vertex == nullptr) {
         return nullptr;
@@ -240,6 +234,17 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
 
     if (pixel == nullptr) {
         return nullptr;
+    }
+
+    for (auto textureData : *material->textures()) {
+        auto texturePath = string(textureData->c_str(), textureData->size());
+
+        auto tex = loadTextureSync(texturePath);
+        if (!tex) {
+            return nullptr;
+        }
+
+        textures.push_back(std::move(tex));
     }
 
     return new_shared<Material>(std::move(vertex), std::move(pixel), std::move(textures));
