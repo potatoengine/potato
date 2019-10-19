@@ -12,7 +12,8 @@ struct Vec2 {
 }
 
 table Mesh {
-    vertices : [Vec3];
+    indices : [uint16] (required);
+    vertices : [Vec3] (required);
     normals : [Vec3];
     tangents : [Vec3];
     uvs : [Vec2];

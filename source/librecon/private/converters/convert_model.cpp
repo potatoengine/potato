@@ -6,6 +6,7 @@
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
 #include "potato/runtime/logger.h"
+#include "potato/render/model_generated.h"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/Exporter.hpp>
@@ -16,6 +17,8 @@ up::recon::ModelConverter::ModelConverter() = default;
 up::recon::ModelConverter::~ModelConverter() = default;
 
 bool up::recon::ModelConverter::convert(Context& ctx) {
+    using namespace flatbuffers;
+
     auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = path::join({ctx.destinationFolderPath(), path::changeExtension(ctx.sourceFilePath(), ".model")});
 
@@ -50,11 +53,56 @@ bool up::recon::ModelConverter::convert(Context& ctx) {
         return false;
     }
 
-    Assimp::Exporter exporter;
-    aiExportDataBlob const* data = exporter.ExportToBlob(scene, "assbin", 0);
+    auto const* mesh = scene->mMeshes[0];
+
+    FlatBufferBuilder builder;
+
+    auto flatIndices = builder.CreateVector<uint16>(mesh->mNumFaces * 3, [mesh](auto index) {
+        auto face = index / 3;
+        auto vert = index % 3;
+        return mesh->mFaces[face].mIndices[vert];
+    });
+    auto flatVerts = builder.CreateVectorOfStructs<schema::Vec3>(mesh->mNumVertices, [mesh](auto index, auto* dest) {
+        auto [x, y, z] = mesh->mVertices[index];
+        *dest = {x, y, z};
+    });
+    Offset<Vector<schema::Vec3 const*>> flatColors;
+    if (mesh->GetNumColorChannels() >= 1) {
+        flatColors = builder.CreateVectorOfStructs<schema::Vec3>(mesh->mNumVertices, [mesh](auto index, auto* dest) {
+            auto [r, g, b, a] = mesh->mColors[0][index];
+            *dest = {r, g, b};
+        });
+    }
+    Offset<Vector<schema::Vec3 const*>> flatNormals;
+    if (mesh->HasNormals()) {
+        flatNormals = builder.CreateVectorOfStructs<schema::Vec3>(mesh->mNumVertices, [mesh](auto index, auto* dest) {
+            auto [x, y, z] = mesh->mNormals[index];
+            *dest = {x, y, z};
+        });
+    }
+    Offset<Vector<schema::Vec3 const*>> flatTangents;
+    if (mesh->HasTangentsAndBitangents()) {
+        flatTangents = builder.CreateVectorOfStructs<schema::Vec3>(mesh->mNumVertices, [mesh](auto index, auto* dest) {
+            auto [x, y, z] = mesh->mTangents[index];
+            *dest = {x, y, z};
+        });
+    }
+    Offset<Vector<schema::Vec2 const*>> flatUVs;
+    if (mesh->HasTextureCoords(0)) {
+        flatUVs = builder.CreateVectorOfStructs<schema::Vec2>(mesh->mNumVertices, [mesh](auto index, auto* dest) {
+            auto [s, t, u] = mesh->mTextureCoords[0][index];
+            *dest = {s, t};
+        });
+    }
+
+    auto flatMesh = schema::CreateMesh(builder, flatIndices, flatVerts, flatNormals, flatTangents, flatUVs, flatColors);
+    auto flatMeshes = builder.CreateVector<schema::Mesh>(&flatMesh, 1);
+    auto flatModel = schema::CreateModel(builder, flatMeshes);
+
+    builder.Finish(flatModel);
 
     file = ctx.fileSystem().openWrite(destAbsolutePath);
-    file.write(span{reinterpret_cast<byte const*>(data->data), data->size});
+    file.write(span{reinterpret_cast<byte const*>(builder.GetBufferPointer()), builder.GetSize()});
     file.close();
 
     ctx.logger().info("Wrote optimized model to `{}'", destAbsolutePath);

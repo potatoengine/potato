@@ -14,6 +14,6 @@ namespace up::recon {
         string_view generateSettings(Context& ctd) override { return {}; }
 
         string_view name() const noexcept override { return "model"; }
-        uint64 revision() const noexcept override { return 1; }
+        uint64 revision() const noexcept override { return 2; }
     };
 } // namespace up::recon

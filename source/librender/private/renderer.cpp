@@ -16,10 +16,7 @@
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
 #include "material_generated.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <fstream>
+#include "model_generated.h"
 #include <chrono>
 
 namespace {
@@ -113,14 +110,23 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     }
     stream.close();
 
-    Assimp::Importer importer;
-    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), 0, "assbin");
-    if (scene == nullptr) {
-        // FIXME: how to report this?
-        //zstring_view error = importer.GetErrorString();
+    auto flatModel = schema::GetModel(contents.data());
+    if (!flatModel) {
         return {};
     }
-    aiMesh const* mesh = scene->mMeshes[0];
+
+    auto flatMeshes = flatModel->meshes();
+    if (flatMeshes == nullptr) {
+        return {};
+    }
+    if (flatMeshes->size() == 0) {
+        return {};
+    }
+
+    auto flatMesh = flatModel->meshes()->Get(0);
+    if (!flatMesh) {
+        return {};
+    }
 
     MeshChannel channels[] = {
         {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Position},
@@ -131,31 +137,39 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     };
 
     uint16 stride = sizeof(float) * 14;
-    uint32 size = mesh->mNumVertices * stride;
+    uint32 numVertices = flatMesh->vertices()->size();
+    uint32 size = numVertices * stride;
 
     MeshBuffer bufferDesc = {size, 0, stride};
 
     vector<uint16> indices;
-    indices.reserve(mesh->mNumFaces * 3);
+    indices.reserve(flatMesh->indices()->size());
 
     vector<float> data;
-    data.reserve(mesh->mNumVertices);
+    data.reserve(numVertices);
 
-    for (uint32 i = 0; i != mesh->mNumFaces; ++i) {
-        indices.push_back(mesh->mFaces[i].mIndices[0]);
-        indices.push_back(mesh->mFaces[i].mIndices[1]);
-        indices.push_back(mesh->mFaces[i].mIndices[2]);
+    auto flatIndices = flatMesh->indices();
+    auto flatVerts = flatMesh->vertices();
+    auto flatColors = flatMesh->colors();
+    auto flatNormals = flatMesh->normals();
+    auto flatTangents = flatMesh->tangents();
+    auto flatUVs = flatMesh->uvs();
+
+    for (uint32 i = 0; i != flatIndices->size(); ++i) {
+        indices.push_back(flatIndices->Get(i));
     }
 
-    for (uint32 i = 0; i != mesh->mNumVertices; ++i) {
-        data.push_back(mesh->mVertices[i].x);
-        data.push_back(mesh->mVertices[i].y);
-        data.push_back(mesh->mVertices[i].z);
+    for (uint32 i = 0; i != numVertices; ++i) {
+        auto vert = *flatVerts->Get(i);
+        data.push_back(vert.x());
+        data.push_back(vert.y());
+        data.push_back(vert.z());
 
-        if (mesh->GetNumColorChannels() >= 1) {
-            data.push_back(mesh->mColors[0][i].r);
-            data.push_back(mesh->mColors[0][i].g);
-            data.push_back(mesh->mColors[0][i].b);
+        if (flatColors != nullptr) {
+            auto color = *flatColors->Get(i);
+            data.push_back(color.x());
+            data.push_back(color.y());
+            data.push_back(color.z());
         }
         else {
             data.push_back(1.f);
@@ -163,10 +177,11 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
             data.push_back(1.f);
         }
 
-        if (mesh->HasNormals()) {
-            data.push_back(mesh->mNormals[i].x);
-            data.push_back(mesh->mNormals[i].y);
-            data.push_back(mesh->mNormals[i].z);
+        if (flatNormals != nullptr) {
+            auto norm = *flatNormals->Get(i);
+            data.push_back(norm.x());
+            data.push_back(norm.y());
+            data.push_back(norm.z());
         }
         else {
             data.push_back(0.f);
@@ -174,10 +189,11 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
             data.push_back(0.f);
         }
 
-        if (mesh->HasTangentsAndBitangents()) {
-            data.push_back(mesh->mTangents[i].x);
-            data.push_back(mesh->mTangents[i].y);
-            data.push_back(mesh->mTangents[i].z);
+        if (flatTangents != nullptr) {
+            auto tangent = *flatTangents->Get(i);
+            data.push_back(tangent.x());
+            data.push_back(tangent.y());
+            data.push_back(tangent.z());
         }
         else {
             data.push_back(0.f);
@@ -185,9 +201,10 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
             data.push_back(0.f);
         }
 
-        if (mesh->HasTextureCoords(0)) {
-            data.push_back(mesh->mTextureCoords[0][i].x);
-            data.push_back(mesh->mTextureCoords[0][i].y);
+        if (flatUVs != nullptr) {
+            auto tex = *flatUVs->Get(i);
+            data.push_back(tex.x());
+            data.push_back(tex.y());
         }
         else {
             data.push_back(0.f);
@@ -221,7 +238,7 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
     if (shader == nullptr) {
         return nullptr;
     }
-    
+
     auto vertexPath = shader->vertex();
     auto pixelPath = shader->pixel();
 
