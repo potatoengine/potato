@@ -24,8 +24,6 @@ if(TARGET assimp AND TARGET SDL2)
             imgui
             SDL2
             doctest
-            nlohmann_json::nlohmann_json
-            assimp
     )
 
     add_subdirectory(public/potato/render)
