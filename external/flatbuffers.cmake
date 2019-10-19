@@ -14,6 +14,9 @@ target_include_directories(flatbuffers_flatlib
 target_compile_definitions(flatbuffers_flatlib PRIVATE
     -DFLATBUFFERS_LOCALE_INDEPENDENT=1
 )
+target_compile_features(flatbuffers_flatlib PUBLIC
+    cxx_std_17
+)
 target_sources(flatbuffers_flatlib PRIVATE
     ${flatbuffers_SOURCE_DIR}/include/flatbuffers/code_generators.h
     ${flatbuffers_SOURCE_DIR}/include/flatbuffers/base.h
