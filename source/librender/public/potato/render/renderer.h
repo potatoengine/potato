@@ -3,28 +3,24 @@
 #pragma once
 
 #include "_export.h"
+#include "loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/zstring_view.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/concurrent_queue.h"
-#include <thread>
-#include <atomic>
 
 namespace up {
     class GpuBuffer;
     class GpuCommandList;
     class GpuDevice;
-} // namespace up
-
-namespace up {
     class RenderContext;
     class Material;
     class Mesh;
     class Shader;
     class Texture;
 
-    class Renderer {
+    class Renderer : private Loader {
     public:
         UP_RENDER_API explicit Renderer(FileSystem& fileSystem, rc<GpuDevice> device);
         virtual ~Renderer();

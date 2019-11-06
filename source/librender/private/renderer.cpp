@@ -15,7 +15,6 @@
 #include "potato/render/gpu_texture.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
-#include "material_generated.h"
 #include <chrono>
 
 namespace {
@@ -104,8 +103,8 @@ auto up::Renderer::context() -> RenderContext {
 auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (readBinary(stream, contents) != IOResult{}) {
-        return {};
+    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+        return nullptr;
     }
     stream.close();
 
@@ -113,63 +112,24 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
 }
 
 auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
-    Stream input = _fileSystem.openRead(path);
-    if (!input) {
+    vector<byte> contents;
+    auto stream = _fileSystem.openRead(path);
+    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
         return nullptr;
     }
+    stream.close();
 
-    vector<byte> data;
-    if (auto rs = readBinary(input, data); rs != IOResult::Success) {
-        return nullptr;
-    }
-
-    input.close();
-
-    auto material = up::schema::GetMaterial(data.data());
-
-    rc<Shader> vertex;
-    rc<Shader> pixel;
-    vector<rc<Texture>> textures;
-
-    auto shader = material->shader();
-    if (shader == nullptr) {
-        return nullptr;
-    }
-
-    auto vertexPath = shader->vertex();
-    auto pixelPath = shader->pixel();
-
-    vertex = loadShaderSync(string(vertexPath->c_str(), vertexPath->size()));
-    pixel = loadShaderSync(string(pixelPath->c_str(), pixelPath->size()));
-
-    if (vertex == nullptr) {
-        return nullptr;
-    }
-
-    if (pixel == nullptr) {
-        return nullptr;
-    }
-
-    for (auto textureData : *material->textures()) {
-        auto texturePath = string(textureData->c_str(), textureData->size());
-
-        auto tex = loadTextureSync(texturePath);
-        if (!tex) {
-            return nullptr;
-        }
-
-        textures.push_back(std::move(tex));
-    }
-
-    return new_shared<Material>(std::move(vertex), std::move(pixel), std::move(textures));
+    return Material::createFromBuffer(contents, *this);
 }
 
 auto up::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (readBinary(stream, contents) != IOResult{}) {
-        return {};
+    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+        return nullptr;
     }
+    stream.close();
+
     return up::new_shared<Shader>(std::move(contents));
 }
 

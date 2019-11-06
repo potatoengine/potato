@@ -13,17 +13,17 @@ namespace up {
     class GpuPipelineState;
     class GpuResourceView;
     class GpuSampler;
-} // namespace up
-
-namespace up {
     class RenderContext;
     class Shader;
     class Texture;
+    class Loader;
 
     class Material : public shared<Material> {
     public:
         UP_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures);
         UP_RENDER_API ~Material();
+
+        static UP_RENDER_API auto createFromBuffer(view<byte> buffer, Loader& loader) -> rc<Material>;
 
         UP_RENDER_API void bindMaterialToRender(RenderContext& ctx);
 
