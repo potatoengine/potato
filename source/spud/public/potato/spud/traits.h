@@ -43,11 +43,11 @@ namespace up {
     template <bool C, typename T = void>
     using enable_if_t = typename std::enable_if_t<C, T>;
 
-#if defined(__cpp_lib_invoke)
+#if defined(__cpp_lib_constexpr_invoke)
     using std::invoke;
 #else
     template <class Class, class Return, class First, class... Rest>
-    decltype(auto) invoke(Return Class::*func, First&& first, Rest&&... rest) {
+    constexpr decltype(auto) invoke(Return Class::*func, First&& first, Rest&&... rest) {
         if constexpr (std::is_member_function_pointer_v<decltype(func)>) {
             return (std::forward<First>(first).*func)(std::forward<Rest>(rest)...);
         }

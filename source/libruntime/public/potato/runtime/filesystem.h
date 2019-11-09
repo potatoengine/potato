@@ -15,8 +15,8 @@ namespace up {
     public:
         virtual ~FileSystem() = default;
 
-        FileSystem(FileSystem const&) = default;
-        FileSystem& operator=(FileSystem const&) = default;
+        FileSystem(FileSystem const&) = delete;
+        FileSystem& operator=(FileSystem const&) = delete;
 
         virtual bool fileExists(zstring_view path) const noexcept = 0;
         virtual bool directoryExists(zstring_view path) const noexcept = 0;

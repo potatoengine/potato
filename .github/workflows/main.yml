@@ -19,16 +19,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Set Environment
-        run: echo ::set-env name=DEPS::%HOME%\deps
+        run: echo "::set-env name=DEPS::$Env:HOME\deps"
       - name: Install SDL2 SDK
         run: |
           curl -s -S -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
-          unzip SDL2-devel-2.0.9-VC.zip -d %DEPS%
-          echo ::set-env name=SDL2DIR::%DEPS%\SDL2-2.0.9
+          unzip SDL2-devel-2.0.9-VC.zip -d "$Env:DEPS"
+          echo "::set-env name=SDL2DIR::$Env:DEPS\SDL2-2.0.9"
       - name: Install Assimp SDK
         run: |
           curl -s -S -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
-          unzip assimp-4.1.0.zip -d %DEPS%
+          unzip assimp-4.1.0.zip -d "$Env:DEPS"
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Setup VS Environment
@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="%DEPS%/assimp-4.1.0" .. || exit /b 1
+          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="$Env:DEPS/assimp-4.1.0" ..
       - name: Build
         run: cmake --build build --parallel
       - name: Test
@@ -62,7 +62,6 @@ jobs:
             cc: gcc-7
           - name: macOS
             os: macos-latest
-            xcode: 10.3
             cxxflags: -Wall -Werror
             cxx: clang++
             cc: clang
@@ -76,7 +75,7 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Select XCode
         run: sudo /usr/bin/xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
-        if: success() && runner.os == 'macOS'
+        if: success() && matrix.xcode != ''
       - name: Install uuid-dev
         run: |
           sudo apt-get -yq update

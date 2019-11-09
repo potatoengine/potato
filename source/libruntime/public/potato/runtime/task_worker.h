@@ -18,8 +18,8 @@ namespace up {
         UP_RUNTIME_API explicit TaskWorker(TaskQueue& queue, zstring_view name);
         UP_RUNTIME_API ~TaskWorker();
 
-        TaskWorker(TaskWorker&&) = default;
-        TaskWorker& operator=(TaskWorker&&) = default;
+        TaskWorker(TaskWorker&&) = delete;
+        TaskWorker& operator=(TaskWorker&&) = delete;
 
         SmallThreadId smallThreadId() const noexcept { return _threadId; }
 

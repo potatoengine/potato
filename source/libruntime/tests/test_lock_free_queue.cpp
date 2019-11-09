@@ -4,48 +4,82 @@
 
 DOCTEST_TEST_SUITE("[potato][runtime] LockFreeQueue") {
     using namespace up;
-    using namespace up;
 
     DOCTEST_TEST_CASE("default") {
         LockFreeQueue<int> queue;
     }
 
-    DOCTEST_TEST_CASE("thread") {
-        constexpr int size = 1024;
-        LockFreeQueue<int, size> queue;
+    DOCTEST_TEST_CASE("fill") {
+        LockFreeQueue<std::size_t> queue;
 
-        for (int i = 0; i < size; ++i) {
+        for (std::size_t i = 0; i < queue.capacity(); ++i) {
             DOCTEST_CHECK(queue.tryEnque(i));
         }
 
-        int total1 = 0;
+        DOCTEST_CHECK(!queue.tryEnque(0));
+    }
+
+    DOCTEST_TEST_CASE("sequential") {
+        LockFreeQueue<std::size_t> queue;
+
+        for (std::size_t i = 0; i < queue.capacity(); ++i) {
+            DOCTEST_CHECK(queue.tryEnque(i));
+        }
+
+        DOCTEST_CHECK(!queue.tryEnque(0));
+
+        for (std::size_t i = 0; i < queue.capacity(); ++i) {
+            std::size_t result;
+            DOCTEST_CHECK(queue.tryDeque(result));
+            DOCTEST_CHECK_EQ(i, result);
+        }
+
+        std::size_t empty;
+        DOCTEST_CHECK(!queue.tryDeque(empty));
+    }
+
+    DOCTEST_TEST_CASE("thread") {
+        LockFreeQueue<std::size_t> queue;
+
+        std::size_t total1 = 0;
         auto thread1 = std::thread([&] {
-            int count;
-            while (queue.tryDeque(count)) {
-                total1 += count;
+            for (;;) {
+                std::size_t count;
+                if (queue.tryDeque(count)) {
+                    if (count == 0) {
+                        break;
+                    }
+                    total1 += count;
+                }
             }
         });
 
-        int total2 = 0;
+        std::size_t total2 = 0;
         auto thread2 = std::thread([&] {
-            int count;
-            while (queue.tryDeque(count)) {
-                total2 += count;
+            for (;;) {
+                std::size_t count;
+                if (queue.tryDeque(count)) {
+                    if (count == 0) {
+                        break;
+                    }
+                    total2 += count;
+                }
             }
         });
+
+        std::size_t expected = 0;
+        for (std::size_t i = 2; i < queue.capacity(); ++i) {
+            DOCTEST_CHECK(queue.tryEnque(i));
+            expected += i;
+        }
+
+        // signals end to threads
+        DOCTEST_CHECK(queue.tryEnque(0));
+        DOCTEST_CHECK(queue.tryEnque(0));
 
         thread1.join();
         thread2.join();
 
-        // sum of [0, size] is sum(0...size-1)
-        //  identities:
-        //   sum(1...N) = N(N+1)/2
-        //   0+N=N
-        //  expand identities:
-        //   sum(0...N-1) = sum(1...N-1)
-        //   sum(1...N-1) = (N-1)(N-1+1)/2
-        //  simplify:
-        //   (N-1)(N-1+1)/2 = N(N-1)/2
-        DOCTEST_CHECK_EQ(total1 + total2, (size * (size - 1)) / 2);
+        DOCTEST_CHECK_EQ(total1 + total2, expected);
     }
 }

@@ -16,8 +16,7 @@
 namespace up {
     class HashCache {
     public:
-        HashCache() = default;
-        HashCache(FileSystem& fileSystem) : _fileSystem(fileSystem) {}
+        explicit HashCache(FileSystem& fileSystem) : _fileSystem(fileSystem) {}
 
         static UP_ASSETDB_API uint64 hashAssetContent(span<byte const> contents) noexcept;
         static UP_ASSETDB_API uint64 hashAssetStream(Stream& stream);
