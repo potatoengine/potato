@@ -24,8 +24,6 @@ if(TARGET assimp AND TARGET SDL2)
             imgui
             SDL2
             doctest
-            nlohmann_json::nlohmann_json
-            assimp
     )
 
     add_subdirectory(public/potato/render)
@@ -43,6 +41,7 @@ if(TARGET assimp AND TARGET SDL2)
         UP_GPU_ENABLE_D3D11 ${UP_GPU_ENABLE_D3D11}
     )
 
+    add_subdirectory(schemas)
     add_subdirectory(private)
     add_subdirectory(tests)
 endif()

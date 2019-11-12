@@ -1,0 +1,13 @@
+namespace up.schema;
+
+table MaterialShader {
+    vertex:string;
+    pixel:string;
+}
+
+table Material {
+    shader:MaterialShader;
+    textures:[string];
+}
+
+root_type Material;

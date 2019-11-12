@@ -15,13 +15,6 @@
 #include "potato/render/gpu_texture.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
-#include "potato/runtime/json.h"
-#include <iostream>
-#include <nlohmann/json.hpp>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <fstream>
 #include <chrono>
 
 namespace {
@@ -35,7 +28,7 @@ namespace {
 up::Renderer::Renderer(FileSystem& fileSystem, rc<GpuDevice> device) : _device(std::move(device)), _fileSystem(fileSystem) {
     _commandList = _device->createCommandList();
 
-    _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.json");
+    _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.mat");
     _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, 64 * 1024);
 }
 
@@ -110,147 +103,33 @@ auto up::Renderer::context() -> RenderContext {
 auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (readBinary(stream, contents) != IOResult{}) {
-        return {};
+    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+        return nullptr;
     }
     stream.close();
 
-    Assimp::Importer importer;
-    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), 0, "assbin");
-    if (scene == nullptr) {
-        // FIXME: how to report this?
-        //zstring_view error = importer.GetErrorString();
-        return {};
-    }
-    aiMesh const* mesh = scene->mMeshes[0];
-
-    MeshChannel channels[] = {
-        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Position},
-        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Color},
-        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Normal},
-        {0, GpuFormat::R32G32B32Float, GpuShaderSemantic::Tangent},
-        {0, GpuFormat::R32G32Float, GpuShaderSemantic::TexCoord},
-    };
-
-    uint16 stride = sizeof(float) * 14;
-    uint32 size = mesh->mNumVertices * stride;
-
-    MeshBuffer bufferDesc = {size, 0, stride};
-
-    vector<uint16> indices;
-    indices.reserve(mesh->mNumFaces * 3);
-
-    vector<float> data;
-    data.reserve(mesh->mNumVertices);
-
-    for (uint32 i = 0; i != mesh->mNumFaces; ++i) {
-        indices.push_back(mesh->mFaces[i].mIndices[0]);
-        indices.push_back(mesh->mFaces[i].mIndices[1]);
-        indices.push_back(mesh->mFaces[i].mIndices[2]);
-    }
-
-    for (uint32 i = 0; i != mesh->mNumVertices; ++i) {
-        data.push_back(mesh->mVertices[i].x);
-        data.push_back(mesh->mVertices[i].y);
-        data.push_back(mesh->mVertices[i].z);
-
-        if (mesh->GetNumColorChannels() >= 1) {
-            data.push_back(mesh->mColors[0][i].r);
-            data.push_back(mesh->mColors[0][i].g);
-            data.push_back(mesh->mColors[0][i].b);
-        }
-        else {
-            data.push_back(1.f);
-            data.push_back(1.f);
-            data.push_back(1.f);
-        }
-
-        if (mesh->HasNormals()) {
-            data.push_back(mesh->mNormals[i].x);
-            data.push_back(mesh->mNormals[i].y);
-            data.push_back(mesh->mNormals[i].z);
-        }
-        else {
-            data.push_back(0.f);
-            data.push_back(0.f);
-            data.push_back(0.f);
-        }
-
-        if (mesh->HasTangentsAndBitangents()) {
-            data.push_back(mesh->mTangents[i].x);
-            data.push_back(mesh->mTangents[i].y);
-            data.push_back(mesh->mTangents[i].z);
-        }
-        else {
-            data.push_back(0.f);
-            data.push_back(0.f);
-            data.push_back(0.f);
-        }
-
-        if (mesh->HasTextureCoords(0)) {
-            data.push_back(mesh->mTextureCoords[0][i].x);
-            data.push_back(mesh->mTextureCoords[0][i].y);
-        }
-        else {
-            data.push_back(0.f);
-            data.push_back(0.f);
-        }
-    }
-
-    return up::new_shared<Mesh>(std::move(indices), vector(data.as_bytes()), span{&bufferDesc, 1}, channels);
+    return Mesh::createFromBuffer(contents);
 }
 
 auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
-    std::ifstream inFile(path.c_str());
-    if (!inFile) {
+    vector<byte> contents;
+    auto stream = _fileSystem.openRead(path);
+    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
         return nullptr;
     }
+    stream.close();
 
-    auto jsonRoot = nlohmann::json::parse(inFile);
-    inFile.close();
-
-    rc<Shader> vertex;
-    rc<Shader> pixel;
-    vector<rc<Texture>> textures;
-
-    auto jsonShaders = jsonRoot["shaders"];
-    if (jsonShaders.is_object()) {
-        auto vertexPath = jsonShaders["vertex"].get<string>();
-        auto pixelPath = jsonShaders["pixel"].get<string>();
-
-        vertex = loadShaderSync(vertexPath);
-        pixel = loadShaderSync(pixelPath);
-    }
-
-    auto jsonTextures = jsonRoot["textures"];
-    for (auto jsonTexture : jsonTextures) {
-        auto texturePath = jsonTexture.get<string>();
-
-        auto tex = loadTextureSync(texturePath);
-        if (!tex) {
-            return nullptr;
-        }
-
-        textures.push_back(std::move(tex));
-    }
-
-    if (vertex == nullptr) {
-        return nullptr;
-    }
-
-    if (pixel == nullptr) {
-        return nullptr;
-    }
-
-    return new_shared<Material>(std::move(vertex), std::move(pixel), std::move(textures));
+    return Material::createFromBuffer(contents, *this);
 }
 
 auto up::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
-    if (readBinary(stream, contents) != IOResult{}) {
-        return {};
+    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+        return nullptr;
     }
+    stream.close();
+
     return up::new_shared<Shader>(std::move(contents));
 }
 

@@ -3,6 +3,8 @@ target_sources(potato_librecon PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/convert_copy.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/convert_json.h"
     "${CMAKE_CURRENT_LIST_DIR}/convert_json.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/convert_material.h"
+    "${CMAKE_CURRENT_LIST_DIR}/convert_material.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/convert_model.h"
     "${CMAKE_CURRENT_LIST_DIR}/convert_model.cpp"
 )

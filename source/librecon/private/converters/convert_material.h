@@ -5,15 +5,15 @@
 #include "potato/recon/converter.h"
 
 namespace up::recon {
-    class ModelConverter : public Converter {
+    class MaterialConverter : public Converter {
     public:
-        ModelConverter();
-        ~ModelConverter();
+        MaterialConverter();
+        ~MaterialConverter();
 
         bool convert(Context& ctx) override;
         string_view generateSettings(Context& ctd) override { return {}; }
 
-        string_view name() const noexcept override { return "model"; }
-        uint64 revision() const noexcept override { return 2; }
+        string_view name() const noexcept override { return "mat"; }
+        uint64 revision() const noexcept override { return 1; }
     };
 } // namespace up::recon

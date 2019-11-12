@@ -16,6 +16,7 @@
 #include "converters/convert_json.h"
 #include "converters/convert_ignore.h"
 #include "converters/convert_model.h"
+#include "converters/convert_material.h"
 #include <nlohmann/json.hpp>
 #include <set>
 #include <algorithm>
@@ -151,6 +152,8 @@ void up::recon::ConverterApp::registerConverters() {
                            new_box<CopyConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".obj"; },
                            new_box<ModelConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".mat"; },
+                           new_box<MaterialConverter>()});
 }
 
 bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
