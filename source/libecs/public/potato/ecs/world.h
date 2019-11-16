@@ -94,7 +94,6 @@ namespace up {
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
 
-        struct AllocatedLocation;
         auto _allocateEntity(Archetype const& archetype) -> AllocatedLocation;
         void _deleteEntity(EntityId entity);
 

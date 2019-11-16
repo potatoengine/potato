@@ -44,8 +44,6 @@ namespace up {
 
     template <typename... Components>
     void Query<Components...>::select(World& world, delegate_ref<SelectSignature> callback) {
-        static ComponentId const components[sizeof...(Components)] = {getComponentId<Components>()...};
-
         if (_worldVersion != world.version()) {
             _worldVersion = world.version();
 
