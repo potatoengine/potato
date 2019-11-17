@@ -2,8 +2,10 @@
 
 #pragma once
 
+#include "_export.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
+#include "potato/spud/utility.h"
 #include "potato/ecs/common.h"
 #include "potato/ecs/chunk.h"
 
@@ -31,10 +33,28 @@ namespace up {
         uint32 version() const noexcept { return _version;  }
         view<Archetype> archetypes() const noexcept { return _archetypes; }
 
-        auto getArchetype(ArchetypeId arch) noexcept -> Archetype*;
-        auto findArchetype(ArchetypeLayoutId layoutHash) const noexcept -> Archetype const*;
+        /// Fetches a specified Archetype.
+        ///
+        auto getArchetype(ArchetypeId arch) noexcept -> Archetype* {
+            auto const index = to_underlying(arch);
+            UP_ASSERT(index >= 1 && index <= _archetypes.size());
+            return &_archetypes[index - 1];
+        }
+
+        /// Fetch an Archetype by its layout hash.
+        ///
+        auto findArchetype(ArchetypeLayoutId layoutHash) const noexcept -> Archetype const* {
+            for (Archetype const& arch : _archetypes) {
+                if (arch.layoutHash == layoutHash) {
+                    return &arch;
+                }
+            }
+
+            return nullptr;
+        }
+
         auto createArchetype(view<ComponentMeta const*> components) -> Archetype const*;
-        auto selectArchetypes(view<ComponentId> components, span<int> offsetsBuffer, delegate_ref<SelectSignature> callback) const noexcept -> int;
+        UP_ECS_API auto selectArchetypes(view<ComponentId> components, span<int> offsetsBuffer, delegate_ref<SelectSignature> callback) const noexcept->int;
 
     private:
         uint32 _version = 0;
@@ -52,7 +72,9 @@ namespace up {
             return *this;
         }
 
-        constexpr auto finalize() noexcept -> result_type { return static_cast<ArchetypeLayoutId>(_state); }
+        constexpr auto finalize() noexcept -> result_type {
+            return static_cast<ArchetypeLayoutId>(_state);
+        }
 
     private:
         static constexpr uint64 seed = 0;

@@ -31,15 +31,23 @@ namespace up {
         ///
         /// Does *not* indicate anything about the creation or moving of entities
         ///
-        UP_ECS_API uint32 version() const noexcept;
+        auto version() const noexcept {
+            return _archetypes.version();
+        }
 
-        UP_ECS_API view<Archetype> archetypes() const noexcept;
+        /// Fetch the list of all Archetypes.
+        ///
+        auto archetypes() const noexcept -> view<Archetype> {
+            return _archetypes.archetypes();
+        }
 
         /// Retrieve a specific Archetype
         ///
         /// @returns nullptr if the ArchetypeId is invalid
         ///
-        UP_ECS_API auto getArchetype(ArchetypeId arch) noexcept -> Archetype const*;
+        auto getArchetype(ArchetypeId arch) noexcept -> Archetype const* {
+            return _archetypes.getArchetype(arch);
+        }
 
         /// Creates a new Entity with the provided list of Component data
         ///
@@ -82,7 +90,11 @@ namespace up {
         ///
         /// @return the number of matched archetypes.
         ///
-        UP_ECS_API int selectArchetypes(view<ComponentId> components, span<int> offsetsBuffer, delegate_ref<SelectSignature> callback) const;
+        int selectArchetypes(view<ComponentId> components, span<int> offsets, delegate_ref<SelectSignature> callback) const {
+            UP_ASSERT(components.size() == offsets.size());
+
+            return _archetypes.selectArchetypes(components, offsets, callback);
+        }
 
     private:
         struct AllocatedLocation {

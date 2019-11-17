@@ -69,22 +69,6 @@ namespace up {
     }
 } // namespace up
 
-auto up::ArchetypeMapper::getArchetype(ArchetypeId arch) noexcept -> Archetype* {
-    auto const index = to_underlying(arch);
-    UP_ASSERT(index >= 1 && index <= _archetypes.size());
-    return &_archetypes[index - 1];
-}
-
-auto up::ArchetypeMapper::findArchetype(ArchetypeLayoutId layoutHash) const noexcept -> Archetype const* {
-    for (Archetype const& arch : _archetypes) {
-        if (arch.layoutHash == layoutHash) {
-            return &arch;
-        }
-    }
-
-    return nullptr;
-}
-
 auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components) -> Archetype const* {
     ArchetypeComponentHasher hasher;
     for (auto meta : components) {

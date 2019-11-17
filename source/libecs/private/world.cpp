@@ -22,24 +22,6 @@ up::World::World() = default;
 
 up::World::~World() = default;
 
-auto up::World::version() const noexcept -> uint32 {
-    return _archetypes.version();
-}
-
-auto up::World::archetypes() const noexcept -> view<Archetype> {
-    return _archetypes.archetypes();
-}
-
-auto up::World::getArchetype(ArchetypeId arch) noexcept -> Archetype const* {
-    return _archetypes.getArchetype(arch);
-}
-
-auto up::World::selectArchetypes(view<ComponentId> componentIds, span<int> offsetsBuffer, delegate_ref<SelectSignature> callback) const -> int {
-    UP_ASSERT(componentIds.size() == offsetsBuffer.size());
-
-    return _archetypes.selectArchetypes(componentIds, offsetsBuffer, callback);
-}
-
 void up::World::deleteEntity(EntityId entity) noexcept {
     if (_entities.isValid(entity)) {
         _deleteEntity(entity);

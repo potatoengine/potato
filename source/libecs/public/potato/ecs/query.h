@@ -9,6 +9,7 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/span.h"
+#include "potato/spud/traits.h"
 #include "potato/ecs/component.h"
 
 namespace up {
@@ -19,13 +20,13 @@ namespace up {
     public:
         static_assert(sizeof...(Components) != 0, "Empty Query objects are not allowed");
 
-        using SelectSignature = void(size_t, Components*...);
-
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
         /// callback once for each Chunk belonging to the Archetypes, with appropriate pointers.
         ///
         /// This is the primary mechanism for finding or mutating Entities.
-        void select(World& world, delegate_ref<SelectSignature> callback);
+        ///
+        template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, size_t, Components*...>>>
+        void select(World& world, Callback&& callback);
 
     private:
         struct Match {
@@ -35,15 +36,16 @@ namespace up {
 
         void _query(World& world);
 
-        template <size_t... Indices>
-        void _execute(World& world, delegate_ref<SelectSignature> callback, std::index_sequence<Indices...>) const;
+        template <typename Callback, size_t... Indices>
+        void _execute(World& world, Callback&& callback, std::index_sequence<Indices...>) const;
 
         uint32 _worldVersion = 0;
         vector<Match> _matches;
     };
 
     template <typename... Components>
-    void Query<Components...>::select(World& world, delegate_ref<SelectSignature> callback) {
+    template <typename Callback, typename Void>
+    void Query<Components...>::select(World& world, Callback&& callback) {
         if (_worldVersion != world.version()) {
             _worldVersion = world.version();
 
@@ -71,8 +73,8 @@ namespace up {
     }
 
     template <typename... Components>
-    template <size_t... Indices>
-    void Query<Components...>::_execute(World& world, delegate_ref<SelectSignature> callback, std::index_sequence<Indices...>) const {
+    template <typename Callback, size_t... Indices>
+    void Query<Components...>::_execute(World& world, Callback&& callback, std::index_sequence<Indices...>) const {
         for (auto const& match : _matches) {
             Archetype const* arch = world.getArchetype(match.archetype);
             int const* offsets = match.offsets;
