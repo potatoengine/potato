@@ -81,38 +81,28 @@ up::Scene::~Scene() {
 }
 
 void up::Scene::tick(float frameTime) {
-    _waveQuery.select(*_world, [&](size_t count, components::Position* positions, components::Wave* waves) {
-        for (size_t i = 0; i != count; ++i) {
-            waves[i].offset += frameTime * .2f;
-            positions[i].xyz.y = 1 + 5 * glm::sin(waves[i].offset * 10);
-        }
+    _waveQuery.select(*_world, [&](components::Position& pos, components::Wave& wave) {
+        wave.offset += frameTime * .2f;
+        pos.xyz.y = 1 + 5 * glm::sin(wave.offset * 10);
     });
 
-    _orbitQuery.select(*_world, [&](size_t count, components::Position* positions) {
-        for (size_t i = 0; i != count; ++i) {
-            positions[i].xyz = glm::rotateY(positions[i].xyz, frameTime);
-        }
+    _orbitQuery.select(*_world, [&](components::Position& pos) {
+        pos.xyz = glm::rotateY(pos.xyz, frameTime);
     });
 
-    _spinQuery.select(*_world, [&](size_t count, components::Rotation* rotations, components::Spin* spins) {
-        for (size_t i = 0; i != count; ++i) {
-            rotations[i].rot = glm::angleAxis(spins[i].radians * frameTime, glm::vec3(0.f, 1.f, 0.f)) * rotations[i].rot;
-        }
+    _spinQuery.select(*_world, [&](components::Rotation& rot, components::Spin const& spin) {
+        rot.rot = glm::angleAxis(spin.radians * frameTime, glm::vec3(0.f, 1.f, 0.f)) * rot.rot;
     });
 }
 
 void up::Scene::flush() {
-    _transformQuery.select(*_world, [&](size_t count, components::Rotation* rotations, components::Position* positions, components::Transform* transforms) {
-        for (size_t i = 0; i != count; ++i) {
-            transforms[i].trans = glm::translate(positions[i].xyz) * glm::mat4_cast(rotations[i].rot);
-        }
+    _transformQuery.select(*_world, [&](components::Rotation const& rot, components::Position const& pos, components::Transform& trans) {
+        trans.trans = glm::translate(pos.xyz) * glm::mat4_cast(rot.rot);
     });
 }
 
 void up::Scene::render(RenderContext& ctx) {
-    _renderableMeshQuery.select(*_world, [&](size_t count, components::Mesh* meshes, components::Transform* transforms) {
-        for (size_t i = 0; i != count; ++i) {
-                meshes[i].model->render(ctx, transforms[i].trans);
-            }
+    _renderableMeshQuery.select(*_world, [&](components::Mesh& mesh, components::Transform const& trans) {
+        mesh.model->render(ctx, trans.trans);
     });
 }

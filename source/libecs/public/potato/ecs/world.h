@@ -90,10 +90,10 @@ namespace up {
         ///
         /// @return the number of matched archetypes.
         ///
-        int selectArchetypes(view<ComponentId> components, span<int> offsets, delegate_ref<SelectSignature> callback) const {
+        auto selectArchetypes(view<ComponentId> components, span<int> offsets, size_t start, delegate_ref<SelectSignature> callback) const -> size_t {
             UP_ASSERT(components.size() == offsets.size());
 
-            return _archetypes.selectArchetypes(components, offsets, callback);
+            return _archetypes.selectArchetypes(components, offsets, start, callback);
         }
 
     private:

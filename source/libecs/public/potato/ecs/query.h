@@ -26,6 +26,14 @@ namespace up {
         /// This is the primary mechanism for finding or mutating Entities.
         ///
         template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, size_t, Components*...>>>
+        void selectChunks(World& world, Callback&& callback);
+
+        /// Given a World and a callback, finds all matching Archetypes, and invokes the
+        /// callback once for each entity.
+        ///
+        /// This is the primary mechanism for finding or mutating Entities.
+        ///
+        template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, Components&...>>>
         void select(World& world, Callback&& callback);
 
     private:
@@ -34,14 +42,29 @@ namespace up {
             int offsets[sizeof...(Components)];
         };
 
-        void _query(World& world);
+        void _findMatches(World& world);
 
+        template <typename Callback, size_t... Indices>
+        void _executeChunks(World& world, Callback&& callback, std::index_sequence<Indices...>) const;
         template <typename Callback, size_t... Indices>
         void _execute(World& world, Callback&& callback, std::index_sequence<Indices...>) const;
 
         uint32 _worldVersion = 0;
         vector<Match> _matches;
+        size_t _matchIndex = 0;
     };
+
+    template <typename... Components>
+    template <typename Callback, typename Void>
+    void Query<Components...>::selectChunks(World& world, Callback&& callback) {
+        if (_worldVersion != world.version()) {
+            _worldVersion = world.version();
+
+            _findMatches(world);
+        }
+
+        _executeChunks(world, callback, std::make_index_sequence<sizeof...(Components)>{});
+    }
 
     template <typename... Components>
     template <typename Callback, typename Void>
@@ -49,21 +72,18 @@ namespace up {
         if (_worldVersion != world.version()) {
             _worldVersion = world.version();
 
-            _query(world);
+            _findMatches(world);
         }
 
         _execute(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
 
     template <typename... Components>
-    void Query<Components...>::_query(World& world) {
+    void Query<Components...>::_findMatches(World& world) {
         static constexpr ComponentId components[sizeof...(Components)] = {getComponentId<Components>()...};
-
-        _matches.clear();
-
         int offsets[sizeof...(Components)];
 
-        world.selectArchetypes(components, offsets, [this](ArchetypeId arch, view<int> offsets) {
+        _matchIndex = world.selectArchetypes(components, offsets, _matchIndex, [this](ArchetypeId arch, view<int> offsets) {
             _matches.emplace_back();
             Match& match = _matches.back();
 
@@ -74,13 +94,28 @@ namespace up {
 
     template <typename... Components>
     template <typename Callback, size_t... Indices>
-    void Query<Components...>::_execute(World& world, Callback&& callback, std::index_sequence<Indices...>) const {
+    void Query<Components...>::_executeChunks(World& world, Callback&& callback, std::index_sequence<Indices...>) const {
         for (auto const& match : _matches) {
             Archetype const* arch = world.getArchetype(match.archetype);
             int const* offsets = match.offsets;
 
             for (auto const& chunk : arch->chunks) {
                 callback(chunk->header.entities, static_cast<Components*>(static_cast<void*>(chunk->data + offsets[Indices]))...);
+            }
+        }
+    }
+
+    template <typename... Components>
+    template <typename Callback, size_t... Indices>
+    void Query<Components...>::_execute(World& world, Callback&& callback, std::index_sequence<Indices...>) const {
+        for (auto const& match : _matches) {
+            Archetype const* arch = world.getArchetype(match.archetype);
+            int const* offsets = match.offsets;
+
+            for (auto const& chunk : arch->chunks) {
+                for (unsigned index = 0; index < chunk->header.entities; ++index) {
+                    callback(*static_cast<Components*>(static_cast<void*>(chunk->data + offsets[Indices]))...);
+                }
             }
         }
     }

@@ -54,7 +54,8 @@ namespace up {
         }
 
         auto createArchetype(view<ComponentMeta const*> components) -> Archetype const*;
-        UP_ECS_API auto selectArchetypes(view<ComponentId> components, span<int> offsetsBuffer, delegate_ref<SelectSignature> callback) const noexcept->int;
+
+        UP_ECS_API auto selectArchetypes(view<ComponentId> components, span<int> offsetsBuffer, size_t start, delegate_ref<SelectSignature> callback) const noexcept -> size_t;
 
     private:
         uint32 _version = 0;

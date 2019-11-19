@@ -92,15 +92,14 @@ auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components)
     return &_archetypes.back();
 }
 
-auto up::ArchetypeMapper::selectArchetypes(view<ComponentId> componentIds, span<int> offsetsBuffer, delegate_ref<SelectSignature> callback) const noexcept -> int {
-    int matches = 0;
-
-    for (Archetype const& arch : _archetypes) {
+auto up::ArchetypeMapper::selectArchetypes(view<ComponentId> componentIds, span<int> offsetsBuffer, size_t start, delegate_ref<SelectSignature> callback) const noexcept -> size_t {
+    size_t index = start;
+    while (index < _archetypes.size()) {
+        auto& arch = _archetypes[index++];
         if (matchArchetype(arch, componentIds, offsetsBuffer)) {
-            ++matches;
             callback(arch.id, offsetsBuffer.first(componentIds.size()));
         }
     }
 
-    return matches;
+    return index;
 }
