@@ -49,6 +49,15 @@ namespace up {
             return _archetypes.getArchetype(arch);
         }
 
+        /// Retrieve the chunks belonging to a specific archetype.
+        ///
+        /// @returns nullptr if the ArchetypeId is invalid
+        ///
+        auto getChunks(ArchetypeId arch) noexcept -> view<Chunk*> {
+            auto const* archetype = _archetypes.getArchetype(arch);
+            return _archetypes.chunks().subspan(archetype->chunksOffset, archetype->chunksLength);
+        }
+
         /// Creates a new Entity with the provided list of Component data
         ///
         template <typename... Components>
@@ -106,7 +115,7 @@ namespace up {
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
 
-        auto _allocateEntity(Archetype const& archetype) -> AllocatedLocation;
+        auto _allocateEntity(Archetype& archetype) -> AllocatedLocation;
         void _deleteEntity(EntityId entity);
 
         void _moveTo(Archetype const& destArch, Chunk& destChunk, int destIndex, Archetype const& srcArch, Chunk& srcChunk, int srcIndex);

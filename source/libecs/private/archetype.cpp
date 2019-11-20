@@ -25,8 +25,8 @@ auto up::ArchetypeMapper::_matchArchetype(Archetype const& arch, view<ComponentI
 };
 
 void up::ArchetypeMapper::_calculateLayout(Archetype& archetype, view<ComponentMeta const*> components) {
-    archetype.layoutOffset = _layout.size();
-    archetype.layoutLength = components.size() + 1;
+    archetype.layoutOffset = static_cast<uint32>(_layout.size());
+    archetype.layoutLength = static_cast<uint16>(components.size() + 1);
 
     _layout.reserve(archetype.layoutOffset + archetype.layoutLength);
 
@@ -73,7 +73,7 @@ void up::ArchetypeMapper::_calculateLayout(Archetype& archetype, view<ComponentM
     }
 }
 
-auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components) -> Archetype const* {
+auto up::ArchetypeMapper::createArchetype(view<ComponentMeta const*> components) -> Archetype* {
     ArchetypeComponentHasher hasher;
     for (auto meta : components) {
         hasher.hash(meta->id);
@@ -106,4 +106,24 @@ auto up::ArchetypeMapper::selectArchetypes(view<ComponentId> componentIds, span<
     }
 
     return index;
+}
+
+auto up::ArchetypeMapper::addChunk(Archetype& arch, Chunk* chunk) -> size_t {
+    _chunks.insert(_chunks.begin() + arch.chunksOffset + arch.chunksLength, chunk);
+    ++arch.chunksLength;
+
+    for (size_t index = static_cast<size_t>(arch.id); index != _archetypes.size(); ++index) {
+        ++_archetypes[index].chunksOffset;
+    }
+
+    return arch.chunksLength - 1;
+}
+
+void up::ArchetypeMapper::removeChunk(Archetype& arch, size_t chunkIndex) noexcept {
+    _chunks.erase(_chunks.begin() + arch.chunksOffset + chunkIndex);
+    --arch.chunksLength;
+
+    for (size_t index = static_cast<size_t>(arch.id); index != _archetypes.size(); ++index) {
+        --_archetypes[index].chunksOffset;
+    }
 }

@@ -96,11 +96,8 @@ namespace up {
     template <typename Callback, size_t... Indices>
     void Query<Components...>::_executeChunks(World& world, Callback&& callback, std::index_sequence<Indices...>) const {
         for (auto const& match : _matches) {
-            Archetype const* arch = world.getArchetype(match.archetype);
-            int const* offsets = match.offsets;
-
-            for (auto const& chunk : arch->chunks) {
-                callback(chunk->header.entities, static_cast<Components*>(static_cast<void*>(chunk->data + offsets[Indices]))...);
+            for (auto const& chunk : world.getChunks(match.archetype)) {
+                callback(chunk->header.entities, static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices]))...);
             }
         }
     }
@@ -109,12 +106,9 @@ namespace up {
     template <typename Callback, size_t... Indices>
     void Query<Components...>::_execute(World& world, Callback&& callback, std::index_sequence<Indices...>) const {
         for (auto const& match : _matches) {
-            Archetype const* arch = world.getArchetype(match.archetype);
-            int const* offsets = match.offsets;
-
-            for (auto const& chunk : arch->chunks) {
+            for (auto const& chunk : world.getChunks(match.archetype)) {
                 for (unsigned index = 0; index < chunk->header.entities; ++index) {
-                    callback(*static_cast<Components*>(static_cast<void*>(chunk->data + offsets[Indices]))...);
+                    callback(*static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices]))...);
                 }
             }
         }

@@ -18,9 +18,10 @@ namespace up {
     ///
     struct Archetype {
         ArchetypeId id = ArchetypeId::Unknown;
-        mutable/*temporary*/ vector<Chunk*> chunks;
-        size_t layoutOffset = 0;
-        size_t layoutLength = 0;
+        uint32 chunksOffset = 0;
+        uint32 layoutOffset = 0;
+        uint16 chunksLength = 0;
+        uint16 layoutLength = 0;
         ArchetypeLayoutId layoutHash = {};
         uint32 maxEntitiesPerChunk = 0;
     };
@@ -31,8 +32,10 @@ namespace up {
     public:
         using SelectSignature = void(ArchetypeId, view<int>);
 
-        uint32 version() const noexcept { return _version;  }
+        uint32 version() const noexcept { return _version; }
         view<Archetype> archetypes() const noexcept { return _archetypes; }
+        view<ChunkRowDesc> layouts() const noexcept { return _layout; }
+        view<Chunk*> chunks() const noexcept { return _chunks; }
 
         /// Fetches a specified Archetype.
         ///
@@ -44,8 +47,8 @@ namespace up {
 
         /// Fetch an Archetype by its layout hash.
         ///
-        auto findArchetype(ArchetypeLayoutId layoutHash) const noexcept -> Archetype const* {
-            for (Archetype const& arch : _archetypes) {
+        auto findArchetype(ArchetypeLayoutId layoutHash) noexcept -> Archetype* {
+            for (Archetype& arch : _archetypes) {
                 if (arch.layoutHash == layoutHash) {
                     return &arch;
                 }
@@ -54,17 +57,19 @@ namespace up {
             return nullptr;
         }
 
-        auto createArchetype(view<ComponentMeta const*> components) -> Archetype const*;
+        auto createArchetype(view<ComponentMeta const*> components) -> Archetype*;
 
         UP_ECS_API auto selectArchetypes(view<ComponentId> components, span<int> offsetsBuffer, size_t start, delegate_ref<SelectSignature> callback) const noexcept -> size_t;
 
-        auto getLayout(Archetype const& arch) const noexcept { return _layout.subspan(arch.layoutOffset, arch.layoutLength); }
+        UP_ECS_API auto addChunk(Archetype& arch, Chunk* chunk) -> size_t;
+        UP_ECS_API void removeChunk(Archetype& arch, size_t chunkIndex) noexcept;
 
     private:
         auto _matchArchetype(Archetype const& arch, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool;
         void _calculateLayout(Archetype& archetype, view<ComponentMeta const*> components);
 
         uint32 _version = 0;
+        vector<Chunk*> _chunks;
         vector<Archetype> _archetypes;
         vector<ChunkRowDesc> _layout;
     };

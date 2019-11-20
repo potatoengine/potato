@@ -32,10 +32,10 @@ void up::World::deleteEntity(EntityId entity) noexcept {
 void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept {
     if (auto [success, archetypeId, chunkIndex, index] = _entities.tryParse(entity); success) {
         auto& archetype = *_archetypes.getArchetype(archetypeId);
-        auto const layout = _archetypes.getLayout(archetype);
+        auto const layout = _archetypes.layouts().subspan(archetype.layoutOffset, archetype.layoutLength);
 
         if (auto const row = findLayout(layout, component); row != nullptr) {
-            auto& chunk = *archetype.chunks[chunkIndex];
+            auto& chunk = *_archetypes.chunks()[archetype.chunksOffset + chunkIndex];
             return chunk.data + row->offset + row->width * index;
         }
     }
@@ -46,8 +46,8 @@ void up::World::_deleteEntity(EntityId entity) {
     auto [archetypeId, chunkIndex, index] = _entities.parse(entity);
 
     Archetype& archetype = *_archetypes.getArchetype(archetypeId);
-    Chunk& chunk = *archetype.chunks[chunkIndex];
-    auto const layout = _archetypes.getLayout(archetype);
+    Chunk& chunk = *_archetypes.chunks()[archetype.chunksOffset + chunkIndex];
+    auto const layout = _archetypes.layouts().subspan(archetype.layoutOffset, archetype.layoutLength);
 
     // Copy the last element over the to-be-removed element, so we don't have holes in our array
     //
@@ -70,22 +70,21 @@ void up::World::_deleteEntity(EntityId entity) {
     // if this was the last entity, deallocate the whole chunk
     //
     if (--chunk.header.entities == 0) {
-        _chunks.recycle(std::move(archetype.chunks[chunkIndex]));
+        _chunks.recycle(&chunk);
 
         // copy-and-pop should be safe, since chunk order doesn't matter
         //
-        archetype.chunks[chunkIndex] = archetype.chunks.back();
-        archetype.chunks.pop_back();
+        _archetypes.removeChunk(archetype, chunkIndex);
     }
 }
 
 void up::World::removeComponent(EntityId entityId, ComponentId componentId) noexcept {
     if (auto [success, archetypeId, chunkIndex, index] = _entities.tryParse(entityId); success) {
         auto& archetype = *_archetypes.getArchetype(archetypeId);
-        auto& chunk = *archetype.chunks[chunkIndex];
+        auto& chunk = *_archetypes.chunks()[archetype.chunksOffset + chunkIndex];
 
         // figure out which layout entry is being removed
-        auto const layout = _archetypes.getLayout(archetype);
+        auto const layout = _archetypes.layouts().subspan(archetype.layoutOffset, archetype.layoutLength);
         auto iter = find(layout, componentId, {}, &ChunkRowDesc::component);
         if (iter == layout.end()) {
             return;
@@ -104,7 +103,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
         }
         auto const newArchetypeHash = hasher.finalize();
 
-        Archetype const* newArchetype = _archetypes.findArchetype(newArchetypeHash);
+        Archetype* newArchetype = _archetypes.findArchetype(newArchetypeHash);
         if (newArchetype == nullptr) {
             newArchetype = _archetypes.createArchetype(newComponentMetaSpan);
         }
@@ -123,8 +122,8 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
 void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept {
     if (auto [success, archetypeId, chunkIndex, index] = _entities.tryParse(entityId); success) {
         auto& archetype = *_archetypes.getArchetype(archetypeId);
-        auto& chunk = *archetype.chunks[chunkIndex];
-        auto const layout = _archetypes.getLayout(archetype);
+        auto& chunk = *_archetypes.chunks()[archetype.chunksOffset + chunkIndex];
+        auto const layout = _archetypes.layouts().subspan(archetype.layoutOffset, archetype.layoutLength);
 
         // construct the list of components that will exist in the new archetype
         ComponentMeta const* newComponentMetas[ArchetypeComponentLimit];
@@ -133,7 +132,7 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* compone
         span newComponentMetaSpan = span{newComponentMetas}.first(layout.size() + 1);
 
         // find the target archetype and allocate an entry in it
-        Archetype const* newArchetype = _archetypes.createArchetype(newComponentMetaSpan);
+        Archetype* newArchetype = _archetypes.createArchetype(newComponentMetaSpan);
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(*newArchetype);
 
         _moveTo(*newArchetype, newChunk, newIndex, archetype, chunk, index);
@@ -156,7 +155,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     }
     auto const archetypeHash = hasher.finalize();
 
-    Archetype const* newArchetype = _archetypes.findArchetype(archetypeHash);
+    Archetype* newArchetype = _archetypes.findArchetype(archetypeHash);
     if (newArchetype == nullptr) {
         newArchetype = _archetypes.createArchetype(components);
     }
@@ -173,21 +172,21 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     return entity;
 }
 
-auto up::World::_allocateEntity(Archetype const& archetype) -> AllocatedLocation {
-    if (archetype.chunks.empty() || archetype.chunks.back()->header.entities == archetype.maxEntitiesPerChunk) {
-        archetype.chunks.push_back(_chunks.allocate(archetype.id));
+auto up::World::_allocateEntity(Archetype& archetype) -> AllocatedLocation {
+    if (archetype.chunksLength == 0 || _archetypes.chunks()[archetype.chunksOffset + archetype.chunksLength - 1]->header.entities == archetype.maxEntitiesPerChunk) {
+        _archetypes.addChunk(archetype, _chunks.allocate(archetype.id));
     }
 
-    Chunk* chunk = archetype.chunks.back();
-    uint16 chunkIndex = static_cast<uint16>(archetype.chunks.size() - 1);
+    uint16 chunkIndex = static_cast<uint16>(archetype.chunksLength - 1);
+    Chunk* chunk = _archetypes.chunks()[archetype.chunksOffset + chunkIndex];
     uint16 index = chunk->header.entities++;
 
     return {*chunk, chunkIndex, index};
 }
 
 void up::World::_moveTo(Archetype const& destArch, Chunk& destChunk, int destIndex, Archetype const& srcArch, Chunk& srcChunk, int srcIndex) {
-    auto const srcLayout = _archetypes.getLayout(srcArch);
-    for (ChunkRowDesc const& row : _archetypes.getLayout(destArch)) {
+    auto const srcLayout = _archetypes.layouts().subspan(srcArch.layoutOffset, srcArch.layoutLength);
+    for (ChunkRowDesc const& row : _archetypes.layouts().subspan(destArch.layoutOffset, destArch.layoutLength)) {
         if (auto const srcRow = findLayout(srcLayout, row.component); srcRow != nullptr) {
             row.meta->relocate(destChunk.data + row.offset + row.width * destIndex, srcChunk.data + srcRow->offset + srcRow->width * srcIndex);
         }
@@ -195,20 +194,20 @@ void up::World::_moveTo(Archetype const& destArch, Chunk& destChunk, int destInd
 }
 
 void up::World::_moveTo(Archetype const& destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex) {
-    for (ChunkRowDesc const& layout : _archetypes.getLayout(destArch)) {
+    for (ChunkRowDesc const& layout : _archetypes.layouts().subspan(destArch.layoutOffset, destArch.layoutLength)) {
         layout.meta->relocate(destChunk.data + layout.offset + layout.width * destIndex, srcChunk.data + layout.offset + layout.width * srcIndex);
     }
 }
 
 void up::World::_copyTo(Archetype const& destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData) {
-    auto const destLayout = _archetypes.getLayout(destArch);
+    auto const destLayout = _archetypes.layouts().subspan(destArch.layoutOffset, destArch.layoutLength);
     auto const destRow = findLayout(destLayout, srcComponent);
 
     destRow->meta->copy(destChunk.data + destRow->offset + destRow->width * destIndex, srcData);
 }
 
 void up::World::_destroyAt(Archetype const& arch, Chunk& chunk, int index) {
-    for (ChunkRowDesc const& layout : _archetypes.getLayout(arch)) {
+    for (ChunkRowDesc const& layout : _archetypes.layouts().subspan(arch.layoutOffset, arch.layoutLength)) {
         layout.meta->destroy(chunk.data + layout.offset + layout.width * index);
     }
 }
