@@ -45,4 +45,9 @@ DOCTEST_TEST_SUITE("[potato][spud] find algorithms") {
         DOCTEST_CHECK_EQ(all(array, [](int i) { return !is_negative(i); }), true);
         DOCTEST_CHECK_EQ(all(vec, is_negative), false);
     }
+
+    DOCTEST_TEST_CASE("contains") {
+        DOCTEST_CHECK_EQ(contains(array, 2), true);
+        DOCTEST_CHECK_EQ(contains(array, 100), false);
+    }
 }

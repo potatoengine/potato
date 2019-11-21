@@ -6,8 +6,22 @@
 #include <cstdint>
 
 namespace up {
+    template <typename C, typename T>
+    constexpr auto find(C const& container, T const& value) noexcept(noexcept(*begin(container) == value)) {
+        auto iter = begin(container);
+        auto last = end(container);
+
+        for (; iter != last; ++iter) {
+            if (*iter == value) {
+                return iter;
+            }
+        }
+
+        return last;
+    }
+
     template <typename C, typename T, typename E = equality, typename P = identity>
-    constexpr auto find(C const& container, T const& value, E const& equals = {}, P const& projection = {}) noexcept(noexcept(project(projection, *begin(container)))) {
+    constexpr auto find(C const& container, T const& value, E const& equals, P const& projection = {}) noexcept(noexcept(equals(project(projection, *begin(container)), value))) {
         auto iter = begin(container);
         auto last = end(container);
 
@@ -32,6 +46,34 @@ namespace up {
         }
 
         return last;
+    }
+
+    template <typename C, typename T>
+    constexpr auto contains(C const& container, T const& value) noexcept(noexcept(*begin(container) == value)) {
+        auto iter = begin(container);
+        auto last = end(container);
+
+        for (; iter != last; ++iter) {
+            if (*iter == value) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    template <typename C, typename T, typename E = equality, typename P = identity>
+    constexpr auto contains(C const& container, T const& value, E const& equals, P const& projection = {}) noexcept(noexcept(equals(project(projection, *begin(container)), value))) {
+        auto iter = begin(container);
+        auto last = end(container);
+
+        for (; iter != last; ++iter) {
+            if (equals(project(projection, *iter), value)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     template <typename C, typename P>
