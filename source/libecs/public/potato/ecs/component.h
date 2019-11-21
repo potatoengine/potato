@@ -6,6 +6,7 @@
 #include "potato/spud/zstring_view.h"
 #include "potato/spud/hash_fnv1a.h"
 #include "potato/spud/traits.h"
+#include <atomic>
 
 namespace up {
     /// Stores metadata about a Component type. This includes its size and alignment,
@@ -32,6 +33,12 @@ namespace up {
         uint32 size = 0;
         uint32 alignment = 0;
         zstring_view name;
+
+        auto allocateId() noexcept -> ComponentMeta& {
+            static std::atomic<std::underlying_type_t<ComponentId>> _next{0};
+            id = static_cast<ComponentId>(++_next);
+            return *this;
+        }
     };
 
     namespace _detail {
@@ -46,14 +53,14 @@ namespace up {
 
         template <typename Component>
         struct ComponentOperations {
-            static constexpr void copyComponent(void* dest, void const* src) noexcept { new(dest) Component(*static_cast<Component const*>(src)); };
+            static constexpr void copyComponent(void* dest, void const* src) noexcept { new (dest) Component(*static_cast<Component const*>(src)); };
             static constexpr void moveComponent(void* dest, void* src) noexcept { *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src)); };
             static constexpr void destroyComponent(void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
         };
 
         template <typename Component>
         struct MetaHolder;
-    }
+    } // namespace _detail
 
     template <typename Component>
     constexpr ComponentMeta ComponentMeta::construct(zstring_view name) noexcept {
@@ -77,12 +84,12 @@ namespace up {
         return &_detail::MetaHolder<litexx::remove_cvref_t<ComponentT>>::meta;
     }
 
-    /// Registers a type as a Component and creates an associated ComponentMeta
-    #define UP_COMPONENT(ComponentType, ...) \
-        template <> \
-        struct up::_detail::MetaHolder<ComponentType> { \
-            __VA_ARGS__ static constexpr up::ComponentMeta meta = up::ComponentMeta::construct<ComponentType>(#ComponentType); \
-        };
+/// Registers a type as a Component and creates an associated ComponentMeta
+#define UP_COMPONENT(ComponentType, ...) \
+    template <> \
+    struct up::_detail::MetaHolder<ComponentType> { \
+        __VA_ARGS__ inline static const up::ComponentMeta meta = up::ComponentMeta::construct<ComponentType>(#ComponentType).allocateId(); \
+    };
 
     /// Finds the unique ComponentId for a given Component type
     template <typename ComponentT>

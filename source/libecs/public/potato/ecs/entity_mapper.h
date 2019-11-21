@@ -11,14 +11,14 @@ namespace up {
     class EntityMapper {
     public:
         struct ParseLocation {
-            ArchetypeId archetype = ArchetypeId::Unknown;
+            ArchetypeId archetype = ArchetypeId::Empty;
             uint16 chunk = 0;
             uint16 index = 0;
         };
 
         struct TryParseLocation {
             bool success = false;
-            ArchetypeId archetype = ArchetypeId::Unknown;
+            ArchetypeId archetype = ArchetypeId::Empty;
             uint16 chunk = 0;
             uint16 index = 0;
         };

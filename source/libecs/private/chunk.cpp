@@ -22,7 +22,7 @@ void up::ChunkAllocator::recycle(Chunk* chunk) {
         return;
     }
 
-    chunk->header.archetype = ArchetypeId::Unknown;
+    chunk->header.archetype = ArchetypeId::Empty;
     chunk->header.entities = 0;
     chunk->header.next = _freeChunkHead;
     _freeChunkHead = chunk;

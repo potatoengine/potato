@@ -355,12 +355,15 @@ namespace up {
         if (_last == _sentinel) {
             auto const size = _last - _first;
 
+            // temp
+            auto temp = value_type(std::forward<ParamsT>(params)...);
+
             // grow
             auto const newCapacity = _grow(size + 1);
             T* tmp = _allocate(newCapacity);
 
             // insert new elements
-            new (tmp + size) value_type(std::forward<ParamsT>(params)...);
+            new (tmp + size) value_type(std::move(temp));
 
             // move over old elements
             unitialized_move_n(_first, size, tmp);

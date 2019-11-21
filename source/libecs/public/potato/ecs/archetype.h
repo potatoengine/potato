@@ -3,6 +3,7 @@
 #pragma once
 
 #include "_export.h"
+#include "component.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/utility.h"
@@ -10,19 +11,13 @@
 #include "potato/ecs/chunk.h"
 
 namespace up {
-    static constexpr uint32 ArchetypeComponentLimit = 256;
-
-    enum class ArchetypeLayoutId : uint64 {};
-
     /// Archetypes are a common type of Entity with identical Component layout.
     ///
     struct Archetype {
-        ArchetypeId id = ArchetypeId::Unknown;
         uint32 chunksOffset = 0;
         uint32 layoutOffset = 0;
         uint16 chunksLength = 0;
         uint16 layoutLength = 0;
-        ArchetypeLayoutId layoutHash = {};
         uint32 maxEntitiesPerChunk = 0;
     };
 
@@ -32,66 +27,57 @@ namespace up {
     public:
         using SelectSignature = void(ArchetypeId, view<int>);
 
-        uint32 version() const noexcept { return _version; }
-        view<Archetype> archetypes() const noexcept { return _archetypes; }
-        view<ChunkRowDesc> layouts() const noexcept { return _layout; }
-        view<Chunk*> chunks() const noexcept { return _chunks; }
+        ArchetypeMapper();
 
-        /// Fetches a specified Archetype.
-        ///
-        auto getArchetype(ArchetypeId arch) noexcept -> Archetype* {
-            auto const index = to_underlying(arch);
-            UP_ASSERT(index >= 1 && index <= _archetypes.size());
-            return &_archetypes[index - 1];
+        auto version() const noexcept { return _version; }
+        auto archetypes() const noexcept -> size_t { return _archetypes.size(); }
+        auto layouts() const noexcept -> view<ChunkRowDesc> { return _layout; }
+        auto chunks() const noexcept -> view<Chunk*> { return _chunks; }
+
+        auto layoutOf(ArchetypeId archetype) const noexcept -> view<ChunkRowDesc> {
+            auto const& arch = _archetypes[to_underlying(archetype)];
+            return _layout.subspan(arch.layoutOffset, arch.layoutLength);
         }
 
-        /// Fetch an Archetype by its layout hash.
-        ///
-        auto findArchetype(ArchetypeLayoutId layoutHash) noexcept -> Archetype* {
-            for (Archetype& arch : _archetypes) {
-                if (arch.layoutHash == layoutHash) {
-                    return &arch;
+        auto chunksOf(ArchetypeId archetype) const noexcept -> view<Chunk*> {
+            auto const& arch = _archetypes[to_underlying(archetype)];
+            return _chunks.subspan(arch.chunksOffset, arch.chunksLength);
+        }
+
+        auto acquireArchetype(view<ComponentMeta const*> components) -> ArchetypeId;
+        auto acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional) -> ArchetypeId;
+        auto acquireArchetypeWithout(ArchetypeId original, ComponentId excluded) -> ArchetypeId;
+
+        template <typename... Components, typename Callback>
+        auto selectArchetypes(size_t start, Callback&& callback) const noexcept -> size_t {
+            ComponentId const components[sizeof...(Components)] = {getComponentId<Components>()...};
+            int offsets[sizeof...(Components)];
+
+            for (auto index = start; index < _archetypes.size(); ++index) {
+                if (_matchArchetype(ArchetypeId(index), components, offsets)) {
+                    callback(ArchetypeId(index), offsets);
                 }
             }
 
-            return nullptr;
+            return _archetypes.size();
         }
 
-        auto createArchetype(view<ComponentMeta const*> components) -> Archetype*;
-
-        UP_ECS_API auto selectArchetypes(view<ComponentId> components, span<int> offsetsBuffer, size_t start, delegate_ref<SelectSignature> callback) const noexcept -> size_t;
-
-        UP_ECS_API auto addChunk(Archetype& arch, Chunk* chunk) -> size_t;
-        UP_ECS_API void removeChunk(Archetype& arch, size_t chunkIndex) noexcept;
+        auto addChunk(ArchetypeId archetype, Chunk* chunk) -> int;
+        void removeChunk(ArchetypeId archetype, int chunkIndex) noexcept;
+        auto getChunk(ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk* {
+            return _chunks[_archetypes[to_underlying(archetype)].chunksOffset + chunkIndex];
+        }
 
     private:
-        auto _matchArchetype(Archetype const& arch, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool;
-        void _calculateLayout(Archetype& archetype, view<ComponentMeta const*> components);
+        template <typename P>
+        auto _findArchetype(P&& predicate) noexcept -> Archetype*;
+        UP_ECS_API auto _matchArchetype(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool;
+        auto _beginArchetype() -> ArchetypeId;
+        auto _finalizeArchetype(ArchetypeId archetype) noexcept -> ArchetypeId;
 
         uint32 _version = 0;
         vector<Chunk*> _chunks;
         vector<Archetype> _archetypes;
         vector<ChunkRowDesc> _layout;
-    };
-
-    /// Hashes components for an Archetype
-    ///
-    class ArchetypeComponentHasher {
-    public:
-        using result_type = ArchetypeLayoutId;
-
-        constexpr auto hash(ComponentId componentId) noexcept -> ArchetypeComponentHasher& {
-            _state += static_cast<uint64>(componentId);
-            return *this;
-        }
-
-        constexpr auto finalize() noexcept -> result_type {
-            return static_cast<ArchetypeLayoutId>(_state);
-        }
-
-    private:
-        static constexpr uint64 seed = 0;
-
-        uint64 _state = seed;
     };
 } // namespace up

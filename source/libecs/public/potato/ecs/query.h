@@ -20,6 +20,8 @@ namespace up {
     public:
         static_assert(sizeof...(Components) != 0, "Empty Query objects are not allowed");
 
+        Query() = default;
+
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
         /// callback once for each Chunk belonging to the Archetypes, with appropriate pointers.
         ///
@@ -42,7 +44,7 @@ namespace up {
             int offsets[sizeof...(Components)];
         };
 
-        void _findMatches(World& world);
+        void _refresh(World& world);
 
         template <typename Callback, size_t... Indices>
         void _executeChunks(World& world, Callback&& callback, std::index_sequence<Indices...>) const;
@@ -57,39 +59,31 @@ namespace up {
     template <typename... Components>
     template <typename Callback, typename Void>
     void Query<Components...>::selectChunks(World& world, Callback&& callback) {
-        if (_worldVersion != world.version()) {
-            _worldVersion = world.version();
-
-            _findMatches(world);
-        }
-
+        _refresh(world);
         _executeChunks(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
 
     template <typename... Components>
     template <typename Callback, typename Void>
     void Query<Components...>::select(World& world, Callback&& callback) {
-        if (_worldVersion != world.version()) {
-            _worldVersion = world.version();
-
-            _findMatches(world);
-        }
-
+        _refresh(world);
         _execute(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
 
     template <typename... Components>
-    void Query<Components...>::_findMatches(World& world) {
-        static constexpr ComponentId components[sizeof...(Components)] = {getComponentId<Components>()...};
-        int offsets[sizeof...(Components)];
+    void Query<Components...>::_refresh(World& world) {
+        auto const currentVersion = world.archetypes().version();
+        if (_worldVersion != currentVersion) {
+            _worldVersion = currentVersion;
 
-        _matchIndex = world.selectArchetypes(components, offsets, _matchIndex, [this](ArchetypeId arch, view<int> offsets) {
-            _matches.emplace_back();
-            Match& match = _matches.back();
+            _matchIndex = world.archetypes().selectArchetypes<Components...>(_matchIndex, [this](ArchetypeId arch, view<int> offsets) {
+                _matches.emplace_back();
+                Match& match = _matches.back();
 
-            match.archetype = arch;
-            std::memcpy(&match.offsets, offsets.data(), sizeof(Match::offsets));
-        });
+                match.archetype = arch;
+                std::memcpy(&match.offsets, offsets.data(), sizeof(Match::offsets));
+            });
+        }
     }
 
     template <typename... Components>

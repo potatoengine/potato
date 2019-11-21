@@ -27,26 +27,10 @@ namespace up {
         World(World&&) = delete;
         World& operator=(World&&) = delete;
 
-        /// Indicates the structure of the World (archetypes) has changed
+        /// Constant view into Archetype state.
         ///
-        /// Does *not* indicate anything about the creation or moving of entities
-        ///
-        auto version() const noexcept {
-            return _archetypes.version();
-        }
-
-        /// Fetch the list of all Archetypes.
-        ///
-        auto archetypes() const noexcept -> view<Archetype> {
-            return _archetypes.archetypes();
-        }
-
-        /// Retrieve a specific Archetype
-        ///
-        /// @returns nullptr if the ArchetypeId is invalid
-        ///
-        auto getArchetype(ArchetypeId arch) noexcept -> Archetype const* {
-            return _archetypes.getArchetype(arch);
+        auto archetypes() const noexcept -> ArchetypeMapper const& {
+            return _archetypes;
         }
 
         /// Retrieve the chunks belonging to a specific archetype.
@@ -54,8 +38,7 @@ namespace up {
         /// @returns nullptr if the ArchetypeId is invalid
         ///
         auto getChunks(ArchetypeId arch) noexcept -> view<Chunk*> {
-            auto const* archetype = _archetypes.getArchetype(arch);
-            return _archetypes.chunks().subspan(archetype->chunksOffset, archetype->chunksLength);
+            return _archetypes.chunksOf(arch);
         }
 
         /// Creates a new Entity with the provided list of Component data
@@ -95,16 +78,6 @@ namespace up {
         ///
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
-        /// Find matching archetypes.
-        ///
-        /// @return the number of matched archetypes.
-        ///
-        auto selectArchetypes(view<ComponentId> components, span<int> offsets, size_t start, delegate_ref<SelectSignature> callback) const -> size_t {
-            UP_ASSERT(components.size() == offsets.size());
-
-            return _archetypes.selectArchetypes(components, offsets, start, callback);
-        }
-
     private:
         struct AllocatedLocation {
             Chunk& chunk;
@@ -115,13 +88,13 @@ namespace up {
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
 
-        auto _allocateEntity(Archetype& archetype) -> AllocatedLocation;
+        auto _allocateEntity(ArchetypeId archetype) -> AllocatedLocation;
         void _deleteEntity(EntityId entity);
 
-        void _moveTo(Archetype const& destArch, Chunk& destChunk, int destIndex, Archetype const& srcArch, Chunk& srcChunk, int srcIndex);
-        void _moveTo(Archetype const& destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex);
-        void _copyTo(Archetype const& destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData);
-        void _destroyAt(Archetype const& arch, Chunk& chunk, int index);
+        void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex);
+        void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex);
+        void _copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData);
+        void _destroyAt(ArchetypeId arch, Chunk& chunk, int index);
 
         EntityMapper _entities;
         ArchetypeMapper _archetypes;
