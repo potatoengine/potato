@@ -1,5 +1,6 @@
 add_executable(potato_spud_test
     main.cpp
+    test_bit_set.cpp
     test_delegate.cpp
     test_delegate_ref.cpp
     test_find.cpp
