@@ -115,10 +115,6 @@ auto up::ArchetypeMapper::acquireArchetype(view<ComponentMeta const*> components
         return static_cast<ArchetypeId>(arch - _archetypes.begin());
     }
 
-    // bump so Query objects know that the list of archetypes has changed
-    //
-    ++_version;
-
     auto id = _beginArchetype();
 
     // append all the other components
@@ -148,10 +144,6 @@ auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMe
     if (arch != nullptr) {
         return static_cast<ArchetypeId>(arch - _archetypes.begin());
     }
-
-    // bump so Query objects know that the list of archetypes has changed
-    //
-    ++_version;
 
     auto id = _beginArchetype();
     _layout.pop_back(); // entity id
