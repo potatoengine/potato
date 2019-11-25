@@ -29,10 +29,6 @@ void up::ArchetypeMapper::_bindArchetypeOffets(ArchetypeId archetype, view<Compo
 }
 
 auto up::ArchetypeMapper::_beginArchetype(bit_set components) -> ArchetypeId {
-    // bump so Query objects know that the list of archetypes has changed
-    //
-    ++_version;
-
     // allocate a new archetype and associated id
     //
     auto id = ArchetypeId(_archetypes.size());

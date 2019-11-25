@@ -53,7 +53,6 @@ namespace up {
         template <typename Callback, size_t... Indices>
         void _execute(World& world, Callback&& callback, std::index_sequence<Indices...>) const;
 
-        uint32 _worldVersion = 0;
         vector<Match> _matches;
         size_t _matchIndex = 0;
         bit_set _mask;
@@ -83,18 +82,13 @@ namespace up {
 
     template <typename... Components>
     void Query<Components...>::_refresh(World& world) {
-        auto const currentVersion = world.archetypes().version();
-        if (_worldVersion != currentVersion) {
-            _worldVersion = currentVersion;
+        _matchIndex = world.archetypes().selectArchetypes(_matchIndex, _mask, _components, [this](ArchetypeId arch, view<int> offsets) {
+            _matches.emplace_back();
+            Match& match = _matches.back();
 
-            _matchIndex = world.archetypes().selectArchetypes(_matchIndex, _mask, _components, [this](ArchetypeId arch, view<int> offsets) {
-                _matches.emplace_back();
-                Match& match = _matches.back();
-
-                match.archetype = arch;
-                std::memcpy(&match.offsets, offsets.data(), sizeof(Match::offsets));
-            });
-        }
+            match.archetype = arch;
+            std::memcpy(&match.offsets, offsets.data(), sizeof(Match::offsets));
+        });
     }
 
     template <typename... Components>

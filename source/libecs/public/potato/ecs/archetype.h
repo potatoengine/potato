@@ -31,7 +31,6 @@ namespace up {
 
         ArchetypeMapper();
 
-        auto version() const noexcept { return _version; }
         auto archetypes() const noexcept -> size_t { return _archetypes.size(); }
         auto layouts() const noexcept -> view<ChunkRowDesc> { return _layout; }
         auto chunks() const noexcept -> view<Chunk*> { return _chunks; }
@@ -80,7 +79,6 @@ namespace up {
         auto _beginArchetype(bit_set components) -> ArchetypeId;
         auto _finalizeArchetype(ArchetypeId archetype) noexcept -> ArchetypeId;
 
-        uint32 _version = 0;
         vector<Chunk*> _chunks;
         vector<Archetype> _archetypes;
         vector<bit_set> _components;
