@@ -15,21 +15,15 @@ namespace {
         double a;
         float b;
     };
-    struct Counter {
-        int value;
-        char padding[128];
-    };
 } // namespace
 
 UP_DECLARE_COMPONENT(Test1);
 UP_DECLARE_COMPONENT(Second);
 UP_DECLARE_COMPONENT(Another);
-UP_DECLARE_COMPONENT(Counter);
 
 UP_DEFINE_COMPONENT(Test1);
 UP_DEFINE_COMPONENT(Second);
 UP_DEFINE_COMPONENT(Another);
-UP_DEFINE_COMPONENT(Counter);
 
 DOCTEST_TEST_SUITE("[potato][ecs] Query") {
     using namespace up;

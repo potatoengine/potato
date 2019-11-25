@@ -89,7 +89,7 @@ namespace up {
 
 /// Registers a type with the component manager
 ///
-#define UP_DEFINE_COMPONENT(ComponentType, ...) \
+#define UP_DEFINE_COMPONENT(ComponentType) \
     auto up::_detail::MetaHolder<ComponentType>::get() noexcept -> ComponentMeta const& { \
         static auto const meta = ::up::ComponentMeta::construct<ComponentType>(#ComponentType); \
         return meta; \
