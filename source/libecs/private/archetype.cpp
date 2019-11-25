@@ -39,10 +39,9 @@ auto up::ArchetypeMapper::_beginArchetype(bit_set components) -> ArchetypeId {
 
     // we'll always include the EntityId in the layout
     //
-    auto const entityMeta = ComponentMeta::get<Entity>();
-    _layout.push_back({entityMeta->id, entityMeta, 0, static_cast<uint16>(entityMeta->size)});
-    _layout.back().meta = entityMeta;
-    _components.back().set(to_underlying(entityMeta->id));
+    auto const& entityMeta = ComponentMeta::get<Entity>();
+    _layout.push_back({entityMeta.id, &entityMeta, 0, static_cast<uint16>(entityMeta.size)});
+    _components.back().set(to_underlying(entityMeta.id));
 
     return id;
 }

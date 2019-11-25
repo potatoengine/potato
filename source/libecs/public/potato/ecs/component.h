@@ -5,7 +5,6 @@
 #include "_export.h"
 #include "common.h"
 #include "potato/spud/zstring_view.h"
-#include "potato/spud/hash_fnv1a.h"
 #include "litexx/type_traits.h"
 #include <atomic>
 #include <new>
@@ -28,11 +27,11 @@ namespace up {
         /// Retrieves the ComponentMeta for a given type
         ///
         template <typename Component>
-        static constexpr auto get() noexcept -> ComponentMeta const*;
+        static constexpr auto get() noexcept -> ComponentMeta const&;
 
         /// Assigns a unique system-wide ID to the component.
         ///
-        UP_ECS_API auto allocateId() noexcept -> ComponentMeta&;
+        UP_ECS_API static auto allocateId() noexcept -> ComponentId;
 
         ComponentId id = ComponentId::Unknown;
         Copy copy = nullptr;
@@ -44,15 +43,6 @@ namespace up {
     };
 
     namespace _detail {
-        constexpr auto hashComponentName(zstring_view name) noexcept -> uint64 {
-            fnv1a hasher;
-            hasher.append_bytes(name.data(), name.size());
-            return hasher.finalize();
-        }
-
-        template <uint64 hash>
-        constexpr ComponentId componentIdFromHash = static_cast<ComponentId>(hash);
-
         template <typename Component>
         struct ComponentOperations {
             static constexpr void copyComponent(void* dest, void const* src) noexcept { new (dest) Component(*static_cast<Component const*>(src)); };
@@ -66,12 +56,8 @@ namespace up {
 
     template <typename Component>
     constexpr ComponentMeta ComponentMeta::construct(zstring_view name) noexcept {
-        fnv1a hasher;
-        hasher.append_bytes(name.data(), name.size());
-        uint64 hash = hasher.finalize();
-
         ComponentMeta meta;
-        meta.id = static_cast<ComponentId>(hash);
+        meta.id = allocateId();
         meta.copy = _detail::ComponentOperations<Component>::copyComponent;
         meta.relocate = _detail::ComponentOperations<Component>::moveComponent;
         meta.destroy = _detail::ComponentOperations<Component>::destroyComponent;
@@ -85,11 +71,11 @@ namespace up {
     ///
     template <typename ComponentT>
     constexpr auto getComponentId() noexcept -> ComponentId {
-        return ComponentMeta::get<ComponentT>()->id;
+        return ComponentMeta::get<ComponentT>().id;
     }
 
     template <typename ComponentT>
-    constexpr auto ComponentMeta::get() noexcept -> ComponentMeta const* {
+    constexpr auto ComponentMeta::get() noexcept -> ComponentMeta const& {
         return _detail::MetaHolder<litexx::remove_cvref_t<ComponentT>>::get();
     }
 
@@ -97,18 +83,16 @@ namespace up {
 ///
 #define UP_DECLARE_COMPONENT(ComponentType, ...) \
     template <> \
-    struct ::up::_detail::MetaHolder<ComponentType> { \
-        __VA_ARGS__ static up::ComponentMeta const meta; \
-        __VA_ARGS__ static auto get() noexcept -> ComponentMeta const*; \
+    struct up::_detail::MetaHolder<ComponentType> { \
+        __VA_ARGS__ static auto get() noexcept -> ComponentMeta const&; \
     }; \
 
 /// Registers a type with the component manager
 ///
 #define UP_DEFINE_COMPONENT(ComponentType, ...) \
-    ::up::ComponentMeta const ::up::_detail::MetaHolder<ComponentType>::meta = \
-        ::up::ComponentMeta::construct<ComponentType>(#ComponentType).allocateId(); \
-    auto ::up::_detail::MetaHolder<ComponentType>::get() noexcept->ComponentMeta const* { \
-        return &meta; \
+    auto up::_detail::MetaHolder<ComponentType>::get() noexcept -> ComponentMeta const& { \
+        static auto const meta = ::up::ComponentMeta::construct<ComponentType>(#ComponentType); \
+        return meta; \
     }
 
 } // namespace up

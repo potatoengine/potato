@@ -84,15 +84,15 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
     }
 }
 
-void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept {
+void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept {
     if (auto [success, archetypeId, chunkIndex, index] = _entities.tryParse(entityId); success) {
         // find the target archetype and allocate an entry in it
-        ArchetypeId newArchetype = _archetypes.acquireArchetypeWith(archetypeId, componentMeta);
+        ArchetypeId newArchetype = _archetypes.acquireArchetypeWith(archetypeId, &componentMeta);
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
 
         auto* chunk = _archetypes.getChunk(archetypeId, chunkIndex);
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *chunk, index);
-        _copyTo(newArchetype, newChunk, newIndex, componentMeta->id, componentData);
+        _copyTo(newArchetype, newChunk, newIndex, componentMeta.id, componentData);
 
         // remove old entity (must be gone before remap)
         //

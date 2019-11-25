@@ -5,8 +5,7 @@
 
 UP_DEFINE_COMPONENT(up::Entity);
 
-auto up::ComponentMeta::allocateId() noexcept -> ComponentMeta& {
+auto up::ComponentMeta::allocateId() noexcept -> ComponentId {
     static std::atomic<std::underlying_type_t<ComponentId>> _next{0};
-    id = static_cast<ComponentId>(++_next);
-    return *this;
+    return static_cast<ComponentId>(++_next);
 }

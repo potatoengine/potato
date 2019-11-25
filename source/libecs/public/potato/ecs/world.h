@@ -101,7 +101,7 @@ namespace up {
         };
 
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
-        UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
+        UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept;
 
         auto _allocateEntity(ArchetypeId archetype) -> AllocatedLocation;
         void _deleteEntity(EntityId entity);
@@ -118,7 +118,7 @@ namespace up {
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentMeta const* const componentMetas[] = {ComponentMeta::get<Components>()...};
+        ComponentMeta const* const componentMetas[] = {&ComponentMeta::get<Components>()...};
         void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
