@@ -16,11 +16,13 @@ DOCTEST_TEST_SUITE("[potato][spud] up::bit_set") {
         bs.set(0);
         DOCTEST_CHECK(bs.test(0));
         DOCTEST_CHECK(!bs.test(1));
+        DOCTEST_CHECK_EQ(bs.capacity(), 64);
 
         bs.set(1000);
         DOCTEST_CHECK(bs.test(1000));
         DOCTEST_CHECK(!bs.test(999));
         DOCTEST_CHECK(!bs.test(1001));
+        DOCTEST_CHECK_EQ(bs.capacity(), 1024);
     }
 
     DOCTEST_TEST_CASE("reset") {
@@ -60,5 +62,29 @@ DOCTEST_TEST_SUITE("[potato][spud] up::bit_set") {
         bs2.set(909);
 
         DOCTEST_CHECK_FALSE(bs1 == bs2);
+    }
+
+    DOCTEST_TEST_CASE("has_all") {
+        bit_set bs1;
+        bit_set bs2;
+
+        bs1.set(0);
+        bs1.set(7);
+        bs1.set(109);
+        bs1.set(555);
+
+        bs2.set(0);
+        bs2.set(7);
+
+        DOCTEST_CHECK(bs1.has_all(bs2));
+
+        bs2.set(109);
+        bs2.set(555);
+
+        DOCTEST_CHECK(bs1.has_all(bs2));
+
+        bs2.set(909);
+
+        DOCTEST_CHECK_FALSE(bs1.has_all(bs2));
     }
 }

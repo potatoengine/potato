@@ -90,6 +90,7 @@ public:
     constexpr span last(size_type length) const noexcept { return span{_end - length, length}; };
 
     constexpr span subspan(size_type offset, size_type count) const noexcept { return span{_begin + offset, count}; }
+    constexpr span subspan(size_type offset) const noexcept { return span{_begin + offset, (_end - _begin) - offset}; }
 
     auto as_bytes() const noexcept {
         if constexpr (std::is_const_v<T>) {

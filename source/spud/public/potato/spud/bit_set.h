@@ -19,6 +19,8 @@ namespace up {
         bit_set(bit_set const&) = delete;
         bit_set& operator=(bit_set const&) = delete;
 
+        inline size_type capacity() const noexcept { return _elemSize * bits; }
+
         inline bit_set(bit_set&& rhs) noexcept;
         inline bit_set& operator=(bit_set&&) noexcept;
 
@@ -27,7 +29,9 @@ namespace up {
         inline bit_set& reset(index_type index) noexcept;
 
         inline bool operator==(bit_set const& rhs) const noexcept;
+        inline bool has_all(bit_set const& rhs) const noexcept;
 
+        inline bit_set clone() const;
         inline bit_set& resize(size_type capacity);
 
     private:
@@ -35,7 +39,7 @@ namespace up {
         static constexpr size_t bits = sizeof(element) * 8;
 
         element* _elems = nullptr;
-        size_type _capacity = 0;
+        size_type _elemSize = 0;
     };
 
     bit_set::bit_set(size_type capacity) {
@@ -46,21 +50,21 @@ namespace up {
         delete[] _elems;
     }
 
-    bit_set::bit_set(bit_set&& rhs) noexcept : _elems(rhs._elems), _capacity(rhs._capacity) {
+    bit_set::bit_set(bit_set&& rhs) noexcept : _elems(rhs._elems), _elemSize(rhs._elemSize) {
         rhs._elems = nullptr;
-        rhs._capacity = 0;
+        rhs._elemSize = 0;
     }
 
     bit_set& bit_set::operator=(bit_set&& rhs) noexcept {
         UP_SPUD_ASSERT(this != &rhs, "cannot move a bit_set over itself");
         _elems = rhs._elems;
-        _capacity = rhs._capacity;
+        _elemSize = rhs._elemSize;
         rhs._elems = nullptr;
-        rhs._capacity = 0;
+        rhs._elemSize = 0;
     }
 
     bool bit_set::test(index_type index) const noexcept {
-        if (index * bits >= _capacity) {
+        if (index >= _elemSize * bits) {
             return false;
         }
         size_t elem = index / bits;
@@ -71,8 +75,8 @@ namespace up {
     }
 
     bit_set& bit_set::set(index_type index) {
-        if (index * bits >= _capacity) {
-            resize(index * bits + 1);
+        if (index >= _elemSize * bits) {
+            resize(index + 1);
         }
         size_t elem = index / bits;
         size_t bit = index - (elem * bits);
@@ -83,7 +87,7 @@ namespace up {
     }
 
     bit_set& bit_set::reset(index_type index) noexcept {
-        if (index * bits >= _capacity) {
+        if (index >= _elemSize * bits) {
             return *this;
         }
         size_t elem = index / bits;
@@ -95,7 +99,7 @@ namespace up {
     }
 
     bool bit_set::operator==(bit_set const& rhs) const noexcept {
-        size_type common = _capacity > rhs._capacity ? rhs._capacity : _capacity;
+        size_type common = _elemSize > rhs._elemSize ? rhs._elemSize : _elemSize;
         for (size_type index = 0; index != common; ++index) {
             element& left = _elems[index];
             element& right = rhs._elems[index];
@@ -104,8 +108,8 @@ namespace up {
             }
         }
 
-        bit_set const& remainder = _capacity > rhs._capacity ? *this : rhs;
-        for (size_t index = common; index != remainder._capacity; ++index) {
+        bit_set const& remainder = _elemSize > rhs._elemSize ? *this : rhs;
+        for (size_t index = common; index != remainder._elemSize; ++index) {
             element& el = remainder._elems[index];
             if (el != element(0)) {
                 return false;
@@ -115,19 +119,56 @@ namespace up {
         return true;
     }
 
-    bit_set& bit_set::resize(size_type capacity) {
-        if (capacity >= _capacity) {
-            element* elems = new element[capacity];
-
-            std::memcpy(elems, _elems, _capacity * sizeof(element));
-
-            std::memset(elems + _capacity, 0, (capacity - _capacity) * sizeof(element));
-
-            delete[] _elems;
-
-            _elems = elems;
-            _capacity = capacity;
+    bool bit_set::has_all(bit_set const& rhs) const noexcept {
+        size_type common = _elemSize > rhs._elemSize ? rhs._elemSize : _elemSize;
+        for (size_type index = 0; index < common; ++index) {
+            element& left = _elems[index];
+            element& right = rhs._elems[index];
+            if ((left & right) != right) {
+                return false;
+            }
         }
+
+        for (size_t index = common; index < rhs._elemSize; ++index) {
+            element& el = rhs._elems[index];
+            if (el != element(0)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bit_set bit_set::clone() const {
+        bit_set rs;
+        rs._elemSize = _elemSize;
+        rs._elems = new element[_elemSize];
+        std::memcpy(rs._elems, _elems, _elemSize * sizeof(element));
+        return rs;
+    }
+
+    bit_set& bit_set::resize(size_type capacity) {
+        size_t const existingCapacity = _elemSize * bits;
+        if (capacity == existingCapacity) {
+            return *this;
+        }
+
+        size_t const newSize = (capacity + bits - 1) / bits;
+        element* newElems = new element[newSize];
+
+        if (capacity > existingCapacity) {
+            std::memcpy(newElems, _elems, _elemSize * sizeof(element));
+            std::memset(newElems + _elemSize, 0, (newSize - _elemSize) * sizeof(element));
+        }
+        else if (capacity < existingCapacity) {
+            std::memcpy(newElems, _elems, newSize * sizeof(element));
+        }
+
+        delete[] _elems;
+
+        _elems = newElems;
+        _elemSize = newSize;
+
         return *this;
     }
 } // namespace up
