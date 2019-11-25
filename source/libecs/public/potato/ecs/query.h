@@ -107,7 +107,7 @@ namespace up {
         for (auto const& match : _matches) {
             for (auto const& chunk : world.getChunks(match.archetype)) {
                 for (unsigned index = 0; index < chunk->header.entities; ++index) {
-                    callback(*static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices]))...);
+                    callback(*(static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices])) + index)...);
                 }
             }
         }

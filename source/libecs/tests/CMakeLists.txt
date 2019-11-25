@@ -1,5 +1,6 @@
 add_executable(potato_libecs_test
     main.cpp
+    test_query.cpp
     test_world.cpp
 )
 
