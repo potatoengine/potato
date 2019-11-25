@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "_export.h"
 #include "common.h"
 #include "potato/spud/zstring_view.h"
 #include "potato/spud/hash_fnv1a.h"
@@ -19,12 +20,18 @@ namespace up {
         using Destroy = void (*)(void* mem) noexcept;
 
         /// Creates a ComponentMeta; should only be used by the UP_COMPONENT macro
+        ///
         template <typename Component>
         static constexpr auto construct(zstring_view name) noexcept -> ComponentMeta;
 
         /// Retrieves the ComponentMeta for a given type
+        ///
         template <typename Component>
         static constexpr auto get() noexcept -> ComponentMeta const*;
+
+        /// Assigns a unique system-wide ID to the component.
+        ///
+        UP_ECS_API auto allocateId() noexcept -> ComponentMeta&;
 
         ComponentId id = ComponentId::Unknown;
         Copy copy = nullptr;
@@ -33,12 +40,6 @@ namespace up {
         uint32 size = 0;
         uint32 alignment = 0;
         zstring_view name;
-
-        auto allocateId() noexcept -> ComponentMeta& {
-            static std::atomic<std::underlying_type_t<ComponentId>> _next{0};
-            id = static_cast<ComponentId>(++_next);
-            return *this;
-        }
     };
 
     namespace _detail {

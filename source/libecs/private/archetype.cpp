@@ -11,8 +11,10 @@
 
 up::ArchetypeMapper::ArchetypeMapper() {
     // Archetype 0 is the empty archetype
-    _archetypes.emplace_back();
-    _components.emplace_back();
+    //
+    auto id = _beginArchetype({});
+    UP_ASSERT(id == ArchetypeId::Empty);
+    _finalizeArchetype(id);
 }
 
 void up::ArchetypeMapper::_bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept {
