@@ -81,21 +81,34 @@ namespace up {
         return meta;
     }
 
-    template <typename ComponentT>
-    constexpr auto ComponentMeta::get() noexcept -> ComponentMeta const* {
-        return &_detail::MetaHolder<litexx::remove_cvref_t<ComponentT>>::meta;
-    }
-
-/// Registers a type as a Component and creates an associated ComponentMeta
-#define UP_COMPONENT(ComponentType, ...) \
-    template <> \
-    struct up::_detail::MetaHolder<ComponentType> { \
-        __VA_ARGS__ inline static const up::ComponentMeta meta = up::ComponentMeta::construct<ComponentType>(#ComponentType).allocateId(); \
-    };
-
     /// Finds the unique ComponentId for a given Component type
+    ///
     template <typename ComponentT>
     constexpr auto getComponentId() noexcept -> ComponentId {
-        return _detail::MetaHolder<litexx::remove_cvref_t<ComponentT>>::meta.id;
+        return ComponentMeta::get<ComponentT>()->id;
     }
+
+    template <typename ComponentT>
+    constexpr auto ComponentMeta::get() noexcept -> ComponentMeta const* {
+        return _detail::MetaHolder<litexx::remove_cvref_t<ComponentT>>::get();
+    }
+
+/// Declare a type is a Component and can be accessed via ComponentMeta::get()
+///
+#define UP_DECLARE_COMPONENT(ComponentType, ...) \
+    template <> \
+    struct ::up::_detail::MetaHolder<ComponentType> { \
+        __VA_ARGS__ static up::ComponentMeta const meta; \
+        __VA_ARGS__ static auto get() noexcept -> ComponentMeta const*; \
+    }; \
+
+/// Registers a type with the component manager
+///
+#define UP_DEFINE_COMPONENT(ComponentType, ...) \
+    ::up::ComponentMeta const ::up::_detail::MetaHolder<ComponentType>::meta = \
+        ::up::ComponentMeta::construct<ComponentType>(#ComponentType).allocateId(); \
+    auto ::up::_detail::MetaHolder<ComponentType>::get() noexcept->ComponentMeta const* { \
+        return &meta; \
+    }
+
 } // namespace up

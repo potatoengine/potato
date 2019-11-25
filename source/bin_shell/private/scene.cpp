@@ -38,12 +38,19 @@ namespace up::components {
     };
 } // namespace up::components
 
-UP_COMPONENT(up::components::Position);
-UP_COMPONENT(up::components::Rotation);
-UP_COMPONENT(up::components::Transform);
-UP_COMPONENT(up::components::Mesh);
-UP_COMPONENT(up::components::Wave);
-UP_COMPONENT(up::components::Spin);
+UP_DECLARE_COMPONENT(up::components::Position);
+UP_DECLARE_COMPONENT(up::components::Rotation);
+UP_DECLARE_COMPONENT(up::components::Transform);
+UP_DECLARE_COMPONENT(up::components::Mesh);
+UP_DECLARE_COMPONENT(up::components::Wave);
+UP_DECLARE_COMPONENT(up::components::Spin);
+
+UP_DEFINE_COMPONENT(up::components::Position);
+UP_DEFINE_COMPONENT(up::components::Rotation);
+UP_DEFINE_COMPONENT(up::components::Transform);
+UP_DEFINE_COMPONENT(up::components::Mesh);
+UP_DEFINE_COMPONENT(up::components::Wave);
+UP_DEFINE_COMPONENT(up::components::Spin);
 
 up::Scene::Scene() : _world(new_box<World>()) {
 }

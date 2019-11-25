@@ -21,10 +21,15 @@ namespace {
     };
 } // namespace
 
-UP_COMPONENT(Test1);
-UP_COMPONENT(Second);
-UP_COMPONENT(Another);
-UP_COMPONENT(Counter);
+UP_DECLARE_COMPONENT(Test1);
+UP_DECLARE_COMPONENT(Second);
+UP_DECLARE_COMPONENT(Another);
+UP_DECLARE_COMPONENT(Counter);
+
+UP_DEFINE_COMPONENT(Test1);
+UP_DEFINE_COMPONENT(Second);
+UP_DEFINE_COMPONENT(Another);
+UP_DEFINE_COMPONENT(Counter);
 
 DOCTEST_TEST_SUITE("[potato][ecs] Query") {
     using namespace up;

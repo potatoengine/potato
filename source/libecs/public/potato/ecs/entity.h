@@ -12,4 +12,4 @@ namespace up {
     };
 }
 
-UP_COMPONENT(up::Entity, UP_ECS_API);
+UP_DECLARE_COMPONENT(up::Entity, UP_ECS_API);
