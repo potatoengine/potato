@@ -6,30 +6,29 @@
 #include "potato/spud/utility.h"
 #include "potato/spud/sort.h"
 #include "potato/spud/find.h"
+#include "potato/spud/bit_set.h"
 #include "potato/runtime/assertion.h"
 
 up::ArchetypeMapper::ArchetypeMapper() {
     // Archetype 0 is the empty archetype
     _archetypes.emplace_back();
+    _components.emplace_back();
 }
 
-auto up::ArchetypeMapper::_matchArchetype(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool {
+void up::ArchetypeMapper::_bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept {
     UP_ASSERT(componentIds.size() == offsets.size());
 
     auto const layout = layoutOf(archetype);
 
     for (ComponentId const component : componentIds) {
         auto const desc = find(layout, component, {}, &ChunkRowDesc::component);
-        if (desc == layout.end()) {
-            return false;
-        }
+        UP_ASSERT(desc != layout.end());
         offsets.front() = desc->offset;
         offsets.pop_front();
     }
-    return true;
 }
 
-auto up::ArchetypeMapper::_beginArchetype() -> ArchetypeId {
+auto up::ArchetypeMapper::_beginArchetype(bit_set components) -> ArchetypeId {
     // bump so Query objects know that the list of archetypes has changed
     //
     ++_version;
@@ -37,29 +36,29 @@ auto up::ArchetypeMapper::_beginArchetype() -> ArchetypeId {
     // allocate a new archetype and associated id
     //
     auto id = ArchetypeId(_archetypes.size());
-    auto& archData = *_archetypes.emplace_back();
-
-    archData.chunksOffset = static_cast<uint32>(_chunks.size());
-    archData.layoutOffset = static_cast<uint32>(_layout.size());
+    _archetypes.push_back({static_cast<uint32>(_chunks.size()), static_cast<uint32>(_layout.size())});
+    _components.push_back(std::move(components));
 
     // we'll always include the EntityId in the layout
     //
     auto const entityMeta = ComponentMeta::get<Entity>();
     _layout.push_back({entityMeta->id, entityMeta, 0, static_cast<uint16>(entityMeta->size)});
     _layout.back().meta = entityMeta;
+    _components.back().set(to_underlying(entityMeta->id));
 
     return id;
 }
 
 auto up::ArchetypeMapper::_finalizeArchetype(ArchetypeId archetype) noexcept -> ArchetypeId {
     auto& archData = _archetypes[to_underlying(archetype)];
+    auto& compSet = _components[to_underlying(archetype)];
     archData.layoutLength = static_cast<uint16>(_layout.size() - archData.layoutOffset);
     auto const layout = _layout.subspan(archData.layoutOffset, archData.layoutLength);
 
-    // sort rows by alignment for ideal packing
+    // sort rows by alignment for ideal packing (do not sort the Entity component)
     //
     up::sort(
-        layout, {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
+        layout.subspan(1), {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
 
     // calculate total size of all components
     //
@@ -83,39 +82,38 @@ auto up::ArchetypeMapper::_finalizeArchetype(ArchetypeId archetype) noexcept -> 
         row.offset = static_cast<uint32>(offset);
         offset += row.width * archData.maxEntitiesPerChunk;
         UP_ASSERT(offset <= sizeof(Chunk::data));
+
+        compSet.set(to_underlying(row.component));
     }
+
+    // sort all rows by component id
+    //
+    up::sort(layout.subspan(1), {}, &ChunkRowDesc::component);
 
     return archetype;
 }
 
-template <typename P>
-auto up::ArchetypeMapper::_findArchetype(P&& predicate) noexcept -> Archetype* {
-    for (Archetype& arch : _archetypes) {
-        auto const layout = _layout.subspan(arch.layoutOffset, arch.layoutLength);
-        if (predicate(layout, arch)) {
-            return &arch;
+auto up::ArchetypeMapper::_findArchetype(bit_set const& set) noexcept -> FindResult {
+    for (size_t index = 0; index != _archetypes.size(); ++index) {
+        if (_components[index] == set) {
+            return {true, static_cast<ArchetypeId>(index)};
         }
     }
-    return nullptr;
+    return {false, ArchetypeId::Empty};
 }
 
 auto up::ArchetypeMapper::acquireArchetype(view<ComponentMeta const*> components) -> ArchetypeId {
-    auto arch = _findArchetype([components](view<ChunkRowDesc> layout, Archetype const& arch) noexcept {
-        if (layout.size() - 1 /*Entity*/ != components.size()) {
-            return false;
-        }
-        for (ComponentMeta const* meta : components) {
-            if (!contains(layout, meta->id, {}, &ChunkRowDesc::component)) {
-                return false;
-            }
-        }
-        return true;
-    });
-    if (arch != nullptr) {
-        return static_cast<ArchetypeId>(arch - _archetypes.begin());
+    bit_set set;
+    for (ComponentMeta const* meta : components) {
+        set.set(to_underlying(meta->id));
+    }
+    set.set(to_underlying(getComponentId<Entity>()));
+
+    if (auto [found, arch] = _findArchetype(set); found) {
+        return arch;
     }
 
-    auto id = _beginArchetype();
+    auto id = _beginArchetype(std::move(set));
 
     // append all the other components
     //
@@ -127,28 +125,16 @@ auto up::ArchetypeMapper::acquireArchetype(view<ComponentMeta const*> components
 }
 
 auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional) -> ArchetypeId {
-    auto arch = _findArchetype([originalLayout = layoutOf(original), additional](view<ChunkRowDesc> layout, Archetype const& arch) noexcept {
-        if (layout.size() - 1 /*additional*/ != originalLayout.size() - 1 /*Entity*/) {
-            return false;
-        }
-        if (!contains(layout, additional->id, {}, &ChunkRowDesc::component)) {
-            return false;
-        }
-        for (ChunkRowDesc const& row : originalLayout) {
-            if (!contains(layout, row.component, {}, &ChunkRowDesc::component)) {
-                return false;
-            }
-        }
-        return true;
-    });
-    if (arch != nullptr) {
-        return static_cast<ArchetypeId>(arch - _archetypes.begin());
+    bit_set set = _components[to_underlying(original)].clone();
+    set.set(to_underlying(additional->id));
+
+    if (auto [found, arch] = _findArchetype(set); found) {
+        return arch;
     }
 
-    auto id = _beginArchetype();
-    _layout.pop_back(); // entity id
+    auto id = _beginArchetype(std::move(set));
     auto const& originalArch = _archetypes[to_underlying(original)];
-    for (int index = 0; index != originalArch.layoutLength; ++index) {
+    for (int index = 1/*Entity*/; index != originalArch.layoutLength; ++index) {
         _layout.push_back(_layout[originalArch.layoutOffset + index]);
     }
     _layout.push_back({additional->id, additional, 0, static_cast<uint16>(additional->size)});
@@ -157,25 +143,16 @@ auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMe
 }
 
 auto up::ArchetypeMapper::acquireArchetypeWithout(ArchetypeId original, ComponentId excluded) -> ArchetypeId {
-    auto arch = _findArchetype([originalLayout = layoutOf(original), excluded](view<ChunkRowDesc> layout, Archetype const& arch) noexcept {
-        if (layout.size() != originalLayout.size() - 2 /*Entity, excluded*/) {
-            return false;
-        }
-        for (ChunkRowDesc const& row : originalLayout) {
-            if (row.component == excluded || !contains(layout, row.component, {}, &ChunkRowDesc::component)) {
-                return false;
-            }
-        }
-        return true;
-    });
-    if (arch != nullptr) {
-        return static_cast<ArchetypeId>(arch - _archetypes.begin());
+    bit_set set = _components[to_underlying(original)].clone();
+    set.reset(to_underlying(excluded));
+
+    if (auto [found, arch] = _findArchetype(set); found) {
+        return arch;
     }
 
-    auto id = _beginArchetype();
-    _layout.pop_back(); // entity id
+    auto id = _beginArchetype(std::move(set));
     auto const& originalArch = _archetypes[to_underlying(original)];
-    for (int index = 0; index != originalArch.layoutLength; ++index) {
+    for (int index = 1/*Entity*/; index != originalArch.layoutLength; ++index) {
         auto const& row = _layout[originalArch.layoutOffset + index];
         if (row.component != excluded) {
             _layout.push_back(row);

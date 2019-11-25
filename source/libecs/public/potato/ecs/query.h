@@ -10,6 +10,8 @@
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/span.h"
 #include "potato/spud/traits.h"
+#include "potato/spud/bit_set.h"
+#include "potato/spud/utility.h"
 #include "potato/ecs/component.h"
 
 namespace up {
@@ -20,7 +22,7 @@ namespace up {
     public:
         static_assert(sizeof...(Components) != 0, "Empty Query objects are not allowed");
 
-        Query() = default;
+        Query();
 
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
         /// callback once for each Chunk belonging to the Archetypes, with appropriate pointers.
@@ -54,7 +56,16 @@ namespace up {
         uint32 _worldVersion = 0;
         vector<Match> _matches;
         size_t _matchIndex = 0;
+        bit_set _mask;
+        ComponentId const _components[sizeof...(Components)] = {};
     };
+
+    template <typename... Components>
+    Query<Components...>::Query() : _components{getComponentId<Components>()...} {
+        for (auto id : _components) {
+            _mask.set(to_underlying(id));
+        }
+    }
 
     template <typename... Components>
     template <typename Callback, typename Void>
@@ -76,7 +87,7 @@ namespace up {
         if (_worldVersion != currentVersion) {
             _worldVersion = currentVersion;
 
-            _matchIndex = world.archetypes().selectArchetypes<Components...>(_matchIndex, [this](ArchetypeId arch, view<int> offsets) {
+            _matchIndex = world.archetypes().selectArchetypes(_matchIndex, _mask, _components, [this](ArchetypeId arch, view<int> offsets) {
                 _matches.emplace_back();
                 Match& match = _matches.back();
 

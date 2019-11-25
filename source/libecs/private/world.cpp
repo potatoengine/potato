@@ -95,9 +95,11 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const* compone
         _copyTo(newArchetype, newChunk, newIndex, componentMeta->id, componentData);
 
         // remove old entity (must be gone before remap)
+        //
         _deleteEntity(entityId);
 
         // update mapping (must be done after delete)
+        //
         _entities.setArchetype(entityId, newArchetype, newChunkIndex, newIndex);
     }
 }

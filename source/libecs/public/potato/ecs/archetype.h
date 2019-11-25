@@ -4,9 +4,11 @@
 
 #include "_export.h"
 #include "component.h"
+#include "entity.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/utility.h"
+#include "potato/spud/bit_set.h"
 #include "potato/ecs/common.h"
 #include "potato/ecs/chunk.h"
 
@@ -48,13 +50,13 @@ namespace up {
         auto acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional) -> ArchetypeId;
         auto acquireArchetypeWithout(ArchetypeId original, ComponentId excluded) -> ArchetypeId;
 
-        template <typename... Components, typename Callback>
-        auto selectArchetypes(size_t start, Callback&& callback) const noexcept -> size_t {
-            ComponentId const components[sizeof...(Components)] = {getComponentId<Components>()...};
-            int offsets[sizeof...(Components)];
+        template <size_t ComponentCount, typename Callback>
+        auto selectArchetypes(size_t start, bit_set const& mask, ComponentId const (&components)[ComponentCount], Callback&& callback) const noexcept -> size_t {
+            int offsets[ComponentCount];
 
             for (auto index = start; index < _archetypes.size(); ++index) {
-                if (_matchArchetype(ArchetypeId(index), components, offsets)) {
+                if (_components[index].has_all(mask)) {
+                    _bindArchetypeOffets(ArchetypeId(index), components, offsets);
                     callback(ArchetypeId(index), offsets);
                 }
             }
@@ -69,15 +71,19 @@ namespace up {
         }
 
     private:
-        template <typename P>
-        auto _findArchetype(P&& predicate) noexcept -> Archetype*;
-        UP_ECS_API auto _matchArchetype(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool;
-        auto _beginArchetype() -> ArchetypeId;
+        struct FindResult {
+            bool success = false;
+            ArchetypeId archetype = ArchetypeId::Empty;
+        };
+        auto _findArchetype(bit_set const& set) noexcept -> FindResult;
+        UP_ECS_API void _bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept;
+        auto _beginArchetype(bit_set components) -> ArchetypeId;
         auto _finalizeArchetype(ArchetypeId archetype) noexcept -> ArchetypeId;
 
         uint32 _version = 0;
         vector<Chunk*> _chunks;
         vector<Archetype> _archetypes;
+        vector<bit_set> _components;
         vector<ChunkRowDesc> _layout;
     };
 } // namespace up
