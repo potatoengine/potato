@@ -78,6 +78,21 @@ namespace up {
         ///
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
+        /// Interrogate an entity and enumerate all of its components.
+        ///
+        template <typename Callback>
+        auto interrogateEntity(EntityId entity, Callback&& callback) const {
+            if (auto [success, archetype, chunkIndex, index] = _entities.tryParse(entity); success) {
+                auto const layout = _archetypes.layoutOf(archetype);
+                Chunk* const chunk = _archetypes.getChunk(archetype, chunkIndex);
+                for (ChunkRowDesc const& row : layout) {
+                    callback(entity, archetype, row.meta, (void*)(chunk->data + row.offset + row.width * index));
+                }
+                return true;
+            }
+            return false;
+        }
+
     private:
         struct AllocatedLocation {
             Chunk& chunk;

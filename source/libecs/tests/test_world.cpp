@@ -163,4 +163,26 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         queryTest1.select(world, [&found](Test1&) { found = true; });
         DOCTEST_CHECK(found);
     }
+
+    DOCTEST_TEST_CASE("Interroate") {
+        World world;
+
+        auto id = world.createEntity(Test1{'f'}, Another{1.0, 2.f} , Second{7.f, 'g'});
+
+        auto success = world.interrogateEntity(id, [](auto entity, auto archetype, auto component, auto data) {
+            if (component->id == getComponentId<Test1>()) {
+                DOCTEST_CHECK_EQ('f', static_cast<Test1 const*>(data)->a);
+            }
+            else if (component->id == getComponentId<Another>()) {
+                DOCTEST_CHECK_EQ(1.0, static_cast<Another const*>(data)->a);
+            }
+            else if (component->id == getComponentId<Second>()) {
+                DOCTEST_CHECK_EQ(7.f, static_cast<Second const*>(data)->b);
+            }
+            else {
+                DOCTEST_CHECK_EQ(getComponentId<Entity>(), component->id);
+            }
+        });
+        DOCTEST_CHECK(success);
+    }
 }

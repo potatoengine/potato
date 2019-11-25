@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "_export.h"
 #include "common.h"
 #include "potato/spud/vector.h"
 
@@ -28,7 +29,7 @@ namespace up {
 
         auto isValid(EntityId) const noexcept -> bool;
         auto parse(EntityId entity) const noexcept -> ParseLocation;
-        auto tryParse(EntityId entity) const noexcept -> TryParseLocation;
+        UP_ECS_API auto tryParse(EntityId entity) const noexcept -> TryParseLocation;
 
         void setArchetype(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept;
         void setIndex(EntityId entity, uint16 newChunk, uint16 newIndex) noexcept;
