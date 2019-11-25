@@ -61,6 +61,7 @@ namespace up {
         _elemSize = rhs._elemSize;
         rhs._elems = nullptr;
         rhs._elemSize = 0;
+        return *this;
     }
 
     bool bit_set::test(index_type index) const noexcept {

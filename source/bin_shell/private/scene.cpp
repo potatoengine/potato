@@ -64,7 +64,7 @@ void up::Scene::create(rc<Model> cube) {
             components::Transform{},
             components::Mesh{cube},
             components::Wave{0, r},
-            components::Spin{glm::sin(r * 10.f) * 2.f - 1.f}
+            components::Spin{glm::sin(r) * 2.f - 1.f}
         );
     }
 

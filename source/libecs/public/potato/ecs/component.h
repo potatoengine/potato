@@ -6,8 +6,9 @@
 #include "common.h"
 #include "potato/spud/zstring_view.h"
 #include "potato/spud/hash_fnv1a.h"
-#include "potato/spud/traits.h"
+#include "litexx/type_traits.h"
 #include <atomic>
+#include <new>
 
 namespace up {
     /// Stores metadata about a Component type. This includes its size and alignment,
