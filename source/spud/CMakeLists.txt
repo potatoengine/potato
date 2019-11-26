@@ -4,8 +4,8 @@ project(spud VERSION 0.1 LANGUAGES CXX)
 add_library(potato_spud INTERFACE)
 add_library(potato::spud ALIAS potato_spud)
 
-#include(up_set_common_properties)
-#up_set_common_properties(spud)
+include(up_set_common_properties)
+up_set_common_properties(potato_spud NO_NAME_TEST)
 
 target_link_libraries(potato_spud
     INTERFACE

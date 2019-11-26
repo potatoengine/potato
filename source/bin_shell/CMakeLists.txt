@@ -17,7 +17,7 @@ if(WIN32)
         potato::spud
         potato::librender
         potato::libecs
-        potato::reflex
+        potato::libreflex
         glm
         SDL2
         SDL2main
