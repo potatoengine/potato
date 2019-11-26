@@ -154,8 +154,6 @@ int up::ShellApp::initialize() {
 }
 
 void up::ShellApp::run() {
-    auto& imguiIO = ImGui::GetIO();
-
     std::chrono::high_resolution_clock clock;
 
     auto now = clock.now();

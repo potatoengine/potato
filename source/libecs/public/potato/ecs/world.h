@@ -3,6 +3,9 @@
 #pragma once
 
 #include "_export.h"
+#include "chunk.h"
+#include "entity_mapper.h"
+#include "archetype.h"
 #include "potato/ecs/component.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
@@ -10,27 +13,13 @@
 #include "potato/spud/box.h"
 
 namespace up {
-    template <typename... Components>
-    class Query;
-
     /// A world contains a collection of Entities, Archetypes, and their associated Components.
     ///
     /// Entities from different Worlds cannot interact.
+    ///
     class World {
     public:
-        using RawSelectSignature = void(size_t, EntityId const*, view<void*>);
-
-        struct Archetype;
-        struct Chunk;
-        struct Entity;
-        struct Layout;
-        struct Location;
-
-        /// Maximum number of Components that can be selected (used in a Query)
-        static constexpr uint32 maxSelectComponents = 64;
-
-        /// Maximum number of Components that can exist on an Archetype (and hence any single Entity)
-        static constexpr uint32 maxArchetypeComponents = 256;
+        using SelectSignature = void(ArchetypeId, view<int>);
 
         UP_ECS_API World();
         UP_ECS_API ~World();
@@ -38,24 +27,40 @@ namespace up {
         World(World&&) = delete;
         World& operator=(World&&) = delete;
 
-        UP_ECS_API view<box<Archetype>> archetypes() const noexcept;
+        /// Constant view into Archetype state.
+        ///
+        auto archetypes() const noexcept -> ArchetypeMapper const& {
+            return _archetypes;
+        }
+
+        /// Retrieve the chunks belonging to a specific archetype.
+        ///
+        /// @returns nullptr if the ArchetypeId is invalid
+        ///
+        auto getChunks(ArchetypeId arch) noexcept -> view<Chunk*> {
+            return _archetypes.chunksOf(arch);
+        }
 
         /// Creates a new Entity with the provided list of Component data
+        ///
         template <typename... Components>
         EntityId createEntity(Components const&... components) noexcept;
 
         /// Deletes an existing Entity
+        ///
         UP_ECS_API void deleteEntity(EntityId entity) noexcept;
 
         /// Adds a new Component to an existing Entity.
         ///
         /// Changes the Entity's Archetype and home Chunk
+        ///
         template <typename Component>
         void addComponent(EntityId entityId, Component const& component) noexcept;
 
         /// Removes a Component from an existing Entity.
         ///
         /// Changes the Entity's Archetype and home Chunk
+        ///
         UP_ECS_API void removeComponent(EntityId entityId, ComponentId componentId) noexcept;
 
         /// Retrieves a pointer to a Component on the specified Entity.
@@ -63,44 +68,58 @@ namespace up {
         /// This is typically a slow operation. It will incur several table lookups
         /// and searches. This should only be used by tools and debug aids, typically,
         /// and a Query should be used for runtime code.
+        ///
         template <typename Component>
         Component* getComponentSlow(EntityId entity) noexcept;
 
         /// Retrieves a pointer to a Component on the specified Entity.
         ///
         /// This is a type-unsafe variant of getComponentSlow.
+        ///
         UP_ECS_API void* getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept;
 
-        UP_ECS_API void selectRaw(view<ComponentId> sortedComponents, view<ComponentId> callbackComponents, delegate_ref<RawSelectSignature> callback) const;
+        /// Interrogate an entity and enumerate all of its components.
+        ///
+        template <typename Callback>
+        auto interrogateEntity(EntityId entity, Callback&& callback) const {
+            if (auto [success, archetype, chunkIndex, index] = _entities.tryParse(entity); success) {
+                auto const layout = _archetypes.layoutOf(archetype);
+                Chunk* const chunk = _archetypes.getChunk(archetype, chunkIndex);
+                for (ChunkRowDesc const& row : layout) {
+                    callback(entity, archetype, row.meta, (void*)(chunk->data + row.offset + row.width * index));
+                }
+                return true;
+            }
+            return false;
+        }
 
     private:
+        struct AllocatedLocation {
+            Chunk& chunk;
+            uint16 chunkIndex;
+            uint16 index;
+        };
+
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
-        UP_ECS_API EntityId _allocateEntityId(uint32 archetypeIndex, uint32 entityIndex) noexcept;
-        UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const* componentMeta, void const* componentData) noexcept;
+        UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept;
 
-        void _deleteLocation(Location const& location) noexcept;
-        void _populateArchetype(uint32 archetypeIndex, view<ComponentMeta const*> components);
-        static void _calculateLayout(Archetype& archetype, size_t size);
-        bool _matchArchetype(uint32 archetypeIndex, view<ComponentId> sortedComponents) const noexcept;
-        void _selectChunksRaw(uint32 archetypeIndex, view<ComponentId> components, delegate_ref<RawSelectSignature> callback) const;
-        void _recycleEntityId(EntityId entity) noexcept;
-        uint32 _findArchetypeIndex(view<ComponentMeta const*> components) noexcept;
-        box<Chunk> _allocateChunk();
-        void _recycleChunk(box<Chunk>);
-        bool _tryGetLocation(EntityId entityId, Location& out) const noexcept;
+        auto _allocateEntity(ArchetypeId archetype) -> AllocatedLocation;
+        void _deleteEntity(EntityId entity);
 
-        static constexpr uint32 freeEntityIndex = static_cast<uint32>(-1);
+        void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex);
+        void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex);
+        void _copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData);
+        void _destroyAt(ArchetypeId arch, Chunk& chunk, int index);
 
-        vector<Entity> _entityMapping;
-        vector<box<Archetype>> _archetypes;
-        box<Chunk> _freeChunkHead;
-        uint32 _freeEntityHead = freeEntityIndex;
+        EntityMapper _entities;
+        ArchetypeMapper _archetypes;
+        ChunkAllocator _chunks;
     };
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentMeta const* componentMetas[] = {ComponentMeta::get<Components>()...};
-        void const* componentData[] = {&components...};
+        ComponentMeta const* const componentMetas[] = {&ComponentMeta::get<Components>()...};
+        void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
     }
@@ -113,6 +132,5 @@ namespace up {
     template <typename Component>
     void World::addComponent(EntityId entityId, Component const& component) noexcept {
         _addComponentRaw(entityId, ComponentMeta::get<Component>(), &component);
-
     }
 } // namespace up

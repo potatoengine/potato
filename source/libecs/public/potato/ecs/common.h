@@ -6,7 +6,7 @@
 
 namespace up {
     /// Unique identifier for an Archetype
-    enum class ArchetypeId : uint32 { Unknown = 0 };
+    enum class ArchetypeId : uint32 { Empty = 0 };
 
     /// Unique identifier for a Component
     enum class ComponentId : uint64 { Unknown = 0 };

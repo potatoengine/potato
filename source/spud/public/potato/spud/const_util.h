@@ -14,6 +14,23 @@ namespace up {
         struct reduce_t<F, V, R...> { static constexpr auto value = F<V, reduce_t<F, R...>::value>::value; };
     } // _detail
 
+    // Stores an integer sequence of offsets
+    //
+    template <typename T, T... Values>
+    struct value_list {};
+
+    // Fetches a value at a specific index from a value_list
+    //
+    template <int N, typename Values>
+    struct value_at;
+    template <typename T, T Value, T... Rest>
+    struct value_at<0, value_list<T, Value, Rest...>> { static constexpr T value = Value; };
+    template <typename T, int N, T Value, T... Rest>
+    struct value_at<N, value_list<T, Value, Rest...>> { static constexpr T value = value_at<N - 1, value_list<T, Rest...>>::value; };
+
+    template <int N, typename Values>
+    constexpr auto value_at_v = value_at<N, Values>::value;
+
     template <auto L, auto R>
     struct max_f { static constexpr auto value = L < R ? R : L; };
 

@@ -51,6 +51,11 @@ DOCTEST_TEST_SUITE("[potato][spud] up::span") {
 
         DOCTEST_CHECK_EQ(sv.size(), 2);
         DOCTEST_CHECK_EQ(sv.front(), 2);
+
+        span tv = av.subspan(3);
+
+        DOCTEST_CHECK_EQ(tv.size(), 2);
+        DOCTEST_CHECK_EQ(tv.front(), 5);
     }
 
     DOCTEST_TEST_CASE("span as_bytes") {

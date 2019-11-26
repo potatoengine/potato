@@ -1,65 +1,38 @@
 #include "potato/ecs/world.h"
 #include "potato/ecs/query.h"
+#include "potato/ecs/entity.h"
 #include <doctest/doctest.h>
 
-struct Test1 {
-    char a;
-};
-struct Second {
-    float b;
-    char a;
-};
-struct Another {
-    double a;
-    float b;
-};
-struct Counter {
-    int value;
-    char padding[128];
-};
+namespace {
+    struct Test1 {
+        char a;
+    };
+    struct Second {
+        float b;
+        char a;
+    };
+    struct Another {
+        double a;
+        float b;
+    };
+    struct Counter {
+        int value;
+        char padding[128];
+    };
+} // namespace
 
-UP_COMPONENT(Test1);
-UP_COMPONENT(Second);
-UP_COMPONENT(Another);
-UP_COMPONENT(Counter);
+UP_DECLARE_COMPONENT(Test1);
+UP_DECLARE_COMPONENT(Second);
+UP_DECLARE_COMPONENT(Another);
+UP_DECLARE_COMPONENT(Counter);
+
+UP_DEFINE_COMPONENT(Test1);
+UP_DEFINE_COMPONENT(Second);
+UP_DEFINE_COMPONENT(Another);
+UP_DEFINE_COMPONENT(Counter);
 
 DOCTEST_TEST_SUITE("[potato][ecs] World") {
     using namespace up;
-
-    DOCTEST_TEST_CASE("Archetype selects") {
-        World world;
-
-        world.createEntity(Test1{'f'}, Second{7.f, 'g'});
-        world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
-        world.createEntity(Second{-2.f, 'h'}, Another{2.f, 1.f});
-        world.createEntity(Test1{'j'}, Another{3.f, 4.f});
-
-        // Exactly two of the entities should be in the same archetype
-        DOCTEST_CHECK_EQ(3, world.archetypes().size());
-
-        size_t invokeCount = 0;
-        size_t entityCount = 0;
-        float weight = 0;
-
-        Query<Second> query;
-        query.select(world, [&](size_t count, EntityId const*, Second* second) {
-            ++invokeCount;
-            entityCount += count;
-
-            for (size_t index = 0; index != count; ++index) {
-                weight += second[index].b;
-            }
-        });
-
-        // Only two archetypes should have matches
-        DOCTEST_CHECK_EQ(2, invokeCount);
-
-        // Three total entities between the two archetypes should exist that match
-        DOCTEST_CHECK_EQ(3, entityCount);
-
-        // Ensure we're storing/retrieving correct values
-        DOCTEST_CHECK_EQ(14.f, weight);
-    }
 
     DOCTEST_TEST_CASE("Direct component access") {
         World world;
@@ -80,12 +53,12 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         EntityId first = world.createEntity(Test1{'f'}, Second{7.f, 'g'});
         EntityId second = world.createEntity(Test1{'h'}, Second{-1.f, 'i'});
 
-        Query<Test1> query;
-        query.select(world, ([&](size_t count, EntityId const* ids, Test1*) {
+        Query<Entity const, Test1> query;
+        query.selectChunks(world, [&](size_t count, Entity const* entities, Test1*) {
             DOCTEST_CHECK_EQ(2, count);
-            DOCTEST_CHECK_EQ(first, ids[0]);
-            DOCTEST_CHECK_EQ(second, ids[1]);
-        }));
+            DOCTEST_CHECK_EQ(first, entities[0].id);
+            DOCTEST_CHECK_EQ(second, entities[1].id);
+        });
     }
 
     DOCTEST_TEST_CASE("Chunks") {
@@ -103,7 +76,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         uint64 sum = 0;
 
         Query<Counter> query;
-        query.select(world, [&](size_t count, EntityId const*, Counter* counters) {
+        query.selectChunks(world, [&](size_t count, Counter* counters) {
             ++chunks;
             total += count;
             for (size_t i = 0; i != count; ++i) {
@@ -119,14 +92,32 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
     DOCTEST_TEST_CASE("Creates and Deletes") {
         World world;
 
+        // create some dummy entities
+        //
         EntityId foo = world.createEntity(Test1{'a'});
         world.createEntity(Test1{'b'});
         EntityId bar = world.createEntity(Test1{'c'});
         world.createEntity(Test1{'d'});
-        world.createEntity(Test1{'e'});
+        EntityId last = world.createEntity(Test1{'e'});
 
+        // delete some entities (not the last one!)
+        //
         world.deleteEntity(foo);
         world.deleteEntity(bar);
+
+        // ensure deleted entities are gone
+        //
+        DOCTEST_CHECK_EQ(nullptr, world.getComponentSlow<Test1>(foo));
+        DOCTEST_CHECK_EQ(nullptr, world.getComponentSlow<Test1>(bar));
+
+        // overwrite emptied locations
+        //
+        world.createEntity(Test1{'x'});
+        world.createEntity(Test1{'x'});
+
+        // ensure that the last entity was moved properly
+        //
+        DOCTEST_CHECK_EQ('e', world.getComponentSlow<Test1>(last)->a);
     }
 
     DOCTEST_TEST_CASE("Remove Component") {
@@ -137,17 +128,17 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
         EntityId id = world.createEntity(Test1{}, Second{});
 
-        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
+        querySecond.select(world, [&found](Second&) { found = true; });
         DOCTEST_CHECK(found);
 
         world.removeComponent(id, getComponentId<Second>());
 
         found = false;
-        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
+        querySecond.select(world, [&found](Second&) { found = true; });
         DOCTEST_CHECK_FALSE(found);
 
         found = false;
-        queryTest1.select(world, [&found](size_t, EntityId const*, Test1*) { found = true; });
+        queryTest1.select(world, [&found](Test1&) { found = true; });
         DOCTEST_CHECK(found);
     }
 
@@ -159,17 +150,39 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
         EntityId id = world.createEntity(Test1{});
 
-        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
+        querySecond.select(world, [&found](Second&) { found = true; });
         DOCTEST_CHECK_FALSE(found);
 
         world.addComponent(id, Second{});
 
         found = false;
-        querySecond.select(world, [&found](size_t, EntityId const*, Second*) { found = true; });
+        querySecond.select(world, [&found](Second&) { found = true; });
         DOCTEST_CHECK(found);
 
         found = false;
-        queryTest1.select(world, [&found](size_t, EntityId const*, Test1*) { found = true; });
+        queryTest1.select(world, [&found](Test1&) { found = true; });
         DOCTEST_CHECK(found);
+    }
+
+    DOCTEST_TEST_CASE("Interroate") {
+        World world;
+
+        auto id = world.createEntity(Test1{'f'}, Another{1.0, 2.f} , Second{7.f, 'g'});
+
+        auto success = world.interrogateEntity(id, [](auto entity, auto archetype, auto component, auto data) {
+            if (component->id == getComponentId<Test1>()) {
+                DOCTEST_CHECK_EQ('f', static_cast<Test1 const*>(data)->a);
+            }
+            else if (component->id == getComponentId<Another>()) {
+                DOCTEST_CHECK_EQ(1.0, static_cast<Another const*>(data)->a);
+            }
+            else if (component->id == getComponentId<Second>()) {
+                DOCTEST_CHECK_EQ(7.f, static_cast<Second const*>(data)->b);
+            }
+            else {
+                DOCTEST_CHECK_EQ(getComponentId<Entity>(), component->id);
+            }
+        });
+        DOCTEST_CHECK(success);
     }
 }

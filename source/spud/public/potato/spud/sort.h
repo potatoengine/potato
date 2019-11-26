@@ -7,7 +7,7 @@
 
 namespace up {
     template <typename Range, typename Compare = less, typename Projection = identity>
-    constexpr void sort(Range& range, Compare const& compare = {}, Projection const& projection = {}) noexcept(noexcept(project(projection, *begin(range)))) {
+    constexpr void sort(Range&& range, Compare const& compare = {}, Projection const& projection = {}) noexcept(noexcept(project(projection, *begin(range)))) {
         auto first = begin(range);
         auto last = end(range);
 

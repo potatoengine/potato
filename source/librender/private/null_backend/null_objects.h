@@ -104,7 +104,7 @@ namespace up::null {
     public:
         GpuTextureType type() const noexcept override { return GpuTextureType::Texture2D; }
         GpuFormat format() const noexcept override { return GpuFormat::Unknown; }
-        glm::ivec3 dimensions() const noexcept override { return {0, 0, 0}; }
+        glm::ivec3 dimensions() const noexcept override { return {1, 1, 0}; }
     };
 
     class SamplerNull final : public GpuSampler {

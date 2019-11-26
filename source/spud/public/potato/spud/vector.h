@@ -97,10 +97,8 @@ namespace up {
         template <typename... ParamsT>
         auto emplace_back(ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator>;
 
-        iterator insert(iterator pos, const_reference value) { return emplace(pos, value); }
-        iterator insert(iterator pos, rvalue_reference value) { return emplace(pos, std::move(value)); }
         template <typename InsertT>
-        iterator insert(const_iterator pos, InsertT&& value) { return emplace(pos, std::forward<InsertT>(value)); }
+        auto insert(const_iterator pos, InsertT&& value) -> enable_if_t<std::is_constructible_v<T, decltype(value)>, iterator> { return emplace(pos, std::forward<InsertT>(value)); }
 
         template <typename IteratorT, typename SentinelT>
         iterator insert(const_iterator pos, IteratorT begin, SentinelT end);
@@ -357,12 +355,15 @@ namespace up {
         if (_last == _sentinel) {
             auto const size = _last - _first;
 
+            // temp
+            auto temp = value_type(std::forward<ParamsT>(params)...);
+
             // grow
             auto const newCapacity = _grow(size + 1);
             T* tmp = _allocate(newCapacity);
 
             // insert new elements
-            new (tmp + size) value_type(std::forward<ParamsT>(params)...);
+            new (tmp + size) value_type(std::move(temp));
 
             // move over old elements
             unitialized_move_n(_first, size, tmp);
