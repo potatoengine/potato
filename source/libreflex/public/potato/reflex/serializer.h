@@ -4,6 +4,7 @@
 
 #include "traits.h"
 #include "metadata.h"
+#include "_wrapper.h"
 
 namespace up::reflex {
     template <typename DerivedType>
@@ -16,17 +17,29 @@ namespace up::reflex {
 
         template <typename ObjectType, typename ClassType, typename FieldType>
         constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field) {
-            auto typeInfo = getTypeInfo<FieldType>();
+            auto typeInfo = getTypeInfo<_detail::ReflectType<FieldType>>();
             if (static_cast<DerivedType*>(this)->enterField(name, typeInfo) == Action::Enter) {
                 value(object.*field);
                 static_cast<DerivedType*>(this)->leaveField(name, typeInfo);
             }
         }
 
+        template <typename ObjectType, typename FieldType>
+        constexpr void field(zstring_view name, ObjectType& object, FieldType& field) {
+            auto typeInfo = getTypeInfo<_detail::ReflectType<FieldType>>();
+            if (static_cast<DerivedType*>(this)->enterField(name, typeInfo) == Action::Enter) {
+                value(field);
+                static_cast<DerivedType*>(this)->leaveField(name, typeInfo);
+            }
+        }
+
         template <typename ValueType>
         void value(ValueType&& value) {
-            using Type = up::remove_cvref_t<ValueType>;
-            if constexpr (is_numeric_v<Type> || is_string_v<Type>) {
+            using Type = _detail::ReflectType<up::remove_cvref_t<ValueType>>;
+            if constexpr (_detail::IsReflectBinding<up::remove_cvref_t<ValueType>>) {
+                static_cast<DerivedType*>(this)->dispatch(_detail::TypeTag<Type>{}, value.getter, value.setter);
+            }
+            else if constexpr (is_numeric_v<Type> || is_string_v<Type>) {
                 static_cast<DerivedType*>(this)->handle(value);
             }
             else if constexpr (std::is_class_v<Type>) {

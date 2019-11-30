@@ -40,6 +40,8 @@ namespace up::reflex {
         void serialize_value(::up::reflex::_detail::TypeTag<up::remove_cvref_t<T>>, _up_ReflectObject& reflect, ::up::zstring_view name = #T)
 
     UP_REFLECT_TYPE(int) { reflect(); }
+    UP_REFLECT_TYPE(unsigned) { reflect(); }
+    UP_REFLECT_TYPE(size_t) { reflect(); }
     UP_REFLECT_TYPE(float) { reflect(); }
     UP_REFLECT_TYPE(double) { reflect(); }
 

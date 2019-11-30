@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "_tag.h"
 #include "serializer.h"
 #include <potato/spud/string_writer.h>
 #include <potato/spud/string_format.h>
@@ -50,6 +51,12 @@ namespace up::reflex {
             _current.pop_back();
         }
 
+        template <typename Tag, typename Getter, typename Setter>
+        void dispatch(Tag, Getter getter, Setter&&) {
+            auto&& tmp = getter();
+            serialize(tmp, *this);
+        }
+
         template <typename T>
         void handle(T&& value) {
             using BaseT = remove_cvref_t<T>;
@@ -62,6 +69,9 @@ namespace up::reflex {
                 }
                 else if constexpr (is_numeric_v<BaseT>) {
                     (*_current.back())[_fieldName.c_str()] = value;
+                }
+                else {
+                    (*_current.back())[_fieldName.c_str()] = nullptr;
                 }
             }
         }
@@ -105,6 +115,12 @@ namespace up::reflex {
 
         void leaveObject(TypeInfo info) noexcept {
             _current.pop_back();
+        }
+
+        template <typename T, typename Getter, typename Setter>
+        void dispatch(_detail::TypeTag<T>, Getter&&, Setter setter) {
+            auto tmp = current()[_fieldName.c_str()].get<T>();
+            setter(std::move(tmp));
         }
 
         template <typename T>

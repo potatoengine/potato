@@ -1,6 +1,8 @@
 #include "potato/reflex/reflect.h"
 #include "potato/reflex/serializer.h"
 #include "potato/reflex/json_serializer.h"
+#include "potato/reflex/container.h"
+#include "potato/spud/vector.h"
 #include <doctest/doctest.h>
 #include <sstream>
 
@@ -26,6 +28,7 @@ namespace {
         Fields xyz;
         float num;
         up::string name;
+        up::vector<int> vec;
     };
 
     UP_REFLECT_TYPE(Fields) {
@@ -38,6 +41,7 @@ namespace {
         reflect("xyz", &Complex::xyz);
         reflect("num", &Complex::num);
         reflect("name", &Complex::name);
+        reflect("vec", &Complex::vec);
     }
 } // namespace
 
@@ -52,18 +56,19 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         auto const big = Complex{
             {1, 2, 3},
             42.f,
-            "bob"};
+            "bob",
+            {4, 5, 6}};
 
         serialize(big, serializer);
 
         std::ostringstream ostr;
         ostr << root;
 
-        DOCTEST_CHECK_EQ(ostr.str(), R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3}})--");
+        DOCTEST_CHECK_EQ(ostr.str(), R"--({"name":"bob","num":42.0,"vec":{"size":3},"xyz":{"x":1,"y":2,"z":3}})--");
     }
 
     DOCTEST_TEST_CASE("deserialize struct from json") {
-        auto root = nlohmann::json::parse(R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3}})--");
+        auto root = nlohmann::json::parse(R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3},"vec":{"size":2}})--");
         auto serializer = JsonStreamDeserializer{root};
 
         Complex big;
@@ -76,6 +81,8 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         DOCTEST_CHECK_EQ(big.num, 42.f);
 
         DOCTEST_CHECK_EQ(big.name, "bob");
+
+        DOCTEST_CHECK_EQ(big.vec.size(), 2);
     }
 }
 
