@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "_tag.h"
 #include <potato/spud/zstring_view.h>
 #include <potato/spud/traits.h>
+#include <potato/spud/utility.h>
 
 namespace up::reflex {
     /// Metadata about a specific type.
@@ -18,7 +18,7 @@ namespace up::reflex {
 
     namespace _detail {
         template <typename T>
-        constexpr auto getTypeInfo(_detail::TypeTag<T>) noexcept -> TypeInfo {
+        constexpr auto getTypeInfo(tag<T>) noexcept -> TypeInfo {
             static_assert(std::is_same_v<T, remove_cvref_t<T>>);
             return TypeInfo{
                 {},
@@ -31,7 +31,7 @@ namespace up::reflex {
     template <typename T>
     constexpr auto getTypeInfo() noexcept -> TypeInfo {
         using _detail::getTypeInfo;
-        return getTypeInfo(_detail::TypeTag<remove_cvref_t<T>>{});
+        return getTypeInfo(tag<remove_cvref_t<T>>{});
     }
 
     /// Wrapper for a type
@@ -39,7 +39,7 @@ namespace up::reflex {
     struct TypedInfo {
         constexpr auto get() noexcept -> TypeInfo {
             using _detail::getTypeInfo;
-            return getTypeInfo(_detail::TypeTag<remove_cvref_t<T>>{});
+            return getTypeInfo(tag<remove_cvref_t<T>>{});
         }
     };
 } // namespace up::reflex

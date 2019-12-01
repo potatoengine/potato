@@ -37,7 +37,7 @@ namespace up::reflex {
         void value(ValueType&& value) {
             using Type = _detail::ReflectType<up::remove_cvref_t<ValueType>>;
             if constexpr (_detail::IsReflectBinding<up::remove_cvref_t<ValueType>>) {
-                static_cast<DerivedType*>(this)->dispatch(_detail::TypeTag<Type>{}, value.getter, value.setter);
+                static_cast<DerivedType*>(this)->dispatch(tag<Type>{}, value.getter, value.setter);
             }
             else if constexpr (is_numeric_v<Type> || is_string_v<Type>) {
                 static_cast<DerivedType*>(this)->handle(value);

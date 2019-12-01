@@ -4,12 +4,12 @@
 
 #include "_export.h"
 #include "_wrapper.h"
-#include "_tag.h"
 #include "metadata.h"
 #include "traits.h"
 #include <potato/spud/zstring_view.h>
 #include <potato/spud/string.h>
 #include <potato/spud/traits.h>
+#include <potato/spud/utility.h>
 
 namespace up::reflex {
 
@@ -33,11 +33,11 @@ namespace up::reflex {
 
     /// Defines reflection for a type
     #define UP_REFLECT_TYPE(T) \
-        constexpr auto getTypeInfo(::up::reflex::_detail::TypeTag<up::remove_cvref_t<T>>) noexcept->::up::reflex::TypeInfo { \
+        constexpr auto getTypeInfo(::up::tag<up::remove_cvref_t<T>>) noexcept->::up::reflex::TypeInfo { \
             return ::up::reflex::TypeInfo{#T, sizeof(up::remove_cvref_t<T>), alignof(up::remove_cvref_t<T>)}; \
         } \
         template <typename _up_ReflectObject> \
-        void serialize_value(::up::reflex::_detail::TypeTag<up::remove_cvref_t<T>>, _up_ReflectObject& reflect, ::up::zstring_view name = #T)
+        void serialize_value(::up::tag<up::remove_cvref_t<T>>, _up_ReflectObject& reflect, ::up::zstring_view name = #T)
 
     UP_REFLECT_TYPE(int) { reflect(); }
     UP_REFLECT_TYPE(unsigned) { reflect(); }
@@ -53,7 +53,7 @@ namespace up::reflex {
     void serialize(Type& value, Serializer& serializer) {
         using BaseType = up::remove_cvref_t<Type>;
         using WrapperType = _detail::SerializerWrapper<Type, Serializer, std::is_class_v<BaseType>>;
-        using TagType = _detail::TypeTag<BaseType>;
+        using TagType = tag<BaseType>;
 
         auto wrapper = WrapperType(value, serializer);
         serialize_value<WrapperType>(TagType{}, wrapper);
@@ -63,7 +63,7 @@ namespace up::reflex {
     template <typename Type, typename Reflector>
     void reflect(Reflector& reflector) {
         using WrapperType = _detail::ReflectorWrapper<Type, Reflector, std::is_class_v<Type>>;
-        using TagType = _detail::TypeTag<Type>;
+        using TagType = tag<Type>;
 
         auto wrapper = WrapperType(reflector);
         serialize_value<WrapperType>(TagType{}, wrapper);

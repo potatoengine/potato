@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "_tag.h"
 #include "serializer.h"
 #include <potato/spud/string_writer.h>
 #include <potato/spud/string_format.h>
@@ -118,7 +117,7 @@ namespace up::reflex {
         }
 
         template <typename T, typename Getter, typename Setter>
-        void dispatch(_detail::TypeTag<T>, Getter&&, Setter setter) {
+        void dispatch(tag<T>, Getter&&, Setter setter) {
             auto tmp = current()[_fieldName.c_str()].get<T>();
             setter(std::move(tmp));
         }

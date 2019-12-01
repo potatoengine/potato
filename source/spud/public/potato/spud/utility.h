@@ -79,6 +79,9 @@ namespace up {
     }
 
     template <typename T>
+    struct tag {};
+
+    template <typename T>
     class sequence {
     public:
         struct sentinel {};

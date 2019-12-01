@@ -5,15 +5,16 @@
 #include "reflect.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/preprocessor.h"
+#include "potato/spud/utility.h"
 
 namespace up::reflex {
     template <typename T>
-    constexpr auto getTypeInfo(_detail::TypeTag<vector<T>>) noexcept -> TypeInfo {
+    constexpr auto getTypeInfo(tag<vector<T>>) noexcept -> TypeInfo {
         return reflex::TypeInfo{"vector", sizeof(vector<T>), alignof(vector<T>)};
     }
 
     template <typename R, typename T>
-    void serialize_value(_detail::TypeTag<vector<T>>, R& reflect, zstring_view name = "vector") {
+    void serialize_value(tag<vector<T>>, R& reflect, zstring_view name = "vector") {
         reflect("size",
             [](vector<T> const& obj) noexcept -> typename vector<T>::size_type { return obj.size(); },
             [](vector<T>* obj, typename vector<T>::size_type size) { obj->resize(size); });
