@@ -1,6 +1,5 @@
 add_executable(potato_libreflex_tests
     main.cpp
-    test_metadata.cpp
     test_serialize.cpp
 )
 

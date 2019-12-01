@@ -29,16 +29,19 @@ namespace up::reflex {
         friend class SerializerBase<JsonStreamSerializer>;
 
     private:
-        Action enterField(zstring_view name, TypeInfo info) noexcept {
+        template <typename T>
+        Action enterField(tag<T>, zstring_view name) noexcept {
             _fieldName = name;
             return Action::Enter;
         }
 
-        void leaveField(zstring_view name, TypeInfo info) noexcept {
+        template <typename T>
+        void leaveField(tag<T>, zstring_view name) noexcept {
             _fieldName = {};
         }
 
-        Action enterObject(TypeInfo info) {
+        template <typename T>
+        Action enterObject(tag<T>) {
             if (_fieldName && !_current.empty()) {
                 auto& obj = (*_current.back())[_fieldName.c_str()] = nlohmann::json::object();
                 _current.push_back(&obj);
@@ -46,7 +49,8 @@ namespace up::reflex {
             return Action::Enter;
         }
 
-        void leaveObject(TypeInfo info) noexcept {
+        template <typename T>
+        void leaveObject(tag<T>) noexcept {
             _current.pop_back();
         }
 
@@ -89,7 +93,8 @@ namespace up::reflex {
         friend class SerializerBase<JsonStreamDeserializer>;
 
     private:
-        Action enterField(zstring_view name, TypeInfo info) noexcept {
+        template <typename T>
+        Action enterField(tag<T>, zstring_view name) noexcept {
             if (current().contains(name.c_str())) {
                 _fieldName = name;
                 return Action::Enter;
@@ -97,11 +102,13 @@ namespace up::reflex {
             return Action::Skip;
         }
 
-        constexpr void leaveField(zstring_view name, TypeInfo info) noexcept {
+        template <typename T>
+        constexpr void leaveField(tag<T>, zstring_view name) noexcept {
             _fieldName = {};
         }
 
-        Action enterObject(TypeInfo info) {
+        template <typename T>
+        Action enterObject(tag<T>) {
             if (_fieldName && !_current.empty() && current().is_object()) {
                 auto& obj = current()[_fieldName.c_str()];
                 if (obj.is_object()) {
@@ -112,7 +119,8 @@ namespace up::reflex {
             return Action::Skip;
         }
 
-        void leaveObject(TypeInfo info) noexcept {
+        template <typename T>
+        void leaveObject(tag<T>) noexcept {
             _current.pop_back();
         }
 

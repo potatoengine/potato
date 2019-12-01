@@ -27,10 +27,10 @@ namespace up::reflex::_detail {
     };
 
     template <typename T>
-    using ReflectType = typename ReflectTypeHelper<T>::Type;
+    using ReflectType = typename ReflectTypeHelper<remove_cvref_t<T>>::Type;
 
     template <typename T>
-    constexpr bool IsReflectBinding = ReflectTypeHelper<T>::IsBinding;
+    constexpr bool IsReflectBinding = ReflectTypeHelper<remove_cvref_t<T>>::IsBinding;
 
     // Creates the "public" interface inside of a reflect::serialize_value function
     //

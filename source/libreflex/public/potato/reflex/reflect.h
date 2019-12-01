@@ -4,7 +4,6 @@
 
 #include "_export.h"
 #include "_wrapper.h"
-#include "metadata.h"
 #include "traits.h"
 #include <potato/spud/zstring_view.h>
 #include <potato/spud/string.h>
@@ -33,11 +32,8 @@ namespace up::reflex {
 
     /// Defines reflection for a type
     #define UP_REFLECT_TYPE(T) \
-        constexpr auto getTypeInfo(::up::tag<up::remove_cvref_t<T>>) noexcept->::up::reflex::TypeInfo { \
-            return ::up::reflex::TypeInfo{#T, sizeof(up::remove_cvref_t<T>), alignof(up::remove_cvref_t<T>)}; \
-        } \
-        template <typename _up_ReflectObject> \
-        void serialize_value(::up::tag<up::remove_cvref_t<T>>, _up_ReflectObject& reflect, ::up::zstring_view name = #T)
+        constexpr auto typeName(::up::tag<up::remove_cvref_t<T>>) noexcept->::up::zstring_view { return #T; } \
+        template <typename _up_ReflectObject> void serialize_value(::up::tag<up::remove_cvref_t<T>>, _up_ReflectObject& reflect, ::up::zstring_view name = #T)
 
     UP_REFLECT_TYPE(int) { reflect(); }
     UP_REFLECT_TYPE(unsigned) { reflect(); }

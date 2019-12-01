@@ -9,8 +9,8 @@
 
 namespace up::reflex {
     template <typename T>
-    constexpr auto getTypeInfo(tag<vector<T>>) noexcept -> TypeInfo {
-        return reflex::TypeInfo{"vector", sizeof(vector<T>), alignof(vector<T>)};
+    constexpr auto typeName(tag<vector<T>>) noexcept -> zstring_view {
+        return "vector<T>";
     }
 
     template <typename R, typename T>

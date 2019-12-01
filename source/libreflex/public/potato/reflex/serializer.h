@@ -3,7 +3,6 @@
 #pragma once
 
 #include "traits.h"
-#include "metadata.h"
 #include "_wrapper.h"
 
 namespace up::reflex {
@@ -17,36 +16,35 @@ namespace up::reflex {
 
         template <typename ObjectType, typename ClassType, typename FieldType>
         constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field) {
-            auto typeInfo = getTypeInfo<_detail::ReflectType<FieldType>>();
-            if (static_cast<DerivedType*>(this)->enterField(name, typeInfo) == Action::Enter) {
+            using Type = _detail::ReflectType<FieldType>;
+            if (static_cast<DerivedType*>(this)->enterField(tag<Type>{}, name) == Action::Enter) {
                 value(object.*field);
-                static_cast<DerivedType*>(this)->leaveField(name, typeInfo);
+                static_cast<DerivedType*>(this)->leaveField(tag<Type>{}, name);
             }
         }
 
         template <typename ObjectType, typename FieldType>
         constexpr void field(zstring_view name, ObjectType& object, FieldType& field) {
-            auto typeInfo = getTypeInfo<_detail::ReflectType<FieldType>>();
-            if (static_cast<DerivedType*>(this)->enterField(name, typeInfo) == Action::Enter) {
+            using Type = _detail::ReflectType<FieldType>;
+            if (static_cast<DerivedType*>(this)->enterField(tag<Type>{}, name) == Action::Enter) {
                 value(field);
-                static_cast<DerivedType*>(this)->leaveField(name, typeInfo);
+                static_cast<DerivedType*>(this)->leaveField(tag<Type>{}, name);
             }
         }
 
         template <typename ValueType>
         void value(ValueType&& value) {
-            using Type = _detail::ReflectType<up::remove_cvref_t<ValueType>>;
-            if constexpr (_detail::IsReflectBinding<up::remove_cvref_t<ValueType>>) {
+            using Type = _detail::ReflectType<ValueType>;
+            if constexpr (_detail::IsReflectBinding<ValueType>) {
                 static_cast<DerivedType*>(this)->dispatch(tag<Type>{}, value.getter, value.setter);
             }
             else if constexpr (is_numeric_v<Type> || is_string_v<Type>) {
                 static_cast<DerivedType*>(this)->handle(value);
             }
             else if constexpr (std::is_class_v<Type>) {
-                auto typeInfo = getTypeInfo<Type>();
-                if (static_cast<DerivedType*>(this)->enterObject(typeInfo) == Action::Enter) {
+                if (static_cast<DerivedType*>(this)->enterObject(tag<Type>{}) == Action::Enter) {
                     serialize(value, *static_cast<DerivedType*>(this));
-                    static_cast<DerivedType*>(this)->leaveObject(typeInfo);
+                    static_cast<DerivedType*>(this)->leaveObject(tag<Type>{});
                 }
             }
             else {
