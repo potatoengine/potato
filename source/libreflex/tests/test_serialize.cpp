@@ -64,11 +64,11 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         std::ostringstream ostr;
         ostr << root;
 
-        DOCTEST_CHECK_EQ(ostr.str(), R"--({"name":"bob","num":42.0,"vec":{"size":3},"xyz":{"x":1,"y":2,"z":3}})--");
+        DOCTEST_CHECK_EQ(ostr.str(), R"--({"name":"bob","num":42.0,"vec":[4,5,6],"xyz":{"x":1,"y":2,"z":3}})--");
     }
 
     DOCTEST_TEST_CASE("deserialize struct from json") {
-        auto root = nlohmann::json::parse(R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3},"vec":{"size":2}})--");
+        auto root = nlohmann::json::parse(R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3},"vec":[4,6]})--");
         auto serializer = JsonStreamDeserializer{root};
 
         Complex big;
@@ -83,6 +83,8 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         DOCTEST_CHECK_EQ(big.name, "bob");
 
         DOCTEST_CHECK_EQ(big.vec.size(), 2);
+        DOCTEST_CHECK_EQ(big.vec.front(), 4);
+        DOCTEST_CHECK_EQ(big.vec.back(), 6);
     }
 }
 

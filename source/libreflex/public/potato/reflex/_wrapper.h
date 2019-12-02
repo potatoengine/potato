@@ -6,32 +6,6 @@
 #include <potato/spud/traits.h>
 
 namespace up::reflex::_detail {
-    template <typename T, typename Getter, typename Setter>
-    struct Binding {
-        using Type = T;
-
-        Getter getter;
-        Setter setter;
-    };
-
-    template <typename T>
-    struct ReflectTypeHelper {
-        using Type = T;
-        constexpr static bool IsBinding = false;
-    };
-
-    template <typename T, typename G, typename S>
-    struct ReflectTypeHelper<Binding<T, G, S>> {
-        using Type = T;
-        constexpr static bool IsBinding = true;
-    };
-
-    template <typename T>
-    using ReflectType = typename ReflectTypeHelper<remove_cvref_t<T>>::Type;
-
-    template <typename T>
-    constexpr bool IsReflectBinding = ReflectTypeHelper<remove_cvref_t<T>>::IsBinding;
-
     // Creates the "public" interface inside of a reflect::serialize_value function
     //
     template <typename Type, typename Serializer, bool IsClassType>
@@ -48,13 +22,8 @@ namespace up::reflex::_detail {
 
         template <typename Getter, typename Setter>
         constexpr auto operator()(zstring_view name, Getter getter, Setter setter) {
-            using ValueType = decltype(getter(this->_object));
-            auto g = [&object = _object, &getter]() -> decltype(auto) { return getter(object); };
-            auto s = [&object = _object, &setter](ValueType const& value) mutable {
-                setter(const_cast<std::remove_const_t<Type>*>(&object), value);
-            };
-            Binding<ValueType, decltype(g), decltype(s)> binding = {g, s};
-            return this->_serializer.field(name, this->_object, binding);
+            auto binding = reflex::bind<Type>(getter, setter);
+            return this->_serializer.field(name, this->_object, binding(this->_object));
         }
 
     protected:

@@ -17,6 +17,6 @@ namespace up::reflex {
     void serialize_value(tag<vector<T>>, R& reflect, zstring_view name = "vector") {
         reflect("size",
             [](vector<T> const& obj) noexcept -> typename vector<T>::size_type { return obj.size(); },
-            [](vector<T>* obj, typename vector<T>::size_type size) { obj->resize(size); });
+            [](vector<T>& obj, typename vector<T>::size_type size) { obj.resize(size); });
     }
 }

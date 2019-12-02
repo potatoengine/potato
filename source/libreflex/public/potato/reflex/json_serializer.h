@@ -28,7 +28,7 @@ namespace up::reflex {
 
         friend class SerializerBase<JsonStreamSerializer>;
 
-    private:
+    protected:
         template <typename T>
         Action enterField(tag<T>, zstring_view name) noexcept {
             _fieldName = name;
@@ -36,46 +36,61 @@ namespace up::reflex {
         }
 
         template <typename T>
-        void leaveField(tag<T>, zstring_view name) noexcept {
-            _fieldName = {};
-        }
-
-        template <typename T>
-        Action enterObject(tag<T>) {
-            if (_fieldName && !_current.empty()) {
-                auto& obj = (*_current.back())[_fieldName.c_str()] = nlohmann::json::object();
-                _current.push_back(&obj);
-            }
+        Action enterItem(tag<T>, size_t) noexcept {
             return Action::Enter;
         }
 
         template <typename T>
-        void leaveObject(tag<T>) noexcept {
-            _current.pop_back();
+        Action beginObject(tag<T>) {
+            _current.push_back(&_push(nlohmann::json::object()));
+            return Action::Enter;
         }
 
-        template <typename Tag, typename Getter, typename Setter>
-        void dispatch(Tag, Getter getter, Setter&&) {
-            auto&& tmp = getter();
-            serialize(tmp, *this);
+        template <typename T>
+        Action beginArray(tag<T>, size_t size) noexcept {
+            _current.push_back(&_push(nlohmann::json::array()));
+            return Action::Enter;
+        }
+
+        void end() noexcept {
+            _current.pop_back();
         }
 
         template <typename T>
         void handle(T&& value) {
+            _push(_encode(std::forward<T>(value)));
+        }
+
+    private:
+        template <typename T>
+        auto _encode(T&& value) -> nlohmann::json {
             using BaseT = remove_cvref_t<T>;
-            if (_fieldName && !_current.empty()) {
-                if constexpr (std::is_same_v<up::string_view, BaseT>) {
-                    (*_current.back())[_fieldName.c_str()] = std::string(value.begin(), value.end());
-                }
-                else if constexpr (is_string_v<BaseT>) {
-                    (*_current.back())[_fieldName.c_str()] = value.c_str();
-                }
-                else if constexpr (is_numeric_v<BaseT>) {
-                    (*_current.back())[_fieldName.c_str()] = value;
-                }
-                else {
-                    (*_current.back())[_fieldName.c_str()] = nullptr;
-                }
+            if constexpr (std::is_same_v<up::string_view, BaseT>) {
+                return std::string(value.begin(), value.end());
+            }
+            else if constexpr (is_string_v<BaseT>) {
+                return value.c_str();
+            }
+            else if constexpr (is_numeric_v<BaseT>) {
+                return value;
+            }
+            else {
+                return nullptr;
+            }
+        }
+
+        auto _push(nlohmann::json node) -> nlohmann::json& {
+            if (_fieldName && _current.back()->is_object()) {
+                auto& obj = *_current.back();
+                return obj[_fieldName.c_str()] = std::move(node);
+            }
+            else if (_current.back()->is_array()) {
+                auto& obj = *_current.back();
+                obj.push_back(std::move(node));
+                return obj.back();
+            }
+            else {
+                return _root = std::move(node);
             }
         }
 
@@ -83,7 +98,7 @@ namespace up::reflex {
         nlohmann::json& _root;
         vector<nlohmann::json*> _current;
         zstring_view _fieldName;
-    };
+    }; // namespace up::reflex
 
     /// Populates objects from JSON
     class JsonStreamDeserializer : public SerializerBase<JsonStreamDeserializer> {
@@ -92,10 +107,10 @@ namespace up::reflex {
 
         friend class SerializerBase<JsonStreamDeserializer>;
 
-    private:
+    protected:
         template <typename T>
         Action enterField(tag<T>, zstring_view name) noexcept {
-            if (current().contains(name.c_str())) {
+            if (_current.back()->is_object() && _current.back()->contains(name.c_str())) {
                 _fieldName = name;
                 return Action::Enter;
             }
@@ -103,61 +118,74 @@ namespace up::reflex {
         }
 
         template <typename T>
-        constexpr void leaveField(tag<T>, zstring_view name) noexcept {
-            _fieldName = {};
-        }
-
-        template <typename T>
-        Action enterObject(tag<T>) {
-            if (_fieldName && !_current.empty() && current().is_object()) {
-                auto& obj = current()[_fieldName.c_str()];
-                if (obj.is_object()) {
-                    _current.push_back(&obj);
-                    return Action::Enter;
-                }
+        Action enterItem(tag<T>, size_t index) noexcept {
+            if (_current.back()->is_array() && index < _current.back()->size()) {
+                _index = index;
+                return Action::Enter;
             }
             return Action::Skip;
         }
 
         template <typename T>
-        void leaveObject(tag<T>) noexcept {
-            _current.pop_back();
+        Action beginObject(tag<T>) {
+            auto* node = current();
+            if (node != nullptr && node->is_object()) {
+                _current.push_back(node);
+                return Action::Enter;
+            }
+            return Action::Skip;
         }
 
-        template <typename T, typename Getter, typename Setter>
-        void dispatch(tag<T>, Getter&&, Setter setter) {
-            auto tmp = current()[_fieldName.c_str()].get<T>();
-            setter(std::move(tmp));
+        template <typename T>
+        Action beginArray(tag<T>, size_t& size) noexcept {
+            auto* node = current();
+            if (node != nullptr && node->is_array()) {
+                _current.push_back(node);
+                size = node->size();
+                return Action::Enter;
+            }
+            return Action::Skip;
+        }
+
+        void end() noexcept {
+            _current.pop_back();
         }
 
         template <typename T>
         void handle(T&& value) {
             using BaseT = remove_cvref_t<T>;
-            if constexpr (is_numeric_v<BaseT>) {
-                if (_fieldName && !_current.empty() && current().is_object()) {
-                    auto& field = current()[_fieldName.c_str()];
-                    if (field.is_primitive()) {
-                        value = current()[_fieldName.c_str()].get<BaseT>();
+            auto* node = current();
+            if (node != nullptr) {
+                if constexpr (std::is_same_v<BaseT, up::string>) {
+                    if (node->is_string()) {
+                        value = node->get<up::string>();
+                    }
+                }
+                else if constexpr (is_numeric_v<BaseT>) {
+                    if (node->is_number()) {
+                        value = node->get<BaseT>();
                     }
                 }
             }
         }
 
-        void handle(up::string& value) {
-            if (_fieldName && !_current.empty() && current().is_object()) {
-                auto& field = current()[_fieldName.c_str()];
-                if (field.is_string()) {
-                    value = current()[_fieldName.c_str()].get<up::string>();
-                }
+    private:
+        auto current() noexcept -> nlohmann::json* {
+            if (_fieldName && _current.back()->is_object() && _current.back()->contains(_fieldName.c_str())) {
+                return &(*_current.back())[_fieldName.c_str()];
+            }
+            else if (_current.back()->is_array() && _index < _current.back()->size()) {
+                return &(*_current.back())[_index];
+            }
+            else {
+                return nullptr;
             }
         }
 
-        nlohmann::json& current() noexcept {
-            return *_current.back();
-        }
-
+    private:
         nlohmann::json& _root;
         vector<nlohmann::json*> _current;
         zstring_view _fieldName;
+        size_t _index = 0;
     };
 } // namespace up::reflex
