@@ -43,7 +43,7 @@ namespace up {
         template <typename IteratorT, typename SentinelT>
         inline explicit vector(IteratorT begin, SentinelT end);
         template <typename InsertT>
-        inline explicit vector(std::initializer_list<InsertT> initial);
+        inline /*implicit*/ vector(std::initializer_list<InsertT> initial);
         inline explicit vector(size_type size, const_reference initial);
         template <typename InsertT>
         inline explicit vector(span<InsertT> source);
