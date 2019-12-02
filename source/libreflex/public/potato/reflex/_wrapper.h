@@ -20,12 +20,6 @@ namespace up::reflex::_detail {
             return _serializer.value(_object);
         }
 
-        template <typename Getter, typename Setter>
-        constexpr auto operator()(zstring_view name, Getter getter, Setter setter) {
-            auto binding = reflex::bind<Type>(getter, setter);
-            return this->_serializer.field(name, this->_object, binding(this->_object));
-        }
-
     protected:
         Type& _object;
         Serializer& _serializer;
