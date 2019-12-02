@@ -9,7 +9,7 @@ static_assert(UP_PP_CAT(tr, ue));
 
 #define UP_PP_COMMA ,
 
-static_assert((false UP_PP_COMMA true));
+static_assert(((void)false UP_PP_COMMA true));
 
 #define _up_STRINGIFY(x) #x
 #define UP_STRINGIFY(x) _up_STRINGIFY(x)
@@ -27,7 +27,7 @@ static_assert(UP_PP_IF(0)(42, 0) == 0);
 #define UP_PP_EXPAND(...) __VA_ARGS__
 
 static_assert(UP_PP_IGNORE(2) + 2 == 2);
-static_assert((UP_PP_EXPAND(7, 2) + 2) == 4);
+static_assert(((void)UP_PP_EXPAND(7, 2) + 2) == 4);
 
 #define UP_PP_SELECT(cond) \
     UP_PP_IF(cond) \
@@ -68,5 +68,5 @@ static_assert(UP_PP_JOIN(1, 2, 3, 4, 5, 6) == 123456);
 #define _up_PP_MAP(t, n, ...) _up_PP_MAP_INVOKE(t, n, __VA_ARGS__)
 #define UP_PP_MAP(t, ...) _up_PP_MAP(t, UP_PP_ARITY(__VA_ARGS__), __VA_ARGS__)
 
-#define _up_PP_MAP_TEST(x) +x
-static_assert((0 UP_PP_MAP(_up_PP_MAP_TEST, 1, 2, 3)) == 3);
+#define _up_PP_MAP_TEST(x) x
+static_assert((UP_PP_MAP(_up_PP_MAP_TEST, (void)1, (void)2, 3)) == 3);
