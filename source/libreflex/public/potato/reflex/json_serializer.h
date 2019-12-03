@@ -24,7 +24,7 @@ namespace up::reflex {
     /// Writes JSON from objects
     class JsonStreamSerializer : public SerializerBase<JsonStreamSerializer> {
     public:
-        JsonStreamSerializer(nlohmann::json& root) noexcept : _root(root), _current({&_root}) {}
+        JsonStreamSerializer(nlohmann::json& root) noexcept : _root(root), _current() {}
 
         friend class SerializerBase<JsonStreamSerializer>;
 
@@ -37,18 +37,19 @@ namespace up::reflex {
 
         template <typename T>
         Action enterItem(tag<T>, size_t) noexcept {
+            _append = true;
             return Action::Enter;
         }
 
         template <typename T>
         Action beginObject(tag<T>) {
-            _current.push_back(&_push(nlohmann::json::object()));
+            _current.push_back(_assign(nlohmann::json::object()));
             return Action::Enter;
         }
 
         template <typename T>
         Action beginArray(tag<T>, size_t size) noexcept {
-            _current.push_back(&_push(nlohmann::json::array()));
+            _current.push_back(_assign(nlohmann::json::array()));
             return Action::Enter;
         }
 
@@ -58,7 +59,7 @@ namespace up::reflex {
 
         template <typename T>
         void handle(T&& value) {
-            _push(_encode(std::forward<T>(value)));
+            _assign(_encode(std::forward<T>(value)));
         }
 
     private:
@@ -79,18 +80,23 @@ namespace up::reflex {
             }
         }
 
-        auto _push(nlohmann::json node) -> nlohmann::json& {
-            if (_fieldName && _current.back()->is_object()) {
-                auto& obj = *_current.back();
-                return obj[_fieldName.c_str()] = std::move(node);
+        auto _assign(nlohmann::json node) -> nlohmann::json* {
+            auto& parent = !_current.empty() ? *_current.back() : _root;
+
+            if (_fieldName) {
+                auto& child = parent[_fieldName.c_str()] = std::move(node);
+                _fieldName = {};
+                return &child;
             }
-            else if (_current.back()->is_array()) {
-                auto& obj = *_current.back();
-                obj.push_back(std::move(node));
-                return obj.back();
+            else if (_append) {
+                parent.push_back(std::move(node));
+                auto& child = parent.back();
+                _append = false;
+                return &child;
             }
             else {
-                return _root = std::move(node);
+                _root = std::move(node);
+                return &_root;
             }
         }
 
@@ -98,12 +104,13 @@ namespace up::reflex {
         nlohmann::json& _root;
         vector<nlohmann::json*> _current;
         zstring_view _fieldName;
+        bool _append = false;
     }; // namespace up::reflex
 
     /// Populates objects from JSON
     class JsonStreamDeserializer : public SerializerBase<JsonStreamDeserializer> {
     public:
-        JsonStreamDeserializer(nlohmann::json& root) noexcept : _root(root), _current({&_root}) {}
+        JsonStreamDeserializer(nlohmann::json& root) noexcept : _root(root), _current() {}
 
         friend class SerializerBase<JsonStreamDeserializer>;
 
@@ -171,11 +178,17 @@ namespace up::reflex {
 
     private:
         auto current() noexcept -> nlohmann::json* {
-            if (_fieldName && _current.back()->is_object() && _current.back()->contains(_fieldName.c_str())) {
-                return &(*_current.back())[_fieldName.c_str()];
+            auto& parent = !_current.empty() ? *_current.back() : _root;
+
+            if (_fieldName && parent.is_object() && parent.contains(_fieldName.c_str())) {
+                auto& current = parent[_fieldName.c_str()];
+                _fieldName = {};
+                return &current;
             }
-            else if (_current.back()->is_array() && _index < _current.back()->size()) {
-                return &(*_current.back())[_index];
+            else if (parent.is_array() && _index < parent.size()) {
+                auto& current = parent[_index];
+                _index = ~size_t{};
+                return &current;
             }
             else {
                 return nullptr;
@@ -186,6 +199,6 @@ namespace up::reflex {
         nlohmann::json& _root;
         vector<nlohmann::json*> _current;
         zstring_view _fieldName;
-        size_t _index = 0;
+        size_t _index = ~size_t{};
     };
 } // namespace up::reflex
