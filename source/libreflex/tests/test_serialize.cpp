@@ -25,7 +25,7 @@ namespace {
 
     struct Complex {
         Fields xyz;
-        float num;
+        float num = 0;
         up::string name;
         up::vector<int> vec;
     };
@@ -67,7 +67,7 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
     }
 
     DOCTEST_TEST_CASE("deserialize struct from json") {
-        auto root = nlohmann::json::parse(R"--({"name":"bob","num":42.0,"xyz":{"x":1,"y":2,"z":3},"vec":[4,6]})--");
+        auto root = nlohmann::json::parse(R"--({"name":"bob","num":42.0,"ignore":{"num":7},"xyz":{"x":1,"y":2,"z":3},"vec":[4,6]})--");
         auto serializer = JsonStreamDeserializer{root};
 
         Complex big;
