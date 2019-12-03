@@ -12,51 +12,60 @@
 
 namespace up::reflex {
 
-    // This isn't a real class, but more of a "guideline" since C++ doesn't have
-    // the right capabilities yet to express this kind of type requirement.
-    //
-    // class Serializer {
-    // public:
-    //     template <typename Class, typename Type>
-    //     void field(zstring_view name, Class& object, Type Class::*);
-    //
-    //     template <typename Class, typename ReturnType, typename... ArgTypes>
-    //     void function(zstring_view name, Class& object, ReturnType (Class::*function)(ArgTypes...));
-    //
-    //     template <typename Class, typename ReturnType, typename... ArgTypes>
-    //     void function(zstring_view name, Class& object, ReturnType (Class::*function)(ArgTypes...) const);
-    // 
-    //     template <typename Type>
-    //     void value(Type& value);
-    // };
+// This isn't a real class, but more of a "guideline" since C++ doesn't have
+// the right capabilities yet to express this kind of type requirement.
+//
+// class Serializer {
+// public:
+//     template <typename Class, typename Type>
+//     void field(zstring_view name, Class& object, Type Class::*);
+//
+//     template <typename Class, typename ReturnType, typename... ArgTypes>
+//     void function(zstring_view name, Class& object, ReturnType (Class::*function)(ArgTypes...));
+//
+//     template <typename Class, typename ReturnType, typename... ArgTypes>
+//     void function(zstring_view name, Class& object, ReturnType (Class::*function)(ArgTypes...) const);
+//
+//     template <typename Type>
+//     void value(Type& value);
+// };
 
-    /// Defines reflection for a type
-    #define UP_REFLECT_TYPE(T) \
-        constexpr auto typeName(::up::tag<up::remove_cvref_t<T>>) noexcept->::up::zstring_view { return #T; } \
-        template <typename _up_ReflectObject> void serialize_value(::up::tag<T>, _up_ReflectObject& reflect, ::up::zstring_view name = #T)
+    namespace _detail {
+        template <typename Reflect, typename T>
+        void serialize_value(tag<T>, Reflect&) = delete;
 
-    UP_REFLECT_TYPE(int) { reflect(); }
-    UP_REFLECT_TYPE(unsigned) { reflect(); }
-    UP_REFLECT_TYPE(size_t) { reflect(); }
-    UP_REFLECT_TYPE(float) { reflect(); }
-    UP_REFLECT_TYPE(double) { reflect(); }
-
-    UP_REFLECT_TYPE(string_view) { reflect(); }
-    UP_REFLECT_TYPE(string&) { reflect(); }
+        template <typename Reflect, typename T>
+        void serialize_value_impl(tag<T>, Reflect& reflect) {
+            if constexpr (is_numeric_v<T> || is_string_v<T> || is_vector_v<T>) {
+                reflect();
+            }
+            else {
+                serialize_value<Reflect>(tag<T>{}, reflect);
+            }
+        }
+    } // namespace _detail
 
     /// Public entry for serialization
     template <typename Type, typename Serializer>
-    void serialize(Type& value, Serializer& serializer) {
+    void serialize(Type&& value, Serializer&& serializer) {
         using BaseType = up::remove_cvref_t<Type>;
 
-        auto wrapper = _detail::SerializerWrapper<Type, Serializer, std::is_class_v<BaseType>>(value, serializer);
-        serialize_value<decltype(wrapper)>(tag<BaseType>{}, wrapper);
+        auto wrapper = _detail::SerializerWrapper<std::remove_reference_t<Type>, remove_cvref_t<Serializer>, std::is_class_v<BaseType>>(value, serializer);
+        _detail::serialize_value_impl<decltype(wrapper)>(tag<BaseType>{}, wrapper);
     }
 
     /// Public entry for reflection
     template <typename Type, typename Reflector>
-    void reflect(Reflector& reflector) {
-        auto wrapper = _detail::ReflectorWrapper<Type, Reflector, std::is_class_v<Type>>(reflector);
-        serialize_value<decltype(wrapper)>(tag<Type>{}, wrapper);
+    void reflect(Reflector&& reflector) {
+        using BaseType = up::remove_cvref_t<Type>;
+
+        auto wrapper = _detail::ReflectorWrapper<std::remove_reference_t<Type>, remove_cvref_t<Reflector>, std::is_class_v<BaseType>>(reflector);
+        _detail::serialize_value_impl<decltype(wrapper)>(tag<BaseType>{}, wrapper);
     }
-} // namespace up
+} // namespace up::reflex
+
+/// Defines reflection for a type
+#define UP_REFLECT_TYPE(T) \
+    constexpr auto typeName(::up::tag<up::remove_cvref_t<T>>) noexcept->::up::zstring_view { return #T; } \
+    template <typename _up_ReflectObject> \
+    void serialize_value(::up::tag<T>, _up_ReflectObject& reflect)
