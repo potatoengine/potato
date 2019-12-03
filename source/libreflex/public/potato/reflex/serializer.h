@@ -56,9 +56,6 @@ namespace up::reflex {
                     static_cast<DerivedType*>(this)->end();
                 }
             }
-            else {
-                static_cast<DerivedType*>(this)->value(value);
-            }
         }
     };
 } // namespace up::reflex
