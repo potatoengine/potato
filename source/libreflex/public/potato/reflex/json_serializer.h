@@ -24,20 +24,20 @@ namespace up::reflex {
     /// Writes JSON from objects
     class JsonStreamSerializer : public SerializerBase<JsonStreamSerializer> {
     public:
-        JsonStreamSerializer(nlohmann::json& root) noexcept : _root(root), _current() {}
+        JsonStreamSerializer(nlohmann::json& root) noexcept : _root(root), _current({&_root}) {}
 
         friend class SerializerBase<JsonStreamSerializer>;
 
     protected:
         template <typename T>
         Action enterField(tag<T>, zstring_view name) noexcept {
-            _fieldName = name;
+            _nextField = name;
             return Action::Enter;
         }
 
         template <typename T>
         Action enterItem(tag<T>, size_t) noexcept {
-            _append = true;
+            _nextAppend = true;
             return Action::Enter;
         }
 
@@ -81,44 +81,45 @@ namespace up::reflex {
         }
 
         auto _assign(nlohmann::json node) -> nlohmann::json* {
-            auto& parent = !_current.empty() ? *_current.back() : _root;
+            auto* parent = _current.back();
 
-            if (_fieldName) {
-                auto& child = parent[_fieldName.c_str()] = std::move(node);
-                _fieldName = {};
+            if (_nextField) {
+                auto& child = (*parent)[_nextField.c_str()] = std::move(node);
+                _nextField = {};
                 return &child;
             }
-            else if (_append) {
-                parent.push_back(std::move(node));
-                auto& child = parent.back();
-                _append = false;
+            else if (_nextAppend) {
+                parent->push_back(std::move(node));
+                auto& child = parent->back();
+                _nextAppend = false;
                 return &child;
             }
             else {
-                _root = std::move(node);
-                return &_root;
+                *parent = std::move(node);
+                return parent;
             }
         }
 
     private:
         nlohmann::json& _root;
         vector<nlohmann::json*> _current;
-        zstring_view _fieldName;
-        bool _append = false;
+        zstring_view _nextField;
+        bool _nextAppend = false;
     }; // namespace up::reflex
 
     /// Populates objects from JSON
     class JsonStreamDeserializer : public SerializerBase<JsonStreamDeserializer> {
     public:
-        JsonStreamDeserializer(nlohmann::json& root) noexcept : _root(root), _current() {}
+        explicit JsonStreamDeserializer(nlohmann::json& root) noexcept : _current({&root}) {}
 
         friend class SerializerBase<JsonStreamDeserializer>;
 
     protected:
         template <typename T>
         Action enterField(tag<T>, zstring_view name) noexcept {
-            if (_current.back()->is_object() && _current.back()->contains(name.c_str())) {
-                _fieldName = name;
+            auto* node = _current.back();
+            if (node->is_object() && node->contains(name.c_str())) {
+                _nextField = name;
                 return Action::Enter;
             }
             return Action::Skip;
@@ -126,8 +127,9 @@ namespace up::reflex {
 
         template <typename T>
         Action enterItem(tag<T>, size_t index) noexcept {
-            if (_current.back()->is_array() && index < _current.back()->size()) {
-                _index = index;
+            auto* node = _current.back();
+            if (node->is_array() && index < node->size()) {
+                _nextIndex = index;
                 return Action::Enter;
             }
             return Action::Skip;
@@ -135,7 +137,7 @@ namespace up::reflex {
 
         template <typename T>
         Action beginObject(tag<T>) {
-            auto* node = current();
+            auto* node = _enter();
             if (node != nullptr && node->is_object()) {
                 _current.push_back(node);
                 return Action::Enter;
@@ -145,7 +147,7 @@ namespace up::reflex {
 
         template <typename T>
         Action beginArray(tag<T>, size_t& size) noexcept {
-            auto* node = current();
+            auto* node = _enter();
             if (node != nullptr && node->is_array()) {
                 _current.push_back(node);
                 size = node->size();
@@ -161,7 +163,7 @@ namespace up::reflex {
         template <typename T>
         void handle(T&& value) {
             using BaseT = remove_cvref_t<T>;
-            auto* node = current();
+            auto* node = _enter();
             if (node != nullptr) {
                 if constexpr (std::is_same_v<BaseT, up::string>) {
                     if (node->is_string()) {
@@ -177,17 +179,16 @@ namespace up::reflex {
         }
 
     private:
-        auto current() noexcept -> nlohmann::json* {
-            auto& parent = !_current.empty() ? *_current.back() : _root;
-
-            if (_fieldName && parent.is_object() && parent.contains(_fieldName.c_str())) {
-                auto& current = parent[_fieldName.c_str()];
-                _fieldName = {};
+        auto _enter() noexcept -> nlohmann::json* {
+            auto* parent = _current.back();
+            if (_nextField && parent->is_object() && parent->contains(_nextField.c_str())) {
+                auto& current = (*parent)[_nextField.c_str()];
+                _nextField = {};
                 return &current;
             }
-            else if (parent.is_array() && _index < parent.size()) {
-                auto& current = parent[_index];
-                _index = ~size_t{};
+            else if (parent->is_array() && _nextIndex < parent->size()) {
+                auto& current = (*parent)[_nextIndex];
+                _nextIndex = ~size_t{};
                 return &current;
             }
             else {
@@ -196,9 +197,8 @@ namespace up::reflex {
         }
 
     private:
-        nlohmann::json& _root;
         vector<nlohmann::json*> _current;
-        zstring_view _fieldName;
-        size_t _index = ~size_t{};
+        zstring_view _nextField;
+        size_t _nextIndex = ~size_t{};
     };
 } // namespace up::reflex
