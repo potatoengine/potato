@@ -4,6 +4,7 @@
 
 #include <potato/spud/zstring_view.h>
 #include <potato/spud/traits.h>
+#include <tuple>
 
 namespace up::reflex::_detail {
     // Creates the "public" interface inside of a reflect::serialize_value function
@@ -31,18 +32,18 @@ namespace up::reflex::_detail {
         using SerializerWrapper<Type, Serializer, false>::SerializerWrapper;
         using SerializerWrapper<Type, Serializer, false>::operator();
 
-        template <typename FieldType>
-        constexpr auto operator()(zstring_view name, FieldType Type::*field) {
-            return this->_serializer.field(name, this->_object, field);
+        template <typename FieldType, typename... Annotations>
+        constexpr auto operator()(zstring_view name, FieldType Type::*field, Annotations&&... annotations) {
+            return this->_serializer.field(name, this->_object, field, std::tuple(std::forward<Annotations>(annotations)...));
         }
 
-        template <typename ReturnType, typename... ArgTypes>
-        constexpr auto operator()(zstring_view name, ReturnType (Type::*function)(ArgTypes...)) {
+        template <typename ReturnType, typename... ArgTypes, typename... Annotations>
+        constexpr auto operator()(zstring_view name, ReturnType (Type::*function)(ArgTypes...), Annotations&&... annotations) {
             return this->_serializer.function(name, this->_object, function);
         }
 
-        template <typename ReturnType, typename... ArgTypes>
-        constexpr auto operator()(zstring_view name, ReturnType (Type::*function)(ArgTypes...) const) {
+        template <typename ReturnType, typename... ArgTypes, typename... Annotations>
+        constexpr auto operator()(zstring_view name, ReturnType (Type::*function)(ArgTypes...) const, Annotations&&... annotations) {
             return this->_serializer.function(name, this->_object, function);
         }
     };

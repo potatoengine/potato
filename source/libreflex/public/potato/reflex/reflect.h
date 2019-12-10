@@ -17,8 +17,8 @@ namespace up::reflex {
 //
 // class Serializer {
 // public:
-//     template <typename Class, typename Type>
-//     void field(zstring_view name, Class& object, Type Class::*);
+//     template <typename Class, typename Type, typename... Annotations>
+//     void field(zstring_view name, Class& object, Type Class::*, Annotations&&...);
 //
 //     template <typename Class, typename ReturnType, typename... ArgTypes>
 //     void function(zstring_view name, Class& object, ReturnType (Class::*function)(ArgTypes...));

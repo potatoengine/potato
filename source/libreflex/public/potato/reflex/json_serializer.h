@@ -3,6 +3,7 @@
 #pragma once
 
 #include "serializer.h"
+#include "annotation.h"
 #include <potato/spud/string_writer.h>
 #include <potato/spud/string_format.h>
 #include <potato/spud/string.h>
@@ -21,6 +22,12 @@ namespace up {
 } // namespace up
 
 namespace up::reflex {
+    struct JsonName {
+        constexpr JsonName(zstring_view n) noexcept : name(n) {}
+
+        zstring_view name;
+    };
+
     /// Writes JSON from objects
     class JsonStreamSerializer : public SerializerBase<JsonStreamSerializer> {
     public:
@@ -29,9 +36,12 @@ namespace up::reflex {
         friend class SerializerBase<JsonStreamSerializer>;
 
     protected:
-        template <typename T>
-        Action enterField(tag<T>, zstring_view name) noexcept {
-            _nextField = name;
+        template <typename T, typename Annotations>
+        Action enterField(tag<T>, zstring_view name, Annotations&& annotations) noexcept {
+            auto extract = [this](auto const& name) { _nextField = name.name; };
+            if (!ApplyAnnotation<JsonName>(annotations, extract)){
+                _nextField = name;
+            }
             return Action::Enter;
         }
 
@@ -115,11 +125,17 @@ namespace up::reflex {
         friend class SerializerBase<JsonStreamDeserializer>;
 
     protected:
-        template <typename T>
-        Action enterField(tag<T>, zstring_view name) noexcept {
+        template <typename T, typename Annotations>
+        Action enterField(tag<T>, zstring_view name, Annotations&& annotations) noexcept {
+            zstring_view fieldName = name;
+            auto extract = [&fieldName](auto const& name) { fieldName = name.name; };
+            if (!ApplyAnnotation<JsonName>(annotations, extract)) {
+                fieldName = name;
+            }
+
             auto* node = _current.back();
-            if (node->is_object() && node->contains(name.c_str())) {
-                _nextField = name;
+            if (node->is_object() && node->contains(fieldName.c_str())) {
+                _nextField = fieldName;
                 return Action::Enter;
             }
             return Action::Skip;

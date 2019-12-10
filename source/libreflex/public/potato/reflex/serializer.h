@@ -13,18 +13,18 @@ namespace up::reflex {
             Skip
         };
 
-        template <typename ObjectType, typename ClassType, typename FieldType>
-        constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field) {
+        template <typename ObjectType, typename ClassType, typename FieldType, typename Annotations>
+        constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field, Annotations&& annotations) {
             using Type = remove_cvref_t<FieldType>;
-            if (static_cast<DerivedType*>(this)->enterField(tag<Type>{}, name) == Action::Enter) {
+            if (static_cast<DerivedType*>(this)->enterField(tag<Type>{}, name, std::forward<Annotations>(annotations)) == Action::Enter) {
                 value(object.*field);
             }
         }
 
-        template <typename ObjectType, typename FieldType>
-        constexpr void field(zstring_view name, ObjectType& object, FieldType&& field) {
+        template <typename ObjectType, typename FieldType, typename Annotations>
+        constexpr void field(zstring_view name, ObjectType& object, FieldType&& field, Annotations&& annotations) {
             using Type = remove_cvref_t<FieldType>;
-            if (static_cast<DerivedType*>(this)->enterField(tag<Type>{}, name) == Action::Enter) {
+            if (static_cast<DerivedType*>(this)->enterField(tag<Type>{}, name, std::forward<Annotations>(annotations)) == Action::Enter) {
                 value(field);
             }
         }

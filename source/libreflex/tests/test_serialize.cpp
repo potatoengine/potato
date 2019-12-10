@@ -38,7 +38,7 @@ namespace {
 
     UP_REFLECT_TYPE(Complex) {
         reflect("xyz", &Complex::xyz);
-        reflect("num", &Complex::num);
+        reflect("num", &Complex::num, up::reflex::JsonName("custom"));
         reflect("name", &Complex::name);
         reflect("vec", &Complex::vec);
     }
@@ -63,11 +63,11 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         std::ostringstream ostr;
         ostr << root;
 
-        DOCTEST_CHECK_EQ(ostr.str(), R"--({"name":"bob","num":42.0,"vec":[4,5,6],"xyz":{"x":1,"y":2,"z":3}})--");
+        DOCTEST_CHECK_EQ(ostr.str(), R"--({"custom":42.0,"name":"bob","vec":[4,5,6],"xyz":{"x":1,"y":2,"z":3}})--");
     }
 
     DOCTEST_TEST_CASE("deserialize struct from json") {
-        auto root = nlohmann::json::parse(R"--({"name":"bob","num":42.0,"ignore":{"num":7},"xyz":{"x":1,"y":2,"z":3},"vec":[4,6]})--");
+        auto root = nlohmann::json::parse(R"--({"name":"bob","custom":42.0,"ignore":{"num":7},"xyz":{"x":1,"y":2,"z":3},"vec":[4,6]})--");
         auto serializer = JsonStreamDeserializer{root};
 
         Complex big;
