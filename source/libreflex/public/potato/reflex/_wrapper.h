@@ -34,7 +34,7 @@ namespace up::reflex::_detail {
 
         template <typename FieldType, typename... Annotations>
         constexpr auto operator()(zstring_view name, FieldType Type::*field, Annotations&&... annotations) {
-            return this->_serializer.field(name, this->_object, field, std::tuple(std::forward<Annotations>(annotations)...));
+            return this->_serializer.field(name, this->_object, field, std::tuple<Annotations...>(std::forward<Annotations>(annotations)...));
         }
 
         template <typename ReturnType, typename... ArgTypes, typename... Annotations>
