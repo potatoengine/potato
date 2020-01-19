@@ -53,11 +53,12 @@ jobs:
     strategy:
       matrix:
         config: [ 'Debug', 'Release' ]
-        cxx: [ 'g++-7', 'clang++-9' ]
+        cxx: [ 'g++-9', 'clang++-9' ]
         include:
-          - cxx: g++-7
-            cc: gcc-7
-            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
+          - cxx: g++-9
+            cc: gcc-9
+            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized -Wno-error=init-list-lifetime
+            packages: g++-9 gcc-9 libstdc++-9-dev
           - cxx: clang++-9
             cc: clang-9
             cxxflags: -Wall -Werror -stdlib=libc++
