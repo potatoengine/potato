@@ -7,19 +7,7 @@
 
 namespace up {
     template <typename Buffer>
-    class format_writer : public formatxx::format_writer {
-    public:
-        constexpr format_writer(Buffer& buffer) noexcept : _buffer(buffer) {}
-
-        void write(formatxx::string_view str) noexcept override {
-            for (char ch : str) {
-                _buffer.push_back(ch);
-            }
-        }
-
-    private:
-        Buffer& _buffer;
-    };
+    using format_writer = formatxx::append_writer<Buffer>;
 
     template <typename Buffer, typename... Args>
     constexpr decltype(auto) format_into(Buffer& buffer, string_view format, Args const&... args) {

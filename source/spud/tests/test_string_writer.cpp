@@ -24,10 +24,10 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_writer") {
     DOCTEST_TEST_CASE("write") {
         string_writer sw;
 
-        sw.write("hello");
-        sw.write(',');
-        sw.write(' ');
-        sw.write("world");
+        sw.append("hello");
+        sw.append(',');
+        sw.append(' ');
+        sw.append("world");
 
         DOCTEST_CHECK(!sw.empty());
         DOCTEST_CHECK_EQ(sw.size(), 12);
@@ -37,7 +37,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_writer") {
     DOCTEST_TEST_CASE("clear") {
         string_writer sw;
 
-        sw.write("test");
+        sw.append("test");
         sw.clear();
 
         DOCTEST_CHECK(sw.empty());
@@ -48,7 +48,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_writer") {
     DOCTEST_TEST_CASE("request and commit") {
         string_writer sw;
 
-        sw.write("initial text");
+        sw.append("initial text");
 
         auto mem = sw.acquire(32);
 
@@ -59,7 +59,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_writer") {
 
         sw.commit(mem.first(4));
 
-        sw.write("footer");
+        sw.append("footer");
 
         DOCTEST_CHECK_EQ(sw.c_str(), "initial textdatafooter");
     }
@@ -67,7 +67,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_writer") {
     DOCTEST_TEST_CASE("resize") {
         string_writer sw;
 
-        sw.write("initial text");
+        sw.append("initial text");
 
         sw.resize(4);
         DOCTEST_CHECK_EQ(sw.c_str(), "init");
@@ -78,14 +78,14 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_writer") {
         sw.resize(8, 'x');
         DOCTEST_CHECK_EQ(sw.c_str(), "init  xx");
 
-        sw.write("yy");
+        sw.append("yy");
         DOCTEST_CHECK_EQ(sw.c_str(), "init  xxyy");
     }
 
     DOCTEST_TEST_CASE("to_string") {
         string_writer sw;
 
-        sw.write("some text here");
+        sw.append("some text here");
 
         string s = sw.to_string();
 

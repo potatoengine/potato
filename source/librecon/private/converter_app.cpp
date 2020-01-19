@@ -289,8 +289,8 @@ auto up::recon::ConverterApp::checkMetafile(Context& ctx, string_view filename) 
     // check to see if a meta file exists for this asset -- if it doesn't create one
     fixed_string_writer<256> metaFile;
 
-    metaFile.write(filename);
-    metaFile.write(".meta");
+    metaFile.append(filename);
+    metaFile.append(".meta");
     if (!_fileSystem->fileExists(metaFile.c_str())) {
         Converter* conveter = findConverter(filename);
         if (conveter) {

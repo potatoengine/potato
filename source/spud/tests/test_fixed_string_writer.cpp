@@ -18,10 +18,10 @@ DOCTEST_TEST_SUITE("[potato][spud] up::fixed_string_writer") {
     DOCTEST_TEST_CASE("write") {
         fixed_string_writer<32> sw;
 
-        sw.write("hello");
-        sw.write(',');
-        sw.write(' ');
-        sw.write("world");
+        sw.append("hello");
+        sw.append(',');
+        sw.append(' ');
+        sw.append("world");
 
         DOCTEST_CHECK(!sw.empty());
         DOCTEST_CHECK_EQ(sw.size(), 12);
@@ -31,7 +31,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::fixed_string_writer") {
     DOCTEST_TEST_CASE("clear") {
         fixed_string_writer<32> sw;
 
-        sw.write("test");
+        sw.append("test");
         sw.clear();
 
         DOCTEST_CHECK(sw.empty());
@@ -42,10 +42,10 @@ DOCTEST_TEST_SUITE("[potato][spud] up::fixed_string_writer") {
     DOCTEST_TEST_CASE("overflow write") {
         fixed_string_writer<32> sw;
 
-        sw.write("initial text");
-        sw.write("more text");
-        sw.write("yet more text");
-        sw.write("and some more text");
+        sw.append("initial text");
+        sw.append("more text");
+        sw.append("yet more text");
+        sw.append("and some more text");
 
         DOCTEST_CHECK_EQ(sw.size(), sw.capacity());
         DOCTEST_CHECK_EQ(sw.c_str(), "initial textmore textyet more t");
