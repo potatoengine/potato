@@ -49,46 +49,40 @@ jobs:
           cd build
           ctest -T test -R potato --verbose
 
-  build-posix:
+  build-ubuntu:
     strategy:
       matrix:
-        os: [ 'ubuntu-latest', 'macos-latest' ]
         config: [ 'Debug', 'Release' ]
+        cxx: [ 'g++-7', 'clang++-9' ]
         include:
-          - name: Ubuntu
-            os: ubuntu-latest
-            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
-            cxx: g++-7
+          - cxx: g++-7
             cc: gcc-7
-          - name: macOS
-            os: macos-latest
-            cxxflags: -Wall -Werror
-            cxx: clang++
-            cc: clang
+            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
+          - cxx: clang++-9
+            cc: clang-9
+            cxxflags: -Wall -Werror -stdlib=libc++
+            packages: clang-9 libc++-9-dev libc++abi-9-dev
     
-    name: '${{ matrix.name }} (${{ matrix.config }} ${{ matrix.cxx }})'
-    runs-on: '${{ matrix.os }}'
+    name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
+    runs-on: 'ubuntu-latest'
 
     steps:
       - uses: actions/checkout@master
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
-      - name: Select XCode
-        run: sudo /usr/bin/xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
-        if: success() && matrix.xcode != ''
+      - name: Apt update
+        run: sudo apt-get -yq update
       - name: Install uuid-dev
-        run: |
-          sudo apt-get -yq update
-          sudo apt-get -yq install uuid-dev
-        if: success() && runner.os == 'linux'
+        run: sudo apt-get -yq install uuid-dev
+      - name: Install toolchain
+        run: sudo apt-get -yq install ${{ matrix.packages }}
+        if: success() && matrix.packages != ''
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
           CXX: '${{ matrix.cxx }}'
           CC: '${{ matrix.cc }}'
         run: |
-          echo $(which ninja)
-          echo $(./ninja-build/ninja -v)
           mkdir -p build
           cd build
           cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
@@ -112,7 +106,6 @@ jobs:
         run: |
           sudo apt-get -yq update
           sudo apt-get -yq install uuid-dev
-        if: success() && runner.os == 'linux'
       - name: Configure
         run: |
           mkdir build
@@ -128,7 +121,7 @@ jobs:
 
   build-all:
     name: All
-    needs: [ 'build-windows', 'build-posix', 'doxygen' ]
+    needs: [ 'build-windows', 'build-ubuntu', 'doxygen' ]
     runs-on: 'ubuntu-latest'
 
     steps:
