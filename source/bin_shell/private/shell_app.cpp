@@ -340,7 +340,7 @@ void up::ShellApp::_drawUI() {
         auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 
         fixed_string_writer<128> buffer;
-        format_into(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
+        format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
         ImGui::Text("%s", buffer.c_str());
     }
     ImGui::End();

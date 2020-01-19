@@ -18,7 +18,7 @@ constexpr char byteToString(up::byte byte) noexcept {
 auto up::UUID::toString() const -> string {
     // format 9554084e-4100-4098-b470-2125f5eed133
     string_writer buffer;
-    format_into(buffer, "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+    format_append(buffer, "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
                 _data.ub[0], _data.ub[1], _data.ub[2], _data.ub[3],
                 _data.ub[4], _data.ub[5],
                 _data.ub[6], _data.ub[7],

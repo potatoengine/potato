@@ -26,7 +26,7 @@
 namespace up::_detail {
     // abstraction to deal with assert instances that don't have a message at all
     template <typename Buffer, typename... Args>
-    void constexpr formatAssertion(Buffer& buffer, char const* format, Args&&... args) { format_into(buffer, format, std::forward<Args>(args)...); }
+    void constexpr formatAssertion(Buffer& buffer, char const* format, Args&&... args) { format_append(buffer, format, std::forward<Args>(args)...); }
     template <typename Buffer>
     void constexpr formatAssertion(Buffer&) {}
 } // namespace up::_detail

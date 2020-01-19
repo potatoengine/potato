@@ -7,10 +7,10 @@ void up::Win32DebugReceiver::log(string_view loggerName, LogSeverity severity, s
     fixed_string_writer<2048> buffer;
 
     if (location.file) {
-        format_into(buffer, "{}({}): <{}> ", location.file, location.line, location.function);
+        format_append(buffer, "{}({}): <{}> ", location.file, location.line, location.function);
     }
 
-    format_into(buffer, "[{}] {} :: {}\n", toString(severity), loggerName, message);
+    format_append(buffer, "[{}] {} :: {}\n", toString(severity), loggerName, message);
 
     OutputDebugStringA(buffer.c_str());
 }

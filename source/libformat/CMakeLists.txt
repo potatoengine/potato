@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 project(format VERSION 0.1 LANGUAGES CXX)
 
-add_library(potato_libformat)
+add_library(potato_libformat STATIC)
 add_library(potato::libformat ALIAS potato_libformat)
 
 include(up_set_common_properties)

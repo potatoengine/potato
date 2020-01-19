@@ -75,6 +75,8 @@ namespace formatxx {
 
     template <typename ResultT, typename FormatT, typename... Args> constexpr ResultT format_as(FormatT const& format, Args const& ... args);
 
+    template <typename Receiver, typename FormatT, typename... Args> constexpr result_code format_append(Receiver& receiver, FormatT const& format, Args const&... args);
+
     template <typename CharT, typename T>
     constexpr result_code format_value_to(basic_format_writer<CharT>& writer, T const& value, basic_format_options<CharT> const& options = {});
 
@@ -148,8 +150,6 @@ namespace formatxx {
 namespace formatxx::_detail {
     template <typename CharT>
     FORMATXX_PUBLIC result_code FORMATXX_API format_impl(basic_format_writer<CharT>& out, basic_string_view<CharT> format, basic_format_arg_list<CharT> args);
-    template <typename CharT>
-    FORMATXX_PUBLIC result_code FORMATXX_API printf_impl(basic_format_writer<CharT>& out, basic_string_view<CharT> format, basic_format_arg_list<CharT> args);
 }
 
 extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::format_impl(basic_format_writer<char>& out, basic_string_view<char> format, basic_format_arg_list<char> args);
@@ -163,9 +163,13 @@ extern template FORMATXX_PUBLIC formatxx::basic_parse_spec_result<char> FORMATXX
 /// @returns a result code indicating any errors.
 template <typename CharT, typename FormatT, typename... Args>
 constexpr formatxx::result_code formatxx::format_to(basic_format_writer<CharT>& writer, FormatT const& format, Args const& ... args) {
-    const _detail::basic_format_arg<CharT> bound_args[] = {_detail::make_format_arg<CharT, _detail::formattable_t<Args>>(args)...};
-    const _detail::basic_format_arg_list<CharT> bound_arg_list(bound_args, sizeof(bound_args) / sizeof(bound_args[0]));
-    return _detail::format_impl(writer, basic_string_view<CharT>(format), bound_arg_list);
+    if constexpr (sizeof...(Args) > 0) {
+        const _detail::basic_format_arg<CharT> bound_args[] = { _detail::make_format_arg<CharT, _detail::formattable_t<Args>>(args)... };
+        return _detail::format_impl(writer, basic_string_view<CharT>(format), {bound_args, sizeof...(Args)});
+    }
+    else {
+        return _detail::format_impl(writer, basic_string_view<CharT>(format), {});
+    }
 }
 
 /// Write the string format using the given parameters and return a string with the result.
@@ -174,9 +178,8 @@ constexpr formatxx::result_code formatxx::format_to(basic_format_writer<CharT>& 
 /// @returns a formatted string.
 template <typename ResultT, typename FormatT, typename... Args>
 constexpr ResultT formatxx::format_as(FormatT const& format, Args const& ... args) {
-    using char_type = typename ResultT::value_type;
     ResultT result;
-    append_writer writer(result);
+    append_writer<ResultT> writer(result);
     format_to(writer, format, args...);
     return result;
 }
@@ -189,6 +192,18 @@ constexpr ResultT formatxx::format_as(FormatT const& format, Args const& ... arg
 template <typename CharT, typename T>
 constexpr formatxx::result_code formatxx::format_value_to(basic_format_writer<CharT>& writer, T const& value, basic_format_options<CharT> const& options) {
     return _detail::make_format_arg<CharT>(value).format_into(writer, options);
+}
+
+/// Write the string format using the given parameters into a receiver.
+/// @param receiver The receiver of the formatted text.
+/// @param format The primary text and formatting controls to be written.
+/// @param args The arguments used by the formatting string.
+/// @returns a result code indicating any errors.
+template <typename Receiver, typename FormatT, typename... Args>
+constexpr formatxx::result_code formatxx::format_append(Receiver& receiver, FormatT const& format, Args const&... args) {
+    using Writer = append_writer<Receiver>;
+    auto writer = Writer(receiver);
+    return ::formatxx::format_to(writer, ::formatxx::string_view(format.data(), format.size()), args...);
 }
 
 #endif // !defined(_guard_FORMATXX_H)

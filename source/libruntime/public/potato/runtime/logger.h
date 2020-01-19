@@ -45,7 +45,7 @@ namespace up {
             }
 
             fixed_string_writer<1024> writer;
-            format_into(writer, format, args...);
+            format_append(writer, format, args...);
 
             _dispatch(severity, writer, {});
         }

@@ -10,8 +10,7 @@ namespace up {
     using format_writer = formatxx::append_writer<Buffer>;
 
     template <typename Buffer, typename... Args>
-    constexpr decltype(auto) format_into(Buffer& buffer, string_view format, Args const&... args) {
-        format_writer<Buffer> writer(buffer);
-        return ::formatxx::format_to(writer, ::formatxx::string_view(format.data(), format.size()), args...);
+    constexpr decltype(auto) format_append(Buffer& buffer, string_view format, Args const&... args) {
+        return ::formatxx::format_append(buffer, format, args...);
     }
 } // namespace up
