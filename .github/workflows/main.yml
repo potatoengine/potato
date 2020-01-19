@@ -55,11 +55,16 @@ jobs:
         os: [ 'ubuntu-latest' ]
         config: [ 'Debug', 'Release' ]
         include:
-          - name: Ubuntu
+          - name: Ubuntu (gcc)
             os: ubuntu-latest
             cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
             cxx: g++-7
             cc: gcc-7
+          - name: Ubuntu (clang)
+            os: ubuntu-latest
+            cxxflags: -Wall -Werror
+            cxx: clang++
+            cc: clang
     
     name: '${{ matrix.name }} (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: '${{ matrix.os }}'
