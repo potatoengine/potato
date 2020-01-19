@@ -53,14 +53,15 @@ jobs:
     strategy:
       matrix:
         config: [ 'Debug', 'Release' ]
-        cxx: [ 'g++-7', 'clang++' ]
+        cxx: [ 'g++-7', 'clang++-9' ]
         include:
           - cxx: g++-7
             cc: gcc-7
             cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
-          - cxx: clang++
-            cc: clang
-            cxxflags: -Wall -Werror
+          - cxx: clang++-9
+            cc: clang-9
+            cxxflags: -Wall -Werror -stdlib=libc++
+            packages: clang-9 libc++-9-dev libc++abi-9-dev
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-latest'
@@ -73,6 +74,11 @@ jobs:
         run: |
           sudo apt-get -yq update
           sudo apt-get -yq install uuid-dev
+      - name: Install toolchain
+        run: |
+          sudo apt-get -yq update
+          sudo apt-get -yq install ${{ matrix.packages }}
+        if: success() && matrix.packages != ''
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
