@@ -71,10 +71,6 @@ namespace formatxx {
     using format_writer = basic_format_writer<char>;
     using format_options = basic_format_options<char>;
 
-    using wstring_view = basic_string_view<wchar_t>;
-    using wformat_writer = basic_format_writer<wchar_t>;
-    using wformat_options = basic_format_options<wchar_t>;
-
     template <typename CharT, typename FormatT, typename... Args> constexpr result_code format_to(basic_format_writer<CharT>& writer, FormatT const& format, Args const& ... args);
 
     template <typename ResultT, typename FormatT, typename... Args> constexpr ResultT format_as(FormatT const& format, Args const& ... args);
@@ -146,9 +142,6 @@ public:
 namespace formatxx {
     /// Default format helpers.
     FORMATXX_PUBLIC void FORMATXX_API format_value(format_writer& out, string_view str, format_options const& options = {}) noexcept;
-    FORMATXX_PUBLIC void FORMATXX_API format_value(format_writer& out, wstring_view str, format_options const& options = {}) noexcept;
-    FORMATXX_PUBLIC void FORMATXX_API format_value(wformat_writer& out, string_view str, wformat_options const& options = {}) noexcept;
-    FORMATXX_PUBLIC void FORMATXX_API format_value(wformat_writer& out, wstring_view str, wformat_options const& options = {}) noexcept;
 }
 
 /// @internal
@@ -162,10 +155,6 @@ namespace formatxx::_detail {
 extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::format_impl(basic_format_writer<char>& out, basic_string_view<char> format, basic_format_arg_list<char> args);
 extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::basic_format_arg<char>::format_into(basic_format_writer<char>& output, basic_format_options<char> const& options) const;
 extern template FORMATXX_PUBLIC formatxx::basic_parse_spec_result<char> FORMATXX_API formatxx::parse_format_spec(basic_string_view<char> spec_string) noexcept;
-
-extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::format_impl(basic_format_writer<wchar_t>& out, basic_string_view<wchar_t> format, basic_format_arg_list<wchar_t> args);
-extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::basic_format_arg<wchar_t>::format_into(basic_format_writer<wchar_t>& output, basic_format_options<wchar_t> const& options) const;
-extern template FORMATXX_PUBLIC formatxx::basic_parse_spec_result<wchar_t> FORMATXX_API formatxx::parse_format_spec(basic_string_view<wchar_t> spec_string) noexcept;
 
 /// Write the string format using the given parameters into a buffer.
 /// @param writer The write buffer that will receive the formatted text.

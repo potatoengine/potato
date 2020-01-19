@@ -31,7 +31,6 @@
 #include "write_integer.h"
 #include "write_string.h"
 #include "write_float.h"
-#include "write_wide.h"
 
 #include <cinttypes>
 
@@ -40,9 +39,6 @@ formatxx::result_code FORMATXX_API formatxx::_detail::basic_format_arg<CharT>::f
     switch (_type) {
     case _detail::format_arg_type::char_t:
         _detail::write_char(output, *static_cast<char const*>(_value), options);
-        return result_code::success;
-    case _detail::format_arg_type::wchar:
-        _detail::write_char(output, *static_cast<wchar_t const*>(_value), options);
         return result_code::success;
     case _detail::format_arg_type::signed_char:
         _detail::write_integer(output, *static_cast<signed char const*>(_value), options);
@@ -85,9 +81,6 @@ formatxx::result_code FORMATXX_API formatxx::_detail::basic_format_arg<CharT>::f
 		return result_code::success;
     case _detail::format_arg_type::char_string:
 		_detail::write_string(output, string_view(*static_cast<char const* const*>(_value)), options);
-		return result_code::success;
-    case _detail::format_arg_type::wchar_string:
-		_detail::write_string(output, wstring_view(*static_cast<wchar_t const* const*>(_value)), options);
 		return result_code::success;
     case _detail::format_arg_type::null_pointer:
 		_detail::write_string(output, _detail::FormatTraits<CharT>::sNullptr, options);

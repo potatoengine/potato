@@ -2,7 +2,6 @@ add_executable(potato_libformat_test
     main.cc
     test_format.cc
     test_small_string.cc
-    test_wide.cc
     test_writer.cc
 )
 

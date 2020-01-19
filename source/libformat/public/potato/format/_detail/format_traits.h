@@ -74,46 +74,6 @@ namespace formatxx::_detail {
 		static constexpr char const sHexadecimalLower[] = "0123456789abcdef";
 		static constexpr char const sHexadecimalUpper[] = "0123456789ABCDEF";
 	};
-
-	template <> struct FormatTraits<wchar_t> {
-		static constexpr wchar_t cFormatBegin = L'{';
-		static constexpr wchar_t cFormatEnd = L'}';
-		static constexpr wchar_t cFormatSep = L':';
-
-		static constexpr wchar_t cPlus = L'+';
-		static constexpr wchar_t cMinus = L'-';
-		static constexpr wchar_t cSpace = L' ';
-		static constexpr wchar_t cHash = L'#';
-		static constexpr wchar_t cDot = L'.';
-        static constexpr wchar_t cZero = L'0';
-
-		static constexpr wchar_t cPrintfSpec = L'%';
-		static constexpr wchar_t cPrintfIndex = L'$';
-
-		static constexpr wstring_view sTrue{ L"true" };
-		static constexpr wstring_view sFalse{ L"false" };
-        static constexpr wstring_view sNullptr{ L"nullptr" };
-
-        static constexpr wstring_view sFormatSpecifiers{ L"bcsdioxXfFeEaAgG" };
-
-		static constexpr wstring_view sPrintfSpecifiers{ L"bcCsSdioxXufFeEaAgGp" };
-		static constexpr wstring_view sPrintfModifiers{ L"hljztL" };
-
-		static constexpr wchar_t const sDecimalPairs[] =
-			L"00010203040506070809"
-			L"10111213141516171819"
-			L"20212223242526272829"
-			L"30313233343536373839"
-			L"40414243444546474849"
-			L"50515253545556575859"
-			L"60616263646566676869"
-			L"70717273747576777879"
-			L"80818283848586878889"
-			L"90919293949596979899";
-		static constexpr wchar_t const sHexadecimalLower[] = L"0123456789abcdef";
-		static constexpr wchar_t const sHexadecimalUpper[] = L"0123456789ABCDEF";
-	};
-
 } // namespace formatxx::_detail
 
 #endif // _guard_FORMATXX_DETAIL_FORMAT_TRAITS_H

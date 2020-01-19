@@ -41,7 +41,6 @@ namespace formatxx::_detail {
 enum class formatxx::_detail::format_arg_type {
     unknown,
     char_t,
-    wchar,
     signed_char,
     unsigned_char,
     signed_int,
@@ -56,7 +55,6 @@ enum class formatxx::_detail::format_arg_type {
     double_float,
     boolean,
     char_string,
-    wchar_string,
     null_pointer,
     void_pointer,
     custom
@@ -117,7 +115,6 @@ namespace formatxx::_detail {
     template <typename T> struct type_of { static constexpr format_arg_type value = format_arg_type::unknown; };
 #define FORMATXX_TYPE(x, e) template <> struct type_of<x> { static constexpr format_arg_type value = format_arg_type::e; };
     FORMATXX_TYPE(char, char_t);
-    FORMATXX_TYPE(wchar_t, wchar);
     FORMATXX_TYPE(signed char, signed_char);
     FORMATXX_TYPE(unsigned char, unsigned_char);
     FORMATXX_TYPE(signed int, signed_int);
@@ -133,8 +130,6 @@ namespace formatxx::_detail {
     FORMATXX_TYPE(bool, boolean);
     FORMATXX_TYPE(char*, char_string);
     FORMATXX_TYPE(char const*, char_string);
-    FORMATXX_TYPE(wchar_t*, char_string);
-    FORMATXX_TYPE(wchar_t const*, wchar_string);
     FORMATXX_TYPE(std::nullptr_t, null_pointer);
     FORMATXX_TYPE(void*, void_pointer);
     FORMATXX_TYPE(void const*, void_pointer);
