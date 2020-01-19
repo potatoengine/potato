@@ -50,10 +50,6 @@ namespace formatxx {
     template <typename StringT = std::string, typename FormatT, typename... Args> StringT format_string(FormatT const& format, Args const& ... args) {
         return format_as<StringT>(format, args...);
     }
-
-    template <typename StringT = std::string, typename FormatT, typename... Args> StringT printf_string(FormatT const& format, Args const& ... args) {
-        return printf_as<StringT>(format, args...);
-    }
 } // namespace formatxx
 
 #endif // !defined(_guard_FORMATXX_STD_STRING_H)

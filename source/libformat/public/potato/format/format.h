@@ -76,16 +76,13 @@ namespace formatxx {
     using wformat_options = basic_format_options<wchar_t>;
 
     template <typename CharT, typename FormatT, typename... Args> constexpr result_code format_to(basic_format_writer<CharT>& writer, FormatT const& format, Args const& ... args);
-    template <typename CharT, typename FormatT, typename... Args> constexpr result_code printf_to(basic_format_writer<CharT>& writer, FormatT const& format, Args const& ... args);
 
     template <typename ResultT, typename FormatT, typename... Args> constexpr ResultT format_as(FormatT const& format, Args const& ... args);
-    template <typename ResultT, typename FormatT, typename... Args> constexpr ResultT printf_as(FormatT const& format, Args const& ... args);
 
     template <typename CharT, typename T>
     constexpr result_code format_value_to(basic_format_writer<CharT>& writer, T const& value, basic_format_options<CharT> const& options = {});
 
     template <typename CharT> constexpr FORMATXX_PUBLIC basic_parse_spec_result<CharT> FORMATXX_API parse_format_spec(basic_string_view<CharT> spec_string) noexcept;
-    template <typename CharT> constexpr FORMATXX_PUBLIC basic_parse_spec_result<CharT> FORMATXX_API parse_printf_spec(basic_string_view<CharT> spec_string) noexcept;
 }
 
 enum class formatxx::result_code : unsigned int {
@@ -163,16 +160,12 @@ namespace formatxx::_detail {
 }
 
 extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::format_impl(basic_format_writer<char>& out, basic_string_view<char> format, basic_format_arg_list<char> args);
-extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::printf_impl(basic_format_writer<char>& out, basic_string_view<char> format, basic_format_arg_list<char> args);
 extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::basic_format_arg<char>::format_into(basic_format_writer<char>& output, basic_format_options<char> const& options) const;
 extern template FORMATXX_PUBLIC formatxx::basic_parse_spec_result<char> FORMATXX_API formatxx::parse_format_spec(basic_string_view<char> spec_string) noexcept;
-extern template FORMATXX_PUBLIC formatxx::basic_parse_spec_result<char> FORMATXX_API formatxx::parse_printf_spec(basic_string_view<char> spec_string) noexcept;
 
 extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::format_impl(basic_format_writer<wchar_t>& out, basic_string_view<wchar_t> format, basic_format_arg_list<wchar_t> args);
-extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::printf_impl(basic_format_writer<wchar_t>& out, basic_string_view<wchar_t> format, basic_format_arg_list<wchar_t> args);
 extern template FORMATXX_PUBLIC formatxx::result_code FORMATXX_API formatxx::_detail::basic_format_arg<wchar_t>::format_into(basic_format_writer<wchar_t>& output, basic_format_options<wchar_t> const& options) const;
 extern template FORMATXX_PUBLIC formatxx::basic_parse_spec_result<wchar_t> FORMATXX_API formatxx::parse_format_spec(basic_string_view<wchar_t> spec_string) noexcept;
-extern template FORMATXX_PUBLIC formatxx::basic_parse_spec_result<wchar_t> FORMATXX_API formatxx::parse_printf_spec(basic_string_view<wchar_t> spec_string) noexcept;
 
 /// Write the string format using the given parameters into a buffer.
 /// @param writer The write buffer that will receive the formatted text.
@@ -182,16 +175,6 @@ extern template FORMATXX_PUBLIC formatxx::basic_parse_spec_result<wchar_t> FORMA
 template <typename CharT, typename FormatT, typename... Args>
 constexpr formatxx::result_code formatxx::format_to(basic_format_writer<CharT>& writer, FormatT const& format, Args const& ... args) {
     return _detail::format_impl(writer, basic_string_view<CharT>(format), { _detail::make_format_arg<CharT, _detail::formattable_t<Args>>(args)... });
-}
-
-/// Write the printf format using the given parameters into a buffer.
-/// @param writer The write buffer that will receive the formatted text.
-/// @param format The primary text and printf controls to be written.
-/// @param args The arguments used by the formatting string.
-/// @returns a result code indicating any errors.
-template <typename CharT, typename FormatT, typename... Args>
-constexpr formatxx::result_code formatxx::printf_to(basic_format_writer<CharT>& writer, FormatT const& format, Args const& ... args) {
-    return _detail::printf_impl(writer, basic_string_view<CharT>(format), { _detail::make_format_arg<CharT, _detail::formattable_t<Args>>(args)... });
 }
 
 /// Write the string format using the given parameters and return a string with the result.
@@ -204,19 +187,6 @@ constexpr ResultT formatxx::format_as(FormatT const& format, Args const& ... arg
     ResultT result;
     append_writer writer(result);
     _detail::format_impl(writer, basic_string_view<char_type>(format), { _detail::make_format_arg<char_type, _detail::formattable_t<Args>>(args)... });
-    return result;
-}
-
-/// Write the printf format using the given parameters and return a string with the result.
-/// @param format The primary text and printf controls to be written.
-/// @param args The arguments used by the formatting string.
-/// @returns a formatted string.
-template <typename ResultT, typename FormatT, typename... Args>
-constexpr ResultT formatxx::printf_as(FormatT const& format, Args const& ... args) {
-    using char_type = typename ResultT::value_type;
-    ResultT result;
-    append_writer writer(result);
-    _detail::printf_impl(writer, basic_string_view<char_type>(format), { _detail::make_format_arg<char_type, _detail::formattable_t<Args>>(args)... });
     return result;
 }
 

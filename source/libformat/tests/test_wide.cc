@@ -19,8 +19,4 @@ DOCTEST_TEST_CASE("wide") {
         DOCTEST_CHECK_EQ(L"the lazy fox", format_string<std::wstring>(L"{} {} {}{}{}", L"the", "lazy", L'f', 'o', L'x'));
         DOCTEST_CHECK_EQ("this is a test", format_string("this {} a {}{}{}", L"is", 't', L'e', L"st"));
     }
-
-    DOCTEST_SUBCASE("printf") {
-        DOCTEST_CHECK_EQ(L"12abcd34", printf_string<std::wstring>(L"%d%s%c%c%d", 12, L"ab", 'c', L'd', 34UL));
-    }
 }
