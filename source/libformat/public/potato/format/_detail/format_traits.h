@@ -1,4 +1,4 @@
-// formatxx - C++ string formatting library.
+// up::format - C++ string formatting library.
 //
 // This is free and unencumbered software released into the public domain.
 // 
@@ -32,7 +32,7 @@
 #define _guard_FORMATXX_DETAIL_FORMAT_TRAITS_H
 #pragma once
 
-namespace formatxx::_detail {
+namespace up::format::_detail {
 
 	template <typename CharT> struct FormatTraits;
 
@@ -74,6 +74,6 @@ namespace formatxx::_detail {
 		static constexpr char const sHexadecimalLower[] = "0123456789abcdef";
 		static constexpr char const sHexadecimalUpper[] = "0123456789ABCDEF";
 	};
-} // namespace formatxx::_detail
+} // namespace up::format::_detail
 
 #endif // _guard_FORMATXX_DETAIL_FORMAT_TRAITS_H

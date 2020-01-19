@@ -6,7 +6,7 @@
 #include <ostream>
 
 DOCTEST_TEST_CASE("writer") {
-    using namespace formatxx;
+    using namespace up::format;
 
     DOCTEST_SUBCASE("span") {
         // can hold 9 characters and a NUL byte

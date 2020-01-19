@@ -29,7 +29,7 @@
 
 #include <litexx/string_view.h>
 
-namespace formatxx {
+namespace up::format {
     template <typename CharT> class basic_format_writer;
 
     template <typename ContainerT> class append_writer;
@@ -37,7 +37,7 @@ namespace formatxx {
 
 /// Writer that calls append(data, size) on wrapped value.
 template <typename ContainerT>
-class formatxx::append_writer : public formatxx::basic_format_writer<typename ContainerT::value_type>{
+class up::format::append_writer : public up::format::basic_format_writer<typename ContainerT::value_type>{
 public:
     constexpr append_writer(ContainerT& container) : _container(container) {}
 

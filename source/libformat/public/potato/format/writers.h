@@ -1,4 +1,4 @@
-// formatxx - C++ string formatting library.
+// up::format - C++ string formatting library.
 //
 // This is free and unencumbered software released into the public domain.
 // 
@@ -36,12 +36,12 @@
 #include "potato/format/_detail/append_writer.h"
 #include <cstring>
 
-namespace formatxx {
+namespace up::format {
     template <typename ContainerT> class container_writer;
     template <typename CharT> class span_writer;
 }
 
-namespace formatxx::_detail {
+namespace up::format::_detail {
     template <typename IteratorT>
     struct iterator_traits { using value_type = typename IteratorT::value_type; };
 
@@ -54,7 +54,7 @@ namespace formatxx::_detail {
 
 /// Writer that calls insert(end, range_begin, range_end) on wrapped value.
 template <typename ContainerT>
-class formatxx::container_writer final : public formatxx::basic_format_writer<typename ContainerT::value_type> {
+class up::format::container_writer final : public up::format::basic_format_writer<typename ContainerT::value_type> {
 public:
     constexpr container_writer(ContainerT & container) : _container(container) {}
 
@@ -68,7 +68,7 @@ private:
 
 /// Writer that appends into a provided memory region, guaranteeing NUL termination and no overflow.
 template <typename CharT>
-class formatxx::span_writer final : public formatxx::basic_format_writer<CharT> {
+class up::format::span_writer final : public up::format::basic_format_writer<CharT> {
 public:
     template <std::size_t Count>
     constexpr span_writer(CharT(&buffer)[Count]) : _buffer(buffer), _cursor(buffer), _length(Count) {

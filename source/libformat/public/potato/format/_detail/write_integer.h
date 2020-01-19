@@ -1,4 +1,4 @@
-// formatxx - C++ string formatting library.
+// up::format - C++ string formatting library.
 //
 // This is free and unencumbered software released into the public domain.
 // 
@@ -37,7 +37,7 @@
 #include <limits>
 #include <climits>
 
-namespace formatxx::_detail {
+namespace up::format::_detail {
 
 	template <typename CharT, typename T>
     constexpr void write_integer(basic_format_writer<CharT>& out, T value, basic_format_options<CharT> const& options);
@@ -255,6 +255,6 @@ namespace formatxx::_detail {
 		}
 	}
 
-} // namespace formatxx::_detail
+} // namespace up::format::_detail
 
 #endif // _guard_FORMATXX_DETAIL_WRITE_INTEGER_H

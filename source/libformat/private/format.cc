@@ -35,7 +35,7 @@
 #include <potato/format/_detail/parse_format.h>
 #include <potato/format/_detail/write_string.h>
 
-namespace formatxx {
+namespace up::format {
     FORMATXX_PUBLIC void FORMATXX_API format_value(format_writer& output, string_view value, format_options const& options) noexcept {
         _detail::write_string(output, value, options);
     }

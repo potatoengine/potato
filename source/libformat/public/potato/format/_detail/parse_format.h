@@ -1,4 +1,4 @@
-// formatxx - C++ string formatting library.
+// up::format - C++ string formatting library.
 //
 // This is free and unencumbered software released into the public domain.
 // 
@@ -35,7 +35,7 @@
 #include "parse_unsigned.h"
 #include "format_util.h"
 
-namespace formatxx {
+namespace up::format {
 
 	template <typename CharT>
     constexpr FORMATXX_PUBLIC basic_parse_spec_result<CharT> FORMATXX_API parse_format_spec(basic_string_view<CharT> spec_string) noexcept {
@@ -87,6 +87,6 @@ namespace formatxx {
 		return result;
 	}
 
-} // namespace formatxx
+} // namespace up::format
 
 #endif // _guard_FORMATXX_DETAIL_PARSE_FORMAT_H
