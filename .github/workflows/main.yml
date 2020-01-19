@@ -49,25 +49,20 @@ jobs:
           cd build
           ctest -T test -R potato --verbose
 
-  build-posix:
+  build-ubuntu:
     strategy:
       matrix:
-        os: [ 'ubuntu-latest' ]
         config: [ 'Debug', 'Release' ]
         include:
-          - name: Ubuntu (gcc)
-            os: ubuntu-latest
-            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
+          - cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
             cxx: g++-7
             cc: gcc-7
-          - name: Ubuntu (clang)
-            os: ubuntu-latest
-            cxxflags: -Wall -Werror
+          - cxxflags: -Wall -Werror
             cxx: clang++
             cc: clang
     
-    name: '${{ matrix.name }} (${{ matrix.config }} ${{ matrix.cxx }})'
-    runs-on: '${{ matrix.os }}'
+    name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
+    runs-on: 'ubuntu-latest'
 
     steps:
       - uses: actions/checkout@master
@@ -77,15 +72,12 @@ jobs:
         run: |
           sudo apt-get -yq update
           sudo apt-get -yq install uuid-dev
-        if: success() && runner.os == 'linux'
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
           CXX: '${{ matrix.cxx }}'
           CC: '${{ matrix.cc }}'
         run: |
-          echo $(which ninja)
-          echo $(./ninja-build/ninja -v)
           mkdir -p build
           cd build
           cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
@@ -109,7 +101,6 @@ jobs:
         run: |
           sudo apt-get -yq update
           sudo apt-get -yq install uuid-dev
-        if: success() && runner.os == 'linux'
       - name: Configure
         run: |
           mkdir build
@@ -125,7 +116,7 @@ jobs:
 
   build-all:
     name: All
-    needs: [ 'build-windows', 'build-posix', 'doxygen' ]
+    needs: [ 'build-windows', 'build-ubuntu', 'doxygen' ]
     runs-on: 'ubuntu-latest'
 
     steps:
