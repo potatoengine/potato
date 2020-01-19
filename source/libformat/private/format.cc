@@ -28,14 +28,14 @@
 // Authors:
 //   Sean Middleditch <sean@middleditch.us>
 
-#include <formatxx/format.h>
+#include <potato/format/format.h>
 
-#include <formatxx/_detail/format_arg_impl.h>
-#include <formatxx/_detail/format_impl.h>
-#include <formatxx/_detail/parse_format.h>
-#include <formatxx/_detail/parse_printf.h>
-#include <formatxx/_detail/printf_impl.h>
-#include <formatxx/_detail/write_string.h>
+#include <potato/format/_detail/format_arg_impl.h>
+#include <potato/format/_detail/format_impl.h>
+#include <potato/format/_detail/parse_format.h>
+#include <potato/format/_detail/parse_printf.h>
+#include <potato/format/_detail/printf_impl.h>
+#include <potato/format/_detail/write_string.h>
 
 namespace formatxx {
     FORMATXX_PUBLIC void FORMATXX_API format_value(format_writer& output, string_view value, format_options const& options) noexcept {

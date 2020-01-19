@@ -26,7 +26,8 @@ find_package(Threads REQUIRED)
 
 target_link_libraries(potato_libformat
     PUBLIC
-        potato::spud
+        litexx
+        #potato::spud
 )
 
 add_subdirectory(public/potato/format)

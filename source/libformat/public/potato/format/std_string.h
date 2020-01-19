@@ -32,7 +32,7 @@
 #define _guard_FORMATXX_STD_STRING_H
 #pragma once
 
-#include <formatxx/format.h>
+#include <potato/format/format.h>
 #include <string>
 #include <string_view>
 

@@ -107,8 +107,8 @@ enum class formatxx::format_sign : unsigned char {
     space
 };
 
-#include "formatxx/_detail/append_writer.h"
-#include "formatxx/_detail/format_arg.h"
+#include "potato/format/_detail/append_writer.h"
+#include "potato/format/_detail/format_arg.h"
 
 /// Interface for any buffer that the format library can write into.
 template <typename CharT>

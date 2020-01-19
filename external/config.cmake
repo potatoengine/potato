@@ -8,10 +8,6 @@ FetchContent_Declare(litexx
     URL https://github.com/seanmiddleditch/litexx/archive/0fa462ceab8fb581deb0701de2f732201d33099a.zip
     URL_HASH SHA1=659be5d33ee80992da1c09814fe773ad94aa8de8
 )
-FetchContent_Declare(formatxx
-    URL https://github.com/seanmiddleditch/formatxx/archive/1b493f9552b5fcbd3ba58395b08b0455b9ece8d7.zip
-    URL_HASH SHA1=28c4fb43eef52bd21cfadc2f64fe60532935cf52
-)
 FetchContent_Declare(imgui
     URL https://github.com/ocornut/imgui/archive/688cf868ea83db6c2958dd6bf7a20d471d00940b.zip
     URL_HASH SHA1=efeb13591544087010efdcee6231ae28acc43c28

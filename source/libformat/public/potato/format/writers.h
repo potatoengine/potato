@@ -32,8 +32,8 @@
 #define _guard_FORMATXX_WRITERS_H
 #pragma once
 
-#include "formatxx/format.h"
-#include "formatxx/_detail/append_writer.h"
+#include "potato/format/format.h"
+#include "potato/format/_detail/append_writer.h"
 #include <cstring>
 
 namespace formatxx {

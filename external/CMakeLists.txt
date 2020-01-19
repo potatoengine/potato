@@ -7,7 +7,6 @@ include(config.cmake)
 set(EXTERNALS
     doctest
     litexx
-    formatxx
     imgui
     glm
     stb

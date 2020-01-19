@@ -3,7 +3,7 @@
 #pragma once
 
 #include "string_view.h"
-#include <formatxx/format.h>
+#include <potato/format/format.h>
 
 namespace up {
     template <typename Buffer>
