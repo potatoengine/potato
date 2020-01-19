@@ -53,13 +53,14 @@ jobs:
     strategy:
       matrix:
         config: [ 'Debug', 'Release' ]
+        cxx: [ 'g++-7', 'clang++' ]
         include:
-          - cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
-            cxx: g++-7
+          - cxx: g++-7
             cc: gcc-7
-          - cxxflags: -Wall -Werror
-            cxx: clang++
+            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
+          - cxx: clang++
             cc: clang
+            cxxflags: -Wall -Werror
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-latest'
