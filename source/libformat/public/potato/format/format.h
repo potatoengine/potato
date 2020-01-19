@@ -163,7 +163,9 @@ extern template FORMATXX_PUBLIC formatxx::basic_parse_spec_result<char> FORMATXX
 /// @returns a result code indicating any errors.
 template <typename CharT, typename FormatT, typename... Args>
 constexpr formatxx::result_code formatxx::format_to(basic_format_writer<CharT>& writer, FormatT const& format, Args const& ... args) {
-    return _detail::format_impl(writer, basic_string_view<CharT>(format), { _detail::make_format_arg<CharT, _detail::formattable_t<Args>>(args)... });
+    const _detail::basic_format_arg<CharT> bound_args[] = {_detail::make_format_arg<CharT, _detail::formattable_t<Args>>(args)...};
+    const _detail::basic_format_arg_list<CharT> bound_arg_list(bound_args, sizeof(bound_args) / sizeof(bound_args[0]));
+    return _detail::format_impl(writer, basic_string_view<CharT>(format), bound_arg_list);
 }
 
 /// Write the string format using the given parameters and return a string with the result.
@@ -175,7 +177,7 @@ constexpr ResultT formatxx::format_as(FormatT const& format, Args const& ... arg
     using char_type = typename ResultT::value_type;
     ResultT result;
     append_writer writer(result);
-    _detail::format_impl(writer, basic_string_view<char_type>(format), { _detail::make_format_arg<char_type, _detail::formattable_t<Args>>(args)... });
+    format_to(writer, format, args...);
     return result;
 }
 

@@ -57,7 +57,7 @@ jobs:
         include:
           - cxx: g++-9
             cc: gcc-9
-            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized -Wno-error=init-list-lifetime
+            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
             packages: g++-9 gcc-9 libstdc++-9-dev
           - cxx: clang++-9
             cc: clang-9

@@ -27,8 +27,6 @@
 #define _guard_FORMATXX_DETAIL_FORMAT_ARG_H
 #pragma once
 
-#include <initializer_list>
-
 namespace formatxx::_detail {
     enum class format_arg_type;
 
@@ -87,7 +85,7 @@ public:
     using size_type = std::size_t;
 
     constexpr basic_format_arg_list() noexcept = default;
-    constexpr basic_format_arg_list(std::initializer_list<format_arg_type> args) noexcept : _args(args.begin()), _count(args.size()) {}
+    constexpr basic_format_arg_list(format_arg_type const* args, size_type count) noexcept : _args(args), _count(count) {}
 
     constexpr result_code format_arg(basic_format_writer<CharT>& output, size_type index, basic_format_options<CharT> const& options) const {
         return index < _count ? _args[index].format_into(output, options) : result_code::out_of_range;
