@@ -2,11 +2,13 @@
 
 #pragma once
 
+
 namespace up::_detail {
 
+    // std::from_chars is not (yet) constexpr
 	static constexpr char const* parse_unsigned(char const* start, char const* end, unsigned& result) noexcept {
 		result = 0;
-            while (start != end && *start >= char('0') && *start <= char('9')) {
+        while (start != end && *start >= char('0') && *start <= char('9')) {
 			result *= 10;
 			result += *start - char('0');
 			++start;

@@ -6,10 +6,6 @@
 
 namespace up::_detail {
 
-    inline int float_helper(char* buf, int result, char const* fmt, int width, int precision, double value) noexcept {
-        return std::snprintf(buf, result, fmt, width, precision, value);
-    }
-
     inline void write_float(format_writer& out, double value, format_options options) {
         constexpr std::size_t fmt_buf_size = 10;
         char fmt_buf[fmt_buf_size] = {
@@ -23,13 +19,9 @@ namespace up::_detail {
         // every sprint call must have a valid code (1)
         switch (options.specifier) {
         case 'a':
-        case 'A':
         case 'e':
-        case 'E':
         case 'f':
-        case 'F':
         case 'g':
-        case 'G':
             *--fmt_ptr = options.specifier;
             break;
         default:
@@ -67,7 +59,7 @@ namespace up::_detail {
         constexpr std::size_t buf_size = 1078;
         char buf[buf_size] = {0,};
 
-        int const result = float_helper(buf, buf_size, fmt_ptr, options.width, options.precision, value);
+        int const result = std::snprintf(buf, buf_size, fmt_ptr, options.width, options.precision, value);
         if (result > 0) {
             out.write({buf, std::size_t(result) < buf_size ? std::size_t(result) : buf_size});
         }

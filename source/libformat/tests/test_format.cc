@@ -58,16 +58,12 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("ff", format_as<std::string>("{:x}", 255));
         DOCTEST_CHECK_EQ("0xff", format_as<std::string>("{:#x}", 255));
         DOCTEST_CHECK_EQ("0x100", format_as<std::string>("{:#x}", 256));
-        DOCTEST_CHECK_EQ("0X11", format_as<std::string>("{:#X}", 17));
-        DOCTEST_CHECK_EQ("0XFFFFFFEF", format_as<std::string>("{:-#X}", -17));
+        DOCTEST_CHECK_EQ("0x11", format_as<std::string>("{:#x}", 17));
+        DOCTEST_CHECK_EQ("0xffffffef", format_as<std::string>("{:-#x}", -17));
 
         DOCTEST_CHECK_EQ("101", format_as<std::string>("{:b}", 5));
         DOCTEST_CHECK_EQ("-10", format_as<std::string>("{:b}", -2));
         DOCTEST_CHECK_EQ("-0b10", format_as<std::string>("{:#b}", -2));
-
-        DOCTEST_CHECK_EQ("11", format_as<std::string>("{:o}", 9));
-        DOCTEST_CHECK_EQ("-33", format_as<std::string>("{:o}", -27));
-        DOCTEST_CHECK_EQ("-0o10", format_as<std::string>("{:#o}", -8));
 
         DOCTEST_CHECK_EQ("+1234", format_as<std::string>("{:+d}", 1234));
     }
@@ -97,9 +93,6 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("234987324.454500", format_as<std::string>("{:f}", 234987324.4545));
         DOCTEST_CHECK_EQ("2.34987e+08", format_as<std::string>("{:g}", 234987324.4545));
         DOCTEST_CHECK_EQ("0x1.c033e78e8b439p+27", format_as<std::string>("{:a}", 234987324.4545));
-        DOCTEST_CHECK_EQ("234987324.454500", format_as<std::string>("{:F}", 234987324.4545));
-        DOCTEST_CHECK_EQ("2.34987E+08", format_as<std::string>("{:G}", 234987324.4545));
-        DOCTEST_CHECK_EQ("0X1.C033E78E8B439P+27", format_as<std::string>("{:A}", 234987324.4545));
     }
 
     DOCTEST_SUBCASE("strings") {
@@ -124,7 +117,7 @@ DOCTEST_TEST_CASE("format") {
         void const* ptr = reinterpret_cast<void const*>(static_cast<std::uintptr_t>(0xDEADC0DE));
         int const* iptr = reinterpret_cast<int const*>(static_cast<std::uintptr_t>(0xFEFEFEFE));
 
-        DOCTEST_CHECK_EQ("DEADC0DE", format_as<std::string>("{:X}", ptr));
+        DOCTEST_CHECK_EQ("deadc0de", format_as<std::string>("{:x}", ptr));
         DOCTEST_CHECK_EQ("fefefefe", format_as<std::string>("{:x}", iptr));
     }
 

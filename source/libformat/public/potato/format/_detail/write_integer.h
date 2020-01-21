@@ -90,7 +90,6 @@ namespace up::_detail {
 		}
 	};
 
-	template <bool LowerCase>
 	struct hexadecimal_helper {
 		// 2 hex digits per octet
 		template <typename UnsignedT>
@@ -103,37 +102,9 @@ namespace up::_detail {
 			char* const end = buffer + buffer_size<UnsignedT>;
 			char* ptr = end;
 
-			char const* const alphabet = LowerCase ?
-				FormatTraits<char>::sHexadecimalLower :
-				FormatTraits<char>::sHexadecimalUpper;
-
 			do {
-				*--ptr = alphabet[value & 0xF];
+				*--ptr = FormatTraits<char>::sHexadecimalLower[value & 0xF];
 			} while ((value >>= 4) != 0);
-
-			return { ptr, end };
-		}
-	};
-
-	struct octal_helper {
-		// up to three 3 octal digits per octet - FIXME is that right? I don't think that's right
-		template <typename UnsignedT>
-		static constexpr std::size_t buffer_size = 3 * sizeof(UnsignedT);
-
-        static constexpr bool use_signs = true;
-
-		template <typename UnsignedT>
-		static constexpr string_view write(char* buffer, UnsignedT value) {
-			char* const end = buffer + buffer_size<UnsignedT>;
-			char* ptr = end;
-
-			// the octal alphabet is a subset of hexadecimal,
-			// and doesn't depend on casing.
-			char const* const alphabet = FormatTraits<char>::sHexadecimalLower;
-
-			do {
-				*--ptr = alphabet[value & 0x7];
-			} while ((value >>= 3) != 0);
 
 			return { ptr, end };
 		}
@@ -195,17 +166,10 @@ namespace up::_detail {
 		switch (options.specifier) {
 		default:
 		case 0:
-		case 'i':
 		case 'd':
-		case 'D':
 			return write_integer_helper<decimal_helper>(out, raw, options);
 		case 'x':
-			return write_integer_helper<hexadecimal_helper</*lower=*/true>>(out, std::make_unsigned_t<T>(raw), options);
-		case 'X':
-			return write_integer_helper<hexadecimal_helper</*lower=*/false>>(out, std::make_unsigned_t<T>(raw), options);
-		case 'o':
-			return write_integer_helper<octal_helper>(out, raw, options);
-			break;
+			return write_integer_helper<hexadecimal_helper>(out, std::make_unsigned_t<T>(raw), options);
 		case 'b':
 			return write_integer_helper<binary_helper>(out, raw, options);
 			break;

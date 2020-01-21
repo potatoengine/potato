@@ -22,7 +22,7 @@ namespace up::_detail {
 		static constexpr string_view sFalse{ "false" };
         static constexpr string_view sNullptr{ "nullptr" };
 
-        static constexpr string_view sFormatSpecifiers{ "bcsdioxXfFeEaAgG" };
+        static constexpr string_view sFormatSpecifiers{ "bcsdxfeag" };
 
 		static constexpr char const sDecimalPairs[] =
 			"00010203040506070809"
@@ -36,6 +36,5 @@ namespace up::_detail {
 			"80818283848586878889"
 			"90919293949596979899";
 		static constexpr char const sHexadecimalLower[] = "0123456789abcdef";
-		static constexpr char const sHexadecimalUpper[] = "0123456789ABCDEF";
 	};
 } // namespace up::_detail
