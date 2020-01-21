@@ -58,27 +58,25 @@
 #endif
 
 namespace up {
-    template <typename CharT> class basic_format_writer;
-    template <typename CharT> class basic_format_options;
-    template <typename CharT> class basic_parse_spec_result;
-
     enum class result_code : unsigned int;
     enum class format_justify : unsigned char;
     enum class format_sign : unsigned char;
 
-    using format_writer = basic_format_writer<char>;
-    using format_options = basic_format_options<char>;
+    class format_writer;
+    class format_options;
 
-    template <typename CharT, typename FormatT, typename... Args> constexpr result_code format_to(basic_format_writer<CharT>& writer, FormatT const& format, Args const& ... args);
+    class parse_spec_result;
+
+    template <typename FormatT, typename... Args> constexpr result_code format_to(format_writer& writer, FormatT const& format, Args const& ... args);
 
     template <typename ResultT, typename FormatT, typename... Args> constexpr ResultT format_as(FormatT const& format, Args const& ... args);
 
     template <typename Receiver, typename FormatT, typename... Args> constexpr result_code format_append(Receiver& receiver, FormatT const& format, Args const&... args);
 
-    template <typename CharT, typename T>
-    constexpr result_code format_value_to(basic_format_writer<CharT>& writer, T const& value, basic_format_options<CharT> const& options = {});
+    template <typename T>
+    constexpr result_code format_value_to(format_writer& writer, T const& value, format_options const& options = {});
 
-    template <typename CharT> constexpr FORMATXX_PUBLIC basic_parse_spec_result<CharT> FORMATXX_API parse_format_spec(string_view spec_string) noexcept;
+    FORMATXX_PUBLIC parse_spec_result FORMATXX_API parse_format_spec(string_view spec_string) noexcept;
 }
 
 enum class up::result_code : unsigned int {
@@ -100,43 +98,31 @@ enum class up::format_sign : unsigned char {
     space
 };
 
-#include "potato/format/_detail/append_writer.h"
-#include "potato/format/_detail/format_arg.h"
-
-/// Interface for any buffer that the format library can write into.
-template <typename CharT>
-class up::basic_format_writer {
-public:
-    virtual ~basic_format_writer() = default;
-
-    /// Write a string slice.
-    /// @param str The string to write.
-    virtual void write(string_view str) = 0;
-};
-
-/// Result from parse_format_spec.
-template <typename CharT>
-class up::basic_parse_spec_result {
-public:
-    result_code code = result_code::success;
-    basic_format_options<CharT> options;
-    string_view unparsed;
-};
+#include "_detail/format_writer.h"
+#include "_detail/append_writer.h"
+#include "_detail/format_arg.h"
 
 /// Extra formatting specifications.
-template <typename CharT>
-class up::basic_format_options {
+class up::format_options {
 public:
-    constexpr basic_format_options() noexcept : alternate_form(false), leading_zeroes(false) {}
+    constexpr format_options() noexcept : alternate_form(false), leading_zeroes(false) {}
 
     string_view user;
     unsigned width = 0;
     unsigned precision = ~0u;
-    CharT specifier = 0;
+    char specifier = 0;
     format_justify justify = format_justify::right;
     format_sign sign = format_sign::negative;
     bool alternate_form : 1;
     bool leading_zeroes : 1;
+};
+
+/// Result from parse_format_spec.
+class up::parse_spec_result {
+public:
+    result_code code = result_code::success;
+    format_options options;
+    string_view unparsed;
 };
 
 namespace up {
@@ -146,23 +132,21 @@ namespace up {
 
 /// @internal
 namespace up::_detail {
-    template <typename CharT>
-    FORMATXX_PUBLIC result_code FORMATXX_API format_impl(basic_format_writer<CharT>& out, string_view format, basic_format_arg_list<CharT> args);
+    FORMATXX_PUBLIC result_code FORMATXX_API format_impl(format_writer& out, string_view format, format_arg_list args);
 }
 
-extern template FORMATXX_PUBLIC up::result_code FORMATXX_API up::_detail::format_impl(basic_format_writer<char>& out, string_view format, basic_format_arg_list<char> args);
-extern template FORMATXX_PUBLIC up::result_code FORMATXX_API up::_detail::basic_format_arg<char>::format_into(basic_format_writer<char>& output, basic_format_options<char> const& options) const;
-extern template FORMATXX_PUBLIC up::basic_parse_spec_result<char> FORMATXX_API up::parse_format_spec(string_view spec_string) noexcept;
+extern FORMATXX_PUBLIC up::result_code FORMATXX_API up::_detail::format_impl(format_writer& out, string_view format, format_arg_list args);
+extern FORMATXX_PUBLIC up::parse_spec_result FORMATXX_API up::parse_format_spec(string_view spec_string) noexcept;
 
 /// Write the string format using the given parameters into a buffer.
 /// @param writer The write buffer that will receive the formatted text.
 /// @param format The primary text and formatting controls to be written.
 /// @param args The arguments used by the formatting string.
 /// @returns a result code indicating any errors.
-template <typename CharT, typename FormatT, typename... Args>
-constexpr up::result_code up::format_to(basic_format_writer<CharT>& writer, FormatT const& format, Args const& ... args) {
+template <typename FormatT, typename... Args>
+constexpr up::result_code up::format_to(format_writer& writer, FormatT const& format, Args const& ... args) {
     if constexpr (sizeof...(Args) > 0) {
-        const _detail::basic_format_arg<CharT> bound_args[] = { _detail::make_format_arg<CharT, _detail::formattable_t<Args>>(args)... };
+        const _detail::format_arg bound_args[] = { _detail::make_format_arg<_detail::formattable_t<Args>>(args)... };
         return _detail::format_impl(writer, string_view(format), {bound_args, sizeof...(Args)});
     }
     else {
@@ -187,9 +171,9 @@ constexpr ResultT up::format_as(FormatT const& format, Args const& ... args) {
 /// @param value The value to format.
 /// @param options The format control options.
 /// @returns a result code indicating any errors.
-template <typename CharT, typename T>
-constexpr up::result_code up::format_value_to(basic_format_writer<CharT>& writer, T const& value, basic_format_options<CharT> const& options) {
-    return _detail::make_format_arg<CharT>(value).format_into(writer, options);
+template <typename T>
+constexpr up::result_code up::format_value_to(format_writer& writer, T const& value, format_options const& options) {
+    return _detail::make_format_arg(value).format_into(writer, options);
 }
 
 /// Write the string format using the given parameters into a receiver.

@@ -34,12 +34,11 @@
 
 namespace up::_detail {
 
-	template <typename CharT>
-	static constexpr CharT const* parse_unsigned(CharT const* start, CharT const* end, unsigned& result) noexcept {
+	static constexpr char const* parse_unsigned(char const* start, char const* end, unsigned& result) noexcept {
 		result = 0;
-		while (start != end && *start >= CharT('0') && *start <= CharT('9')) {
+            while (start != end && *start >= char('0') && *start <= char('9')) {
 			result *= 10;
-			result += *start - CharT('0');
+			result += *start - char('0');
 			++start;
 		}
 		return start;

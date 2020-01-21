@@ -39,7 +39,7 @@
 
 namespace up {
     template <typename ContainerT> class container_writer;
-    template <typename CharT> class span_writer;
+    class span_writer;
 }
 
 namespace up::_detail {
@@ -55,7 +55,7 @@ namespace up::_detail {
 
 /// Writer that calls insert(end, range_begin, range_end) on wrapped value.
 template <typename ContainerT>
-class up::container_writer final : public up::basic_format_writer<typename ContainerT::value_type> {
+class up::container_writer final : public up::format_writer {
 public:
     constexpr container_writer(ContainerT & container) : _container(container) {}
 
@@ -68,15 +68,14 @@ private:
 };
 
 /// Writer that appends into a provided memory region, guaranteeing NUL termination and no overflow.
-template <typename CharT>
-class up::span_writer final : public up::basic_format_writer<CharT> {
+class up::span_writer final : public up::format_writer {
 public:
     template <std::size_t Count>
-    constexpr span_writer(CharT(&buffer)[Count]) : _buffer(buffer), _cursor(buffer), _length(Count) {
-        *buffer = CharT{};
+    constexpr span_writer(char(&buffer)[Count]) : _buffer(buffer), _cursor(buffer), _length(Count) {
+        *buffer = char{};
     }
-    constexpr span_writer(CharT* buffer, std::size_t length) : _buffer(buffer), _cursor(buffer), _length(length) {
-        *buffer = CharT{};
+    constexpr span_writer(char* buffer, std::size_t length) : _buffer(buffer), _cursor(buffer), _length(length) {
+        *buffer = char{};
     }
 
     void write(string_view str) override {
@@ -85,14 +84,14 @@ public:
         std::size_t const available = capacity - size;
         std::size_t const length = available < str.size() ? available : str.size();
 
-        std::memcpy(_cursor, str.data(), length * sizeof(CharT));
+        std::memcpy(_cursor, str.data(), length);
         _cursor += length;
-        *_cursor = CharT{};
+        *_cursor = char{};
     }
 
 private:
-    CharT* _buffer = nullptr;
-    CharT* _cursor = nullptr;
+    char* _buffer = nullptr;
+    char* _cursor = nullptr;
     std::size_t _length = 0;
 };
 

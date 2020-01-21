@@ -30,10 +30,10 @@
 namespace up::_detail {
     enum class format_arg_type;
 
-    template <typename CharT> class basic_format_arg;
-    template <typename CharT> class basic_format_arg_list;
+    class format_arg;
+    class format_arg_list;
 
-    template <typename CharT, typename T> constexpr basic_format_arg<CharT> make_format_arg(T const& value) noexcept;
+    template <typename T> constexpr format_arg make_format_arg(T const& value) noexcept;
 }
 
 enum class up::_detail::format_arg_type {
@@ -59,16 +59,15 @@ enum class up::_detail::format_arg_type {
 };
 
 /// Abstraction for a single formattable value
-template <typename CharT>
-class up::_detail::basic_format_arg {
+class up::_detail::format_arg {
 public:
-    using thunk_type = result_code(FORMATXX_API*)(basic_format_writer<CharT>&, void const*, basic_format_options<CharT>);
+    using thunk_type = result_code(FORMATXX_API*)(format_writer&, void const*, format_options);
 
-    constexpr basic_format_arg() noexcept = default;
-    constexpr basic_format_arg(_detail::format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
-    constexpr basic_format_arg(thunk_type thunk, void const* value) noexcept : _type(_detail::format_arg_type::custom), _thunk(thunk), _value(value) {}
+    constexpr format_arg() noexcept = default;
+    constexpr format_arg(_detail::format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
+    constexpr format_arg(thunk_type thunk, void const* value) noexcept : _type(_detail::format_arg_type::custom), _thunk(thunk), _value(value) {}
 
-    FORMATXX_PUBLIC result_code FORMATXX_API format_into(basic_format_writer<CharT>& output, basic_format_options<CharT> const& options) const;
+    FORMATXX_PUBLIC result_code FORMATXX_API format_into(format_writer& output, format_options const& options) const;
 
 private:
     _detail::format_arg_type _type = _detail::format_arg_type::unknown;
@@ -77,22 +76,21 @@ private:
 };
 
 /// Abstraction for a set of format arguments.
-template <typename CharT>
-class up::_detail::basic_format_arg_list {
+class up::_detail::format_arg_list {
 public:
-    using format_arg_type = basic_format_arg<CharT>;
+    using format_arg_type = format_arg;
     using thunk_type = typename format_arg_type::thunk_type;
     using size_type = std::size_t;
 
-    constexpr basic_format_arg_list() noexcept = default;
-    constexpr basic_format_arg_list(format_arg_type const* args, size_type count) noexcept : _args(args), _count(count) {}
+    constexpr format_arg_list() noexcept = default;
+    constexpr format_arg_list(format_arg_type const* args, size_type count) noexcept : _args(args), _count(count) {}
 
-    constexpr result_code format_arg(basic_format_writer<CharT>& output, size_type index, basic_format_options<CharT> const& options) const {
+    constexpr result_code format_arg_into(format_writer& output, size_type index, format_options const& options) const {
         return index < _count ? _args[index].format_into(output, options) : result_code::out_of_range;
     }
 
 private:
-    basic_format_arg<CharT> const* _args = nullptr;
+    format_arg const* _args = nullptr;
     size_type _count = 0;
 };
 
@@ -103,10 +101,10 @@ namespace up::_detail {
     template <typename T>
     using formattable_t = decay_array_t<std::remove_reference_t<T>>;
 
-    template <typename C, typename T, typename V = void>
+    template <typename T, typename V = void>
     struct has_format_value { static constexpr bool value = false; };
-    template <typename C, typename T>
-    struct has_format_value<C, T, std::void_t<decltype(format_value(std::declval<basic_format_writer<C>&>(), std::declval<T>(), std::declval<basic_format_options<C>>()))>> {
+    template <typename T>
+    struct has_format_value<T, std::void_t<decltype(format_value(std::declval<format_writer&>(), std::declval<T>(), std::declval<format_options>()))>> {
         static constexpr bool value = true;
     };
 
@@ -133,21 +131,21 @@ namespace up::_detail {
     FORMATXX_TYPE(void const*, void_pointer);
 #undef FORMTAXX_TYPE
 
-    template <typename CharT, typename T>
-    constexpr result_code FORMATXX_API format_value_thunk(basic_format_writer<CharT>& out, void const* ptr, basic_format_options<CharT> options) {
+    template <typename T>
+    constexpr result_code FORMATXX_API format_value_thunk(format_writer& out, void const* ptr, format_options options) {
         format_value(out, *static_cast<T const*>(ptr), options);
         return result_code::success;
     }
 
-    template <typename CharT, typename T>
-    constexpr basic_format_arg<CharT> make_format_arg(T const& value) noexcept {
+    template <typename T>
+    constexpr format_arg make_format_arg(T const& value) noexcept {
         constexpr format_arg_type type = type_of<T>::value;
 
         if constexpr (type != format_arg_type::unknown) {
             return { type, &value };
         }
-        else if constexpr (has_format_value<CharT, T>::value) {
-            return basic_format_arg<CharT>(&format_value_thunk<CharT, T>, &value);
+        else if constexpr (has_format_value<T>::value) {
+            return format_arg(&format_value_thunk<T>, &value);
         }
         else if constexpr (std::is_pointer_v<T>) {
             return { format_arg_type::void_pointer, &value };

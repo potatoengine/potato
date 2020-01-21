@@ -28,16 +28,15 @@
 #pragma once
 
 #include <potato/spud/string_view.h>
+#include "format_writer.h"
 
 namespace up {
-    template <typename CharT> class basic_format_writer;
-
     template <typename ContainerT> class append_writer;
 }
 
 /// Writer that calls append(data, size) on wrapped value.
 template <typename ContainerT>
-class up::append_writer : public up::basic_format_writer<typename ContainerT::value_type>{
+class up::append_writer : public up::format_writer {
 public:
     constexpr append_writer(ContainerT& container) : _container(container) {}
 

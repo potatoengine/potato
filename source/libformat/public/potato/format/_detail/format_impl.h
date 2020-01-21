@@ -37,17 +37,16 @@
 
 namespace up::_detail {
 
-	template <typename CharT>
-	FORMATXX_PUBLIC result_code FORMATXX_API format_impl(basic_format_writer<CharT>& out, string_view format, basic_format_arg_list<CharT> args) {
+	FORMATXX_PUBLIC result_code FORMATXX_API format_impl(format_writer& out, string_view format, format_arg_list args) {
 		unsigned next_index = 0;
 		result_code result = result_code::success;
 
-		CharT const* begin = format.data();
-		CharT const* const end = begin + format.size();
-		CharT const* iter = begin;
+		char const* begin = format.data();
+		char const* const end = begin + format.size();
+		char const* iter = begin;
 
 		while (iter < end) {
-			if (*iter != FormatTraits<CharT>::cFormatBegin) {
+			if (*iter != FormatTraits<char>::cFormatBegin) {
 				++iter;
 				continue;
 			}
@@ -66,14 +65,14 @@ namespace up::_detail {
 
 			// if we just have another { then take it as a literal character by starting our next begin here,
 			// so it'll get written next time we write out the begin; nothing else to do for formatting here
-			if (*iter == FormatTraits<CharT>::cFormatBegin) {
+			if (*iter == FormatTraits<char>::cFormatBegin) {
 				begin = iter++;
 				continue;
 			}
 
 			// determine which argument we're going to format
 			unsigned index = 0;
-			CharT const* const start = iter;
+			char const* const start = iter;
 			iter = parse_unsigned(start, end, index);
 
 			// if we hit the end of the string, we have an incomplete format
@@ -87,14 +86,14 @@ namespace up::_detail {
 				index = next_index;
 			}
 
-			basic_format_options<CharT> options;
+			format_options options;
 
 			// if a : follows the number, we have some formatting controls
-			if (*iter == FormatTraits<CharT>::cFormatSep) {
+			if (*iter == FormatTraits<char>::cFormatSep) {
 				++iter; // eat separator
-				CharT const* const spec_begin = iter;
+				char const* const spec_begin = iter;
 
-				while (iter < end && *iter != FormatTraits<CharT>::cFormatEnd) {
+				while (iter < end && *iter != FormatTraits<char>::cFormatEnd) {
 					++iter;
 				}
 
@@ -104,7 +103,7 @@ namespace up::_detail {
 					break;
 				}
 
-                basic_parse_spec_result<CharT> const spec_result = parse_format_spec<CharT>({ spec_begin, iter });
+                parse_spec_result const spec_result = parse_format_spec({ spec_begin, iter });
                 if (spec_result.code != result_code::success) {
                     result = spec_result.code;
                     break;
@@ -115,14 +114,14 @@ namespace up::_detail {
 			}
 
 			// after the index/options, we expect an end to the format marker
-			if (*iter != FormatTraits<CharT>::cFormatEnd) {
+			if (*iter != FormatTraits<char>::cFormatEnd) {
 				// we have something besides a number, no bueno
 				result = result_code::malformed_input;
 				begin = iter; // make sure we're set up for the next begin, which starts at this unknown character
 				continue;
 			}
 
-			result_code const arg_result = args.format_arg(out, index, options);
+			result_code const arg_result = args.format_arg_into(out, index, options);
 			if (arg_result != result_code::success) {
 				result = arg_result;
 			}

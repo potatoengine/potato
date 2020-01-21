@@ -32,6 +32,7 @@
 #define _guard_FORMATXX_DETAIL_WRITE_INTEGER_H
 #pragma once
 
+#include "potato/format/format.h"
 #include "format_util.h"
 #include <type_traits>
 #include <limits>
@@ -39,34 +40,33 @@
 
 namespace up::_detail {
 
-	template <typename CharT, typename T>
-    constexpr void write_integer(basic_format_writer<CharT>& out, T value, basic_format_options<CharT> const& options);
+	template <typename T>
+    constexpr void write_integer(format_writer& out, T value, format_options const& options);
 
 	struct prefix_helper {
 		// type prefix (2), sign (1)
 		static constexpr std::size_t buffer_size() { return 3; }
 
-		template <typename CharT>
-		static constexpr string_view write(CharT* buffer, basic_format_options<CharT> const& options, bool negative, bool add_sign) {
-			CharT* const end = buffer + buffer_size();
-			CharT* ptr = end;
+		static constexpr string_view write(char* buffer, format_options const& options, bool negative, bool add_sign) {
+			char* const end = buffer + buffer_size();
+			char* ptr = end;
 
 			// add numeric type prefix (2)
 			if (options.alternate_form) {
 				*--ptr = options.specifier;
-				*--ptr = FormatTraits<CharT>::cZero;
+				*--ptr = FormatTraits<char>::cZero;
 			}
 
 			// add sign (1)
             if (add_sign) {
                 if (negative) {
-                    *--ptr = FormatTraits<CharT>::cMinus;
+                    *--ptr = FormatTraits<char>::cMinus;
                 }
                 else if (options.sign == format_sign::always) {
-                    *--ptr = FormatTraits<CharT>::cPlus;
+                    *--ptr = FormatTraits<char>::cPlus;
                 }
                 else if (options.sign == format_sign::space) {
-                    *--ptr = FormatTraits<CharT>::cSpace;
+                    *--ptr = FormatTraits<char>::cSpace;
                 }
             }
 
@@ -84,14 +84,14 @@ namespace up::_detail {
 
         static constexpr bool use_signs = true;
 
-		template <typename CharT, typename UnsignedT>
-		static constexpr string_view write(CharT* buffer, UnsignedT value) {
+		template <typename UnsignedT>
+		static constexpr string_view write(char* buffer, UnsignedT value) {
 			// we'll work on every two decimal digits (groups of 100). notes taken from cppformat,
 			// which took the notes from Alexandrescu from "Three Optimization Tips for C++"
-			CharT const* const table = FormatTraits<CharT>::sDecimalPairs;
+			char const* const table = FormatTraits<char>::sDecimalPairs;
 
-			CharT* const end = buffer + buffer_size<UnsignedT>;
-			CharT* ptr = end;
+			char* const end = buffer + buffer_size<UnsignedT>;
+			char* ptr = end;
 
 			// work on every two decimal digits (groups of 100). notes taken from cppformat,
 			// which took the notes from Alexandrescu from "Three Optimization Tips for C++"
@@ -114,7 +114,7 @@ namespace up::_detail {
 			}
 			else {
 				// we have but a single digit left, so this is easy
-				*--ptr = static_cast<char>(FormatTraits<CharT>::cZero + value);
+				*--ptr = static_cast<char>(FormatTraits<char>::cZero + value);
 			}
 
 			return { ptr, end };
@@ -129,14 +129,14 @@ namespace up::_detail {
 
         static constexpr bool use_signs = false;
 
-		template <typename CharT, typename UnsignedT>
-		static constexpr string_view write(CharT* buffer, UnsignedT value) {
-			CharT* const end = buffer + buffer_size<UnsignedT>;
-			CharT* ptr = end;
+		template <typename UnsignedT>
+		static constexpr string_view write(char* buffer, UnsignedT value) {
+			char* const end = buffer + buffer_size<UnsignedT>;
+			char* ptr = end;
 
-			CharT const* const alphabet = LowerCase ?
-				FormatTraits<CharT>::sHexadecimalLower :
-				FormatTraits<CharT>::sHexadecimalUpper;
+			char const* const alphabet = LowerCase ?
+				FormatTraits<char>::sHexadecimalLower :
+				FormatTraits<char>::sHexadecimalUpper;
 
 			do {
 				*--ptr = alphabet[value & 0xF];
@@ -153,14 +153,14 @@ namespace up::_detail {
 
         static constexpr bool use_signs = true;
 
-		template <typename CharT, typename UnsignedT>
-		static constexpr string_view write(CharT* buffer, UnsignedT value) {
-			CharT* const end = buffer + buffer_size<UnsignedT>;
-			CharT* ptr = end;
+		template <typename UnsignedT>
+		static constexpr string_view write(char* buffer, UnsignedT value) {
+			char* const end = buffer + buffer_size<UnsignedT>;
+			char* ptr = end;
 
 			// the octal alphabet is a subset of hexadecimal,
 			// and doesn't depend on casing.
-			CharT const* const alphabet = FormatTraits<CharT>::sHexadecimalLower;
+			char const* const alphabet = FormatTraits<char>::sHexadecimalLower;
 
 			do {
 				*--ptr = alphabet[value & 0x7];
@@ -177,21 +177,21 @@ namespace up::_detail {
 
         static constexpr bool use_signs = true;
 
-		template <typename CharT, typename UnsignedT>
-		static constexpr string_view write(CharT* buffer, UnsignedT value) {
-			CharT* const end = buffer + buffer_size<UnsignedT>;
-			CharT* ptr = end;
+		template <typename UnsignedT>
+		static constexpr string_view write(char* buffer, UnsignedT value) {
+			char* const end = buffer + buffer_size<UnsignedT>;
+			char* ptr = end;
 
 			do {
-				*--ptr = static_cast<CharT>(FormatTraits<CharT>::cZero + (value & 1));
+				*--ptr = static_cast<char>(FormatTraits<char>::cZero + (value & 1));
 			} while ((value >>= 1) != 0);
 
 			return { ptr, end };
 		}
 	};
 
-	template <typename HelperT, typename CharT, typename ValueT>
-	constexpr void write_integer_helper(basic_format_writer<CharT> & out, ValueT raw_value, basic_format_options<CharT> const& options) {
+	template <typename HelperT, typename ValueT>
+	constexpr void write_integer_helper(format_writer & out, ValueT raw_value, format_options const& options) {
 		using unsigned_type = std::make_unsigned_t<ValueT>;
 
 		// convert to an unsigned value to make the formatting easier; note that must
@@ -200,16 +200,16 @@ namespace up::_detail {
 		unsigned_type const unsigned_value = raw_value >= 0 ? raw_value : 0 - static_cast<unsigned_type>(raw_value);
 
 		// calculate prefixes like signs
-		CharT prefix_buffer[prefix_helper::buffer_size()];
+		char prefix_buffer[prefix_helper::buffer_size()] = {0,};
 		auto const prefix = prefix_helper::write(prefix_buffer, options, raw_value < 0, HelperT::use_signs);
 
 		// generate the actual number
-		CharT value_buffer[HelperT::template buffer_size<unsigned_type>];
+		char value_buffer[HelperT::template buffer_size<unsigned_type>];
 		auto const result = HelperT::write(value_buffer, unsigned_value);
 
 		if (options.precision != ~0u) {
 			out.write(prefix);
-			write_padded_align_right(out, result, FormatTraits<CharT>::cZero, options.precision);
+			write_padded_align_right(out, result, FormatTraits<char>::cZero, options.precision);
 		}
 		else {
 			std::size_t const output_length = prefix.size() + result.size();
@@ -218,23 +218,23 @@ namespace up::_detail {
 			if (options.justify == format_justify::left) {
 				out.write(prefix);
 				out.write(result);
-				write_padding(out, FormatTraits<CharT>::cSpace, padding);
+				write_padding(out, FormatTraits<char>::cSpace, padding);
 			}
 			else if (options.leading_zeroes) {
 				out.write(prefix);
-				write_padding(out, FormatTraits<CharT>::cZero, padding);
+				write_padding(out, FormatTraits<char>::cZero, padding);
 				out.write(result);
 			}
 			else {
-				write_padding(out, FormatTraits<CharT>::cSpace, padding);
+				write_padding(out, FormatTraits<char>::cSpace, padding);
 				out.write(prefix);
 				out.write(result);
 			}
 		}
 	}
 
-	template <typename CharT, typename T>
-	constexpr void write_integer(basic_format_writer<CharT> & out, T raw, basic_format_options<CharT> const& options) {
+	template <typename T>
+	constexpr void write_integer(format_writer & out, T raw, format_options const& options) {
 		switch (options.specifier) {
 		default:
 		case 0:

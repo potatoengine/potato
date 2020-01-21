@@ -40,7 +40,6 @@ namespace up {
         _detail::write_string(output, value, options);
     }
 
-	template FORMATXX_PUBLIC result_code FORMATXX_API _detail::format_impl(basic_format_writer<char>& out, string_view format, basic_format_arg_list<char> args);
-    template FORMATXX_PUBLIC result_code FORMATXX_API _detail::basic_format_arg<char>::format_into(basic_format_writer<char>& output, basic_format_options<char> const& options) const;
-    template FORMATXX_PUBLIC basic_parse_spec_result<char> FORMATXX_API parse_format_spec(string_view spec_string) noexcept;
+	FORMATXX_PUBLIC result_code FORMATXX_API _detail::format_impl(format_writer& out, string_view format, format_arg_list args);
+    FORMATXX_PUBLIC parse_spec_result FORMATXX_API parse_format_spec(string_view spec_string) noexcept;
 } // namespace formatxx

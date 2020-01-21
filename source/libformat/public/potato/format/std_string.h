@@ -37,18 +37,14 @@
 #include <string_view>
 
 namespace up {
-    template <typename CharT, typename StringCharT, typename TraitsT, typename AllocatorT>
-	void format_value(basic_format_writer<CharT>& out, std::basic_string<StringCharT, TraitsT, AllocatorT> const& string, basic_format_options<CharT> const& options) {
+    template <typename StringCharT, typename TraitsT, typename AllocatorT>
+	constexpr void format_value(format_writer& out, std::basic_string<StringCharT, TraitsT, AllocatorT> const& string, format_options const& options) {
 		format_value(out, string_view(string.data(), string.size()), options);
 	}
 
-    template <typename CharT, typename StringCharT, typename TraitsT>
-    void format_value(basic_format_writer<CharT>& out, std::basic_string_view<StringCharT, TraitsT> const& string, basic_format_options<CharT> const& options) {
+    template <typename StringCharT, typename TraitsT>
+    constexpr void format_value(format_writer& out, std::basic_string_view<StringCharT, TraitsT> const& string, format_options const& options) {
         format_value(out, string_view(string.data(), string.size()), options);
-    }
-
-    template <typename StringT = std::string, typename FormatT, typename... Args> StringT format_string(FormatT const& format, Args const& ... args) {
-        return format_as<StringT>(format, args...);
     }
 } // namespace formatxx
 

@@ -37,14 +37,13 @@
 
 namespace up {
 
-	template <typename CharT>
-    constexpr FORMATXX_PUBLIC basic_parse_spec_result<CharT> FORMATXX_API parse_format_spec(string_view spec_string) noexcept {
-		using Traits = _detail::FormatTraits<CharT>;
+    inline FORMATXX_PUBLIC parse_spec_result FORMATXX_API parse_format_spec(string_view spec_string) noexcept {
+		using Traits = _detail::FormatTraits<char>;
 
-        basic_parse_spec_result<CharT> result;
+        parse_spec_result result;
 
-        CharT const* start = spec_string.data();
-		CharT const* const end = start + spec_string.size();
+        char const* start = spec_string.data();
+		char const* const end = start + spec_string.size();
 
 		// flags
 		while (start != end) {

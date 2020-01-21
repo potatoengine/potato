@@ -34,8 +34,7 @@
 
 #include <cinttypes>
 
-template <typename CharT>
-up::result_code FORMATXX_API up::_detail::basic_format_arg<CharT>::format_into(basic_format_writer<CharT>& output, basic_format_options<CharT> const& options) const {
+up::result_code FORMATXX_API up::_detail::format_arg::format_into(format_writer& output, format_options const& options) const {
     switch (_type) {
     case _detail::format_arg_type::char_t:
         _detail::write_char(output, *static_cast<char const*>(_value), options);
@@ -77,13 +76,13 @@ up::result_code FORMATXX_API up::_detail::basic_format_arg<CharT>::format_into(b
 		_detail::write_float(output, *static_cast<double const*>(_value), options);
 		return result_code::success;
     case _detail::format_arg_type::boolean:
-		_detail::write_string(output, *static_cast<bool const*>(_value) ? _detail::FormatTraits<CharT>::sTrue : _detail::FormatTraits<CharT>::sFalse, options);
+        _detail::write_string(output, *static_cast<bool const*>(_value) ? _detail::FormatTraits<char>::sTrue : _detail::FormatTraits<char>::sFalse, options);
 		return result_code::success;
     case _detail::format_arg_type::char_string:
 		_detail::write_string(output, string_view(*static_cast<char const* const*>(_value)), options);
 		return result_code::success;
     case _detail::format_arg_type::null_pointer:
-		_detail::write_string(output, _detail::FormatTraits<CharT>::sNullptr, options);
+        _detail::write_string(output, _detail::FormatTraits<char>::sNullptr, options);
 		return result_code::success;
     case _detail::format_arg_type::void_pointer:
 		_detail::write_integer(output, reinterpret_cast<std::uintptr_t>(*static_cast<void const* const*>(_value)), options);
