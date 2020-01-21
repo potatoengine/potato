@@ -27,9 +27,9 @@
 #define _guard_FORMATXX_DETAIL_APPEND_WRITER_H
 #pragma once
 
-#include <litexx/string_view.h>
+#include <potato/spud/string_view.h>
 
-namespace up::format {
+namespace up {
     template <typename CharT> class basic_format_writer;
 
     template <typename ContainerT> class append_writer;
@@ -37,11 +37,11 @@ namespace up::format {
 
 /// Writer that calls append(data, size) on wrapped value.
 template <typename ContainerT>
-class up::format::append_writer : public up::format::basic_format_writer<typename ContainerT::value_type>{
+class up::append_writer : public up::basic_format_writer<typename ContainerT::value_type>{
 public:
     constexpr append_writer(ContainerT& container) : _container(container) {}
 
-    constexpr void write(litexx::basic_string_view<typename ContainerT::value_type> str) override {
+    constexpr void write(string_view str) override {
         _container.append(str.data(), str.size());
     }
 

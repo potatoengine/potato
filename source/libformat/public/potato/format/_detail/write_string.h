@@ -1,4 +1,4 @@
-// up::format - C++ string formatting library.
+// up - C++ string formatting library.
 //
 // This is free and unencumbered software released into the public domain.
 // 
@@ -34,10 +34,10 @@
 
 #include "format_util.h"
 
-namespace up::format::_detail {
+namespace up::_detail {
 
 	template <typename CharT>
-    constexpr void write_string(basic_format_writer<CharT>& out, basic_string_view<CharT> str, basic_format_options<CharT> const& options) {
+    constexpr void write_string(basic_format_writer<CharT>& out, string_view str, basic_format_options<CharT> const& options) {
 		if (options.precision != ~0u) {
 			str = trim_string(str, options.precision);
 		}
@@ -55,6 +55,6 @@ namespace up::format::_detail {
 		write_string(out, { &ch, 1 }, options);
 	}
 
-} // namespace up::format::_detail
+} // namespace up::_detail
 
 #endif // _guard_FORMATXX_DETAIL_WRITE_STRING_H

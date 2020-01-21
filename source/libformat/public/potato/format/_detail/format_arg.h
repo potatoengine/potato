@@ -27,7 +27,7 @@
 #define _guard_FORMATXX_DETAIL_FORMAT_ARG_H
 #pragma once
 
-namespace up::format::_detail {
+namespace up::_detail {
     enum class format_arg_type;
 
     template <typename CharT> class basic_format_arg;
@@ -36,7 +36,7 @@ namespace up::format::_detail {
     template <typename CharT, typename T> constexpr basic_format_arg<CharT> make_format_arg(T const& value) noexcept;
 }
 
-enum class up::format::_detail::format_arg_type {
+enum class up::_detail::format_arg_type {
     unknown,
     char_t,
     signed_char,
@@ -60,7 +60,7 @@ enum class up::format::_detail::format_arg_type {
 
 /// Abstraction for a single formattable value
 template <typename CharT>
-class up::format::_detail::basic_format_arg {
+class up::_detail::basic_format_arg {
 public:
     using thunk_type = result_code(FORMATXX_API*)(basic_format_writer<CharT>&, void const*, basic_format_options<CharT>);
 
@@ -78,7 +78,7 @@ private:
 
 /// Abstraction for a set of format arguments.
 template <typename CharT>
-class up::format::_detail::basic_format_arg_list {
+class up::_detail::basic_format_arg_list {
 public:
     using format_arg_type = basic_format_arg<CharT>;
     using thunk_type = typename format_arg_type::thunk_type;
@@ -96,7 +96,7 @@ private:
     size_type _count = 0;
 };
 
-namespace up::format::_detail {
+namespace up::_detail {
     template <typename T>
     using decay_array_t = std::conditional_t<std::is_array_v<T>, std::remove_extent_t<T> const*, T>;
 

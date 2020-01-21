@@ -1,4 +1,4 @@
-// up::format - C++ string formatting library.
+// up - C++ string formatting library.
 //
 // This is free and unencumbered software released into the public domain.
 // 
@@ -34,19 +34,20 @@
 
 #include "potato/format/format.h"
 #include "potato/format/_detail/append_writer.h"
+#include <potato/spud/traits.h>
 #include <cstring>
 
-namespace up::format {
+namespace up {
     template <typename ContainerT> class container_writer;
     template <typename CharT> class span_writer;
 }
 
-namespace up::format::_detail {
+namespace up::_detail {
     template <typename IteratorT>
     struct iterator_traits { using value_type = typename IteratorT::value_type; };
 
     template <typename T>
-    struct iterator_traits<T*> { using value_type = litexx::remove_cvref_t<T>; };
+    struct iterator_traits<T*> { using value_type = remove_cvref_t<T>; };
 
     template <typename T>
     using iterator_value_t = typename iterator_traits<T>::value_type;
@@ -54,11 +55,11 @@ namespace up::format::_detail {
 
 /// Writer that calls insert(end, range_begin, range_end) on wrapped value.
 template <typename ContainerT>
-class up::format::container_writer final : public up::format::basic_format_writer<typename ContainerT::value_type> {
+class up::container_writer final : public up::basic_format_writer<typename ContainerT::value_type> {
 public:
     constexpr container_writer(ContainerT & container) : _container(container) {}
 
-    constexpr void write(basic_string_view<typename ContainerT::value_type> str) override {
+    constexpr void write(string_view str) override {
         _container.insert(_container.end(), str.begin(), str.end());
     }
 
@@ -68,7 +69,7 @@ private:
 
 /// Writer that appends into a provided memory region, guaranteeing NUL termination and no overflow.
 template <typename CharT>
-class up::format::span_writer final : public up::format::basic_format_writer<CharT> {
+class up::span_writer final : public up::basic_format_writer<CharT> {
 public:
     template <std::size_t Count>
     constexpr span_writer(CharT(&buffer)[Count]) : _buffer(buffer), _cursor(buffer), _length(Count) {
@@ -78,7 +79,7 @@ public:
         *buffer = CharT{};
     }
 
-    void write(basic_string_view<CharT> str) override {
+    void write(string_view str) override {
         std::size_t const size = _cursor - _buffer;
         std::size_t const capacity = _length - 1;
         std::size_t const available = capacity - size;

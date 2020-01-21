@@ -1,4 +1,4 @@
-// up::format - C++ string formatting library.
+// up - C++ string formatting library.
 //
 // This is free and unencumbered software released into the public domain.
 // 
@@ -35,10 +35,10 @@
 #include "parse_unsigned.h"
 #include "format_util.h"
 
-namespace up::format {
+namespace up {
 
 	template <typename CharT>
-    constexpr FORMATXX_PUBLIC basic_parse_spec_result<CharT> FORMATXX_API parse_format_spec(basic_string_view<CharT> spec_string) noexcept {
+    constexpr FORMATXX_PUBLIC basic_parse_spec_result<CharT> FORMATXX_API parse_format_spec(string_view spec_string) noexcept {
 		using Traits = _detail::FormatTraits<CharT>;
 
         basic_parse_spec_result<CharT> result;
@@ -87,6 +87,6 @@ namespace up::format {
 		return result;
 	}
 
-} // namespace up::format
+} // namespace up
 
 #endif // _guard_FORMATXX_DETAIL_PARSE_FORMAT_H

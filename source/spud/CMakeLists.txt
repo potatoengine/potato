@@ -9,7 +9,7 @@ add_library(potato::spud ALIAS potato_spud)
 
 target_link_libraries(potato_spud
     INTERFACE
-        potato::libformat
+        litexx
 )
 
 target_include_directories(potato_spud INTERFACE public/)

@@ -43,6 +43,9 @@ namespace up {
     template <bool C, typename T = void>
     using enable_if_t = typename std::enable_if_t<C, T>;
 
+    template <typename T>
+    using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+
 #if defined(__cpp_lib_constexpr_invoke)
     using std::invoke;
 #else

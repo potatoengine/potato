@@ -10,30 +10,30 @@ enum class custom_enum { foo, bar };
 
 class custom_type {};
 
-void format_value(up::format::format_writer& writer, custom_enum value, up::format::format_options options) noexcept {
+void format_value(up::format_writer& writer, custom_enum value, up::format_options options) noexcept {
     switch (value) {
     case custom_enum::foo: format_value_to(writer, "foo", options); return;
     case custom_enum::bar: format_value_to(writer, "bar", options); return;
     }
 }
 
-void format_value(up::format::format_writer& writer, custom_type, up::format::format_options options) noexcept {
+void format_value(up::format_writer& writer, custom_type, up::format_options options) noexcept {
     format_value_to(writer, "custom", options);
 }
-void format_value(up::format::format_writer& writer, custom_type const*, up::format::format_options options) noexcept {
+void format_value(up::format_writer& writer, custom_type const*, up::format_options options) noexcept {
     format_value_to(writer, "custom pointer", options);
 }
 
 template <typename T>
 std::string format_as_string(T const& value) {
     std::string result;
-    up::format::append_writer writer(result);
-    up::format::format_value_to(writer, value, {});
+    up::append_writer writer(result);
+    up::format_value_to(writer, value, {});
     return result;
 }
 
 DOCTEST_TEST_CASE("format") {
-    using namespace up::format;
+    using namespace up;
 
     DOCTEST_SUBCASE("integers") {
         DOCTEST_CHECK_EQ("123987", format_string("{}", 123987));
@@ -119,9 +119,9 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("test", format_string("{}", "test"));
         DOCTEST_CHECK_EQ("test", format_string("{}", std::string("test")));
         DOCTEST_CHECK_EQ("test", format_string("{}", std::string_view("test")));
-        DOCTEST_CHECK_EQ("test", format_string("{}", up::format::string_view("test")));
+        DOCTEST_CHECK_EQ("test", format_string("{}", up::string_view("test")));
 
-        DOCTEST_CHECK_EQ("abcdef", format_string("{}{}{}", up::format::string_view("ab"), std::string("cd"), "ef"));
+        DOCTEST_CHECK_EQ("abcdef", format_string("{}{}{}", up::string_view("ab"), std::string("cd"), "ef"));
 
         DOCTEST_CHECK_EQ("abc", format_string(std::string("a{}c"), "b"));
 
@@ -164,10 +164,10 @@ DOCTEST_TEST_CASE("format") {
         char buffer[256];
         span_writer writer(buffer);
 
-        DOCTEST_CHECK_EQ(up::format::result_code::success, format_to(writer, "{} {:4d} {:3.5f}", "abc", 9, 12.57));
-        DOCTEST_CHECK_EQ(up::format::result_code::malformed_input, format_to(writer, "{} {:4d", "abc", 9));
-        DOCTEST_CHECK_EQ(up::format::result_code::success, format_to(writer, "{0} {1}", "abc", 9));
-        DOCTEST_CHECK_EQ(up::format::result_code::out_of_range, format_to(writer, "{0} {1} {5}", "abc", 9, 12.57));
+        DOCTEST_CHECK_EQ(up::result_code::success, format_to(writer, "{} {:4d} {:3.5f}", "abc", 9, 12.57));
+        DOCTEST_CHECK_EQ(up::result_code::malformed_input, format_to(writer, "{} {:4d", "abc", 9));
+        DOCTEST_CHECK_EQ(up::result_code::success, format_to(writer, "{0} {1}", "abc", 9));
+        DOCTEST_CHECK_EQ(up::result_code::out_of_range, format_to(writer, "{0} {1} {5}", "abc", 9, 12.57));
     }
 
     DOCTEST_SUBCASE("format_value_into") {

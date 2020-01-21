@@ -35,12 +35,12 @@
 #include <potato/format/_detail/parse_format.h>
 #include <potato/format/_detail/write_string.h>
 
-namespace up::format {
+namespace up {
     FORMATXX_PUBLIC void FORMATXX_API format_value(format_writer& output, string_view value, format_options const& options) noexcept {
         _detail::write_string(output, value, options);
     }
 
-	template FORMATXX_PUBLIC result_code FORMATXX_API _detail::format_impl(basic_format_writer<char>& out, basic_string_view<char> format, basic_format_arg_list<char> args);
+	template FORMATXX_PUBLIC result_code FORMATXX_API _detail::format_impl(basic_format_writer<char>& out, string_view format, basic_format_arg_list<char> args);
     template FORMATXX_PUBLIC result_code FORMATXX_API _detail::basic_format_arg<char>::format_into(basic_format_writer<char>& output, basic_format_options<char> const& options) const;
-	template FORMATXX_PUBLIC basic_parse_spec_result<char> FORMATXX_API parse_format_spec(basic_string_view<char> spec_string) noexcept;
+    template FORMATXX_PUBLIC basic_parse_spec_result<char> FORMATXX_API parse_format_spec(string_view spec_string) noexcept;
 } // namespace formatxx

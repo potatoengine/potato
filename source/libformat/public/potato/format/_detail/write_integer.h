@@ -1,4 +1,4 @@
-// up::format - C++ string formatting library.
+// up - C++ string formatting library.
 //
 // This is free and unencumbered software released into the public domain.
 // 
@@ -37,7 +37,7 @@
 #include <limits>
 #include <climits>
 
-namespace up::format::_detail {
+namespace up::_detail {
 
 	template <typename CharT, typename T>
     constexpr void write_integer(basic_format_writer<CharT>& out, T value, basic_format_options<CharT> const& options);
@@ -47,7 +47,7 @@ namespace up::format::_detail {
 		static constexpr std::size_t buffer_size() { return 3; }
 
 		template <typename CharT>
-		static constexpr basic_string_view<CharT> write(CharT* buffer, basic_format_options<CharT> const& options, bool negative, bool add_sign) {
+		static constexpr string_view write(CharT* buffer, basic_format_options<CharT> const& options, bool negative, bool add_sign) {
 			CharT* const end = buffer + buffer_size();
 			CharT* ptr = end;
 
@@ -85,7 +85,7 @@ namespace up::format::_detail {
         static constexpr bool use_signs = true;
 
 		template <typename CharT, typename UnsignedT>
-		static constexpr basic_string_view<CharT> write(CharT* buffer, UnsignedT value) {
+		static constexpr string_view write(CharT* buffer, UnsignedT value) {
 			// we'll work on every two decimal digits (groups of 100). notes taken from cppformat,
 			// which took the notes from Alexandrescu from "Three Optimization Tips for C++"
 			CharT const* const table = FormatTraits<CharT>::sDecimalPairs;
@@ -130,7 +130,7 @@ namespace up::format::_detail {
         static constexpr bool use_signs = false;
 
 		template <typename CharT, typename UnsignedT>
-		static constexpr basic_string_view<CharT> write(CharT* buffer, UnsignedT value) {
+		static constexpr string_view write(CharT* buffer, UnsignedT value) {
 			CharT* const end = buffer + buffer_size<UnsignedT>;
 			CharT* ptr = end;
 
@@ -154,7 +154,7 @@ namespace up::format::_detail {
         static constexpr bool use_signs = true;
 
 		template <typename CharT, typename UnsignedT>
-		static constexpr basic_string_view<CharT> write(CharT* buffer, UnsignedT value) {
+		static constexpr string_view write(CharT* buffer, UnsignedT value) {
 			CharT* const end = buffer + buffer_size<UnsignedT>;
 			CharT* ptr = end;
 
@@ -178,7 +178,7 @@ namespace up::format::_detail {
         static constexpr bool use_signs = true;
 
 		template <typename CharT, typename UnsignedT>
-		static constexpr basic_string_view<CharT> write(CharT* buffer, UnsignedT value) {
+		static constexpr string_view write(CharT* buffer, UnsignedT value) {
 			CharT* const end = buffer + buffer_size<UnsignedT>;
 			CharT* ptr = end;
 
@@ -255,6 +255,6 @@ namespace up::format::_detail {
 		}
 	}
 
-} // namespace up::format::_detail
+} // namespace up::_detail
 
 #endif // _guard_FORMATXX_DETAIL_WRITE_INTEGER_H

@@ -1,4 +1,4 @@
-// up::format - C++ string formatting library.
+// up - C++ string formatting library.
 //
 // This is free and unencumbered software released into the public domain.
 // 
@@ -32,7 +32,7 @@
 #define _guard_FORMATXX_DETAIL_PARSE_UNSIGNED_H
 #pragma once
 
-namespace up::format::_detail {
+namespace up::_detail {
 
 	template <typename CharT>
 	static constexpr CharT const* parse_unsigned(CharT const* start, CharT const* end, unsigned& result) noexcept {
@@ -45,6 +45,6 @@ namespace up::format::_detail {
 		return start;
 	}
 
-} // namespace up::format::_detail
+} // namespace up::_detail
 
 #endif // _guard_FORMATXX_DETAIL_PARSE_UNSIGNED_H

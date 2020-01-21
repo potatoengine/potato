@@ -1,12 +1,13 @@
 #include "potato/format/format.h"
 #include "potato/format/std_string.h"
 #include "potato/format/writers.h"
+#include <potato/spud/string_view.h>
 #include <doctest/doctest.h>
 #include <vector>
 #include <ostream>
 
 DOCTEST_TEST_CASE("writer") {
-    using namespace up::format;
+    using namespace up;
 
     DOCTEST_SUBCASE("span") {
         // can hold 9 characters and a NUL byte
@@ -40,7 +41,7 @@ DOCTEST_TEST_CASE("writer") {
         container_writer writer(tmp);
 
         format_to(writer, "1{}3", "2");
-        DOCTEST_CHECK_EQ(string_view("123"), string_view(tmp.data(), tmp.size()));
+        DOCTEST_CHECK_EQ("123"_sv, string_view(tmp.data(), tmp.size()));
     }
 
     DOCTEST_SUBCASE("append") {

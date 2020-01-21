@@ -1,4 +1,4 @@
-// up::format - C++ string formatting library.
+// up - C++ string formatting library.
 //
 // This is free and unencumbered software released into the public domain.
 // 
@@ -32,7 +32,7 @@
 #define _guard_FORMATXX_DETAIL_FORMAT_UTIL_H
 #pragma once
 
-namespace up::format::_detail {
+namespace up::_detail {
 
 	template <typename CharT>
 	constexpr void write_padding(basic_format_writer<CharT>& out, CharT pad_char, std::size_t count) {
@@ -43,7 +43,7 @@ namespace up::format::_detail {
 	}
 
 	template <typename CharT>
-    constexpr void write_padded_align_right(basic_format_writer<CharT>& out, basic_string_view<CharT> string, CharT pad_char, std::size_t count) {
+    constexpr void write_padded_align_right(basic_format_writer<CharT>& out, string_view string, CharT pad_char, std::size_t count) {
 		if (count > string.size()) {
 			write_padding(out, pad_char, count - string.size());
 		}
@@ -52,7 +52,7 @@ namespace up::format::_detail {
 	}
 
 	template <typename CharT>
-    constexpr void write_padded_align_left(basic_format_writer<CharT> & out, basic_string_view<CharT> string, CharT pad_char, std::size_t count) {
+    constexpr void write_padded_align_left(basic_format_writer<CharT> & out, string_view string, CharT pad_char, std::size_t count) {
 		out.write(string);
 
 		if (count > string.size()) {
@@ -61,7 +61,7 @@ namespace up::format::_detail {
 	}
 
 	template <typename CharT>
-    constexpr void write_padded_aligned(basic_format_writer<CharT> & out, basic_string_view<CharT> string, CharT pad_char, std::size_t count, bool align_left) {
+    constexpr void write_padded_aligned(basic_format_writer<CharT> & out, string_view string, CharT pad_char, std::size_t count, bool align_left) {
 		if (!align_left) {
 			write_padded_align_right(out, string, pad_char, count);
 		}
@@ -70,14 +70,12 @@ namespace up::format::_detail {
 		}
 	}
 
-	template <typename CharT>
-	constexpr auto trim_string(basic_string_view<CharT> string, std::size_t max_size) noexcept -> basic_string_view<CharT> {
-		return string.size() < max_size ? string : basic_string_view<CharT>(string.data(), max_size);
+	constexpr auto trim_string(string_view string, std::size_t max_size) noexcept -> string_view {
+		return string.size() < max_size ? string : string_view(string.data(), max_size);
 	}
 
-	template <typename CharT>
-	constexpr bool string_contains(basic_string_view<CharT> haystack, CharT needle) noexcept {
-		for (CharT const c : haystack) {
+    constexpr bool string_contains(string_view haystack, char needle) noexcept {
+		for (char const c : haystack) {
 			if (c == needle) {
 				return true;
 			}
@@ -85,6 +83,6 @@ namespace up::format::_detail {
 		return false;
 	}
 
-} // namespace up::format::_detail
+} // namespace up::_detail
 
 #endif // _guard_FORMATXX_DETAIL_FORMAT_UTIL_H
