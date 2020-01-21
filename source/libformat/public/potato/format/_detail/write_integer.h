@@ -29,13 +29,7 @@ namespace up::_detail {
 			// add sign (1)
             if (add_sign) {
                 if (negative) {
-                    *--ptr = FormatTraits<char>::cMinus;
-                }
-                else if (options.sign == format_sign::always) {
-                    *--ptr = FormatTraits<char>::cPlus;
-                }
-                else if (options.sign == format_sign::space) {
-                    *--ptr = FormatTraits<char>::cSpace;
+                    *--ptr = '-';
                 }
             }
 
@@ -147,18 +141,8 @@ namespace up::_detail {
 		char value_buffer[HelperT::template buffer_size<unsigned_type>];
 		auto const result = HelperT::write(value_buffer, unsigned_value);
 
-		if (options.justify == format_justify::left) {
-			out.write(prefix);
-			out.write(result);
-		}
-		else if (options.leading_zeroes) {
-			out.write(prefix);
-			out.write(result);
-		}
-		else {
-			out.write(prefix);
-			out.write(result);
-		}
+		out.write(prefix);
+		out.write(result);
 	}
 
 	template <typename T>

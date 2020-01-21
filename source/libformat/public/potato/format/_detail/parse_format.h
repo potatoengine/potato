@@ -16,17 +16,8 @@ namespace up {
 
 		// flags
 		while (start != end) {
-			if (*start == Traits::cPlus) {
-				result.options.sign = format_sign::always;
-			}
-			else if (*start == Traits::cMinus) {
-				result.options.justify = format_justify::left;
-			}
-			else if (*start == Traits::cZero) {
+			if (*start == Traits::cZero) {
                 result.options.leading_zeroes = true;
-			}
-			else if (*start == Traits::cSpace) {
-                result.options.sign = format_sign::space;
 			}
 			else if (*start == Traits::cHash) {
                 result.options.alternate_form = true;

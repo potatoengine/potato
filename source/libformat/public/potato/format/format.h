@@ -8,8 +8,6 @@
 
 namespace up {
     enum class result_code : unsigned int;
-    enum class format_justify : unsigned char;
-    enum class format_sign : unsigned char;
 
     class format_writer;
     class format_options;
@@ -33,18 +31,6 @@ enum class up::result_code : unsigned int {
     out_of_space,
 };
 
-enum class up::format_justify : unsigned char {
-    right,
-    left,
-    center
-};
-
-enum class up::format_sign : unsigned char {
-    negative,
-    always,
-    space
-};
-
 #include "_detail/format_writer.h"
 #include "_detail/append_writer.h"
 #include "_detail/fixed_writer.h"
@@ -59,8 +45,6 @@ public:
     unsigned width = 0;
     unsigned precision = ~0u;
     char specifier = 0;
-    format_justify justify = format_justify::right;
-    format_sign sign = format_sign::negative;
     bool alternate_form : 1;
     bool leading_zeroes : 1;
 };

@@ -39,8 +39,6 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("0", format_as<std::string>("{}", 0));
         DOCTEST_CHECK_EQ("-1", format_as<std::string>("{}", -1));
         DOCTEST_CHECK_EQ("1", format_as<std::string>("{}", +1));
-        DOCTEST_CHECK_EQ("+1", format_as<std::string>("{:+}", +1));
-        DOCTEST_CHECK_EQ(" 1", format_as<std::string>("{: }", +1));
 
         DOCTEST_CHECK_EQ("127", format_as<std::string>("{}", std::numeric_limits<std::int8_t>::max()));
         DOCTEST_CHECK_EQ("32767", format_as<std::string>("{}", std::numeric_limits<std::int16_t>::max()));
@@ -59,13 +57,13 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("0xff", format_as<std::string>("{:#x}", 255));
         DOCTEST_CHECK_EQ("0x100", format_as<std::string>("{:#x}", 256));
         DOCTEST_CHECK_EQ("0x11", format_as<std::string>("{:#x}", 17));
-        DOCTEST_CHECK_EQ("0xffffffef", format_as<std::string>("{:-#x}", -17));
+        DOCTEST_CHECK_EQ("0xffffffef", format_as<std::string>("{:#x}", -17));
 
         DOCTEST_CHECK_EQ("101", format_as<std::string>("{:b}", 5));
         DOCTEST_CHECK_EQ("-10", format_as<std::string>("{:b}", -2));
         DOCTEST_CHECK_EQ("-0b10", format_as<std::string>("{:#b}", -2));
 
-        DOCTEST_CHECK_EQ("+1234", format_as<std::string>("{:+d}", 1234));
+        DOCTEST_CHECK_EQ("1234", format_as<std::string>("{:d}", 1234));
     }
 
     DOCTEST_SUBCASE("floats") {
@@ -77,10 +75,8 @@ DOCTEST_TEST_CASE("format") {
 
         DOCTEST_CHECK_EQ("12.34", format_as<std::string>("{:2.2}", 12.34));
         DOCTEST_CHECK_EQ("12.00", format_as<std::string>("{:#2.2}", 12.0));
-        DOCTEST_CHECK_EQ(" 12.34", format_as<std::string>("{: 6.2}", 12.34));
+        DOCTEST_CHECK_EQ(" 12.34", format_as<std::string>("{:6.2}", 12.34));
         DOCTEST_CHECK_EQ("012.34", format_as<std::string>("{:06.2}", 12.34));
-        DOCTEST_CHECK_EQ("+12.34", format_as<std::string>("{:+06.2}", 12.34));
-        DOCTEST_CHECK_EQ("12.34 ;", format_as<std::string>("{:-6.2};", 12.34));
 
         // assumes IEEE754 single- and double-precision types
         DOCTEST_CHECK_EQ("340282346638528859811704183484516925440.000000", format_as<std::string>("{}", std::numeric_limits<float>::max()));

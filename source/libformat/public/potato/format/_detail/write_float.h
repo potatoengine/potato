@@ -7,7 +7,7 @@
 namespace up::_detail {
 
     inline void write_float(format_writer& out, double value, format_options options) {
-        constexpr std::size_t fmt_buf_size = 10;
+        constexpr std::size_t fmt_buf_size = 8;
         char fmt_buf[fmt_buf_size] = {
             0,
         };
@@ -35,17 +35,7 @@ namespace up::_detail {
         *--fmt_ptr = '.';
         *--fmt_ptr = '*';
 
-        // these flags are mutually exclusive within themselves (1)
-        switch (options.sign) {
-        case format_sign::negative: break;
-        case format_sign::always: *--fmt_ptr = FormatTraits<char>::cPlus; break;
-        case format_sign::space: *--fmt_ptr = FormatTraits<char>::cSpace; break;
-        }
-
-        // these flags may all be set together (3)
-        if (options.justify == format_justify::left) {
-            *--fmt_ptr = '-';
-        }
+        // these flags may all be set together (2)
         if (options.leading_zeroes) {
             *--fmt_ptr = '0';
         }
