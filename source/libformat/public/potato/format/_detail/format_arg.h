@@ -61,13 +61,13 @@ enum class up::_detail::format_arg_type {
 /// Abstraction for a single formattable value
 class up::_detail::format_arg {
 public:
-    using thunk_type = result_code(FORMATXX_API*)(format_writer&, void const*, format_options);
+    using thunk_type = result_code(*)(format_writer&, void const*, format_options);
 
     constexpr format_arg() noexcept = default;
     constexpr format_arg(_detail::format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
     constexpr format_arg(thunk_type thunk, void const* value) noexcept : _type(_detail::format_arg_type::custom), _thunk(thunk), _value(value) {}
 
-    FORMATXX_PUBLIC result_code FORMATXX_API format_into(format_writer& output, format_options const& options) const;
+    UP_FORMAT_API result_code format_into(format_writer& output, format_options const& options) const;
 
 private:
     _detail::format_arg_type _type = _detail::format_arg_type::unknown;
@@ -132,7 +132,7 @@ namespace up::_detail {
 #undef FORMTAXX_TYPE
 
     template <typename T>
-    constexpr result_code FORMATXX_API format_value_thunk(format_writer& out, void const* ptr, format_options options) {
+    constexpr result_code format_value_thunk(format_writer& out, void const* ptr, format_options options) {
         format_value(out, *static_cast<T const*>(ptr), options);
         return result_code::success;
     }

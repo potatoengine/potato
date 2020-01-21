@@ -32,30 +32,9 @@
 #define _guard_FORMATXX_H
 #pragma once
 
+#include "_export.h"
 #include <type_traits>
 #include <potato/spud/string_view.h>
-
-#if !defined(FORMATXX_API)
-#	if defined(_WIN32)
-#		define FORMATXX_API __stdcall
-#	else
-#		define FORMATXX_API
-#	endif
-#endif
-
-#if defined(_WIN32) && !defined(FORMATXX_PUBLIC)
-#	if defined(FORMATXX_EXPORT)
-#		define FORMATXX_PUBLIC __declspec(dllexport)
-#	else
-#		define FORMATXX_PUBLIC
-#	endif
-#elif __GNUC__ >= 4 && !defined(FORMATXX_PUBLIC)
-#	if defined(FORMATXX_EXPORT)
-#		define FORMATXX_PUBLIC __attribute__((visibility("default")))
-#	else
-#		define FORMATXX_PUBLIC
-#	endif
-#endif
 
 namespace up {
     enum class result_code : unsigned int;
@@ -74,7 +53,7 @@ namespace up {
     template <typename T>
     constexpr result_code format_value_to(format_writer& writer, T const& value, format_options const& options = {});
 
-    FORMATXX_PUBLIC parse_spec_result FORMATXX_API parse_format_spec(string_view spec_string) noexcept;
+    UP_FORMAT_API parse_spec_result parse_format_spec(string_view spec_string) noexcept;
 }
 
 enum class up::result_code : unsigned int {
@@ -125,16 +104,16 @@ public:
 
 namespace up {
     /// Default format helpers.
-    FORMATXX_PUBLIC void FORMATXX_API format_value(format_writer& out, string_view str, format_options const& options = {}) noexcept;
+    UP_FORMAT_API void format_value(format_writer& out, string_view str, format_options const& options = {}) noexcept;
 }
 
 /// @internal
 namespace up::_detail {
-    FORMATXX_PUBLIC result_code FORMATXX_API format_impl(format_writer& out, string_view format, format_arg_list args);
+    UP_FORMAT_API result_code format_impl(format_writer& out, string_view format, format_arg_list args);
 }
 
-extern FORMATXX_PUBLIC up::result_code FORMATXX_API up::_detail::format_impl(format_writer& out, string_view format, format_arg_list args);
-extern FORMATXX_PUBLIC up::parse_spec_result FORMATXX_API up::parse_format_spec(string_view spec_string) noexcept;
+extern UP_FORMAT_API up::result_code up::_detail::format_impl(format_writer& out, string_view format, format_arg_list args);
+extern UP_FORMAT_API up::parse_spec_result up::parse_format_spec(string_view spec_string) noexcept;
 
 /// Write the string format using the given parameters into a buffer.
 /// @param writer The write buffer that will receive the formatted text.

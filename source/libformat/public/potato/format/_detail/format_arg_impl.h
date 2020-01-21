@@ -34,7 +34,7 @@
 
 #include <cinttypes>
 
-up::result_code FORMATXX_API up::_detail::format_arg::format_into(format_writer& output, format_options const& options) const {
+up::result_code up::_detail::format_arg::format_into(format_writer& output, format_options const& options) const {
     switch (_type) {
     case _detail::format_arg_type::char_t:
         _detail::write_char(output, *static_cast<char const*>(_value), options);

@@ -37,7 +37,7 @@
 
 namespace up {
 
-    inline FORMATXX_PUBLIC parse_spec_result FORMATXX_API parse_format_spec(string_view spec_string) noexcept {
+    inline UP_FORMAT_API parse_spec_result parse_format_spec(string_view spec_string) noexcept {
 		using Traits = _detail::FormatTraits<char>;
 
         parse_spec_result result;

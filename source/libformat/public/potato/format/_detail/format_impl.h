@@ -37,7 +37,7 @@
 
 namespace up::_detail {
 
-	FORMATXX_PUBLIC result_code FORMATXX_API format_impl(format_writer& out, string_view format, format_arg_list args) {
+	UP_FORMAT_API result_code format_impl(format_writer& out, string_view format, format_arg_list args) {
 		unsigned next_index = 0;
 		result_code result = result_code::success;
 

@@ -36,10 +36,10 @@
 #include <potato/format/_detail/write_string.h>
 
 namespace up {
-    FORMATXX_PUBLIC void FORMATXX_API format_value(format_writer& output, string_view value, format_options const& options) noexcept {
+    UP_FORMAT_API void format_value(format_writer& output, string_view value, format_options const& options) noexcept {
         _detail::write_string(output, value, options);
     }
 
-	FORMATXX_PUBLIC result_code FORMATXX_API _detail::format_impl(format_writer& out, string_view format, format_arg_list args);
-    FORMATXX_PUBLIC parse_spec_result FORMATXX_API parse_format_spec(string_view spec_string) noexcept;
+	UP_FORMAT_API result_code _detail::format_impl(format_writer& out, string_view format, format_arg_list args);
+    UP_FORMAT_API parse_spec_result parse_format_spec(string_view spec_string) noexcept;
 } // namespace formatxx
