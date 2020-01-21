@@ -67,11 +67,9 @@ namespace up {
 
     class parse_spec_result;
 
-    template <typename FormatT, typename... Args> constexpr result_code format_to(format_writer& writer, FormatT const& format, Args const& ... args);
-
-    template <typename ResultT, typename FormatT, typename... Args> constexpr ResultT format_as(FormatT const& format, Args const& ... args);
-
-    template <typename Receiver, typename FormatT, typename... Args> constexpr result_code format_append(Receiver& receiver, FormatT const& format, Args const&... args);
+    template <typename... Args> constexpr result_code format_to(format_writer& writer, string_view format_str, Args const& ... args);
+    template <typename ResultT, typename... Args> constexpr ResultT format_as(string_view format_str, Args const& ... args);
+    template <typename Receiver, typename... Args> constexpr result_code format_append(Receiver& receiver, string_view format_str, Args const&... args);
 
     template <typename T>
     constexpr result_code format_value_to(format_writer& writer, T const& value, format_options const& options = {});
@@ -140,29 +138,28 @@ extern FORMATXX_PUBLIC up::parse_spec_result FORMATXX_API up::parse_format_spec(
 
 /// Write the string format using the given parameters into a buffer.
 /// @param writer The write buffer that will receive the formatted text.
-/// @param format The primary text and formatting controls to be written.
+/// @param format_str The primary text and formatting controls to be written.
 /// @param args The arguments used by the formatting string.
 /// @returns a result code indicating any errors.
-template <typename FormatT, typename... Args>
-constexpr up::result_code up::format_to(format_writer& writer, FormatT const& format, Args const& ... args) {
+template <typename... Args>
+constexpr up::result_code up::format_to(format_writer& writer, string_view format_str, Args const& ... args) {
     if constexpr (sizeof...(Args) > 0) {
         const _detail::format_arg bound_args[] = { _detail::make_format_arg<_detail::formattable_t<Args>>(args)... };
-        return _detail::format_impl(writer, string_view(format), {bound_args, sizeof...(Args)});
+        return _detail::format_impl(writer, format_str, {bound_args, sizeof...(Args)});
     }
     else {
-        return _detail::format_impl(writer, string_view(format), {});
+        return _detail::format_impl(writer, format_str, {});
     }
 }
 
 /// Write the string format using the given parameters and return a string with the result.
-/// @param format The primary text and formatting controls to be written.
+/// @param format_str The primary text and formatting controls to be written.
 /// @param args The arguments used by the formatting string.
 /// @returns a formatted string.
-template <typename ResultT, typename FormatT, typename... Args>
-constexpr ResultT up::format_as(FormatT const& format, Args const& ... args) {
+template <typename ResultT, typename... Args>
+constexpr ResultT up::format_as(string_view format_str, Args const&... args) {
     ResultT result;
-    append_writer<ResultT> writer(result);
-    format_to(writer, format, args...);
+    format_append(result, format_str, args...);
     return result;
 }
 
@@ -178,14 +175,13 @@ constexpr up::result_code up::format_value_to(format_writer& writer, T const& va
 
 /// Write the string format using the given parameters into a receiver.
 /// @param receiver The receiver of the formatted text.
-/// @param format The primary text and formatting controls to be written.
+/// @param format_str The primary text and formatting controls to be written.
 /// @param args The arguments used by the formatting string.
 /// @returns a result code indicating any errors.
-template <typename Receiver, typename FormatT, typename... Args>
-constexpr up::result_code up::format_append(Receiver& receiver, FormatT const& format, Args const&... args) {
-    using Writer = append_writer<Receiver>;
-    auto writer = Writer(receiver);
-    return format_to(writer, string_view(format), args...);
+template <typename Receiver, typename... Args>
+constexpr up::result_code up::format_append(Receiver& receiver, string_view format_str, Args const&... args) {
+    auto writer = append_writer(receiver);
+    return format_to(writer, format_str, args...);
 }
 
 #endif // !defined(_guard_FORMATXX_H)

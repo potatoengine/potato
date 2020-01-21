@@ -32,25 +32,12 @@
 #define _guard_FORMATXX_WRITERS_H
 #pragma once
 
-#include "potato/format/format.h"
-#include "potato/format/_detail/append_writer.h"
-#include <potato/spud/traits.h>
+#include "_detail/format_writer.h"
 #include <cstring>
 
 namespace up {
     template <typename ContainerT> class container_writer;
     class span_writer;
-}
-
-namespace up::_detail {
-    template <typename IteratorT>
-    struct iterator_traits { using value_type = typename IteratorT::value_type; };
-
-    template <typename T>
-    struct iterator_traits<T*> { using value_type = remove_cvref_t<T>; };
-
-    template <typename T>
-    using iterator_value_t = typename iterator_traits<T>::value_type;
 }
 
 /// Writer that calls insert(end, range_begin, range_end) on wrapped value.
