@@ -4,7 +4,6 @@
 #include <doctest/doctest.h>
 #include <ostream>
 
-
 enum class standard_enum { one, two };
 enum class custom_enum { foo, bar };
 
