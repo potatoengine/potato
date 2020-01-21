@@ -4,10 +4,6 @@ FetchContent_Declare(doctest
     URL https://github.com/onqtam/doctest/archive/0b0a37405e878628009c9378e2fafa49e1499878.zip
     URL_HASH SHA1=3772e3bdb58f4280f28576911d0d36f7f240a4c7
 )
-FetchContent_Declare(litexx
-    URL https://github.com/seanmiddleditch/litexx/archive/0fa462ceab8fb581deb0701de2f732201d33099a.zip
-    URL_HASH SHA1=659be5d33ee80992da1c09814fe773ad94aa8de8
-)
 FetchContent_Declare(imgui
     URL https://github.com/ocornut/imgui/archive/688cf868ea83db6c2958dd6bf7a20d471d00940b.zip
     URL_HASH SHA1=efeb13591544087010efdcee6231ae28acc43c28
