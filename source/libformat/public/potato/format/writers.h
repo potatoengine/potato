@@ -1,7 +1,5 @@
 // Copyright (C) 2020 Sean Middleditch, all rights reserverd.
 
-#if !defined(_guard_FORMATXX_WRITERS_H)
-#define _guard_FORMATXX_WRITERS_H
 #pragma once
 
 #include "_detail/format_writer.h"
@@ -53,5 +51,3 @@ private:
     char* _cursor = nullptr;
     std::size_t _length = 0;
 };
-
-#endif // !defined(_guard_FORMATXX_WRITERS_H)

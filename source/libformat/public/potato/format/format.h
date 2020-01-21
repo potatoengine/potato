@@ -1,7 +1,5 @@
 // Copyright (C) 2020 Sean Middleditch, all rights reserverd.
 
-#if !defined(_guard_FORMATXX_H)
-#define _guard_FORMATXX_H
 #pragma once
 
 #include "_export.h"
@@ -134,5 +132,3 @@ constexpr up::result_code up::format_append(Receiver& receiver, string_view form
     auto writer = append_writer(receiver);
     return format_to(writer, format_str, args...);
 }
-
-#endif // !defined(_guard_FORMATXX_H)

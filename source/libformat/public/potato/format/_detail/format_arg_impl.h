@@ -1,7 +1,5 @@
 // Copyright (C) 2020 Sean Middleditch, all rights reserverd.
 
-#if !defined(_guard_FORMATXX_DETAIL_FORMAT_ARG_IMPL_H)
-#define _guard_FORMATXX_DETAIL_FORMAT_ARG_IMPL_H
 #pragma once
 
 #include "format_traits.h"
@@ -70,5 +68,3 @@ up::result_code up::_detail::format_arg::format_into(format_writer& output, form
         return result_code::success;
     }
 }
-
-#endif // !defined(_guard_FORMATXX_DETAIL_FORMAT_ARG_IMPL_H)

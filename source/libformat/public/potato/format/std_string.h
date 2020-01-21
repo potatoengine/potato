@@ -1,7 +1,5 @@
 // Copyright (C) 2020 Sean Middleditch, all rights reserverd.
 
-#if !defined(_guard_FORMATXX_STD_STRING_H)
-#define _guard_FORMATXX_STD_STRING_H
 #pragma once
 
 #include "format.h"
@@ -19,5 +17,3 @@ namespace up {
         format_value(out, string_view(string.data(), string.size()), options);
     }
 } // namespace formatxx
-
-#endif // !defined(_guard_FORMATXX_STD_STRING_H)

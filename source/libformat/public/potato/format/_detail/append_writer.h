@@ -1,7 +1,5 @@
 // Copyright (C) 2020 Sean Middleditch, all rights reserverd.
 
-#if !defined(_guard_FORMATXX_DETAIL_APPEND_WRITER_H)
-#define _guard_FORMATXX_DETAIL_APPEND_WRITER_H
 #pragma once
 
 #include <potato/spud/string_view.h>
@@ -24,5 +22,3 @@ public:
 private:
     ContainerT & _container;
 };
-
-#endif // !defined(_guard_FORMATXX_DETAIL_APPEND_WRITER_H)

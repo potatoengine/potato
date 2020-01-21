@@ -1,7 +1,5 @@
 // Copyright (C) 2020 Sean Middleditch, all rights reserverd.
 
-#if !defined(_guard_FORMATXX_DETAIL_PARSE_FORMAT_H)
-#define _guard_FORMATXX_DETAIL_PARSE_FORMAT_H
 #pragma once
 
 #include "parse_unsigned.h"
@@ -59,5 +57,3 @@ namespace up {
 	}
 
 } // namespace up
-
-#endif // _guard_FORMATXX_DETAIL_PARSE_FORMAT_H

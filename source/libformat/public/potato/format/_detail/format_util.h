@@ -1,7 +1,5 @@
 // Copyright (C) 2020 Sean Middleditch, all rights reserverd.
 
-#if !defined(_guard_FORMATXX_DETAIL_FORMAT_UTIL_H)
-#define _guard_FORMATXX_DETAIL_FORMAT_UTIL_H
 #pragma once
 
 namespace up::_detail {
@@ -52,5 +50,3 @@ namespace up::_detail {
 	}
 
 } // namespace up::_detail
-
-#endif // _guard_FORMATXX_DETAIL_FORMAT_UTIL_H

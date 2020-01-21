@@ -1,7 +1,5 @@
 // Copyright (C) 2020 Sean Middleditch, all rights reserverd.
 
-#if !defined(_guard_FORMATXX_DETAIL_WRITE_STRING_H)
-#define _guard_FORMATXX_DETAIL_WRITE_STRING_H
 #pragma once
 
 #include "format_util.h"
@@ -26,5 +24,3 @@ namespace up::_detail {
 	}
 
 } // namespace up::_detail
-
-#endif // _guard_FORMATXX_DETAIL_WRITE_STRING_H
