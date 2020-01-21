@@ -13,5 +13,5 @@ namespace up {
     }
 
 	UP_FORMAT_API result_code _detail::format_impl(format_writer& out, string_view format, format_arg_list args);
-    UP_FORMAT_API parse_spec_result parse_format_spec(string_view spec_string) noexcept;
+    UP_FORMAT_API constexpr parse_spec_result parse_format_spec(string_view spec_string) noexcept;
 } // namespace formatxx

@@ -80,7 +80,6 @@ namespace up::_detail {
                 }
 
                 options = spec_result.options;
-                options.user = spec_result.unparsed;
 			}
 
 			// after the index/options, we expect an end to the format marker

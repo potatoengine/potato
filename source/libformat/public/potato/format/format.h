@@ -21,7 +21,7 @@ namespace up {
     template <typename T>
     constexpr result_code format_value_to(format_writer& writer, T const& value, format_options const& options = {});
 
-    UP_FORMAT_API parse_spec_result parse_format_spec(string_view spec_string) noexcept;
+    constexpr UP_FORMAT_API parse_spec_result parse_format_spec(string_view spec_string) noexcept;
 }
 
 enum class up::result_code : unsigned int {
@@ -41,7 +41,6 @@ class up::format_options {
 public:
     constexpr format_options() noexcept : alternate_form(false), leading_zeroes(false) {}
 
-    string_view user;
     unsigned width = 0;
     unsigned precision = ~0u;
     char specifier = 0;
@@ -68,7 +67,7 @@ namespace up::_detail {
 }
 
 extern UP_FORMAT_API up::result_code up::_detail::format_impl(format_writer& out, string_view format, format_arg_list args);
-extern UP_FORMAT_API up::parse_spec_result up::parse_format_spec(string_view spec_string) noexcept;
+extern constexpr UP_FORMAT_API up::parse_spec_result up::parse_format_spec(string_view spec_string) noexcept;
 
 /// Write the string format using the given parameters into a buffer.
 /// @param writer The write buffer that will receive the formatted text.

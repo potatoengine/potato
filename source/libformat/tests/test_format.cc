@@ -52,16 +52,14 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("-9223372036854775808", format_as<std::string>("{}", std::numeric_limits<std::int64_t>::min()));
 
         DOCTEST_CHECK_EQ("0", format_as<std::string>("{:x}", 0));
-        DOCTEST_CHECK_EQ("0x0", format_as<std::string>("{:#x}", 0));
         DOCTEST_CHECK_EQ("ff", format_as<std::string>("{:x}", 255));
-        DOCTEST_CHECK_EQ("0xff", format_as<std::string>("{:#x}", 255));
-        DOCTEST_CHECK_EQ("0x100", format_as<std::string>("{:#x}", 256));
-        DOCTEST_CHECK_EQ("0x11", format_as<std::string>("{:#x}", 17));
-        DOCTEST_CHECK_EQ("0xffffffef", format_as<std::string>("{:#x}", -17));
+        DOCTEST_CHECK_EQ("100", format_as<std::string>("{:x}", 256));
+        DOCTEST_CHECK_EQ("11", format_as<std::string>("{:x}", 17));
+        DOCTEST_CHECK_EQ("-11", format_as<std::string>("{:x}", -17));
+        DOCTEST_CHECK_EQ("ffffffef", format_as<std::string>("{:x}", ~16u));
 
         DOCTEST_CHECK_EQ("101", format_as<std::string>("{:b}", 5));
         DOCTEST_CHECK_EQ("-10", format_as<std::string>("{:b}", -2));
-        DOCTEST_CHECK_EQ("-0b10", format_as<std::string>("{:#b}", -2));
 
         DOCTEST_CHECK_EQ("1234", format_as<std::string>("{:d}", 1234));
     }
