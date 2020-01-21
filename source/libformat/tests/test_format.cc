@@ -8,18 +8,18 @@ enum class custom_enum { foo, bar };
 
 class custom_type {};
 
-void format_value(up::format_writer& writer, custom_enum value, up::format_options options) noexcept {
+void format_value(up::format_writer& writer, custom_enum value) noexcept {
     switch (value) {
-    case custom_enum::foo: format_value_to(writer, "foo", options); return;
-    case custom_enum::bar: format_value_to(writer, "bar", options); return;
+    case custom_enum::foo: format_value_to(writer, "foo"); return;
+    case custom_enum::bar: format_value_to(writer, "bar"); return;
     }
 }
 
-void format_value(up::format_writer& writer, custom_type, up::format_options options) noexcept {
-    format_value_to(writer, "custom", options);
+void format_value(up::format_writer& writer, custom_type) noexcept {
+    format_value_to(writer, "custom");
 }
-void format_value(up::format_writer& writer, custom_type const*, up::format_options options) noexcept {
-    format_value_to(writer, "custom pointer", options);
+void format_value(up::format_writer& writer, custom_type const*) noexcept {
+    format_value_to(writer, "custom pointer");
 }
 
 template <typename T>

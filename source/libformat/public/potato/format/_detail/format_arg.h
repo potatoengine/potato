@@ -38,7 +38,7 @@ enum class up::_detail::format_arg_type {
 /// Abstraction for a single formattable value
 class up::_detail::format_arg {
 public:
-    using thunk_type = result_code(*)(format_writer&, void const*, format_options);
+    using thunk_type = result_code(*)(format_writer&, void const*);
 
     constexpr format_arg() noexcept = default;
     constexpr format_arg(_detail::format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
@@ -81,7 +81,7 @@ namespace up::_detail {
     template <typename T, typename V = void>
     struct has_format_value { static constexpr bool value = false; };
     template <typename T>
-    struct has_format_value<T, std::void_t<decltype(format_value(std::declval<format_writer&>(), std::declval<T>(), std::declval<format_options>()))>> {
+    struct has_format_value<T, std::void_t<decltype(format_value(std::declval<format_writer&>(), std::declval<T>()))>> {
         static constexpr bool value = true;
     };
 
@@ -109,8 +109,8 @@ namespace up::_detail {
 #undef FORMTAXX_TYPE
 
     template <typename T>
-    constexpr result_code format_value_thunk(format_writer& out, void const* ptr, format_options options) {
-        format_value(out, *static_cast<T const*>(ptr), options);
+    constexpr result_code format_value_thunk(format_writer& out, void const* ptr) {
+        format_value(out, *static_cast<T const*>(ptr));
         return result_code::success;
     }
 

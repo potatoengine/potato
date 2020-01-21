@@ -63,7 +63,7 @@ up::result_code up::_detail::format_arg::format_into(format_writer& output, form
 		_detail::write_integer(output, reinterpret_cast<std::uintptr_t>(*static_cast<void const* const*>(_value)), options);
 		return result_code::success;
     case _detail::format_arg_type::custom:
-        return _thunk(output, _value, options);
+        return _thunk(output, _value);
     default:
         return result_code::success;
     }

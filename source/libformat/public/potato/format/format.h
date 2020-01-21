@@ -55,7 +55,6 @@ namespace up::_detail {
 }
 
 extern UP_FORMAT_API up::result_code up::_detail::format_impl(format_writer& out, string_view format, format_arg_list args);
-extern constexpr UP_FORMAT_API up::parse_spec_result up::parse_format_spec(string_view spec_string) noexcept;
 
 /// Write the string format using the given parameters into a buffer.
 /// @param writer The write buffer that will receive the formatted text.
