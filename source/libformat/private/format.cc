@@ -8,7 +8,7 @@
 #include <potato/format/_detail/write_string.h>
 
 namespace up {
-    UP_FORMAT_API void format_value(format_writer& output, string_view value, format_options const& options) noexcept {
+    UP_FORMAT_API void format_value(format_writer& output, string_view value, format_options options) noexcept {
         _detail::write_string(output, value, options);
     }
 

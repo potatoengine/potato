@@ -19,7 +19,7 @@ namespace up {
     template <typename Receiver, typename... Args> constexpr result_code format_append(Receiver& receiver, string_view format_str, Args const&... args);
 
     template <typename T>
-    constexpr result_code format_value_to(format_writer& writer, T const& value, format_options const& options = {});
+    constexpr result_code format_value_to(format_writer& writer, T const& value, format_options options = {});
 
     constexpr UP_FORMAT_API parse_spec_result parse_format_spec(string_view spec_string) noexcept;
 }
@@ -35,30 +35,18 @@ enum class up::result_code : unsigned int {
 #include "_detail/append_writer.h"
 #include "_detail/fixed_writer.h"
 #include "_detail/format_arg.h"
-
-/// Extra formatting specifications.
-class up::format_options {
-public:
-    constexpr format_options() noexcept : alternate_form(false), leading_zeroes(false) {}
-
-    unsigned width = 0;
-    unsigned precision = ~0u;
-    char specifier = 0;
-    bool alternate_form : 1;
-    bool leading_zeroes : 1;
-};
+#include "_detail/format_options.h"
 
 /// Result from parse_format_spec.
 class up::parse_spec_result {
 public:
     result_code code = result_code::success;
     format_options options;
-    string_view unparsed;
 };
 
 namespace up {
     /// Default format helpers.
-    UP_FORMAT_API void format_value(format_writer& out, string_view str, format_options const& options = {}) noexcept;
+    UP_FORMAT_API void format_value(format_writer& out, string_view str, format_options options = {}) noexcept;
 }
 
 /// @internal
@@ -102,7 +90,7 @@ constexpr ResultT up::format_as(string_view format_str, Args const&... args) {
 /// @param options The format control options.
 /// @returns a result code indicating any errors.
 template <typename T>
-constexpr up::result_code up::format_value_to(format_writer& writer, T const& value, format_options const& options) {
+constexpr up::result_code up::format_value_to(format_writer& writer, T const& value, format_options options) {
     return _detail::make_format_arg(value).format_into(writer, options);
 }
 

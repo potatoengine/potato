@@ -29,19 +29,21 @@ namespace up {
 		}
 
 		// read in width
-		start = _detail::parse_unsigned(start, end, result.options.width);
+        unsigned width = 0;
+		start = _detail::parse_unsigned(start, end, width);
+        result.options.width = static_cast<unsigned char>(width);
 
 		// read in precision, if present
 		if (start != end && *start == Traits::cDot) {
-			start = _detail::parse_unsigned(start + 1, end, result.options.precision);
+            unsigned precision = 0;
+			start = _detail::parse_unsigned(start + 1, end, precision);
+            result.options.precision = static_cast<unsigned char>(precision);
 		}
 
 		// generic code specified option allowed (mostly to set format_options on numeric formatting)
 		if (start != end && Traits::sFormatSpecifiers.find(*start) != string_view::npos) {
             result.options.specifier = *start++;
 		}
-
-        result.unparsed = { start, end };
 
 		return result;
 	}
