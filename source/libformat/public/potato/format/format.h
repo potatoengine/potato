@@ -47,6 +47,7 @@ enum class up::format_sign : unsigned char {
 
 #include "_detail/format_writer.h"
 #include "_detail/append_writer.h"
+#include "_detail/fixed_writer.h"
 #include "_detail/format_arg.h"
 
 /// Extra formatting specifications.

@@ -1,6 +1,5 @@
 #include "potato/format/format.h"
 #include "potato/format/std_string.h"
-#include "potato/format/writers.h"
 #include <doctest/doctest.h>
 #include <ostream>
 
@@ -161,7 +160,7 @@ DOCTEST_TEST_CASE("format") {
 
     DOCTEST_SUBCASE("errors") {
         char buffer[256];
-        span_writer writer(buffer);
+        fixed_writer writer(buffer);
 
         DOCTEST_CHECK_EQ(up::result_code::success, format_to(writer, "{} {:4d} {:3.5f}", "abc", 9, 12.57));
         DOCTEST_CHECK_EQ(up::result_code::malformed_input, format_to(writer, "{} {:4d", "abc", 9));
