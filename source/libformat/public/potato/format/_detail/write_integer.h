@@ -3,7 +3,6 @@
 #pragma once
 
 #include "potato/format/format.h"
-#include "format_util.h"
 #include <type_traits>
 #include <limits>
 #include <climits>
@@ -177,29 +176,17 @@ namespace up::_detail {
 		char value_buffer[HelperT::template buffer_size<unsigned_type>];
 		auto const result = HelperT::write(value_buffer, unsigned_value);
 
-		if (options.precision != ~0u) {
+		if (options.justify == format_justify::left) {
 			out.write(prefix);
-			write_padded_align_right(out, result, FormatTraits<char>::cZero, options.precision);
+			out.write(result);
+		}
+		else if (options.leading_zeroes) {
+			out.write(prefix);
+			out.write(result);
 		}
 		else {
-			std::size_t const output_length = prefix.size() + result.size();
-			std::size_t const padding = options.width > output_length ? options.width - output_length : 0;
-
-			if (options.justify == format_justify::left) {
-				out.write(prefix);
-				out.write(result);
-				write_padding(out, FormatTraits<char>::cSpace, padding);
-			}
-			else if (options.leading_zeroes) {
-				out.write(prefix);
-				write_padding(out, FormatTraits<char>::cZero, padding);
-				out.write(result);
-			}
-			else {
-				write_padding(out, FormatTraits<char>::cSpace, padding);
-				out.write(prefix);
-				out.write(result);
-			}
+			out.write(prefix);
+			out.write(result);
 		}
 	}
 

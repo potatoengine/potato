@@ -3,7 +3,6 @@
 #pragma once
 
 #include "parse_unsigned.h"
-#include "format_util.h"
 
 namespace up {
 
@@ -47,7 +46,7 @@ namespace up {
 		}
 
 		// generic code specified option allowed (mostly to set format_options on numeric formatting)
-		if (start != end && _detail::string_contains(Traits::sFormatSpecifiers, *start)) {
+		if (start != end && Traits::sFormatSpecifiers.find(*start) != string_view::npos) {
             result.options.specifier = *start++;
 		}
 

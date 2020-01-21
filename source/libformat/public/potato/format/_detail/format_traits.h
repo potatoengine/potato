@@ -18,17 +18,11 @@ namespace up::_detail {
 		static constexpr char cDot = '.';
         static constexpr char cZero = '0';
 
-		static constexpr char cPrintfSpec = '%';
-		static constexpr char cPrintfIndex = '$';
-
 		static constexpr string_view sTrue{ "true" };
 		static constexpr string_view sFalse{ "false" };
         static constexpr string_view sNullptr{ "nullptr" };
 
         static constexpr string_view sFormatSpecifiers{ "bcsdioxXfFeEaAgG" };
-
-		static constexpr string_view sPrintfSpecifiers{ "bcCsSdioxXufFeEaAgGp" };
-		static constexpr string_view sPrintfModifiers{ "hljztL" };
 
 		static constexpr char const sDecimalPairs[] =
 			"00010203040506070809"
