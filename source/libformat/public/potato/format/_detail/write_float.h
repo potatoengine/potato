@@ -35,12 +35,9 @@ namespace up::_detail {
         *--fmt_ptr = '.';
         *--fmt_ptr = '*';
 
-        // these flags may all be set together (2)
+        // leading zeroes flag (1)
         if (options.leading_zeroes) {
             *--fmt_ptr = '0';
-        }
-        if (options.alternate_form) {
-            *--fmt_ptr = FormatTraits<char>::cHash;
         }
 
         // every format must start with this (1)
@@ -49,7 +46,7 @@ namespace up::_detail {
         constexpr std::size_t buf_size = 1078;
         char buf[buf_size] = {0,};
 
-        int const result = std::snprintf(buf, buf_size, fmt_ptr, options.width, options.precision, value);
+        int const result = std::snprintf(buf, buf_size, fmt_ptr, options.width, static_cast<signed char>(options.precision), value);
         if (result > 0) {
             out.write({buf, std::size_t(result) < buf_size ? std::size_t(result) : buf_size});
         }

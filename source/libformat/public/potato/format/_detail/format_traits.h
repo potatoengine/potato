@@ -11,7 +11,6 @@ namespace up::_detail {
 		static constexpr char cFormatEnd = '}';
 		static constexpr char cFormatSep = ':';
 
-		static constexpr char cHash = '#';
 		static constexpr char cDot = '.';
         static constexpr char cZero = '0';
 

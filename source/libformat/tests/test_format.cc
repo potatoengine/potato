@@ -72,7 +72,7 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("-1.000000", format_as<std::string>("{}", -1.0));
 
         DOCTEST_CHECK_EQ("12.34", format_as<std::string>("{:2.2}", 12.34));
-        DOCTEST_CHECK_EQ("12.00", format_as<std::string>("{:#2.2}", 12.0));
+        DOCTEST_CHECK_EQ("12.00", format_as<std::string>("{:2.2}", 12.0));
         DOCTEST_CHECK_EQ(" 12.34", format_as<std::string>("{:6.2}", 12.34));
         DOCTEST_CHECK_EQ("012.34", format_as<std::string>("{:06.2}", 12.34));
 

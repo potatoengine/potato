@@ -19,9 +19,6 @@ namespace up {
 			if (*start == Traits::cZero) {
                 result.options.leading_zeroes = true;
 			}
-			else if (*start == Traits::cHash) {
-                result.options.alternate_form = true;
-			}
 			else {
 				break;
 			}

@@ -8,12 +8,11 @@
 namespace up {
     class format_options {
     public:
-        constexpr format_options() noexcept : alternate_form(false), leading_zeroes(false) {}
+        constexpr format_options() noexcept : leading_zeroes(false) {}
 
         unsigned char width = 0;
         unsigned char precision = ~static_cast<unsigned char>(0);
         char specifier = 0;
-        bool alternate_form : 1;
         bool leading_zeroes : 1;
     };
 
