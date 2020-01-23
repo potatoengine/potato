@@ -19,7 +19,7 @@ namespace up {
     template <typename Receiver, typename... Args> constexpr result_code format_append(Receiver& receiver, string_view format_str, Args const&... args);
 
     template <typename T>
-    constexpr result_code format_value_to(format_writer& writer, T const& value, format_options options = {});
+    constexpr result_code format_value_to(format_writer& writer, T const& value, string_view spec_string = {});
 
     constexpr UP_FORMAT_API parse_spec_result parse_format_spec(string_view spec_string) noexcept;
 }
@@ -46,7 +46,7 @@ public:
 
 namespace up {
     /// Default format helpers.
-    UP_FORMAT_API void format_value(format_writer& out, string_view str, format_options options = {}) noexcept;
+    UP_FORMAT_API void format_value(format_writer& out, string_view str, string_view spec_string = {}) noexcept;
 }
 
 /// @internal
@@ -89,8 +89,8 @@ constexpr ResultT up::format_as(string_view format_str, Args const&... args) {
 /// @param options The format control options.
 /// @returns a result code indicating any errors.
 template <typename T>
-constexpr up::result_code up::format_value_to(format_writer& writer, T const& value, format_options options) {
-    return _detail::make_format_arg(value).format_into(writer, options);
+constexpr up::result_code up::format_value_to(format_writer& writer, T const& value, string_view spec_string) {
+    return _detail::make_format_arg(value).format_into(writer, spec_string);
 }
 
 /// Write the string format using the given parameters into a receiver.

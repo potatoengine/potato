@@ -56,7 +56,7 @@ namespace up::_detail {
 				index = next_index;
 			}
 
-			format_options options;
+			string_view spec_string;
 
 			// if a : follows the number, we have some formatting controls
 			if (*iter == FormatTraits<char>::cFormatSep) {
@@ -73,13 +73,7 @@ namespace up::_detail {
 					break;
 				}
 
-                parse_spec_result const spec_result = parse_format_spec({ spec_begin, iter });
-                if (spec_result.code != result_code::success) {
-                    result = spec_result.code;
-                    break;
-                }
-
-                options = spec_result.options;
+                spec_string = { spec_begin, iter };
 			}
 
 			// after the index/options, we expect an end to the format marker
@@ -90,7 +84,7 @@ namespace up::_detail {
 				continue;
 			}
 
-			result_code const arg_result = args.format_arg_into(out, index, options);
+			result_code const arg_result = args.format_arg_into(out, index, spec_string);
 			if (arg_result != result_code::success) {
 				result = arg_result;
 			}
