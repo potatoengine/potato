@@ -3,6 +3,7 @@
 #pragma once
 
 #include "potato/format/format.h"
+#include "parse_format.h"
 #include <limits>
 #include <charconv>
 

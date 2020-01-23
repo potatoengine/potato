@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "parse_format.h"
 #include <cstdio>
 
 namespace up::_detail {

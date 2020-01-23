@@ -6,6 +6,13 @@
 
 namespace up {
 
+    /// Result from parse_format_spec.
+    class parse_spec_result {
+    public:
+        result_code code = result_code::success;
+        format_options options;
+    };
+
     constexpr parse_spec_result parse_format_spec(string_view spec_string) noexcept {
 		using Traits = _detail::FormatTraits<char>;
 

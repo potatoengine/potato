@@ -20,8 +20,6 @@ namespace up {
 
     template <typename T>
     constexpr result_code format_value_to(format_writer& writer, T const& value, string_view spec_string = {});
-
-    constexpr UP_FORMAT_API parse_spec_result parse_format_spec(string_view spec_string) noexcept;
 }
 
 enum class up::result_code : unsigned int {
@@ -36,13 +34,6 @@ enum class up::result_code : unsigned int {
 #include "_detail/fixed_writer.h"
 #include "_detail/format_arg.h"
 #include "_detail/format_options.h"
-
-/// Result from parse_format_spec.
-class up::parse_spec_result {
-public:
-    result_code code = result_code::success;
-    format_options options;
-};
 
 namespace up {
     /// Default format helpers.
