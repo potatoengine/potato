@@ -11,28 +11,26 @@ namespace up::_detail {
 
 	template <typename Writer, typename T>
     constexpr void write_integer(Writer& out, T raw, string_view spec_string) {
-        auto const spec = parse_format_spec(spec_string);
+        constexpr auto max_hex_chars = sizeof(raw) * CHAR_BIT + 1 /*negative*/;
+        constexpr auto max_dec_chars = std::numeric_limits<T>::digits10 + 2 /*overflow digit, negative*/;
+        constexpr auto max_bin_chars = std::numeric_limits<T>::digits + 1 /*negative*/;
+        constexpr auto max_buffer = 1/*NUL*/ + (max_hex_chars | max_dec_chars | max_bin_chars);
 
-        if (spec.code == result_code::success && spec.options.specifier == 'x') {
-            char buffer[sizeof(raw) * CHAR_BIT + 2 /*negative, nul*/] = {0,};
-            auto const result = std::to_chars(buffer, buffer + sizeof(buffer), raw, 16);
-            if (result.ec == std::errc()) {
-                out.write({buffer, result.ptr});
+        char buffer[max_buffer] = { 0, };
+        int base = 10;
+
+        if (auto const [result, spec] = parse_format_spec(spec_string); result == result_code::success) {
+            switch (spec.specifier) {
+            case 'x': base = 16; break;
+            case 'b': base = 2; break;
+            default: break;
             }
         }
-        else if (spec.code == result_code::success && spec.options.specifier == 'b') {
-            char buffer[std::numeric_limits<T>::digits + 2 /*negative, nul*/] = {0,};
-            auto const result = std::to_chars(buffer, buffer + sizeof(buffer), raw, 2);
-            if (result.ec == std::errc()) {
-                out.write({buffer, result.ptr});
-            }
-        }
-        else {
-            char buffer[std::numeric_limits<T>::digits10 + 3 /*overflow digit, negative, nul*/] = {0,};
-            auto const result = std::to_chars(buffer, buffer + sizeof(buffer), raw, 10);
-            if (result.ec == std::errc()) {
-                out.write({buffer, result.ptr});
-            }
+
+        auto const result = std::to_chars(buffer, buffer + sizeof(buffer), raw, base);
+
+        if (result.ec == std::errc()) {
+            out.write({buffer, result.ptr});
         }
 	}
 
