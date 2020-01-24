@@ -9,7 +9,27 @@ namespace up::_detail {
 
     // std::to_chars<float> is still mostly unsupported by vendors
     inline void write_float(format_writer& out, double value, string_view spec_string) {
-        auto const spec = parse_format_spec(spec_string);
+        char printf_spec = 'f';
+        int width = 0;
+        int precision = -1;
+        bool leading_zeroes = false;
+
+        if (auto const [result, spec] = parse_format_spec(spec_string); result == result_code::success) {
+            switch (spec.specifier) {
+            case 'a':
+            case 'e':
+            case 'f':
+            case 'g':
+                printf_spec = spec.specifier;
+                break;
+            default:
+                break;
+            }
+
+            leading_zeroes = spec.leading_zeroes;
+            width = spec.width;
+            precision = static_cast<signed char>(spec.precision);
+        }
 
         constexpr std::size_t fmt_buf_size = 8;
         char fmt_buf[fmt_buf_size] = {
@@ -17,21 +37,12 @@ namespace up::_detail {
         };
         char* fmt_ptr = fmt_buf + fmt_buf_size;
 
+
         // required NUL terminator for sprintf formats (1)
         *--fmt_ptr = 0;
 
         // every sprint call must have a valid code (1)
-        switch (spec.code == result_code::success ? spec.options.specifier : 'f') {
-        case 'a':
-        case 'e':
-        case 'f':
-        case 'g':
-            *--fmt_ptr = spec.options.specifier;
-            break;
-        default:
-            *--fmt_ptr = 'f';
-            break;
-        }
+        *--fmt_ptr = printf_spec;
 
         // we always pass in a width and precision, defaulting to 0 which has no effect
         // as width, and -1 which is a guaranteed "ignore" (3)
@@ -40,7 +51,7 @@ namespace up::_detail {
         *--fmt_ptr = '*';
 
         // leading zeroes flag (1)
-        if (spec.code == result_code::success && spec.options.leading_zeroes) {
+        if (leading_zeroes) {
             *--fmt_ptr = '0';
         }
 
@@ -50,7 +61,7 @@ namespace up::_detail {
         constexpr std::size_t buf_size = 1078;
         char buf[buf_size] = {0,};
 
-        int const result = std::snprintf(buf, buf_size, fmt_ptr, spec.options.width, static_cast<signed char>(spec.options.precision), value);
+        int const result = std::snprintf(buf, buf_size, fmt_ptr, width, precision, value);
         if (result > 0) {
             out.write({buf, std::size_t(result) < buf_size ? std::size_t(result) : buf_size});
         }

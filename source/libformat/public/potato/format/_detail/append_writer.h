@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <potato/spud/string_view.h>
 #include "format_writer.h"
 
 namespace up {

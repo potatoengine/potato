@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "_detail/format_writer.h"
+#include "format_writer.h"
 #include <cstring>
 
 namespace up {
