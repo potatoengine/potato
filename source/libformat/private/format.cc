@@ -4,7 +4,6 @@
 
 #include <potato/format/_detail/format_arg_impl.h>
 #include <potato/format/_detail/format_impl.h>
-#include <potato/format/_detail/parse_format.h>
 #include <potato/format/_detail/write_string.h>
 
 namespace up {

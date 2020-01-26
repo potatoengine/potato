@@ -3,7 +3,6 @@
 #pragma once
 
 #include "parse_unsigned.h"
-#include "parse_format.h"
 
 namespace up::_detail {
 
@@ -15,11 +14,12 @@ namespace up::_detail {
 		char const* const end = begin + format.size();
 		char const* iter = begin;
 
-		while (iter < end) {
-			if (*iter != FormatTraits<char>::cFormatBegin) {
+		while (iter != end) {
+			if (*iter != '{') {
 				++iter;
 				continue;
 			}
+
 			// write out the string so far, since we don't write characters immediately
 			if (iter > begin) {
 				out.write({ begin, iter });
@@ -35,7 +35,7 @@ namespace up::_detail {
 
 			// if we just have another { then take it as a literal character by starting our next begin here,
 			// so it'll get written next time we write out the begin; nothing else to do for formatting here
-			if (*iter == FormatTraits<char>::cFormatBegin) {
+			if (*iter == '{') {
 				begin = iter++;
 				continue;
 			}
@@ -59,11 +59,11 @@ namespace up::_detail {
 			string_view spec_string;
 
 			// if a : follows the number, we have some formatting controls
-			if (*iter == FormatTraits<char>::cFormatSep) {
+			if (*iter == ':') {
 				++iter; // eat separator
 				char const* const spec_begin = iter;
 
-				while (iter < end && *iter != FormatTraits<char>::cFormatEnd) {
+				while (iter != end && *iter != '}') {
 					++iter;
 				}
 
@@ -77,7 +77,7 @@ namespace up::_detail {
 			}
 
 			// after the index/options, we expect an end to the format marker
-			if (*iter != FormatTraits<char>::cFormatEnd) {
+			if (*iter != '}') {
 				// we have something besides a number, no bueno
 				result = result_code::malformed_input;
 				begin = iter; // make sure we're set up for the next begin, which starts at this unknown character

@@ -2,33 +2,28 @@
 
 #pragma once
 
-#include "parse_format.h"
+#include "format_spec.h"
 #include <cstdio>
 
 namespace up::_detail {
 
     // std::to_chars<float> is still mostly unsupported by vendors
     inline void write_float(format_writer& out, double value, string_view spec_string) {
-        char printf_spec = 'f';
+        bool leading_zeroes = false;
+        if (auto const [success, lead_zeroes] = _detail::parse_spec(spec_string, "0"); success) {
+            leading_zeroes = true;
+        }
+
         int width = 0;
         int precision = -1;
-        bool leading_zeroes = false;
+        if (auto const [success, spec_width, spec_precision] = _detail::parse_width_and_precision(spec_string); success) {
+            width = static_cast<int>(spec_width);
+            precision = static_cast<int>(spec_precision);
+        }
 
-        if (auto const [result, spec] = parse_format_spec(spec_string); result == result_code::success) {
-            switch (spec.specifier) {
-            case 'a':
-            case 'e':
-            case 'f':
-            case 'g':
-                printf_spec = spec.specifier;
-                break;
-            default:
-                break;
-            }
-
-            leading_zeroes = spec.leading_zeroes;
-            width = spec.width;
-            precision = static_cast<signed char>(spec.precision);
+        char printf_spec = 'f';
+        if (auto const [success, spec] = parse_spec(spec_string, "aefg"); success) {
+            printf_spec = spec;
         }
 
         constexpr std::size_t fmt_buf_size = 8;

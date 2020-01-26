@@ -12,8 +12,6 @@ namespace up {
     class format_writer;
     class format_options;
 
-    class parse_spec_result;
-
     template <typename... Args> constexpr result_code format_to(format_writer& writer, string_view format_str, Args const& ... args);
     template <typename ResultT, typename... Args> constexpr ResultT format_as(string_view format_str, Args const& ... args);
     template <typename Receiver, typename... Args> constexpr result_code format_append(Receiver& receiver, string_view format_str, Args const&... args);
@@ -33,7 +31,6 @@ enum class up::result_code : unsigned int {
 #include "_detail/append_writer.h"
 #include "_detail/fixed_writer.h"
 #include "_detail/format_arg.h"
-#include "_detail/format_options.h"
 
 namespace up {
     /// Default format helpers.

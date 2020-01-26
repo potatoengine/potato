@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "format_traits.h"
 #include "write_integer.h"
 #include "write_string.h"
 #include "write_float.h"
@@ -51,13 +50,13 @@ up::result_code up::_detail::format_arg::format_into(format_writer& output, stri
 		_detail::write_float(output, *static_cast<double const*>(_value), spec_string);
 		return result_code::success;
     case _detail::format_arg_type::boolean:
-        _detail::write_string(output, *static_cast<bool const*>(_value) ? _detail::FormatTraits<char>::sTrue : _detail::FormatTraits<char>::sFalse, spec_string);
+        _detail::write_string(output, *static_cast<bool const*>(_value) ? "true"_sv : "false"_sv, spec_string);
 		return result_code::success;
     case _detail::format_arg_type::char_string:
 		_detail::write_string(output, string_view(*static_cast<char const* const*>(_value)), spec_string);
 		return result_code::success;
     case _detail::format_arg_type::null_pointer:
-        _detail::write_string(output, _detail::FormatTraits<char>::sNullptr, spec_string);
+        _detail::write_string(output, "nullptr"_sv, spec_string);
 		return result_code::success;
     case _detail::format_arg_type::void_pointer:
 		_detail::write_integer(output, reinterpret_cast<std::uintptr_t>(*static_cast<void const* const*>(_value)), spec_string);

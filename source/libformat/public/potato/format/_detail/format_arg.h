@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "format_options.h"
-
 namespace up::_detail {
     enum class format_arg_type;
 

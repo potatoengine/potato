@@ -3,7 +3,7 @@
 #pragma once
 
 #include "potato/format/format.h"
-#include "parse_format.h"
+#include "format_spec.h"
 #include <limits>
 #include <charconv>
 
@@ -19,8 +19,8 @@ namespace up::_detail {
         char buffer[max_buffer] = { 0, };
         int base = 10;
 
-        if (auto const [result, spec] = parse_format_spec(spec_string); result == result_code::success) {
-            switch (spec.specifier) {
+        if (auto const [success, spec] = _detail::parse_spec(spec_string, "xb"); success) {
+            switch (spec) {
             case 'x': base = 16; break;
             case 'b': base = 2; break;
             default: break;
