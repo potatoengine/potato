@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 namespace up::_detail {
     enum class format_arg_type;
 
@@ -70,11 +72,6 @@ private:
 };
 
 namespace up::_detail {
-    template <typename T>
-    using decay_array_t = std::conditional_t<std::is_array_v<T>, std::remove_extent_t<T> const*, T>;
-
-    template <typename T>
-    using formattable_t = decay_array_t<std::remove_reference_t<T>>;
 
     template <typename T, typename V = void>
     struct has_format_value { static constexpr bool value = false; };

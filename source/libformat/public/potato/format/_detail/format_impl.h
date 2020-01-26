@@ -21,7 +21,7 @@ namespace up::_detail {
 			}
 
 			// write out the string so far, since we don't write characters immediately
-			if (iter > begin) {
+			if (iter != begin) {
 				out.write({ begin, iter });
 			}
 
@@ -41,7 +41,7 @@ namespace up::_detail {
 			}
 
 			// determine which argument we're going to format
-			unsigned index = 0;
+			unsigned index = next_index;
 			char const* const start = iter;
 			iter = parse_unsigned(start, end, index);
 
@@ -49,11 +49,6 @@ namespace up::_detail {
 			if (iter == end) {
 				result = result_code::malformed_input;
 				break;
-			}
-
-			// if we read nothing, we have a "next index" situation (or an error)
-			if (iter == start) {
-				index = next_index;
 			}
 
 			string_view spec_string;
@@ -80,8 +75,7 @@ namespace up::_detail {
 			if (*iter != '}') {
 				// we have something besides a number, no bueno
 				result = result_code::malformed_input;
-				begin = iter; // make sure we're set up for the next begin, which starts at this unknown character
-				continue;
+                break;
 			}
 
 			result_code const arg_result = args.format_arg_into(out, index, spec_string);
@@ -89,7 +83,7 @@ namespace up::_detail {
 				result = arg_result;
 			}
 
-			// the iterrent text begin begins with the next character following the format directive's end
+			// the remaining text begins with the next character following the format directive's end
 			begin = iter = iter + 1;
 
 			// if we continue to receive {} then the next index will be the next one after the last one used
@@ -97,7 +91,7 @@ namespace up::_detail {
 		}
 
 		// write out tail end of format string
-		if (iter > begin) {
+		if (iter != begin) {
 			out.write({ begin, iter });
 		}
 

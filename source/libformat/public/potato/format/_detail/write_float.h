@@ -7,8 +7,7 @@
 
 namespace up::_detail {
 
-    // std::to_chars<float> is still mostly unsupported by vendors
-    inline void write_float(format_writer& out, double value, string_view spec_string) {
+    inline int write_float_helper(char* buf, size_t buf_size, double value, string_view spec_string) noexcept {
         bool leading_zeroes = false;
         if (auto const [success, lead_zeroes] = _detail::parse_spec(spec_string, "0"); success) {
             leading_zeroes = true;
@@ -53,10 +52,16 @@ namespace up::_detail {
         // every format must start with this (1)
         *--fmt_ptr = '%';
 
+        return std::snprintf(buf, buf_size, fmt_ptr, width, precision, value);
+    }
+
+    // std::to_chars<float> is still mostly unsupported by vendors
+    template <typename Writer>
+    inline void write_float(Writer& out, double value, string_view spec_string) {
         constexpr std::size_t buf_size = 1078;
         char buf[buf_size] = {0,};
 
-        int const result = std::snprintf(buf, buf_size, fmt_ptr, width, precision, value);
+        int const result = write_float_helper(buf, buf_size, value, spec_string);
         if (result > 0) {
             out.write({buf, std::size_t(result) < buf_size ? std::size_t(result) : buf_size});
         }

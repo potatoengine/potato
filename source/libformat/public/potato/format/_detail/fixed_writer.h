@@ -13,14 +13,14 @@ namespace up {
 class up::fixed_writer final : public up::format_writer {
 public:
     template <std::size_t Count>
-    constexpr fixed_writer(char (&buffer)[Count]) : _buffer(buffer), _cursor(buffer), _length(Count) {
+    constexpr fixed_writer(char (&buffer)[Count]) noexcept : _buffer(buffer), _cursor(buffer), _length(Count) {
         *buffer = char{};
     }
-    constexpr fixed_writer(char* buffer, std::size_t length) : _buffer(buffer), _cursor(buffer), _length(length) {
+    constexpr fixed_writer(char* buffer, std::size_t length) noexcept : _buffer(buffer), _cursor(buffer), _length(length) {
         *buffer = char{};
     }
 
-    void write(string_view str) override {
+    void write(string_view str) noexcept override {
         std::size_t const size = _cursor - _buffer;
         std::size_t const capacity = _length - 1/*NUL*/;
         std::size_t const available = capacity - size;

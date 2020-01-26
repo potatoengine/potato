@@ -3,6 +3,7 @@
 #pragma once
 
 #include "_export.h"
+#include "_detail/format_traits.h"
 #include <type_traits>
 #include <potato/spud/string_view.h>
 
@@ -12,12 +13,12 @@ namespace up {
     class format_writer;
     class format_options;
 
-    template <typename... Args> constexpr result_code format_to(format_writer& writer, string_view format_str, Args const& ... args);
+    template <typename Writer, typename... Args> constexpr auto format_to(Writer& writer, string_view format_str, Args const& ... args) -> std::enable_if_t<_detail::is_format_writer<Writer>, up::result_code>;
     template <typename ResultT, typename... Args> constexpr ResultT format_as(string_view format_str, Args const& ... args);
     template <typename Receiver, typename... Args> constexpr result_code format_append(Receiver& receiver, string_view format_str, Args const&... args);
 
-    template <typename T>
-    constexpr result_code format_value_to(format_writer& writer, T const& value, string_view spec_string = {});
+    template <typename Writer, typename T>
+    constexpr auto format_value_to(Writer& writer, T const& value, string_view spec_string = {}) -> std::enable_if_t<_detail::is_format_writer<Writer>, up::result_code>;
 }
 
 enum class up::result_code : unsigned int {
@@ -49,8 +50,8 @@ extern UP_FORMAT_API up::result_code up::_detail::format_impl(format_writer& out
 /// @param format_str The primary text and formatting controls to be written.
 /// @param args The arguments used by the formatting string.
 /// @returns a result code indicating any errors.
-template <typename... Args>
-constexpr up::result_code up::format_to(format_writer& writer, string_view format_str, Args const& ... args) {
+template <typename Writer, typename... Args>
+constexpr auto up::format_to(Writer& writer, string_view format_str, Args const& ... args) -> std::enable_if_t<_detail::is_format_writer<Writer>, up::result_code> {
     if constexpr (sizeof...(Args) > 0) {
         const _detail::format_arg bound_args[] = { _detail::make_format_arg<_detail::formattable_t<Args>>(args)... };
         return _detail::format_impl(writer, format_str, {bound_args, sizeof...(Args)});
@@ -76,8 +77,8 @@ constexpr ResultT up::format_as(string_view format_str, Args const&... args) {
 /// @param value The value to format.
 /// @param options The format control options.
 /// @returns a result code indicating any errors.
-template <typename T>
-constexpr up::result_code up::format_value_to(format_writer& writer, T const& value, string_view spec_string) {
+template <typename Writer, typename T>
+constexpr auto up::format_value_to(Writer& writer, T const& value, string_view spec_string) -> std::enable_if_t<_detail::is_format_writer<Writer>, up::result_code> {
     return _detail::make_format_arg(value).format_into(writer, spec_string);
 }
 

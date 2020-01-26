@@ -12,9 +12,9 @@ namespace up {
 template <typename ContainerT>
 class up::append_writer : public up::format_writer {
 public:
-    constexpr append_writer(ContainerT& container) : _container(container) {}
+    constexpr append_writer(ContainerT& container) noexcept : _container(container) {}
 
-    constexpr void write(string_view str) override {
+    constexpr void write(string_view str) noexcept override {
         _container.append(str.data(), str.size());
     }
 
