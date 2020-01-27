@@ -6,9 +6,9 @@
 
 namespace up::_detail {
 
-	UP_FORMAT_API result_code format_impl(format_writer& out, string_view format, format_arg_list args) {
+	UP_FORMAT_API format_result format_impl(format_writer& out, string_view format, format_arg_list args) {
 		unsigned next_index = 0;
-		result_code result = result_code::success;
+		format_result result = format_result::success;
 
 		char const* begin = format.data();
 		char const* const end = begin + format.size();
@@ -29,7 +29,7 @@ namespace up::_detail {
 
 			// if we hit the end of the input, we have an incomplete format, and nothing else we can do
 			if (iter == end) {
-				result = result_code::malformed_input;
+				result = format_result::malformed_input;
 				break;
 			}
 
@@ -47,7 +47,7 @@ namespace up::_detail {
 
 			// if we hit the end of the string, we have an incomplete format
 			if (iter == end) {
-				result = result_code::malformed_input;
+				result = format_result::malformed_input;
 				break;
 			}
 
@@ -64,7 +64,7 @@ namespace up::_detail {
 
 				if (iter == end) {
 					// invalid options
-					result = result_code::malformed_input;
+					result = format_result::malformed_input;
 					break;
 				}
 
@@ -74,12 +74,12 @@ namespace up::_detail {
 			// after the index/options, we expect an end to the format marker
 			if (*iter != '}') {
 				// we have something besides a number, no bueno
-				result = result_code::malformed_input;
+				result = format_result::malformed_input;
                 break;
 			}
 
-			result_code const arg_result = args.format_arg_into(out, index, spec_string);
-			if (arg_result != result_code::success) {
+			format_result const arg_result = args.format_arg_into(out, index, spec_string);
+			if (arg_result != format_result::success) {
 				result = arg_result;
 			}
 

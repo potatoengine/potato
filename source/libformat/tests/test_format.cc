@@ -135,10 +135,10 @@ DOCTEST_TEST_CASE("format") {
         char buffer[256];
         fixed_writer writer(buffer);
 
-        DOCTEST_CHECK_EQ(up::result_code::success, format_to(writer, "{} {:4d} {:3.5f}", "abc", 9, 12.57));
-        DOCTEST_CHECK_EQ(up::result_code::malformed_input, format_to(writer, "{} {:4d", "abc", 9));
-        DOCTEST_CHECK_EQ(up::result_code::success, format_to(writer, "{0} {1}", "abc", 9));
-        DOCTEST_CHECK_EQ(up::result_code::out_of_range, format_to(writer, "{0} {1} {5}", "abc", 9, 12.57));
+        DOCTEST_CHECK_EQ(up::format_result::success, format_to(writer, "{} {:4d} {:3.5f}", "abc", 9, 12.57));
+        DOCTEST_CHECK_EQ(up::format_result::malformed_input, format_to(writer, "{} {:4d", "abc", 9));
+        DOCTEST_CHECK_EQ(up::format_result::success, format_to(writer, "{0} {1}", "abc", 9));
+        DOCTEST_CHECK_EQ(up::format_result::out_of_range, format_to(writer, "{0} {1} {5}", "abc", 9, 12.57));
     }
 
     DOCTEST_SUBCASE("format_value_into") {
