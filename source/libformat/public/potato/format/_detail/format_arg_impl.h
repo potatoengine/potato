@@ -8,7 +8,8 @@
 
 #include <cinttypes>
 
-up::format_result up::_detail::format_arg::format_into(format_writer& output, string_view spec_string) const {
+template <typename Writer>
+constexpr up::format_result up::_detail::format_arg::format_into(Writer& output, string_view spec_string) const {
     switch (_type) {
     case _detail::format_arg_type::char_t:
         _detail::write_char(output, *static_cast<char const*>(_value), spec_string);

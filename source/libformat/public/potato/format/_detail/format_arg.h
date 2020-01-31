@@ -44,7 +44,8 @@ public:
     constexpr format_arg(_detail::format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
     constexpr format_arg(thunk_type thunk, void const* value) noexcept : _type(_detail::format_arg_type::custom), _thunk(thunk), _value(value) {}
 
-    UP_FORMAT_API format_result format_into(format_writer& output, string_view spec_string) const;
+    template <typename Writer>
+    constexpr format_result format_into(Writer& output, string_view spec_string) const;
 
 private:
     _detail::format_arg_type _type = _detail::format_arg_type::unknown;
@@ -62,7 +63,8 @@ public:
     constexpr format_arg_list() noexcept = default;
     constexpr format_arg_list(format_arg_type const* args, size_type count) noexcept : _args(args), _count(count) {}
 
-    constexpr format_result format_arg_into(format_writer& output, size_type index, string_view spec_string) const {
+    template <typename Writer>
+    constexpr format_result format_arg_into(Writer& output, size_type index, string_view spec_string) const {
         return index < _count ? _args[index].format_into(output, spec_string) : format_result::out_of_range;
     }
 

@@ -24,6 +24,8 @@ namespace up {
 #include "_detail/append_writer.h"
 #include "_detail/fixed_writer.h"
 #include "_detail/format_arg.h"
+#include "_detail/format_arg_impl.h"
+#include "_detail/format_impl.h"
 
 namespace up {
     /// Default format helpers.
