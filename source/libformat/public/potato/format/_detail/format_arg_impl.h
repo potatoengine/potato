@@ -63,7 +63,7 @@ constexpr up::format_result up::_detail::format_arg::format_into(Writer& output,
 		_detail::write_integer(output, reinterpret_cast<std::uintptr_t>(*static_cast<void const* const*>(_value)), spec_string);
 		return format_result::success;
     case _detail::format_arg_type::custom:
-        return _thunk(output, _value);
+        return _thunk(&output, _value);
     default:
         return format_result::success;
     }

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "format_result.h"
 #include "parse_unsigned.h"
 
 namespace up::_detail {
@@ -52,7 +53,7 @@ namespace up::_detail {
     }
 
     template <typename Writer>
-	UP_FORMAT_API format_result format_impl(Writer& out, string_view format, format_arg_list args) {
+	constexpr format_result format_impl(Writer& out, string_view format, format_arg_list args) {
 		unsigned next_index = 0;
 
 		char const* begin = format.data();

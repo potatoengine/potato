@@ -184,7 +184,7 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         }
 
         auto name = converter->name();
-        _logger.info("Asset `{}' requires import ({} {})", path.c_str(), std::string_view(name.data(), name.size()), converter->revision());
+        _logger.info("Asset `{}' requires import ({} {})", path.c_str(), string_view(name.data(), name.size()), converter->revision());
 
         Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
         checkMetafile(context, path);

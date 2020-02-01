@@ -3,24 +3,40 @@
 #include <doctest/doctest.h>
 #include <ostream>
 
+static_assert(up::is_formattable<int>);
+static_assert(up::is_formattable<float>);
+static_assert(up::is_formattable<char>);
+static_assert(up::is_formattable<up::byte>);
+static_assert(up::is_formattable<std::string>);
+static_assert(up::is_formattable<decltype("test")>);
+
 enum class standard_enum { one, two };
 enum class custom_enum { foo, bar };
 
 class custom_type {};
 
-void format_value(up::format_writer& writer, custom_enum value) noexcept {
+static_assert(up::is_format_writer<up::append_writer<std::string>>);
+
+template <typename Writer>
+void format_value(Writer& writer, custom_enum value) noexcept {
     switch (value) {
     case custom_enum::foo: format_value_to(writer, "foo"); return;
     case custom_enum::bar: format_value_to(writer, "bar"); return;
     }
 }
+static_assert(up::is_formattable<custom_enum>);
 
-void format_value(up::format_writer& writer, custom_type) noexcept {
+template <typename Writer>
+void format_value(Writer& writer, custom_type) noexcept {
     format_value_to(writer, "custom");
 }
-void format_value(up::format_writer& writer, custom_type const*) noexcept {
+static_assert(up::is_formattable<custom_type>);
+
+template <typename Writer>
+void format_value(Writer& writer, custom_type const*) noexcept {
     format_value_to(writer, "custom pointer");
 }
+static_assert(up::is_formattable<custom_type const*>);
 
 template <typename T>
 std::string format_as_string(T const& value) {

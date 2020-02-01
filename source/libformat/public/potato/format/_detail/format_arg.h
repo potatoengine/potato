@@ -3,6 +3,7 @@
 #pragma once
 
 #include <type_traits>
+#include "format_traits.h"
 
 namespace up::_detail {
     enum class format_arg_type;
@@ -10,7 +11,7 @@ namespace up::_detail {
     class format_arg;
     class format_arg_list;
 
-    template <typename T> constexpr format_arg make_format_arg(T const& value) noexcept;
+    template <typename Writer, typename T> constexpr format_arg make_format_arg(T const& value) noexcept;
 }
 
 enum class up::_detail::format_arg_type {
@@ -38,7 +39,7 @@ enum class up::_detail::format_arg_type {
 /// Abstraction for a single formattable value
 class up::_detail::format_arg {
 public:
-    using thunk_type = format_result(*)(format_writer&, void const*);
+    using thunk_type = format_result(*)(void*, void const*);
 
     constexpr format_arg() noexcept = default;
     constexpr format_arg(_detail::format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
@@ -75,13 +76,6 @@ private:
 
 namespace up::_detail {
 
-    template <typename T, typename V = void>
-    struct has_format_value { static constexpr bool value = false; };
-    template <typename T>
-    struct has_format_value<T, std::void_t<decltype(format_value(std::declval<format_writer&>(), std::declval<T>()))>> {
-        static constexpr bool value = true;
-    };
-
     template <typename T> struct type_of { static constexpr format_arg_type value = format_arg_type::unknown; };
 #define FORMATXX_TYPE(x, e) template <> struct type_of<x> { static constexpr format_arg_type value = format_arg_type::e; };
     FORMATXX_TYPE(char, char_t);
@@ -105,21 +99,23 @@ namespace up::_detail {
     FORMATXX_TYPE(void const*, void_pointer);
 #undef FORMTAXX_TYPE
 
-    template <typename T>
-    constexpr format_result format_value_thunk(format_writer& out, void const* ptr) {
-        format_value(out, *static_cast<T const*>(ptr));
+    template <typename Writer, typename T>
+    constexpr format_result format_value_thunk(void* out, void const* ptr) {
+        auto& writer = *static_cast<Writer*>(out);
+        auto const& value = *static_cast<T const*>(ptr);
+        format_value(writer, value);
         return format_result::success;
     }
 
-    template <typename T>
+    template <typename Writer, typename T>
     constexpr format_arg make_format_arg(T const& value) noexcept {
         constexpr format_arg_type type = type_of<T>::value;
 
         if constexpr (type != format_arg_type::unknown) {
             return { type, &value };
         }
-        else if constexpr (has_format_value<T>::value) {
-            return format_arg(&format_value_thunk<T>, &value);
+        else if constexpr (_has_format_value<Writer, T>::value) {
+            return format_arg(&format_value_thunk<Writer, T>, &value);
         }
         else if constexpr (std::is_pointer_v<T>) {
             return { format_arg_type::void_pointer, &value };
