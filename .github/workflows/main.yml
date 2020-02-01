@@ -61,7 +61,7 @@ jobs:
             packages: g++-9 gcc-9 libstdc++-9-dev
           - cxx: clang++-9
             cc: clang-9
-            cxxflags: -Wall -Werror -stdlib=libc++
+            cxxflags: -Wall -Werror -Wno-unused-function -stdlib=libc++
             packages: clang-9 libc++-9-dev libc++abi-9-dev
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
