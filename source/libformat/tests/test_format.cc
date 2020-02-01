@@ -70,13 +70,14 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("0", format_as<std::string>("{:x}", 0));
         DOCTEST_CHECK_EQ("ff", format_as<std::string>("{:x}", 255));
         DOCTEST_CHECK_EQ("100", format_as<std::string>("{:x}", 256));
-        DOCTEST_CHECK_EQ("11", format_as<std::string>("{:x}", 17));
+        DOCTEST_CHECK_EQ(" 11", format_as<std::string>("{:3x}", 17));
         DOCTEST_CHECK_EQ("-11", format_as<std::string>("{:x}", -17));
         DOCTEST_CHECK_EQ("ffffffef", format_as<std::string>("{:x}", ~16u));
 
         DOCTEST_CHECK_EQ("101", format_as<std::string>("{:b}", 5));
         DOCTEST_CHECK_EQ("-10", format_as<std::string>("{:b}", -2));
 
+        DOCTEST_CHECK_EQ("  1234", format_as<std::string>("{:6d}", 1234));
         DOCTEST_CHECK_EQ("001234", format_as<std::string>("{:06d}", 1234));
     }
 
