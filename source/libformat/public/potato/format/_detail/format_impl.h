@@ -75,7 +75,7 @@ namespace up::_detail {
 
             // if we hit the end of the input, we have an incomplete format, and nothing else we can do
             if (iter == end) {
-                return { format_result::malformed_input };
+                return format_result::malformed_input;
             }
 
             // if we just have another { then take it as a literal character by starting our next begin here,
