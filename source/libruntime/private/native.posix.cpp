@@ -71,9 +71,9 @@ static auto enumerateWorker(up::zstring_view path, up::EnumerateCallback cb, up:
         // path per recursive entry
         writer.resize(writerPos);
         if (!writer.empty()) {
-            writer.write('/');
+            writer.append('/');
         }
-        writer.write(entry->d_name);
+        writer.append(entry->d_name);
 
         up::FileInfo info;
         info.path = writer.c_str();
@@ -105,7 +105,7 @@ auto up::NativeFileSystem::enumerate(zstring_view path, EnumerateCallback cb, En
     string_writer writer;
 
     if ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath) {
-        writer.write(path);
+        writer.append(path);
     }
 
     return enumerateWorker(path, cb, writer);
