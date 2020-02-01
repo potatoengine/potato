@@ -31,7 +31,6 @@ namespace up::_detail {
         };
         char* fmt_ptr = fmt_buf + fmt_buf_size;
 
-
         // required NUL terminator for sprintf formats (1)
         *--fmt_ptr = 0;
 

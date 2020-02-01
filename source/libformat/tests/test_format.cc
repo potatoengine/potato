@@ -77,7 +77,7 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("101", format_as<std::string>("{:b}", 5));
         DOCTEST_CHECK_EQ("-10", format_as<std::string>("{:b}", -2));
 
-        DOCTEST_CHECK_EQ("1234", format_as<std::string>("{:d}", 1234));
+        DOCTEST_CHECK_EQ("001234", format_as<std::string>("{:06d}", 1234));
     }
 
     DOCTEST_SUBCASE("floats") {
@@ -115,7 +115,7 @@ DOCTEST_TEST_CASE("format") {
 
         DOCTEST_CHECK_EQ("abc", format_as<std::string>(std::string("a{}c"), "b"));
 
-        DOCTEST_CHECK_EQ("value42", format_as<std::string>("{:-8}{:05}", "value", 42));
+        DOCTEST_CHECK_EQ("value00042", format_as<std::string>("{:-8}{:05}", "value", 42));
     }
 
     DOCTEST_SUBCASE("booleans") {
