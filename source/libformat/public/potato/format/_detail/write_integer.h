@@ -4,6 +4,7 @@
 
 #include "potato/format/format.h"
 #include "format_spec.h"
+#include <climits>
 #include <limits>
 #include <charconv>
 
