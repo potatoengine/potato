@@ -53,16 +53,16 @@ jobs:
     strategy:
       matrix:
         config: [ 'Debug', 'Release' ]
-        cxx: [ 'g++-9', 'clang++-9' ]
+        cxx: [ 'g++-9', 'clang++-10' ]
         include:
           - cxx: g++-9
             cc: gcc-9
             cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
             packages: g++-9 gcc-9 libstdc++-9-dev
-          - cxx: clang++-9
-            cc: clang-9
+          - cxx: clang++-10
+            cc: clang-10
             cxxflags: -Wall -Werror -stdlib=libc++
-            packages: clang-9 libc++-9-dev libc++abi-9-dev
+            packages: clang-10 libc++-10-dev libc++abi-10-dev
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-latest'
