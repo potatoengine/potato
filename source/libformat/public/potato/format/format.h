@@ -36,13 +36,10 @@ namespace up {
 /// @returns a result code indicating any errors.
 template <typename Writer, typename... Args>
 constexpr auto up::format_to(Writer& writer, string_view format_str, Args const& ... args) -> std::enable_if_t<is_format_writer<Writer> && (is_formattable<Args> && ...), up::format_result> {
-    if constexpr (sizeof...(Args) > 0) {
-        const _detail::format_arg bound_args[] = { _detail::make_format_arg<Writer, _detail::formattable_t<Args>>(args)... };
-        return _detail::format_impl(writer, format_str, {bound_args, sizeof...(Args)});
-    }
-    else {
-        return _detail::format_impl(writer, format_str, {});
-    }
+    // The argument list _must_ be a temporary in the parameter list, as conversions may be involved in formattable_t constructor;
+    // trying to store this in a local array or variable will allow those temporaries to be destructed before the call to
+    // format_impl.
+    return _detail::format_impl(writer, format_str, { _detail::make_format_arg<Writer, _detail::formattable_t<Args>>(args)... });
 }
 
 /// Write the string format using the given parameters and return a string with the result.

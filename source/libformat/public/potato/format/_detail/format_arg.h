@@ -3,6 +3,7 @@
 #pragma once
 
 #include <type_traits>
+#include <initializer_list>
 #include "format_traits.h"
 
 namespace up::_detail {

@@ -4,6 +4,7 @@
 
 #include "format_result.h"
 #include "parse_unsigned.h"
+#include <initializer_list>
 
 namespace up::_detail {
 
@@ -53,7 +54,7 @@ namespace up::_detail {
     }
 
     template <typename Writer>
-	constexpr format_result format_impl(Writer& out, string_view format, format_arg_list args) {
+	constexpr format_result format_impl(Writer& out, string_view format, std::initializer_list<format_arg> args) {
 		unsigned next_index = 0;
 
 		char const* begin = format.data();
@@ -90,7 +91,12 @@ namespace up::_detail {
                 return result;
             }
 
-			format_result const arg_result = args.format_arg_into(out, index, spec_string);
+            if (index >= args.size()) {
+                return format_result::out_of_range;
+            }
+
+            format_arg const& arg = *(args.begin() + index);
+			format_result const arg_result = arg.format_into(out, spec_string);
 			if (arg_result != format_result::success) {
                 return arg_result;
 			}
