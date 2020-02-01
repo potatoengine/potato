@@ -33,22 +33,24 @@ namespace up {
 
         /*implicit*/ operator string_view() const noexcept { return {_buffer, _size}; }
 
-        void write(string_view str) noexcept {
+        void append(const_pointer nstr, size_type len) noexcept {
             size_type available = capacity() - _size;
-            size_type writeLen = available < str.size() ? available : str.size();
-            std::memmove(_buffer + _size, str.data(), writeLen);
+            size_type writeLen = available < len ? available : len;
+            std::memmove(_buffer + _size, nstr, writeLen);
             _buffer[_size += writeLen] = 0;
         }
 
-        void write(value_type ch) noexcept {
+        void append(string_view str) noexcept { append(str.data(), str.size()); }
+
+        void append(value_type ch) noexcept {
             if (_size < capacity()) {
                 _buffer[_size] = ch;
                 _buffer[++_size] = 0;
             }
         }
 
-        // for back_inserter/fmt support
-        void push_back(value_type ch) noexcept { write(ch); }
+        // for back_inserter support
+        void push_back(value_type ch) noexcept { append(ch); }
 
         void clear() noexcept {
             *_buffer = 0;

@@ -99,9 +99,9 @@ bool up::recon::HlslConverter::compile(Context& ctx, FileSystem& fileSys, zstrin
     }
 
     string_writer ext;
-    ext.write('.');
-    ext.write(targetProfileName);
-    ext.write(".cbo");
+    ext.append('.');
+    ext.append(targetProfileName);
+    ext.append(".cbo");
 
     auto destPath = path::changeExtension(ctx.sourceFilePath(), ext.c_str());
     auto destAbsolutePath = path::join({string_view(ctx.destinationFolderPath()), destPath.c_str()});

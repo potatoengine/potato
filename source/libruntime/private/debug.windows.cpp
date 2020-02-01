@@ -21,7 +21,7 @@ namespace {
             EmptyClipboard();
 
             up::fixed_string_writer<1024> buffer;
-            up::format_into(buffer, "ASSERTION FAILED: {}\r\n{}\r\n{}\r\n{}", data.condition, data.message, data.location, data.callstack);
+            up::format_append(buffer, "ASSERTION FAILED: {}\r\n{}\r\n{}\r\n{}", data.condition, data.message, data.location, data.callstack);
 
             if (HANDLE handle = GlobalAlloc(GMEM_MOVEABLE, buffer.size() + 1)) {
                 void* lockedData = GlobalLock(handle);
@@ -88,7 +88,7 @@ namespace {
 namespace up::_detail {
     auto handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText) -> FatalErrorAction {
         fixed_string_writer<128> location_buffer;
-        format_into(location_buffer, "{}({})", file, line);
+        format_append(location_buffer, "{}({})", file, line);
 
         DialogData data;
         data.message = messageText;

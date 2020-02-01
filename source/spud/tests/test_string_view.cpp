@@ -15,7 +15,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::string_view") {
 
     DOCTEST_TEST_CASE("std::string initialization") {
         std::string const s = "this is a test";
-        string_view const sv(s.data(), s.size());
+        string_view const sv(s);
 
         DOCTEST_CHECK(!sv.empty());
         DOCTEST_CHECK_EQ(sv.size(), s.size());

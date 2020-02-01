@@ -45,12 +45,12 @@ namespace up {
 
         /*implicit*/ operator string_view() const noexcept { return {_ptr, _size}; }
 
-        inline void write(value_type ch);
-        inline void write(const_pointer data, size_type length);
-        void write(string_view str) { write(str.data(), str.size()); }
+        inline void append(value_type ch);
+        inline void append(const_pointer data, size_type length);
+        void append(string_view str) { append(str.data(), str.size()); }
 
-        // for back_inserter/fmt support
-        void push_back(value_type ch) { write(ch); }
+        // for back_inserter support
+        void push_back(value_type ch) { append(ch); }
 
         inline void reserve(size_type capacity);
 
@@ -81,13 +81,13 @@ namespace up {
     };
 } // namespace up
 
-void up::string_writer::write(value_type ch) {
+void up::string_writer::append(value_type ch) {
     _grow(_size + 1);
     _ptr[_size++] = ch;
     _ptr[_size] = '\0';
 }
 
-void up::string_writer::write(const_pointer data, size_type length) {
+void up::string_writer::append(const_pointer data, size_type length) {
     _grow(_size + length);
     std::memmove(_ptr + _size, data, length);
     _size += length;

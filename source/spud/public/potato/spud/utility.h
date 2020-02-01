@@ -73,6 +73,11 @@ namespace up {
         return (value + alignLessOne) & ~alignLessOne;
     }
 
+    template <typename To, typename From>
+    constexpr auto narrow_cast(From&& from) noexcept -> To {
+        return static_cast<To>(std::forward<From>(from));
+    }
+
     template <typename T>
     class sequence {
     public:

@@ -32,8 +32,8 @@ auto up::path::changeExtension(string_view path, string_view extension) -> strin
 
     string_writer result;
     result.reserve(pos + extension.size());
-    result.write(path.data(), pos);
-    result.write(extension.data(), extension.size());
+    result.append(path.data(), pos);
+    result.append(extension.data(), extension.size());
     return string(result);
 }
 
@@ -157,7 +157,7 @@ auto up::path::normalize(string_view path) -> string {
                 mode = Part::Dot;
             }
             else {
-                result.write(ch);
+                result.append(ch);
             }
             break;
         case Part::Slash:
@@ -170,8 +170,8 @@ auto up::path::normalize(string_view path) -> string {
                 break;
             }
             else {
-                result.write('/');
-                result.write(ch);
+                result.append('/');
+                result.append(ch);
                 mode = Part::Component;
             }
             break;
@@ -185,8 +185,8 @@ auto up::path::normalize(string_view path) -> string {
                 mode = Part::Slash;
             }
             else {
-                result.write('.');
-                result.write(ch);
+                result.append('.');
+                result.append(ch);
                 mode = Part::Component;
             }
             break;
@@ -194,7 +194,7 @@ auto up::path::normalize(string_view path) -> string {
     }
 
     if (result.empty()) {
-        result.write('/');
+        result.append('/');
     }
 
     return string(result);
@@ -216,9 +216,9 @@ auto up::path::join(std::initializer_list<string_view> components) -> string {
 
     for (auto sv : components) {
         if (!sv.empty() && !result.empty()) {
-            result.write('/');
+            result.append('/');
         }
-        result.write(sv.data(), sv.size());
+        result.append(sv.data(), sv.size());
     }
 
     return std::move(result).to_string();

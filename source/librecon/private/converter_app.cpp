@@ -184,7 +184,7 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         }
 
         auto name = converter->name();
-        _logger.info("Asset `{}' requires import ({} {})", path.c_str(), std::string_view(name.data(), name.size()), converter->revision());
+        _logger.info("Asset `{}' requires import ({} {})", path.c_str(), string_view(name.data(), name.size()), converter->revision());
 
         Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
         checkMetafile(context, path);
@@ -289,8 +289,8 @@ auto up::recon::ConverterApp::checkMetafile(Context& ctx, string_view filename) 
     // check to see if a meta file exists for this asset -- if it doesn't create one
     fixed_string_writer<256> metaFile;
 
-    metaFile.write(filename);
-    metaFile.write(".meta");
+    metaFile.append(filename);
+    metaFile.append(".meta");
     if (!_fileSystem->fileExists(metaFile.c_str())) {
         Converter* conveter = findConverter(filename);
         if (conveter) {

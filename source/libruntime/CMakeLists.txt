@@ -27,6 +27,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(potato_libruntime
     PUBLIC
         potato::spud
+        potato::libformat
         ${UP_UUID_LIBRARY}
         Threads::Threads
     PRIVATE

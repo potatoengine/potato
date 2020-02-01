@@ -5,7 +5,7 @@
 #include "_export.h"
 #include "common.h"
 #include "potato/spud/zstring_view.h"
-#include "litexx/type_traits.h"
+#include "potato/spud/traits.h"
 #include <atomic>
 #include <new>
 
@@ -76,7 +76,7 @@ namespace up {
 
     template <typename ComponentT>
     constexpr auto ComponentMeta::get() noexcept -> ComponentMeta const& {
-        return _detail::MetaHolder<litexx::remove_cvref_t<ComponentT>>::get();
+        return _detail::MetaHolder<remove_cvref_t<ComponentT>>::get();
     }
 
 /// Declare a type is a Component and can be accessed via ComponentMeta::get()

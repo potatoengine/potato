@@ -1,3 +1,4 @@
+add_subdirectory(libformat)
 add_subdirectory(spud)
 add_subdirectory(libruntime)
 add_subdirectory(librender)

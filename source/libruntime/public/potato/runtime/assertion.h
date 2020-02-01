@@ -3,8 +3,7 @@
 #pragma once
 
 #include <potato/runtime/debug.h>
-#include <potato/spud/string_format.h>
-#include <potato/spud/fixed_string_writer.h>
+#include <potato/format/format.h>
 #include <utility>
 
 #if defined(NDEBUG)
@@ -25,17 +24,18 @@
 
 namespace up::_detail {
     // abstraction to deal with assert instances that don't have a message at all
-    template <typename Buffer, typename... Args>
-    void constexpr formatAssertion(Buffer& buffer, char const* format, Args&&... args) { format_into(buffer, format, std::forward<Args>(args)...); }
-    template <typename Buffer>
-    void constexpr formatAssertion(Buffer&) {}
+    template <typename Writer, typename... Args>
+    void constexpr formatAssertion(Writer& writer, char const* format, Args&&... args) { format_to(writer, format, std::forward<Args>(args)...); }
+    template <typename Writer>
+    void constexpr formatAssertion(Writer&) {}
 } // namespace up::_detail
 
 #    define _up_FORMAT_FAIL(condition_text, ...) \
         do { \
-            ::up::fixed_string_writer<512> _up_fail_buffer; \
-            ::up::_detail::formatAssertion(_up_fail_buffer, ##__VA_ARGS__); \
-            _up_FAIL((condition_text), _up_fail_buffer.c_str()); \
+            char _up_fail_buffer[512]; \
+            ::up::fixed_writer _up_fail_writer(_up_fail_buffer); \
+            ::up::_detail::formatAssertion(_up_fail_writer, ##__VA_ARGS__); \
+            _up_FAIL((condition_text), _up_fail_buffer); \
         } while (false)
 
 #    define UP_ASSERT(condition, ...) \
