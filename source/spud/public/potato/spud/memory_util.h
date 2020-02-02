@@ -90,7 +90,7 @@ template <typename InputIt, typename SizeT, typename TypeT>
 void up::unitialized_move_n(InputIt first, SizeT count, TypeT* out_first) {
     using type = std::remove_reference_t<decltype(*first)>;
     using type_rvalue = type&&;
-    if constexpr (std::is_trivially_constructible_v<TypeT, type_rvalue> && std::is_pointer_v<InputIt>) {
+    if constexpr (std::is_trivially_constructible_v<TypeT, type_rvalue> && std::is_pointer_v<InputIt>) { //NOLINT
         std::memmove(out_first, first, count * sizeof(type));
     }
     else {
@@ -104,7 +104,7 @@ template <typename InputIt, typename SizeT, typename TypeT>
 void up::move_n(InputIt first, SizeT count, TypeT* out_first) {
     using type = std::remove_reference_t<decltype(*first)>;
     using type_rvalue = type&&;
-    if constexpr (std::is_trivially_assignable_v<TypeT, type_rvalue> && std::is_pointer_v<InputIt>) {
+    if constexpr (std::is_trivially_assignable_v<TypeT, type_rvalue> && std::is_pointer_v<InputIt>) { //NOLINT
         std::memmove(out_first, first, count * sizeof(type));
     }
     else {
