@@ -61,7 +61,8 @@ jobs:
           - cxx: clang++-9
             cc: clang-9
             cxxflags: -Wall -Werror -Wno-unused-function -stdlib=libc++
-            packages: clang-9 libc++-9-dev libc++abi-9-dev
+            packages: clang-9 clang-tools-9 libc++-9-dev libc++abi-9-dev
+            clang_tidy: clang-tidy-9
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-latest'
@@ -85,37 +86,13 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+          cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
       - name: Build
         run: cmake --build build --parallel
       - name: Test
         run: |
           cd build
           ctest -T test -R potato --verbose
-
-  clang_tidy:
-    name: Clang Tidy
-    runs-on: 'ubuntu-latest'
-
-    steps:
-      - uses: actions/checkout@master
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
-      - name: Install clang-tidy
-        run: sudo apt-get -yq install clang-tidy-9 clang-9 libc++-9-dev libc++abi-9-dev
-      - name: Install uuid-dev
-        run: sudo apt-get -yq install uuid-dev
-      - name: Configure
-        env:
-          CC: 'clang-9'
-          CXX: 'clang++-9'
-          CXXFLAGS: '-Wall -Werror -Wno-unused-function -stdlib=libc++'
-        run: |
-          mkdir build
-          cd build
-          cmake -G Ninja -DUP_CLANG_TIDY:PATH=clang-tidy-9 ..
-      - name: Analyze
-        run: cmake --build build --parallel
 
   doxygen:
     name: Documentation
@@ -144,7 +121,7 @@ jobs:
 
   build-all:
     name: All
-    needs: [ 'build-windows', 'build-ubuntu', 'clang_tidy', 'doxygen' ]
+    needs: [ 'build-windows', 'build-ubuntu', 'doxygen' ]
     runs-on: 'ubuntu-latest'
 
     steps:

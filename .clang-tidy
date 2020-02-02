@@ -2,10 +2,6 @@ FormatStyle: "file"
 Checks: "-*,performance-*,readability-*,-readability-named-parameter,-readability-magic-numbers,-readability-uppercase-literal-suffix,-readability-convert-member-functions-to-static"
 HeaderFilterRegex: "source/.*"
 ExtraArgs: [
-    "-Wno-unknown-argument",
-    "-Wno-pragma-pack",
-    "-std=c++17",
-    "-stdlib=libc++",
     "-D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING",
 ]
 WarningsAsErrors: "*"
