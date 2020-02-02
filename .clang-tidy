@@ -1,6 +1,6 @@
 FormatStyle: "file"
-Checks: "-*,performance-*"
-HeaderFilterRegex: "source/"
+Checks: "-*,performance-*,readability-*,-readability-named-parameter,-readability-magic-numbers,-readability-uppercase-literal-suffix,-readability-convert-member-functions-to-static"
+HeaderFilterRegex: "source/.*"
 ExtraArgs: [
     "-Wno-unknown-argument",
     "-Wno-pragma-pack",
