@@ -258,9 +258,8 @@ namespace up {
         size_type const size = _last - _first;
         if (size < new_size) {
             reserve(new_size);
-            for (T* new_end = _first + new_size; _last != new_end; ++_last) {
-                new (_last) T{};
-            }
+            default_construct_n(_last, new_size - size);
+            _last += new_size;
         }
         else if (size > new_size) {
             destruct_n(_first + new_size, _last - _first);
@@ -273,9 +272,7 @@ namespace up {
         size_type const count = _last - _first;
         if (count < new_size) {
             reserve(new_size);
-            for (T* new_end = _first + new_size; _last != new_end; ++_last) {
-                new (_last) T(init);
-            }
+            uninitialized_value_construct_n(_last, new_size - count, init);
         }
         else if (count > new_size) {
             destruct_n(_first + new_size, _last - _first);
@@ -327,6 +324,7 @@ namespace up {
         if (_last != _sentinel) {
             return new (_last++) value_type(std::forward<ParamsT>(params)...);
         }
+
         auto const size = _last - _first;
 
         // temp
