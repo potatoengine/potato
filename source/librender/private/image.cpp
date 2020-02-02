@@ -23,7 +23,7 @@ static void stb_skip(void* user, int n) {
 
 static int stb_eof(void* user) {
     auto* stream = static_cast<up::Stream*>(user);
-    return stream->isEof();
+    return stream->isEof() ? 1 : 0;
 }
 
 static constexpr stbi_io_callbacks stb_io = {&stb_read, &stb_skip, &stb_eof};

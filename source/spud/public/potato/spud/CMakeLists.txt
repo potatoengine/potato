@@ -9,6 +9,7 @@ target_sources(potato_spud PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/find.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fixed_string_writer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/functional.h
     ${CMAKE_CURRENT_SOURCE_DIR}/hash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/hash_fnv1a.h
     ${CMAKE_CURRENT_SOURCE_DIR}/int_types.h

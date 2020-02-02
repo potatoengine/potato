@@ -16,8 +16,7 @@ jobs:
     runs-on: 'windows-latest'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
+      - uses: actions/checkout@master
       - name: Set Environment
         run: echo "::set-env name=DEPS::$Env:HOME\deps"
       - name: Install SDL2 SDK
@@ -62,7 +61,8 @@ jobs:
           - cxx: clang++-9
             cc: clang-9
             cxxflags: -Wall -Werror -Wno-unused-function -stdlib=libc++
-            packages: clang-9 libc++-9-dev libc++abi-9-dev
+            packages: clang-9 clang-tidy-9 libc++-9-dev libc++abi-9-dev
+            clang_tidy: clang-tidy-9
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-latest'
@@ -86,7 +86,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+          cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
       - name: Build
         run: cmake --build build --parallel
       - name: Test
@@ -99,10 +99,9 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
+      - uses: actions/checkout@master
       - name: Install Doxygen
         run: sudo apt-get -yq install doxygen
-      - name: Checkout
-        uses: actions/checkout@master
       - name: Install uuid-dev
         run: |
           sudo apt-get -yq update

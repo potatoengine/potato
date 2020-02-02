@@ -16,11 +16,13 @@ namespace {
     };
 
     void CopyToClipboard(DialogData const& data) noexcept {
+        constexpr int clipboard_size_bytes = 1024;
+
         // copy into clipboard
         if (OpenClipboard(nullptr) == TRUE) {
             EmptyClipboard();
 
-            up::fixed_string_writer<1024> buffer;
+            up::fixed_string_writer<clipboard_size_bytes> buffer;
             up::format_append(buffer, "ASSERTION FAILED: {}\r\n{}\r\n{}\r\n{}", data.condition, data.message, data.location, data.callstack);
 
             if (HANDLE handle = GlobalAlloc(GMEM_MOVEABLE, buffer.size() + 1)) {
@@ -87,7 +89,8 @@ namespace {
 
 namespace up::_detail {
     auto handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText) -> FatalErrorAction {
-        fixed_string_writer<128> location_buffer;
+        constexpr int location_buffer_bytes = 128;
+        fixed_string_writer<location_buffer_bytes> location_buffer;
         format_append(location_buffer, "{}({})", file, line);
 
         DialogData data;

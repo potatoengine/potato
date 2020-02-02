@@ -41,7 +41,7 @@ auto up::NativeFileSystem::enumerate(zstring_view path, EnumerateCallback cb, En
 
     while (iter != end) {
         std::string genPath =
-            (((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath) ? iter->path() : std::filesystem::relative(iter->path(), path.c_str())).generic_string().c_str();
+            ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath ? iter->path() : std::filesystem::relative(iter->path(), path.c_str())).generic_string();
 
         FileInfo info;
         info.path = genPath.c_str();

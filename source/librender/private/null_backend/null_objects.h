@@ -24,7 +24,7 @@ namespace up::null {
 
     class DeviceNull final : public GpuDevice {
     public:
-        rc<GpuSwapChain> createSwapChain(void* native_window) override;
+        rc<GpuSwapChain> createSwapChain(void* nativeWindow) override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
         box<GpuBuffer> createBuffer(GpuBufferType type, uint64 size) override;
@@ -33,7 +33,7 @@ namespace up::null {
 
         box<GpuResourceView> createRenderTargetView(GpuTexture* renderTarget) override;
         box<GpuResourceView> createDepthStencilView(GpuTexture* depthStencilBuffer) override;
-        box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
+        box<GpuResourceView> createShaderResourceView(GpuBuffer* buffer) override;
         box<GpuResourceView> createShaderResourceView(GpuTexture* texture) override;
 
         void execute(GpuCommandList* commands) override {}

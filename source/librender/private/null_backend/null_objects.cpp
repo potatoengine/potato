@@ -16,7 +16,7 @@ auto up::CreateFactoryNull() -> box<GpuDeviceFactory> {
     return new_box<null::FactoryNull>();
 }
 
-auto up::null::DeviceNull::createSwapChain(void* native_window) -> rc<GpuSwapChain> {
+auto up::null::DeviceNull::createSwapChain(void* nativeWindow) -> rc<GpuSwapChain> {
     return new_shared<SwapChainNull>();
 }
 
@@ -36,11 +36,11 @@ auto up::null::DeviceNull::createDepthStencilView(GpuTexture* depthStencilBuffer
     return new_box<ResourceViewNull>(GpuViewType::DSV);
 }
 
-auto up::null::DeviceNull::createShaderResourceView(GpuBuffer* resource) -> box<GpuResourceView> {
+auto up::null::DeviceNull::createShaderResourceView(GpuBuffer* buffer) -> box<GpuResourceView> {
     return new_box<ResourceViewNull>(GpuViewType::SRV);
 }
 
-auto up::null::DeviceNull::createShaderResourceView(GpuTexture* resource) -> box<GpuResourceView> {
+auto up::null::DeviceNull::createShaderResourceView(GpuTexture* texture) -> box<GpuResourceView> {
     return new_box<ResourceViewNull>(GpuViewType::SRV);
 }
 

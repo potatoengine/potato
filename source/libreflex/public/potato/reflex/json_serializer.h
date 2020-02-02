@@ -79,15 +79,13 @@ namespace up::reflex {
             if constexpr (std::is_same_v<up::string_view, BaseT>) {
                 return std::string(value.begin(), value.end());
             }
-            else if constexpr (is_string_v<BaseT>) {
+            if constexpr (is_string_v<BaseT>) {
                 return value.c_str();
             }
-            else if constexpr (is_numeric_v<BaseT>) {
+            if constexpr (is_numeric_v<BaseT>) {
                 return value;
             }
-            else {
-                return nullptr;
-            }
+            return nullptr;
         }
 
         auto _assign(nlohmann::json node) -> nlohmann::json* {
@@ -98,16 +96,15 @@ namespace up::reflex {
                 _nextField = {};
                 return &child;
             }
-            else if (_nextAppend) {
+            if (_nextAppend) {
                 parent->push_back(std::move(node));
                 auto& child = parent->back();
                 _nextAppend = false;
                 return &child;
             }
-            else {
-                *parent = std::move(node);
-                return parent;
-            }
+
+            *parent = std::move(node);
+            return parent;
         }
 
     private:
@@ -202,14 +199,12 @@ namespace up::reflex {
                 _nextField = {};
                 return &current;
             }
-            else if (parent->is_array() && _nextIndex < parent->size()) {
+            if (parent->is_array() && _nextIndex < parent->size()) {
                 auto& current = (*parent)[_nextIndex];
                 _nextIndex = ~size_t{};
                 return &current;
             }
-            else {
-                return nullptr;
-            }
+            return nullptr;
         }
 
     private:

@@ -9,6 +9,7 @@
       "installRoot": "${projectDir}/out/msvc-debug-shared/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
+      "enableClangTidyCodeAnalysis": true,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
@@ -36,6 +37,7 @@
       "installRoot": "${projectDir}/out/msvc-debug-static/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
+      "enableClangTidyCodeAnalysis": true,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
@@ -58,6 +60,7 @@
       "installRoot": "${projectDir}/out/msvc-release-shared/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
+      "enableClangTidyCodeAnalysis": true,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
@@ -80,6 +83,7 @@
       "installRoot": "${projectDir}/out/msvc-release-static/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
+      "enableClangTidyCodeAnalysis": true,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
@@ -106,6 +110,7 @@
       "inheritEnvironments": [ "linux_x64" ],
       "wslPath": "${defaultWSLPath}",
       "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "enableClangTidyCodeAnalysis": true,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
@@ -135,6 +140,7 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "--verbose",
       "inheritEnvironments": [ "linux_x64" ],
+      "enableClangTidyCodeAnalysis": true,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
@@ -165,6 +171,7 @@
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "--verbose",
       "inheritEnvironments": [ "clang_cl_x64" ],
+      "enableClangTidyCodeAnalysis": true,
       "variables": [
         {
           "name": "UP_OUTPUT_DIR",

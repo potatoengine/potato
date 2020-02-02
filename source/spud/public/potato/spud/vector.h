@@ -258,8 +258,8 @@ namespace up {
         size_type const size = _last - _first;
         if (size < new_size) {
             reserve(new_size);
-            for (T* new_end = _first + new_size; _last != new_end; ++_last)
-                new (_last) T{};
+            default_construct_n(_last, new_size - size);
+            _last += new_size;
         }
         else if (size > new_size) {
             destruct_n(_first + new_size, _last - _first);
@@ -272,8 +272,7 @@ namespace up {
         size_type const count = _last - _first;
         if (count < new_size) {
             reserve(new_size);
-            for (T* new_end = _first + new_size; _last != new_end; ++_last)
-                new (_last) T(init);
+            uninitialized_value_construct_n(_last, new_size - count, init);
         }
         else if (count > new_size) {
             destruct_n(_first + new_size, _last - _first);
@@ -309,79 +308,48 @@ namespace up {
     template <typename T>
     template <typename... ParamsT>
     auto vector<T>::emplace(const_iterator pos, ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
-        if (_last == _sentinel) {
-            auto const offset = pos - _first;
-
-            // grow
-            auto const newCapacity = _grow(_last - _first + 1);
-            T* tmp = _allocate(newCapacity);
-
-            // insert new elements
-            new (tmp + offset) value_type(std::forward<ParamsT>(params)...);
-
-            // move over elements before insertion point
-            unitialized_move_n(_first, offset, tmp);
-
-            // move over elements after insertion point
-            unitialized_move_n(_first + offset, _last - _first - offset, tmp + offset + 1);
-
-            auto const new_size = _last - _first + 1;
-
-            // free up old space
-            destruct_n(_first, _last - _first);
-            _deallocate(_first, _sentinel - _first);
-
-            // commit new space
-            _first = tmp;
-            _last = _first + new_size;
-            _sentinel = _first + newCapacity;
-
-            return _first + offset;
+        if (pos == _last) {
+            return emplace_back(std::forward<ParamsT>(params)...);
         }
-        else if (pos == _last) {
-            return new (_last++) value_type(std::forward<ParamsT>(params)...);
-        }
-        else {
-            iterator mpos = const_cast<iterator>(pos);
-            _rshift(mpos, 1);
-            *mpos = value_type(std::forward<ParamsT>(params)...);
-            return mpos;
-        }
+
+        iterator mpos = const_cast<iterator>(pos);
+        _rshift(mpos, 1);
+        *mpos = value_type(std::forward<ParamsT>(params)...);
+        return mpos;
     }
 
     template <typename T>
     template <typename... ParamsT>
     auto vector<T>::emplace_back(ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
-        if (_last == _sentinel) {
-            auto const size = _last - _first;
-
-            // temp
-            auto temp = value_type(std::forward<ParamsT>(params)...);
-
-            // grow
-            auto const newCapacity = _grow(size + 1);
-            T* tmp = _allocate(newCapacity);
-
-            // insert new elements
-            new (tmp + size) value_type(std::move(temp));
-
-            // move over old elements
-            unitialized_move_n(_first, size, tmp);
-
-            // free up old space
-            destruct_n(_first, _last - _first);
-            _deallocate(_first, _sentinel - _first);
-
-            // commit new space
-            _first = tmp;
-            _last = _first + size + 1;
-            _sentinel = _first + newCapacity;
-
-            return _first + size;
-        }
-        else {
+        if (_last != _sentinel) {
             return new (_last++) value_type(std::forward<ParamsT>(params)...);
         }
+
+        auto const size = _last - _first;
+
+        // temp
+        auto temp = value_type(std::forward<ParamsT>(params)...);
+
+        // grow
+        auto const newCapacity = _grow(size + 1);
+        T* tmp = _allocate(newCapacity);
+
+        // insert new elements
+        new (tmp + size) value_type(std::move(temp));
+
+        // move over old elements
+        unitialized_move_n(_first, size, tmp);
+
+        // free up old space
+        destruct_n(_first, _last - _first);
+        _deallocate(_first, _sentinel - _first);
+
+        // commit new space
+        _first = tmp;
+        _last = _first + size + 1;
+        _sentinel = _first + newCapacity;
+
+        return _first + size;
     }
 
     template <typename T>
@@ -393,41 +361,40 @@ namespace up {
 
         auto const count = end - begin;
 
-        if (_sentinel - _last < count) {
-            auto const offset = pos - _first;
-
-            // grow
-            auto const newCapacity = _grow(_last - _first + count);
-            T* tmp = _allocate(newCapacity);
-
-            // insert new elements
-            unitialized_copy_n(begin, count, tmp + offset);
-
-            // move over elements before insertion point
-            unitialized_copy_n(_first, offset, tmp);
-
-            // move over elements after insertion point
-            unitialized_copy_n(_first + offset, _last - _first - offset, tmp + offset + count);
-
-            auto const new_size = _last - _first + count;
-
-            // free up old space
-            destruct_n(_first, _last - _first);
-            _deallocate(_first, _sentinel - _first);
-
-            // commit new space
-            _first = tmp;
-            _last = _first + new_size;
-            _sentinel = _first + newCapacity;
-
-            return _first + offset;
-        }
-        else {
+        if (_sentinel - _last == count) {
             iterator mpos = const_cast<iterator>(pos);
             _rshift(mpos, count);
             move_n(begin, count, mpos);
             return mpos;
         }
+
+        auto const offset = pos - _first;
+
+        // grow
+        auto const newCapacity = _grow(_last - _first + count);
+        T* tmp = _allocate(newCapacity);
+
+        // insert new elements
+        unitialized_copy_n(begin, count, tmp + offset);
+
+        // move over elements before insertion point
+        unitialized_copy_n(_first, offset, tmp);
+
+        // move over elements after insertion point
+        unitialized_copy_n(_first + offset, _last - _first - offset, tmp + offset + count);
+
+        auto const new_size = _last - _first + count;
+
+        // free up old space
+        destruct_n(_first, _last - _first);
+        _deallocate(_first, _sentinel - _first);
+
+        // commit new space
+        _first = tmp;
+        _last = _first + new_size;
+        _sentinel = _first + newCapacity;
+
+        return _first + offset;
     }
 
     template <typename T>

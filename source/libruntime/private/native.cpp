@@ -44,7 +44,7 @@ namespace up {
                 return IOResult::Success;
             }
 
-            IOResult write(span<byte const>) override {
+            IOResult write([[maybe_unused]] span<byte const> ignore) override {
                 return IOResult::UnsupportedOperation;
             }
 

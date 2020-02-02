@@ -49,8 +49,9 @@ bool up::DrawImgui::createResources(GpuDevice& device) {
 
     auto& imguiIO = ImGui::GetIO();
 
-    int fontWidth, fontHeight;
-    unsigned char* pixels;
+    int fontWidth = 0;
+    int fontHeight = 0;
+    unsigned char* pixels = nullptr;
     imguiIO.Fonts->GetTexDataAsRGBA32(&pixels, &fontWidth, &fontHeight);
     GpuTextureDesc texDesc;
     texDesc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
@@ -274,10 +275,10 @@ char const* up::DrawImgui::_getClipboardTextContents(void* self) {
     return imgui->_clipboardTextData.c_str();
 }
 
-void up::DrawImgui::_setClipboardTextContents(void* self, char const* text) {
+void up::DrawImgui::_setClipboardTextContents(void* self, char const* zstr) {
     auto imgui = static_cast<DrawImgui*>(self);
     imgui->_clipboardTextData.reset();
-    SDL_SetClipboardText(text);
+    SDL_SetClipboardText(zstr);
 }
 
 void up::DrawImgui::_ensureContext() {

@@ -27,7 +27,7 @@ namespace up {
         Scene(Scene const&) = delete;
         Scene& operator=(Scene const&) = delete;
 
-        void create(rc<Model> cube);
+        void create(rc<Model> const& cube);
         void tick(float frameTime);
         void flush();
         void render(RenderContext& ctx);

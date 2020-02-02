@@ -125,12 +125,8 @@ bool up::path::isNormalized(string_view path) noexcept {
         }
     }
 
-    if (mode != Part::Component) {
-        // no trailing slash or dot
-        return false;
-    }
-
-    return true;
+    // require no trailing slash or dot
+    return mode == Part::Component;
 }
 
 auto up::path::normalize(string_view path) -> string {

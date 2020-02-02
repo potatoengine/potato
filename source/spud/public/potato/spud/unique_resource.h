@@ -3,6 +3,7 @@
 #pragma once
 
 #include <utility>
+#include <type_traits>
 
 namespace up {
     template <typename T, auto D, auto Default = T{}>
@@ -20,12 +21,12 @@ public:
     unique_resource() = default;
     ~unique_resource() { reset(); }
 
-    explicit unique_resource(rvalue_reference obj) : _object(obj) {}
+    explicit unique_resource(rvalue_reference obj) noexcept(std::is_nothrow_move_constructible_v<T>) : _object(obj) {}
 
-    unique_resource(unique_resource&& src) : _object(std::move(src.get())) {}
-    inline unique_resource& operator=(unique_resource&& src);
+    unique_resource(unique_resource&& src) noexcept(std::is_nothrow_move_constructible_v<T>) : _object(std::move(src.get())) {}
 
-    inline unique_resource& operator=(rvalue_reference obj);
+    inline unique_resource& operator=(unique_resource&& src) noexcept(std::is_nothrow_move_assignable_v<T>);
+    inline unique_resource& operator=(rvalue_reference obj) noexcept(std::is_nothrow_move_assignable_v<T>);
 
     bool empty() const { return _object == Default; }
     explicit operator bool() const { return _object != Default; }
@@ -44,28 +45,22 @@ private:
 };
 
 template <typename T, auto D, auto Default>
-auto up::unique_resource<T, D, Default>::operator=(unique_resource&& src) -> up::unique_resource<T, D, Default>& {
-    if (this != &src) {
-        reset(std::move(src.get()));
-    }
+auto up::unique_resource<T, D, Default>::operator=(unique_resource&& src) noexcept(std::is_nothrow_move_assignable_v<T>) -> up::unique_resource<T, D, Default>& {
+    reset(std::move(src.get()));
     return *this;
 }
 
 template <typename T, auto D, auto Default>
-auto up::unique_resource<T, D, Default>::operator=(rvalue_reference obj) -> up::unique_resource<T, D, Default>& {
-    if (obj != _object) {
-        D(_object);
-        _object = std::move(obj);
-    }
+auto up::unique_resource<T, D, Default>::operator=(rvalue_reference obj) noexcept(std::is_nothrow_move_assignable_v<T>) -> up::unique_resource<T, D, Default>& {
+    D(_object);
+    _object = std::move(obj);
     return *this;
 }
 
 template <typename T, auto D, auto Default>
 void up::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
-    if (obj != _object) {
-        D(_object);
-        _object = std::forward<T>(obj);
-    }
+    D(_object);
+    _object = std::move(obj);
 }
 
 template <typename T, auto D, auto Default>
