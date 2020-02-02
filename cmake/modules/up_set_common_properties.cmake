@@ -79,6 +79,14 @@ function(up_set_common_properties TARGET)
             $<$<CXX_COMPILER_ID:MSVC>:/Zc:inline>
         )
     endif()
+    
+    # Enable clang-tidy
+    #
+    if (UP_CLANG_TIDY AND NOT IS_INTERFACE AND NOT IS_TEST)
+        set_target_properties(${TARGET} PROPERTIES
+            CXX_CLANG_TIDY ${UP_CLANG_TIDY}
+        )
+    endif()
 
     # Disable C4141, since __forceinline apparently implies
     # inline, but Clang/GCC's [always_inline] does _not_

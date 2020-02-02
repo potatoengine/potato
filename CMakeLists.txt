@@ -14,6 +14,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" "${CMAKE_CURRE
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(UP_BUILD_DOCS "Build documentation" OFF)
 
+set(UP_CLANG_TIDY "" CACHE PATH "Path to clang-tidy")
+
 enable_testing()
 include(Dart)
 
