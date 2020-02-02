@@ -82,7 +82,7 @@ function(up_set_common_properties TARGET)
     
     # Enable clang-tidy
     #
-    if (UP_CLANG_TIDY AND NOT IS_INTERFACE AND NOT IS_TEST)
+    if (UP_CLANG_TIDY AND NOT MSVC AND NOT IS_INTERFACE AND NOT IS_TEST)
         set_target_properties(${TARGET} PROPERTIES
             CXX_CLANG_TIDY ${UP_CLANG_TIDY}
         )

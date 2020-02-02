@@ -103,6 +103,8 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Install clang-tidy
         run: sudo apt-get -yq install clang-tidy-9 clang-9 libc++-9-dev libc++abi-9-dev
+      - name: Install uuid-dev
+        run: sudo apt-get -yq install uuid-dev
       - name: Configure
         env:
           CC: 'clang-9'
