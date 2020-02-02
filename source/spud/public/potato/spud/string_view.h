@@ -158,13 +158,7 @@ public:
     friend bool constexpr operator<(string_view lhs, string_view rhs) noexcept {
         auto const len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
         auto const rs = stringCompare(lhs.data(), rhs.data(), len);
-        if (rs < 0) {
-            return true;
-        }
-        else if (rs == 0 || lhs.size() < rhs.size()) {
-            return true;
-        }
-        return false;
+        return rs < 0 || (rs == 0 || lhs.size() < rhs.size());
     }
 
 private:

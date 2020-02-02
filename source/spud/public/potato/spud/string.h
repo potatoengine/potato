@@ -162,13 +162,7 @@ public:
     friend bool operator<(string const& lhs, string const& rhs) noexcept {
         auto len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
         auto rs = stringCompare(lhs.data(), rhs.data(), len);
-        if (rs < 0) {
-            return true;
-        }
-        else if (rs == 0 && lhs.size() < rhs.size()) {
-            return true;
-        }
-        return false;
+        return rs < 0 || (rs == 0 && lhs.size() < rhs.size());
     }
 
     /*implicit*/ operator string_view() const noexcept {
@@ -229,18 +223,17 @@ public:
 
 private:
     [[nodiscard]] static pointer _copy(const_pointer str, size_type length) {
-        if (length != 0) {
-            pointer p = new value_type[length + 1];
-            std::memmove(p, str, length);
-            p[length] = 0;
-            return p;
-        }
-        else {
+        if (length == 0) {
             return nullptr;
         }
+
+        pointer p = new value_type[length + 1];
+        std::memmove(p, str, length);
+        p[length] = 0;
+        return p;
     }
 
-    static void _free(pointer data, size_type length) {
+    static void _free(const_pointer data, size_type length) {
         delete[] data;
         data = nullptr;
     }

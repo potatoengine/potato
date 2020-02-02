@@ -140,17 +140,18 @@ auto up::string_writer::to_string() const& -> string {
 }
 
 auto up::string_writer::to_string() && -> string {
+    string result;
+
     if (_ptr != _fixed && _size == _capacity - 1 /*NUL*/) {
-        string s = string::take_ownership(_ptr, _size);
+        result = string::take_ownership(_ptr, _size);
         _ptr = nullptr;
-        reset();
-        return s;
     }
     else {
-        string s(_ptr, _size);
-        reset();
-        return s;
+        result = string(_ptr, _size);
     }
+
+    reset();
+    return result;
 }
 
 void up::string_writer::resize(size_type newSize, value_type fill) {
