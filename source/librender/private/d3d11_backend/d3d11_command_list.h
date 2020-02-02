@@ -41,9 +41,9 @@ namespace up::d3d11 {
         void finish() override;
         void clear(GpuPipelineState* pipelineState = nullptr) override;
 
-        span<byte> map(GpuBuffer* resource, uint64 size, uint64 offset = 0) override;
-        void unmap(GpuBuffer* resource, span<byte const> data) override;
-        void update(GpuBuffer* resource, span<byte const> data, uint64 offset = 0) override;
+        span<byte> map(GpuBuffer* buffer, uint64 size, uint64 offset = 0) override;
+        void unmap(GpuBuffer* buffer, span<byte const> data) override;
+        void update(GpuBuffer* buffer, span<byte const> data, uint64 offset = 0) override;
 
         com_ptr<ID3D11DeviceContext> const& deviceContext() const { return _context; }
         com_ptr<ID3D11CommandList> const& commandList() const { return _commands; }

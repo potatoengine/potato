@@ -18,7 +18,7 @@ namespace up::d3d11 {
 
         static rc<GpuDevice> createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter);
 
-        rc<GpuSwapChain> createSwapChain(void* native_window) override;
+        rc<GpuSwapChain> createSwapChain(void* nativeWindow) override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
         box<GpuBuffer> createBuffer(GpuBufferType type, uint64 size) override;

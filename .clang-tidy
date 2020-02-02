@@ -1,5 +1,5 @@
 FormatStyle: "file"
-Checks: "-*,modernize-*,readability-*,performance-*"
+Checks: "-*,performance-*"
 HeaderFilterRegex: "source/"
 ExtraArgs: [
     "-Wno-unknown-argument",

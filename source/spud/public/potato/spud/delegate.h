@@ -4,6 +4,7 @@
 
 #include "_assertion.h"
 #include "traits.h"
+#include "functional.h"
 
 #include <new>
 
@@ -76,14 +77,14 @@ namespace up {
         public:
             delegate_base() noexcept = default;
 
-            delegate_base(const delegate_base&) = delete;
-            delegate_base& operator=(const delegate_base&) = delete;
+            delegate_base(const delegate_base& rhs) = delete;
+            delegate_base& operator=(const delegate_base& rhs) = delete;
 
-            inline delegate_base(delegate_base&&) noexcept;
-            inline delegate_base& operator=(delegate_base&&) noexcept;
+            inline delegate_base(delegate_base&& rhs) noexcept;
+            inline delegate_base& operator=(delegate_base&& rhs) noexcept;
 
-            /*implicit*/ delegate_base(std::nullptr_t) noexcept {}
-            delegate_base& operator=(std::nullptr_t) {
+            /*implicit*/ delegate_base(std::nullptr_t null) noexcept {}
+            delegate_base& operator=(std::nullptr_t null) {
                 reset();
                 return *this;
             }

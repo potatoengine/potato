@@ -52,39 +52,8 @@ namespace up {
     static_assert(is_numeric_v<bool> && is_numeric_v<char> && is_numeric_v<float>);
     static_assert(!is_numeric_v<int*> && !is_numeric_v<float&> && !is_numeric_v<std::nullptr_t>);
 
-#if defined(__cpp_lib_constexpr_invoke)
-    using std::invoke;
-#else
-    template <class Class, class Return, class First, class... Rest>
-    constexpr decltype(auto) invoke(Return Class::*func, First&& first, Rest&&... rest) {
-        if constexpr (std::is_member_function_pointer_v<decltype(func)>) {
-            return (std::forward<First>(first).*func)(std::forward<Rest>(rest)...);
-        }
-        else {
-            return func(std::forward<First>(first), std::forward<Rest>(rest)...);
-        }
-    }
-
-    template <typename Functor, typename... Args>
-    constexpr auto invoke(Functor&& func, Args&&... args) -> decltype(std::forward<Functor>(func)(std::forward<Args>(args)...)) {
-        return std::forward<Functor>(func)(std::forward<Args>(args)...);
-    }
-#endif
-
-#if defined(__cpp_lib_is_invocable)
     template <typename Functor, typename... ParamTypes>
     constexpr bool is_invocable_v = std::is_invocable_v<Functor, ParamTypes...>;
-#else
-    namespace _detail {
-        template <typename Functor, typename... ParamTypes>
-        using is_invocable_test = decltype(invoke(std::declval<Functor>(), std::declval<ParamTypes>()...));
-        extern void is_invocable_func_test();
-    } // namespace _detail
-    template <typename Functor, typename... ParamTypes>
-    constexpr bool is_invocable_v = is_detected_v<_detail::is_invocable_test, Functor, ParamTypes...>;
-    static_assert(is_invocable_v<decltype(_detail::is_invocable_func_test)>);
-    static_assert(!is_invocable_v<int>);
-#endif
 
     template <typename T, typename Arguments, typename = void>
     struct is_braces_constructible { static constexpr bool value = false; };

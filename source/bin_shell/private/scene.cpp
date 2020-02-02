@@ -64,7 +64,7 @@ UP_REFLECT_TYPE(up::components::Position) {
 up::Scene::Scene() : _world(new_box<World>()) {
 }
 
-void up::Scene::create(rc<Model> cube) {
+void up::Scene::create(rc<Model> const& cube) {
     auto pi = glm::pi<float>();
 
     for (size_t i = 0; i <= 100; ++i) {

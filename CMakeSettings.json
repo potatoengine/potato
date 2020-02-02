@@ -9,6 +9,7 @@
       "installRoot": "${projectDir}/out/msvc-debug-shared/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
+      "enableClangTidyCodeAnalysis": true,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",

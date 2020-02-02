@@ -195,13 +195,12 @@ void up::d3d11::CommandListD3D11::clear(GpuPipelineState* pipelineState) {
     }
 }
 
-auto up::d3d11::CommandListD3D11::map(GpuBuffer* resource, up::uint64 size, up::uint64 offset) -> span<up::byte> {
-    if (resource == nullptr) {
+auto up::d3d11::CommandListD3D11::map(GpuBuffer* buffer, up::uint64 size, up::uint64 offset) -> span<up::byte> {
+    if (buffer == nullptr) {
         return {};
     }
 
-    auto buffer = static_cast<BufferD3D11*>(resource);
-    ID3D11Buffer* d3dBuffer = buffer->buffer().get();
+    ID3D11Buffer* d3dBuffer = static_cast<BufferD3D11*>(buffer)->buffer().get();
     UP_ASSERT(d3dBuffer != nullptr);
 
     D3D11_MAPPED_SUBRESOURCE sub = {};
@@ -213,7 +212,7 @@ auto up::d3d11::CommandListD3D11::map(GpuBuffer* resource, up::uint64 size, up::
 
     //_context->Map(d3dBuffer, 0, writeAll ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &sub);
     _context->Map(d3dBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &sub);
-    return {static_cast<up::byte*>(sub.pData) + offset, size};
+    return {static_cast<up::byte*>(sub.pData) + offset, static_cast<std::size_t>(size)};
 }
 
 void up::d3d11::CommandListD3D11::unmap(GpuBuffer* buffer, span<up::byte const> data) {

@@ -5,7 +5,7 @@
 // detect platform
 #if defined(_WIN32) || defined(_WINDOWS)
 #    if !defined(_WIN64)
-#        error "Only Win64 is supported on Windows"
+//#        error "Only Win64 is supported on Windows"
 #    endif
 #    define UP_PLATFORM_WINDOWS 1
 #    define UP_PLATFORM_WIN64 1
@@ -50,7 +50,7 @@
 #    define UP_ARCH_LP64 1
 #    define UP_ARCH_CACHELINE 64
 #else
-#    error "Unsupported architecture"
+//#    error "Unsupported architecture"
 #endif
 
 // ensure C++17

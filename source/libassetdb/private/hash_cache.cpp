@@ -94,7 +94,7 @@ bool up::HashCache::deserialize(Stream& stream) {
         rec->mtime = mtime;
         rec->size = size;
         _hashes[rec->osPath] = std::move(rec);
-        return hash;
+        return hash != 0;
     }
 
     return true;

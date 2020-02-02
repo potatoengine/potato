@@ -22,3 +22,7 @@ auto up::NullFileSystem::copyFile(zstring_view from, zstring_view to) noexcept -
 auto up::NullFileSystem::remove(zstring_view path) noexcept -> IOResult { return IOResult::UnsupportedOperation; }
 
 auto up::NullFileSystem::removeRecursive(zstring_view path) noexcept -> IOResult { return IOResult::UnsupportedOperation; }
+
+auto up::NullFileSystem::currentWorkingDirectory() const noexcept -> string { return {}; }
+
+auto up::NullFileSystem::currentWorkingDirectory(zstring_view) -> bool { return false; }

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "traits.h"
+#include "functional.h"
 #include <utility>
 
 namespace up {
@@ -42,7 +43,7 @@ namespace up {
         }
     };
 
-    template <typename Value, typename Projection/*, typename = enable_if_t<!std::is_member_object_pointer_v<Projection>>*/>
+    template <typename Value, typename Projection, typename = enable_if_t<std::is_invocable_v<Projection, Value const&>>>
     decltype(auto) project(Projection const& projection, Value const& value) noexcept(noexcept(invoke(projection, value))) {
         return invoke(projection, value);
     }

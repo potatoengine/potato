@@ -54,7 +54,7 @@ auto up::Mesh::createFromBuffer(view<byte> buffer) -> rc<Mesh> {
     }
 
     auto flatModel = schema::GetModel(buffer.data());
-    if (!flatModel) {
+    if (flatModel == nullptr) {
         return {};
     }
 
@@ -67,7 +67,7 @@ auto up::Mesh::createFromBuffer(view<byte> buffer) -> rc<Mesh> {
     }
 
     auto flatMesh = flatModel->meshes()->Get(0);
-    if (!flatMesh) {
+    if (flatMesh == nullptr) {
         return {};
     }
 

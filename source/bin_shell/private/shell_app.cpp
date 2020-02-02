@@ -81,7 +81,7 @@ int up::ShellApp::initialize() {
     SDL_SysWMinfo wmInfo;
     SDL_VERSION(&wmInfo.version);
 
-    if (!SDL_GetWindowWMInfo(_window.get(), &wmInfo)) {
+    if (SDL_GetWindowWMInfo(_window.get(), &wmInfo) != SDL_TRUE) {
         _errorDialog("Could not get window info");
         return 1;
     }
@@ -154,9 +154,7 @@ int up::ShellApp::initialize() {
 }
 
 void up::ShellApp::run() {
-    std::chrono::high_resolution_clock clock;
-
-    auto now = clock.now();
+    auto now = std::chrono::high_resolution_clock::now();
     _lastFrameDuration = now - now;
 
     while (isRunning()) {
@@ -164,7 +162,7 @@ void up::ShellApp::run() {
         _tick();
         _render();
 
-        auto endFrame = clock.now();
+        auto endFrame = std::chrono::high_resolution_clock::now();
         _lastFrameDuration = endFrame - now;
         _lastFrameTime = static_cast<float>(_lastFrameDuration.count() / 1000000000.0);
         now = endFrame;
@@ -180,7 +178,8 @@ void up::ShellApp::_onWindowClosed() {
 }
 
 void up::ShellApp::_onWindowSizeChanged() {
-    int width, height;
+    int width = 0;
+    int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
     _renderCamera->resetSwapChain(nullptr);
     _renderer->commandList().clear();
@@ -195,7 +194,7 @@ void up::ShellApp::_processEvents() {
     _inputState->relativeMovement = {0, 0, 0};
 
     SDL_Event ev;
-    while (SDL_PollEvent(&ev)) {
+    while (SDL_PollEvent(&ev) > 0) {
         switch (ev.type) {
         case SDL_QUIT:
             return;
@@ -234,7 +233,8 @@ void up::ShellApp::_processEvents() {
                                          static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
     }
 
-    int relx, rely;
+    int relx = 0;
+    int rely = 0;
     int buttons = SDL_GetRelativeMouseState(&relx, &rely);
     bool isMouseMove = buttons != 0 && !imguiIO.WantCaptureMouse;
     SDL_SetRelativeMouseMode(isMouseMove ? SDL_TRUE : SDL_FALSE);
@@ -256,7 +256,8 @@ void up::ShellApp::_tick() {
 
 void up::ShellApp::_render() {
     GpuViewportDesc viewport;
-    int width, height;
+    int width = 0;
+    int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
     viewport.width = static_cast<float>(width);
     viewport.height = static_cast<float>(height);
