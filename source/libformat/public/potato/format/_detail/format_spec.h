@@ -14,7 +14,7 @@ namespace up::_detail {
 
     constexpr auto parse_width_and_precision(string_view& spec_string) noexcept -> format_width_precision {
         if (spec_string.empty()) {
-            return { false };
+            return {false};
         }
 
         char const* const start = spec_string.begin();
@@ -33,9 +33,9 @@ namespace up::_detail {
             success = next != prec_string;
         }
 
-        spec_string = { next, end };
+        spec_string = {next, end};
 
-        return { success, width, precision };
+        return {success, width, precision};
     }
 
     struct format_spec {
@@ -48,10 +48,10 @@ namespace up::_detail {
             char spec = spec_string.front();
             if (spec_options.find(spec) != string_view::npos) {
                 spec_string.pop_front();
-                return { true, spec };
+                return {true, spec};
             }
         }
-        return { false };
+        return {false};
     }
 
 } // namespace up::_detail

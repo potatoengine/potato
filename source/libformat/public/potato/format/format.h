@@ -13,13 +13,16 @@
 #include <type_traits>
 
 namespace up {
-    template <typename Writer, typename... Args> constexpr auto format_to(Writer& writer, string_view format_str, Args const& ... args) -> std::enable_if_t<is_format_writer<Writer> && (is_formattable<Args> && ...), up::format_result>;
-    template <typename ResultT, typename... Args> constexpr auto format_as(string_view format_str, Args const& ... args) -> std::enable_if_t<(is_formattable<Args> && ...), ResultT>;
-    template <typename Receiver, typename... Args> constexpr auto format_append(Receiver& receiver, string_view format_str, Args const&... args) -> std::enable_if_t<(is_formattable<Args> && ...), format_result>;
+    template <typename Writer, typename... Args>
+    constexpr auto format_to(Writer& writer, string_view format_str, Args const&... args) -> std::enable_if_t<is_format_writer<Writer> && (is_formattable<Args> && ...), up::format_result>;
+    template <typename ResultT, typename... Args>
+    constexpr auto format_as(string_view format_str, Args const&... args) -> std::enable_if_t<(is_formattable<Args> && ...), ResultT>;
+    template <typename Receiver, typename... Args>
+    constexpr auto format_append(Receiver& receiver, string_view format_str, Args const&... args) -> std::enable_if_t<(is_formattable<Args> && ...), format_result>;
 
     template <typename Writer, typename T>
     constexpr auto format_value_to(Writer& writer, T const& value, string_view spec_string = {}) -> std::enable_if_t<is_format_writer<Writer> && is_formattable<T>, up::format_result>;
-}
+} // namespace up
 
 namespace up {
     /// Default format helpers.
@@ -27,7 +30,7 @@ namespace up {
     constexpr void format_value(Writer& out, string_view str) noexcept(noexcept(out.write(str))) {
         out.write(str);
     }
-}
+} // namespace up
 
 /// Write the string format using the given parameters into a buffer.
 /// @param writer The write buffer that will receive the formatted text.
@@ -35,11 +38,11 @@ namespace up {
 /// @param args The arguments used by the formatting string.
 /// @returns a result code indicating any errors.
 template <typename Writer, typename... Args>
-constexpr auto up::format_to(Writer& writer, string_view format_str, Args const& ... args) -> std::enable_if_t<is_format_writer<Writer> && (is_formattable<Args> && ...), up::format_result> {
+constexpr auto up::format_to(Writer& writer, string_view format_str, Args const&... args) -> std::enable_if_t<is_format_writer<Writer> && (is_formattable<Args> && ...), up::format_result> {
     // The argument list _must_ be a temporary in the parameter list, as conversions may be involved in formattable_t constructor;
     // trying to store this in a local array or variable will allow those temporaries to be destructed before the call to
     // format_impl.
-    return _detail::format_impl(writer, format_str, { _detail::make_format_arg<Writer, _detail::formattable_t<Args>>(args)... });
+    return _detail::format_impl(writer, format_str, {_detail::make_format_arg<Writer, _detail::formattable_t<Args>>(args)...});
 }
 
 /// Write the string format using the given parameters and return a string with the result.

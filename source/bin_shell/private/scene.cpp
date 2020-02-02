@@ -71,25 +71,21 @@ void up::Scene::create(rc<Model> const& cube) {
         float p = i / 100.0f;
         float r = p * 2.f * pi;
         _world->createEntity(
-            components::Position{{
-                (20 + glm::cos(r) * 10.f) * glm::sin(r),
-                1 + glm::sin(r * 10.f) * 5.f,
-                (20 + glm::sin(r) * 10.f) * glm::cos(r)}
-            },
+            components::Position{{(20 + glm::cos(r) * 10.f) * glm::sin(r),
+                                  1 + glm::sin(r * 10.f) * 5.f,
+                                  (20 + glm::sin(r) * 10.f) * glm::cos(r)}},
             components::Rotation{glm::identity<glm::quat>()},
             components::Transform{},
             components::Mesh{cube},
             components::Wave{0, r},
-            components::Spin{glm::sin(r) * 2.f - 1.f}
-        );
+            components::Spin{glm::sin(r) * 2.f - 1.f});
     }
 
     _world->createEntity(
         components::Position{{0, 5, 0}},
         components::Rotation{glm::identity<glm::quat>()},
         components::Transform(),
-        components::Mesh{cube}
-    );
+        components::Mesh{cube});
 }
 
 up::Scene::~Scene() {

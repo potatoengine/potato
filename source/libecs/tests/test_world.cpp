@@ -167,7 +167,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
     DOCTEST_TEST_CASE("Interroate") {
         World world;
 
-        auto id = world.createEntity(Test1{'f'}, Another{1.0, 2.f} , Second{7.f, 'g'});
+        auto id = world.createEntity(Test1{'f'}, Another{1.0, 2.f}, Second{7.f, 'g'});
 
         auto success = world.interrogateEntity(id, [](auto entity, auto archetype, auto component, auto data) {
             if (component->id == getComponentId<Test1>()) {

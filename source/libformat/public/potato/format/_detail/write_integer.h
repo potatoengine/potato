@@ -16,11 +16,11 @@ namespace up::_detail {
         constexpr auto pad_run_count = 8;
         constexpr auto pad_run_mask = pad_run_count - 1;
         static_assert((pad_run_count & pad_run_mask) == 0);
-        constexpr char padding[pad_run_count] = { PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar };
+        constexpr char padding[pad_run_count] = {PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar};
 
         while (width > 0) {
             auto const to_write = width & pad_run_mask;
-            out.write({ padding, narrow_cast<string_view::size_type>(to_write) });
+            out.write({padding, narrow_cast<string_view::size_type>(to_write)});
             width -= to_write;
         }
     }
@@ -35,12 +35,12 @@ namespace up::_detail {
         integer_spec spec;
 
         if (auto const [success, lead_zeroes] = _detail::parse_spec(spec_string, "0"); success) {
-           spec.leading_zeroes = true;
+            spec.leading_zeroes = true;
         }
 
         char const* const end = spec_string.data() + spec_string.size();
         char const* next = _detail::parse_unsigned(spec_string.data(), spec_string.data() + spec_string.size(), spec.width);
-        spec_string = { next, end };
+        spec_string = {next, end};
 
         if (auto const [success, printf_spec] = _detail::parse_spec(spec_string, "xb"); success) {
             switch (printf_spec) {
@@ -53,16 +53,18 @@ namespace up::_detail {
         return spec;
     }
 
-	template <typename Writer, typename T>
+    template <typename Writer, typename T>
     constexpr void write_integer(Writer& out, T raw, string_view spec_string) {
         constexpr auto max_hex_chars = sizeof(raw) * CHAR_BIT + 1 /*negative*/;
         constexpr auto max_dec_chars = std::numeric_limits<T>::digits10 + 2 /*overflow digit, negative*/;
         constexpr auto max_bin_chars = std::numeric_limits<T>::digits + 1 /*negative*/;
-        constexpr auto max_buffer = 1/*NUL*/ + (max_hex_chars | max_dec_chars | max_bin_chars);
+        constexpr auto max_buffer = 1 /*NUL*/ + (max_hex_chars | max_dec_chars | max_bin_chars);
 
         auto const spec = parse_integer_spec(spec_string);
 
-        char buffer[max_buffer] = { 0, };
+        char buffer[max_buffer] = {
+            0,
+        };
         auto const result = std::to_chars(buffer, buffer + sizeof(buffer), raw, spec.base);
 
         if (result.ec == std::errc()) {
@@ -79,6 +81,6 @@ namespace up::_detail {
 
             out.write({buffer, result.ptr});
         }
-	}
+    }
 
 } // namespace up::_detail

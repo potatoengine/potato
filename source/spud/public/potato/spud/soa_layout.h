@@ -65,4 +65,4 @@ namespace up {
             return result;
         }
     };
-}
+} // namespace up

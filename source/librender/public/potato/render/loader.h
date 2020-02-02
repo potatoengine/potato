@@ -22,4 +22,4 @@ namespace up {
         Loader() = default;
         ~Loader() = default;
     };
-}
+} // namespace up

@@ -7,10 +7,10 @@
 #include "potato/spud/platform_windows.h"
 #include <limits>
 
-up::Semaphore::Semaphore(int initial) noexcept  : _counter(initial), _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {
+up::Semaphore::Semaphore(int initial) noexcept : _counter(initial), _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {
 }
 
-up::Semaphore::~Semaphore() noexcept  {
+up::Semaphore::~Semaphore() noexcept {
     CloseHandle(_handle);
 }
 

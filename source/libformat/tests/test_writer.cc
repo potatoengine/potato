@@ -19,7 +19,7 @@ DOCTEST_TEST_CASE("writer") {
 
         // should truncate
         writer = fixed_writer(buffer);
-        format_to(writer, "test {0}", /*too big*/1234567890LL);
+        format_to(writer, "test {0}", /*too big*/ 1234567890LL);
         DOCTEST_CHECK_EQ(std::string("test 1234"), buffer);
     }
 

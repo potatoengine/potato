@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <potato/spud/string_view.h>
 #include "format_result.h"
 #include "parse_unsigned.h"
 #include <initializer_list>
@@ -22,10 +23,10 @@ namespace up::_detail {
 
         // if we hit the end of the string, we have an incomplete format
         if (iter == end) {
-            return { format_result::malformed_input };
+            return {format_result::malformed_input};
         }
 
-        string_view spec_string;
+        string_view spec_string = {};
 
         // if a : follows the number, we have some formatting controls
         if (*iter == ':') {
@@ -38,38 +39,38 @@ namespace up::_detail {
 
             if (iter == end) {
                 // invalid options
-                return { format_result::malformed_input };
+                return {format_result::malformed_input};
             }
 
-            spec_string = { spec_begin, iter };
+            spec_string = {spec_begin, iter};
         }
 
         // after the index/options, we expect an end to the format marker
         if (*iter != '}') {
             // we have something besides a number, no bueno
-            return { format_result::malformed_input };
+            return {format_result::malformed_input};
         }
 
-        return { format_result::success, index, spec_string };
+        return {format_result::success, index, spec_string};
     }
 
     template <typename Writer>
-	constexpr format_result format_impl(Writer& out, string_view format, std::initializer_list<format_arg> args) {
-		unsigned next_index = 0;
+    constexpr format_result format_impl(Writer& out, string_view format, std::initializer_list<format_arg> args) {
+        unsigned next_index = 0;
 
-		char const* begin = format.data();
-		char const* const end = begin + format.size();
-		char const* iter = begin;
+        char const* begin = format.data();
+        char const* const end = begin + format.size();
+        char const* iter = begin;
 
-		while (iter != end) {
-			if (*iter != '{') {
-				++iter;
-				continue;
-			}
+        while (iter != end) {
+            if (*iter != '{') {
+                ++iter;
+                continue;
+            }
 
             // write out the string so far, since we don't write characters immediately
             if (iter != begin) {
-                out.write({ begin, iter });
+                out.write({begin, iter});
             }
 
             ++iter; // swallow the {
@@ -96,24 +97,24 @@ namespace up::_detail {
             }
 
             format_arg const& arg = *(args.begin() + index);
-			format_result const arg_result = arg.format_into(out, spec_string);
-			if (arg_result != format_result::success) {
+            format_result const arg_result = arg.format_into(out, spec_string);
+            if (arg_result != format_result::success) {
                 return arg_result;
-			}
+            }
 
-			// the remaining text begins with the next character following the format directive's end
-			begin = iter = iter + 1;
+            // the remaining text begins with the next character following the format directive's end
+            begin = iter = iter + 1;
 
-			// if we continue to receive {} then the next index will be the next one after the last one used
-			next_index = index + 1;
-		}
+            // if we continue to receive {} then the next index will be the next one after the last one used
+            next_index = index + 1;
+        }
 
-		// write out tail end of format string
-		if (iter != begin) {
-			out.write({ begin, iter });
-		}
+        // write out tail end of format string
+        if (iter != begin) {
+            out.write({begin, iter});
+        }
 
-		return format_result::success;
-	}
+        return format_result::success;
+    }
 
 } // namespace up::_detail

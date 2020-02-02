@@ -11,7 +11,7 @@ namespace up {
     struct _empty_format_writer {
         void write(string_view);
     };
-} // up
+} // namespace up
 
 namespace up::_detail {
     template <typename T>
@@ -39,7 +39,7 @@ namespace up::_detail {
 
     template <typename T>
     constexpr bool _is_formattable = std::is_integral_v<T> || std::is_floating_point_v<T> || std::is_pointer_v<T> || std::is_enum_v<T> || ::up::_detail::_is_string<T> || _has_format_value<::up::_empty_format_writer, T>::value;
-} // up::_detail
+} // namespace up::_detail
 
 namespace up {
     template <typename T>
@@ -50,5 +50,4 @@ namespace up {
 
     template <typename T>
     constexpr bool is_formattable = ::up::_detail::_is_formattable<::up::remove_cvref_t<T>>;
-} // up
-
+} // namespace up

@@ -10,7 +10,7 @@
 __pragma(warning(disable : 4307))
 #endif
 
-namespace up {
+    namespace up {
     /// <summary> A uhash-compatible fnv1-a hasher. </summary>
     class fnv1a {
     public:

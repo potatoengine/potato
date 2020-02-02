@@ -44,11 +44,7 @@ namespace up {
 
     template <typename T, std::size_t Capacity, std::size_t CacheLineWidth>
     LockFreeQueue<T, Capacity, CacheLineWidth>::LockFreeQueue()
-        : _enque(0)
-        , _deque(0)
-        , _sequence(new AlignedAtomic<std::uint32_t, CacheLineWidth>[kBufferSize])
-        , _buffer(new std::aligned_storage_t<sizeof(T), alignof(T)>[kBufferSize])
-    {
+        : _enque(0), _deque(0), _sequence(new AlignedAtomic<std::uint32_t, CacheLineWidth>[kBufferSize]), _buffer(new std::aligned_storage_t<sizeof(T), alignof(T)>[kBufferSize]) {
         for (std::uint32_t i = 0; i != kBufferSize; ++i)
             _sequence[i].store(i, std::memory_order_relaxed);
     }

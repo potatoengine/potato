@@ -94,6 +94,19 @@ jobs:
           cd build
           ctest -T test -R potato --verbose
 
+  format:
+    name: Check Format
+    runs-on: 'ubuntu-latest'
+
+    steps:
+    - uses: actions/checkout@master
+    - uses: DoozyX/clang-format-lint-action@v0.5
+      with:
+        source: './source'
+        exclude: './external'
+        extensions: 'h,cpp,cc'
+        clangFormatVersion: 9
+
   doxygen:
     name: Documentation
     runs-on: 'ubuntu-latest'
@@ -121,7 +134,7 @@ jobs:
 
   build-all:
     name: All
-    needs: [ 'build-windows', 'build-ubuntu', 'doxygen' ]
+    needs: [ 'build-windows', 'build-ubuntu', 'format', 'doxygen' ]
     runs-on: 'ubuntu-latest'
 
     steps:

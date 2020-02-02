@@ -12,7 +12,7 @@
 namespace up {
     class FileSystem;
     class Logger;
-}
+} // namespace up
 
 namespace up::recon {
     class Context {

@@ -27,7 +27,7 @@ namespace up {
             return std::tie(a, b, c, d, e);
         }
         else if constexpr (is_braces_constructible_v<Struct, any_type, any_type, any_type, any_type>) {
-            auto &&[a, b, c, d] = s;
+            auto&& [a, b, c, d] = s;
             return std::tie(a, b, c, d);
         }
         else if constexpr (is_braces_constructible_v<Struct, any_type, any_type, any_type>) {
@@ -65,4 +65,4 @@ namespace up {
     //
     template <typename Struct>
     using member_typelist_t = typelist_map_t<std::remove_reference_t, tuple_to_typelist_t<decltype(tie_struct<Struct>(std::declval<Struct>()))>>;
-}
+} // namespace up

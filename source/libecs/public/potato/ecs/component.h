@@ -85,12 +85,12 @@ namespace up {
     template <> \
     struct up::_detail::MetaHolder<ComponentType> { \
         __VA_ARGS__ static auto get() noexcept -> ComponentMeta const&; \
-    }; \
+    };
 
 /// Registers a type with the component manager
 ///
 #define UP_DEFINE_COMPONENT(ComponentType) \
-    auto up::_detail::MetaHolder<ComponentType>::get() noexcept -> ComponentMeta const& { \
+    auto up::_detail::MetaHolder<ComponentType>::get() noexcept->ComponentMeta const& { \
         static auto const meta = ::up::ComponentMeta::construct<ComponentType>(#ComponentType); \
         return meta; \
     }

@@ -2,7 +2,6 @@
 
 #pragma once
 
-
 namespace up::_detail {
 
     constexpr bool is_digit(char ch) noexcept {
@@ -10,7 +9,7 @@ namespace up::_detail {
     }
 
     // std::from_chars is not (yet) constexpr
-	constexpr char const* parse_unsigned(char const* start, char const* end, unsigned& result) noexcept {
+    constexpr char const* parse_unsigned(char const* start, char const* end, unsigned& result) noexcept {
         if (start != end && is_digit(*start)) {
             result = 0;
             do {
@@ -19,7 +18,7 @@ namespace up::_detail {
                 ++start;
             } while (start != end && is_digit(*start));
         }
-		return start;
-	}
+        return start;
+    }
 
 } // namespace up::_detail

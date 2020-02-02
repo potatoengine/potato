@@ -18,7 +18,7 @@ namespace up {
 
         void write(string_view str) noexcept {
             std::size_t const size = _cursor - _buffer;
-            std::size_t const capacity = _length - 1/*NUL*/;
+            std::size_t const capacity = _length - 1 /*NUL*/;
             std::size_t const available = capacity - size;
             std::size_t const length = available < str.size() ? available : str.size();
 
@@ -32,4 +32,4 @@ namespace up {
         char* _cursor = nullptr;
         std::size_t _length = 0;
     };
-}
+} // namespace up

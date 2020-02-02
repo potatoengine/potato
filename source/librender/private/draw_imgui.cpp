@@ -82,7 +82,6 @@ auto up::DrawImgui::loadFontAwesome5(Stream fontFile) -> bool {
         return false;
     }
 
-    
     ImFontConfig config; // = {.MergeMode = true, .PixelSnapH = true};
     config.MergeMode = true;
     config.PixelSnapH = true;

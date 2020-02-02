@@ -79,10 +79,10 @@ namespace up {
 
         friend bool operator==(rc const& lhs, rc const& rhs) noexcept { return lhs.get() == rhs.get(); }
         friend bool operator!=(rc const& lhs, rc const& rhs) noexcept { return lhs.get() != rhs.get(); }
-        friend bool operator==(rc const& lhs, std::nullptr_t) noexcept{ return lhs.get() == nullptr; }
-        friend bool operator!=(rc const& lhs, std::nullptr_t) noexcept{ return lhs.get() != nullptr; }
-        friend bool operator==(std::nullptr_t, rc const& rhs) noexcept{ return nullptr == rhs.get(); }
-        friend bool operator!=(std::nullptr_t, rc const& rhs) noexcept{ return nullptr != rhs.get(); }
+        friend bool operator==(rc const& lhs, std::nullptr_t) noexcept { return lhs.get() == nullptr; }
+        friend bool operator!=(rc const& lhs, std::nullptr_t) noexcept { return lhs.get() != nullptr; }
+        friend bool operator==(std::nullptr_t, rc const& rhs) noexcept { return nullptr == rhs.get(); }
+        friend bool operator!=(std::nullptr_t, rc const& rhs) noexcept { return nullptr != rhs.get(); }
 
     private:
         void _addRef() noexcept {

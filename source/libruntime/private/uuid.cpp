@@ -5,7 +5,7 @@
 #include "potato/spud/string_writer.h"
 #include "potato/spud/ascii.h"
 
-up::UUID::UUID(up::byte const (&bytes)[16]) noexcept : _data{HighLow{}} {
+constexpr up::UUID::UUID(Bytes const& bytes) noexcept : _data{HighLow{}} {
     for (int i = 0; i != 16; ++i) {
         _data.ub[i] = bytes[i];
     }
@@ -19,11 +19,11 @@ auto up::UUID::toString() const -> string {
     // format 9554084e-4100-4098-b470-2125f5eed133
     string_writer buffer;
     format_append(buffer, "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                _data.ub[0], _data.ub[1], _data.ub[2], _data.ub[3],
-                _data.ub[4], _data.ub[5],
-                _data.ub[6], _data.ub[7],
-                _data.ub[8], _data.ub[9],
-                _data.ub[10], _data.ub[11], _data.ub[12], _data.ub[13], _data.ub[14], _data.ub[15]);
+                  _data.ub[0], _data.ub[1], _data.ub[2], _data.ub[3],
+                  _data.ub[4], _data.ub[5],
+                  _data.ub[6], _data.ub[7],
+                  _data.ub[8], _data.ub[9],
+                  _data.ub[10], _data.ub[11], _data.ub[12], _data.ub[13], _data.ub[14], _data.ub[15]);
 
     return buffer.c_str();
 }
