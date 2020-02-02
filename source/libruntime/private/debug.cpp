@@ -14,7 +14,6 @@ namespace up::_detail {
 
 auto up::_detail::raiseFatalError(char const* file, int line, char const* failedConditionText, char const* messageText) -> FatalErrorAction {
     constexpr int num_addresses = 64;
-    constexpr int num_records = 20;
 
     // FIXME: this can be invoked via memory exhaustion, what do?
     string_writer buffer;
@@ -28,6 +27,7 @@ auto up::_detail::raiseFatalError(char const* file, int line, char const* failed
     std::array<uintptr, num_addresses> addresses = {};
 
 #if !defined(NDEBUG)
+    constexpr int num_records = 20;
     auto records = std::array<callstack::TraceRecord, num_records>{};
     auto const stack = callstack::readTrace(addresses);
 
