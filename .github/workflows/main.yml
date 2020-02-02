@@ -94,15 +94,39 @@ jobs:
           cd build
           ctest -T test -R potato --verbose
 
+  clang_tidy:
+    name: Clang Tidy
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+      - name: Install clang-tidy
+        run: sudo apt-get -yq install clang-tidy-9 clang-9 libc++-9-dev
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Configure
+        env:
+          CXXFLAGS: 'clang-9'
+          CXX: 'clang++-9'
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DUP_CLANG_TIDY:PATH=clang-tidy-9 ..
+      - name: Analyze
+        run: cmake --build build --parallel
+
   doxygen:
     name: Documentation
     runs-on: 'ubuntu-latest'
 
     steps:
-      - name: Install Doxygen
-        run: sudo apt-get -yq install doxygen
       - name: Checkout
         uses: actions/checkout@master
+      - name: Install Doxygen
+        run: sudo apt-get -yq install doxygen
       - name: Install uuid-dev
         run: |
           sudo apt-get -yq update
@@ -122,7 +146,7 @@ jobs:
 
   build-all:
     name: All
-    needs: [ 'build-windows', 'build-ubuntu', 'doxygen' ]
+    needs: [ 'build-windows', 'build-ubuntu', 'clang_tidy', 'doxygen' ]
     runs-on: 'ubuntu-latest'
 
     steps:
