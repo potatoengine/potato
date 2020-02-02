@@ -102,10 +102,10 @@ jobs:
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Install clang-tidy
-        run: sudo apt-get -yq install clang-tidy-9 clang-9 libc++-9-dev
+        run: sudo apt-get -yq install clang-tidy-9 clang-9 libc++-9-dev libc++abi-9-dev
       - name: Configure
         env:
-          CXXFLAGS: 'clang-9'
+          CC: 'clang-9'
           CXX: 'clang++-9'
         run: |
           mkdir build
