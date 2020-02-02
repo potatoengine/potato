@@ -10,8 +10,10 @@ static_assert(up::is_formattable<up::byte>);
 static_assert(up::is_formattable<std::string>);
 static_assert(up::is_formattable<decltype("test")>);
 
-enum class standard_enum { one, two };
-enum class custom_enum { foo, bar };
+enum class standard_enum { one,
+                           two };
+enum class custom_enum { foo,
+                         bar };
 
 class custom_type {};
 
@@ -96,10 +98,11 @@ DOCTEST_TEST_CASE("format") {
         // assumes IEEE754 single- and double-precision types
         DOCTEST_CHECK_EQ("340282346638528859811704183484516925440.000000", format_as<std::string>("{}", std::numeric_limits<float>::max()));
         DOCTEST_CHECK_EQ("17976931348623157081452742373170435679807056752584499659891747680315"
-            "72607800285387605895586327668781715404589535143824642343213268894641827684675"
-            "46703537516986049910576551282076245490090389328944075868508455133942304583236"
-            "90322294816580855933212334827479782620414472316873817718091929988125040402618"
-            "4124858368.000000", format_as<std::string>("{}", std::numeric_limits<double>::max()));
+                         "72607800285387605895586327668781715404589535143824642343213268894641827684675"
+                         "46703537516986049910576551282076245490090389328944075868508455133942304583236"
+                         "90322294816580855933212334827479782620414472316873817718091929988125040402618"
+                         "4124858368.000000",
+                         format_as<std::string>("{}", std::numeric_limits<double>::max()));
 
         DOCTEST_CHECK_EQ("234987324.454500", format_as<std::string>("{:f}", 234987324.4545));
         DOCTEST_CHECK_EQ("2.34987e+08", format_as<std::string>("{:g}", 234987324.4545));

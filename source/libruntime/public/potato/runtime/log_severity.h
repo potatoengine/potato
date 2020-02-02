@@ -15,7 +15,7 @@ namespace up {
     enum class LogSeverityMask : unsigned {
         Info = 1 << (int)LogSeverity::Info,
         Error = 1 << (int)LogSeverity::Error,
-        Everything = Info|Error
+        Everything = Info | Error
     };
 
     constexpr LogSeverityMask toMask(LogSeverity severity) noexcept {

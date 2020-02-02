@@ -47,7 +47,7 @@ namespace up {
 #endif
 #undef _up_HAS_TYPE_PACK_ELEMENT
         };
-    } // _detail
+    } // namespace _detail
 
     template <typename T>
     using typelist_head_t = typename _detail::typelist_head<T>::type;
@@ -65,7 +65,7 @@ namespace up {
     constexpr std::size_t typelist_size_v = 0;
     template <typename... T>
     constexpr std::size_t typelist_size_v<typelist<T...>> = sizeof...(T);
-    
+
     static_assert(typelist_size_v<typelist<>> == 0);
     static_assert(typelist_size_v<typelist<int>> == 1);
     static_assert(typelist_size_v<typelist<int, float, char>> == 3);
@@ -80,7 +80,7 @@ namespace up {
     using typelist_map_t = typename _detail::typelist_map<T, U>::type;
 
     static_assert(std::is_same_v<typelist_map_t<std::add_const_t, typelist<int, char>>, typelist<int const, char const>>);
-    
+
     template <int N, typename T>
     using typelist_at_t = typename _detail::type_at_impl<N, T>::type;
 

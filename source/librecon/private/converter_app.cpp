@@ -328,7 +328,7 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
             if (path::extension(info.path) == ".meta") {
                 return EnumerateResult::Continue;
             }
-                   
+
             files.push_back(info.path);
         }
         else if (info.type == FileType::Directory) {

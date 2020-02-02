@@ -30,7 +30,7 @@ namespace up::reflex {
 
         template <typename T, typename Tuple>
         constexpr int IndexOfAnnotation = IndexOfAnnotationHelper<T, remove_cvref_t<Tuple>, 0>::value;
-    }
+    } // namespace _detail
 
     template <typename Type, typename Callback, typename Annotations>
     constexpr bool ApplyAnnotation(Annotations&& annotations, Callback&& callback) {

@@ -6,7 +6,7 @@
 namespace {
     constexpr bool is_even(int val) noexcept { return val % 2 == 0; }
     constexpr bool is_negative(int val) noexcept { return val < 0; }
-}
+} // namespace
 
 DOCTEST_TEST_SUITE("[potato][spud] find algorithms") {
     using namespace up;
@@ -29,11 +29,11 @@ DOCTEST_TEST_SUITE("[potato][spud] find algorithms") {
         DOCTEST_CHECK_EQ(find_if(array, is_even), std::begin(array));
         DOCTEST_CHECK_EQ(find_if(vec, is_negative), std::begin(vec));
 
-        DOCTEST_CHECK_EQ(find_if(array, [](int i){ return i > 100; }), std::end(array) - 1);
-        DOCTEST_CHECK_EQ(find_if(vec, [](int i){ return !is_even(i); }), std::end(vec) - 1);
+        DOCTEST_CHECK_EQ(find_if(array, [](int i) { return i > 100; }), std::end(array) - 1);
+        DOCTEST_CHECK_EQ(find_if(vec, [](int i) { return !is_even(i); }), std::end(vec) - 1);
 
-        DOCTEST_CHECK_EQ(find_if(array, [](int){ return false; }), std::end(array));
-        DOCTEST_CHECK_EQ(find_if(vec, [](int){ return false; }), std::end(vec));
+        DOCTEST_CHECK_EQ(find_if(array, [](int) { return false; }), std::end(array));
+        DOCTEST_CHECK_EQ(find_if(vec, [](int) { return false; }), std::end(vec));
     }
 
     DOCTEST_TEST_CASE("any") {

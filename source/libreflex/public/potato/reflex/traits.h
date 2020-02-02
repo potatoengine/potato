@@ -29,7 +29,7 @@ namespace up::reflex {
         struct is_vector { constexpr static bool value = false; };
         template <typename T>
         struct is_vector<vector<T>> { constexpr static bool value = true; };
-    }
+    } // namespace _detail
     template <typename T>
     constexpr bool is_vector_v = _detail::is_vector<T>::value;
 } // namespace up::reflex

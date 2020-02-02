@@ -39,7 +39,7 @@ namespace up::reflex {
         template <typename T, typename Annotations>
         Action enterField(tag<T>, zstring_view name, Annotations&& annotations) noexcept {
             auto extract = [this](auto const& name) { _nextField = name.name; };
-            if (!ApplyAnnotation<JsonName>(annotations, extract)){
+            if (!ApplyAnnotation<JsonName>(annotations, extract)) {
                 _nextField = name;
             }
             return Action::Enter;

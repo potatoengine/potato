@@ -12,23 +12,23 @@
 
 namespace up::reflex {
 
-// This isn't a real class, but more of a "guideline" since C++ doesn't have
-// the right capabilities yet to express this kind of type requirement.
-//
-// class Serializer {
-// public:
-//     template <typename Class, typename Type, typename... Annotations>
-//     void field(zstring_view name, Class& object, Type Class::*, Annotations&&...);
-//
-//     template <typename Class, typename ReturnType, typename... ArgTypes>
-//     void function(zstring_view name, Class& object, ReturnType (Class::*function)(ArgTypes...));
-//
-//     template <typename Class, typename ReturnType, typename... ArgTypes>
-//     void function(zstring_view name, Class& object, ReturnType (Class::*function)(ArgTypes...) const);
-//
-//     template <typename Type>
-//     void value(Type& value);
-// };
+    // This isn't a real class, but more of a "guideline" since C++ doesn't have
+    // the right capabilities yet to express this kind of type requirement.
+    //
+    // class Serializer {
+    // public:
+    //     template <typename Class, typename Type, typename... Annotations>
+    //     void field(zstring_view name, Class& object, Type Class::*, Annotations&&...);
+    //
+    //     template <typename Class, typename ReturnType, typename... ArgTypes>
+    //     void function(zstring_view name, Class& object, ReturnType (Class::*function)(ArgTypes...));
+    //
+    //     template <typename Class, typename ReturnType, typename... ArgTypes>
+    //     void function(zstring_view name, Class& object, ReturnType (Class::*function)(ArgTypes...) const);
+    //
+    //     template <typename Type>
+    //     void value(Type& value);
+    // };
 
     namespace _detail {
         template <typename Reflect, typename T>

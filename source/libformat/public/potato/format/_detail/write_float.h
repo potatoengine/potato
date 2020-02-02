@@ -58,7 +58,9 @@ namespace up::_detail {
     template <typename Writer>
     inline void write_float(Writer& out, double value, string_view spec_string) {
         constexpr std::size_t buf_size = 1078;
-        char buf[buf_size] = {0,};
+        char buf[buf_size] = {
+            0,
+        };
 
         int const result = write_float_helper(buf, buf_size, value, spec_string);
         if (result > 0) {

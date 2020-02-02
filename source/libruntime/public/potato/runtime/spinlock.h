@@ -18,7 +18,7 @@ namespace up {
         std::atomic<std::thread::id> _owner = std::thread::id();
     };
 
-    void Spinlock::lock() noexcept  {
+    void Spinlock::lock() noexcept {
         // try to acquire the lock
         // FIXME - exponential backoff should be added
         std::thread::id expected{};
@@ -28,18 +28,18 @@ namespace up {
         }
     }
 
-    bool Spinlock::tryLock() noexcept  {
+    bool Spinlock::tryLock() noexcept {
         // try to acquire the lock
         std::thread::id expected{};
         auto const desired = std::this_thread::get_id();
         return _owner.compare_exchange_strong(expected, desired, std::memory_order_acquire);
     }
 
-    bool Spinlock::isLocked() const noexcept  {
+    bool Spinlock::isLocked() const noexcept {
         return _owner != std::thread::id();
     }
 
-    void Spinlock::unlock() noexcept  {
+    void Spinlock::unlock() noexcept {
         UP_ASSERT(_owner == std::this_thread::get_id());
 
         // release the lock

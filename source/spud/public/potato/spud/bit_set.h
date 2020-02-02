@@ -72,7 +72,7 @@ namespace up {
         size_t bit = index - (elem * bits);
         element mask = element(1) << bit;
         element& data = _elems[elem];
-        return (data & mask) != 0;   
+        return (data & mask) != 0;
     }
 
     bit_set& bit_set::set(index_type index) {

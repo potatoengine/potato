@@ -12,8 +12,9 @@ namespace up::_detail {
     class format_arg;
     class format_arg_list;
 
-    template <typename Writer, typename T> constexpr format_arg make_format_arg(T const& value) noexcept;
-}
+    template <typename Writer, typename T>
+    constexpr format_arg make_format_arg(T const& value) noexcept;
+} // namespace up::_detail
 
 enum class up::_detail::format_arg_type {
     unknown,
@@ -40,7 +41,7 @@ enum class up::_detail::format_arg_type {
 /// Abstraction for a single formattable value
 class up::_detail::format_arg {
 public:
-    using thunk_type = format_result(*)(void*, void const*);
+    using thunk_type = format_result (*)(void*, void const*);
 
     constexpr format_arg() noexcept = default;
     constexpr format_arg(_detail::format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
@@ -77,8 +78,11 @@ private:
 
 namespace up::_detail {
 
-    template <typename T> struct type_of { static constexpr format_arg_type value = format_arg_type::unknown; };
-#define FORMATXX_TYPE(x, e) template <> struct type_of<x> { static constexpr format_arg_type value = format_arg_type::e; };
+    template <typename T>
+    struct type_of { static constexpr format_arg_type value = format_arg_type::unknown; };
+#define FORMATXX_TYPE(x, e) \
+    template <> \
+    struct type_of<x> { static constexpr format_arg_type value = format_arg_type::e; };
     FORMATXX_TYPE(char, char_t);
     FORMATXX_TYPE(signed char, signed_char);
     FORMATXX_TYPE(unsigned char, unsigned_char);
@@ -113,19 +117,19 @@ namespace up::_detail {
         constexpr format_arg_type type = type_of<T>::value;
 
         if constexpr (type != format_arg_type::unknown) {
-            return { type, &value };
+            return {type, &value};
         }
         else if constexpr (_has_format_value<Writer, T>::value) {
             return format_arg(&format_value_thunk<Writer, T>, &value);
         }
         else if constexpr (std::is_pointer_v<T>) {
-            return { format_arg_type::void_pointer, &value };
+            return {format_arg_type::void_pointer, &value};
         }
         else if constexpr (std::is_enum_v<T>) {
-            return { type_of<std::underlying_type_t<T>>::value, &value };
+            return {type_of<std::underlying_type_t<T>>::value, &value};
         }
         else {
             return {};
         }
     }
-}
+} // namespace up::_detail

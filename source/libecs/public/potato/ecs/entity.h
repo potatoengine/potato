@@ -10,6 +10,6 @@ namespace up {
     struct Entity {
         EntityId id = EntityId::None;
     };
-}
+} // namespace up
 
 UP_DECLARE_COMPONENT(up::Entity, UP_ECS_API);

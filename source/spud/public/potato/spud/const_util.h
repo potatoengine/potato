@@ -12,7 +12,7 @@ namespace up {
 
         template <template <auto, auto> typename F, auto V, auto... R>
         struct reduce_t<F, V, R...> { static constexpr auto value = F<V, reduce_t<F, R...>::value>::value; };
-    } // _detail
+    } // namespace _detail
 
     // Stores an integer sequence of offsets
     //

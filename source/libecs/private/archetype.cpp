@@ -131,7 +131,7 @@ auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMe
 
     auto id = _beginArchetype(std::move(set));
     auto const& originalArch = _archetypes[to_underlying(original)];
-    for (int index = 1/*Entity*/; index != originalArch.layoutLength; ++index) {
+    for (int index = 1 /*Entity*/; index != originalArch.layoutLength; ++index) {
         _layout.push_back(_layout[originalArch.layoutOffset + index]);
     }
     _layout.push_back({additional->id, additional, 0, static_cast<uint16>(additional->size)});
@@ -149,7 +149,7 @@ auto up::ArchetypeMapper::acquireArchetypeWithout(ArchetypeId original, Componen
 
     auto id = _beginArchetype(std::move(set));
     auto const& originalArch = _archetypes[to_underlying(original)];
-    for (int index = 1/*Entity*/; index != originalArch.layoutLength; ++index) {
+    for (int index = 1 /*Entity*/; index != originalArch.layoutLength; ++index) {
         auto const& row = _layout[originalArch.layoutOffset + index];
         if (row.component != excluded) {
             _layout.push_back(row);

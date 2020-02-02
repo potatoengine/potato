@@ -10,9 +10,12 @@ namespace up {
 
     class UP_RUNTIME_API UUID {
     public:
+        static constexpr int octects = 16;
+        using Bytes = up::byte[octects];
+
         constexpr UUID() noexcept : _data{HighLow{}} {}
         constexpr UUID(UUID const& rhs) noexcept : _data{rhs._data.u64} {}
-        UUID(up::byte const (&bytes)[16]) noexcept;
+        constexpr UUID(Bytes const& bytes) noexcept;
 
         constexpr bool isValid() const noexcept { return _data.u64.high != 0 || _data.u64.low != 0; }
 
@@ -36,12 +39,12 @@ namespace up {
 
         union Storage {
             HighLow u64;
-            byte ub[16];
+            byte ub[octects];
         };
 
         Storage _data;
     };
 
-    static_assert(sizeof(UUID) == 16, "sizeof(uuid) must be 16 octects");
+    static_assert(sizeof(UUID) == UUID::octects, "sizeof(uuid) must be 16 octects");
 
 } // namespace up

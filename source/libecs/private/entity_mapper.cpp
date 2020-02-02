@@ -49,7 +49,7 @@ auto up::EntityMapper::allocate(ArchetypeId archetype, uint16 chunk, uint16 inde
         auto const generation = getMappedGeneration(mapping);
 
         _freeEntityHead = getMappedIndex(_entityMapping[mappingIndex]);
-        
+
         _entityMapping[mappingIndex] = makeMapped(generation, to_underlying(archetype), chunk, index);
 
         return makeEntityId(mappingIndex, generation);

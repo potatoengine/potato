@@ -41,7 +41,7 @@ namespace up {
         }
     }
 
-    bool Semaphore::tryWait() noexcept  {
+    bool Semaphore::tryWait() noexcept {
         // consume a single item if there are any available (positive count)
         int count = _counter.load(std::memory_order_relaxed);
         return count > 0 && _counter.compare_exchange_strong(count, count - 1, std::memory_order_acquire);
