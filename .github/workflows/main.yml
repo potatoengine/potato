@@ -16,8 +16,7 @@ jobs:
     runs-on: 'windows-latest'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
+      - uses: actions/checkout@master
       - name: Set Environment
         run: echo "::set-env name=DEPS::$Env:HOME\deps"
       - name: Install SDL2 SDK
@@ -99,14 +98,11 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
+      - uses: actions/checkout@master
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Install clang-tidy
         run: sudo apt-get -yq install clang-tidy-9 clang-9 libc++-9-dev
-      - name: Checkout
-        uses: actions/checkout@master
       - name: Configure
         env:
           CXXFLAGS: 'clang-9'
@@ -123,8 +119,7 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
+      - uses: actions/checkout@master
       - name: Install Doxygen
         run: sudo apt-get -yq install doxygen
       - name: Install uuid-dev
