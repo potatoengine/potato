@@ -23,7 +23,7 @@ namespace up {
     void move_n(InputIt first, SizeT count, TypeT* out_first);
 
     template <typename InputIt, typename SizeT, typename TypeT>
-    void move_backwards_n(InputIt first, SizeT count, TypeT* out_first);
+    void move_backwards_n(InputIt first, SizeT count, TypeT* out_last);
 } // namespace up
 
 template <typename InputIt, typename SizeT>
