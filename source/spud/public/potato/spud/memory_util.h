@@ -30,10 +30,8 @@ template <typename InputIt, typename SizeT>
 void up::destruct_n(InputIt first, SizeT count) {
     using type = std::remove_reference_t<decltype(*first)>;
     if constexpr (!std::is_trivially_destructible_v<type>) {
-        if (!std::is_trivially_destructible_v<type>) {
-            for (SizeT i = 0; i != count; ++i, ++first) {
-                first->~type();
-            }
+        for (SizeT i = 0; i != count; ++i, ++first) {
+            first->~type();
         }
     }
 }
@@ -41,7 +39,7 @@ void up::destruct_n(InputIt first, SizeT count) {
 template <typename InputIt, typename SizeT, typename TypeT>
 void up::unitialized_copy_n(InputIt first, SizeT count, TypeT* out_first) {
     using type = std::remove_reference_t<decltype(*first)>;
-    if constexpr (std::is_trivially_constructible_v<TypeT, type> && std::is_pointer_v<InputIt>) {
+    if constexpr (std::is_pointer_v<InputIt> && std::is_trivially_constructible_v<TypeT, type>) { // NOLINT
         std::memmove(out_first, first, count * sizeof(type));
     }
     else {
@@ -55,7 +53,7 @@ void up::unitialized_copy_n(InputIt first, SizeT count, TypeT* out_first) {
 template <typename InputIt, typename SizeT, typename TypeT>
 void up::copy_n(InputIt first, SizeT count, TypeT* out_first) {
     using type = std::remove_reference_t<decltype(*first)>;
-    if constexpr (std::is_trivially_assignable_v<TypeT, type> && std::is_pointer_v<InputIt>) {
+    if constexpr (std::is_pointer_v<InputIt> && std::is_trivially_assignable_v<TypeT, type>) { // NOLINT
         std::memmove(out_first, first, count * sizeof(type));
     }
     else {

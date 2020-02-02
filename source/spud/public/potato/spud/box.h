@@ -48,8 +48,9 @@ public:
 
     box(box&& src) noexcept : _ptr(src.release()) {}
     box& operator=(box&& src) noexcept {
-        if (this != &src)
+        if (this != &src) {
             reset(src.release());
+        }
         return *this;
     }
 
@@ -57,8 +58,9 @@ public:
     box(box<U>&& src) noexcept : _ptr(src.release()) {}
     template <typename U>
     enable_if_t<std::is_assignable_v<T*, U*>, box&> operator=(box<U>&& src) noexcept {
-        if (this != &src)
+        if (this != &src) {
             reset(src.release());
+        }
         return *this;
     }
 
