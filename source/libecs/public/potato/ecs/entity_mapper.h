@@ -40,4 +40,4 @@ namespace up {
         vector<uint64> _entityMapping;
         uint32 _freeEntityHead = freeEntityIndex;
     };
-}
+} // namespace up

@@ -9,4 +9,4 @@ namespace up {
         malformed_input,
         out_of_space,
     };
-} // up
+} // namespace up
