@@ -61,8 +61,9 @@ jobs:
           - cxx: clang++-9
             cc: clang-9
             cxxflags: -Wall -Werror -Wno-unused-function -stdlib=libc++
-            packages: clang-9 clang-tidy-9 libc++-9-dev libc++abi-9-dev
+            packages: clang-9 clang-tidy-9 clang-format-9 libc++-9-dev libc++abi-9-dev
             clang_tidy: clang-tidy-9
+            clang_format: clang-format-9
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-latest'
@@ -89,6 +90,10 @@ jobs:
           cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
       - name: Build
         run: cmake --build build --parallel
+      - name: Clang Format
+        run: |
+          find source/ -iname '*.h' -o -iname '*.cpp' | xargs "${{ matrix.clang_format }}" --Werror
+        if: success() && matrix.clang_format != ''
       - name: Test
         run: |
           cd build
