@@ -10,7 +10,9 @@ up_set_common_properties(potato_libecs)
 target_link_libraries(potato_libecs
     PUBLIC
         potato::libruntime
+        potato::libreflex
         potato::spud
+        glm
     PRIVATE
         doctest
 )

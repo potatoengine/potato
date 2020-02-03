@@ -19,6 +19,12 @@ namespace {
         int value;
         char padding[128];
     };
+
+
+    UP_REFLECT_TYPE(Test1) {}
+    UP_REFLECT_TYPE(Second) {}
+    UP_REFLECT_TYPE(Another) {}
+    UP_REFLECT_TYPE(Counter) {}
 } // namespace
 
 UP_DECLARE_COMPONENT(Test1);

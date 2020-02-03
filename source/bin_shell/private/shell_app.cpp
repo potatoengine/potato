@@ -285,7 +285,36 @@ void up::ShellApp::_render() {
     _swapChain->present();
 }
 
+namespace {
+    class ImGuiComponentReflector final : public up::ComponentReflector {
+    protected:
+        void onField(up::zstring_view name) override {
+            _name = name;
+        }
+
+        void onValue(int value) override {
+            ImGui::InputInt(_name.c_str(), &value);
+        }
+
+        void onValue(float value) override {
+            ImGui::InputFloat(_name.c_str(), &value);
+        }
+
+        void onValue(up::EntityId value) override {
+            ImGui::LabelText(_name.c_str(), "%u", (unsigned)value);
+        }
+
+        void onValue(glm::vec3 value) override {
+            ImGui::InputFloat3(_name.c_str(), &value.x);
+        }
+
+    private:
+        up::zstring_view _name;
+    };
+} // namespace
+
 void up::ShellApp::_drawUI() {
+    auto& imguiIO = ImGui::GetIO();
     ImVec2 menuSize;
 
     _drawImgui.beginFrame();
@@ -325,6 +354,15 @@ void up::ShellApp::_drawUI() {
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu(u8"\uf2d2 Windows")) {
+
+            if (ImGui::MenuItem("Inspector")) {
+                _showInspector = !_showInspector;
+            }
+
+            ImGui::EndMenu();
+        }
+
         ImGui::Spacing();
         ImGui::Spacing();
         ImGui::Spacing();
@@ -336,8 +374,30 @@ void up::ShellApp::_drawUI() {
         ImGui::EndMainMenuBar();
     }
 
-    ImGui::SetNextWindowPos({0, menuSize.y});
+    if (_showInspector) {
+        auto const viewHeight = imguiIO.DisplaySize.y - menuSize.y;
+        ImGui::SetNextWindowSizeConstraints({30, viewHeight}, {imguiIO.DisplaySize.x, viewHeight});
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+        ImGui::Begin(u8"\uf085 Inspector", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+        {
+            ImGui::SetWindowPos(ImVec2(0, menuSize.y));
+            ImGui::SetWindowSize(ImVec2(300, imguiIO.DisplaySize.y - menuSize.y));
+
+            _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto const* data) {
+                if (ImGui::CollapsingHeader(meta->name.c_str())) {
+                    ImGuiComponentReflector ref;
+                    meta->reflect(data, ref);
+                }
+            });
+        }
+        ImGui::PopStyleVar(1);
+        ImGui::End();
+    }
+
     if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
+        auto const fpSize = ImGui::GetWindowSize();
+        ImGui::SetWindowPos(ImVec2(imguiIO.DisplaySize.x - fpSize.x - 20, menuSize.y));
+
         auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 
         fixed_string_writer<128> buffer;

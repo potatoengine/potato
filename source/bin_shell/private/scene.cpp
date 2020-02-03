@@ -41,6 +41,20 @@ namespace up::components {
     struct Spin {
         float radians;
     };
+
+    UP_REFLECT_TYPE(Position) {
+        reflect("xyz", &Position::xyz);
+    }
+    UP_REFLECT_TYPE(Rotation) {}
+    UP_REFLECT_TYPE(Transform) {}
+    UP_REFLECT_TYPE(Mesh) {}
+    UP_REFLECT_TYPE(Wave) {
+        reflect("time", &Wave::time);
+        reflect("offset", &Wave::offset);
+    }
+    UP_REFLECT_TYPE(Spin) {
+        reflect("radians", &Spin::radians);
+    }
 } // namespace up::components
 
 UP_DECLARE_COMPONENT(up::components::Position);
@@ -81,7 +95,7 @@ void up::Scene::create(rc<Model> const& cube) {
             components::Spin{glm::sin(r) * 2.f - 1.f});
     }
 
-    _world->createEntity(
+    _main = _world->createEntity(
         components::Position{{0, 5, 0}},
         components::Rotation{glm::identity<glm::quat>()},
         components::Transform(),

@@ -6,10 +6,41 @@
 #include "common.h"
 #include "potato/spud/zstring_view.h"
 #include "potato/spud/traits.h"
+#include "potato/reflex/reflect.h"
+#include <glm/vec3.hpp>
 #include <atomic>
 #include <new>
 
 namespace up {
+    class ComponentReflector {
+    public:
+        virtual ~ComponentReflector() = default;
+
+        template <typename ObjectType, typename ClassType, typename FieldType, typename Annotations>
+        constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field, Annotations&& annotations) {
+            onField(name);
+            value(object.*field);
+        }
+
+        template <typename ObjectType, typename FieldType, typename Annotations>
+        constexpr void field(zstring_view name, ObjectType& object, FieldType&& field, Annotations&& annotations) {
+            onField(name);
+            value(field);
+        }
+
+        template <typename ValueType>
+        void value(ValueType&& value) {
+            onValue(value);
+        }
+
+    protected:
+        virtual void onField(zstring_view name) = 0;
+        virtual void onValue(EntityId value) = 0;
+        virtual void onValue(int value) = 0;
+        virtual void onValue(float value) = 0;
+        virtual void onValue(glm::vec3 value) = 0;
+    };
+
     /// Stores metadata about a Component type. This includes its size and alignment,
     /// functions for copying and destroying objects of the Component type, and so on.
     ///
@@ -18,6 +49,7 @@ namespace up {
         using Copy = void (*)(void* dest, void const* source) noexcept;
         using Relocate = void (*)(void* dest, void* source) noexcept;
         using Destroy = void (*)(void* mem) noexcept;
+        using Reflect = void (*)(void const* obj, ComponentReflector& reflector);
 
         /// Creates a ComponentMeta; should only be used by the UP_COMPONENT macro
         ///
@@ -37,6 +69,7 @@ namespace up {
         Copy copy = nullptr;
         Relocate relocate = nullptr;
         Destroy destroy = nullptr;
+        Reflect reflect = nullptr;
         uint32 size = 0;
         uint32 alignment = 0;
         zstring_view name;
@@ -48,6 +81,7 @@ namespace up {
             static constexpr void copyComponent(void* dest, void const* src) noexcept { new (dest) Component(*static_cast<Component const*>(src)); };
             static constexpr void moveComponent(void* dest, void* src) noexcept { *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src)); };
             static constexpr void destroyComponent(void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
+            static constexpr void reflectComponent(void const* obj, ComponentReflector& reflector) noexcept { reflex::serialize(*static_cast<Component const*>(obj), reflector); };
         };
 
         template <typename Component>
@@ -61,6 +95,7 @@ namespace up {
         meta.copy = _detail::ComponentOperations<Component>::copyComponent;
         meta.relocate = _detail::ComponentOperations<Component>::moveComponent;
         meta.destroy = _detail::ComponentOperations<Component>::destroyComponent;
+        meta.reflect = _detail::ComponentOperations<Component>::reflectComponent;
         meta.size = sizeof(Component);
         meta.alignment = alignof(Component);
         meta.name = name;
