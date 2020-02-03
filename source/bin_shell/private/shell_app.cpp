@@ -112,7 +112,8 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _renderCamera = new_box<RenderCamera>(_swapChain);
+    _renderCamera = new_box<RenderCamera>();
+    _renderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
     auto material = _renderer->loadMaterialSync("resources/materials/full.mat");
     if (material == nullptr) {
@@ -181,10 +182,10 @@ void up::ShellApp::_onWindowSizeChanged() {
     int width = 0;
     int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
-    _renderCamera->resetSwapChain(nullptr);
+    _renderCamera->resetBackBuffer(nullptr);
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
-    _renderCamera->resetSwapChain(_swapChain);
+    _renderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 }
 
 void up::ShellApp::_processEvents() {

@@ -20,21 +20,19 @@ namespace {
     };
 } // namespace
 
-up::RenderCamera::RenderCamera(rc<GpuSwapChain> swapChain) : _swapChain(std::move(swapChain)) {}
+up::RenderCamera::RenderCamera() = default;
 
 up::RenderCamera::~RenderCamera() = default;
 
-void up::RenderCamera::resetSwapChain(rc<GpuSwapChain> swapChain) {
-    _swapChain = std::move(swapChain);
-    _backBuffer.reset();
+void up::RenderCamera::resetBackBuffer(box<GpuTexture> texture) {
+    _backBuffer = std::move(texture);
     _depthStencilBuffer.reset();
     _rtv.reset();
     _dsv.reset();
 }
 
 void up::RenderCamera::beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, glm::mat4x4 cameraTransform) {
-    if (_rtv == nullptr && _swapChain != nullptr) {
-        _backBuffer = _swapChain->getBuffer(0);
+    if (_rtv == nullptr && _backBuffer != nullptr) {
         _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
     }
 
