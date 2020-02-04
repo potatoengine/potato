@@ -250,6 +250,9 @@ void up::DrawImgui::endFrame(GpuDevice& device, GpuCommandList& commandList) {
                 continue;
             }
 
+            auto const srv = static_cast<GpuResourceView*>(cmd.TextureId);
+            commandList.bindShaderResource(0, srv != nullptr ? srv : _srv.get(), GpuShaderStage::Pixel);
+
             GpuClipRect scissor;
             scissor.left = (uint32)cmd.ClipRect.x - (uint32)pos.x;
             scissor.top = (uint32)cmd.ClipRect.y - (uint32)pos.y;
@@ -257,8 +260,6 @@ void up::DrawImgui::endFrame(GpuDevice& device, GpuCommandList& commandList) {
             scissor.bottom = (uint32)cmd.ClipRect.w - (uint32)pos.y;
             commandList.setClipRect(scissor);
 
-            // FIXME: different texture per cmd
-            commandList.bindShaderResource(0, _srv.get(), GpuShaderStage::Pixel);
             commandList.drawIndexed(cmd.ElemCount, indexOffset, vertexOffset);
 
             indexOffset += cmd.ElemCount;
