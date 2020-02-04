@@ -18,6 +18,7 @@ namespace up {
     class Model;
     class GpuDevice;
     class GpuSwapChain;
+    class GpuTexture;
     class World;
     class Scene;
     class Camera;
@@ -48,6 +49,8 @@ private:
     void _drawUI();
     void _drawGrid();
 
+    void _resizeSceneView(glm::ivec2 size);
+
     void _errorDialog(zstring_view message);
 
     bool _loadConfig(zstring_view path);
@@ -62,6 +65,8 @@ private:
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
+    rc<GpuTexture> _sceneBuffer;
+    box<GpuResourceView> _sceneBufferView;
     box<Renderer> _renderer;
     box<RenderCamera> _renderCamera;
     box<Scene> _scene;

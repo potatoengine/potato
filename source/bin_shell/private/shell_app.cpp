@@ -18,6 +18,7 @@
 #include "potato/render/gpu_command_list.h"
 #include "potato/render/gpu_swap_chain.h"
 #include "potato/render/gpu_texture.h"
+#include "potato/render/gpu_resource_view.h"
 #include "potato/render/renderer.h"
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
@@ -186,6 +187,7 @@ void up::ShellApp::_onWindowSizeChanged() {
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
     _renderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+    _sceneBuffer = nullptr;
 }
 
 void up::ShellApp::_processEvents() {
@@ -268,21 +270,33 @@ void up::ShellApp::_render() {
     imguiIO.DisplaySize.y = viewport.height;
 
     _drawUI();
-    if (_grid) {
-        _drawGrid();
+
+    {
+        _renderer->beginFrame();
+        auto ctx = _renderer->context();
+
+        _renderCamera->resetBackBuffer(_sceneBuffer);
+        if (_grid) {
+            _drawGrid();
+        }
+        _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
+        _scene->render(ctx);
+        _renderer->flushDebugDraw(_lastFrameTime);
+        _renderCamera->endFrame(ctx);
+        _renderer->endFrame(_lastFrameTime);
     }
 
-    _renderer->beginFrame();
-    auto ctx = _renderer->context();
-    _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-    _scene->render(ctx);
-    _renderCamera->endFrame(ctx);
+    {
+        _renderer->beginFrame();
+        auto ctx = _renderer->context();
 
-    _renderer->flushDebugDraw(_lastFrameTime);
+        _renderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+        _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
+        _drawImgui.endFrame(*_device, _renderer->commandList());
+        _renderCamera->endFrame(ctx);
+        _renderer->endFrame(_lastFrameTime);
+    }
 
-    _drawImgui.endFrame(*_device, _renderer->commandList());
-
-    _renderer->endFrame(_lastFrameTime);
     _swapChain->present();
 }
 
@@ -359,6 +373,7 @@ void up::ShellApp::_drawUI() {
 
             if (ImGui::MenuItem("Inspector")) {
                 _showInspector = !_showInspector;
+                _sceneBuffer = nullptr;
             }
 
             ImGui::EndMenu();
@@ -375,14 +390,16 @@ void up::ShellApp::_drawUI() {
         ImGui::EndMainMenuBar();
     }
 
+    float inspectorWidth = 0;
+    auto const viewHeight = imguiIO.DisplaySize.y - menuSize.y;
     if (_showInspector) {
-        auto const viewHeight = imguiIO.DisplaySize.y - menuSize.y;
         ImGui::SetNextWindowSizeConstraints({30, viewHeight}, {imguiIO.DisplaySize.x, viewHeight});
+        ImGui::SetNextWindowPos(ImVec2(0, menuSize.y), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(300, viewHeight), ImGuiCond_FirstUseEver);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
         ImGui::Begin(u8"\uf085 Inspector", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
         {
-            ImGui::SetWindowPos(ImVec2(0, menuSize.y));
-            ImGui::SetWindowSize(ImVec2(300, imguiIO.DisplaySize.y - menuSize.y));
+            inspectorWidth = ImGui::GetWindowWidth();
 
             _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto const* data) {
                 if (ImGui::CollapsingHeader(meta->name.c_str())) {
@@ -394,6 +411,25 @@ void up::ShellApp::_drawUI() {
         ImGui::PopStyleVar(1);
         ImGui::End();
     }
+
+    ImGui::SetNextWindowPos({inspectorWidth, menuSize.y}, ImGuiCond_Always);
+    ImGui::SetNextWindowSize({imguiIO.DisplaySize.x - inspectorWidth, imguiIO.DisplaySize.y - menuSize.y}, ImGuiCond_Always);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+    if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground)) {
+        ImVec2 sceneSize = {imguiIO.DisplaySize.x - inspectorWidth, imguiIO.DisplaySize.y - menuSize.y};
+
+        glm::vec3 bufferSize = {0,0,0};
+        if (_sceneBuffer != nullptr) {
+            bufferSize = _sceneBuffer->dimensions();
+        }
+        if (bufferSize.x != sceneSize.x || bufferSize.y != sceneSize.y) {
+            _resizeSceneView({sceneSize.x, sceneSize.y});
+        }
+
+        ImGui::Image(_sceneBufferView.get(), sceneSize);
+        ImGui::End();
+    }
+    ImGui::PopStyleVar(1);
 
     if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
         auto const fpSize = ImGui::GetWindowSize();
@@ -430,6 +466,17 @@ void up::ShellApp::_drawGrid() {
     grid.spacing = spacing;
     grid.guidelineSpacing = guidelines;
     drawDebugGrid(grid);
+}
+
+void up::ShellApp::_resizeSceneView(glm::ivec2 size) {
+    GpuTextureDesc desc;
+    desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
+    desc.type = GpuTextureType::Texture2D;
+    desc.width = size.x;
+    desc.height = size.y;
+    _sceneBuffer = _device->createTexture2D(desc, {});
+
+    _sceneBufferView = _device->createShaderResourceView(_sceneBuffer.get());
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {
