@@ -418,7 +418,7 @@ void up::ShellApp::_drawUI() {
     if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground)) {
         ImVec2 sceneSize = {imguiIO.DisplaySize.x - inspectorWidth, imguiIO.DisplaySize.y - menuSize.y};
 
-        glm::vec3 bufferSize = {0,0,0};
+        glm::vec3 bufferSize = {0, 0, 0};
         if (_sceneBuffer != nullptr) {
             bufferSize = _sceneBuffer->dimensions();
         }

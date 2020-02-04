@@ -20,7 +20,6 @@ namespace {
         char padding[128];
     };
 
-
     UP_REFLECT_TYPE(Test1) {}
     UP_REFLECT_TYPE(Second) {}
     UP_REFLECT_TYPE(Another) {}
