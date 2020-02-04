@@ -190,8 +190,8 @@ auto up::d3d11::DeviceD3D11::createTexture2D(GpuTextureDesc const& desc, span<up
         nativeDesc.BindFlags = D3D10_BIND_DEPTH_STENCIL;
     }
     else {
-        nativeDesc.Usage = D3D11_USAGE_IMMUTABLE;
-        nativeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        nativeDesc.Usage = D3D11_USAGE_DEFAULT;
+        nativeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
     }
     nativeDesc.SampleDesc.Count = 1;
     nativeDesc.SampleDesc.Quality = 0;
