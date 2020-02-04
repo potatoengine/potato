@@ -14,13 +14,13 @@ namespace up {
 namespace up {
     class Texture : public shared<Texture> {
     public:
-        UP_RENDER_API explicit Texture(Image image, box<GpuTexture> texture);
+        UP_RENDER_API explicit Texture(Image image, rc<GpuTexture> texture);
         UP_RENDER_API ~Texture();
 
         GpuTexture& texture() const noexcept { return *_texture; }
 
     private:
-        box<GpuTexture> _texture;
+        rc<GpuTexture> _texture;
         Image _image;
     };
 } // namespace up

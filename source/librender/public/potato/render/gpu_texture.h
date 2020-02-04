@@ -3,10 +3,11 @@
 #pragma once
 
 #include "gpu_common.h"
+#include <potato/spud/rc.h>
 #include <glm/vec3.hpp>
 
 namespace up {
-    class GpuTexture {
+    class GpuTexture : public shared<GpuTexture> {
     public:
         GpuTexture() = default;
         virtual ~GpuTexture() = default;

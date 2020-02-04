@@ -23,15 +23,15 @@ namespace up {
         UP_RENDER_API RenderCamera();
         UP_RENDER_API ~RenderCamera();
 
-        UP_RENDER_API void resetBackBuffer(box<GpuTexture> texture);
+        UP_RENDER_API void resetBackBuffer(rc<GpuTexture> texture);
 
         UP_RENDER_API void beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, glm::mat4x4 cameraTransform);
         UP_RENDER_API void endFrame(RenderContext& ctx);
 
     private:
         box<GpuBuffer> _cameraDataBuffer;
-        box<GpuTexture> _backBuffer;
-        box<GpuTexture> _depthStencilBuffer;
+        rc<GpuTexture> _backBuffer;
+        rc<GpuTexture> _depthStencilBuffer;
         box<GpuResourceView> _rtv;
         box<GpuResourceView> _dsv;
     };

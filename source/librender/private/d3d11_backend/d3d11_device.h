@@ -22,7 +22,7 @@ namespace up::d3d11 {
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
         box<GpuBuffer> createBuffer(GpuBufferType type, uint64 size) override;
-        box<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) override;
+        rc<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) override;
         box<GpuSampler> createSampler() override;
 
         void execute(GpuCommandList* commandList) override;

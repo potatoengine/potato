@@ -48,16 +48,16 @@ auto up::null::DeviceNull::createBuffer(GpuBufferType type, up::uint64 size) -> 
     return new_box<BufferNull>(type);
 }
 
-auto up::null::DeviceNull::createTexture2D(GpuTextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
-    return new_box<TextureNull>();
+auto up::null::DeviceNull::createTexture2D(GpuTextureDesc const& desc, span<up::byte const> data) -> rc<GpuTexture> {
+    return new_shared<TextureNull>();
 }
 
 auto up::null::DeviceNull::createSampler() -> box<GpuSampler> {
     return new_box<SamplerNull>();
 }
 
-auto up::null::SwapChainNull::getBuffer(int index) -> box<GpuTexture> {
-    return new_box<TextureNull>();
+auto up::null::SwapChainNull::getBuffer(int index) -> rc<GpuTexture> {
+    return new_shared<TextureNull>();
 }
 
 int up::null::SwapChainNull::getCurrentBufferIndex() {

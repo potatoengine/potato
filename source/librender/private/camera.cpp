@@ -24,7 +24,7 @@ up::RenderCamera::RenderCamera() = default;
 
 up::RenderCamera::~RenderCamera() = default;
 
-void up::RenderCamera::resetBackBuffer(box<GpuTexture> texture) {
+void up::RenderCamera::resetBackBuffer(rc<GpuTexture> texture) {
     _backBuffer = std::move(texture);
     _depthStencilBuffer.reset();
     _rtv.reset();
