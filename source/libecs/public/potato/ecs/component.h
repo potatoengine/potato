@@ -36,9 +36,9 @@ namespace up {
     protected:
         virtual void onField(zstring_view name) = 0;
         virtual void onValue(EntityId value) = 0;
-        virtual void onValue(int value) = 0;
-        virtual void onValue(float value) = 0;
-        virtual void onValue(glm::vec3 value) = 0;
+        virtual void onValue(int& value) = 0;
+        virtual void onValue(float& value) = 0;
+        virtual void onValue(glm::vec3& value) = 0;
     };
 
     /// Stores metadata about a Component type. This includes its size and alignment,
@@ -49,7 +49,7 @@ namespace up {
         using Copy = void (*)(void* dest, void const* source) noexcept;
         using Relocate = void (*)(void* dest, void* source) noexcept;
         using Destroy = void (*)(void* mem) noexcept;
-        using Reflect = void (*)(void const* obj, ComponentReflector& reflector);
+        using Reflect = void (*)(void* obj, ComponentReflector& reflector);
 
         /// Creates a ComponentMeta; should only be used by the UP_COMPONENT macro
         ///
@@ -81,7 +81,7 @@ namespace up {
             static constexpr void copyComponent(void* dest, void const* src) noexcept { new (dest) Component(*static_cast<Component const*>(src)); };
             static constexpr void moveComponent(void* dest, void* src) noexcept { *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src)); };
             static constexpr void destroyComponent(void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
-            static constexpr void reflectComponent(void const* obj, ComponentReflector& reflector) noexcept { reflex::serialize(*static_cast<Component const*>(obj), reflector); };
+            static constexpr void reflectComponent(void* obj, ComponentReflector& reflector) noexcept { reflex::serialize(*static_cast<Component*>(obj), reflector); };
         };
 
         template <typename Component>

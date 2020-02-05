@@ -307,11 +307,11 @@ namespace {
             _name = name;
         }
 
-        void onValue(int value) override {
+        void onValue(int& value) override {
             ImGui::InputInt(_name.c_str(), &value);
         }
 
-        void onValue(float value) override {
+        void onValue(float& value) override {
             ImGui::InputFloat(_name.c_str(), &value);
         }
 
@@ -319,7 +319,7 @@ namespace {
             ImGui::LabelText(_name.c_str(), "%u", (unsigned)value);
         }
 
-        void onValue(glm::vec3 value) override {
+        void onValue(glm::vec3& value) override {
             ImGui::InputFloat3(_name.c_str(), &value.x);
         }
 
@@ -401,7 +401,7 @@ void up::ShellApp::_drawUI() {
         {
             inspectorWidth = ImGui::GetWindowWidth();
 
-            _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto const* data) {
+            _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
                 if (ImGui::CollapsingHeader(meta->name.c_str())) {
                     ImGuiComponentReflector ref;
                     meta->reflect(data, ref);
