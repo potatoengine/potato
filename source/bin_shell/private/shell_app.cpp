@@ -271,7 +271,7 @@ void up::ShellApp::_render() {
 
     _drawUI();
 
-    {
+    if (_sceneBuffer != nullptr) {
         _renderer->beginFrame();
         auto ctx = _renderer->context();
 
@@ -390,46 +390,12 @@ void up::ShellApp::_drawUI() {
         ImGui::EndMainMenuBar();
     }
 
-    float inspectorWidth = 0;
-    auto const viewHeight = imguiIO.DisplaySize.y - menuSize.y;
-    if (_showInspector) {
-        ImGui::SetNextWindowSizeConstraints({30, viewHeight}, {imguiIO.DisplaySize.x, viewHeight});
-        ImGui::SetNextWindowPos(ImVec2(0, menuSize.y), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(300, viewHeight), ImGuiCond_FirstUseEver);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
-        ImGui::Begin(u8"\uf085 Inspector", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-        {
-            inspectorWidth = ImGui::GetWindowWidth();
-
-            _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
-                if (ImGui::CollapsingHeader(meta->name.c_str())) {
-                    ImGuiComponentReflector ref;
-                    meta->reflect(data, ref);
-                }
-            });
-        }
-        ImGui::PopStyleVar(1);
-        ImGui::End();
+    ImGui::SetNextWindowPos(ImVec2(0, menuSize.y), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(imguiIO.DisplaySize.x, imguiIO.DisplaySize.y - menuSize.y), ImGuiCond_Always);
+    if (ImGui::Begin("Main", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
+        _drawDocumentsUI({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
     }
-
-    ImGui::SetNextWindowPos({inspectorWidth, menuSize.y}, ImGuiCond_Always);
-    ImGui::SetNextWindowSize({imguiIO.DisplaySize.x - inspectorWidth, imguiIO.DisplaySize.y - menuSize.y}, ImGuiCond_Always);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground)) {
-        ImVec2 sceneSize = {imguiIO.DisplaySize.x - inspectorWidth, imguiIO.DisplaySize.y - menuSize.y};
-
-        glm::vec3 bufferSize = {0, 0, 0};
-        if (_sceneBuffer != nullptr) {
-            bufferSize = _sceneBuffer->dimensions();
-        }
-        if (bufferSize.x != sceneSize.x || bufferSize.y != sceneSize.y) {
-            _resizeSceneView({sceneSize.x, sceneSize.y});
-        }
-
-        ImGui::Image(_sceneBufferView.get(), sceneSize);
-        ImGui::End();
-    }
-    ImGui::PopStyleVar(1);
+    ImGui::End();
 
     if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
         auto const fpSize = ImGui::GetWindowSize();
@@ -442,6 +408,67 @@ void up::ShellApp::_drawUI() {
         ImGui::Text("%s", buffer.c_str());
     }
     ImGui::End();
+}
+
+void up::ShellApp::_drawDocumentsUI(glm::vec4 rect) {
+    auto& io = ImGui::GetIO();
+
+    auto const height = rect.w - rect.y;
+    auto const width = rect.z - rect.x;
+    auto const pos = glm::vec2{rect.x, rect.y};
+
+    if (ImGui::BeginTabBar("DocumentTabs", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton)) {
+        if (ImGui::BeginTabItem("EmptyTab", nullptr, ImGuiTabItemFlags_None)) {
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("SceneTab", nullptr, ImGuiTabItemFlags_None)) {
+            auto const contentSize = ImGui::GetContentRegionAvail();
+
+            float inspectorWidth = 0;
+            if (_showInspector) {
+                ImGui::SetNextWindowPos(ImVec2(0, ImGui::GetCursorScreenPos().y), ImGuiCond_Always);
+                ImGui::SetNextWindowSizeConstraints({30, contentSize.y}, {contentSize.x - 30, contentSize.y});
+                ImGui::SetNextWindowSize(ImVec2(300, contentSize.y), ImGuiCond_FirstUseEver);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+                ImGui::Begin(u8"\uf085 Inspector", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+                {
+                    inspectorWidth = ImGui::GetWindowWidth();
+
+                    _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
+                        if (ImGui::CollapsingHeader(meta->name.c_str())) {
+                            ImGuiComponentReflector ref;
+                            meta->reflect(data, ref);
+                        }
+                    });
+                }
+                ImGui::PopStyleVar(1);
+                ImGui::End();
+            }
+
+            ImGui::SetNextWindowPos({pos.x + inspectorWidth, ImGui::GetCursorScreenPos().y}, ImGuiCond_Always);
+            ImGui::SetNextWindowSize({width - inspectorWidth, contentSize.y}, ImGuiCond_Always);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+            if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground)) {
+                ImVec2 sceneSize = {width - inspectorWidth, contentSize.y};
+
+                glm::vec3 bufferSize = {0, 0, 0};
+                if (_sceneBuffer != nullptr) {
+                    bufferSize = _sceneBuffer->dimensions();
+                }
+                if (bufferSize.x != sceneSize.x || bufferSize.y != sceneSize.y) {
+                    _resizeSceneView({sceneSize.x, sceneSize.y});
+                }
+
+                ImGui::Image(_sceneBufferView.get(), sceneSize);
+                ImGui::End();
+            }
+            ImGui::PopStyleVar(1);
+
+            ImGui::EndTabItem();
+        }
+    }
+    ImGui::EndTabBar();
 }
 
 void up::ShellApp::_drawGrid() {

@@ -47,6 +47,7 @@ private:
     void _tick();
     void _render();
     void _drawUI();
+    void _drawDocumentsUI(glm::vec4 rect);
     void _drawGrid();
 
     void _resizeSceneView(glm::ivec2 size);
