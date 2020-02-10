@@ -392,10 +392,12 @@ void up::ShellApp::_drawUI() {
 
     ImGui::SetNextWindowPos(ImVec2(0, menuSize.y), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(imguiIO.DisplaySize.x, imguiIO.DisplaySize.y - menuSize.y), ImGuiCond_Always);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     if (ImGui::Begin("Main", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
         _drawDocumentsUI({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
     }
     ImGui::End();
+    ImGui::PopStyleVar(1);
 
     if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
         auto const fpSize = ImGui::GetWindowSize();
