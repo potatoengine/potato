@@ -79,5 +79,6 @@ private:
     box<CameraController> _cameraController;
     box<InputState> _inputState;
     float _lastFrameTime = 0.f;
+    float _inspectorWidth = 300.f;
     std::chrono::nanoseconds _lastFrameDuration = {};
 };
