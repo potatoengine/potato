@@ -5,8 +5,8 @@ FetchContent_Declare(doctest
     URL_HASH SHA1=3772e3bdb58f4280f28576911d0d36f7f240a4c7
 )
 FetchContent_Declare(imgui
-    URL https://github.com/ocornut/imgui/archive/688cf868ea83db6c2958dd6bf7a20d471d00940b.zip
-    URL_HASH SHA1=efeb13591544087010efdcee6231ae28acc43c28
+    URL https://github.com/ocornut/imgui/archive/v1.75.zip
+    URL_HASH SHA1=2f36c5f3d36e3640d3c85abd0bb7b7c89f59e9b3
 )
 FetchContent_Declare(glm
     URL https://github.com/g-truc/glm/archive/d162eee1e6f7c317a09229fe6ceab8ec6ab9a4b4.zip
