@@ -126,42 +126,34 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
         io.MouseClickedPos[0] = {(float)ev.button.x, (float)ev.button.y};
         return io.WantCaptureMouse;
     case SDL_MOUSEWHEEL:
-        if (io.WantCaptureMouse) {
-            if (ev.wheel.y > 0) {
-                io.MouseWheel += 1;
-            }
-            else if (ev.wheel.y < 0) {
-                io.MouseWheel -= 1;
-            }
+        if (ev.wheel.y > 0) {
+            io.MouseWheel += 1;
+        }
+        else if (ev.wheel.y < 0) {
+            io.MouseWheel -= 1;
+        }
 
-            if (ev.wheel.x > 0) {
-                io.MouseWheelH += 1;
-            }
-            else if (ev.wheel.x < 0) {
-                io.MouseWheelH -= 1;
-            }
-            return true;
+        if (ev.wheel.x > 0) {
+            io.MouseWheelH += 1;
         }
-        break;
+        else if (ev.wheel.x < 0) {
+            io.MouseWheelH -= 1;
+        }
+        return io.WantCaptureMouse;
     case SDL_TEXTINPUT:
-        if (io.WantTextInput) {
-            io.AddInputCharactersUTF8(ev.text.text);
-            return true;
-        }
-        break;
+        io.AddInputCharactersUTF8(ev.text.text);
+        return io.WantTextInput;
     case SDL_KEYDOWN:
-    case SDL_KEYUP:
-        if (io.WantCaptureKeyboard) {
-            int key = ev.key.keysym.scancode;
-            IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
-            io.KeysDown[key] = (ev.type == SDL_KEYDOWN);
-            io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-            io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-            io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-            io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
-            return true;
-        }
-        break;
+    case SDL_KEYUP: {
+        int key = ev.key.keysym.scancode;
+        IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
+        io.KeysDown[key] = (ev.type == SDL_KEYDOWN);
+        io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
+        io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
+        io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
+        io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
+        return io.WantCaptureKeyboard;
+    }
     }
     return false;
 }

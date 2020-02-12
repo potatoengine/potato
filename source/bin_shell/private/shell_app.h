@@ -46,7 +46,7 @@ private:
     void _processEvents();
     void _tick();
     void _render();
-    void _drawUI();
+    void _displayUI();
     void _drawDocumentsUI(glm::vec4 rect);
     void _drawGrid();
 

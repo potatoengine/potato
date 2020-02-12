@@ -162,6 +162,7 @@ void up::ShellApp::run() {
 
     while (isRunning()) {
         _processEvents();
+        _displayUI();
         _tick();
         _render();
 
@@ -238,16 +239,6 @@ void up::ShellApp::_processEvents() {
                                          static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
                                          static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
     }
-
-    int relx = 0;
-    int rely = 0;
-    int buttons = SDL_GetRelativeMouseState(&relx, &rely);
-    bool isMouseMove = buttons != 0 && !imguiIO.WantCaptureMouse;
-    SDL_SetRelativeMouseMode(isMouseMove ? SDL_TRUE : SDL_FALSE);
-    if (isMouseMove) {
-        _inputState->relativeMotion.x = static_cast<float>(relx) / 800;
-        _inputState->relativeMotion.y = static_cast<float>(rely) / 600;
-    }
 }
 
 void up::ShellApp::_tick() {
@@ -267,12 +258,6 @@ void up::ShellApp::_render() {
     SDL_GetWindowSize(_window.get(), &width, &height);
     viewport.width = static_cast<float>(width);
     viewport.height = static_cast<float>(height);
-
-    auto& imguiIO = ImGui::GetIO();
-    imguiIO.DisplaySize.x = viewport.width;
-    imguiIO.DisplaySize.y = viewport.height;
-
-    _drawUI();
 
     if (_sceneBuffer != nullptr) {
         _renderer->beginFrame();
@@ -331,9 +316,15 @@ namespace {
     };
 } // namespace
 
-void up::ShellApp::_drawUI() {
+void up::ShellApp::_displayUI() {
     auto& imguiIO = ImGui::GetIO();
     ImVec2 menuSize;
+
+    int width = 0;
+    int height = 0;
+    SDL_GetWindowSize(_window.get(), &width, &height);
+    imguiIO.DisplaySize.x = static_cast<float>(width);
+    imguiIO.DisplaySize.y = static_cast<float>(height);
 
     _drawImgui.beginFrame();
     if (ImGui::BeginMainMenuBar()) {
@@ -443,7 +434,7 @@ void up::ShellApp::_drawDocumentsUI(glm::vec4 rect) {
                     ImGui::SameLine();
                     ImGui::InvisibleButton("vsplitter", ImVec2(4.0f, contentSize.y));
                     if (ImGui::IsItemActive()) {
-                        _inspectorWidth = glm::clamp(_inspectorWidth + ImGui::GetIO().MouseDelta.x, 30.f, contentSize.x - 80.f);
+                        _inspectorWidth = glm::clamp(_inspectorWidth + io.MouseDelta.x, 30.f, contentSize.x - 80.f);
                     }
                     ImGui::SameLine();
 
@@ -452,7 +443,7 @@ void up::ShellApp::_drawDocumentsUI(glm::vec4 rect) {
 
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
                 ImVec2 sceneSize = {width - inspectorVisibleWidth, contentSize.y};
-                if (ImGui::BeginChild("SceneView", sceneSize)) {
+                if (ImGui::BeginChild("SceneView", sceneSize, false)) {
                     glm::vec3 bufferSize = {0, 0, 0};
                     if (_sceneBuffer != nullptr) {
                         bufferSize = _sceneBuffer->dimensions();
@@ -461,7 +452,14 @@ void up::ShellApp::_drawDocumentsUI(glm::vec4 rect) {
                         _resizeSceneView({sceneSize.x, sceneSize.y});
                     }
 
+                    auto const pos = ImGui::GetCursorPos();
                     ImGui::Image(_sceneBufferView.get(), sceneSize);
+                    ImGui::SetCursorPos(pos);
+                    ImGui::InvisibleButton("SceneInteract", sceneSize);
+                    if (ImGui::IsItemActive()) {
+                        _inputState->relativeMotion.x = io.MouseDelta.x / sceneSize.x;
+                        _inputState->relativeMotion.y = io.MouseDelta.y / sceneSize.y;
+                    }
                 }
                 ImGui::EndChild();
                 ImGui::PopStyleVar(1);
