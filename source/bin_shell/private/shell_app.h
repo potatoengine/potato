@@ -46,11 +46,17 @@ private:
     void _processEvents();
     void _tick();
     void _render();
+
     void _displayUI();
-    void _drawDocumentsUI(glm::vec4 rect);
+    void _displayMainMenu();
+    void _displayDocuments(glm::vec4 rect);
+    void _displayScene(glm::vec2 contentSize);
+    void _displayGame(glm::vec2 contentSize);
+
     void _drawGrid();
 
     void _resizeSceneView(glm::ivec2 size);
+    void _resizeGameView(glm::ivec2 size);
 
     void _errorDialog(zstring_view message);
 
@@ -63,20 +69,28 @@ private:
     bool _paused = true;
     bool _grid = true;
     bool _showInspector = true;
+    bool _isControllingCamera = false;
+    bool _playing = false;
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
     rc<GpuTexture> _sceneBuffer;
+    rc<GpuTexture> _gameBuffer;
     box<GpuResourceView> _sceneBufferView;
+    box<GpuResourceView> _gameBufferView;
     box<Renderer> _renderer;
-    box<RenderCamera> _renderCamera;
+    box<RenderCamera> _uiRenderCamera;
+    box<RenderCamera> _sceneRenderCamera;
+    box<RenderCamera> _gameRenderCamera;
     box<Scene> _scene;
     string _resourceDir;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     DrawImgui _drawImgui;
     Logger _logger;
-    Camera _camera;
-    box<CameraController> _cameraController;
+    Camera _sceneCamera;
+    Camera _gameCamera;
+    box<CameraController> _sceneCameraController;
+    box<CameraController> _gameCameraController;
     box<InputState> _inputState;
     float _lastFrameTime = 0.f;
     float _inspectorWidth = 300.f;

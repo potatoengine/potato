@@ -25,8 +25,8 @@ namespace up {
 
         UP_RENDER_API void resetBackBuffer(rc<GpuTexture> texture);
 
+        UP_RENDER_API void updateBuffers(RenderContext& ctx, glm::vec3 dimensions, glm::vec3 cameraPosition, glm::mat4x4 cameraTransform);
         UP_RENDER_API void beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, glm::mat4x4 cameraTransform);
-        UP_RENDER_API void endFrame(RenderContext& ctx);
 
     private:
         box<GpuBuffer> _cameraDataBuffer;

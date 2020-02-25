@@ -31,6 +31,46 @@ void up::RenderCamera::resetBackBuffer(rc<GpuTexture> texture) {
     _dsv.reset();
 }
 
+void up::RenderCamera::updateBuffers(RenderContext& ctx, glm::vec3 dimensions, glm::vec3 cameraPosition, glm::mat4x4 cameraTransform) {
+    if (_rtv == nullptr && _backBuffer != nullptr) {
+        _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
+    }
+
+    if (_dsv == nullptr) {
+        GpuTextureDesc desc;
+        desc.type = GpuTextureType::DepthStencil;
+        desc.format = GpuFormat::D32Float;
+        desc.width = static_cast<uint32>(dimensions.x);
+        desc.height = static_cast<uint32>(dimensions.y);
+        _depthStencilBuffer = ctx.device.createTexture2D(desc, {});
+        _dsv = ctx.device.createDepthStencilView(_depthStencilBuffer.get());
+    }
+
+    if (_cameraDataBuffer == nullptr) {
+        _cameraDataBuffer = ctx.device.createBuffer(GpuBufferType::Constant, sizeof(CameraData));
+    }
+
+    GpuViewportDesc viewport;
+    viewport.width = static_cast<float>(dimensions.x);
+    viewport.height = static_cast<float>(dimensions.y);
+    viewport.minDepth = 0;
+    viewport.maxDepth = 1;
+
+    float farZ = 400.f;
+    float nearZ = .2f;
+
+    auto projection = glm::perspectiveFovRH_ZO(glm::radians(75.f), viewport.width, viewport.height, nearZ, farZ);
+
+    CameraData data;
+    data.worldView = transpose(cameraTransform);
+    data.viewProjection = transpose(projection);
+    data.worldViewProjection = cameraTransform * projection;
+    data.cameraPosition = cameraPosition;
+    data.nearFar = {nearZ, farZ};
+
+    ctx.commandList.update(_cameraDataBuffer.get(), span{&data, 1}.as_bytes());
+}
+
 void up::RenderCamera::beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, glm::mat4x4 cameraTransform) {
     if (_rtv == nullptr && _backBuffer != nullptr) {
         _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
@@ -78,7 +118,4 @@ void up::RenderCamera::beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, 
     ctx.commandList.bindDepthStencil(_dsv.get());
     ctx.commandList.bindConstantBuffer(1, _cameraDataBuffer.get(), GpuShaderStage::All);
     ctx.commandList.setViewport(viewport);
-}
-
-void up::RenderCamera::endFrame(RenderContext& ctx) {
 }

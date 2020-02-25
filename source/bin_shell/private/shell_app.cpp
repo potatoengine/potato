@@ -56,7 +56,9 @@ up::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
 
     _renderer.reset();
-    _renderCamera.reset();
+    _uiRenderCamera.reset();
+    _sceneRenderCamera.reset();
+    _gameRenderCamera.reset();
     _swapChain.reset();
     _window.reset();
 
@@ -114,8 +116,11 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _renderCamera = new_box<RenderCamera>();
-    _renderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+    _uiRenderCamera = new_box<RenderCamera>();
+    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+
+    _sceneRenderCamera = new_box<RenderCamera>();
+    _gameRenderCamera = new_box<RenderCamera>();
 
     auto material = _renderer->loadMaterialSync("resources/materials/full.mat");
     if (material == nullptr) {
@@ -150,8 +155,10 @@ int up::ShellApp::initialize() {
     }
     _drawImgui.createResources(*_device);
 
-    _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-    _cameraController = new_box<ArcBallCameraController>(_camera);
+    _sceneCamera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+    _gameCamera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+    _sceneCameraController = new_box<ArcBallCameraController>(_sceneCamera);
+    _gameCameraController = new_box<FlyCameraController>(_gameCamera);
 
     return 0;
 }
@@ -185,10 +192,10 @@ void up::ShellApp::_onWindowSizeChanged() {
     int width = 0;
     int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
-    _renderCamera->resetBackBuffer(nullptr);
+    _uiRenderCamera->resetBackBuffer(nullptr);
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
-    _renderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
     _sceneBuffer = nullptr;
 }
 
@@ -197,6 +204,9 @@ void up::ShellApp::_processEvents() {
 
     _inputState->relativeMotion = {0, 0, 0};
     _inputState->relativeMovement = {0, 0, 0};
+
+    SDL_CaptureMouse(_isControllingCamera ? SDL_TRUE : SDL_FALSE);
+    SDL_SetRelativeMouseMode(_playing && !_paused ? SDL_TRUE : SDL_FALSE);
 
     SDL_Event ev;
     while (SDL_PollEvent(&ev) > 0) {
@@ -214,26 +224,31 @@ void up::ShellApp::_processEvents() {
             }
             break;
         case SDL_KEYDOWN:
-            if (ev.key.keysym.scancode == SDL_SCANCODE_F && (ev.key.keysym.mod & KMOD_CTRL) != 0) {
-                _cameraController = new_box<FlyCameraController>(_camera);
-            }
-            if (ev.key.keysym.scancode == SDL_SCANCODE_B && (ev.key.keysym.mod & KMOD_CTRL) != 0) {
-                _cameraController = new_box<ArcBallCameraController>(_camera);
-            }
-            if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
-                _paused = !_paused;
+            if (!imguiIO.WantCaptureKeyboard) {
+                if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
+                    _paused = !_paused;
+                }
             }
             break;
         case SDL_MOUSEWHEEL:
-            if (!imguiIO.WantCaptureMouse) {
+            if ((_isControllingCamera || (_playing && !_paused)) && !imguiIO.WantCaptureMouse) {
                 _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
             }
+            break;
+        case SDL_MOUSEMOTION:
+            if (_isControllingCamera || (_playing && !_paused)) {
+                _inputState->relativeMotion.x = ev.motion.xrel / 800.0f;
+                _inputState->relativeMotion.y = ev.motion.yrel / 600.0f;
+            }
+            break;
+        case SDL_MOUSEBUTTONUP:
+            _isControllingCamera = false;
             break;
         }
         _drawImgui.handleEvent(ev);
     }
 
-    if (!imguiIO.WantCaptureKeyboard) {
+    if (_isControllingCamera || (_playing && !_paused)) {
         auto keys = SDL_GetKeyboardState(nullptr);
         _inputState->relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
                                          static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
@@ -242,7 +257,12 @@ void up::ShellApp::_processEvents() {
 }
 
 void up::ShellApp::_tick() {
-    _cameraController->apply(_camera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
+    if (_playing) {
+        _gameCameraController->apply(_gameCamera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
+    }
+    else {
+        _sceneCameraController->apply(_sceneCamera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
+    }
 
     if (!_paused) {
         _scene->tick(_lastFrameTime);
@@ -263,14 +283,24 @@ void up::ShellApp::_render() {
         _renderer->beginFrame();
         auto ctx = _renderer->context();
 
-        _renderCamera->resetBackBuffer(_sceneBuffer);
+        _sceneRenderCamera->resetBackBuffer(_sceneBuffer);
         if (_grid) {
             _drawGrid();
         }
-        _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
+        _sceneRenderCamera->beginFrame(ctx, _sceneCamera.position(), _sceneCamera.matrix());
         _scene->render(ctx);
         _renderer->flushDebugDraw(_lastFrameTime);
-        _renderCamera->endFrame(ctx);
+        _renderer->endFrame(_lastFrameTime);
+    }
+
+    if (_gameBuffer != nullptr) {
+        _renderer->beginFrame();
+        auto ctx = _renderer->context();
+
+        _gameRenderCamera->resetBackBuffer(_gameBuffer);
+        _gameRenderCamera->beginFrame(ctx, _gameCamera.position(), _gameCamera.matrix());
+        _scene->render(ctx);
+        _renderer->flushDebugDraw(_lastFrameTime);
         _renderer->endFrame(_lastFrameTime);
     }
 
@@ -278,10 +308,9 @@ void up::ShellApp::_render() {
         _renderer->beginFrame();
         auto ctx = _renderer->context();
 
-        _renderCamera->resetBackBuffer(_swapChain->getBuffer(0));
-        _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
+        _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+        _uiRenderCamera->beginFrame(ctx, _sceneCamera.position(), _sceneCamera.matrix());
         _drawImgui.endFrame(*_device, _renderer->commandList());
-        _renderCamera->endFrame(ctx);
         _renderer->endFrame(_lastFrameTime);
     }
 
@@ -318,7 +347,6 @@ namespace {
 
 void up::ShellApp::_displayUI() {
     auto& imguiIO = ImGui::GetIO();
-    ImVec2 menuSize;
 
     int width = 0;
     int height = 0;
@@ -327,9 +355,19 @@ void up::ShellApp::_displayUI() {
     imguiIO.DisplaySize.y = static_cast<float>(height);
 
     _drawImgui.beginFrame();
+    _displayMainMenu();
+
+    ImVec2 menuSize;
     if (ImGui::BeginMainMenuBar()) {
         menuSize = ImGui::GetWindowSize();
+        ImGui::EndMainMenuBar();
+    }
 
+    _displayDocuments({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
+}
+
+void up::ShellApp::_displayMainMenu() {
+    if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu(u8"\uf094 Potato")) {
             if (ImGui::MenuItem(u8"\uf52b Quit", "ESC")) {
                 _running = false;
@@ -338,26 +376,11 @@ void up::ShellApp::_displayUI() {
         }
 
         if (ImGui::BeginMenu(u8"\uf06e View")) {
-            if (ImGui::BeginMenu("Camera")) {
-                if (ImGui::MenuItem("Fly", "ctrl-f")) {
-                    _cameraController = new_box<FlyCameraController>(_camera);
-                }
-                if (ImGui::MenuItem("ArcBall", "ctrl-b")) {
-                    _cameraController = new_box<ArcBallCameraController>(_camera);
-                }
-                ImGui::EndMenu();
-            }
-
             if (ImGui::BeginMenu("Options")) {
                 if (ImGui::MenuItem("Grid")) {
                     _grid = !_grid;
                 }
                 ImGui::EndMenu();
-            }
-
-            if (ImGui::MenuItem("Reset")) {
-                _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-                _cameraController = new_box<ArcBallCameraController>(_camera);
             }
 
             ImGui::EndMenu();
@@ -383,28 +406,16 @@ void up::ShellApp::_displayUI() {
 
         ImGui::EndMainMenuBar();
     }
-
-    _drawDocumentsUI({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
-
-    if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
-        auto const fpSize = ImGui::GetWindowSize();
-        ImGui::SetWindowPos(ImVec2(imguiIO.DisplaySize.x - fpSize.x - 20, menuSize.y));
-
-        auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
-
-        fixed_string_writer<128> buffer;
-        format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
-        ImGui::Text("%s", buffer.c_str());
-    }
-    ImGui::End();
 }
 
-void up::ShellApp::_drawDocumentsUI(glm::vec4 rect) {
+void up::ShellApp::_displayDocuments(glm::vec4 rect) {
     auto& io = ImGui::GetIO();
 
     auto const height = rect.w - rect.y;
     auto const width = rect.z - rect.x;
     auto const pos = glm::vec2{rect.x, rect.y};
+
+    _playing = false;
 
     ImGui::SetNextWindowPos(ImVec2(0, pos.y), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
@@ -441,28 +452,32 @@ void up::ShellApp::_drawDocumentsUI(glm::vec4 rect) {
                     inspectorVisibleWidth = _inspectorWidth + 4;
                 }
 
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-                ImVec2 sceneSize = {width - inspectorVisibleWidth, contentSize.y};
-                if (ImGui::BeginChild("SceneView", sceneSize, false)) {
-                    glm::vec3 bufferSize = {0, 0, 0};
-                    if (_sceneBuffer != nullptr) {
-                        bufferSize = _sceneBuffer->dimensions();
-                    }
-                    if (bufferSize.x != sceneSize.x || bufferSize.y != sceneSize.y) {
-                        _resizeSceneView({sceneSize.x, sceneSize.y});
-                    }
+                _displayScene({width - inspectorVisibleWidth, height});
 
-                    auto const pos = ImGui::GetCursorPos();
-                    ImGui::Image(_sceneBufferView.get(), sceneSize);
-                    ImGui::SetCursorPos(pos);
-                    ImGui::InvisibleButton("SceneInteract", sceneSize);
-                    if (ImGui::IsItemActive()) {
-                        _inputState->relativeMotion.x = io.MouseDelta.x / sceneSize.x;
-                        _inputState->relativeMotion.y = io.MouseDelta.y / sceneSize.y;
-                    }
-                }
-                ImGui::EndChild();
                 ImGui::PopStyleVar(1);
+                ImGui::EndTabItem();
+
+                if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
+                    auto const fpSize = ImGui::GetWindowSize();
+                    ImGui::SetWindowPos(ImVec2(width - fpSize.x - 20, pos.y));
+
+                    auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
+
+                    fixed_string_writer<128> buffer;
+                    format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
+                    ImGui::Text("%s", buffer.c_str());
+                }
+                ImGui::End();
+            }
+
+            if (ImGui::BeginTabItem("GameTab", nullptr, ImGuiTabItemFlags_None)) {
+                _playing = true;
+
+                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+
+                auto const contentSize = ImGui::GetContentRegionAvail();
+
+                _displayGame({contentSize.x, contentSize.y});
 
                 ImGui::PopStyleVar(1);
                 ImGui::EndTabItem();
@@ -478,6 +493,43 @@ void up::ShellApp::_drawDocumentsUI(glm::vec4 rect) {
     ImGui::PopStyleVar(1);
 }
 
+void up::ShellApp::_displayScene(glm::vec2 contentSize) {
+    auto const sceneSize = ImVec2(contentSize.x, contentSize.y);
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+    if (ImGui::BeginChild("SceneView", sceneSize, false)) {
+        glm::vec3 bufferSize = {0, 0, 0};
+        if (_sceneBuffer != nullptr) {
+            bufferSize = _sceneBuffer->dimensions();
+        }
+        if (bufferSize.x != sceneSize.x || bufferSize.y != sceneSize.y) {
+            _resizeSceneView({sceneSize.x, sceneSize.y});
+        }
+
+        auto const pos = ImGui::GetCursorPos();
+        ImGui::Image(_sceneBufferView.get(), sceneSize);
+        ImGui::SetCursorPos(pos);
+        ImGui::InvisibleButton("SceneInteract", sceneSize);
+        if (ImGui::IsItemActive()) {
+            _isControllingCamera = true;
+        }
+    }
+    ImGui::EndChild();
+    ImGui::PopStyleVar(1);
+}
+
+void up::ShellApp::_displayGame(glm::vec2 contentSize) {
+    glm::vec3 bufferSize = {0, 0, 0};
+    if (_gameBuffer != nullptr) {
+        bufferSize = _gameBuffer->dimensions();
+    }
+    if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
+        _resizeGameView({contentSize.x, contentSize.y});
+    }
+
+    ImGui::Image(_gameBufferView.get(), {contentSize.x, contentSize.y});
+}
+
 void up::ShellApp::_drawGrid() {
     auto constexpr guidelines = 10;
 
@@ -485,7 +537,7 @@ void up::ShellApp::_drawGrid() {
     // pixels on the screen; this doesn't really accomplish that, though.
     // Improvements welcome.
     //
-    auto const cameraPos = _camera.position();
+    auto const cameraPos = _sceneCamera.position();
     auto const logDist = std::log2(std::abs(cameraPos.y));
     auto const spacing = std::max(1, static_cast<int>(logDist) - 3);
 
@@ -511,6 +563,17 @@ void up::ShellApp::_resizeSceneView(glm::ivec2 size) {
     _sceneBuffer = _device->createTexture2D(desc, {});
 
     _sceneBufferView = _device->createShaderResourceView(_sceneBuffer.get());
+}
+
+void up::ShellApp::_resizeGameView(glm::ivec2 size) {
+    GpuTextureDesc desc;
+    desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
+    desc.type = GpuTextureType::Texture2D;
+    desc.width = size.x;
+    desc.height = size.y;
+    _gameBuffer = _device->createTexture2D(desc, {});
+
+    _gameBufferView = _device->createShaderResourceView(_gameBuffer.get());
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {
