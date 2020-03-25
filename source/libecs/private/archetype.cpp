@@ -68,7 +68,7 @@ auto up::ArchetypeMapper::_finalizeArchetype(ArchetypeId archetype) noexcept -> 
 
     // calculate how many entities with this layout can fit in a single chunk
     //
-    archData.maxEntitiesPerChunk = static_cast<uint32>((sizeof(ChunkPayload) - padding) / size);
+    archData.maxEntitiesPerChunk = size != 0 ? static_cast<uint32>((sizeof(ChunkPayload) - padding) / size) : 0;
     UP_ASSERT(archData.maxEntitiesPerChunk > 0);
 
     // calculate the row offets for the layout
