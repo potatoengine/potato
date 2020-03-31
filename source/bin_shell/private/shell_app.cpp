@@ -66,8 +66,6 @@ up::ShellApp::~ShellApp() {
 }
 
 int up::ShellApp::initialize() {
-    using namespace up;
-
     zstring_view configPath = "shell.config.json";
     if (_fileSystem.fileExists(configPath)) {
         _loadConfig(configPath);
@@ -411,93 +409,60 @@ void up::ShellApp::_displayMainMenu() {
 void up::ShellApp::_displayDocuments(glm::vec4 rect) {
     auto& io = ImGui::GetIO();
 
-    auto const height = rect.w - rect.y;
-    auto const width = rect.z - rect.x;
-    auto const pos = glm::vec2{rect.x, rect.y};
-
     _playing = false;
 
-    ImGui::SetNextWindowPos(ImVec2(0, pos.y), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    if (ImGui::Begin("Main", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
+    if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_None)) {
+        auto const contentSize = ImGui::GetContentRegionAvail();
 
-        if (ImGui::BeginTabBar("DocumentTabs", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_Reorderable)) {
-            if (ImGui::BeginTabItem("SceneTab", nullptr, ImGuiTabItemFlags_None)) {
-                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-
-                auto const contentSize = ImGui::GetContentRegionAvail();
-
-                float inspectorVisibleWidth = 0;
-                if (_showInspector) {
-                    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-                    if (ImGui::BeginChild(u8"\uf085 Inspector", ImVec2(_inspectorWidth, contentSize.y))) {
-                        _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
-                            if (ImGui::CollapsingHeader(meta->name.c_str())) {
-                                ImGuiComponentReflector ref;
-                                meta->reflect(data, ref);
-                            }
-                        });
-                    }
-                    ImGui::EndChild();
-                    ImGui::PopStyleVar(1);
-
-                    ImGui::SameLine();
-                    ImGui::InvisibleButton("vsplitter", ImVec2(4.0f, contentSize.y));
-                    if (ImGui::IsItemActive()) {
-                        _inspectorWidth = glm::clamp(_inspectorWidth + io.MouseDelta.x, 30.f, contentSize.x - 80.f);
-                    }
-                    ImGui::SameLine();
-
-                    inspectorVisibleWidth = _inspectorWidth + 4;
-                }
-
-                _displayScene({width - inspectorVisibleWidth, height});
-
-                ImGui::PopStyleVar(1);
-                ImGui::EndTabItem();
-
-                if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
-                    auto const fpSize = ImGui::GetWindowSize();
-                    ImGui::SetWindowPos(ImVec2(width - fpSize.x - 20, pos.y));
-
-                    auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
-
-                    fixed_string_writer<128> buffer;
-                    format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
-                    ImGui::Text("%s", buffer.c_str());
-                }
-                ImGui::End();
-            }
-
-            if (ImGui::BeginTabItem("GameTab", nullptr, ImGuiTabItemFlags_None)) {
-                _playing = true;
-
-                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-
-                auto const contentSize = ImGui::GetContentRegionAvail();
-
-                _displayGame({contentSize.x, contentSize.y});
-
-                ImGui::PopStyleVar(1);
-                ImGui::EndTabItem();
-            }
-
-            if (ImGui::BeginTabItem("EmptyTab", nullptr, ImGuiTabItemFlags_None)) {
-                ImGui::EndTabItem();
-            }
-        }
-        ImGui::EndTabBar();
+        _displayScene({contentSize.x, contentSize.y});
     }
     ImGui::End();
-    ImGui::PopStyleVar(1);
+
+    if (ImGui::Begin(u8"\uf085 Inspector")) {
+        _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
+            if (ImGui::CollapsingHeader(meta->name.c_str())) {
+                ImGuiComponentReflector ref;
+                meta->reflect(data, ref);
+            }
+        });
+    }
+    ImGui::End();
+    
+    if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
+        auto const contentSize = ImGui::GetContentRegionAvail();
+        ImGui::SetWindowPos(ImVec2(contentSize.x, contentSize.y));
+
+        auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
+
+        fixed_string_writer<128> buffer;
+        format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
+        ImGui::Text("%s", buffer.c_str());
+    }
+    ImGui::End();
+
+    if (ImGui::Begin("GameView", nullptr, ImGuiWindowFlags_None)) {
+        _playing = true;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+
+        auto const contentSize = ImGui::GetContentRegionAvail();
+
+        _displayGame({contentSize.x, contentSize.y});
+
+        ImGui::PopStyleVar(1);
+    }
+    ImGui::End();
 }
 
 void up::ShellApp::_displayScene(glm::vec2 contentSize) {
     auto const sceneSize = ImVec2(contentSize.x, contentSize.y);
 
+    if (contentSize.x <= 0 || contentSize.y <= 0) {
+        return;
+    }
+
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    if (ImGui::BeginChild("SceneView", sceneSize, false)) {
+    if (ImGui::BeginChild("SceneContent", sceneSize, false)) {
         glm::vec3 bufferSize = {0, 0, 0};
         if (_sceneBuffer != nullptr) {
             bufferSize = _sceneBuffer->dimensions();
@@ -566,6 +531,10 @@ void up::ShellApp::_resizeSceneView(glm::ivec2 size) {
 }
 
 void up::ShellApp::_resizeGameView(glm::ivec2 size) {
+    if (size.x <= 0 || size.y <= 0) {
+        return;
+    }
+
     GpuTextureDesc desc;
     desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
     desc.type = GpuTextureType::Texture2D;

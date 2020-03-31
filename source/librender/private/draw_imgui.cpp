@@ -284,8 +284,10 @@ void up::DrawImgui::_ensureContext() {
 
     io.Fonts->AddFontDefault();
 
-    io.BackendPlatformName = "potato::grui";
+    io.BackendPlatformName = "potato";
     io.IniFilename = nullptr;
+
+    io.ConfigFlags = ImGuiConfigFlags_DockingEnable;
 
     io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
