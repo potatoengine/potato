@@ -36,6 +36,7 @@
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>
@@ -413,9 +414,27 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
 
     ImGui::SetNextWindowPos({rect.x, rect.y});
     ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
-    if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+    if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground)) {
+        auto dockSize = ImGui::GetContentRegionAvail();
+
         auto const dockId = ImGui::GetID("MainDockspace");
-        ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
+
+        if (ImGui::DockBuilderGetNode(dockId) == nullptr) {
+            ImGui::DockBuilderRemoveNode(dockId);
+            ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_DockSpace);
+            ImGui::DockBuilderSetNodeSize(dockId, dockSize);
+
+            auto contentDockId = dockId;
+            auto const paneDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Left, 0.25f, nullptr, &contentDockId);
+
+            ImGui::DockBuilderDockWindow(u8"\uf085 Inspector", paneDockId);
+            ImGui::DockBuilderDockWindow("SceneView", contentDockId);
+            ImGui::DockBuilderDockWindow("GameView", contentDockId);
+
+            ImGui::DockBuilderFinish(dockId);
+        }
+
+        ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_AutoHideTabBar);
 
         if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_None)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
