@@ -411,45 +411,53 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
 
     _playing = false;
 
-    if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_None)) {
-        auto const contentSize = ImGui::GetContentRegionAvail();
+    ImGui::SetNextWindowPos({rect.x, rect.y});
+    ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
+    if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+        auto const dockId = ImGui::GetID("MainDockspace");
+        ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
 
-        _displayScene({contentSize.x, contentSize.y});
-    }
-    ImGui::End();
+        if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_None)) {
+            auto const contentSize = ImGui::GetContentRegionAvail();
 
-    if (ImGui::Begin(u8"\uf085 Inspector")) {
-        _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
-            if (ImGui::CollapsingHeader(meta->name.c_str())) {
-                ImGuiComponentReflector ref;
-                meta->reflect(data, ref);
-            }
-        });
-    }
-    ImGui::End();
-    
-    if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
-        auto const contentSize = ImGui::GetContentRegionAvail();
-        ImGui::SetWindowPos(ImVec2(contentSize.x, contentSize.y));
+            _displayScene({contentSize.x, contentSize.y});
+        }
+        ImGui::End();
 
-        auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
+        if (ImGui::Begin(u8"\uf085 Inspector")) {
+            _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
+                if (ImGui::CollapsingHeader(meta->name.c_str())) {
+                    ImGuiComponentReflector ref;
+                    meta->reflect(data, ref);
+                }
+            });
+        }
+        ImGui::End();
 
-        fixed_string_writer<128> buffer;
-        format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
-        ImGui::Text("%s", buffer.c_str());
-    }
-    ImGui::End();
+        if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
+            auto const contentSize = ImGui::GetContentRegionAvail();
+            ImGui::SetWindowPos(ImVec2(contentSize.x, contentSize.y));
 
-    if (ImGui::Begin("GameView", nullptr, ImGuiWindowFlags_None)) {
-        _playing = true;
+            auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+            fixed_string_writer<128> buffer;
+            format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
+            ImGui::Text("%s", buffer.c_str());
+        }
+        ImGui::End();
 
-        auto const contentSize = ImGui::GetContentRegionAvail();
+        if (ImGui::Begin("GameView", nullptr, ImGuiWindowFlags_None)) {
+            _playing = true;
 
-        _displayGame({contentSize.x, contentSize.y});
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
-        ImGui::PopStyleVar(1);
+            auto const contentSize = ImGui::GetContentRegionAvail();
+
+            _displayGame({contentSize.x, contentSize.y});
+
+            ImGui::PopStyleVar(1);
+        }
+        ImGui::End();
     }
     ImGui::End();
 }
