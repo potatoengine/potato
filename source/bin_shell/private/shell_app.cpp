@@ -204,8 +204,10 @@ void up::ShellApp::_processEvents() {
     _inputState->relativeMotion = {0, 0, 0};
     _inputState->relativeMovement = {0, 0, 0};
 
-    SDL_CaptureMouse(_isControllingCamera ? SDL_TRUE : SDL_FALSE);
-    SDL_SetRelativeMouseMode(_playing && !_paused ? SDL_TRUE : SDL_FALSE);
+    bool isMouseBound = _isGameInputBound || _isControllingCamera;
+
+    SDL_CaptureMouse(isMouseBound ? SDL_TRUE : SDL_FALSE);
+    SDL_SetRelativeMouseMode(isMouseBound ? SDL_TRUE : SDL_FALSE);
 
     SDL_Event ev;
     while (SDL_PollEvent(&ev) > 0) {
@@ -213,6 +215,7 @@ void up::ShellApp::_processEvents() {
         case SDL_QUIT:
             return;
         case SDL_WINDOWEVENT:
+            _drawImgui.handleEvent(ev);
             switch (ev.window.event) {
             case SDL_WINDOWEVENT_CLOSE:
                 _onWindowClosed();
@@ -223,31 +226,40 @@ void up::ShellApp::_processEvents() {
             }
             break;
         case SDL_KEYDOWN:
-            if (!imguiIO.WantCaptureKeyboard) {
-                if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
-                    _paused = !_paused;
-                }
+            _drawImgui.handleEvent(ev);
+            if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
+                _playing = !_playing;
+                _isGameInputBound = _isGameInputBound && _playing;
             }
             break;
         case SDL_MOUSEWHEEL:
-            if ((_isControllingCamera || (_playing && !_paused)) && !imguiIO.WantCaptureMouse) {
+            if (!isMouseBound) {
+                _drawImgui.handleEvent(ev);
+            }
+            if (isMouseBound && !imguiIO.WantCaptureMouse) {
                 _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
             }
             break;
         case SDL_MOUSEMOTION:
-            if (_isControllingCamera || (_playing && !_paused)) {
-                _inputState->relativeMotion.x = ev.motion.xrel / 800.0f;
-                _inputState->relativeMotion.y = ev.motion.yrel / 600.0f;
+            if (!isMouseBound) {
+                _drawImgui.handleEvent(ev);
+            }
+            if (isMouseBound) {
+                _inputState->relativeMotion.x = ev.motion.xrel / imguiIO.DisplaySize.x;
+                _inputState->relativeMotion.y = ev.motion.yrel / imguiIO.DisplaySize.y;
             }
             break;
         case SDL_MOUSEBUTTONUP:
+            _drawImgui.handleEvent(ev);
             _isControllingCamera = false;
             break;
+        default:
+            _drawImgui.handleEvent(ev);
+            break;
         }
-        _drawImgui.handleEvent(ev);
     }
 
-    if (_isControllingCamera || (_playing && !_paused)) {
+    if (isMouseBound) {
         auto keys = SDL_GetKeyboardState(nullptr);
         _inputState->relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
                                          static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
@@ -256,14 +268,14 @@ void up::ShellApp::_processEvents() {
 }
 
 void up::ShellApp::_tick() {
-    if (_playing) {
+    if (_playing && _isGameInputBound) {
         _gameCameraController->apply(_gameCamera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
     }
     else {
         _sceneCameraController->apply(_sceneCamera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
     }
 
-    if (!_paused) {
+    if (_playing) {
         _scene->tick(_lastFrameTime);
     }
 
@@ -399,8 +411,8 @@ void up::ShellApp::_displayMainMenu() {
         ImGui::Spacing();
         ImGui::Spacing();
 
-        if (ImGui::MenuItem(!_paused ? u8"\uf04c Pause" : u8"\uf04b Play", "F5")) {
-            _paused = !_paused;
+        if (ImGui::MenuItem(_playing ? u8"\uf04c Pause" : u8"\uf04b Play", "F5")) {
+            _playing = !_playing;
         }
 
         ImGui::EndMainMenuBar();
@@ -410,10 +422,9 @@ void up::ShellApp::_displayMainMenu() {
 void up::ShellApp::_displayDocuments(glm::vec4 rect) {
     auto& io = ImGui::GetIO();
 
-    _playing = false;
-
     ImGui::SetNextWindowPos({rect.x, rect.y});
     ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground)) {
         auto dockSize = ImGui::GetContentRegionAvail();
 
@@ -466,8 +477,6 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
         ImGui::End();
 
         if (ImGui::Begin("GameView", nullptr, ImGuiWindowFlags_None)) {
-            _playing = true;
-
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
             auto const contentSize = ImGui::GetContentRegionAvail();
@@ -479,6 +488,7 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
         ImGui::End();
     }
     ImGui::End();
+    ImGui::PopStyleVar(1);
 }
 
 void up::ShellApp::_displayScene(glm::vec2 contentSize) {
@@ -512,6 +522,7 @@ void up::ShellApp::_displayScene(glm::vec2 contentSize) {
 
 void up::ShellApp::_displayGame(glm::vec2 contentSize) {
     glm::vec3 bufferSize = {0, 0, 0};
+
     if (_gameBuffer != nullptr) {
         bufferSize = _gameBuffer->dimensions();
     }
@@ -519,7 +530,13 @@ void up::ShellApp::_displayGame(glm::vec2 contentSize) {
         _resizeGameView({contentSize.x, contentSize.y});
     }
 
+    auto const pos = ImGui::GetCursorPos();
     ImGui::Image(_gameBufferView.get(), {contentSize.x, contentSize.y});
+    ImGui::SetCursorPos(pos);
+    ImGui::InvisibleButton("SceneInteract", {contentSize.x, contentSize.y});
+    if (ImGui::IsItemActive() && _playing) {
+        _isGameInputBound = true;
+    }
 }
 
 void up::ShellApp::_drawGrid() {

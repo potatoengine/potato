@@ -66,11 +66,11 @@ private:
     struct InputState;
 
     bool _running = true;
-    bool _paused = true;
     bool _grid = true;
     bool _showInspector = true;
     bool _isControllingCamera = false;
     bool _playing = false;
+    bool _isGameInputBound = false;
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
