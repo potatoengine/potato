@@ -231,6 +231,9 @@ void up::ShellApp::_processEvents() {
                 _playing = !_playing;
                 _isGameInputBound = _isGameInputBound && _playing;
             }
+            else if (ev.key.keysym.scancode == SDL_SCANCODE_ESCAPE && 0 != (ev.key.keysym.mod & KMOD_SHIFT)) {
+                _isGameInputBound = false;
+            }
             break;
         case SDL_MOUSEWHEEL:
             if (!isMouseBound) {
