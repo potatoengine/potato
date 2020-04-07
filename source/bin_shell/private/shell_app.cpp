@@ -76,6 +76,33 @@ namespace {
         bool _enableGrid = true;
         bool _isControllingCamera = false;
     };
+
+    class GameView : public up::shell::Document {
+    public:
+        explicit GameView(up::GpuDevice& device, up::Scene& scene) : _device(device), _scene(scene), _cameraController(_camera) {
+            _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+        }
+        virtual ~GameView() = default;
+
+        void render(up::Renderer& renderer, float frameTime) override;
+        void ui() override;
+        void handleEvent(SDL_Event const& ev) override;
+        void tick(float deltaTime) override;
+
+    private:
+        void _resize(glm::ivec2 size);
+
+    private:
+        up::GpuDevice& _device;
+        up::Scene& _scene;
+        up::rc<up::GpuTexture> _buffer;
+        up::box<up::GpuResourceView> _bufferView;
+        up::box<up::RenderCamera> _renderCamera;
+        up::Camera _camera;
+        up::FlyCameraController _cameraController;
+        glm::vec3 _relMotion{0, 0, 0};
+        glm::vec3 _relMovement{0, 0, 0};
+    };
 }
 
 void SceneView::render(up::Renderer& renderer, float frameTime) {
@@ -192,19 +219,85 @@ void SceneView::_resize(glm::ivec2 size) {
     _bufferView = _device.createShaderResourceView(_buffer.get());
 }
 
-struct up::ShellApp::InputState {
-    glm::vec3 relativeMovement = {0, 0, 0};
-    glm::vec3 relativeMotion = {0, 0, 0};
-};
+void GameView::render(up::Renderer& renderer, float frameTime) {
+    if (_renderCamera == nullptr) {
+        _renderCamera = up::new_box<up::RenderCamera>();
+    }
 
-up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell"), _inputState(new_box<InputState>()) {}
+    if (_buffer != nullptr) {
+        renderer.beginFrame();
+        auto ctx = renderer.context();
+
+        _renderCamera->resetBackBuffer(_buffer);
+        _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
+        _scene.render(ctx);
+        renderer.flushDebugDraw(frameTime);
+        renderer.endFrame(frameTime);
+    }
+}
+
+void GameView::ui() {
+    if (ImGui::Begin("GameView", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+        auto const contentSize = ImGui::GetContentRegionAvail();
+
+        if (contentSize.x <= 0 || contentSize.y <= 0) {
+            return;
+        }
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+        if (ImGui::BeginChild("GameContent", contentSize, false)) {
+            glm::vec3 bufferSize = {0, 0, 0};
+            if (_buffer != nullptr) {
+                bufferSize = _buffer->dimensions();
+            }
+            if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
+                _resize({contentSize.x, contentSize.y});
+            }
+
+            auto const pos = ImGui::GetCursorPos();
+            ImGui::Image(_bufferView.get(), contentSize);
+            ImGui::SetCursorPos(pos);
+            ImGui::InvisibleButton("GameContent", contentSize);
+            if (ImGui::IsItemActive() && _scene.playing()) {
+                auto& io = ImGui::GetIO();
+                _relMotion.x = io.MouseDelta.x / io.DisplaySize.x;
+                _relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
+            }
+        }
+        ImGui::EndChild();
+        ImGui::PopStyleVar(1);
+    }
+    ImGui::End();
+}
+
+void GameView::handleEvent(SDL_Event const& ev) {
+}
+
+void GameView::tick(float deltaTime) {
+    _cameraController.apply(_camera, _relMovement, _relMotion, deltaTime);
+    _relMovement = {0, 0, 0};
+    _relMotion = {0, 0, 0};
+}
+
+void GameView::_resize(glm::ivec2 size) {
+    using namespace up;
+    GpuTextureDesc desc;
+    desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
+    desc.type = GpuTextureType::Texture2D;
+    desc.width = size.x;
+    desc.height = size.y;
+    _buffer = _device.createTexture2D(desc, {});
+
+    _bufferView = _device.createShaderResourceView(_buffer.get());
+}
+
+up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell") {}
 
 up::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
 
     _renderer.reset();
     _uiRenderCamera.reset();
-    _gameRenderCamera.reset();
     _swapChain.reset();
     _window.reset();
 
@@ -263,8 +356,6 @@ int up::ShellApp::initialize() {
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
-    _gameRenderCamera = new_box<RenderCamera>();
-
     auto material = _renderer->loadMaterialSync("resources/materials/full.mat");
     if (material == nullptr) {
         _errorDialog("Failed to load basic material");
@@ -298,10 +389,8 @@ int up::ShellApp::initialize() {
     }
     _drawImgui.createResources(*_device);
 
-    _gameCamera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-    _gameCameraController = new_box<FlyCameraController>(_gameCamera);
-
     _documents.push_back(new_box<SceneView>(*_device, *_scene));
+    _documents.push_back(new_box<GameView>(*_device, *_scene));
 
     return 0;
 }
@@ -344,16 +433,11 @@ void up::ShellApp::_onWindowSizeChanged() {
 void up::ShellApp::_processEvents() {
     auto& io = ImGui::GetIO();
 
-    _inputState->relativeMotion = {0, 0, 0};
-    _inputState->relativeMovement = {0, 0, 0};
-
-    bool isMouseBound = _isGameInputBound || _isControllingCamera;
-
-    SDL_CaptureMouse((isMouseBound || io.WantCaptureMouse) ? SDL_TRUE : SDL_FALSE);
-    SDL_SetRelativeMouseMode(isMouseBound ? SDL_TRUE : SDL_FALSE);
+    SDL_CaptureMouse((_isGameInputBound || io.WantCaptureMouse) ? SDL_TRUE : SDL_FALSE);
+    SDL_SetRelativeMouseMode(_isGameInputBound ? SDL_TRUE : SDL_FALSE);
 
     auto const guiCursor = ImGui::GetMouseCursor();
-    if (guiCursor != _lastCursor && !isMouseBound) {
+    if (guiCursor != _lastCursor && !_isGameInputBound) {
         _lastCursor = guiCursor;
         SDL_ShowCursor(guiCursor != ImGuiMouseCursor_None ? SDL_TRUE : SDL_FALSE);
         if (guiCursor == ImGuiMouseCursor_Arrow) {
@@ -410,33 +494,28 @@ void up::ShellApp::_processEvents() {
         case SDL_KEYDOWN:
             _drawImgui.handleEvent(ev);
             if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
-                _playing = !_playing;
-                _isGameInputBound = _isGameInputBound && _playing;
+                _scene->playing(!_scene->playing());
+                _isGameInputBound = _isGameInputBound && _scene->playing();
             }
             else if (ev.key.keysym.scancode == SDL_SCANCODE_ESCAPE && 0 != (ev.key.keysym.mod & KMOD_SHIFT)) {
                 _isGameInputBound = false;
             }
             break;
         case SDL_MOUSEWHEEL:
-            if (!isMouseBound) {
+            if (!_isGameInputBound) {
                 _drawImgui.handleEvent(ev);
             }
-            if (isMouseBound && !io.WantCaptureMouse) {
-                _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
+            if (_isGameInputBound && !io.WantCaptureMouse) {
+                //_inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
             }
             break;
         case SDL_MOUSEMOTION:
-            if (!isMouseBound) {
+            if (!_isGameInputBound) {
                 _drawImgui.handleEvent(ev);
-            }
-            if (isMouseBound) {
-                _inputState->relativeMotion.x = ev.motion.xrel / io.DisplaySize.x;
-                _inputState->relativeMotion.y = ev.motion.yrel / io.DisplaySize.y;
             }
             break;
         case SDL_MOUSEBUTTONUP:
             _drawImgui.handleEvent(ev);
-            _isControllingCamera = false;
             break;
         default:
             _drawImgui.handleEvent(ev);
@@ -444,26 +523,20 @@ void up::ShellApp::_processEvents() {
         }
     }
 
-    if (isMouseBound) {
-        auto keys = SDL_GetKeyboardState(nullptr);
-        _inputState->relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
-                                         static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
-                                         static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
+    if (_isGameInputBound) {
+        //auto keys = SDL_GetKeyboardState(nullptr);
+        //_inputState->relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
+        //                                 static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
+        //                                 static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
     }
 }
 
 void up::ShellApp::_tick() {
-    if (_playing && _isGameInputBound) {
-        _gameCameraController->apply(_gameCamera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
-    }
-
     for (auto const& doc : _documents) {
         doc->tick(_lastFrameTime);
     }
 
-    if (_playing) {
-        _scene->tick(_lastFrameTime);
-    }
+    _scene->tick(_lastFrameTime);
 
     _scene->flush();
 }
@@ -480,26 +553,13 @@ void up::ShellApp::_render() {
         doc->render(*_renderer, _lastFrameTime);
     }
 
-    if (_gameBuffer != nullptr) {
-        _renderer->beginFrame();
-        auto ctx = _renderer->context();
+    _renderer->beginFrame();
+    auto ctx = _renderer->context();
 
-        _gameRenderCamera->resetBackBuffer(_gameBuffer);
-        _gameRenderCamera->beginFrame(ctx, _gameCamera.position(), _gameCamera.matrix());
-        _scene->render(ctx);
-        _renderer->flushDebugDraw(_lastFrameTime);
-        _renderer->endFrame(_lastFrameTime);
-    }
-
-    {
-        _renderer->beginFrame();
-        auto ctx = _renderer->context();
-
-        _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
-        _uiRenderCamera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
-        _drawImgui.endFrame(*_device, _renderer->commandList());
-        _renderer->endFrame(_lastFrameTime);
-    }
+    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+    _uiRenderCamera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
+    _drawImgui.endFrame(*_device, _renderer->commandList());
+    _renderer->endFrame(_lastFrameTime);
 
     _swapChain->present();
 }
@@ -582,8 +642,8 @@ void up::ShellApp::_displayMainMenu() {
         ImGui::Spacing();
         ImGui::Spacing();
 
-        if (ImGui::MenuItem(_playing ? u8"\uf04c Pause" : u8"\uf04b Play", "F5")) {
-            _playing = !_playing;
+        if (ImGui::MenuItem(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play", "F5")) {
+            _scene->playing(!_scene->playing());
         }
 
         ImGui::EndMainMenuBar();
@@ -618,11 +678,6 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
 
         ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_AutoHideTabBar);
 
-        
-        for (auto const& doc : _documents) {
-            doc->ui();
-        }
-
         if (ImGui::Begin(u8"\uf085 Inspector")) {
             _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
                 if (ImGui::CollapsingHeader(meta->name.c_str())) {
@@ -644,54 +699,13 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             ImGui::Text("%s", buffer.c_str());
         }
         ImGui::End();
-
-        if (ImGui::Begin("GameView", nullptr, ImGuiWindowFlags_None)) {
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-
-            auto const contentSize = ImGui::GetContentRegionAvail();
-
-            _displayGame({contentSize.x, contentSize.y});
-
-            ImGui::PopStyleVar(1);
+                
+        for (auto const& doc : _documents) {
+            doc->ui();
         }
-        ImGui::End();
     }
     ImGui::End();
     ImGui::PopStyleVar(1);
-}
-
-void up::ShellApp::_displayGame(glm::vec2 contentSize) {
-    glm::vec3 bufferSize = {0, 0, 0};
-
-    if (_gameBuffer != nullptr) {
-        bufferSize = _gameBuffer->dimensions();
-    }
-    if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
-        _resizeGameView({contentSize.x, contentSize.y});
-    }
-
-    auto const pos = ImGui::GetCursorPos();
-    ImGui::Image(_gameBufferView.get(), {contentSize.x, contentSize.y});
-    ImGui::SetCursorPos(pos);
-    ImGui::InvisibleButton("SceneInteract", {contentSize.x, contentSize.y});
-    if (ImGui::IsItemActive() && _playing) {
-        _isGameInputBound = true;
-    }
-}
-
-void up::ShellApp::_resizeGameView(glm::ivec2 size) {
-    if (size.x <= 0 || size.y <= 0) {
-        return;
-    }
-
-    GpuTextureDesc desc;
-    desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
-    desc.type = GpuTextureType::Texture2D;
-    desc.width = size.x;
-    desc.height = size.y;
-    _gameBuffer = _device->createTexture2D(desc, {});
-
-    _gameBufferView = _device->createShaderResourceView(_gameBuffer.get());
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {

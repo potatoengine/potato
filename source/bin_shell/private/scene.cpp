@@ -107,6 +107,10 @@ up::Scene::~Scene() {
 }
 
 void up::Scene::tick(float frameTime) {
+    if (!_playing) {
+        return;
+    }
+
     _waveQuery.select(*_world, [&](components::Position& pos, components::Wave& wave) {
         wave.offset += frameTime * .2f;
         pos.xyz.y = 1 + 5 * glm::sin(wave.offset * 10);

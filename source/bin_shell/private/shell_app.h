@@ -51,9 +51,6 @@ private:
     void _displayUI();
     void _displayMainMenu();
     void _displayDocuments(glm::vec4 rect);
-    void _displayGame(glm::vec2 contentSize);
-
-    void _resizeGameView(glm::ivec2 size);
 
     void _errorDialog(zstring_view message);
 
@@ -64,17 +61,12 @@ private:
 
     bool _running = true;
     bool _showInspector = true;
-    bool _isControllingCamera = false;
-    bool _playing = false;
     bool _isGameInputBound = false;
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
-    rc<GpuTexture> _gameBuffer;
-    box<GpuResourceView> _gameBufferView;
     box<Renderer> _renderer;
     box<RenderCamera> _uiRenderCamera;
-    box<RenderCamera> _gameRenderCamera;
     box<Scene> _scene;
     string _resourceDir;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
@@ -82,9 +74,6 @@ private:
     int _lastCursor = -1;
     DrawImgui _drawImgui;
     Logger _logger;
-    Camera _gameCamera;
-    box<CameraController> _gameCameraController;
-    box<InputState> _inputState;
     vector<box<shell::Document>> _documents;
     float _lastFrameTime = 0.f;
     float _inspectorWidth = 300.f;
