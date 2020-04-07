@@ -6,6 +6,7 @@
 #include "potato/render/draw_imgui.h"
 #include "potato/runtime/logger.h"
 #include "camera.h"
+#include "potato/shell/document.h"
 
 #include <SDL.h>
 #include <chrono>
@@ -50,12 +51,8 @@ private:
     void _displayUI();
     void _displayMainMenu();
     void _displayDocuments(glm::vec4 rect);
-    void _displayScene(glm::vec2 contentSize);
     void _displayGame(glm::vec2 contentSize);
 
-    void _drawGrid();
-
-    void _resizeSceneView(glm::ivec2 size);
     void _resizeGameView(glm::ivec2 size);
 
     void _errorDialog(zstring_view message);
@@ -66,7 +63,6 @@ private:
     struct InputState;
 
     bool _running = true;
-    bool _grid = true;
     bool _showInspector = true;
     bool _isControllingCamera = false;
     bool _playing = false;
@@ -74,24 +70,22 @@ private:
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
-    rc<GpuTexture> _sceneBuffer;
     rc<GpuTexture> _gameBuffer;
-    box<GpuResourceView> _sceneBufferView;
     box<GpuResourceView> _gameBufferView;
     box<Renderer> _renderer;
     box<RenderCamera> _uiRenderCamera;
-    box<RenderCamera> _sceneRenderCamera;
     box<RenderCamera> _gameRenderCamera;
     box<Scene> _scene;
     string _resourceDir;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
+    unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
+    int _lastCursor = -1;
     DrawImgui _drawImgui;
     Logger _logger;
-    Camera _sceneCamera;
     Camera _gameCamera;
-    box<CameraController> _sceneCameraController;
     box<CameraController> _gameCameraController;
     box<InputState> _inputState;
+    vector<box<shell::Document>> _documents;
     float _lastFrameTime = 0.f;
     float _inspectorWidth = 300.f;
     std::chrono::nanoseconds _lastFrameDuration = {};

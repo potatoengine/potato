@@ -46,6 +46,152 @@
 
 #include <nlohmann/json.hpp>
 
+namespace {
+    class SceneView : public up::shell::Document {
+    public:
+        explicit SceneView(up::GpuDevice& device, up::Scene& scene) : _device(device), _scene(scene), _cameraController(_camera) {
+            _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+        }
+        virtual ~SceneView() = default;
+
+        void render(up::Renderer& renderer, float frameTime) override;
+        void ui() override;
+        void handleEvent(SDL_Event const& ev) override;
+        void tick(float deltaTime) override;
+
+    private:
+        void _drawGrid();
+        void _resize(glm::ivec2 size);
+
+    private:
+        up::GpuDevice& _device;
+        up::Scene& _scene;
+        up::rc<up::GpuTexture> _buffer;
+        up::box<up::GpuResourceView> _bufferView;
+        up::box<up::RenderCamera> _renderCamera;
+        up::Camera _camera;
+        up::ArcBallCameraController _cameraController;
+        glm::vec3 _relMotion{0, 0, 0};
+        glm::vec3 _relMovement{0, 0, 0};
+        bool _enableGrid = true;
+        bool _isControllingCamera = false;
+    };
+}
+
+void SceneView::render(up::Renderer& renderer, float frameTime) {
+    if (_renderCamera == nullptr) {
+        _renderCamera = up::new_box<up::RenderCamera>();
+    }
+
+    if (_buffer != nullptr) {
+        renderer.beginFrame();
+        auto ctx = renderer.context();
+
+        _renderCamera->resetBackBuffer(_buffer);
+        if (_enableGrid) {
+            _drawGrid();
+        }
+        _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
+        _scene.render(ctx);
+        renderer.flushDebugDraw(frameTime);
+        renderer.endFrame(frameTime);
+    }
+}
+
+void SceneView::ui() {
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu(u8"\uf06e View")) {
+            if (ImGui::BeginMenu("Options")) {
+                if (ImGui::MenuItem("Grid")) {
+                    _enableGrid = !_enableGrid;
+                }
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+
+    if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_None)) {
+        auto const contentSize = ImGui::GetContentRegionAvail();
+
+        if (contentSize.x <= 0 || contentSize.y <= 0) {
+            return;
+        }
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+        if (ImGui::BeginChild("SceneContent", contentSize, false)) {
+            glm::vec3 bufferSize = {0, 0, 0};
+            if (_buffer != nullptr) {
+                bufferSize = _buffer->dimensions();
+            }
+            if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
+                _resize({contentSize.x, contentSize.y});
+            }
+
+            auto const pos = ImGui::GetCursorPos();
+            ImGui::Image(_bufferView.get(), contentSize);
+            ImGui::SetCursorPos(pos);
+            ImGui::InvisibleButton("SceneInteract", contentSize);
+            if (ImGui::IsItemActive()) {
+                auto& io = ImGui::GetIO();
+                _relMotion.x = io.MouseDelta.x / io.DisplaySize.x;
+                _relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
+            }
+        }
+        ImGui::EndChild();
+        ImGui::PopStyleVar(1);
+    }
+    ImGui::End();
+}
+
+void SceneView::handleEvent(SDL_Event const& ev) {
+}
+
+void SceneView::tick(float deltaTime) {
+    _cameraController.apply(_camera, _relMovement, _relMotion, deltaTime);
+    _relMovement = {0, 0, 0};
+    _relMotion = {0, 0, 0};
+}
+
+void SceneView::_drawGrid() {
+    auto constexpr guidelines = 10;
+
+    // The real intent here is to keep the grid roughly the same spacing in
+    // pixels on the screen; this doesn't really accomplish that, though.
+    // Improvements welcome.
+    //
+    auto const cameraPos = _camera.position();
+    auto const logDist = std::log2(std::abs(cameraPos.y));
+    auto const spacing = std::max(1, static_cast<int>(logDist) - 3);
+
+    int guideSpacing = guidelines * spacing;
+    float x = static_cast<float>(static_cast<int>(cameraPos.x / guideSpacing) * guideSpacing);
+    float z = static_cast<float>(static_cast<int>(cameraPos.z / guideSpacing) * guideSpacing);
+
+    up::DebugDrawGrid grid;
+    grid.axis2 = {0, 0, 1};
+    grid.offset = {x, 0, z};
+    grid.halfWidth = 1000;
+    grid.spacing = spacing;
+    grid.guidelineSpacing = guidelines;
+    drawDebugGrid(grid);
+}
+
+
+void SceneView::_resize(glm::ivec2 size) {
+    using namespace up;
+    GpuTextureDesc desc;
+    desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
+    desc.type = GpuTextureType::Texture2D;
+    desc.width = size.x;
+    desc.height = size.y;
+    _buffer = _device.createTexture2D(desc, {});
+
+    _bufferView = _device.createShaderResourceView(_buffer.get());
+}
+
 struct up::ShellApp::InputState {
     glm::vec3 relativeMovement = {0, 0, 0};
     glm::vec3 relativeMotion = {0, 0, 0};
@@ -58,7 +204,6 @@ up::ShellApp::~ShellApp() {
 
     _renderer.reset();
     _uiRenderCamera.reset();
-    _sceneRenderCamera.reset();
     _gameRenderCamera.reset();
     _swapChain.reset();
     _window.reset();
@@ -118,7 +263,6 @@ int up::ShellApp::initialize() {
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
-    _sceneRenderCamera = new_box<RenderCamera>();
     _gameRenderCamera = new_box<RenderCamera>();
 
     auto material = _renderer->loadMaterialSync("resources/materials/full.mat");
@@ -154,10 +298,10 @@ int up::ShellApp::initialize() {
     }
     _drawImgui.createResources(*_device);
 
-    _sceneCamera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
     _gameCamera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-    _sceneCameraController = new_box<ArcBallCameraController>(_sceneCamera);
     _gameCameraController = new_box<FlyCameraController>(_gameCamera);
+
+    _documents.push_back(new_box<SceneView>(*_device, *_scene));
 
     return 0;
 }
@@ -195,19 +339,57 @@ void up::ShellApp::_onWindowSizeChanged() {
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
-    _sceneBuffer = nullptr;
 }
 
 void up::ShellApp::_processEvents() {
-    auto& imguiIO = ImGui::GetIO();
+    auto& io = ImGui::GetIO();
 
     _inputState->relativeMotion = {0, 0, 0};
     _inputState->relativeMovement = {0, 0, 0};
 
     bool isMouseBound = _isGameInputBound || _isControllingCamera;
 
-    SDL_CaptureMouse(isMouseBound ? SDL_TRUE : SDL_FALSE);
+    SDL_CaptureMouse((isMouseBound || io.WantCaptureMouse) ? SDL_TRUE : SDL_FALSE);
     SDL_SetRelativeMouseMode(isMouseBound ? SDL_TRUE : SDL_FALSE);
+
+    auto const guiCursor = ImGui::GetMouseCursor();
+    if (guiCursor != _lastCursor && !isMouseBound) {
+        _lastCursor = guiCursor;
+        SDL_ShowCursor(guiCursor != ImGuiMouseCursor_None ? SDL_TRUE : SDL_FALSE);
+        if (guiCursor == ImGuiMouseCursor_Arrow) {
+            SDL_SetCursor(SDL_GetDefaultCursor());
+            _cursor.reset();
+        }
+        else {
+            switch (guiCursor) {
+            case ImGuiMouseCursor_TextInput:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM));
+                break;
+            case ImGuiMouseCursor_ResizeAll:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL));
+                break;
+            case ImGuiMouseCursor_ResizeNS:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS));
+                break;
+            case ImGuiMouseCursor_ResizeEW:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE));
+                break;
+            case ImGuiMouseCursor_ResizeNESW:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW));
+                break;
+            case ImGuiMouseCursor_ResizeNWSE:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE));
+                break;
+            case ImGuiMouseCursor_Hand:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
+                break;
+            default:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO));
+                break;
+            }
+            SDL_SetCursor(_cursor.get());
+        }
+    }
 
     SDL_Event ev;
     while (SDL_PollEvent(&ev) > 0) {
@@ -239,7 +421,7 @@ void up::ShellApp::_processEvents() {
             if (!isMouseBound) {
                 _drawImgui.handleEvent(ev);
             }
-            if (isMouseBound && !imguiIO.WantCaptureMouse) {
+            if (isMouseBound && !io.WantCaptureMouse) {
                 _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
             }
             break;
@@ -248,8 +430,8 @@ void up::ShellApp::_processEvents() {
                 _drawImgui.handleEvent(ev);
             }
             if (isMouseBound) {
-                _inputState->relativeMotion.x = ev.motion.xrel / imguiIO.DisplaySize.x;
-                _inputState->relativeMotion.y = ev.motion.yrel / imguiIO.DisplaySize.y;
+                _inputState->relativeMotion.x = ev.motion.xrel / io.DisplaySize.x;
+                _inputState->relativeMotion.y = ev.motion.yrel / io.DisplaySize.y;
             }
             break;
         case SDL_MOUSEBUTTONUP:
@@ -274,8 +456,9 @@ void up::ShellApp::_tick() {
     if (_playing && _isGameInputBound) {
         _gameCameraController->apply(_gameCamera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
     }
-    else {
-        _sceneCameraController->apply(_sceneCamera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
+
+    for (auto const& doc : _documents) {
+        doc->tick(_lastFrameTime);
     }
 
     if (_playing) {
@@ -293,18 +476,8 @@ void up::ShellApp::_render() {
     viewport.width = static_cast<float>(width);
     viewport.height = static_cast<float>(height);
 
-    if (_sceneBuffer != nullptr) {
-        _renderer->beginFrame();
-        auto ctx = _renderer->context();
-
-        _sceneRenderCamera->resetBackBuffer(_sceneBuffer);
-        if (_grid) {
-            _drawGrid();
-        }
-        _sceneRenderCamera->beginFrame(ctx, _sceneCamera.position(), _sceneCamera.matrix());
-        _scene->render(ctx);
-        _renderer->flushDebugDraw(_lastFrameTime);
-        _renderer->endFrame(_lastFrameTime);
+    for (auto const& doc : _documents) {
+        doc->render(*_renderer, _lastFrameTime);
     }
 
     if (_gameBuffer != nullptr) {
@@ -323,7 +496,7 @@ void up::ShellApp::_render() {
         auto ctx = _renderer->context();
 
         _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
-        _uiRenderCamera->beginFrame(ctx, _sceneCamera.position(), _sceneCamera.matrix());
+        _uiRenderCamera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
         _drawImgui.endFrame(*_device, _renderer->commandList());
         _renderer->endFrame(_lastFrameTime);
     }
@@ -391,12 +564,8 @@ void up::ShellApp::_displayMainMenu() {
 
         if (ImGui::BeginMenu(u8"\uf06e View")) {
             if (ImGui::BeginMenu("Options")) {
-                if (ImGui::MenuItem("Grid")) {
-                    _grid = !_grid;
-                }
                 ImGui::EndMenu();
             }
-
             ImGui::EndMenu();
         }
 
@@ -404,7 +573,6 @@ void up::ShellApp::_displayMainMenu() {
 
             if (ImGui::MenuItem("Inspector")) {
                 _showInspector = !_showInspector;
-                _sceneBuffer = nullptr;
             }
 
             ImGui::EndMenu();
@@ -450,12 +618,10 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
 
         ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_AutoHideTabBar);
 
-        if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_None)) {
-            auto const contentSize = ImGui::GetContentRegionAvail();
-
-            _displayScene({contentSize.x, contentSize.y});
+        
+        for (auto const& doc : _documents) {
+            doc->ui();
         }
-        ImGui::End();
 
         if (ImGui::Begin(u8"\uf085 Inspector")) {
             _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
@@ -494,35 +660,6 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::PopStyleVar(1);
 }
 
-void up::ShellApp::_displayScene(glm::vec2 contentSize) {
-    auto const sceneSize = ImVec2(contentSize.x, contentSize.y);
-
-    if (contentSize.x <= 0 || contentSize.y <= 0) {
-        return;
-    }
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    if (ImGui::BeginChild("SceneContent", sceneSize, false)) {
-        glm::vec3 bufferSize = {0, 0, 0};
-        if (_sceneBuffer != nullptr) {
-            bufferSize = _sceneBuffer->dimensions();
-        }
-        if (bufferSize.x != sceneSize.x || bufferSize.y != sceneSize.y) {
-            _resizeSceneView({sceneSize.x, sceneSize.y});
-        }
-
-        auto const pos = ImGui::GetCursorPos();
-        ImGui::Image(_sceneBufferView.get(), sceneSize);
-        ImGui::SetCursorPos(pos);
-        ImGui::InvisibleButton("SceneInteract", sceneSize);
-        if (ImGui::IsItemActive()) {
-            _isControllingCamera = true;
-        }
-    }
-    ImGui::EndChild();
-    ImGui::PopStyleVar(1);
-}
-
 void up::ShellApp::_displayGame(glm::vec2 contentSize) {
     glm::vec3 bufferSize = {0, 0, 0};
 
@@ -540,41 +677,6 @@ void up::ShellApp::_displayGame(glm::vec2 contentSize) {
     if (ImGui::IsItemActive() && _playing) {
         _isGameInputBound = true;
     }
-}
-
-void up::ShellApp::_drawGrid() {
-    auto constexpr guidelines = 10;
-
-    // The real intent here is to keep the grid roughly the same spacing in
-    // pixels on the screen; this doesn't really accomplish that, though.
-    // Improvements welcome.
-    //
-    auto const cameraPos = _sceneCamera.position();
-    auto const logDist = std::log2(std::abs(cameraPos.y));
-    auto const spacing = std::max(1, static_cast<int>(logDist) - 3);
-
-    int guideSpacing = guidelines * spacing;
-    float x = static_cast<float>(static_cast<int>(cameraPos.x / guideSpacing) * guideSpacing);
-    float z = static_cast<float>(static_cast<int>(cameraPos.z / guideSpacing) * guideSpacing);
-
-    DebugDrawGrid grid;
-    grid.axis2 = {0, 0, 1};
-    grid.offset = {x, 0, z};
-    grid.halfWidth = 1000;
-    grid.spacing = spacing;
-    grid.guidelineSpacing = guidelines;
-    drawDebugGrid(grid);
-}
-
-void up::ShellApp::_resizeSceneView(glm::ivec2 size) {
-    GpuTextureDesc desc;
-    desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
-    desc.type = GpuTextureType::Texture2D;
-    desc.width = size.x;
-    desc.height = size.y;
-    _sceneBuffer = _device->createTexture2D(desc, {});
-
-    _sceneBufferView = _device->createShaderResourceView(_sceneBuffer.get());
 }
 
 void up::ShellApp::_resizeGameView(glm::ivec2 size) {

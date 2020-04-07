@@ -28,5 +28,6 @@ if(WIN32)
     include(up_copy_library_import)
     up_copy_library_import(SDL2::SDL2 potato_shell)
 
+    add_subdirectory(public/potato/shell)
     add_subdirectory(private)
 endif()

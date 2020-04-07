@@ -16,7 +16,7 @@ namespace up {
 
     class FlyCameraController : public CameraController {
     public:
-        FlyCameraController(Camera const& camera) noexcept;
+        explicit FlyCameraController(Camera const& camera) noexcept;
         void apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept override;
 
     private:
@@ -29,7 +29,7 @@ namespace up {
 
     class ArcBallCameraController : public CameraController {
     public:
-        ArcBallCameraController(Camera const& camera) noexcept;
+        explicit ArcBallCameraController(Camera const& camera) noexcept;
         void apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept override;
 
     private:
