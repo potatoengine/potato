@@ -61,7 +61,6 @@ private:
 
     bool _running = true;
     bool _showInspector = true;
-    bool _isGameInputBound = false;
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;

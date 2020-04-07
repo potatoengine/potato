@@ -100,8 +100,7 @@ namespace {
         up::box<up::RenderCamera> _renderCamera;
         up::Camera _camera;
         up::FlyCameraController _cameraController;
-        glm::vec3 _relMotion{0, 0, 0};
-        glm::vec3 _relMovement{0, 0, 0};
+        bool _isInputBound = false;
     };
 }
 
@@ -237,6 +236,9 @@ void GameView::render(up::Renderer& renderer, float frameTime) {
 }
 
 void GameView::ui() {
+    SDL_CaptureMouse(_isInputBound ? SDL_TRUE : SDL_FALSE);
+    SDL_SetRelativeMouseMode(_isInputBound ? SDL_TRUE : SDL_FALSE);
+
     if (ImGui::Begin("GameView", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
         auto const contentSize = ImGui::GetContentRegionAvail();
 
@@ -259,9 +261,7 @@ void GameView::ui() {
             ImGui::SetCursorPos(pos);
             ImGui::InvisibleButton("GameContent", contentSize);
             if (ImGui::IsItemActive() && _scene.playing()) {
-                auto& io = ImGui::GetIO();
-                _relMotion.x = io.MouseDelta.x / io.DisplaySize.x;
-                _relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
+                _isInputBound = true;
             }
         }
         ImGui::EndChild();
@@ -271,12 +271,29 @@ void GameView::ui() {
 }
 
 void GameView::handleEvent(SDL_Event const& ev) {
+    if (ev.key.keysym.scancode == SDL_SCANCODE_ESCAPE && 0 != (ev.key.keysym.mod & KMOD_SHIFT)) {
+        _isInputBound = false;
+    }
 }
 
 void GameView::tick(float deltaTime) {
-    _cameraController.apply(_camera, _relMovement, _relMotion, deltaTime);
-    _relMovement = {0, 0, 0};
-    _relMotion = {0, 0, 0};
+    _isInputBound = _isInputBound && _scene.playing();
+
+    if (_isInputBound) {
+        glm::vec3 relMotion = {0, 0, 0}, relMove = {0, 0, 0};
+
+        auto& io = ImGui::GetIO();
+        relMotion.x = io.MouseDelta.x / io.DisplaySize.x;
+        relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
+        relMotion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
+
+        auto keys = SDL_GetKeyboardState(nullptr);
+        relMove= {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
+                        static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
+                        static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
+
+        _cameraController.apply(_camera, relMove, relMotion, deltaTime);
+    }
 }
 
 void GameView::_resize(glm::ivec2 size) {
@@ -294,6 +311,8 @@ void GameView::_resize(glm::ivec2 size) {
 up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell") {}
 
 up::ShellApp::~ShellApp() {
+    _documents.clear();
+
     _drawImgui.releaseResources();
 
     _renderer.reset();
@@ -433,11 +452,10 @@ void up::ShellApp::_onWindowSizeChanged() {
 void up::ShellApp::_processEvents() {
     auto& io = ImGui::GetIO();
 
-    SDL_CaptureMouse((_isGameInputBound || io.WantCaptureMouse) ? SDL_TRUE : SDL_FALSE);
-    SDL_SetRelativeMouseMode(_isGameInputBound ? SDL_TRUE : SDL_FALSE);
+    SDL_CaptureMouse(io.WantCaptureMouse ? SDL_TRUE : SDL_FALSE);
 
     auto const guiCursor = ImGui::GetMouseCursor();
-    if (guiCursor != _lastCursor && !_isGameInputBound) {
+    if (guiCursor != _lastCursor) {
         _lastCursor = guiCursor;
         SDL_ShowCursor(guiCursor != ImGuiMouseCursor_None ? SDL_TRUE : SDL_FALSE);
         if (guiCursor == ImGuiMouseCursor_Arrow) {
@@ -495,24 +513,13 @@ void up::ShellApp::_processEvents() {
             _drawImgui.handleEvent(ev);
             if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
                 _scene->playing(!_scene->playing());
-                _isGameInputBound = _isGameInputBound && _scene->playing();
-            }
-            else if (ev.key.keysym.scancode == SDL_SCANCODE_ESCAPE && 0 != (ev.key.keysym.mod & KMOD_SHIFT)) {
-                _isGameInputBound = false;
             }
             break;
         case SDL_MOUSEWHEEL:
-            if (!_isGameInputBound) {
-                _drawImgui.handleEvent(ev);
-            }
-            if (_isGameInputBound && !io.WantCaptureMouse) {
-                //_inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
-            }
+            _drawImgui.handleEvent(ev);
             break;
         case SDL_MOUSEMOTION:
-            if (!_isGameInputBound) {
-                _drawImgui.handleEvent(ev);
-            }
+            _drawImgui.handleEvent(ev);
             break;
         case SDL_MOUSEBUTTONUP:
             _drawImgui.handleEvent(ev);
@@ -521,13 +528,10 @@ void up::ShellApp::_processEvents() {
             _drawImgui.handleEvent(ev);
             break;
         }
-    }
 
-    if (_isGameInputBound) {
-        //auto keys = SDL_GetKeyboardState(nullptr);
-        //_inputState->relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
-        //                                 static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
-        //                                 static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
+        for (auto const& doc : _documents) {
+            doc->handleEvent(ev);
+        }
     }
 }
 
