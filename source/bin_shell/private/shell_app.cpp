@@ -56,7 +56,7 @@ namespace {
 
         void render(up::Renderer& renderer, float frameTime) override;
         void ui() override;
-        void handleEvent(SDL_Event const& ev) override;
+        bool handleEvent(SDL_Event const& ev) override;
         void tick(float deltaTime) override;
 
     private:
@@ -86,7 +86,7 @@ namespace {
 
         void render(up::Renderer& renderer, float frameTime) override;
         void ui() override;
-        void handleEvent(SDL_Event const& ev) override;
+        bool handleEvent(SDL_Event const& ev) override;
         void tick(float deltaTime) override;
 
     private:
@@ -162,8 +162,8 @@ void SceneView::ui() {
             ImGui::InvisibleButton("SceneInteract", contentSize);
             if (ImGui::IsItemActive()) {
                 auto& io = ImGui::GetIO();
-                _relMotion.x = io.MouseDelta.x / io.DisplaySize.x;
-                _relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
+                _relMotion.x = io.MouseDelta.x / contentSize.x;
+                _relMotion.y = io.MouseDelta.y / contentSize.y;
             }
         }
         ImGui::EndChild();
@@ -172,7 +172,8 @@ void SceneView::ui() {
     ImGui::End();
 }
 
-void SceneView::handleEvent(SDL_Event const& ev) {
+bool SceneView::handleEvent(SDL_Event const& ev) {
+    return false;
 }
 
 void SceneView::tick(float deltaTime) {
@@ -239,6 +240,15 @@ void GameView::ui() {
     SDL_CaptureMouse(_isInputBound ? SDL_TRUE : SDL_FALSE);
     SDL_SetRelativeMouseMode(_isInputBound ? SDL_TRUE : SDL_FALSE);
 
+    auto const contentId = ImGui::GetID("GameContentView");
+    auto const* const ctx = ImGui::GetCurrentContext();
+    if (_isInputBound) {
+        ImGui::SetActiveID(contentId, ctx->CurrentWindow);
+    }
+    else if (ctx->ActiveId == contentId) {
+        ImGui::ClearActiveID();
+    }
+
     if (ImGui::Begin("GameView", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
         auto const contentSize = ImGui::GetContentRegionAvail();
 
@@ -270,10 +280,26 @@ void GameView::ui() {
     ImGui::End();
 }
 
-void GameView::handleEvent(SDL_Event const& ev) {
-    if (ev.key.keysym.scancode == SDL_SCANCODE_ESCAPE && 0 != (ev.key.keysym.mod & KMOD_SHIFT)) {
-        _isInputBound = false;
+bool GameView::handleEvent(SDL_Event const& ev) {
+    if (_isInputBound) {
+        switch (ev.type) {
+        case SDL_KEYDOWN:
+            if (ev.key.keysym.scancode == SDL_SCANCODE_ESCAPE && 0 != (ev.key.keysym.mod & KMOD_SHIFT)) {
+                _isInputBound = false;
+            }
+            return true;
+        }
     }
+
+    switch (ev.type) {
+    case SDL_KEYDOWN:
+        if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
+            _scene.playing(!_scene.playing());
+            return true;
+        }
+        break;
+    }
+    return false;
 }
 
 void GameView::tick(float deltaTime) {
@@ -495,6 +521,8 @@ void up::ShellApp::_processEvents() {
 
     SDL_Event ev;
     while (SDL_PollEvent(&ev) > 0) {
+        // core events that cannot be interrupted by documents
+        //
         switch (ev.type) {
         case SDL_QUIT:
             return;
@@ -508,29 +536,35 @@ void up::ShellApp::_processEvents() {
                 _onWindowSizeChanged();
                 break;
             }
-            break;
-        case SDL_KEYDOWN:
-            _drawImgui.handleEvent(ev);
-            if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
-                _scene->playing(!_scene->playing());
+            case SDL_MOUSEBUTTONUP:
+            case SDL_MOUSEMOTION:
+                _drawImgui.handleEvent(ev);
+                break;
+        }
+
+        // see if any document is handling the input
+        //
+        bool handled = false;
+
+        for (auto const& doc : _documents) {
+            if (doc->handleEvent(ev)) {
+                handled = true;
+                break;
             }
-            break;
+        }
+
+        if (handled) {
+            continue;
+        }
+
+        // input events that can be routed to imgui otherwise
+        //
+        switch (ev.type) {
+        case SDL_KEYDOWN:
         case SDL_MOUSEWHEEL:
-            _drawImgui.handleEvent(ev);
-            break;
-        case SDL_MOUSEMOTION:
-            _drawImgui.handleEvent(ev);
-            break;
-        case SDL_MOUSEBUTTONUP:
-            _drawImgui.handleEvent(ev);
-            break;
         default:
             _drawImgui.handleEvent(ev);
             break;
-        }
-
-        for (auto const& doc : _documents) {
-            doc->handleEvent(ev);
         }
     }
 }
