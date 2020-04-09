@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2018-2020 Sean Middleditch, all rights reserverd.
 
 #include "shell_app.h"
 #include "camera.h"
@@ -46,43 +46,17 @@
 
 #include <nlohmann/json.hpp>
 
+namespace up::shell {
+    extern auto createScenePanel(GpuDevice& device, Scene& scene) -> box<Panel>;
+}
+
 namespace {
-    class SceneView : public up::shell::Document {
+    class GamePanel : public up::shell::Panel {
     public:
-        explicit SceneView(up::GpuDevice& device, up::Scene& scene) : _device(device), _scene(scene), _cameraController(_camera) {
+        explicit GamePanel(up::GpuDevice& device, up::Scene& scene) : _device(device), _scene(scene), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
-        virtual ~SceneView() = default;
-
-        void render(up::Renderer& renderer, float frameTime) override;
-        void ui() override;
-        bool handleEvent(SDL_Event const& ev) override;
-        void tick(float deltaTime) override;
-
-    private:
-        void _drawGrid();
-        void _resize(glm::ivec2 size);
-
-    private:
-        up::GpuDevice& _device;
-        up::Scene& _scene;
-        up::rc<up::GpuTexture> _buffer;
-        up::box<up::GpuResourceView> _bufferView;
-        up::box<up::RenderCamera> _renderCamera;
-        up::Camera _camera;
-        up::ArcBallCameraController _cameraController;
-        glm::vec3 _relMotion{0, 0, 0};
-        glm::vec3 _relMovement{0, 0, 0};
-        bool _enableGrid = true;
-        bool _isControllingCamera = false;
-    };
-
-    class GameView : public up::shell::Document {
-    public:
-        explicit GameView(up::GpuDevice& device, up::Scene& scene) : _device(device), _scene(scene), _cameraController(_camera) {
-            _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-        }
-        virtual ~GameView() = default;
+        virtual ~GamePanel() = default;
 
         void render(up::Renderer& renderer, float frameTime) override;
         void ui() override;
@@ -104,122 +78,7 @@ namespace {
     };
 }
 
-void SceneView::render(up::Renderer& renderer, float frameTime) {
-    if (_renderCamera == nullptr) {
-        _renderCamera = up::new_box<up::RenderCamera>();
-    }
-
-    if (_buffer != nullptr) {
-        renderer.beginFrame();
-        auto ctx = renderer.context();
-
-        _renderCamera->resetBackBuffer(_buffer);
-        if (_enableGrid) {
-            _drawGrid();
-        }
-        _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-        _scene.render(ctx);
-        renderer.flushDebugDraw(frameTime);
-        renderer.endFrame(frameTime);
-    }
-}
-
-void SceneView::ui() {
-    if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu(u8"\uf06e View")) {
-            if (ImGui::BeginMenu("Options")) {
-                if (ImGui::MenuItem("Grid")) {
-                    _enableGrid = !_enableGrid;
-                }
-                ImGui::EndMenu();
-            }
-
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
-    }
-
-    if (ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_None)) {
-        auto const contentSize = ImGui::GetContentRegionAvail();
-
-        if (contentSize.x <= 0 || contentSize.y <= 0) {
-            return;
-        }
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-        if (ImGui::BeginChild("SceneContent", contentSize, false)) {
-            glm::vec3 bufferSize = {0, 0, 0};
-            if (_buffer != nullptr) {
-                bufferSize = _buffer->dimensions();
-            }
-            if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
-                _resize({contentSize.x, contentSize.y});
-            }
-
-            auto const pos = ImGui::GetCursorPos();
-            ImGui::Image(_bufferView.get(), contentSize);
-            ImGui::SetCursorPos(pos);
-            ImGui::InvisibleButton("SceneInteract", contentSize);
-            if (ImGui::IsItemActive()) {
-                auto& io = ImGui::GetIO();
-                _relMotion.x = io.MouseDelta.x / contentSize.x;
-                _relMotion.y = io.MouseDelta.y / contentSize.y;
-            }
-        }
-        ImGui::EndChild();
-        ImGui::PopStyleVar(1);
-    }
-    ImGui::End();
-}
-
-bool SceneView::handleEvent(SDL_Event const& ev) {
-    return false;
-}
-
-void SceneView::tick(float deltaTime) {
-    _cameraController.apply(_camera, _relMovement, _relMotion, deltaTime);
-    _relMovement = {0, 0, 0};
-    _relMotion = {0, 0, 0};
-}
-
-void SceneView::_drawGrid() {
-    auto constexpr guidelines = 10;
-
-    // The real intent here is to keep the grid roughly the same spacing in
-    // pixels on the screen; this doesn't really accomplish that, though.
-    // Improvements welcome.
-    //
-    auto const cameraPos = _camera.position();
-    auto const logDist = std::log2(std::abs(cameraPos.y));
-    auto const spacing = std::max(1, static_cast<int>(logDist) - 3);
-
-    int guideSpacing = guidelines * spacing;
-    float x = static_cast<float>(static_cast<int>(cameraPos.x / guideSpacing) * guideSpacing);
-    float z = static_cast<float>(static_cast<int>(cameraPos.z / guideSpacing) * guideSpacing);
-
-    up::DebugDrawGrid grid;
-    grid.axis2 = {0, 0, 1};
-    grid.offset = {x, 0, z};
-    grid.halfWidth = 1000;
-    grid.spacing = spacing;
-    grid.guidelineSpacing = guidelines;
-    drawDebugGrid(grid);
-}
-
-
-void SceneView::_resize(glm::ivec2 size) {
-    using namespace up;
-    GpuTextureDesc desc;
-    desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
-    desc.type = GpuTextureType::Texture2D;
-    desc.width = size.x;
-    desc.height = size.y;
-    _buffer = _device.createTexture2D(desc, {});
-
-    _bufferView = _device.createShaderResourceView(_buffer.get());
-}
-
-void GameView::render(up::Renderer& renderer, float frameTime) {
+void GamePanel::render(up::Renderer& renderer, float frameTime) {
     if (_renderCamera == nullptr) {
         _renderCamera = up::new_box<up::RenderCamera>();
     }
@@ -236,7 +95,7 @@ void GameView::render(up::Renderer& renderer, float frameTime) {
     }
 }
 
-void GameView::ui() {
+void GamePanel::ui() {
     SDL_CaptureMouse(_isInputBound ? SDL_TRUE : SDL_FALSE);
     SDL_SetRelativeMouseMode(_isInputBound ? SDL_TRUE : SDL_FALSE);
 
@@ -249,7 +108,7 @@ void GameView::ui() {
         ImGui::ClearActiveID();
     }
 
-    if (ImGui::Begin("GameView", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+    if (ImGui::Begin("GamePanel", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
         auto const contentSize = ImGui::GetContentRegionAvail();
 
         if (contentSize.x <= 0 || contentSize.y <= 0) {
@@ -280,7 +139,7 @@ void GameView::ui() {
     ImGui::End();
 }
 
-bool GameView::handleEvent(SDL_Event const& ev) {
+bool GamePanel::handleEvent(SDL_Event const& ev) {
     if (_isInputBound) {
         switch (ev.type) {
         case SDL_KEYDOWN:
@@ -302,7 +161,7 @@ bool GameView::handleEvent(SDL_Event const& ev) {
     return false;
 }
 
-void GameView::tick(float deltaTime) {
+void GamePanel::tick(float deltaTime) {
     _isInputBound = _isInputBound && _scene.playing();
 
     if (_isInputBound) {
@@ -322,7 +181,7 @@ void GameView::tick(float deltaTime) {
     }
 }
 
-void GameView::_resize(glm::ivec2 size) {
+void GamePanel::_resize(glm::ivec2 size) {
     using namespace up;
     GpuTextureDesc desc;
     desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
@@ -434,8 +293,8 @@ int up::ShellApp::initialize() {
     }
     _drawImgui.createResources(*_device);
 
-    _documents.push_back(new_box<SceneView>(*_device, *_scene));
-    _documents.push_back(new_box<GameView>(*_device, *_scene));
+    _documents.push_back(shell::createScenePanel(*_device, *_scene));
+    _documents.push_back(new_box<GamePanel>(*_device, *_scene));
 
     return 0;
 }
@@ -708,8 +567,8 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             auto const paneDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Left, 0.25f, nullptr, &contentDockId);
 
             ImGui::DockBuilderDockWindow(u8"\uf085 Inspector", paneDockId);
-            ImGui::DockBuilderDockWindow("SceneView", contentDockId);
-            ImGui::DockBuilderDockWindow("GameView", contentDockId);
+            ImGui::DockBuilderDockWindow("ScenePanel", contentDockId);
+            ImGui::DockBuilderDockWindow("GamePanel", contentDockId);
 
             ImGui::DockBuilderFinish(dockId);
         }

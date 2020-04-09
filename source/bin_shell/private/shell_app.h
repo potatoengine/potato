@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2018-2020 Sean Middleditch, all rights reserverd.
 
 #include "potato/spud/box.h"
 #include "potato/spud/unique_resource.h"
@@ -6,7 +6,7 @@
 #include "potato/render/draw_imgui.h"
 #include "potato/runtime/logger.h"
 #include "camera.h"
-#include "potato/shell/document.h"
+#include "potato/shell/panel.h"
 
 #include <SDL.h>
 #include <chrono>
@@ -57,8 +57,6 @@ private:
     bool _loadConfig(zstring_view path);
 
 private:
-    struct InputState;
-
     bool _running = true;
     bool _showInspector = true;
     NativeFileSystem _fileSystem;
@@ -73,7 +71,7 @@ private:
     int _lastCursor = -1;
     DrawImgui _drawImgui;
     Logger _logger;
-    vector<box<shell::Document>> _documents;
+    vector<box<shell::Panel>> _documents;
     float _lastFrameTime = 0.f;
     float _inspectorWidth = 300.f;
     std::chrono::nanoseconds _lastFrameDuration = {};

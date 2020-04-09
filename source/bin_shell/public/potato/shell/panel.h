@@ -7,13 +7,13 @@ namespace up {
 }
 
 namespace up::shell {
-    class Document {
+    class Panel {
     public:
-        Document() = default;
-        virtual ~Document() = default;
+        Panel() = default;
+        virtual ~Panel() = default;
 
-        Document(Document const&) = delete;
-        Document& operator=(Document const&) = delete;
+        Panel(Panel const&) = delete;
+        Panel& operator=(Panel const&) = delete;
 
         virtual void render(Renderer& renderer, float frameTime) = 0;
         virtual void ui() = 0;
