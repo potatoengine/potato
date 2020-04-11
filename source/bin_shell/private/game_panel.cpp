@@ -17,6 +17,7 @@
 #include "potato/render/camera.h"
 #include "potato/render/debug_draw.h"
 #include "potato/render/context.h"
+#include "potato/render/draw_imgui.h"
 
 namespace up::shell {
     class GamePanel : public Panel {
@@ -28,7 +29,6 @@ namespace up::shell {
 
         void render(Renderer& renderer, float frameTime) override;
         void ui() override;
-        bool handleEvent(SDL_Event const& ev) override;
         void tick(float deltaTime) override;
 
     private:
@@ -67,16 +67,25 @@ namespace up::shell {
     }
 
     void GamePanel::ui() {
-        SDL_CaptureMouse(_isInputBound ? SDL_TRUE : SDL_FALSE);
-        SDL_SetRelativeMouseMode(_isInputBound ? SDL_TRUE : SDL_FALSE);
-
         auto const contentId = ImGui::GetID("GameContentView");
         auto const* const ctx = ImGui::GetCurrentContext();
+        auto const& io = ImGui::GetIO();
         if (_isInputBound) {
             ImGui::SetActiveID(contentId, ctx->CurrentWindow);
+            ImGui::SetCaptureRelativeMouseMode(true);
+
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE) && io.KeyShift) {
+                _isInputBound = false;
+            }
         }
-        else if (ctx->ActiveId == contentId) {
-            ImGui::ClearActiveID();
+        else {
+            if (ctx->ActiveId == contentId) {
+                ImGui::ClearActiveID();
+            }
+
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_F5, false)) {
+                _scene.playing(!_scene.playing());
+            }
         }
 
         if (ImGui::Begin("GamePanel", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
@@ -108,28 +117,6 @@ namespace up::shell {
             ImGui::PopStyleVar(1);
         }
         ImGui::End();
-    }
-
-    bool GamePanel::handleEvent(SDL_Event const& ev) {
-        if (_isInputBound) {
-            switch (ev.type) {
-            case SDL_KEYDOWN:
-                if (ev.key.keysym.scancode == SDL_SCANCODE_ESCAPE && 0 != (ev.key.keysym.mod & KMOD_SHIFT)) {
-                    _isInputBound = false;
-                }
-                return true;
-            }
-        }
-
-        switch (ev.type) {
-        case SDL_KEYDOWN:
-            if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
-                _scene.playing(!_scene.playing());
-                return true;
-            }
-            break;
-        }
-        return false;
     }
 
     void GamePanel::tick(float deltaTime) {

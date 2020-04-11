@@ -45,6 +45,9 @@ namespace up {
         UP_RENDER_API void beginFrame();
         UP_RENDER_API void endFrame(GpuDevice& device, GpuCommandList& commandList);
 
+        void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
+        auto isCaptureRelativeMouseMode() noexcept -> bool { return _captureRelativeMouseMode; }
+
     private:
         void _ensureContext();
         static void _freeContext(ImGuiContext* ctx);
@@ -61,5 +64,11 @@ namespace up {
         rc<Shader> _vertShader;
         rc<Shader> _pixelShader;
         string _clipboardTextData;
+        bool _captureRelativeMouseMode = false;
     };
 } // namespace up
+
+namespace ImGui {
+    UP_RENDER_API void SetCaptureRelativeMouseMode(bool captured);
+    UP_RENDER_API auto IsCaptureRelativeMouseMode() -> bool;
+}

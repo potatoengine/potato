@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <imgui.h>
+#include <SDL.h>
 
 #include "scene.h"
 #include "camera.h"
@@ -15,6 +16,7 @@
 #include "potato/render/camera.h"
 #include "potato/render/debug_draw.h"
 #include "potato/render/context.h"
+#include "potato/render/draw_imgui.h"
 
 namespace up::shell {
     class ScenePanel : public shell::Panel {
@@ -26,8 +28,7 @@ namespace up::shell {
 
         void render(Renderer& renderer, float frameTime) override;
         void ui() override;
-        bool handleEvent(SDL_Event const& ev) override;
-        void tick(float deltaTime) override;
+        void tick(float deltaTime) override {}
 
     private:
         void _drawGrid();
@@ -41,8 +42,6 @@ namespace up::shell {
         box<RenderCamera> _renderCamera;
         Camera _camera;
         ArcBallCameraController _cameraController;
-        glm::vec3 _relMotion{0, 0, 0};
-        glm::vec3 _relMovement{0, 0, 0};
         bool _enableGrid = true;
         bool _isControllingCamera = false;
     };
@@ -72,6 +71,8 @@ namespace up::shell {
     }
 
     void ScenePanel::ui() {
+        auto& io = ImGui::GetIO();
+
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu(u8"\uf06e View")) {
                 if (ImGui::BeginMenu("Options")) {
@@ -103,30 +104,27 @@ namespace up::shell {
                     _resize({contentSize.x, contentSize.y});
                 }
 
+                glm::vec3 movement = {0, 0, 0}, motion = {0, 0, 0};
+
                 auto const pos = ImGui::GetCursorPos();
                 ImGui::Image(_bufferView.get(), contentSize);
                 ImGui::SetCursorPos(pos);
                 ImGui::InvisibleButton("SceneInteract", contentSize);
                 if (ImGui::IsItemActive()) {
-                    auto& io = ImGui::GetIO();
-                    _relMotion.x = io.MouseDelta.x / contentSize.x;
-                    _relMotion.y = io.MouseDelta.y / contentSize.y;
+                    motion.x = io.MouseDelta.x / contentSize.x;
+                    motion.y = io.MouseDelta.y / contentSize.y;
+                    ImGui::SetCaptureRelativeMouseMode(true);
                 }
+                if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered()) {
+                    motion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
+                }
+
+                _cameraController.apply(_camera, movement, motion, io.DeltaTime);
             }
             ImGui::EndChild();
             ImGui::PopStyleVar(1);
         }
         ImGui::End();
-    }
-
-    bool ScenePanel::handleEvent(SDL_Event const& ev) {
-        return false;
-    }
-
-    void ScenePanel::tick(float deltaTime) {
-        _cameraController.apply(_camera, _relMovement, _relMotion, deltaTime);
-        _relMovement = {0, 0, 0};
-        _relMotion = {0, 0, 0};
     }
 
     void ScenePanel::_drawGrid() {
@@ -164,4 +162,4 @@ namespace up::shell {
 
         _bufferView = _device.createShaderResourceView(_buffer.get());
     }
-} // namespace up
+} // namespace up::shell

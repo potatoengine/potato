@@ -195,7 +195,8 @@ void up::ShellApp::_onWindowSizeChanged() {
 void up::ShellApp::_processEvents() {
     auto& io = ImGui::GetIO();
 
-    SDL_CaptureMouse(io.WantCaptureMouse ? SDL_TRUE : SDL_FALSE);
+    SDL_SetRelativeMouseMode(ImGui::IsCaptureRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
+    SDL_CaptureMouse(io.WantCaptureMouse || ImGui::IsCaptureRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
 
     auto const guiCursor = ImGui::GetMouseCursor();
     if (guiCursor != _lastCursor) {
@@ -237,46 +238,22 @@ void up::ShellApp::_processEvents() {
     }
 
     SDL_Event ev;
-    while (SDL_PollEvent(&ev) > 0) {
+    while (_running && SDL_PollEvent(&ev) > 0) {
         // core events that cannot be interrupted by documents
         //
         switch (ev.type) {
         case SDL_QUIT:
-            return;
+            quit();
+            break;
+        case SDL_WINDOWEVENT_CLOSE:
+            _onWindowClosed();
+            break;
+        case SDL_WINDOWEVENT_SIZE_CHANGED:
+            _onWindowSizeChanged();
+            break;
         case SDL_WINDOWEVENT:
-            _drawImgui.handleEvent(ev);
-            switch (ev.window.event) {
-            case SDL_WINDOWEVENT_CLOSE:
-                _onWindowClosed();
-                break;
-            case SDL_WINDOWEVENT_SIZE_CHANGED:
-                _onWindowSizeChanged();
-                break;
-            }
-            case SDL_MOUSEBUTTONUP:
-            case SDL_MOUSEMOTION:
-                _drawImgui.handleEvent(ev);
-                break;
-        }
-
-        // see if any document is handling the input
-        //
-        bool handled = false;
-
-        for (auto const& doc : _documents) {
-            if (doc->handleEvent(ev)) {
-                handled = true;
-                break;
-            }
-        }
-
-        if (handled) {
-            continue;
-        }
-
-        // input events that can be routed to imgui otherwise
-        //
-        switch (ev.type) {
+        case SDL_MOUSEBUTTONUP:
+        case SDL_MOUSEMOTION:
         case SDL_KEYDOWN:
         case SDL_MOUSEWHEEL:
         default:

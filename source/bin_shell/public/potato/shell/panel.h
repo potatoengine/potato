@@ -18,6 +18,5 @@ namespace up::shell {
         virtual void render(Renderer& renderer, float frameTime) = 0;
         virtual void ui() = 0;
         virtual void tick(float deltaTime) = 0;
-        virtual auto handleEvent(SDL_Event const& ev) -> bool = 0;
     };
 }

@@ -105,6 +105,7 @@ void up::DrawImgui::beginFrame() {
 
     ImGui::SetCurrentContext(_context.get());
     ImGui::NewFrame();
+    _captureRelativeMouseMode = false;
 }
 
 bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
@@ -285,6 +286,7 @@ void up::DrawImgui::_ensureContext() {
     io.Fonts->AddFontDefault();
 
     io.BackendPlatformName = "potato";
+    io.UserData = this;
     io.IniFilename = nullptr;
 
     io.ConfigFlags = ImGuiConfigFlags_DockingEnable;
@@ -320,4 +322,18 @@ void up::DrawImgui::_freeContext(ImGuiContext* ctx) {
     if (ctx != nullptr) {
         ImGui::DestroyContext(ctx);
     }
+}
+
+void ImGui::SetCaptureRelativeMouseMode(bool captured) {
+    auto& io = ImGui::GetIO();
+    auto* const state = static_cast<up::DrawImgui*>(io.UserData);
+    if (state != nullptr) {
+        state->setCaptureRelativeMouseMode(captured);
+    }
+
+}
+auto ImGui::IsCaptureRelativeMouseMode() -> bool {
+    auto& io = ImGui::GetIO();
+    auto* const state = static_cast<up::DrawImgui*>(io.UserData);
+    return state != nullptr ? state->isCaptureRelativeMouseMode() : false;
 }
