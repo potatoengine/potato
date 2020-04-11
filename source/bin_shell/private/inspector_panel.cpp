@@ -24,6 +24,7 @@ namespace up::shell {
         explicit InspectorPanel(Scene& scene) : _scene(scene) {}
         virtual ~InspectorPanel() = default;
 
+        zstring_view displayName() const override { return "Inspector"; }
         void ui() override;
 
     private:
@@ -64,6 +65,10 @@ namespace up::shell {
 
     void InspectorPanel::ui() {
         auto& io = ImGui::GetIO();
+
+        if (!enabled()) {
+            return;
+        }
 
         if (ImGui::Begin(u8"\uf085 Inspector")) {
             _scene.world().interrogateEntity(_scene.main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {

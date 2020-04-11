@@ -26,6 +26,7 @@ namespace up::shell {
         }
         virtual ~ScenePanel() = default;
 
+        zstring_view displayName() const override { return "Scene"; }
         void ui() override;
 
     private:
@@ -64,6 +65,10 @@ namespace up::shell {
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
+        }
+
+        if (!enabled()) {
+            return;
         }
 
         if (ImGui::Begin("ScenePanel", nullptr, ImGuiWindowFlags_None)) {

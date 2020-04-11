@@ -27,6 +27,7 @@ namespace up::shell {
         }
         virtual ~GamePanel() = default;
 
+        zstring_view displayName() const override { return "Game"; }
         void ui() override;
 
     private:
@@ -62,7 +63,7 @@ namespace up::shell {
             _isInputBound = false;
         }
 
-        _isInputBound = _isInputBound && _scene.playing();
+        _isInputBound = _isInputBound && _scene.playing() && enabled();
 
         if (_isInputBound) {
             ImGui::SetActiveID(contentId, ctx->CurrentWindow);
@@ -85,6 +86,10 @@ namespace up::shell {
             if (ctx->ActiveId == contentId) {
                 ImGui::ClearActiveID();
             }
+        }
+
+        if (!enabled()) {
+            return;
         }
 
         if (ImGui::Begin("GamePanel", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {

@@ -77,7 +77,7 @@ int up::ShellApp::initialize() {
         _fileSystem.currentWorkingDirectory(_resourceDir.c_str());
     }
 
-    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
+    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 768, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create window", nullptr);
     }
@@ -345,8 +345,10 @@ void up::ShellApp::_displayMainMenu() {
         }
 
         if (ImGui::BeginMenu(u8"\uf2d2 Windows")) {
-            if (ImGui::MenuItem("Inspector")) {
-                _showInspector = !_showInspector;
+            for (auto const& doc : _documents) {
+                if (ImGui::MenuItem(doc->displayName().c_str(), nullptr, doc->enabled(), true)) {
+                    doc->enabled(!doc->enabled());
+                }
             }
             ImGui::EndMenu();
         }
@@ -379,8 +381,10 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_DockSpace);
             ImGui::DockBuilderSetNodeSize(dockId, dockSize);
 
-            auto contentDockId = dockId;
-            auto const paneDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Left, 0.25f, nullptr, &contentDockId);
+            auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_None);
+
+            auto contentDockId = centralDockId;
+            auto const paneDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
 
             ImGui::DockBuilderDockWindow(u8"\uf085 Inspector", paneDockId);
             ImGui::DockBuilderDockWindow("ScenePanel", contentDockId);
@@ -389,11 +393,15 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             ImGui::DockBuilderFinish(dockId);
         }
 
-        ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_AutoHideTabBar);
+        ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_None);
+
+        for (auto const& doc : _documents) {
+            doc->ui();
+        }
 
         if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
-            ImGui::SetWindowPos(ImVec2(contentSize.x, contentSize.y));
+            ImGui::SetWindowPos(ImVec2(io.DisplaySize.x - contentSize.x - 20, rect.y));
 
             auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 
@@ -402,10 +410,6 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             ImGui::Text("%s", buffer.c_str());
         }
         ImGui::End();
-
-        for (auto const& doc : _documents) {
-            doc->ui();
-        }
     }
     ImGui::End();
     ImGui::PopStyleVar(1);
