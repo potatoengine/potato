@@ -4,6 +4,7 @@ target_sources(potato_shell PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/camera_controller.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/camera_controller.h"
     "${CMAKE_CURRENT_LIST_DIR}/game_panel.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/inspector_panel.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/main.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/scene.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/scene.h"

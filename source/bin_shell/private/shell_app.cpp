@@ -49,6 +49,7 @@
 namespace up::shell {
     extern auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
     extern auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
+    extern auto createInspectorPanel(Scene& scene) -> box<Panel>;
 } // namespace up::shell
 
 up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell") {}
@@ -153,6 +154,7 @@ int up::ShellApp::initialize() {
 
     _documents.push_back(shell::createScenePanel(*_renderer, *_scene));
     _documents.push_back(shell::createGamePanel(*_renderer, *_scene));
+    _documents.push_back(shell::createInspectorPanel(*_scene));
 
     return 0;
 }
@@ -312,34 +314,6 @@ void up::ShellApp::_render() {
     _swapChain->present();
 }
 
-namespace {
-    class ImGuiComponentReflector final : public up::ComponentReflector {
-    protected:
-        void onField(up::zstring_view name) override {
-            _name = name;
-        }
-
-        void onValue(int& value) override {
-            ImGui::InputInt(_name.c_str(), &value);
-        }
-
-        void onValue(float& value) override {
-            ImGui::InputFloat(_name.c_str(), &value);
-        }
-
-        void onValue(up::EntityId value) override {
-            ImGui::LabelText(_name.c_str(), "%u", (unsigned)value);
-        }
-
-        void onValue(glm::vec3& value) override {
-            ImGui::InputFloat3(_name.c_str(), &value.x);
-        }
-
-    private:
-        up::zstring_view _name;
-    };
-} // namespace
-
 void up::ShellApp::_displayUI() {
     auto& imguiIO = ImGui::GetIO();
 
@@ -371,11 +345,9 @@ void up::ShellApp::_displayMainMenu() {
         }
 
         if (ImGui::BeginMenu(u8"\uf2d2 Windows")) {
-
             if (ImGui::MenuItem("Inspector")) {
                 _showInspector = !_showInspector;
             }
-
             ImGui::EndMenu();
         }
 
@@ -418,16 +390,6 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
         }
 
         ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_AutoHideTabBar);
-
-        if (ImGui::Begin(u8"\uf085 Inspector")) {
-            _scene->world().interrogateEntity(_scene->main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
-                if (ImGui::CollapsingHeader(meta->name.c_str())) {
-                    ImGuiComponentReflector ref;
-                    meta->reflect(data, ref);
-                }
-            });
-        }
-        ImGui::End();
 
         if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
