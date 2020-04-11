@@ -16,6 +16,7 @@ namespace up {
     class GpuPipelineState;
     class GpuResourceView;
     class GpuSampler;
+    class RenderContext;
 } // namespace up
 
 struct ImDrawData;
@@ -45,7 +46,7 @@ namespace up {
         UP_RENDER_API void beginFrame();
         UP_RENDER_API void endFrame();
 
-        UP_RENDER_API void render(GpuDevice& device, GpuCommandList& commandList);
+        UP_RENDER_API void render(RenderContext& ctx);
 
         void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
         auto isCaptureRelativeMouseMode() noexcept -> bool { return _captureRelativeMouseMode; }

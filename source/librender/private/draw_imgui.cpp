@@ -9,6 +9,7 @@
 #include "potato/render/gpu_texture.h"
 #include "potato/render/gpu_resource_view.h"
 #include "potato/render/gpu_sampler.h"
+#include "potato/render/context.h"
 #include <potato/runtime/assertion.h>
 #include <imgui.h>
 #include <SDL_events.h>
@@ -166,14 +167,14 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
     return false;
 }
 
-void up::DrawImgui::render(GpuDevice& device, GpuCommandList& commandList) {
+void up::DrawImgui::render(RenderContext& renderContext) {
     UP_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());
     ImGui::Render();
 
     if (_pipelineState.empty()) {
-        createResources(device);
+        createResources(renderContext.device);
     }
 
     ImDrawData& data = *ImGui::GetDrawData();
@@ -183,11 +184,11 @@ void up::DrawImgui::render(GpuDevice& device, GpuCommandList& commandList) {
     UP_ASSERT(data.TotalIdxCount * sizeof(ImDrawIdx) <= bufferSize, "Too many ImGui indices");
     UP_ASSERT(data.TotalVtxCount * sizeof(ImDrawVert) <= bufferSize, "Too many ImGui verticies");
 
-    commandList.setPipelineState(_pipelineState.get());
-    commandList.setPrimitiveTopology(GpuPrimitiveTopology::Triangles);
+    renderContext.commandList.setPipelineState(_pipelineState.get());
+    renderContext.commandList.setPrimitiveTopology(GpuPrimitiveTopology::Triangles);
 
-    auto indices = commandList.map(_indexBuffer.get(), bufferSize);
-    auto vertices = commandList.map(_vertexBuffer.get(), bufferSize);
+    auto indices = renderContext.commandList.map(_indexBuffer.get(), bufferSize);
+    auto vertices = renderContext.commandList.map(_vertexBuffer.get(), bufferSize);
 
     uint32 indexOffset = 0;
     uint32 vertexOffset = 0;
@@ -202,8 +203,8 @@ void up::DrawImgui::render(GpuDevice& device, GpuCommandList& commandList) {
         vertexOffset += list.VtxBuffer.Size * sizeof(ImDrawVert);
     }
 
-    commandList.unmap(_indexBuffer.get(), indices);
-    commandList.unmap(_vertexBuffer.get(), vertices);
+    renderContext.commandList.unmap(_indexBuffer.get(), indices);
+    renderContext.commandList.unmap(_vertexBuffer.get(), vertices);
 
     float L = data.DisplayPos.x;
     float R = data.DisplayPos.x + data.DisplaySize.x;
@@ -216,14 +217,14 @@ void up::DrawImgui::render(GpuDevice& device, GpuCommandList& commandList) {
         {(R + L) / (L - R), (T + B) / (B - T), 0.5f, 1.0f},
     };
 
-    auto constants = commandList.map(_constantBuffer.get(), sizeof(mvp));
+    auto constants = renderContext.commandList.map(_constantBuffer.get(), sizeof(mvp));
     std::memcpy(constants.data(), mvp, constants.size());
-    commandList.unmap(_constantBuffer.get(), constants);
+    renderContext.commandList.unmap(_constantBuffer.get(), constants);
 
-    commandList.bindIndexBuffer(_indexBuffer.get(), GpuIndexFormat::Unsigned16, 0);
-    commandList.bindVertexBuffer(0, _vertexBuffer.get(), sizeof(ImDrawVert));
-    commandList.bindConstantBuffer(0, _constantBuffer.get(), GpuShaderStage::Vertex);
-    commandList.bindSampler(0, _sampler.get(), GpuShaderStage::Pixel);
+    renderContext.commandList.bindIndexBuffer(_indexBuffer.get(), GpuIndexFormat::Unsigned16, 0);
+    renderContext.commandList.bindVertexBuffer(0, _vertexBuffer.get(), sizeof(ImDrawVert));
+    renderContext.commandList.bindConstantBuffer(0, _constantBuffer.get(), GpuShaderStage::Vertex);
+    renderContext.commandList.bindSampler(0, _sampler.get(), GpuShaderStage::Pixel);
 
     GpuViewportDesc viewport;
     viewport.width = data.DisplaySize.x;
@@ -232,7 +233,7 @@ void up::DrawImgui::render(GpuDevice& device, GpuCommandList& commandList) {
     viewport.topY = 0;
     viewport.minDepth = 0;
     viewport.maxDepth = 1;
-    commandList.setViewport(viewport);
+    renderContext.commandList.setViewport(viewport);
 
     indexOffset = 0;
     vertexOffset = 0;
@@ -251,16 +252,16 @@ void up::DrawImgui::render(GpuDevice& device, GpuCommandList& commandList) {
             }
 
             auto const srv = static_cast<GpuResourceView*>(cmd.TextureId);
-            commandList.bindShaderResource(0, srv != nullptr ? srv : _srv.get(), GpuShaderStage::Pixel);
+            renderContext.commandList.bindShaderResource(0, srv != nullptr ? srv : _srv.get(), GpuShaderStage::Pixel);
 
             GpuClipRect scissor;
             scissor.left = (uint32)cmd.ClipRect.x - (uint32)pos.x;
             scissor.top = (uint32)cmd.ClipRect.y - (uint32)pos.y;
             scissor.right = (uint32)cmd.ClipRect.z - (uint32)pos.x;
             scissor.bottom = (uint32)cmd.ClipRect.w - (uint32)pos.y;
-            commandList.setClipRect(scissor);
+            renderContext.commandList.setClipRect(scissor);
 
-            commandList.drawIndexed(cmd.ElemCount, indexOffset, vertexOffset);
+            renderContext.commandList.drawIndexed(cmd.ElemCount, indexOffset, vertexOffset);
 
             indexOffset += cmd.ElemCount;
         }

@@ -177,6 +177,9 @@ void up::ShellApp::run() {
 
         _displayUI();
         _tick();
+
+        _drawImgui.endFrame();
+
         _render();
 
         auto endFrame = std::chrono::high_resolution_clock::now();
@@ -258,13 +261,22 @@ void up::ShellApp::_processEvents() {
         case SDL_QUIT:
             quit();
             break;
-        case SDL_WINDOWEVENT_CLOSE:
-            _onWindowClosed();
-            break;
-        case SDL_WINDOWEVENT_SIZE_CHANGED:
-            _onWindowSizeChanged();
-            break;
         case SDL_WINDOWEVENT:
+            switch (ev.window.event) {
+            case SDL_WINDOWEVENT_CLOSE:
+                _onWindowClosed();
+                break;
+            case SDL_WINDOWEVENT_MAXIMIZED:
+            case SDL_WINDOWEVENT_RESIZED:
+            case SDL_WINDOWEVENT_SIZE_CHANGED:
+                _onWindowSizeChanged();
+                break;
+            case SDL_WINDOWEVENT_ENTER:
+            case SDL_WINDOWEVENT_EXPOSED:
+                break;
+            }
+            _drawImgui.handleEvent(ev);
+            break;
         case SDL_MOUSEBUTTONUP:
         case SDL_MOUSEMOTION:
         case SDL_KEYDOWN:
@@ -294,7 +306,7 @@ void up::ShellApp::_render() {
 
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
     _uiRenderCamera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
-    _drawImgui.render(*_device, _renderer->commandList());
+    _drawImgui.render(ctx);
     _renderer->endFrame(_lastFrameTime);
 
     _swapChain->present();
