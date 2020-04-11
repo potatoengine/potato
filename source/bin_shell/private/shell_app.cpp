@@ -47,9 +47,9 @@
 #include <nlohmann/json.hpp>
 
 namespace up::shell {
-    extern auto createScenePanel(GpuDevice& device, Scene& scene) -> box<Panel>;
-    extern auto createGamePanel(GpuDevice& device, Scene& scene) -> box<Panel>;
-}
+    extern auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
+    extern auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
+} // namespace up::shell
 
 up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell") {}
 
@@ -151,18 +151,30 @@ int up::ShellApp::initialize() {
     }
     _drawImgui.createResources(*_device);
 
-    _documents.push_back(shell::createScenePanel(*_device, *_scene));
-    _documents.push_back(shell::createGamePanel(*_device, *_scene));
+    _documents.push_back(shell::createScenePanel(*_renderer, *_scene));
+    _documents.push_back(shell::createGamePanel(*_renderer, *_scene));
 
     return 0;
 }
 
 void up::ShellApp::run() {
+    auto& imguiIO = ImGui::GetIO();
+
     auto now = std::chrono::high_resolution_clock::now();
     _lastFrameDuration = now - now;
 
+    int width = 0;
+    int height = 0;
+
     while (isRunning()) {
         _processEvents();
+
+        SDL_GetWindowSize(_window.get(), &width, &height);
+        imguiIO.DisplaySize.x = static_cast<float>(width);
+        imguiIO.DisplaySize.y = static_cast<float>(height);
+
+        _drawImgui.beginFrame();
+
         _displayUI();
         _tick();
         _render();
@@ -229,8 +241,11 @@ void up::ShellApp::_processEvents() {
             case ImGuiMouseCursor_Hand:
                 _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
                 break;
-            default:
+            case ImGuiMouseCursor_NotAllowed:
                 _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO));
+                break;
+            default:
+                _cursor.reset(SDL_GetDefaultCursor());
                 break;
             }
             SDL_SetCursor(_cursor.get());
@@ -239,8 +254,6 @@ void up::ShellApp::_processEvents() {
 
     SDL_Event ev;
     while (_running && SDL_PollEvent(&ev) > 0) {
-        // core events that cannot be interrupted by documents
-        //
         switch (ev.type) {
         case SDL_QUIT:
             quit();
@@ -276,16 +289,12 @@ void up::ShellApp::_render() {
     viewport.width = static_cast<float>(width);
     viewport.height = static_cast<float>(height);
 
-    for (auto const& doc : _documents) {
-        doc->render(*_renderer, _lastFrameTime);
-    }
-
     _renderer->beginFrame();
     auto ctx = _renderer->context();
 
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
     _uiRenderCamera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
-    _drawImgui.endFrame(*_device, _renderer->commandList());
+    _drawImgui.render(*_device, _renderer->commandList());
     _renderer->endFrame(_lastFrameTime);
 
     _swapChain->present();
@@ -322,13 +331,6 @@ namespace {
 void up::ShellApp::_displayUI() {
     auto& imguiIO = ImGui::GetIO();
 
-    int width = 0;
-    int height = 0;
-    SDL_GetWindowSize(_window.get(), &width, &height);
-    imguiIO.DisplaySize.x = static_cast<float>(width);
-    imguiIO.DisplaySize.y = static_cast<float>(height);
-
-    _drawImgui.beginFrame();
     _displayMainMenu();
 
     ImVec2 menuSize;
@@ -426,7 +428,7 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             ImGui::Text("%s", buffer.c_str());
         }
         ImGui::End();
-                
+
         for (auto const& doc : _documents) {
             doc->ui();
         }

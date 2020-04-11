@@ -21,20 +21,20 @@
 namespace up::shell {
     class ScenePanel : public shell::Panel {
     public:
-        explicit ScenePanel(GpuDevice& device, Scene& scene) : _device(device), _scene(scene), _cameraController(_camera) {
+        explicit ScenePanel(Renderer& renderer, Scene& scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
         virtual ~ScenePanel() = default;
 
-        void render(Renderer& renderer, float frameTime) override;
         void ui() override;
 
     private:
+        void _renderScene(float frameTime);
         void _drawGrid();
         void _resize(glm::ivec2 size);
 
     private:
-        GpuDevice& _device;
+        Renderer& _renderer;
         Scene& _scene;
         rc<GpuTexture> _buffer;
         box<GpuResourceView> _bufferView;
@@ -45,28 +45,8 @@ namespace up::shell {
         bool _isControllingCamera = false;
     };
 
-    auto createScenePanel(GpuDevice& device, Scene& scene) -> box<Panel> {
-        return new_box<ScenePanel>(device, scene);
-    }
-
-    void ScenePanel::render(Renderer& renderer, float frameTime) {
-        if (_renderCamera == nullptr) {
-            _renderCamera = new_box<RenderCamera>();
-        }
-
-        if (_buffer != nullptr) {
-            renderer.beginFrame();
-            auto ctx = renderer.context();
-
-            _renderCamera->resetBackBuffer(_buffer);
-            if (_enableGrid) {
-                _drawGrid();
-            }
-            _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-            _scene.render(ctx);
-            renderer.flushDebugDraw(frameTime);
-            renderer.endFrame(frameTime);
-        }
+    auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel> {
+        return new_box<ScenePanel>(renderer, scene);
     }
 
     void ScenePanel::ui() {
@@ -106,9 +86,16 @@ namespace up::shell {
                 glm::vec3 movement = {0, 0, 0}, motion = {0, 0, 0};
 
                 ImGui::GetWindowDrawList()->AddCallback([](const ImDrawList* list, const ImDrawCmd* cmd) {
-                    auto& self = *static_cast<ScenePanel*>(cmd->UserCallbackData);
-
+                    // Note: we'd like to do this here, but we'll need our own render data since we're in
+                    // the middle of using the Renderer to draw the ImGui data at the time this is called.
+                    /*auto& self = *static_cast<ScenePanel*>(cmd->UserCallbackData);
+                    auto& io = ImGui::GetIO();
+                    self._renderScene(io.DeltaTime);*/
                 }, this);
+
+                // Note: would prefer to do this in a render callback instead
+                //
+                _renderScene(io.DeltaTime);
 
                 auto const pos = ImGui::GetCursorPos();
                 ImGui::Image(_bufferView.get(), contentSize);
@@ -129,6 +116,26 @@ namespace up::shell {
             ImGui::PopStyleVar(1);
         }
         ImGui::End();
+    }
+
+    void ScenePanel::_renderScene(float frameTime) {
+        if (_renderCamera == nullptr) {
+            _renderCamera = new_box<RenderCamera>();
+        }
+
+        if (_buffer != nullptr) {
+            _renderer.beginFrame();
+            auto ctx = _renderer.context();
+
+            _renderCamera->resetBackBuffer(_buffer);
+            if (_enableGrid) {
+                _drawGrid();
+            }
+            _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
+            _scene.render(ctx);
+            _renderer.flushDebugDraw(frameTime);
+            _renderer.endFrame(frameTime);
+        }
     }
 
     void ScenePanel::_drawGrid() {
@@ -162,8 +169,8 @@ namespace up::shell {
         desc.type = GpuTextureType::Texture2D;
         desc.width = size.x;
         desc.height = size.y;
-        _buffer = _device.createTexture2D(desc, {});
+        _buffer = _renderer.device().createTexture2D(desc, {});
 
-        _bufferView = _device.createShaderResourceView(_buffer.get());
+        _bufferView = _renderer.device().createShaderResourceView(_buffer.get());
     }
 } // namespace up::shell

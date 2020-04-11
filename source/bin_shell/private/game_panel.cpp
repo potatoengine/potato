@@ -22,19 +22,19 @@
 namespace up::shell {
     class GamePanel : public Panel {
     public:
-        explicit GamePanel(GpuDevice& device, Scene& scene) : _device(device), _scene(scene), _cameraController(_camera) {
+        explicit GamePanel(Renderer& renderer, Scene& scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
         virtual ~GamePanel() = default;
 
-        void render(Renderer& renderer, float frameTime) override;
         void ui() override;
 
     private:
+        void _renderScene(float frameTime);
         void _resize(glm::ivec2 size);
 
     private:
-        GpuDevice& _device;
+        Renderer& _renderer;
         Scene& _scene;
         rc<GpuTexture> _buffer;
         box<GpuResourceView> _bufferView;
@@ -44,25 +44,8 @@ namespace up::shell {
         bool _isInputBound = false;
     };
 
-    auto createGamePanel(GpuDevice& device, Scene& scene) -> box<Panel> {
-        return new_box<GamePanel>(device, scene);
-    }
-
-    void GamePanel::render(Renderer& renderer, float frameTime) {
-        if (_renderCamera == nullptr) {
-            _renderCamera = new_box<RenderCamera>();
-        }
-
-        if (_buffer != nullptr) {
-            renderer.beginFrame();
-            auto ctx = renderer.context();
-
-            _renderCamera->resetBackBuffer(_buffer);
-            _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-            _scene.render(ctx);
-            renderer.flushDebugDraw(frameTime);
-            renderer.endFrame(frameTime);
-        }
+    auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel> {
+        return new_box<GamePanel>(renderer, scene);
     }
 
     void GamePanel::ui() {
@@ -121,6 +104,8 @@ namespace up::shell {
                     _resize({contentSize.x, contentSize.y});
                 }
 
+                _renderScene(io.DeltaTime);
+
                 auto const pos = ImGui::GetCursorPos();
                 ImGui::Image(_bufferView.get(), contentSize);
                 ImGui::SetCursorPos(pos);
@@ -135,6 +120,23 @@ namespace up::shell {
         ImGui::End();
     }
 
+    void GamePanel::_renderScene(float frameTime) {
+        if (_renderCamera == nullptr) {
+            _renderCamera = new_box<RenderCamera>();
+        }
+
+        if (_buffer != nullptr) {
+            _renderer.beginFrame();
+            auto ctx = _renderer.context();
+
+            _renderCamera->resetBackBuffer(_buffer);
+            _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
+            _scene.render(ctx);
+            _renderer.flushDebugDraw(frameTime);
+            _renderer.endFrame(frameTime);
+        }
+    }
+
     void GamePanel::_resize(glm::ivec2 size) {
         using namespace up;
         GpuTextureDesc desc;
@@ -142,8 +144,8 @@ namespace up::shell {
         desc.type = GpuTextureType::Texture2D;
         desc.width = size.x;
         desc.height = size.y;
-        _buffer = _device.createTexture2D(desc, {});
+        _buffer = _renderer.device().createTexture2D(desc, {});
 
-        _bufferView = _device.createShaderResourceView(_buffer.get());
+        _bufferView = _renderer.device().createShaderResourceView(_buffer.get());
     }
 } // namespace up::shell

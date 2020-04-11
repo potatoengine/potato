@@ -108,6 +108,13 @@ void up::DrawImgui::beginFrame() {
     _captureRelativeMouseMode = false;
 }
 
+void up::DrawImgui::endFrame() {
+    ImGui::SetCurrentContext(_context.get());
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImGui::EndFrame();
+}
+
 bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
     UP_ASSERT(!_context.empty());
 
@@ -159,7 +166,7 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
     return false;
 }
 
-void up::DrawImgui::endFrame(GpuDevice& device, GpuCommandList& commandList) {
+void up::DrawImgui::render(GpuDevice& device, GpuCommandList& commandList) {
     UP_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());

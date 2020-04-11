@@ -43,7 +43,9 @@ namespace up {
         UP_RENDER_API bool handleEvent(SDL_Event const& ev);
 
         UP_RENDER_API void beginFrame();
-        UP_RENDER_API void endFrame(GpuDevice& device, GpuCommandList& commandList);
+        UP_RENDER_API void endFrame();
+
+        UP_RENDER_API void render(GpuDevice& device, GpuCommandList& commandList);
 
         void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
         auto isCaptureRelativeMouseMode() noexcept -> bool { return _captureRelativeMouseMode; }

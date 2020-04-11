@@ -15,7 +15,6 @@ namespace up::shell {
         Panel(Panel const&) = delete;
         Panel& operator=(Panel const&) = delete;
 
-        virtual void render(Renderer& renderer, float frameTime) = 0;
         virtual void ui() = 0;
     };
 }
