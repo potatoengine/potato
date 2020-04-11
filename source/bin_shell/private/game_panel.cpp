@@ -29,7 +29,6 @@ namespace up::shell {
 
         void render(Renderer& renderer, float frameTime) override;
         void ui() override;
-        void tick(float deltaTime) override;
 
     private:
         void _resize(glm::ivec2 size);
@@ -70,21 +69,38 @@ namespace up::shell {
         auto const contentId = ImGui::GetID("GameContentView");
         auto const* const ctx = ImGui::GetCurrentContext();
         auto const& io = ImGui::GetIO();
+
+        
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_F5, false)) {
+            _scene.playing(!_scene.playing());
+        }
+
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE) && io.KeyShift) {
+            _isInputBound = false;
+        }
+
+        _isInputBound = _isInputBound && _scene.playing();
+
         if (_isInputBound) {
             ImGui::SetActiveID(contentId, ctx->CurrentWindow);
             ImGui::SetCaptureRelativeMouseMode(true);
 
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE) && io.KeyShift) {
-                _isInputBound = false;
-            }
+            glm::vec3 relMotion = {0, 0, 0}, relMove = {0, 0, 0};
+
+            relMotion.x = io.MouseDelta.x / io.DisplaySize.x;
+            relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
+            relMotion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
+
+            auto keys = SDL_GetKeyboardState(nullptr);
+            relMove = {ImGui::IsKeyPressed(SDL_SCANCODE_D) - ImGui::IsKeyPressed(SDL_SCANCODE_A),
+                        ImGui::IsKeyPressed(SDL_SCANCODE_SPACE) - ImGui::IsKeyPressed(SDL_SCANCODE_C),
+                        ImGui::IsKeyPressed(SDL_SCANCODE_W) - ImGui::IsKeyPressed(SDL_SCANCODE_S)};
+
+            _cameraController.apply(_camera, relMove, relMotion, io.DeltaTime);
         }
         else {
             if (ctx->ActiveId == contentId) {
                 ImGui::ClearActiveID();
-            }
-
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_F5, false)) {
-                _scene.playing(!_scene.playing());
             }
         }
 
@@ -117,26 +133,6 @@ namespace up::shell {
             ImGui::PopStyleVar(1);
         }
         ImGui::End();
-    }
-
-    void GamePanel::tick(float deltaTime) {
-        _isInputBound = _isInputBound && _scene.playing();
-
-        if (_isInputBound) {
-            glm::vec3 relMotion = {0, 0, 0}, relMove = {0, 0, 0};
-
-            auto& io = ImGui::GetIO();
-            relMotion.x = io.MouseDelta.x / io.DisplaySize.x;
-            relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
-            relMotion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
-
-            auto keys = SDL_GetKeyboardState(nullptr);
-            relMove = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
-                       static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
-                       static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
-
-            _cameraController.apply(_camera, relMove, relMotion, deltaTime);
-        }
     }
 
     void GamePanel::_resize(glm::ivec2 size) {

@@ -28,7 +28,6 @@ namespace up::shell {
 
         void render(Renderer& renderer, float frameTime) override;
         void ui() override;
-        void tick(float deltaTime) override {}
 
     private:
         void _drawGrid();
@@ -105,6 +104,11 @@ namespace up::shell {
                 }
 
                 glm::vec3 movement = {0, 0, 0}, motion = {0, 0, 0};
+
+                ImGui::GetWindowDrawList()->AddCallback([](const ImDrawList* list, const ImDrawCmd* cmd) {
+                    auto& self = *static_cast<ScenePanel*>(cmd->UserCallbackData);
+
+                }, this);
 
                 auto const pos = ImGui::GetCursorPos();
                 ImGui::Image(_bufferView.get(), contentSize);

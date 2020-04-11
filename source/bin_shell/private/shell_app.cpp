@@ -264,12 +264,7 @@ void up::ShellApp::_processEvents() {
 }
 
 void up::ShellApp::_tick() {
-    for (auto const& doc : _documents) {
-        doc->tick(_lastFrameTime);
-    }
-
     _scene->tick(_lastFrameTime);
-
     _scene->flush();
 }
 
