@@ -40,7 +40,7 @@ namespace up::reflex {
                 reflect();
             }
             else {
-                serialize_value<Reflect>(tag<T>{}, reflect);
+                serialize_value(tag<T>{}, reflect);
             }
         }
     } // namespace _detail

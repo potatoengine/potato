@@ -35,9 +35,17 @@ namespace up {
         bool load(Stream file);
         void save(Stream file);
 
+        bool playing() const { return _playing; }
+        bool playing(bool active) { return _playing = active; }
+
+        World& world() noexcept { return *_world; }
+        EntityId main() const noexcept { return _main; }
+
     private:
         rc<Model> _cube;
         box<World> _world;
+        EntityId _main;
+        bool _playing = false;
 
         Query<components::Position, components::Wave> _waveQuery;
         Query<components::Position> _orbitQuery;

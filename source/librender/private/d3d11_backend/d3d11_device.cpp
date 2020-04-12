@@ -173,7 +173,7 @@ auto up::d3d11::DeviceD3D11::createBuffer(GpuBufferType type, up::uint64 size) -
     return new_box<BufferD3D11>(type, size, std::move(buffer));
 }
 
-auto up::d3d11::DeviceD3D11::createTexture2D(GpuTextureDesc const& desc, span<up::byte const> data) -> box<GpuTexture> {
+auto up::d3d11::DeviceD3D11::createTexture2D(GpuTextureDesc const& desc, span<up::byte const> data) -> rc<GpuTexture> {
     auto bytesPerPixel = toByteSize(desc.format);
 
     UP_ASSERT(data.empty() || data.size() == desc.width * desc.height * bytesPerPixel);
@@ -190,8 +190,8 @@ auto up::d3d11::DeviceD3D11::createTexture2D(GpuTextureDesc const& desc, span<up
         nativeDesc.BindFlags = D3D10_BIND_DEPTH_STENCIL;
     }
     else {
-        nativeDesc.Usage = D3D11_USAGE_IMMUTABLE;
-        nativeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        nativeDesc.Usage = D3D11_USAGE_DEFAULT;
+        nativeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
     }
     nativeDesc.SampleDesc.Count = 1;
     nativeDesc.SampleDesc.Quality = 0;
@@ -206,7 +206,7 @@ auto up::d3d11::DeviceD3D11::createTexture2D(GpuTextureDesc const& desc, span<up
         return nullptr;
     }
 
-    return new_box<TextureD3D11>(std::move(texture).as<ID3D11Resource>());
+    return new_shared<TextureD3D11>(std::move(texture).as<ID3D11Resource>());
 }
 
 auto up::d3d11::DeviceD3D11::createSampler() -> box<GpuSampler> {

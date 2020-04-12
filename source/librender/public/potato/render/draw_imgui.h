@@ -16,6 +16,7 @@ namespace up {
     class GpuPipelineState;
     class GpuResourceView;
     class GpuSampler;
+    class RenderContext;
 } // namespace up
 
 struct ImDrawData;
@@ -43,7 +44,12 @@ namespace up {
         UP_RENDER_API bool handleEvent(SDL_Event const& ev);
 
         UP_RENDER_API void beginFrame();
-        UP_RENDER_API void endFrame(GpuDevice& device, GpuCommandList& commandList);
+        UP_RENDER_API void endFrame();
+
+        UP_RENDER_API void render(RenderContext& ctx);
+
+        void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
+        auto isCaptureRelativeMouseMode() noexcept -> bool { return _captureRelativeMouseMode; }
 
     private:
         void _ensureContext();
@@ -61,5 +67,11 @@ namespace up {
         rc<Shader> _vertShader;
         rc<Shader> _pixelShader;
         string _clipboardTextData;
+        bool _captureRelativeMouseMode = false;
     };
 } // namespace up
+
+namespace ImGui {
+    UP_RENDER_API void SetCaptureRelativeMouseMode(bool captured);
+    UP_RENDER_API auto IsCaptureRelativeMouseMode() -> bool;
+} // namespace ImGui

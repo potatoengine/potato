@@ -31,7 +31,7 @@ namespace up {
         virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
         virtual box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) = 0;
         virtual box<GpuBuffer> createBuffer(GpuBufferType type, uint64 size) = 0;
-        virtual box<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) = 0;
+        virtual rc<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) = 0;
         virtual box<GpuSampler> createSampler() = 0;
 
         virtual void execute(GpuCommandList* commandList) = 0;

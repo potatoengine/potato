@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Sean Middleditch, all rights reserverd.
+// Copyright (C) 2018-2020 Sean Middleditch, all rights reserverd.
 
 #include "shell_app.h"
 #include "camera.h"
@@ -18,6 +18,7 @@
 #include "potato/render/gpu_command_list.h"
 #include "potato/render/gpu_swap_chain.h"
 #include "potato/render/gpu_texture.h"
+#include "potato/render/gpu_resource_view.h"
 #include "potato/render/renderer.h"
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
@@ -35,26 +36,31 @@
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/functions.hpp>
 
 #include <nlohmann/json.hpp>
 
-struct up::ShellApp::InputState {
-    glm::vec3 relativeMovement = {0, 0, 0};
-    glm::vec3 relativeMotion = {0, 0, 0};
-};
+namespace up::shell {
+    extern auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
+    extern auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
+    extern auto createInspectorPanel(Scene& scene) -> box<Panel>;
+} // namespace up::shell
 
-up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell"), _inputState(new_box<InputState>()) {}
+up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell") {}
 
 up::ShellApp::~ShellApp() {
+    _documents.clear();
+
     _drawImgui.releaseResources();
 
     _renderer.reset();
-    _renderCamera.reset();
+    _uiRenderCamera.reset();
     _swapChain.reset();
     _window.reset();
 
@@ -62,8 +68,6 @@ up::ShellApp::~ShellApp() {
 }
 
 int up::ShellApp::initialize() {
-    using namespace up;
-
     zstring_view configPath = "shell.config.json";
     if (_fileSystem.fileExists(configPath)) {
         _loadConfig(configPath);
@@ -73,7 +77,7 @@ int up::ShellApp::initialize() {
         _fileSystem.currentWorkingDirectory(_resourceDir.c_str());
     }
 
-    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
+    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 768, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create window", nullptr);
     }
@@ -112,7 +116,8 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _renderCamera = new_box<RenderCamera>(_swapChain);
+    _uiRenderCamera = new_box<RenderCamera>();
+    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
     auto material = _renderer->loadMaterialSync("resources/materials/full.mat");
     if (material == nullptr) {
@@ -147,19 +152,36 @@ int up::ShellApp::initialize() {
     }
     _drawImgui.createResources(*_device);
 
-    _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-    _cameraController = new_box<ArcBallCameraController>(_camera);
+    _documents.push_back(shell::createScenePanel(*_renderer, *_scene));
+    _documents.push_back(shell::createGamePanel(*_renderer, *_scene));
+    _documents.push_back(shell::createInspectorPanel(*_scene));
 
     return 0;
 }
 
 void up::ShellApp::run() {
+    auto& imguiIO = ImGui::GetIO();
+
     auto now = std::chrono::high_resolution_clock::now();
     _lastFrameDuration = now - now;
 
+    int width = 0;
+    int height = 0;
+
     while (isRunning()) {
         _processEvents();
+
+        SDL_GetWindowSize(_window.get(), &width, &height);
+        imguiIO.DisplaySize.x = static_cast<float>(width);
+        imguiIO.DisplaySize.y = static_cast<float>(height);
+
+        _drawImgui.beginFrame();
+
+        _displayUI();
         _tick();
+
+        _drawImgui.endFrame();
+
         _render();
 
         auto endFrame = std::chrono::high_resolution_clock::now();
@@ -181,76 +203,95 @@ void up::ShellApp::_onWindowSizeChanged() {
     int width = 0;
     int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
-    _renderCamera->resetSwapChain(nullptr);
+    _uiRenderCamera->resetBackBuffer(nullptr);
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
-    _renderCamera->resetSwapChain(_swapChain);
+    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 }
 
 void up::ShellApp::_processEvents() {
-    auto& imguiIO = ImGui::GetIO();
+    auto& io = ImGui::GetIO();
 
-    _inputState->relativeMotion = {0, 0, 0};
-    _inputState->relativeMovement = {0, 0, 0};
+    SDL_SetRelativeMouseMode(ImGui::IsCaptureRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
+    SDL_CaptureMouse(io.WantCaptureMouse || ImGui::IsCaptureRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
+
+    auto const guiCursor = ImGui::GetMouseCursor();
+    if (guiCursor != _lastCursor) {
+        _lastCursor = guiCursor;
+        SDL_ShowCursor(guiCursor != ImGuiMouseCursor_None ? SDL_TRUE : SDL_FALSE);
+        if (guiCursor == ImGuiMouseCursor_Arrow) {
+            SDL_SetCursor(SDL_GetDefaultCursor());
+            _cursor.reset();
+        }
+        else {
+            switch (guiCursor) {
+            case ImGuiMouseCursor_TextInput:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM));
+                break;
+            case ImGuiMouseCursor_ResizeAll:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL));
+                break;
+            case ImGuiMouseCursor_ResizeNS:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS));
+                break;
+            case ImGuiMouseCursor_ResizeEW:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE));
+                break;
+            case ImGuiMouseCursor_ResizeNESW:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW));
+                break;
+            case ImGuiMouseCursor_ResizeNWSE:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE));
+                break;
+            case ImGuiMouseCursor_Hand:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
+                break;
+            case ImGuiMouseCursor_NotAllowed:
+                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO));
+                break;
+            default:
+                _cursor.reset(SDL_GetDefaultCursor());
+                break;
+            }
+            SDL_SetCursor(_cursor.get());
+        }
+    }
 
     SDL_Event ev;
-    while (SDL_PollEvent(&ev) > 0) {
+    while (_running && SDL_PollEvent(&ev) > 0) {
         switch (ev.type) {
         case SDL_QUIT:
-            return;
+            quit();
+            break;
         case SDL_WINDOWEVENT:
             switch (ev.window.event) {
             case SDL_WINDOWEVENT_CLOSE:
                 _onWindowClosed();
                 break;
+            case SDL_WINDOWEVENT_MAXIMIZED:
+            case SDL_WINDOWEVENT_RESIZED:
             case SDL_WINDOWEVENT_SIZE_CHANGED:
                 _onWindowSizeChanged();
                 break;
+            case SDL_WINDOWEVENT_ENTER:
+            case SDL_WINDOWEVENT_EXPOSED:
+                break;
             }
+            _drawImgui.handleEvent(ev);
             break;
+        case SDL_MOUSEBUTTONUP:
+        case SDL_MOUSEMOTION:
         case SDL_KEYDOWN:
-            if (ev.key.keysym.scancode == SDL_SCANCODE_F && (ev.key.keysym.mod & KMOD_CTRL) != 0) {
-                _cameraController = new_box<FlyCameraController>(_camera);
-            }
-            if (ev.key.keysym.scancode == SDL_SCANCODE_B && (ev.key.keysym.mod & KMOD_CTRL) != 0) {
-                _cameraController = new_box<ArcBallCameraController>(_camera);
-            }
-            if (ev.key.keysym.scancode == SDL_SCANCODE_F5) {
-                _paused = !_paused;
-            }
-            break;
         case SDL_MOUSEWHEEL:
-            _inputState->relativeMotion.z += (ev.wheel.y > 0.f ? 1.f : ev.wheel.y < 0 ? -1.f : 0.f) * (ev.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.f : 1.f);
+        default:
+            _drawImgui.handleEvent(ev);
             break;
         }
-        _drawImgui.handleEvent(ev);
-    }
-
-    if (!imguiIO.WantCaptureKeyboard) {
-        auto keys = SDL_GetKeyboardState(nullptr);
-        _inputState->relativeMovement = {static_cast<float>(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]),
-                                         static_cast<float>(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_C]),
-                                         static_cast<float>(keys[SDL_SCANCODE_W] - keys[SDL_SCANCODE_S])};
-    }
-
-    int relx = 0;
-    int rely = 0;
-    int buttons = SDL_GetRelativeMouseState(&relx, &rely);
-    bool isMouseMove = buttons != 0 && !imguiIO.WantCaptureMouse;
-    SDL_SetRelativeMouseMode(isMouseMove ? SDL_TRUE : SDL_FALSE);
-    if (isMouseMove) {
-        _inputState->relativeMotion.x = static_cast<float>(relx) / 800;
-        _inputState->relativeMotion.y = static_cast<float>(rely) / 600;
     }
 }
 
 void up::ShellApp::_tick() {
-    _cameraController->apply(_camera, _inputState->relativeMovement, _inputState->relativeMotion, _lastFrameTime);
-
-    if (!_paused) {
-        _scene->tick(_lastFrameTime);
-    }
-
+    _scene->tick(_lastFrameTime);
     _scene->flush();
 }
 
@@ -262,36 +303,33 @@ void up::ShellApp::_render() {
     viewport.width = static_cast<float>(width);
     viewport.height = static_cast<float>(height);
 
-    auto& imguiIO = ImGui::GetIO();
-    imguiIO.DisplaySize.x = viewport.width;
-    imguiIO.DisplaySize.y = viewport.height;
-
-    _drawUI();
-    if (_grid) {
-        _drawGrid();
-    }
-
     _renderer->beginFrame();
     auto ctx = _renderer->context();
-    _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-    _scene->render(ctx);
-    _renderCamera->endFrame(ctx);
 
-    _renderer->flushDebugDraw(_lastFrameTime);
-
-    _drawImgui.endFrame(*_device, _renderer->commandList());
-
+    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+    _uiRenderCamera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
+    _drawImgui.render(ctx);
     _renderer->endFrame(_lastFrameTime);
+
     _swapChain->present();
 }
 
-void up::ShellApp::_drawUI() {
-    ImVec2 menuSize;
+void up::ShellApp::_displayUI() {
+    auto& imguiIO = ImGui::GetIO();
 
-    _drawImgui.beginFrame();
+    _displayMainMenu();
+
+    ImVec2 menuSize;
     if (ImGui::BeginMainMenuBar()) {
         menuSize = ImGui::GetWindowSize();
+        ImGui::EndMainMenuBar();
+    }
 
+    _displayDocuments({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
+}
+
+void up::ShellApp::_displayMainMenu() {
+    if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu(u8"\uf094 Potato")) {
             if (ImGui::MenuItem(u8"\uf52b Quit", "ESC")) {
                 _running = false;
@@ -300,28 +338,18 @@ void up::ShellApp::_drawUI() {
         }
 
         if (ImGui::BeginMenu(u8"\uf06e View")) {
-            if (ImGui::BeginMenu("Camera")) {
-                if (ImGui::MenuItem("Fly", "ctrl-f")) {
-                    _cameraController = new_box<FlyCameraController>(_camera);
-                }
-                if (ImGui::MenuItem("ArcBall", "ctrl-b")) {
-                    _cameraController = new_box<ArcBallCameraController>(_camera);
-                }
-                ImGui::EndMenu();
-            }
-
             if (ImGui::BeginMenu("Options")) {
-                if (ImGui::MenuItem("Grid")) {
-                    _grid = !_grid;
-                }
                 ImGui::EndMenu();
             }
+            ImGui::EndMenu();
+        }
 
-            if (ImGui::MenuItem("Reset")) {
-                _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-                _cameraController = new_box<ArcBallCameraController>(_camera);
+        if (ImGui::BeginMenu(u8"\uf2d2 Windows")) {
+            for (auto const& doc : _documents) {
+                if (ImGui::MenuItem(doc->displayName().c_str(), nullptr, doc->enabled(), true)) {
+                    doc->enabled(!doc->enabled());
+                }
             }
-
             ImGui::EndMenu();
         }
 
@@ -329,46 +357,62 @@ void up::ShellApp::_drawUI() {
         ImGui::Spacing();
         ImGui::Spacing();
 
-        if (ImGui::MenuItem(!_paused ? u8"\uf04c Pause" : u8"\uf04b Play", "F5")) {
-            _paused = !_paused;
+        if (ImGui::MenuItem(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play", "F5")) {
+            _scene->playing(!_scene->playing());
         }
 
         ImGui::EndMainMenuBar();
     }
-
-    ImGui::SetNextWindowPos({0, menuSize.y});
-    if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
-        auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
-
-        fixed_string_writer<128> buffer;
-        format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
-        ImGui::Text("%s", buffer.c_str());
-    }
-    ImGui::End();
 }
 
-void up::ShellApp::_drawGrid() {
-    auto constexpr guidelines = 10;
+void up::ShellApp::_displayDocuments(glm::vec4 rect) {
+    auto& io = ImGui::GetIO();
 
-    // The real intent here is to keep the grid roughly the same spacing in
-    // pixels on the screen; this doesn't really accomplish that, though.
-    // Improvements welcome.
-    //
-    auto const cameraPos = _camera.position();
-    auto const logDist = std::log2(std::abs(cameraPos.y));
-    auto const spacing = std::max(1, static_cast<int>(logDist) - 3);
+    ImGui::SetNextWindowPos({rect.x, rect.y});
+    ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+    if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground)) {
+        auto dockSize = ImGui::GetContentRegionAvail();
 
-    int guideSpacing = guidelines * spacing;
-    float x = static_cast<float>(static_cast<int>(cameraPos.x / guideSpacing) * guideSpacing);
-    float z = static_cast<float>(static_cast<int>(cameraPos.z / guideSpacing) * guideSpacing);
+        auto const dockId = ImGui::GetID("MainDockspace");
 
-    DebugDrawGrid grid;
-    grid.axis2 = {0, 0, 1};
-    grid.offset = {x, 0, z};
-    grid.halfWidth = 1000;
-    grid.spacing = spacing;
-    grid.guidelineSpacing = guidelines;
-    drawDebugGrid(grid);
+        if (ImGui::DockBuilderGetNode(dockId) == nullptr) {
+            ImGui::DockBuilderRemoveNode(dockId);
+            ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_DockSpace);
+            ImGui::DockBuilderSetNodeSize(dockId, dockSize);
+
+            auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_None);
+
+            auto contentDockId = centralDockId;
+            auto const paneDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
+
+            ImGui::DockBuilderDockWindow(u8"\uf085 Inspector", paneDockId);
+            ImGui::DockBuilderDockWindow("ScenePanel", contentDockId);
+            ImGui::DockBuilderDockWindow("GamePanel", contentDockId);
+
+            ImGui::DockBuilderFinish(dockId);
+        }
+
+        ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_None);
+
+        for (auto const& doc : _documents) {
+            doc->ui();
+        }
+
+        if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
+            auto const contentSize = ImGui::GetContentRegionAvail();
+            ImGui::SetWindowPos(ImVec2(io.DisplaySize.x - contentSize.x - 20, rect.y));
+
+            auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
+
+            fixed_string_writer<128> buffer;
+            format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
+            ImGui::Text("%s", buffer.c_str());
+        }
+        ImGui::End();
+    }
+    ImGui::End();
+    ImGui::PopStyleVar(1);
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {

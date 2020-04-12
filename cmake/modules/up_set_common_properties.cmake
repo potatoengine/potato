@@ -143,11 +143,6 @@ function(up_set_common_properties TARGET)
         $<INSTALL_INTERFACE:public>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
     )
-    if(NOT IS_INTERFACE)
-        target_include_directories(${TARGET} PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/private
-        )
-    endif()
 
     ## Set test output directory.
     ## Not actually a good idea without figuring out how to place

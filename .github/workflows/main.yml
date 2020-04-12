@@ -56,11 +56,11 @@ jobs:
         include:
           - cxx: g++-9
             cc: gcc-9
-            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized
+            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized -Wno-error=unused-but-set-variable -Wno-error=unused-variable
             packages: g++-9 gcc-9 libstdc++-9-dev
           - cxx: clang++-9
             cc: clang-9
-            cxxflags: -Wall -Werror -Wno-unused-function -stdlib=libc++
+            cxxflags: -Wall -Werror -Wno-unused-function -Wno-unused-variable -stdlib=libc++
             packages: clang-9 clang-tidy-9 libc++-9-dev libc++abi-9-dev
             clang_tidy: clang-tidy-9
     

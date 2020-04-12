@@ -9,6 +9,7 @@
 #include "potato/render/gpu_texture.h"
 #include "potato/render/gpu_resource_view.h"
 #include "potato/render/gpu_sampler.h"
+#include "potato/render/context.h"
 #include <potato/runtime/assertion.h>
 #include <imgui.h>
 #include <SDL_events.h>
@@ -105,6 +106,14 @@ void up::DrawImgui::beginFrame() {
 
     ImGui::SetCurrentContext(_context.get());
     ImGui::NewFrame();
+    _captureRelativeMouseMode = false;
+}
+
+void up::DrawImgui::endFrame() {
+    ImGui::SetCurrentContext(_context.get());
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImGui::EndFrame();
 }
 
 bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
@@ -126,54 +135,46 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
         io.MouseClickedPos[0] = {(float)ev.button.x, (float)ev.button.y};
         return io.WantCaptureMouse;
     case SDL_MOUSEWHEEL:
-        if (io.WantCaptureMouse) {
-            if (ev.wheel.y > 0) {
-                io.MouseWheel += 1;
-            }
-            else if (ev.wheel.y < 0) {
-                io.MouseWheel -= 1;
-            }
+        if (ev.wheel.y > 0) {
+            io.MouseWheel += 1;
+        }
+        else if (ev.wheel.y < 0) {
+            io.MouseWheel -= 1;
+        }
 
-            if (ev.wheel.x > 0) {
-                io.MouseWheelH += 1;
-            }
-            else if (ev.wheel.x < 0) {
-                io.MouseWheelH -= 1;
-            }
-            return true;
+        if (ev.wheel.x > 0) {
+            io.MouseWheelH += 1;
         }
-        break;
+        else if (ev.wheel.x < 0) {
+            io.MouseWheelH -= 1;
+        }
+        return io.WantCaptureMouse;
     case SDL_TEXTINPUT:
-        if (io.WantTextInput) {
-            io.AddInputCharactersUTF8(ev.text.text);
-            return true;
-        }
-        break;
+        io.AddInputCharactersUTF8(ev.text.text);
+        return io.WantTextInput;
     case SDL_KEYDOWN:
-    case SDL_KEYUP:
-        if (io.WantCaptureKeyboard) {
-            int key = ev.key.keysym.scancode;
-            IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
-            io.KeysDown[key] = (ev.type == SDL_KEYDOWN);
-            io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-            io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-            io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-            io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
-            return true;
-        }
-        break;
+    case SDL_KEYUP: {
+        int key = ev.key.keysym.scancode;
+        IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
+        io.KeysDown[key] = (ev.type == SDL_KEYDOWN);
+        io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
+        io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
+        io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
+        io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
+        return io.WantCaptureKeyboard;
+    }
     }
     return false;
 }
 
-void up::DrawImgui::endFrame(GpuDevice& device, GpuCommandList& commandList) {
+void up::DrawImgui::render(RenderContext& renderContext) {
     UP_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());
     ImGui::Render();
 
     if (_pipelineState.empty()) {
-        createResources(device);
+        createResources(renderContext.device);
     }
 
     ImDrawData& data = *ImGui::GetDrawData();
@@ -183,11 +184,11 @@ void up::DrawImgui::endFrame(GpuDevice& device, GpuCommandList& commandList) {
     UP_ASSERT(data.TotalIdxCount * sizeof(ImDrawIdx) <= bufferSize, "Too many ImGui indices");
     UP_ASSERT(data.TotalVtxCount * sizeof(ImDrawVert) <= bufferSize, "Too many ImGui verticies");
 
-    commandList.setPipelineState(_pipelineState.get());
-    commandList.setPrimitiveTopology(GpuPrimitiveTopology::Triangles);
+    renderContext.commandList.setPipelineState(_pipelineState.get());
+    renderContext.commandList.setPrimitiveTopology(GpuPrimitiveTopology::Triangles);
 
-    auto indices = commandList.map(_indexBuffer.get(), bufferSize);
-    auto vertices = commandList.map(_vertexBuffer.get(), bufferSize);
+    auto indices = renderContext.commandList.map(_indexBuffer.get(), bufferSize);
+    auto vertices = renderContext.commandList.map(_vertexBuffer.get(), bufferSize);
 
     uint32 indexOffset = 0;
     uint32 vertexOffset = 0;
@@ -202,8 +203,8 @@ void up::DrawImgui::endFrame(GpuDevice& device, GpuCommandList& commandList) {
         vertexOffset += list.VtxBuffer.Size * sizeof(ImDrawVert);
     }
 
-    commandList.unmap(_indexBuffer.get(), indices);
-    commandList.unmap(_vertexBuffer.get(), vertices);
+    renderContext.commandList.unmap(_indexBuffer.get(), indices);
+    renderContext.commandList.unmap(_vertexBuffer.get(), vertices);
 
     float L = data.DisplayPos.x;
     float R = data.DisplayPos.x + data.DisplaySize.x;
@@ -216,14 +217,14 @@ void up::DrawImgui::endFrame(GpuDevice& device, GpuCommandList& commandList) {
         {(R + L) / (L - R), (T + B) / (B - T), 0.5f, 1.0f},
     };
 
-    auto constants = commandList.map(_constantBuffer.get(), sizeof(mvp));
+    auto constants = renderContext.commandList.map(_constantBuffer.get(), sizeof(mvp));
     std::memcpy(constants.data(), mvp, constants.size());
-    commandList.unmap(_constantBuffer.get(), constants);
+    renderContext.commandList.unmap(_constantBuffer.get(), constants);
 
-    commandList.bindIndexBuffer(_indexBuffer.get(), GpuIndexFormat::Unsigned16, 0);
-    commandList.bindVertexBuffer(0, _vertexBuffer.get(), sizeof(ImDrawVert));
-    commandList.bindConstantBuffer(0, _constantBuffer.get(), GpuShaderStage::Vertex);
-    commandList.bindSampler(0, _sampler.get(), GpuShaderStage::Pixel);
+    renderContext.commandList.bindIndexBuffer(_indexBuffer.get(), GpuIndexFormat::Unsigned16, 0);
+    renderContext.commandList.bindVertexBuffer(0, _vertexBuffer.get(), sizeof(ImDrawVert));
+    renderContext.commandList.bindConstantBuffer(0, _constantBuffer.get(), GpuShaderStage::Vertex);
+    renderContext.commandList.bindSampler(0, _sampler.get(), GpuShaderStage::Pixel);
 
     GpuViewportDesc viewport;
     viewport.width = data.DisplaySize.x;
@@ -232,7 +233,7 @@ void up::DrawImgui::endFrame(GpuDevice& device, GpuCommandList& commandList) {
     viewport.topY = 0;
     viewport.minDepth = 0;
     viewport.maxDepth = 1;
-    commandList.setViewport(viewport);
+    renderContext.commandList.setViewport(viewport);
 
     indexOffset = 0;
     vertexOffset = 0;
@@ -250,16 +251,17 @@ void up::DrawImgui::endFrame(GpuDevice& device, GpuCommandList& commandList) {
                 continue;
             }
 
+            auto const srv = static_cast<GpuResourceView*>(cmd.TextureId);
+            renderContext.commandList.bindShaderResource(0, srv != nullptr ? srv : _srv.get(), GpuShaderStage::Pixel);
+
             GpuClipRect scissor;
             scissor.left = (uint32)cmd.ClipRect.x - (uint32)pos.x;
             scissor.top = (uint32)cmd.ClipRect.y - (uint32)pos.y;
             scissor.right = (uint32)cmd.ClipRect.z - (uint32)pos.x;
             scissor.bottom = (uint32)cmd.ClipRect.w - (uint32)pos.y;
-            commandList.setClipRect(scissor);
+            renderContext.commandList.setClipRect(scissor);
 
-            // FIXME: different texture per cmd
-            commandList.bindShaderResource(0, _srv.get(), GpuShaderStage::Pixel);
-            commandList.drawIndexed(cmd.ElemCount, indexOffset, vertexOffset);
+            renderContext.commandList.drawIndexed(cmd.ElemCount, indexOffset, vertexOffset);
 
             indexOffset += cmd.ElemCount;
         }
@@ -291,8 +293,11 @@ void up::DrawImgui::_ensureContext() {
 
     io.Fonts->AddFontDefault();
 
-    io.BackendPlatformName = "potato::grui";
+    io.BackendPlatformName = "potato";
+    io.UserData = this;
     io.IniFilename = nullptr;
+
+    io.ConfigFlags = ImGuiConfigFlags_DockingEnable;
 
     io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
@@ -325,4 +330,17 @@ void up::DrawImgui::_freeContext(ImGuiContext* ctx) {
     if (ctx != nullptr) {
         ImGui::DestroyContext(ctx);
     }
+}
+
+void ImGui::SetCaptureRelativeMouseMode(bool captured) {
+    auto& io = ImGui::GetIO();
+    auto* const state = static_cast<up::DrawImgui*>(io.UserData);
+    if (state != nullptr) {
+        state->setCaptureRelativeMouseMode(captured);
+    }
+}
+auto ImGui::IsCaptureRelativeMouseMode() -> bool {
+    auto& io = ImGui::GetIO();
+    auto* const state = static_cast<up::DrawImgui*>(io.UserData);
+    return state != nullptr ? state->isCaptureRelativeMouseMode() : false;
 }
