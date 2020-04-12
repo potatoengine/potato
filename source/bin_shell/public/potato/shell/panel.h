@@ -23,7 +23,7 @@ namespace up::shell {
         bool enabled() const noexcept { return _enabled; }
         void enabled(bool enabled) noexcept { _enabled = enabled; }
 
-    private:
+    protected:
         bool _enabled = true;
     };
 } // namespace up::shell
