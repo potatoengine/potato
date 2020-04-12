@@ -17,11 +17,14 @@
 #include "potato/render/debug_draw.h"
 #include "potato/render/context.h"
 #include "potato/render/draw_imgui.h"
+#include "potato/spud/fixed_string_writer.h"
 
 namespace up::shell {
     class InspectorPanel : public shell::Panel {
     public:
-        explicit InspectorPanel(Scene& scene) : _scene(scene) {}
+        explicit InspectorPanel(Scene& scene) : _scene(scene) {
+            _selected = _scene.main();
+        }
         virtual ~InspectorPanel() = default;
 
         zstring_view displayName() const override { return "Inspector"; }
@@ -29,6 +32,7 @@ namespace up::shell {
 
     private:
         Scene& _scene;
+        EntityId _selected = EntityId::None;
     };
 
     auto createInspectorPanel(Scene& scene) -> box<Panel> {
@@ -65,7 +69,7 @@ namespace up::shell {
                     glm::degrees(euler.y),
                     glm::degrees(euler.z));
 
-                if (ImGui::SliderFloat3(_name.c_str(), &eulerDegrees.x, -179.999f, +180.0f)) {
+                if (ImGui::SliderFloat3(_name.c_str(), &eulerDegrees.x, 0, +359.f)) {
                     value = glm::vec3(
                         glm::radians(eulerDegrees.x),
                         glm::radians(eulerDegrees.y),
@@ -86,12 +90,32 @@ namespace up::shell {
         }
 
         if (ImGui::Begin(u8"\uf085 Inspector")) {
-            _scene.world().interrogateEntity(_scene.main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
+            _scene.world().interrogateEntity(_selected, [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
                 if (ImGui::CollapsingHeader(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGuiComponentReflector ref;
                     meta->reflect(data, ref);
                 }
             });
+
+            for (size_t i = 1, e = _scene.world().archetypes().archetypes(); i != e; ++i) {
+                auto const archetypeId = static_cast<ArchetypeId>(i);
+                for (Chunk* chunk : _scene.world().getChunks(archetypeId)) {
+                    auto const rows = _scene.world().archetypes().layoutOf(archetypeId);
+                    for (auto const& row : rows) {
+                        if (row.meta == &ComponentMeta::get<Entity>()) {
+                            Entity const* const entities = reinterpret_cast<Entity const*>(chunk->data + row.offset);
+                            for (int j = 0; j != chunk->header.entities; ++j) {
+                                fixed_string_writer label;
+                                format_append(label, "{}", (unsigned)entities[j].id);
+                                if (ImGui::Button(label.c_str())) {
+                                    _selected = entities[j].id;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
         }
         ImGui::End();
     }
