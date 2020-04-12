@@ -90,13 +90,15 @@ namespace up::shell {
 
                 glm::vec3 movement = {0, 0, 0}, motion = {0, 0, 0};
 
-                ImGui::GetWindowDrawList()->AddCallback([](const ImDrawList* list, const ImDrawCmd* cmd) {
+                auto callback = [](const ImDrawList* list, const ImDrawCmd* cmd) {
                     // Note: we'd like to do this here, but we'll need our own render data since we're in
                     // the middle of using the Renderer to draw the ImGui data at the time this is called.
                     /*auto& self = *static_cast<ScenePanel*>(cmd->UserCallbackData);
                     auto& io = ImGui::GetIO();
                     self._renderScene(io.DeltaTime);*/
-                }, this);
+                };
+
+                ImGui::GetWindowDrawList()->AddCallback(callback, this);
 
                 // Note: would prefer to do this in a render callback instead
                 //

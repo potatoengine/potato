@@ -74,4 +74,4 @@ namespace up {
 namespace ImGui {
     UP_RENDER_API void SetCaptureRelativeMouseMode(bool captured);
     UP_RENDER_API auto IsCaptureRelativeMouseMode() -> bool;
-}
+} // namespace ImGui

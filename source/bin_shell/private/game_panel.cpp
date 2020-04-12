@@ -54,7 +54,6 @@ namespace up::shell {
         auto const* const ctx = ImGui::GetCurrentContext();
         auto const& io = ImGui::GetIO();
 
-        
         if (ImGui::IsKeyPressed(SDL_SCANCODE_F5, false)) {
             _scene.playing(!_scene.playing());
         }
@@ -77,8 +76,8 @@ namespace up::shell {
 
             auto keys = SDL_GetKeyboardState(nullptr);
             relMove = {ImGui::IsKeyPressed(SDL_SCANCODE_D) - ImGui::IsKeyPressed(SDL_SCANCODE_A),
-                        ImGui::IsKeyPressed(SDL_SCANCODE_SPACE) - ImGui::IsKeyPressed(SDL_SCANCODE_C),
-                        ImGui::IsKeyPressed(SDL_SCANCODE_W) - ImGui::IsKeyPressed(SDL_SCANCODE_S)};
+                       ImGui::IsKeyPressed(SDL_SCANCODE_SPACE) - ImGui::IsKeyPressed(SDL_SCANCODE_C),
+                       ImGui::IsKeyPressed(SDL_SCANCODE_W) - ImGui::IsKeyPressed(SDL_SCANCODE_S)};
 
             _cameraController.apply(_camera, relMove, relMotion, io.DeltaTime);
         }

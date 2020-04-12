@@ -26,4 +26,4 @@ namespace up::shell {
     private:
         bool _enabled = true;
     };
-}
+} // namespace up::shell

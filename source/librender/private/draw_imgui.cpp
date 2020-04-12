@@ -338,7 +338,6 @@ void ImGui::SetCaptureRelativeMouseMode(bool captured) {
     if (state != nullptr) {
         state->setCaptureRelativeMouseMode(captured);
     }
-
 }
 auto ImGui::IsCaptureRelativeMouseMode() -> bool {
     auto& io = ImGui::GetIO();
