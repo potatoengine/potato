@@ -45,7 +45,9 @@ namespace up::components {
     UP_REFLECT_TYPE(Position) {
         reflect("xyz", &Position::xyz);
     }
-    UP_REFLECT_TYPE(Rotation) {}
+    UP_REFLECT_TYPE(Rotation) {
+        reflect("rotation", &Rotation::rot);
+    }
     UP_REFLECT_TYPE(Transform) {}
     UP_REFLECT_TYPE(Mesh) {}
     UP_REFLECT_TYPE(Wave) {
@@ -70,10 +72,6 @@ UP_DEFINE_COMPONENT(up::components::Transform);
 UP_DEFINE_COMPONENT(up::components::Mesh);
 UP_DEFINE_COMPONENT(up::components::Wave);
 UP_DEFINE_COMPONENT(up::components::Spin);
-
-UP_REFLECT_TYPE(up::components::Position) {
-    reflect("xyz", &up::components::Position::xyz);
-}
 
 up::Scene::Scene() : _world(new_box<World>()) {
 }

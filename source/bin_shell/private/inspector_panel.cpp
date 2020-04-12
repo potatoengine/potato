@@ -58,6 +58,13 @@ namespace up::shell {
                 ImGui::InputFloat3(_name.c_str(), &value.x);
             }
 
+            void onValue(glm::quat& value) override {
+                auto euler = glm::eulerAngles(value);
+                if (ImGui::InputFloat3(_name.c_str(), &euler.x)) {
+                    value = euler;
+                }
+            }
+
         private:
             up::zstring_view _name;
         };

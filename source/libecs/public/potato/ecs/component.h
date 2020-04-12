@@ -8,6 +8,7 @@
 #include "potato/spud/traits.h"
 #include "potato/reflex/reflect.h"
 #include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <atomic>
 #include <new>
 
@@ -39,6 +40,7 @@ namespace up {
         virtual void onValue(int& value) = 0;
         virtual void onValue(float& value) = 0;
         virtual void onValue(glm::vec3& value) = 0;
+        virtual void onValue(glm::quat& value) = 0;
     };
 
     /// Stores metadata about a Component type. This includes its size and alignment,
