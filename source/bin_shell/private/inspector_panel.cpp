@@ -60,8 +60,16 @@ namespace up::shell {
 
             void onValue(glm::quat& value) override {
                 auto euler = glm::eulerAngles(value);
-                if (ImGui::InputFloat3(_name.c_str(), &euler.x)) {
-                    value = euler;
+                auto eulerDegrees = glm::vec3(
+                    glm::degrees(euler.x),
+                    glm::degrees(euler.y),
+                    glm::degrees(euler.z));
+
+                if (ImGui::SliderFloat3(_name.c_str(), &eulerDegrees.x, -179.999f, +180.0f)) {
+                    value = glm::vec3(
+                        glm::radians(eulerDegrees.x),
+                        glm::radians(eulerDegrees.y),
+                        glm::radians(eulerDegrees.z));
                 }
             }
 
