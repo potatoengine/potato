@@ -1,12 +1,16 @@
 // Copyright (C) 2018-2020 Sean Middleditch, all rights reserverd.
 
-#include "potato/spud/box.h"
-#include "potato/spud/unique_resource.h"
-#include "potato/runtime/native.h"
-#include "potato/render/draw_imgui.h"
-#include "potato/runtime/logger.h"
+
 #include "camera.h"
+
 #include "potato/shell/panel.h"
+#include "potato/shell/selection.h"
+
+#include <potato/spud/box.h>
+#include <potato/spud/unique_resource.h>
+#include <potato/runtime/native.h>
+#include <potato/render/draw_imgui.h>
+#include <potato/runtime/logger.h>
 
 #include <SDL.h>
 #include <chrono>
@@ -71,6 +75,7 @@ private:
     int _lastCursor = -1;
     DrawImgui _drawImgui;
     Logger _logger;
+    shell::Selection _selection;
     vector<box<shell::Panel>> _documents;
     float _lastFrameTime = 0.f;
     float _inspectorWidth = 300.f;
