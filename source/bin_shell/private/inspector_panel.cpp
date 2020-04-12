@@ -87,7 +87,7 @@ namespace up::shell {
 
         if (ImGui::Begin(u8"\uf085 Inspector")) {
             _scene.world().interrogateEntity(_scene.main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
-                if (ImGui::CollapsingHeader(meta->name.c_str())) {
+                if (ImGui::CollapsingHeader(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGuiComponentReflector ref;
                     meta->reflect(data, ref);
                 }
