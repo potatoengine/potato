@@ -9,6 +9,8 @@
 #include "camera_controller.h"
 
 #include "potato/shell/panel.h"
+#include "potato/shell/selection.h"
+
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_texture.h"
 #include "potato/render/gpu_resource_view.h"
@@ -21,7 +23,7 @@
 namespace up::shell {
     class InspectorPanel : public shell::Panel {
     public:
-        explicit InspectorPanel(Scene& scene) : _scene(scene) {}
+        explicit InspectorPanel(Scene& scene, Selection& selection) : _scene(scene), _selection(selection) {}
         virtual ~InspectorPanel() = default;
 
         zstring_view displayName() const override { return "Inspector"; }
@@ -29,10 +31,11 @@ namespace up::shell {
 
     private:
         Scene& _scene;
+        Selection& _selection;
     };
 
-    auto createInspectorPanel(Scene& scene) -> box<Panel> {
-        return new_box<InspectorPanel>(scene);
+    auto createInspectorPanel(Scene& scene, Selection& selection) -> box<Panel> {
+        return new_box<InspectorPanel>(scene, selection);
     }
 
     namespace {
@@ -60,8 +63,16 @@ namespace up::shell {
 
             void onValue(glm::quat& value) override {
                 auto euler = glm::eulerAngles(value);
-                if (ImGui::InputFloat3(_name.c_str(), &euler.x)) {
-                    value = euler;
+                auto eulerDegrees = glm::vec3(
+                    glm::degrees(euler.x),
+                    glm::degrees(euler.y),
+                    glm::degrees(euler.z));
+
+                if (ImGui::SliderFloat3(_name.c_str(), &eulerDegrees.x, 0, +359.f)) {
+                    value = glm::vec3(
+                        glm::radians(eulerDegrees.x),
+                        glm::radians(eulerDegrees.y),
+                        glm::radians(eulerDegrees.z));
                 }
             }
 
@@ -77,9 +88,9 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::Begin(u8"\uf085 Inspector")) {
-            _scene.world().interrogateEntity(_scene.main(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
-                if (ImGui::CollapsingHeader(meta->name.c_str())) {
+        if (ImGui::Begin(u8"\uf085 Inspector", &_enabled, ImGuiWindowFlags_NoCollapse)) {
+            _scene.world().interrogateEntity(_selection.selected(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
+                if (ImGui::CollapsingHeader(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGuiComponentReflector ref;
                     meta->reflect(data, ref);
                 }

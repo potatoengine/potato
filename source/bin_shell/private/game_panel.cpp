@@ -91,7 +91,7 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::Begin("GamePanel", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+        if (ImGui::Begin("GamePanel", &_enabled, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
 
             if (contentSize.x <= 0 || contentSize.y <= 0) {

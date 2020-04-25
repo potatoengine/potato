@@ -71,7 +71,7 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::Begin("ScenePanel", nullptr, ImGuiWindowFlags_None)) {
+        if (ImGui::Begin("ScenePanel", &_enabled, ImGuiWindowFlags_NoCollapse)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
 
             if (contentSize.x <= 0 || contentSize.y <= 0) {

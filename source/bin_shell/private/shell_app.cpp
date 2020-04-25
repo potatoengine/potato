@@ -49,7 +49,8 @@
 namespace up::shell {
     extern auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
     extern auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
-    extern auto createInspectorPanel(Scene& scene) -> box<Panel>;
+    extern auto createInspectorPanel(Scene& scene, Selection& selection) -> box<Panel>;
+    extern auto createHierarchyPanel(Scene& scene, Selection& selection) -> box<Panel>;
 } // namespace up::shell
 
 up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell") {}
@@ -133,6 +134,8 @@ int up::ShellApp::initialize() {
 
     _scene->create(new_shared<Model>(std::move(mesh), std::move(material)));
 
+    _selection.select(_scene->main());
+
     auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
     auto imguiPixelShader = _renderer->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
     if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
@@ -154,7 +157,8 @@ int up::ShellApp::initialize() {
 
     _documents.push_back(shell::createScenePanel(*_renderer, *_scene));
     _documents.push_back(shell::createGamePanel(*_renderer, *_scene));
-    _documents.push_back(shell::createInspectorPanel(*_scene));
+    _documents.push_back(shell::createInspectorPanel(*_scene, _selection));
+    _documents.push_back(shell::createHierarchyPanel(*_scene, _selection));
 
     return 0;
 }
@@ -384,9 +388,11 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_None);
 
             auto contentDockId = centralDockId;
-            auto const paneDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
+            auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
+            auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
 
-            ImGui::DockBuilderDockWindow(u8"\uf085 Inspector", paneDockId);
+            ImGui::DockBuilderDockWindow(u8"\uf085 Inspector", inspectedDockId);
+            ImGui::DockBuilderDockWindow("Hierarchy", hierarchyDockId);
             ImGui::DockBuilderDockWindow("ScenePanel", contentDockId);
             ImGui::DockBuilderDockWindow("GamePanel", contentDockId);
 
