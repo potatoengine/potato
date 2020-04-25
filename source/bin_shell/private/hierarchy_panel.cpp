@@ -46,8 +46,7 @@ namespace up::shell {
                             for (int j = 0; j != chunk->header.entities; ++j) {
                                 fixed_string_writer label;
                                 format_append(label, "Entity (#{})", (unsigned)entities[j].id);
-                                ImGui::PushItemWidth(-1.f);
-                                if (ImGui::Button(label.c_str())) {
+                                if (ImGui::Selectable(label.c_str())) {
                                     _selection.select(entities[j].id);
                                 }
                             }
