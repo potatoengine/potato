@@ -1,6 +1,5 @@
 // Copyright (C) 2018-2020 Sean Middleditch, all rights reserverd.
 
-
 #include "camera.h"
 
 #include "potato/shell/panel.h"
