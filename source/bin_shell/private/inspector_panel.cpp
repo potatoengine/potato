@@ -90,9 +90,10 @@ namespace up::shell {
 
         if (ImGui::Begin(as_char(u8"\uf085 Inspector"), &_enabled, ImGuiWindowFlags_NoCollapse)) {
             _scene.world().interrogateEntityUnsafe(_selection.selected(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
-                if (ImGui::CollapsingHeader(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::TreeNodeEx(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGuiComponentReflector ref;
                     meta->reflect(data, ref);
+                    ImGui::TreePop();
                 }
             });
         }
