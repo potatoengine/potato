@@ -29,7 +29,7 @@ namespace up {
         ///
         /// This is the primary mechanism for finding or mutating Entities.
         ///
-        template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, size_t, Components*...>>>
+        template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, size_t, EntityId const*, Components*...>>>
         void selectChunks(World& world, Callback&& callback);
 
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
@@ -37,7 +37,7 @@ namespace up {
         ///
         /// This is the primary mechanism for finding or mutating Entities.
         ///
-        template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, Components&...>>>
+        template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, EntityId, Components&...>>>
         void select(World& world, Callback&& callback);
 
     private:
@@ -96,7 +96,9 @@ namespace up {
     void Query<Components...>::_executeChunks(World& world, Callback&& callback, std::index_sequence<Indices...>) const {
         for (auto const& match : _matches) {
             for (auto const& chunk : world.chunksOf(match.archetype)) {
-                callback(chunk->header.entities, static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices]))...);
+                callback(chunk->header.entities,
+                    static_cast<EntityId const*>(static_cast<void*>(chunk->data)),
+                    static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices]))...);
             }
         }
     }
@@ -107,7 +109,9 @@ namespace up {
         for (auto const& match : _matches) {
             for (auto const& chunk : world.chunksOf(match.archetype)) {
                 for (unsigned index = 0; index < chunk->header.entities; ++index) {
-                    callback(*(static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices])) + index)...);
+                    callback(
+                        *(static_cast<EntityId*>(static_cast<void*>(chunk->data)) + index),
+                        *(static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices])) + index)...);
                 }
             }
         }

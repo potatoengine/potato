@@ -4,7 +4,6 @@
 
 #include "_export.h"
 #include "component.h"
-#include "entity.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/utility.h"

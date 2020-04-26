@@ -3,7 +3,6 @@
 #include <potato/runtime/assertion.h>
 #include "potato/ecs/world.h"
 #include "potato/ecs/archetype.h"
-#include "potato/ecs/entity.h"
 #include "potato/spud/find.h"
 #include <algorithm>
 
@@ -50,11 +49,11 @@ void up::World::_deleteEntity(EntityId entity) {
     //
     auto const lastIndex = chunk->header.entities;
     if (index != lastIndex) {
+        static_cast<EntityId*>(static_cast<void*>(chunk->data))[index] = static_cast<EntityId*>(static_cast<void*>(chunk->data))[lastIndex];
         _moveTo(archetypeId, *chunk, index, *chunk, lastIndex);
 
         auto const layout = _archetypes.layoutOf(archetypeId);
-        auto const row = findRowDesc(layout, getComponentId<Entity>());
-        auto const movedEntity = static_cast<Entity const*>(static_cast<void*>(chunk->data + row->offset + row->width * lastIndex))->id;
+        auto const movedEntity = *static_cast<EntityId const*>(static_cast<void*>(chunk->data + sizeof(EntityId) * lastIndex));
         _entities.setIndex(movedEntity, chunkIndex, index);
     }
 
@@ -74,6 +73,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
 
         auto* oldChunk = _archetypes.getChunk(archetypeId, chunkIndex);
+        static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *oldChunk, index);
 
         // remove old entity (must be gone before remap)
@@ -91,6 +91,7 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& compone
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
 
         auto* chunk = _archetypes.getChunk(archetypeId, chunkIndex);
+        static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *chunk, index);
         _copyTo(newArchetype, newChunk, newIndex, componentMeta.id, componentData);
 
@@ -112,7 +113,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
 
     // Allocate EntityId
     auto const entity = _entities.allocate(newArchetype, newChunkIndex, newIndex);
-    _copyTo(newArchetype, newChunk, newIndex, getComponentId<Entity>(), &entity);
+    static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entity;
 
     for (auto index : sequence(components.size())) {
         _copyTo(newArchetype, newChunk, newIndex, components[index]->id, data[index]);

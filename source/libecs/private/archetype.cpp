@@ -2,7 +2,6 @@
 
 #include "potato/ecs/archetype.h"
 #include "potato/ecs/component.h"
-#include "potato/ecs/entity.h"
 #include "potato/spud/utility.h"
 #include "potato/spud/sort.h"
 #include "potato/spud/find.h"
@@ -37,12 +36,6 @@ auto up::ArchetypeMapper::_beginArchetype(bit_set components) -> ArchetypeId {
     _archetypes.push_back({static_cast<uint32>(_chunks.size()), static_cast<uint32>(_layout.size())});
     _components.push_back(std::move(components));
 
-    // we'll always include the EntityId in the layout
-    //
-    auto const& entityMeta = ComponentMeta::get<Entity>();
-    _layout.push_back({entityMeta.id, &entityMeta, 0, static_cast<uint16>(entityMeta.size)});
-    _components.back().set(to_underlying(entityMeta.id));
-
     return id;
 }
 
@@ -52,14 +45,13 @@ auto up::ArchetypeMapper::_finalizeArchetype(ArchetypeId archetype) noexcept -> 
     archData.layoutLength = static_cast<uint16>(_layout.size() - archData.layoutOffset);
     auto const layout = _layout.subspan(archData.layoutOffset, archData.layoutLength);
 
-    // sort rows by alignment for ideal packing (do not sort the Entity component)
+    // sort rows by alignment for ideal packing
     //
-    up::sort(
-        layout.subspan(1), {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
+    up::sort(layout, {}, [](const auto& layout) noexcept { return layout.meta->alignment; });
 
     // calculate total size of all components
     //
-    size_t size = 0;
+    size_t size = sizeof(EntityId);
     size_t padding = 0;
     for (auto const& row : layout) {
         padding += align_to(size, row.meta->alignment) - size;
@@ -73,7 +65,7 @@ auto up::ArchetypeMapper::_finalizeArchetype(ArchetypeId archetype) noexcept -> 
 
     // calculate the row offets for the layout
     //
-    size_t offset = 0;
+    size_t offset = sizeof(EntityId) * archData.maxEntitiesPerChunk;
     for (auto& row : layout) {
         offset = align_to(offset, row.meta->alignment);
         row.offset = static_cast<uint32>(offset);
@@ -85,7 +77,7 @@ auto up::ArchetypeMapper::_finalizeArchetype(ArchetypeId archetype) noexcept -> 
 
     // sort all rows by component id
     //
-    up::sort(layout.subspan(1), {}, &ChunkRowDesc::component);
+    up::sort(layout, {}, &ChunkRowDesc::component);
 
     return archetype;
 }
@@ -104,7 +96,6 @@ auto up::ArchetypeMapper::acquireArchetype(view<ComponentMeta const*> components
     for (ComponentMeta const* meta : components) {
         set.set(to_underlying(meta->id));
     }
-    set.set(to_underlying(getComponentId<Entity>()));
 
     if (auto [found, arch] = _findArchetype(set); found) {
         return arch;
@@ -131,7 +122,7 @@ auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMe
 
     auto id = _beginArchetype(std::move(set));
     auto const& originalArch = _archetypes[to_underlying(original)];
-    for (int index = 1 /*Entity*/; index != originalArch.layoutLength; ++index) {
+    for (int index = 0; index != originalArch.layoutLength; ++index) {
         _layout.push_back(_layout[originalArch.layoutOffset + index]);
     }
     _layout.push_back({additional->id, additional, 0, static_cast<uint16>(additional->size)});
@@ -149,7 +140,7 @@ auto up::ArchetypeMapper::acquireArchetypeWithout(ArchetypeId original, Componen
 
     auto id = _beginArchetype(std::move(set));
     auto const& originalArch = _archetypes[to_underlying(original)];
-    for (int index = 1 /*Entity*/; index != originalArch.layoutLength; ++index) {
+    for (int index = 0; index != originalArch.layoutLength; ++index) {
         auto const& row = _layout[originalArch.layoutOffset + index];
         if (row.component != excluded) {
             _layout.push_back(row);

@@ -109,28 +109,28 @@ void up::Scene::tick(float frameTime) {
         return;
     }
 
-    _waveQuery.select(*_world, [&](components::Position& pos, components::Wave& wave) {
+    _waveQuery.select(*_world, [&](EntityId, components::Position& pos, components::Wave& wave) {
         wave.offset += frameTime * .2f;
         pos.xyz.y = 1 + 5 * glm::sin(wave.offset * 10);
     });
 
-    _orbitQuery.select(*_world, [&](components::Position& pos) {
+    _orbitQuery.select(*_world, [&](EntityId, components::Position& pos) {
         pos.xyz = glm::rotateY(pos.xyz, frameTime);
     });
 
-    _spinQuery.select(*_world, [&](components::Rotation& rot, components::Spin const& spin) {
+    _spinQuery.select(*_world, [&](EntityId, components::Rotation& rot, components::Spin const& spin) {
         rot.rot = glm::angleAxis(spin.radians * frameTime, glm::vec3(0.f, 1.f, 0.f)) * rot.rot;
     });
 }
 
 void up::Scene::flush() {
-    _transformQuery.select(*_world, [&](components::Rotation const& rot, components::Position const& pos, components::Transform& trans) {
+    _transformQuery.select(*_world, [&](EntityId, components::Rotation const& rot, components::Position const& pos, components::Transform& trans) {
         trans.trans = glm::translate(pos.xyz) * glm::mat4_cast(rot.rot);
     });
 }
 
 void up::Scene::render(RenderContext& ctx) {
-    _renderableMeshQuery.select(*_world, [&](components::Mesh& mesh, components::Transform const& trans) {
+    _renderableMeshQuery.select(*_world, [&](EntityId, components::Mesh& mesh, components::Transform const& trans) {
         mesh.model->render(ctx, trans.trans);
     });
 }

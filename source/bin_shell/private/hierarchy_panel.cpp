@@ -39,17 +39,12 @@ namespace up::shell {
             for (size_t i = 1, e = _scene.world().archetypes().archetypes(); i != e; ++i) {
                 auto const archetypeId = static_cast<ArchetypeId>(i);
                 for (Chunk* chunk : _scene.world().chunksOf(archetypeId)) {
-                    auto const rows = _scene.world().archetypes().layoutOf(archetypeId);
-                    for (auto const& row : rows) {
-                        if (row.meta == &ComponentMeta::get<Entity>()) {
-                            Entity const* const entities = reinterpret_cast<Entity const*>(chunk->data + row.offset);
-                            for (int j = 0; j != chunk->header.entities; ++j) {
-                                fixed_string_writer label;
-                                format_append(label, "Entity (#{})", (unsigned)entities[j].id);
-                                if (ImGui::Selectable(label.c_str())) {
-                                    _selection.select(entities[j].id);
-                                }
-                            }
+                    EntityId const* const entities = reinterpret_cast<EntityId const*>(chunk->data);
+                    for (int j = 0; j != chunk->header.entities; ++j) {
+                        fixed_string_writer label;
+                        format_append(label, "Entity (#{})", (unsigned)entities[j]);
+                        if (ImGui::Selectable(label.c_str())) {
+                            _selection.select(entities[j]);
                         }
                     }
                 }

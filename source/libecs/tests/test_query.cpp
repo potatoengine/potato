@@ -1,6 +1,5 @@
 #include "potato/ecs/world.h"
 #include "potato/ecs/query.h"
-#include "potato/ecs/entity.h"
 #include <doctest/doctest.h>
 
 namespace {
@@ -48,7 +47,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] Query") {
         float weight = 0;
 
         Query<Second> query;
-        query.selectChunks(world, [&](size_t count, Second* second) {
+        query.selectChunks(world, [&](size_t count, EntityId const*, Second* second) {
             ++invokeCount;
             entityCount += count;
 
@@ -78,7 +77,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] Query") {
         Query<Second> query;
         float sum = 0;
         int count = 0;
-        query.select(world, [&](Second const& second) {
+        query.select(world, [&](EntityId, Second const& second) {
             ++count;
             sum += second.b;
         });
