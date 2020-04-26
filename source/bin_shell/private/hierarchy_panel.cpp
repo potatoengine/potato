@@ -38,7 +38,7 @@ namespace up::shell {
         if (ImGui::Begin("Hierarchy", &_enabled, ImGuiWindowFlags_NoCollapse)) {
             for (size_t i = 1, e = _scene.world().archetypes().archetypes(); i != e; ++i) {
                 auto const archetypeId = static_cast<ArchetypeId>(i);
-                for (Chunk* chunk : _scene.world().getChunks(archetypeId)) {
+                for (Chunk* chunk : _scene.world().chunksOf(archetypeId)) {
                     auto const rows = _scene.world().archetypes().layoutOf(archetypeId);
                     for (auto const& row : rows) {
                         if (row.meta == &ComponentMeta::get<Entity>()) {

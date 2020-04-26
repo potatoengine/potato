@@ -174,7 +174,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
         auto id = world.createEntity(Test1{'f'}, Another{1.0, 2.f}, Second{7.f, 'g'});
 
-        auto success = world.interrogateEntity(id, [](auto entity, auto archetype, auto component, auto data) {
+        auto success = world.interrogateEntityUnsafe(id, [](auto entity, auto archetype, auto component, auto data) {
             if (component->id == getComponentId<Test1>()) {
                 DOCTEST_CHECK_EQ('f', static_cast<Test1 const*>(data)->a);
             }

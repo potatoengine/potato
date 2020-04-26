@@ -95,7 +95,7 @@ namespace up {
     template <typename Callback, size_t... Indices>
     void Query<Components...>::_executeChunks(World& world, Callback&& callback, std::index_sequence<Indices...>) const {
         for (auto const& match : _matches) {
-            for (auto const& chunk : world.getChunks(match.archetype)) {
+            for (auto const& chunk : world.chunksOf(match.archetype)) {
                 callback(chunk->header.entities, static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices]))...);
             }
         }
@@ -105,7 +105,7 @@ namespace up {
     template <typename Callback, size_t... Indices>
     void Query<Components...>::_execute(World& world, Callback&& callback, std::index_sequence<Indices...>) const {
         for (auto const& match : _matches) {
-            for (auto const& chunk : world.getChunks(match.archetype)) {
+            for (auto const& chunk : world.chunksOf(match.archetype)) {
                 for (unsigned index = 0; index < chunk->header.entities; ++index) {
                     callback(*(static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices])) + index)...);
                 }

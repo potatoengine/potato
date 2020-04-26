@@ -37,7 +37,7 @@ namespace up {
         ///
         /// @returns nullptr if the ArchetypeId is invalid
         ///
-        auto getChunks(ArchetypeId arch) noexcept -> view<Chunk*> {
+        auto chunksOf(ArchetypeId arch) noexcept -> view<Chunk*> {
             return _archetypes.chunksOf(arch);
         }
 
@@ -81,7 +81,7 @@ namespace up {
         /// Interrogate an entity and enumerate all of its components.
         ///
         template <typename Callback>
-        auto interrogateEntity(EntityId entity, Callback&& callback) const {
+        auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const {
             if (auto [success, archetype, chunkIndex, index] = _entities.tryParse(entity); success) {
                 auto const layout = _archetypes.layoutOf(archetype);
                 Chunk* const chunk = _archetypes.getChunk(archetype, chunkIndex);
