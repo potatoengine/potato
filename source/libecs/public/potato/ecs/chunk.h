@@ -25,7 +25,7 @@ namespace up {
 
     /// The fixed header at the beginning of every Chunk
     ///
-    struct alignas(32) ChunkHeader {
+    struct alignas(64) ChunkHeader {
         ArchetypeId archetype = ArchetypeId::Empty;
         unsigned int entities = 0;
         unsigned int capacity = 0;
