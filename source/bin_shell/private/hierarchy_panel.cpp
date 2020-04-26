@@ -42,7 +42,7 @@ namespace up::shell {
                     EntityId const* const entities = reinterpret_cast<EntityId const*>(chunk->data);
                     for (int j = 0; j != chunk->header.entities; ++j) {
                         fixed_string_writer label;
-                        format_append(label, "Entity (#{})", (unsigned)entities[j]);
+                        format_append(label, "Entity (#{})", to_underlying(entities[j]));
                         if (ImGui::Selectable(label.c_str(), entities[j] == _selection.selected())) {
                             _selection.select(entities[j]);
                         }
