@@ -36,16 +36,20 @@ namespace up::shell {
         }
 
         if (ImGui::Begin("Hierarchy", &_enabled, ImGuiWindowFlags_NoCollapse)) {
-            for (size_t i = 1, e = _scene.world().archetypes().archetypes(); i != e; ++i) {
-                auto const archetypeId = static_cast<ArchetypeId>(i);
-                for (Chunk* chunk : _scene.world().chunksOf(archetypeId)) {
-                    EntityId const* const entities = reinterpret_cast<EntityId const*>(chunk->data);
-                    for (int j = 0; j != chunk->header.entities; ++j) {
-                        fixed_string_writer label;
-                        format_append(label, "Entity (#{})", to_underlying(entities[j]));
-                        if (ImGui::Selectable(label.c_str(), entities[j] == _selection.selected())) {
-                            _selection.select(entities[j]);
-                        }
+            fixed_string_writer label;
+
+            for (auto const& chunk : _scene.world().chunks()) {
+                EntityId const* const entities = reinterpret_cast<EntityId const*>(chunk->data);
+                for (EntityId entityId : span{entities, chunk->header.entities}) {
+                    label.clear();
+                    format_append(label, "Entity (#{})", entityId);
+
+                    bool selected = entityId == _selection.selected();
+                    if (ImGui::Selectable(label.c_str(), selected)) {
+                        _selection.select(entityId);
+                    }
+                    if (selected) {
+                        ImGui::SetItemDefaultFocus();
                     }
                 }
             }

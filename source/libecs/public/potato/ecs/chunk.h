@@ -54,6 +54,8 @@ namespace up {
         auto allocate(ArchetypeId archetype) -> Chunk*;
         void recycle(Chunk* chunk);
 
+        auto chunks() const noexcept -> view<box<Chunk>> { return _chunks; }
+
     private:
         vector<box<Chunk>> _chunks;
         Chunk* _freeChunkHead = nullptr;

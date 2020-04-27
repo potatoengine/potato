@@ -41,6 +41,10 @@ namespace up {
             return _archetypes.chunksOf(arch);
         }
 
+        /// @brief View of all chunks allocated in the world.
+        /// @return all chunks in the world.
+        auto chunks() const noexcept { return _chunks.chunks(); }
+
         /// Creates a new Entity with the provided list of Component data
         ///
         template <typename... Components>
