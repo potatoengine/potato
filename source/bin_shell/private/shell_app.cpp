@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "camera_controller.h"
 #include "scene.h"
+#include "components.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/platform.h"
@@ -167,6 +168,14 @@ int up::ShellApp::initialize() {
     _documents.push_back(shell::createGamePanel(*_renderer, *_scene));
     _documents.push_back(shell::createInspectorPanel(*_scene, _selection));
     _documents.push_back(shell::createHierarchyPanel(*_scene, _selection));
+
+    auto& registry = ComponentRegistry::defaultRegistry();
+    registry.registerComponent(&ComponentMeta::get<components::Position>());
+    registry.registerComponent(&ComponentMeta::get<components::Rotation>());
+    registry.registerComponent(&ComponentMeta::get<components::Transform>());
+    registry.registerComponent(&ComponentMeta::get<components::Mesh>());
+    registry.registerComponent(&ComponentMeta::get<components::Wave>());
+    registry.registerComponent(&ComponentMeta::get<components::Spin>());
 
     return 0;
 }
