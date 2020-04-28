@@ -31,6 +31,7 @@
 #include "potato/render/debug_draw.h"
 #include "potato/ecs/world.h"
 #include "potato/ecs/query.h"
+#include "potato/ecs/registry.h"
 
 #include <chrono>
 #include <SDL.h>
