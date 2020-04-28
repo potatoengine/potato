@@ -48,6 +48,7 @@ namespace up {
     ///
     /// Todo: replace with a ubiquitous reflection system of some kind
     struct ComponentMeta {
+        using Construct = void(*)(void * dest) noexcept;
         using Copy = void (*)(void* dest, void const* source) noexcept;
         using Relocate = void (*)(void* dest, void* source) noexcept;
         using Destroy = void (*)(void* mem) noexcept;
@@ -56,7 +57,7 @@ namespace up {
         /// Creates a ComponentMeta; should only be used by the UP_COMPONENT macro
         ///
         template <typename Component>
-        static constexpr auto construct(zstring_view name) noexcept -> ComponentMeta;
+        static constexpr auto createMeta(zstring_view name) noexcept -> ComponentMeta;
 
         /// Retrieves the ComponentMeta for a given type
         ///
@@ -68,6 +69,7 @@ namespace up {
         UP_ECS_API static auto allocateId() noexcept -> ComponentId;
 
         ComponentId id = ComponentId::Unknown;
+        Construct construct = nullptr;
         Copy copy = nullptr;
         Relocate relocate = nullptr;
         Destroy destroy = nullptr;
@@ -80,6 +82,7 @@ namespace up {
     namespace _detail {
         template <typename Component>
         struct ComponentOperations {
+            static constexpr void constructComponent(void* dest) noexcept { new (dest) Component(); };
             static constexpr void copyComponent(void* dest, void const* src) noexcept { new (dest) Component(*static_cast<Component const*>(src)); };
             static constexpr void moveComponent(void* dest, void* src) noexcept { *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src)); };
             static constexpr void destroyComponent(void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
@@ -91,9 +94,10 @@ namespace up {
     } // namespace _detail
 
     template <typename Component>
-    constexpr ComponentMeta ComponentMeta::construct(zstring_view name) noexcept {
+    constexpr ComponentMeta ComponentMeta::createMeta(zstring_view name) noexcept {
         ComponentMeta meta;
         meta.id = allocateId();
+        meta.construct = _detail::ComponentOperations<Component>::constructComponent;
         meta.copy = _detail::ComponentOperations<Component>::copyComponent;
         meta.relocate = _detail::ComponentOperations<Component>::moveComponent;
         meta.destroy = _detail::ComponentOperations<Component>::destroyComponent;
@@ -128,7 +132,7 @@ namespace up {
 ///
 #define UP_DEFINE_COMPONENT(ComponentType) \
     auto up::_detail::MetaHolder<ComponentType>::get() noexcept->ComponentMeta const& { \
-        static auto const meta = ::up::ComponentMeta::construct<ComponentType>(#ComponentType); \
+        static auto const meta = ::up::ComponentMeta::createMeta<ComponentType>(#ComponentType); \
         return meta; \
     }
 

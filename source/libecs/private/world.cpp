@@ -84,6 +84,27 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
     }
 }
 
+void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& componentMeta) {
+    if (auto [success, archetypeId, chunkIndex, index] = _entities.tryParse(entityId); success) {
+        // find the target archetype and allocate an entry in it
+        ArchetypeId newArchetype = _archetypes.acquireArchetypeWith(archetypeId, &componentMeta);
+        auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
+
+        auto* chunk = _archetypes.getChunk(archetypeId, chunkIndex);
+        static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
+        _moveTo(newArchetype, newChunk, newIndex, archetypeId, *chunk, index);
+        _constructAt(newArchetype, newChunk, newIndex, componentMeta.id);
+
+        // remove old entity (must be gone before remap)
+        //
+        _deleteEntity(entityId);
+
+        // update mapping (must be done after delete)
+        //
+        _entities.setArchetype(entityId, newArchetype, newChunkIndex, newIndex);
+    }
+}
+
 void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept {
     if (auto [success, archetypeId, chunkIndex, index] = _entities.tryParse(entityId); success) {
         // find the target archetype and allocate an entry in it
@@ -160,6 +181,11 @@ void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, C
 void up::World::_copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData) {
     auto const destRow = findRowDesc(_archetypes.layoutOf(destArch), srcComponent);
     destRow->meta->copy(destChunk.data + destRow->offset + destRow->width * destIndex, srcData);
+}
+
+void up::World::_constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component) {
+    auto const row = findRowDesc(_archetypes.layoutOf(arch), component);
+    row->meta->construct(chunk.data + row->offset + row->width * index);
 }
 
 void up::World::_destroyAt(ArchetypeId arch, Chunk& chunk, int index) {

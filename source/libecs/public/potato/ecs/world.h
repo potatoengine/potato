@@ -61,6 +61,11 @@ namespace up {
         template <typename Component>
         void addComponent(EntityId entityId, Component const& component) noexcept;
 
+        /// @brief Add a default-constructed component to an existing entity.
+        /// @param entity The entity to add the componet to.
+        /// @param meta Metadata for the to-be-added component.
+        UP_ECS_API void addComponentDefault(EntityId entity, ComponentMeta const& meta);
+
         /// Removes a Component from an existing Entity.
         ///
         /// Changes the Entity's Archetype and home Chunk
@@ -113,6 +118,7 @@ namespace up {
         void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex);
         void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex);
         void _copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData);
+        void _constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component);
         void _destroyAt(ArchetypeId arch, Chunk& chunk, int index);
 
         EntityMapper _entities;
