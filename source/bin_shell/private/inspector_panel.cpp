@@ -11,6 +11,8 @@
 #include "potato/shell/panel.h"
 #include "potato/shell/selection.h"
 
+#include "potato/ecs/registry.h"
+
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_texture.h"
 #include "potato/render/gpu_resource_view.h"
@@ -96,6 +98,22 @@ namespace up::shell {
                     ImGui::TreePop();
                 }
             });
+
+            if (_selection.hasSelection()) {
+                if (ImGui::Button("+ Add Component")) {
+                    ImGui::OpenPopup("##add_component_list");
+                }
+                if (ImGui::BeginPopup("##add_component_list")) {
+                    for (auto const* meta : ComponentRegistry::defaultRegistry().components()) {
+                        if (_scene.world().getComponentSlowUnsafe(_selection.selected(), meta->id) == nullptr) {
+                            if (ImGui::Selectable(meta->name.c_str())) {
+                                _scene.world().addComponentDefault(_selection.selected(), *meta);
+                            }
+                        }
+                    }
+                    ImGui::EndPopup();
+                }
+            }
         }
         ImGui::End();
     }
