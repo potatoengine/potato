@@ -142,17 +142,26 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
     ImGui::SetCurrentContext(_context.get());
     ImGuiIO& io = ImGui::GetIO();
 
+    auto const toImguiButton = [](int sdlButton) noexcept {
+        switch (sdlButton) {
+        case 1: return 0;
+        case 2: return 2;
+        case 3: return 1;
+        default: return 0;
+        }
+    };
+
     switch (ev.type) {
     case SDL_MOUSEMOTION:
         io.MousePos = {(float)ev.motion.x, (float)ev.motion.y};
         return io.WantCaptureMouse;
     case SDL_MOUSEBUTTONDOWN:
-        io.MouseDown[0] = true;
-        io.MouseClickedPos[0] = {(float)ev.button.x, (float)ev.button.y};
+        io.MouseDown[toImguiButton(ev.button.button)] = true;
+        io.MouseClickedPos[toImguiButton(ev.button.button)] = {(float)ev.button.x, (float)ev.button.y};
         return io.WantCaptureMouse;
     case SDL_MOUSEBUTTONUP:
-        io.MouseDown[0] = false;
-        io.MouseClickedPos[0] = {(float)ev.button.x, (float)ev.button.y};
+        io.MouseDown[toImguiButton(ev.button.button)] = false;
+        io.MouseClickedPos[toImguiButton(ev.button.button)] = {(float)ev.button.x, (float)ev.button.y};
         return io.WantCaptureMouse;
     case SDL_MOUSEWHEEL:
         if (ev.wheel.y > 0) {
