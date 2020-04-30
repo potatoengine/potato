@@ -104,6 +104,9 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         world.createEntity(Test1{'d'});
         EntityId last = world.createEntity(Test1{'e'});
 
+        Test1* fooTest = world.getComponentSlow<Test1>(foo);
+        DOCTEST_CHECK_NE(nullptr, fooTest);
+
         // delete some entities (not the last one!)
         //
         world.deleteEntity(foo);
@@ -118,6 +121,10 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         //
         world.createEntity(Test1{'x'});
         world.createEntity(Test1{'x'});
+
+        // ensure that the first deleted entity was overwritten properly
+        //
+        DOCTEST_CHECK_EQ('e', fooTest->a);
 
         // ensure that the last entity was moved properly
         //

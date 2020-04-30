@@ -47,13 +47,10 @@ void up::World::_deleteEntity(EntityId entity) {
 
     // Copy the last element over the to-be-removed element, so we don't have holes in our array
     //
-    auto const lastIndex = chunk->header.entities;
+    auto const lastIndex = chunk->header.entities - 1;
     if (index != lastIndex) {
-        static_cast<EntityId*>(static_cast<void*>(chunk->data))[index] = static_cast<EntityId*>(static_cast<void*>(chunk->data))[lastIndex];
+        auto const movedEntity = static_cast<EntityId*>(static_cast<void*>(chunk->data))[index] = static_cast<EntityId*>(static_cast<void*>(chunk->data))[lastIndex];
         _moveTo(archetypeId, *chunk, index, *chunk, lastIndex);
-
-        auto const layout = _archetypes.layoutOf(archetypeId);
-        auto const movedEntity = *static_cast<EntityId const*>(static_cast<void*>(chunk->data + sizeof(EntityId) * lastIndex));
         _entities.setIndex(movedEntity, chunkIndex, index);
     }
 
@@ -73,8 +70,9 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
 
         auto* oldChunk = _archetypes.getChunk(archetypeId, chunkIndex);
-        static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *oldChunk, index);
+
+        static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
 
         // remove old entity (must be gone before remap)
         _deleteEntity(entityId);
@@ -172,8 +170,8 @@ void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, A
     }
 }
 
-void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex) {
-    for (ChunkRowDesc const& layout : _archetypes.layoutOf(destArch)) {
+void up::World::_moveTo(ArchetypeId arch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex) {
+    for (ChunkRowDesc const& layout : _archetypes.layoutOf(arch)) {
         layout.meta->relocate(destChunk.data + layout.offset + layout.width * destIndex, srcChunk.data + layout.offset + layout.width * srcIndex);
     }
 }
