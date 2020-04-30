@@ -91,13 +91,30 @@ namespace up::shell {
         }
 
         if (ImGui::Begin(as_char(u8"\uf085 Inspector"), &_enabled, ImGuiWindowFlags_NoCollapse)) {
-            _scene.world().interrogateEntityUnsafe(_selection.selected(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
+            ComponentId deletedComponent = ComponentId::Unknown;
+
+            _scene.world().interrogateEntityUnsafe(_selection.selected(), [&](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
                 if (ImGui::TreeNodeEx(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+                        ImGui::OpenPopup("##component_context_menu");
+                    }
+
+                    if (ImGui::BeginPopupContextItem("##component_context_menu")) {
+                        if (ImGui::MenuItem("Remove")) {
+                            deletedComponent = meta->id;
+                        }
+                        ImGui::EndPopup();
+                    }
+
                     ImGuiComponentReflector ref;
                     meta->reflect(data, ref);
                     ImGui::TreePop();
                 }
             });
+
+            if (deletedComponent != ComponentId::Unknown) {
+                _scene.world().removeComponent(_selection.selected(), deletedComponent);
+            }
 
             if (_selection.hasSelection()) {
                 if (ImGui::Button("+ Add Component")) {
@@ -106,7 +123,7 @@ namespace up::shell {
                 if (ImGui::BeginPopup("##add_component_list")) {
                     for (auto const* meta : ComponentRegistry::defaultRegistry().components()) {
                         if (_scene.world().getComponentSlowUnsafe(_selection.selected(), meta->id) == nullptr) {
-                            if (ImGui::Selectable(meta->name.c_str())) {
+                            if (ImGui::MenuItem(meta->name.c_str())) {
                                 _scene.world().addComponentDefault(_selection.selected(), *meta);
                             }
                         }
