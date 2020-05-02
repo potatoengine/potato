@@ -97,7 +97,7 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::Begin(as_char(u8"\uf085 Inspector"), &_enabled, ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin("Inspector", &_enabled, ImGuiWindowFlags_NoCollapse)) {
             ComponentId deletedComponent = ComponentId::Unknown;
 
             _scene.world().interrogateEntityUnsafe(_selection.selected(), [&](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
@@ -107,7 +107,7 @@ namespace up::shell {
                     }
 
                     if (ImGui::BeginPopupContextItem("##component_context_menu")) {
-                        if (ImGui::MenuItem("Remove")) {
+                        if (ImGui::MenuItem(as_char(u8"\uf1f8 Remove"))) {
                             deletedComponent = meta->id;
                         }
                         ImGui::EndPopup();
@@ -124,7 +124,7 @@ namespace up::shell {
             }
 
             if (_selection.hasSelection()) {
-                if (ImGui::Button("+ Add Component")) {
+                if (ImGui::Button(as_char(u8"\uf067 Add Component"))) {
                     ImGui::OpenPopup("##add_component_list");
                 }
                 if (ImGui::BeginPopup("##add_component_list")) {

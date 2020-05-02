@@ -409,7 +409,7 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
             auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
 
-            ImGui::DockBuilderDockWindow(as_char(u8"\uf085 Inspector"), inspectedDockId);
+            ImGui::DockBuilderDockWindow("Inspector", inspectedDockId);
             ImGui::DockBuilderDockWindow("Hierarchy", hierarchyDockId);
             ImGui::DockBuilderDockWindow("ScenePanel", contentDockId);
             ImGui::DockBuilderDockWindow("GamePanel", contentDockId);
