@@ -71,6 +71,7 @@ namespace up::shell {
             return;
         }
 
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
         if (ImGui::Begin("ScenePanel", &_enabled, ImGuiWindowFlags_NoCollapse)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
 
@@ -78,7 +79,6 @@ namespace up::shell {
                 return;
             }
 
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
             if (ImGui::BeginChild("SceneContent", contentSize, false)) {
                 glm::vec3 bufferSize = {0, 0, 0};
                 if (_buffer != nullptr) {
@@ -120,9 +120,9 @@ namespace up::shell {
                 _cameraController.apply(_camera, movement, motion, io.DeltaTime);
             }
             ImGui::EndChild();
-            ImGui::PopStyleVar(1);
         }
         ImGui::End();
+        ImGui::PopStyleVar(1);
     }
 
     void ScenePanel::_renderScene(float frameTime) {

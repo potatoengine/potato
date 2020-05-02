@@ -144,7 +144,14 @@ int up::ShellApp::initialize() {
     }
 
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
-    auto fontStream = _fileSystem.openRead("resources/fonts/fontawesome5/fa-solid-900.ttf");
+    auto fontStream = _fileSystem.openRead("resources/fonts/roboto/Roboto-Regular.ttf");
+    if (!fontStream) {
+        _errorDialog("Failed to open Roboto-Regular font");
+        return 1;
+    }
+    _drawImgui.loadFont(std::move(fontStream));
+
+    fontStream = _fileSystem.openRead("resources/fonts/fontawesome5/fa-solid-900.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open FontAwesome font");
         return 1;
@@ -153,6 +160,7 @@ int up::ShellApp::initialize() {
         _errorDialog("Failed to load FontAwesome font");
         return 1;
     }
+
     _drawImgui.createResources(*_device);
 
     _documents.push_back(shell::createScenePanel(*_renderer, *_scene));
@@ -375,7 +383,7 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::SetNextWindowPos({rect.x, rect.y});
     ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground)) {
+    if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus)) {
         auto dockSize = ImGui::GetContentRegionAvail();
 
         auto const dockId = ImGui::GetID("MainDockspace");
@@ -401,10 +409,6 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
 
         ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_None);
 
-        for (auto const& doc : _documents) {
-            doc->ui();
-        }
-
         if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
             ImGui::SetWindowPos(ImVec2(io.DisplaySize.x - contentSize.x - 20, rect.y));
@@ -419,6 +423,10 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
     }
     ImGui::End();
     ImGui::PopStyleVar(1);
+
+    for (auto const& doc : _documents) {
+        doc->ui();
+    }
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {

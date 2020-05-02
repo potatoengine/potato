@@ -40,6 +40,7 @@ namespace up {
         UP_RENDER_API void releaseResources();
 
         UP_RENDER_API bool loadFontAwesome5(Stream fontFile);
+        UP_RENDER_API bool loadFont(Stream fontFile);
 
         UP_RENDER_API bool handleEvent(SDL_Event const& ev);
 
@@ -49,10 +50,12 @@ namespace up {
         UP_RENDER_API void render(RenderContext& ctx);
 
         void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
-        auto isCaptureRelativeMouseMode() noexcept -> bool { return _captureRelativeMouseMode; }
+        auto isCaptureRelativeMouseMode() const noexcept -> bool { return _captureRelativeMouseMode; }
 
     private:
         void _ensureContext();
+        void _applyStyle();
+
         static void _freeContext(ImGuiContext* ctx);
         static char const* _getClipboardTextContents(void* self);
         static void _setClipboardTextContents(void* self, char const* zstr);
