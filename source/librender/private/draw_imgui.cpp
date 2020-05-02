@@ -83,12 +83,32 @@ auto up::DrawImgui::loadFontAwesome5(Stream fontFile) -> bool {
         return false;
     }
 
-    ImFontConfig config; // = {.MergeMode = true, .PixelSnapH = true};
+    ImFontConfig config;
     config.MergeMode = true;
     config.PixelSnapH = true;
     config.FontDataOwnedByAtlas = false;
 
-    auto font = io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 13.0f, &config, s_ranges);
+    auto font = io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 16.0f, &config, s_ranges);
+    return font != nullptr;
+}
+
+auto up::DrawImgui::loadFont(Stream fontFile) -> bool {
+    _ensureContext();
+
+    ImGui::SetCurrentContext(_context.get());
+    auto& io = ImGui::GetIO();
+
+    vector<byte> fontData;
+    if (readBinary(fontFile, fontData) != IOResult::Success) {
+        return false;
+    }
+
+    ImFontConfig config;
+    config.MergeMode = false;
+    config.PixelSnapH = false;
+    config.FontDataOwnedByAtlas = false;
+
+    auto font = io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 16.0f, &config);
     return font != nullptr;
 }
 
@@ -291,7 +311,7 @@ void up::DrawImgui::_ensureContext() {
     ImGui::SetCurrentContext(_context.get());
     auto& io = ImGui::GetIO();
 
-    io.Fonts->AddFontDefault();
+    //io.Fonts->AddFontDefault();
 
     io.BackendPlatformName = "potato";
     io.UserData = this;

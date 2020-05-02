@@ -144,7 +144,14 @@ int up::ShellApp::initialize() {
     }
 
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
-    auto fontStream = _fileSystem.openRead("resources/fonts/fontawesome5/fa-solid-900.ttf");
+    auto fontStream = _fileSystem.openRead("resources/fonts/roboto/Roboto-Regular.ttf");
+    if (!fontStream) {
+        _errorDialog("Failed to open Roboto-Regular font");
+        return 1;
+    }
+    _drawImgui.loadFont(std::move(fontStream));
+
+    fontStream = _fileSystem.openRead("resources/fonts/fontawesome5/fa-solid-900.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open FontAwesome font");
         return 1;
@@ -153,6 +160,7 @@ int up::ShellApp::initialize() {
         _errorDialog("Failed to load FontAwesome font");
         return 1;
     }
+
     _drawImgui.createResources(*_device);
 
     _documents.push_back(shell::createScenePanel(*_renderer, *_scene));

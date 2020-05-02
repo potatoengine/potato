@@ -40,6 +40,7 @@ namespace up {
         UP_RENDER_API void releaseResources();
 
         UP_RENDER_API bool loadFontAwesome5(Stream fontFile);
+        UP_RENDER_API bool loadFont(Stream fontFile);
 
         UP_RENDER_API bool handleEvent(SDL_Event const& ev);
 
