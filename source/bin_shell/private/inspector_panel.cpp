@@ -78,6 +78,13 @@ namespace up::shell {
                 }
             }
 
+            void onValue(glm::mat4x4& value) override {
+                ImGui::InputFloat4("##a", &value[0].x);
+                ImGui::InputFloat4("##b", &value[1].x);
+                ImGui::InputFloat4("##c", &value[2].x);
+                ImGui::InputFloat4("##d", &value[3].x);
+            }
+
         private:
             up::zstring_view _name;
         };

@@ -4,44 +4,13 @@
 
 #include "_export.h"
 #include "common.h"
-#include "potato/spud/zstring_view.h"
-#include "potato/spud/traits.h"
-#include "potato/reflex/reflect.h"
-#include <glm/vec3.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "reflector.h"
+#include <potato/spud/zstring_view.h>
+#include <potato/spud/traits.h>
 #include <atomic>
 #include <new>
 
 namespace up {
-    class ComponentReflector {
-    public:
-        virtual ~ComponentReflector() = default;
-
-        template <typename ObjectType, typename ClassType, typename FieldType, typename Annotations>
-        constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field, Annotations&& annotations) {
-            onField(name);
-            value(object.*field);
-        }
-
-        template <typename ObjectType, typename FieldType, typename Annotations>
-        constexpr void field(zstring_view name, ObjectType& object, FieldType&& field, Annotations&& annotations) {
-            onField(name);
-            value(field);
-        }
-
-        template <typename ValueType>
-        void value(ValueType&& value) {
-            onValue(value);
-        }
-
-    protected:
-        virtual void onField(zstring_view name) = 0;
-        virtual void onValue(EntityId value) = 0;
-        virtual void onValue(int& value) = 0;
-        virtual void onValue(float& value) = 0;
-        virtual void onValue(glm::vec3& value) = 0;
-        virtual void onValue(glm::quat& value) = 0;
-    };
 
     /// Stores metadata about a Component type. This includes its size and alignment,
     /// functions for copying and destroying objects of the Component type, and so on.
