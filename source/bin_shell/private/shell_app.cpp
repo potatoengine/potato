@@ -409,10 +409,6 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
 
         ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_None);
 
-        for (auto const& doc : _documents) {
-            doc->ui();
-        }
-
         if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
             ImGui::SetWindowPos(ImVec2(io.DisplaySize.x - contentSize.x - 20, rect.y));
@@ -427,6 +423,10 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
     }
     ImGui::End();
     ImGui::PopStyleVar(1);
+
+    for (auto const& doc : _documents) {
+        doc->ui();
+    }
 }
 
 void up::ShellApp::_errorDialog(zstring_view message) {

@@ -91,6 +91,7 @@ namespace up::shell {
             return;
         }
 
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
         if (ImGui::Begin("GamePanel", &_enabled, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
 
@@ -98,7 +99,6 @@ namespace up::shell {
                 return;
             }
 
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
             if (ImGui::BeginChild("GameContent", contentSize, false)) {
                 glm::vec3 bufferSize = {0, 0, 0};
                 if (_buffer != nullptr) {
@@ -119,9 +119,9 @@ namespace up::shell {
                 }
             }
             ImGui::EndChild();
-            ImGui::PopStyleVar(1);
         }
         ImGui::End();
+        ImGui::PopStyleVar(1);
     }
 
     void GamePanel::_renderScene(float frameTime) {
