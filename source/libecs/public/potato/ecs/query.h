@@ -97,8 +97,8 @@ namespace up {
         for (auto const& match : _matches) {
             for (auto const& chunk : world.chunksOf(match.archetype)) {
                 callback(chunk->header.entities,
-                    static_cast<EntityId const*>(static_cast<void*>(chunk->data)),
-                    static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices]))...);
+                         static_cast<EntityId const*>(static_cast<void*>(chunk->data)),
+                         static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices]))...);
             }
         }
     }
