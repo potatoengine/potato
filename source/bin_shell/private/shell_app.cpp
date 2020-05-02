@@ -383,7 +383,7 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::SetNextWindowPos({rect.x, rect.y});
     ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground)) {
+    if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus)) {
         auto dockSize = ImGui::GetContentRegionAvail();
 
         auto const dockId = ImGui::GetID("MainDockspace");
