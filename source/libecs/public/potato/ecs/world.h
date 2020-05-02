@@ -35,9 +35,7 @@ namespace up {
 
         /// Constant view into Archetype state.
         ///
-        //auto archetypes() const noexcept -> ArchetypeMapper const& {
-        //    return _archetypes;
-        //}
+        auto archetypes() const noexcept { return _archetypes.archetypes(); }
 
         /// Retrieve the chunks belonging to a specific archetype.
         ///

@@ -40,7 +40,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] Query") {
         world.createEntity(Test1{'j'}, Another{3.f, 4.f});
 
         // Exactly two of the entities should be in the same archetype; and the empty Archetype, for 4
-        DOCTEST_CHECK_EQ(4, world.archetypes().archetypes());
+        DOCTEST_CHECK_EQ(4, world.archetypes().size());
 
         size_t invokeCount = 0;
         size_t entityCount = 0;
