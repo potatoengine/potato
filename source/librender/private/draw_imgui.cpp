@@ -88,7 +88,7 @@ auto up::DrawImgui::loadFontAwesome5(Stream fontFile) -> bool {
     config.PixelSnapH = true;
     config.FontDataOwnedByAtlas = false;
 
-    auto font = io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 16.0f, &config, s_ranges);
+    auto font = io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 11.0f, &config, s_ranges);
     return font != nullptr;
 }
 
