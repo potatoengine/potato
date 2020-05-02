@@ -39,8 +39,11 @@ namespace up::components {
     UP_REFLECT_TYPE(Rotation) {
         reflect("rotation", &Rotation::rot);
     }
-    UP_REFLECT_TYPE(Transform) {}
-    UP_REFLECT_TYPE(Mesh) {}
+    UP_REFLECT_TYPE(Transform) {
+        reflect("matrix", &Transform::trans);
+    }
+    UP_REFLECT_TYPE(Mesh) {
+    }
     UP_REFLECT_TYPE(Wave) {
         reflect("time", &Wave::time);
         reflect("offset", &Wave::offset);
