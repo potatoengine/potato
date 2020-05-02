@@ -54,8 +54,9 @@ namespace up {
     };
 
     template <typename... Components>
-    Query<Components...>::Query() : _components{getComponentId<Components>()...} {
-        for (auto id : _components) {
+    Query<Components...>::Query() {
+        static const ComponentId components[sizeof...(Components)] = {getComponentId<Components>()...};
+        for (auto id : components) {
             _mask.set(to_underlying(id));
         }
     }
