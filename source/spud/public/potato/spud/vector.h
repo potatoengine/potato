@@ -93,20 +93,20 @@ namespace up {
         void shrink_to_fit();
 
         template <typename... ParamsT>
-        auto emplace(const_iterator pos, ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator>;
+        auto emplace(const_iterator pos, ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, reference>;
         template <typename... ParamsT>
-        auto emplace_back(ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator>;
+        auto emplace_back(ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, reference>;
 
         template <typename InsertT>
-        auto insert(const_iterator pos, InsertT&& value) -> enable_if_t<std::is_constructible_v<T, decltype(value)>, iterator> { return emplace(pos, std::forward<InsertT>(value)); }
+        auto insert(const_iterator pos, InsertT&& value) -> enable_if_t<std::is_constructible_v<T, decltype(value)>, reference> { return emplace(pos, std::forward<InsertT>(value)); }
 
         template <typename IteratorT, typename SentinelT>
         iterator insert(const_iterator pos, IteratorT begin, SentinelT end);
 
-        iterator push_back(const_reference value) { return emplace_back(value); }
-        iterator push_back(rvalue_reference value) { return emplace_back(std::move(value)); }
+        reference push_back(const_reference value) { return emplace_back(value); }
+        reference push_back(rvalue_reference value) { return emplace_back(std::move(value)); }
         template <typename InsertT>
-        iterator push_back(InsertT&& value) { return emplace_back(std::forward<InsertT>(value)); }
+        reference push_back(InsertT&& value) { return emplace_back(std::forward<InsertT>(value)); }
 
         iterator erase(const_iterator pos);
         iterator erase(const_iterator begin, const_iterator end);
@@ -307,7 +307,7 @@ namespace up {
 
     template <typename T>
     template <typename... ParamsT>
-    auto vector<T>::emplace(const_iterator pos, ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
+    auto vector<T>::emplace(const_iterator pos, ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, reference> {
         if (pos == _last) {
             return emplace_back(std::forward<ParamsT>(params)...);
         }
@@ -315,14 +315,15 @@ namespace up {
         iterator mpos = const_cast<iterator>(pos);
         _rshift(mpos, 1);
         *mpos = value_type(std::forward<ParamsT>(params)...);
-        return mpos;
+        return *mpos;
     }
 
     template <typename T>
     template <typename... ParamsT>
-    auto vector<T>::emplace_back(ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, iterator> {
+    auto vector<T>::emplace_back(ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, reference> {
         if (_last != _sentinel) {
-            return new (_last++) value_type(std::forward<ParamsT>(params)...);
+            T* value = new (_last++) value_type(std::forward<ParamsT>(params)...);
+            return *value;
         }
 
         auto const size = _last - _first;
@@ -349,7 +350,7 @@ namespace up {
         _last = _first + size + 1;
         _sentinel = _first + newCapacity;
 
-        return _first + size;
+        return _first[size];
     }
 
     template <typename T>
