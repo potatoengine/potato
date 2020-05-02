@@ -41,12 +41,7 @@ namespace up {
         void select(World& world, Callback&& callback);
 
     private:
-        struct Match {
-            ArchetypeId archetype;
-            int offsets[sizeof...(Components)];
-        };
-
-        void _refresh(World& world);
+        using Match = QueryMatch<sizeof...(Components)>;
 
         template <typename Callback, size_t... Indices>
         void _executeChunks(World& world, Callback&& callback, std::index_sequence<Indices...>) const;
@@ -56,7 +51,6 @@ namespace up {
         vector<Match> _matches;
         size_t _matchIndex = 0;
         bit_set _mask;
-        ComponentId const _components[sizeof...(Components)] = {};
     };
 
     template <typename... Components>
@@ -69,26 +63,15 @@ namespace up {
     template <typename... Components>
     template <typename Callback, typename Void>
     void Query<Components...>::selectChunks(World& world, Callback&& callback) {
-        _refresh(world);
+        _matchIndex = world._bindArchetypes<Components...>(_matchIndex, _mask, _matches);
         _executeChunks(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
 
     template <typename... Components>
     template <typename Callback, typename Void>
     void Query<Components...>::select(World& world, Callback&& callback) {
-        _refresh(world);
+        _matchIndex = world._bindArchetypes<Components...>(_matchIndex, _mask, _matches);
         _execute(world, callback, std::make_index_sequence<sizeof...(Components)>{});
-    }
-
-    template <typename... Components>
-    void Query<Components...>::_refresh(World& world) {
-        _matchIndex = world.archetypes().selectArchetypes(_matchIndex, _mask, _components, [this](ArchetypeId arch, view<int> offsets) {
-            _matches.emplace_back();
-            Match& match = _matches.back();
-
-            match.archetype = arch;
-            std::memcpy(&match.offsets, offsets.data(), sizeof(Match::offsets));
-        });
     }
 
     template <typename... Components>

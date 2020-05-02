@@ -7,6 +7,7 @@
 #include "scene.h"
 #include "camera.h"
 #include "camera_controller.h"
+#include "imgui_reflector.h"
 
 #include "potato/shell/panel.h"
 #include "potato/shell/selection.h"
@@ -39,56 +40,6 @@ namespace up::shell {
     auto createInspectorPanel(Scene& scene, Selection& selection) -> box<Panel> {
         return new_box<InspectorPanel>(scene, selection);
     }
-
-    namespace {
-        class ImGuiComponentReflector final : public up::ComponentReflector {
-        protected:
-            void onField(up::zstring_view name) override {
-                _name = name;
-            }
-
-            void onValue(int& value) override {
-                ImGui::InputInt(_name.c_str(), &value);
-            }
-
-            void onValue(float& value) override {
-                ImGui::InputFloat(_name.c_str(), &value);
-            }
-
-            void onValue(up::EntityId value) override {
-                ImGui::LabelText(_name.c_str(), "%u", (unsigned)value);
-            }
-
-            void onValue(glm::vec3& value) override {
-                ImGui::InputFloat3(_name.c_str(), &value.x);
-            }
-
-            void onValue(glm::quat& value) override {
-                auto euler = glm::eulerAngles(value);
-                auto eulerDegrees = glm::vec3(
-                    glm::degrees(euler.x),
-                    glm::degrees(euler.y),
-                    glm::degrees(euler.z));
-
-                if (ImGui::SliderFloat3(_name.c_str(), &eulerDegrees.x, 0, +359.f)) {
-                    value = glm::vec3(
-                        glm::radians(eulerDegrees.x),
-                        glm::radians(eulerDegrees.y),
-                        glm::radians(eulerDegrees.z));
-                }
-            }
-
-            void onValue(glm::mat4x4& value) override {
-                ImGui::InputFloat4("##a", &value[0].x);
-                ImGui::InputFloat4("##b", &value[1].x);
-                ImGui::InputFloat4("##c", &value[2].x);
-                ImGui::InputFloat4("##d", &value[3].x);
-            }
-
-        private:
-            up::zstring_view _name;
-        };
-    } // namespace
 
     void InspectorPanel::ui() {
         auto& io = ImGui::GetIO();

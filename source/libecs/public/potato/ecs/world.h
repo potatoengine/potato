@@ -13,6 +13,12 @@
 #include "potato/spud/box.h"
 
 namespace up {
+    template <int Count>
+    struct QueryMatch {
+        ArchetypeId archetype;
+        int offsets[Count];
+    };
+
     /// A world contains a collection of Entities, Archetypes, and their associated Components.
     ///
     /// Entities from different Worlds cannot interact.
@@ -29,9 +35,9 @@ namespace up {
 
         /// Constant view into Archetype state.
         ///
-        auto archetypes() const noexcept -> ArchetypeMapper const& {
-            return _archetypes;
-        }
+        //auto archetypes() const noexcept -> ArchetypeMapper const& {
+        //    return _archetypes;
+        //}
 
         /// Retrieve the chunks belonging to a specific archetype.
         ///
@@ -100,6 +106,16 @@ namespace up {
                 return true;
             }
             return false;
+        }
+
+        template <typename... Components>
+        auto _bindArchetypes(size_t firstIndex, bit_set const& mask, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
+            static ComponentId const components[sizeof...(Components)] = {getComponentId<Components>()...};
+            return _archetypes.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
+                auto& match = matches.emplace_back();
+                match.archetype = arch;
+                std::memcpy(&match.offsets, offsets.data(), sizeof(QueryMatch<sizeof...(Components)>::offsets));
+            });
         }
 
     private:
