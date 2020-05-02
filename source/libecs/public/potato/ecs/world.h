@@ -95,7 +95,7 @@ namespace up {
 
         /// Interrogate an entity and enumerate all of its components.
         ///
-        template <typename Callback>
+        template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, EntityId, ArchetypeId, ComponentMeta const*, void*>>>
         auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const {
             if (auto [success, archetype, chunkIndex, index] = _entities.tryParse(entity); success) {
                 auto const layout = _archetypes.layoutOf(archetype);

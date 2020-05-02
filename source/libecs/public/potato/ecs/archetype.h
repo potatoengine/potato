@@ -30,7 +30,10 @@ namespace up {
 
         ArchetypeMapper();
 
-        auto archetypes() const noexcept -> size_t { return _archetypes.size(); }
+        auto archetypes() const noexcept -> sequence<ArchetypeId> {
+            return {ArchetypeId::Empty, static_cast<ArchetypeId>(_archetypes.size())};
+        }
+
         auto layouts() const noexcept -> view<ChunkRowDesc> { return _layout; }
         auto chunks() const noexcept -> view<Chunk*> { return _chunks; }
 
