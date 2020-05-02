@@ -50,7 +50,7 @@ namespace up {
         UP_RENDER_API void render(RenderContext& ctx);
 
         void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
-        auto isCaptureRelativeMouseMode() noexcept -> bool { return _captureRelativeMouseMode; }
+        auto isCaptureRelativeMouseMode() const noexcept -> bool { return _captureRelativeMouseMode; }
 
     private:
         void _ensureContext();

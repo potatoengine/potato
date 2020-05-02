@@ -15,7 +15,7 @@
 #include <SDL_events.h>
 #include <SDL_clipboard.h>
 
-static constexpr up::uint32 bufferSize = 256 * 1024;
+static constexpr up::uint32 bufferSize = 1024 * 1024;
 
 up::DrawImgui::DrawImgui() = default;
 up::DrawImgui::~DrawImgui() = default;
