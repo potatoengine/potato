@@ -54,6 +54,8 @@ namespace up {
 
     private:
         void _ensureContext();
+        void _applyStyle();
+
         static void _freeContext(ImGuiContext* ctx);
         static char const* _getClipboardTextContents(void* self);
         static void _setClipboardTextContents(void* self, char const* zstr);
