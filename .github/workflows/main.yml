@@ -61,7 +61,7 @@ jobs:
           - cxx: clang++-10
             cc: clang-10
             cxxflags: -Wall -Werror -Wno-unused-function -Wno-unused-variable -stdlib=libc++
-            packages: clang-10 clang-tidy-10 libc++-10-dev libc++abi-10-dev
+            packages: clang-10 clang-tidy-10 clang-format-10 libc++-10-dev libc++abi-10-dev
             clang_tidy: clang-tidy-10
             clang_format: clang-format-10
     
