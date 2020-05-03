@@ -64,14 +64,14 @@ namespace up {
     template <typename... Components>
     template <typename Callback, typename Void>
     void Query<Components...>::selectChunks(World& world, Callback&& callback) {
-        _matchIndex = world._bindArchetypes<Components...>(_matchIndex, _mask, _matches);
+        _matchIndex = world.matchArchetypesInto<Components...>(_matchIndex, _mask, _matches);
         _executeChunks(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
 
     template <typename... Components>
     template <typename Callback, typename Void>
     void Query<Components...>::select(World& world, Callback&& callback) {
-        _matchIndex = world._bindArchetypes<Components...>(_matchIndex, _mask, _matches);
+        _matchIndex = world.matchArchetypesInto<Components...>(_matchIndex, _mask, _matches);
         _execute(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
 

@@ -107,7 +107,7 @@ namespace up {
         }
 
         template <typename... Components>
-        auto _bindArchetypes(size_t firstIndex, bit_set const& mask, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
+        auto matchArchetypesInto(size_t firstIndex, bit_set const& mask, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
             static ComponentId const components[sizeof...(Components)] = {getComponentId<Components>()...};
             return _archetypes.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
                 auto& match = matches.emplace_back();
