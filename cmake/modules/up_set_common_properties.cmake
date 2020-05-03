@@ -17,15 +17,15 @@ function(up_set_common_properties TARGET)
         set(IS_INTERFACE TRUE)
     endif()
 
-    # Potato requires C++17
+    # Potato requires C++20
     #
     target_compile_features(${TARGET} ${PUBLIC_INTERFACE}
-        cxx_std_17
+        cxx_std_20
     )
     if (NOT IS_INTERFACE)
         set_target_properties(${TARGET} PROPERTIES
             LINKER_LANGUAGE CXX
-            CXX_STANDARD 17
+            CXX_STANDARD 20
             CXX_EXTENSIONS OFF
             CXX_STANDARD_REQUIRED ON
         )
