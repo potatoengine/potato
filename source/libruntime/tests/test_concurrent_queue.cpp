@@ -4,7 +4,6 @@
 
 DOCTEST_TEST_SUITE("[potato][runtime] ConcurrentQueue") {
     using namespace up;
-    using namespace up;
 
     DOCTEST_TEST_CASE("default") {
         ConcurrentQueue<int> queue;
@@ -30,6 +29,8 @@ DOCTEST_TEST_SUITE("[potato][runtime] ConcurrentQueue") {
         producer.detach();
 
         consumer.join();
+
+        DOCTEST_REQUIRE(queue.isClosed());
 
         DOCTEST_CHECK_EQ(last, 1023);
     }
