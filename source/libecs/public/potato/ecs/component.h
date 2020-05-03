@@ -17,7 +17,7 @@ namespace up {
     ///
     /// Todo: replace with a ubiquitous reflection system of some kind
     struct ComponentMeta {
-        using Construct = void(*)(void * dest) noexcept;
+        using Construct = void (*)(void* dest) noexcept;
         using Copy = void (*)(void* dest, void const* source) noexcept;
         using Relocate = void (*)(void* dest, void* source) noexcept;
         using Destroy = void (*)(void* mem) noexcept;
