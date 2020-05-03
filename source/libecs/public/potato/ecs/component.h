@@ -7,6 +7,8 @@
 #include "reflector.h"
 #include <potato/spud/zstring_view.h>
 #include <potato/spud/traits.h>
+#include <potato/spud/hash.h>
+#include <typeindex>
 #include <atomic>
 #include <new>
 
@@ -28,16 +30,9 @@ namespace up {
         template <typename Component>
         static constexpr auto createMeta(zstring_view name) noexcept -> ComponentMeta;
 
-        /// Retrieves the ComponentMeta for a given type
-        ///
-        template <typename Component>
-        static constexpr auto get() noexcept -> ComponentMeta const&;
-
-        /// Assigns a unique system-wide ID to the component.
-        ///
-        UP_ECS_API static auto allocateId() noexcept -> ComponentId;
-
         ComponentId id = ComponentId::Unknown;
+        std::type_index type = typeid(void);
+        uint32 index = ~0U;
         Construct construct = nullptr;
         Copy copy = nullptr;
         Relocate relocate = nullptr;
@@ -57,15 +52,13 @@ namespace up {
             static constexpr void destroyComponent(void* mem) noexcept { static_cast<Component*>(mem)->~Component(); };
             static constexpr void reflectComponent(void* obj, ComponentReflector& reflector) noexcept { reflex::serialize(*static_cast<Component*>(obj), reflector); };
         };
-
-        template <typename Component>
-        struct MetaHolder;
     } // namespace _detail
 
     template <typename Component>
     constexpr ComponentMeta ComponentMeta::createMeta(zstring_view name) noexcept {
         ComponentMeta meta;
-        meta.id = allocateId();
+        meta.id = to_enum<ComponentId>(hash_value(name));
+        meta.type = typeid(Component);
         meta.construct = _detail::ComponentOperations<Component>::constructComponent;
         meta.copy = _detail::ComponentOperations<Component>::copyComponent;
         meta.relocate = _detail::ComponentOperations<Component>::moveComponent;
@@ -76,33 +69,4 @@ namespace up {
         meta.name = name;
         return meta;
     }
-
-    /// Finds the unique ComponentId for a given Component type
-    ///
-    template <typename ComponentT>
-    constexpr auto getComponentId() noexcept -> ComponentId {
-        return ComponentMeta::get<ComponentT>().id;
-    }
-
-    template <typename ComponentT>
-    constexpr auto ComponentMeta::get() noexcept -> ComponentMeta const& {
-        return _detail::MetaHolder<remove_cvref_t<ComponentT>>::get();
-    }
-
-/// Declare a type is a Component and can be accessed via ComponentMeta::get()
-///
-#define UP_DECLARE_COMPONENT(ComponentType, ...) \
-    template <> \
-    struct up::_detail::MetaHolder<ComponentType> { \
-        __VA_ARGS__ static auto get() noexcept -> ComponentMeta const&; \
-    };
-
-/// Registers a type with the component manager
-///
-#define UP_DEFINE_COMPONENT(ComponentType) \
-    auto up::_detail::MetaHolder<ComponentType>::get() noexcept->ComponentMeta const& { \
-        static auto const meta = ::up::ComponentMeta::createMeta<ComponentType>(#ComponentType); \
-        return meta; \
-    }
-
 } // namespace up

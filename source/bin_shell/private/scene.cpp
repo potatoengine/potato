@@ -17,13 +17,6 @@
 
 #include <nlohmann/json.hpp>
 
-UP_DEFINE_COMPONENT(up::components::Position);
-UP_DEFINE_COMPONENT(up::components::Rotation);
-UP_DEFINE_COMPONENT(up::components::Transform);
-UP_DEFINE_COMPONENT(up::components::Mesh);
-UP_DEFINE_COMPONENT(up::components::Wave);
-UP_DEFINE_COMPONENT(up::components::Spin);
-
 up::Scene::Scene() : _world(new_box<World>()) {
 }
 

@@ -72,7 +72,7 @@ auto up::ArchetypeMapper::_finalizeArchetype(ArchetypeId archetype) noexcept -> 
         offset += row.width * archData.maxEntitiesPerChunk;
         UP_ASSERT(offset <= sizeof(Chunk::data));
 
-        compSet.set(to_underlying(row.component));
+        compSet.set(row.meta->index);
     }
 
     // sort all rows by component id
@@ -94,7 +94,7 @@ auto up::ArchetypeMapper::_findArchetype(bit_set const& set) noexcept -> FindRes
 auto up::ArchetypeMapper::acquireArchetype(view<ComponentMeta const*> components) -> ArchetypeId {
     bit_set set;
     for (ComponentMeta const* meta : components) {
-        set.set(to_underlying(meta->id));
+        set.set(meta->index);
     }
 
     if (auto [found, arch] = _findArchetype(set); found) {

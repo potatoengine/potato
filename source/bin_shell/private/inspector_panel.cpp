@@ -79,10 +79,10 @@ namespace up::shell {
                     ImGui::OpenPopup("##add_component_list");
                 }
                 if (ImGui::BeginPopup("##add_component_list")) {
-                    for (auto const* meta : ComponentRegistry::defaultRegistry().components()) {
-                        if (_scene.world().getComponentSlowUnsafe(_selection.selected(), meta->id) == nullptr) {
-                            if (ImGui::MenuItem(meta->name.c_str())) {
-                                _scene.world().addComponentDefault(_selection.selected(), *meta);
+                    for (auto const& meta : ComponentRegistry::defaultRegistry().components()) {
+                        if (_scene.world().getComponentSlowUnsafe(_selection.selected(), meta.id) == nullptr) {
+                            if (ImGui::MenuItem(meta.name.c_str())) {
+                                _scene.world().addComponentDefault(_selection.selected(), meta);
                             }
                         }
                     }

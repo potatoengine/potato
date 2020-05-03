@@ -25,175 +25,173 @@ namespace {
     UP_REFLECT_TYPE(Counter) {}
 } // namespace
 
-UP_DECLARE_COMPONENT(Test1);
-UP_DECLARE_COMPONENT(Second);
-UP_DECLARE_COMPONENT(Another);
-UP_DECLARE_COMPONENT(Counter);
-
-UP_DEFINE_COMPONENT(Test1);
-UP_DEFINE_COMPONENT(Second);
-UP_DEFINE_COMPONENT(Another);
-UP_DEFINE_COMPONENT(Counter);
-
 DOCTEST_TEST_SUITE("[potato][ecs] World") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("Direct component access") {
-        World world;
+    DOCTEST_TEST_CASE("") {
+        ComponentRegistry registry;
+        registry.registerComponent(ComponentMeta::createMeta<Test1>("Test1"));
+        registry.registerComponent(ComponentMeta::createMeta<Second>("Second"));
+        registry.registerComponent(ComponentMeta::createMeta<Another>("Another"));
+        registry.registerComponent(ComponentMeta::createMeta<Counter>("Counter"));
 
-        world.createEntity(Test1{'f'}, Second{7.f, 'g'});
-        world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
-        auto id = world.createEntity(Second{-2.f, 'h'}, Another{2.f, 1.f});
+        DOCTEST_SUBCASE("Direct component access") {
+            World world;
 
-        Second* test = world.getComponentSlow<Second>(id);
-        DOCTEST_CHECK(test != nullptr);
-        DOCTEST_CHECK_EQ('h', test->a);
-        DOCTEST_CHECK_EQ(-2.f, test->b);
-    }
+            world.createEntity(Test1{'f'}, Second{7.f, 'g'});
+            world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
+            auto id = world.createEntity(Second{-2.f, 'h'}, Another{2.f, 1.f});
 
-    DOCTEST_TEST_CASE("EntityId management") {
-        World world;
-
-        EntityId first = world.createEntity(Test1{'f'}, Second{7.f, 'g'});
-        EntityId second = world.createEntity(Test1{'h'}, Second{-1.f, 'i'});
-
-        Query<Test1> query;
-        query.selectChunks(world, [&](size_t count, EntityId const* entities, Test1*) {
-            DOCTEST_CHECK_EQ(2, count);
-            DOCTEST_CHECK_EQ(first, entities[0]);
-            DOCTEST_CHECK_EQ(second, entities[1]);
-        });
-    }
-
-    DOCTEST_TEST_CASE("Chunks") {
-        constexpr int count = 100000;
-        World world;
-
-        uint64 expectedSum = 0;
-        for (int i = 0; i != count; ++i) {
-            expectedSum += i;
-            world.createEntity(Counter{i});
+            Second* test = world.getComponentSlow<Second>(id);
+            DOCTEST_CHECK(test != nullptr);
+            DOCTEST_CHECK_EQ('h', test->a);
+            DOCTEST_CHECK_EQ(-2.f, test->b);
         }
 
-        size_t chunks = 0;
-        size_t total = 0;
-        uint64 sum = 0;
+        DOCTEST_SUBCASE("EntityId management") {
+            World world;
 
-        Query<Counter> query;
-        query.selectChunks(world, [&](size_t count, EntityId const*, Counter* counters) {
-            ++chunks;
-            total += count;
-            for (size_t i = 0; i != count; ++i) {
-                sum += counters[i].value;
+            EntityId first = world.createEntity(Test1{'f'}, Second{7.f, 'g'});
+            EntityId second = world.createEntity(Test1{'h'}, Second{-1.f, 'i'});
+
+            Query<Test1> query;
+            query.selectChunks(world, [&](size_t count, EntityId const* entities, Test1*) {
+                DOCTEST_CHECK_EQ(2, count);
+                DOCTEST_CHECK_EQ(first, entities[0]);
+                DOCTEST_CHECK_EQ(second, entities[1]);
+            });
+        }
+
+        DOCTEST_SUBCASE("Chunks") {
+            constexpr int count = 100000;
+            World world;
+
+            uint64 expectedSum = 0;
+            for (int i = 0; i != count; ++i) {
+                expectedSum += i;
+                world.createEntity(Counter{i});
             }
-        });
 
-        DOCTEST_CHECK_NE(0, chunks);
-        DOCTEST_CHECK_EQ(count, total);
-        DOCTEST_CHECK_EQ(expectedSum, sum);
-    }
+            size_t chunks = 0;
+            size_t total = 0;
+            uint64 sum = 0;
 
-    DOCTEST_TEST_CASE("Creates and Deletes") {
-        World world;
+            Query<Counter> query;
+            query.selectChunks(world, [&](size_t count, EntityId const*, Counter* counters) {
+                ++chunks;
+                total += count;
+                for (size_t i = 0; i != count; ++i) {
+                    sum += counters[i].value;
+                }
+            });
 
-        // create some dummy entities
-        //
-        EntityId foo = world.createEntity(Test1{'a'});
-        world.createEntity(Test1{'b'});
-        EntityId bar = world.createEntity(Test1{'c'});
-        world.createEntity(Test1{'d'});
-        EntityId last = world.createEntity(Test1{'e'});
+            DOCTEST_CHECK_NE(0, chunks);
+            DOCTEST_CHECK_EQ(count, total);
+            DOCTEST_CHECK_EQ(expectedSum, sum);
+        }
 
-        Test1* fooTest = world.getComponentSlow<Test1>(foo);
-        DOCTEST_CHECK_NE(nullptr, fooTest);
+        DOCTEST_SUBCASE("Creates and Deletes") {
+            World world;
 
-        // delete some entities (not the last one!)
-        //
-        world.deleteEntity(foo);
-        world.deleteEntity(bar);
+            // create some dummy entities
+            //
+            EntityId foo = world.createEntity(Test1{'a'});
+            world.createEntity(Test1{'b'});
+            EntityId bar = world.createEntity(Test1{'c'});
+            world.createEntity(Test1{'d'});
+            EntityId last = world.createEntity(Test1{'e'});
 
-        // ensure deleted entities are gone
-        //
-        DOCTEST_CHECK_EQ(nullptr, world.getComponentSlow<Test1>(foo));
-        DOCTEST_CHECK_EQ(nullptr, world.getComponentSlow<Test1>(bar));
+            Test1* fooTest = world.getComponentSlow<Test1>(foo);
+            DOCTEST_CHECK_NE(nullptr, fooTest);
 
-        // overwrite emptied locations
-        //
-        world.createEntity(Test1{'x'});
-        world.createEntity(Test1{'x'});
+            // delete some entities (not the last one!)
+            //
+            world.deleteEntity(foo);
+            world.deleteEntity(bar);
 
-        // ensure that the first deleted entity was overwritten properly
-        //
-        DOCTEST_CHECK_EQ('e', fooTest->a);
+            // ensure deleted entities are gone
+            //
+            DOCTEST_CHECK_EQ(nullptr, world.getComponentSlow<Test1>(foo));
+            DOCTEST_CHECK_EQ(nullptr, world.getComponentSlow<Test1>(bar));
 
-        // ensure that the last entity was moved properly
-        //
-        DOCTEST_CHECK_EQ('e', world.getComponentSlow<Test1>(last)->a);
-    }
+            // overwrite emptied locations
+            //
+            world.createEntity(Test1{'x'});
+            world.createEntity(Test1{'x'});
 
-    DOCTEST_TEST_CASE("Remove Component") {
-        bool found = false;
-        World world;
-        Query<Test1> queryTest1;
-        Query<Second> querySecond;
+            // ensure that the first deleted entity was overwritten properly
+            //
+            DOCTEST_CHECK_EQ('e', fooTest->a);
 
-        EntityId id = world.createEntity(Test1{}, Second{});
+            // ensure that the last entity was moved properly
+            //
+            DOCTEST_CHECK_EQ('e', world.getComponentSlow<Test1>(last)->a);
+        }
 
-        querySecond.select(world, [&found](EntityId, Second&) { found = true; });
-        DOCTEST_CHECK(found);
+        DOCTEST_SUBCASE("Remove Component") {
+            bool found = false;
+            World world;
+            Query<Test1> queryTest1;
+            Query<Second> querySecond;
 
-        world.removeComponent(id, getComponentId<Second>());
+            EntityId id = world.createEntity(Test1{}, Second{});
 
-        found = false;
-        querySecond.select(world, [&found](EntityId, Second&) { found = true; });
-        DOCTEST_CHECK_FALSE(found);
+            querySecond.select(world, [&found](EntityId, Second&) { found = true; });
+            DOCTEST_CHECK(found);
 
-        found = false;
-        queryTest1.select(world, [&found](EntityId, Test1&) { found = true; });
-        DOCTEST_CHECK(found);
-    }
+            world.removeComponent<Second>(id);
 
-    DOCTEST_TEST_CASE("Add Component") {
-        bool found = false;
-        World world;
-        Query<Test1> queryTest1;
-        Query<Second> querySecond;
+            found = false;
+            querySecond.select(world, [&found](EntityId, Second&) { found = true; });
+            DOCTEST_CHECK_FALSE(found);
 
-        EntityId id = world.createEntity(Test1{});
+            found = false;
+            queryTest1.select(world, [&found](EntityId, Test1&) { found = true; });
+            DOCTEST_CHECK(found);
+        }
 
-        querySecond.select(world, [&found](EntityId, Second&) { found = true; });
-        DOCTEST_CHECK_FALSE(found);
+        DOCTEST_SUBCASE("Add Component") {
+            bool found = false;
+            World world;
+            Query<Test1> queryTest1;
+            Query<Second> querySecond;
 
-        world.addComponent(id, Second{});
+            EntityId id = world.createEntity(Test1{});
 
-        found = false;
-        querySecond.select(world, [&found](EntityId, Second&) { found = true; });
-        DOCTEST_CHECK(found);
+            querySecond.select(world, [&found](EntityId, Second&) { found = true; });
+            DOCTEST_CHECK_FALSE(found);
 
-        found = false;
-        queryTest1.select(world, [&found](EntityId, Test1&) { found = true; });
-        DOCTEST_CHECK(found);
-    }
+            world.addComponent(id, Second{});
 
-    DOCTEST_TEST_CASE("Interroate") {
-        World world;
+            found = false;
+            querySecond.select(world, [&found](EntityId, Second&) { found = true; });
+            DOCTEST_CHECK(found);
 
-        auto id = world.createEntity(Test1{'f'}, Another{1.0, 2.f}, Second{7.f, 'g'});
+            found = false;
+            queryTest1.select(world, [&found](EntityId, Test1&) { found = true; });
+            DOCTEST_CHECK(found);
+        }
 
-        auto success = world.interrogateEntityUnsafe(id, [](auto entity, auto archetype, auto component, auto data) {
-            if (component->id == getComponentId<Test1>()) {
-                DOCTEST_CHECK_EQ('f', static_cast<Test1 const*>(data)->a);
-            }
-            else if (component->id == getComponentId<Another>()) {
-                DOCTEST_CHECK_EQ(1.0, static_cast<Another const*>(data)->a);
-            }
-            else if (component->id == getComponentId<Second>()) {
-                DOCTEST_CHECK_EQ(7.f, static_cast<Second const*>(data)->b);
-            }
-            else {
-                DOCTEST_FAIL("unknown component");
-            }
-        });
-        DOCTEST_CHECK(success);
+        DOCTEST_SUBCASE("Interroate") {
+            World world;
+
+            auto id = world.createEntity(Test1{'f'}, Another{1.0, 2.f}, Second{7.f, 'g'});
+
+            auto success = world.interrogateEntityUnsafe(id, [&](auto entity, auto archetype, auto component, auto data) {
+                if (component->id == registry.findIdByType<Test1>()) {
+                    DOCTEST_CHECK_EQ('f', static_cast<Test1 const*>(data)->a);
+                }
+                else if (component->id == registry.findIdByType<Another>()) {
+                    DOCTEST_CHECK_EQ(1.0, static_cast<Another const*>(data)->a);
+                }
+                else if (component->id == registry.findIdByType<Second>()) {
+                    DOCTEST_CHECK_EQ(7.f, static_cast<Second const*>(data)->b);
+                }
+                else {
+                    DOCTEST_FAIL("unknown component");
+                }
+            });
+            DOCTEST_CHECK(success);
+        }
     }
 }

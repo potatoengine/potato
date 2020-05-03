@@ -6,6 +6,7 @@
 #include "chunk.h"
 #include "entity_mapper.h"
 #include "archetype.h"
+#include "registry.h"
 #include "potato/ecs/component.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
@@ -76,6 +77,16 @@ namespace up {
         ///
         UP_ECS_API void removeComponent(EntityId entityId, ComponentId componentId) noexcept;
 
+        /// @brief Removes a component from an entity.
+        /// @tparam Component Component type to remove.
+        /// @param entityId Entity to modify.
+        template <typename Component>
+        void removeComponent(EntityId entityId) noexcept {
+            ComponentRegistry const& registry = ComponentRegistry::defaultRegistry();
+            ComponentMeta const* const meta = registry.findByType<Component>();
+            return removeComponent(entityId, meta->id);
+        }
+
         /// Retrieves a pointer to a Component on the specified Entity.
         ///
         /// This is typically a slow operation. It will incur several table lookups
@@ -108,7 +119,8 @@ namespace up {
 
         template <typename... Components>
         auto matchArchetypesInto(size_t firstIndex, bit_set const& mask, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
-            static ComponentId const components[sizeof...(Components)] = {getComponentId<Components>()...};
+            ComponentRegistry const& registry = ComponentRegistry::defaultRegistry();
+            static ComponentId const components[sizeof...(Components)] = {registry.findIdByType<Components>()...};
             return _archetypes.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
                 auto& match = matches.emplace_back();
                 match.archetype = arch;
@@ -142,7 +154,8 @@ namespace up {
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentMeta const* const componentMetas[] = {&ComponentMeta::get<Components>()...};
+        ComponentRegistry const& registry = ComponentRegistry::defaultRegistry();
+        ComponentMeta const* const componentMetas[] = {registry.findByType<Components>()...};
         void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
@@ -150,11 +163,14 @@ namespace up {
 
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
-        return static_cast<Component*>(getComponentSlowUnsafe(entity, getComponentId<Component>()));
+        ComponentRegistry const& registry = ComponentRegistry::defaultRegistry();
+        return static_cast<Component*>(getComponentSlowUnsafe(entity, registry.findIdByType<Component>()));
     }
 
     template <typename Component>
     void World::addComponent(EntityId entityId, Component const& component) noexcept {
-        _addComponentRaw(entityId, ComponentMeta::get<Component>(), &component);
+        ComponentRegistry const& registry = ComponentRegistry::defaultRegistry();
+        ComponentMeta const* const meta = registry.findByType<Component>();
+        _addComponentRaw(entityId, *meta, &component);
     }
 } // namespace up

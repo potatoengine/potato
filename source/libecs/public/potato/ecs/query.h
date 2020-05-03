@@ -5,6 +5,7 @@
 #include "_export.h"
 #include "world.h"
 #include "archetype.h"
+#include "registry.h"
 #include "potato/spud/typelist.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
@@ -55,9 +56,10 @@ namespace up {
 
     template <typename... Components>
     Query<Components...>::Query() {
-        static const ComponentId components[sizeof...(Components)] = {getComponentId<Components>()...};
-        for (auto id : components) {
-            _mask.set(to_underlying(id));
+        ComponentRegistry& registry = ComponentRegistry::defaultRegistry();
+        static uint32 const indices[sizeof...(Components)] = {registry.findIndexByType<Components>()...};
+        for (auto index : indices) {
+            _mask.set(index);
         }
     }
 

@@ -52,10 +52,3 @@ namespace up::components {
         reflect("radians", &Spin::radians);
     }
 } // namespace up::components
-
-UP_DECLARE_COMPONENT(up::components::Position);
-UP_DECLARE_COMPONENT(up::components::Rotation);
-UP_DECLARE_COMPONENT(up::components::Transform);
-UP_DECLARE_COMPONENT(up::components::Mesh);
-UP_DECLARE_COMPONENT(up::components::Wave);
-UP_DECLARE_COMPONENT(up::components::Spin);

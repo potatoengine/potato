@@ -20,14 +20,6 @@ namespace {
     UP_REFLECT_TYPE(Another) {}
 } // namespace
 
-UP_DECLARE_COMPONENT(Test1);
-UP_DECLARE_COMPONENT(Second);
-UP_DECLARE_COMPONENT(Another);
-
-UP_DEFINE_COMPONENT(Test1);
-UP_DEFINE_COMPONENT(Second);
-UP_DEFINE_COMPONENT(Another);
-
 DOCTEST_TEST_SUITE("[potato][ecs] Query") {
     using namespace up;
 
