@@ -81,9 +81,9 @@ jobs:
       - name: Install toolchain
         run: apt-get -yq install cmake ${{ matrix.packages }}
         if: success() && matrix.packages != ''
-      - name: Check Format:
+      - name: Check Format
         run: |
-          python3 .github/scripts/run-clang-format.py -r --clang-format-executable "${{ matrix.clang_format }}" --exclude ./external --extensions "h,cpp,cc" ./source
+          python3 .github/scripts/run-clang-format.py -r --clang-format-executable "${{ matrix.clang_format }}" --exclude ./external --extensions h,cpp,cc ./source
         if: success() && matrix.clang_format != ''
       - name: Configure
         env:
