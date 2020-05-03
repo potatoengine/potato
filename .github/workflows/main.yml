@@ -114,11 +114,11 @@ jobs:
       - name: Apt update
         run: apt-get -yq update
       - name: Install Doxygen
-        run: sudo apt-get -yq install doxygen
+        run: apt-get -yq install doxygen
       - name: Install build tools
-        run: sudo apt-get -yq cmake g++-10 gcc-10 libstdc++-10-dev
+        run: apt-get -yq cmake g++-10 gcc-10 libstdc++-10-dev
       - name: Install uuid-dev
-        run: sudo apt-get -yq install uuid-dev
+        run: apt-get -yq install uuid-dev
       - name: Configure
         env:
           CXX: 'g++-10'
