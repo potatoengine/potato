@@ -52,12 +52,12 @@ jobs:
     strategy:
       matrix:
         config: [ 'Debug', 'Release' ]
-        cxx: [ 'g++-9', 'clang++-10' ]
+        cxx: [ 'g++-10', 'clang++-10' ]
         include:
-          - cxx: g++-9
-            cc: gcc-9
+          - cxx: g++-10
+            cc: gcc-10
             cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized -Wno-error=unused-but-set-variable -Wno-error=unused-variable
-            packages: g++-9 gcc-9 libstdc++-9-dev
+            packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
             cxxflags: -Wall -Werror -Wno-unused-function -Wno-unused-variable -stdlib=libc++
