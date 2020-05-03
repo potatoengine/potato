@@ -107,7 +107,7 @@ jobs:
         source: './source'
         exclude: './external'
         extensions: 'h,cpp,cc'
-        clangFormatVersion: 10
+        clangFormatVersion: 9
 
   doxygen:
     name: Documentation
