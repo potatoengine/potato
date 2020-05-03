@@ -76,7 +76,7 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
         run: apt-get -yq update
-      - name: Install uuid-dev
+      - name: Install libraries
         run: apt-get -yq install uuid-dev
       - name: Install toolchain
         run: apt-get -yq install cmake ${{ matrix.packages }}
@@ -115,10 +115,10 @@ jobs:
         run: apt-get -yq update
       - name: Install Doxygen
         run: apt-get -yq install doxygen
-      - name: Install build tools
-        run: apt-get -yq cmake g++-10 gcc-10 libstdc++-10-dev
-      - name: Install uuid-dev
+      - name: Install libraries
         run: apt-get -yq install uuid-dev
+      - name: Install toolchain
+        run: apt-get -yq install cmake g++-10 gcc-10 libstdc++-10-dev
       - name: Configure
         env:
           CXX: 'g++-10'
