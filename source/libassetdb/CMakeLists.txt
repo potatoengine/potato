@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.16)
 project(assetdb VERSION 0.1 LANGUAGES CXX)
 
 add_library(potato_libassetdb)
