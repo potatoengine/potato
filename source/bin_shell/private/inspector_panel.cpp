@@ -88,7 +88,7 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::Begin(u8"\uf085 Inspector", &_enabled, ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin(as_char(u8"\uf085 Inspector"), &_enabled, ImGuiWindowFlags_NoCollapse)) {
             _scene.world().interrogateEntity(_selection.selected(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
                 if (ImGui::CollapsingHeader(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGuiComponentReflector ref;

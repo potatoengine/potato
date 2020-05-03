@@ -21,4 +21,6 @@ namespace up {
         return __builtin_char_memchr(str, ch, length);
 #endif
     }
+
+    inline auto as_char(char8_t const* u8str) -> char const* { return reinterpret_cast<char const*>(u8str); }
 } // namespace up
