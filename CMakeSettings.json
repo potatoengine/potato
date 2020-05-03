@@ -1,4 +1,4 @@
-﻿{
+{
   "configurations": [
     {
       "name": "Windows (Debug)",
@@ -9,7 +9,8 @@
       "installRoot": "${projectDir}/out/msvc-debug-shared/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": false,
+      "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
@@ -23,7 +24,7 @@
         },
         {
           "name": "UP_BUILD_DOCS",
-          "value": "True",
+          "value": "YES",
           "type": "BOOL"
         }
       ]
@@ -37,7 +38,8 @@
       "installRoot": "${projectDir}/out/msvc-debug-static/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": false,
+      "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
@@ -60,7 +62,8 @@
       "installRoot": "${projectDir}/out/msvc-release-shared/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": false,
+      "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
@@ -83,7 +86,8 @@
       "installRoot": "${projectDir}/out/msvc-release-static/root",
       "ctestCommandArgs": "--verbose",
       "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": false,
+      "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
@@ -110,11 +114,12 @@
       "inheritEnvironments": [ "linux_x64" ],
       "wslPath": "${defaultWSLPath}",
       "addressSanitizerRuntimeFlags": "detect_leaks=0",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": false,
+      "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
-          "value": "False",
+          "value": "YES",
           "type": "BOOL"
         },
         {
@@ -140,11 +145,12 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "--verbose",
       "inheritEnvironments": [ "linux_x64" ],
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": false,
+      "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
-          "value": "True",
+          "value": "YES",
           "type": "BOOL"
         },
         {
@@ -171,7 +177,8 @@
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "--verbose",
       "inheritEnvironments": [ "clang_cl_x64" ],
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": false,
+      "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
           "name": "UP_OUTPUT_DIR",
