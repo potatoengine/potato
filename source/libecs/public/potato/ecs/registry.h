@@ -4,6 +4,7 @@
 
 #include "_export.h"
 #include "common.h"
+#include "component.h"
 
 #include <potato/spud/vector.h>
 #include <typeindex>
