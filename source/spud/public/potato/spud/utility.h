@@ -65,8 +65,13 @@ namespace up {
     }
 
     template <typename Enum>
-    constexpr auto to_underlying(Enum value) noexcept -> std::underlying_type_t<Enum> {
+    constexpr auto to_underlying(Enum value) noexcept -> std::underlying_type_t<Enum> requires std::is_enum_v<Enum> {
         return static_cast<std::underlying_type_t<Enum>>(value);
+    }
+
+    template <typename Enum, typename T>
+    constexpr auto to_enum(T value) noexcept -> Enum requires std::is_enum_v<Enum>&& std::is_same_v<std::underlying_type_t<Enum>, T> {
+        return static_cast<Enum>(value);
     }
 
     constexpr auto align_to(std::size_t value, std::size_t alignment) noexcept -> std::size_t {
