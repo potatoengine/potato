@@ -63,6 +63,7 @@ jobs:
             cxxflags: -Wall -Werror -Wno-unused-function -Wno-unused-variable -stdlib=libc++
             packages: clang-10 clang-tidy-10 libc++-10-dev libc++abi-10-dev
             clang_tidy: clang-tidy-10
+            clang_format: clang-format-10
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-latest'
@@ -80,6 +81,10 @@ jobs:
       - name: Install toolchain
         run: apt-get -yq install cmake ${{ matrix.packages }}
         if: success() && matrix.packages != ''
+      - name: Check Format:
+        run: |
+          python3 .github/scripts/run-clang-format.py -r --clang-format-executable "${{ matrix.clang_format }}" --exclude ./external --extensions "h,cpp,cc" ./source
+        if: success() && matrix.clang_format != ''
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
@@ -95,19 +100,6 @@ jobs:
         run: |
           cd build
           ctest -T test -R potato --verbose
-
-  format:
-    name: Check Format
-    runs-on: 'ubuntu-latest'
-
-    steps:
-    - uses: actions/checkout@master
-    - uses: DoozyX/clang-format-lint-action@v0.5
-      with:
-        source: './source'
-        exclude: './external'
-        extensions: 'h,cpp,cc'
-        clangFormatVersion: 9
 
   doxygen:
     name: Documentation
@@ -136,7 +128,7 @@ jobs:
 
   build-all:
     name: All
-    needs: [ 'build-windows', 'build-ubuntu', 'format', 'doxygen' ]
+    needs: [ 'build-windows', 'build-ubuntu', 'doxygen' ]
     runs-on: 'ubuntu-latest'
 
     steps:
