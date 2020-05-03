@@ -342,21 +342,21 @@ void up::ShellApp::_displayUI() {
 
 void up::ShellApp::_displayMainMenu() {
     if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu(u8"\uf094 Potato")) {
-            if (ImGui::MenuItem(u8"\uf52b Quit", "ESC")) {
+        if (ImGui::BeginMenu(as_char(u8"\uf094 Potato"))) {
+            if (ImGui::MenuItem(as_char(u8"\uf52b Quit"), "ESC")) {
                 _running = false;
             }
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu(u8"\uf06e View")) {
+        if (ImGui::BeginMenu(as_char(u8"\uf06e View"))) {
             if (ImGui::BeginMenu("Options")) {
                 ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu(u8"\uf2d2 Windows")) {
+        if (ImGui::BeginMenu(as_char(u8"\uf2d2 Windows"))) {
             for (auto const& doc : _documents) {
                 if (ImGui::MenuItem(doc->displayName().c_str(), nullptr, doc->enabled(), true)) {
                     doc->enabled(!doc->enabled());
@@ -369,7 +369,7 @@ void up::ShellApp::_displayMainMenu() {
         ImGui::Spacing();
         ImGui::Spacing();
 
-        if (ImGui::MenuItem(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play", "F5")) {
+        if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
             _scene->playing(!_scene->playing());
         }
 
@@ -399,7 +399,7 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
             auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
 
-            ImGui::DockBuilderDockWindow(u8"\uf085 Inspector", inspectedDockId);
+            ImGui::DockBuilderDockWindow(as_char(u8"\uf085 Inspector"), inspectedDockId);
             ImGui::DockBuilderDockWindow("Hierarchy", hierarchyDockId);
             ImGui::DockBuilderDockWindow("ScenePanel", contentDockId);
             ImGui::DockBuilderDockWindow("GamePanel", contentDockId);

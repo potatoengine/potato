@@ -54,7 +54,7 @@ namespace up::shell {
         auto& io = ImGui::GetIO();
 
         if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu(u8"\uf06e View")) {
+            if (ImGui::BeginMenu(as_char(u8"\uf06e View"))) {
                 if (ImGui::BeginMenu("Options")) {
                     if (ImGui::MenuItem("Grid")) {
                         _enableGrid = !_enableGrid;

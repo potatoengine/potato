@@ -56,7 +56,7 @@ jobs:
         include:
           - cxx: g++-10
             cc: gcc-10
-            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized -Wno-error=unused-but-set-variable -Wno-error=unused-variable
+            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations
             packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
@@ -76,7 +76,7 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
         run: apt-get -yq update
-      - name: Install uuid-dev
+      - name: Install libraries
         run: apt-get -yq install uuid-dev
       - name: Install toolchain
         run: apt-get -yq install cmake ${{ matrix.packages }}
@@ -104,20 +104,29 @@ jobs:
   doxygen:
     name: Documentation
     runs-on: 'ubuntu-latest'
+    container:
+      image: 'ubuntu:20.04'
 
     steps:
       - uses: actions/checkout@master
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+      - name: Apt update
+        run: apt-get -yq update
       - name: Install Doxygen
-        run: sudo apt-get -yq install doxygen
-      - name: Install uuid-dev
-        run: |
-          sudo apt-get -yq update
-          sudo apt-get -yq install uuid-dev
+        run: apt-get -yq install doxygen
+      - name: Install libraries
+        run: apt-get -yq install uuid-dev
+      - name: Install toolchain
+        run: apt-get -yq install cmake g++-10 gcc-10 libstdc++-10-dev
       - name: Configure
+        env:
+          CXX: 'g++-10'
+          CC: 'gcc-10'
         run: |
           mkdir build
           cd build
-          cmake -DUP_BUILD_DOCS=ON ..
+          cmake -G Ninja -DUP_BUILD_DOCS=ON ..
       - name: Build Docs
         run: cmake --build build --target doxygen
       - name: Post Artifacts

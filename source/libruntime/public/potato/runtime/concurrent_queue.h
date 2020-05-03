@@ -23,6 +23,8 @@ namespace up {
         void close();
         void waitUntilEmpty();
 
+        bool isClosed() noexcept;
+
         template <typename InsertT>
         [[nodiscard]] bool tryEnque(InsertT&& value);
         [[nodiscard]] bool tryDeque(T& out);
@@ -70,6 +72,12 @@ namespace up {
 
             std::this_thread::yield();
         }
+    }
+
+    template <typename T>
+    bool ConcurrentQueue<T>::isClosed() noexcept {
+        std::unique_lock lock(_lock);
+        return _closed;
     }
 
     template <typename T>
