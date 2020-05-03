@@ -27,7 +27,7 @@ public:
         return &_ptr;
     }
 
-    operator void**() noexcept { return reinterpret_cast<void**>(operator P*()); }
+    operator void* *() noexcept { return reinterpret_cast<void**>(operator P*()); }
 
 private:
     P _ptr = nullptr;

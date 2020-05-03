@@ -10,7 +10,7 @@ namespace up {
     class fixed_string;
 
     template <size_t Capacity>
-    fixed_string(char const (&)[Capacity])->fixed_string<Capacity>;
+    fixed_string(char const (&)[Capacity]) -> fixed_string<Capacity>;
 
     template <size_t Capacity>
     class fixed_string {

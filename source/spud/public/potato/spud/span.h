@@ -14,23 +14,23 @@ namespace up {
     using view = span<T const>;
 
     template <typename T>
-    span(T*, T*)->span<T>;
+    span(T*, T*) -> span<T>;
     template <typename T>
-    span(T*, std::size_t)->span<T>;
+    span(T*, std::size_t) -> span<T>;
     template <typename T, std::size_t N>
-    span(T (&src)[N])->span<T>;
+    span(T (&src)[N]) -> span<T>;
     template <typename T, std::size_t N>
-    span(std::array<T, N>&)->span<T>;
+    span(std::array<T, N>&) -> span<T>;
     template <typename T, std::size_t N>
-    span(std::array<T, N> const&)->span<T const>;
+    span(std::array<T, N> const&) -> span<T const>;
 
     template <typename T>
     class vector;
 
     template <typename T>
-    span(vector<T> const&)->span<T const>;
+    span(vector<T> const&) -> span<T const>;
     template <typename T>
-    span(vector<T>&)->span<T>;
+    span(vector<T>&) -> span<T>;
 
     template <typename HashAlgorithm, typename T>
     inline void hash_append(HashAlgorithm&, up::span<T> const&) noexcept;

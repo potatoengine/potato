@@ -24,5 +24,5 @@ namespace up {
     };
 
     template <typename LockT>
-    LockGuard(LockT&)->LockGuard<LockT>;
+    LockGuard(LockT&) -> LockGuard<LockT>;
 } // namespace up

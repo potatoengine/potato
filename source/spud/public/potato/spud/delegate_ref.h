@@ -9,7 +9,7 @@ namespace up {
     class delegate_ref;
 
     template <typename T>
-    delegate_ref(T)->delegate_ref<signature_t<T>>;
+    delegate_ref(T) -> delegate_ref<signature_t<T>>;
 
     namespace _detail {
         template <typename F, typename R, typename... P>
