@@ -6,6 +6,10 @@ insert_final_newline = true
 indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
+charset = utf-8
+
+[*.{cpp,c,h}]
+vc_generate_documentation_comments = doxygen_triple_slash
 
 [*.{json,yml,natvis,xml,json.in,vsconfig}]
 indent_size = 2
