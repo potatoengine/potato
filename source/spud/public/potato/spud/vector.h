@@ -18,11 +18,11 @@ namespace up {
     class vector;
 
     template <typename T>
-    vector(span<T>)->vector<std::remove_const_t<T>>;
+    vector(span<T>) -> vector<std::remove_const_t<T>>;
     template <typename T>
-    vector(std::initializer_list<T>)->vector<std::remove_const_t<T>>;
+    vector(std::initializer_list<T>) -> vector<std::remove_const_t<T>>;
     template <typename IteratorT, typename SentinelT>
-    vector(IteratorT, SentinelT)->vector<std::remove_const_t<decltype(*std::declval<IteratorT>())>>;
+    vector(IteratorT, SentinelT) -> vector<std::remove_const_t<decltype(*std::declval<IteratorT>())>>;
 
     template <typename T>
     class vector {
@@ -124,7 +124,7 @@ namespace up {
 
         void pop_back();
 
-    public:
+    private:
         T* _allocate(size_type capacity);
         void _deallocate(T* ptr, size_type capacity);
         size_type _grow(size_type minimum = 4);

@@ -36,7 +36,6 @@ namespace up {
             }
         }
 
-    private:
         mutable std::atomic<int> _refs = 1;
     };
 

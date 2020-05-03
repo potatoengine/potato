@@ -107,7 +107,6 @@ namespace up::reflex {
             return parent;
         }
 
-    private:
         nlohmann::json& _root;
         vector<nlohmann::json*> _current;
         zstring_view _nextField;
@@ -207,7 +206,6 @@ namespace up::reflex {
             return nullptr;
         }
 
-    private:
         vector<nlohmann::json*> _current;
         zstring_view _nextField;
         size_t _nextIndex = ~size_t{};

@@ -13,22 +13,22 @@ namespace up {
     class delegate;
 
     template <typename T>
-    delegate(T)->delegate<signature_t<T>>;
+    delegate(T) -> delegate<signature_t<T>>;
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
-    delegate(ClassType& object, ReturnType (ClassType::*)(ParamTypes...))->delegate<ReturnType(ParamTypes...)>;
+    delegate(ClassType& object, ReturnType (ClassType::*)(ParamTypes...)) -> delegate<ReturnType(ParamTypes...)>;
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
-    delegate(ClassType const& object, ReturnType (ClassType::*)(ParamTypes...) const)->delegate<ReturnType(ParamTypes...) const>;
+    delegate(ClassType const& object, ReturnType (ClassType::*)(ParamTypes...) const) -> delegate<ReturnType(ParamTypes...) const>;
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
-    delegate(ClassType&& object, ReturnType (ClassType::*)(ParamTypes...) const)->delegate<ReturnType(ParamTypes...) const>;
+    delegate(ClassType&& object, ReturnType (ClassType::*)(ParamTypes...) const) -> delegate<ReturnType(ParamTypes...) const>;
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
-    delegate(ClassType* object, ReturnType (ClassType::*)(ParamTypes...))->delegate<ReturnType(ParamTypes...)>;
+    delegate(ClassType* object, ReturnType (ClassType::*)(ParamTypes...)) -> delegate<ReturnType(ParamTypes...)>;
 
     template <typename ClassType, typename ReturnType, typename... ParamTypes>
-    delegate(ClassType const* object, ReturnType (ClassType::*)(ParamTypes...) const)->delegate<ReturnType(ParamTypes...) const>;
+    delegate(ClassType const* object, ReturnType (ClassType::*)(ParamTypes...) const) -> delegate<ReturnType(ParamTypes...) const>;
 
     namespace _detail {
         static constexpr size_t delegate_size_c = 3;
@@ -106,7 +106,6 @@ namespace up {
             delegate_base(delegate_vtable_base const* vtable) noexcept : _vtable(vtable) {}
             ~delegate_base() = default;
 
-        protected:
             // we will overwrite this with an object with just a vtable - if we are nullptr, we have no real vtable
             delegate_vtable_base const* _vtable = nullptr;
             storage_t _storage = {};
