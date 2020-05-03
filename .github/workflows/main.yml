@@ -74,11 +74,11 @@ jobs:
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
-        run: sudo apt-get -yq update
+        run: apt-get -yq update
       - name: Install uuid-dev
-        run: sudo apt-get -yq install uuid-dev
+        run: apt-get -yq install uuid-dev
       - name: Install toolchain
-        run: sudo apt-get -yq install ${{ matrix.packages }}
+        run: apt-get -yq install ${{ matrix.packages }}
         if: success() && matrix.packages != ''
       - name: Configure
         env:
