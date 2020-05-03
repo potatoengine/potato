@@ -104,20 +104,29 @@ jobs:
   doxygen:
     name: Documentation
     runs-on: 'ubuntu-latest'
+    container:
+      image: 'ubuntu:20.04'
 
     steps:
       - uses: actions/checkout@master
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+      - name: Apt update
+        run: apt-get -yq update
       - name: Install Doxygen
         run: sudo apt-get -yq install doxygen
+      - name: Install build tools
+        run: sudo apt-get -yq cmake g++-10 gcc-10 libstdc++-10-dev
       - name: Install uuid-dev
-        run: |
-          sudo apt-get -yq update
-          sudo apt-get -yq install uuid-dev
+        run: sudo apt-get -yq install uuid-dev
       - name: Configure
+        env:
+          CXX: 'g++-10'
+          CC: 'gcc-10'
         run: |
           mkdir build
           cd build
-          cmake -DUP_BUILD_DOCS=ON ..
+          cmake -G Ninja -DUP_BUILD_DOCS=ON ..
       - name: Build Docs
         run: cmake --build build --target doxygen
       - name: Post Artifacts
