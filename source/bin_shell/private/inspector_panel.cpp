@@ -65,7 +65,7 @@ namespace up::shell {
                     }
 
                     ImGuiComponentReflector ref;
-                    meta->reflect(data, ref);
+                    meta->ops.reflect(data, ref);
                     ImGui::TreePop();
                 }
             });

@@ -168,29 +168,29 @@ void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, A
     auto const srcLayout = _archetypes.layoutOf(srcArch);
     for (ChunkRowDesc const& row : _archetypes.layoutOf(destArch)) {
         if (auto const srcRow = findRowDesc(srcLayout, row.component); srcRow != nullptr) {
-            row.meta->relocate(destChunk.data + row.offset + row.width * destIndex, srcChunk.data + srcRow->offset + srcRow->width * srcIndex);
+            row.meta->ops.moveAssign(destChunk.data + row.offset + row.width * destIndex, srcChunk.data + srcRow->offset + srcRow->width * srcIndex);
         }
     }
 }
 
 void up::World::_moveTo(ArchetypeId arch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex) {
     for (ChunkRowDesc const& layout : _archetypes.layoutOf(arch)) {
-        layout.meta->relocate(destChunk.data + layout.offset + layout.width * destIndex, srcChunk.data + layout.offset + layout.width * srcIndex);
+        layout.meta->ops.moveAssign(destChunk.data + layout.offset + layout.width * destIndex, srcChunk.data + layout.offset + layout.width * srcIndex);
     }
 }
 
 void up::World::_copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData) {
     auto const destRow = findRowDesc(_archetypes.layoutOf(destArch), srcComponent);
-    destRow->meta->copy(destChunk.data + destRow->offset + destRow->width * destIndex, srcData);
+    destRow->meta->ops.copyConstruct(destChunk.data + destRow->offset + destRow->width * destIndex, srcData);
 }
 
 void up::World::_constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component) {
     auto const row = findRowDesc(_archetypes.layoutOf(arch), component);
-    row->meta->construct(chunk.data + row->offset + row->width * index);
+    row->meta->ops.defaultConstruct(chunk.data + row->offset + row->width * index);
 }
 
 void up::World::_destroyAt(ArchetypeId arch, Chunk& chunk, int index) {
     for (ChunkRowDesc const& layout : _archetypes.layoutOf(arch)) {
-        layout.meta->destroy(chunk.data + layout.offset + layout.width * index);
+        layout.meta->ops.destruct(chunk.data + layout.offset + layout.width * index);
     }
 }

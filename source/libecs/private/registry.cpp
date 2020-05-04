@@ -31,7 +31,7 @@ auto up::ComponentRegistry::findById(ComponentId id) const noexcept -> Component
     return it != _components.end() ? it : nullptr;
 }
 
-auto up::ComponentRegistry::_findByType(std::type_index type) const noexcept -> ComponentMeta const* {
-    auto const* it = find(_components, type, equality{}, &ComponentMeta::type);
+auto up::ComponentRegistry::_findByType(uint64 typeHash) const noexcept -> ComponentMeta const* {
+    auto const* it = find(_components, typeHash, equality{}, &ComponentMeta::typeHash);
     return it != _components.end() ? it : nullptr;
 }

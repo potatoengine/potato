@@ -45,7 +45,7 @@ namespace up {
         /// @tparam Component which type to match against.
         /// @return the found component or nullptr on no match.
         template <typename Component>
-        auto findByType() const noexcept -> ComponentMeta const* { return _findByType(typeid(Component)); }
+        auto findByType() const noexcept -> ComponentMeta const* { return _findByType(typeid(Component).hash_code()); }
 
         /// @brief Finds the type index for a component by compile-time type.
         /// @tparam Component Component which type to match against
@@ -64,7 +64,7 @@ namespace up {
         auto components() const noexcept -> view<ComponentMeta> { return _components; }
 
     private:
-        UP_ECS_API auto _findByType(std::type_index type) const noexcept -> ComponentMeta const*;
+        UP_ECS_API auto _findByType(uint64 typeHash) const noexcept -> ComponentMeta const*;
 
         vector<ComponentMeta> _components;
         uint32 _nextIndex = 0;
