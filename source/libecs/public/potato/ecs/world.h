@@ -28,7 +28,8 @@ namespace up {
     public:
         using SelectSignature = void(ArchetypeId, view<int>);
 
-        UP_ECS_API World();
+        UP_ECS_API explicit World(ComponentRegistry& registry);
+        World() : World(ComponentRegistry::defaultRegistry()) {}
         UP_ECS_API ~World();
 
         World(World&&) = delete;
@@ -82,8 +83,7 @@ namespace up {
         /// @param entityId Entity to modify.
         template <typename Component>
         void removeComponent(EntityId entityId) noexcept {
-            ComponentRegistry const& registry = ComponentRegistry::defaultRegistry();
-            ComponentMeta const* const meta = registry.findByType<Component>();
+            ComponentMeta const* const meta = _registry.findByType<Component>();
             return removeComponent(entityId, meta->id);
         }
 
@@ -119,8 +119,7 @@ namespace up {
 
         template <typename... Components>
         auto matchArchetypesInto(size_t firstIndex, bit_set const& mask, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
-            ComponentRegistry const& registry = ComponentRegistry::defaultRegistry();
-            static ComponentId const components[sizeof...(Components)] = {registry.findIdByType<Components>()...};
+            static ComponentId const components[sizeof...(Components)] = {_registry.findIdByType<Components>()...};
             return _archetypes.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
                 auto& match = matches.emplace_back();
                 match.archetype = arch;
@@ -150,12 +149,12 @@ namespace up {
         EntityMapper _entities;
         ArchetypeMapper _archetypes;
         ChunkAllocator _chunks;
+        ComponentRegistry& _registry;
     };
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentRegistry const& registry = ComponentRegistry::defaultRegistry();
-        ComponentMeta const* const componentMetas[] = {registry.findByType<Components>()...};
+        ComponentMeta const* const componentMetas[] = {_registry.findByType<Components>()...};
         void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
@@ -163,14 +162,12 @@ namespace up {
 
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
-        ComponentRegistry const& registry = ComponentRegistry::defaultRegistry();
-        return static_cast<Component*>(getComponentSlowUnsafe(entity, registry.findIdByType<Component>()));
+        return static_cast<Component*>(getComponentSlowUnsafe(entity, _registry.findIdByType<Component>()));
     }
 
     template <typename Component>
     void World::addComponent(EntityId entityId, Component const& component) noexcept {
-        ComponentRegistry const& registry = ComponentRegistry::defaultRegistry();
-        ComponentMeta const* const meta = registry.findByType<Component>();
+        ComponentMeta const* const meta = _registry.findByType<Component>();
         _addComponentRaw(entityId, *meta, &component);
     }
 } // namespace up

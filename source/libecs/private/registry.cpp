@@ -11,7 +11,7 @@ auto up::ComponentRegistry::defaultRegistry() noexcept -> ComponentRegistry& {
 
 void up::ComponentRegistry::registerComponent(ComponentMeta const& meta) {
     auto& newMeta = _components.push_back(meta);
-    newMeta.index++;
+    newMeta.index = _nextIndex++;
 }
 
 void up::ComponentRegistry::deregisterComponent(ComponentId id) {

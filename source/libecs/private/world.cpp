@@ -17,7 +17,7 @@ namespace up {
     }
 } // namespace up
 
-up::World::World() = default;
+up::World::World(ComponentRegistry& registry) : _registry(registry) {}
 
 up::World::~World() = default;
 
@@ -65,8 +65,11 @@ void up::World::_deleteEntity(EntityId entity) {
 }
 
 void up::World::removeComponent(EntityId entityId, ComponentId componentId) noexcept {
+    ComponentMeta const* const meta = _registry.findById(componentId);
+    UP_ASSERT(meta != nullptr);
+
     if (auto [success, archetypeId, chunkIndex, index] = _entities.tryParse(entityId); success) {
-        ArchetypeId newArchetype = _archetypes.acquireArchetypeWithout(archetypeId, componentId);
+        ArchetypeId newArchetype = _archetypes.acquireArchetypeWithout(archetypeId, meta);
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
 
         auto* oldChunk = _archetypes.getChunk(archetypeId, chunkIndex);

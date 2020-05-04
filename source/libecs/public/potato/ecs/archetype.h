@@ -49,7 +49,7 @@ namespace up {
 
         auto acquireArchetype(view<ComponentMeta const*> components) -> ArchetypeId;
         auto acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional) -> ArchetypeId;
-        auto acquireArchetypeWithout(ArchetypeId original, ComponentId excluded) -> ArchetypeId;
+        auto acquireArchetypeWithout(ArchetypeId original, ComponentMeta const* excluded) -> ArchetypeId;
 
         template <size_t ComponentCount, typename Callback>
         auto selectArchetypes(size_t start, bit_set const& mask, ComponentId const (&components)[ComponentCount], Callback&& callback) const noexcept -> size_t {

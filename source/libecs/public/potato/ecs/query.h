@@ -23,7 +23,8 @@ namespace up {
     public:
         static_assert(sizeof...(Components) != 0, "Empty Query objects are not allowed");
 
-        Query();
+        explicit Query(ComponentRegistry& registry);
+        Query() : Query(ComponentRegistry::defaultRegistry()) {}
 
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
         /// callback once for each Chunk belonging to the Archetypes, with appropriate pointers.
@@ -55,8 +56,7 @@ namespace up {
     };
 
     template <typename... Components>
-    Query<Components...>::Query() {
-        ComponentRegistry& registry = ComponentRegistry::defaultRegistry();
+    Query<Components...>::Query(ComponentRegistry& registry) {
         static uint32 const indices[sizeof...(Components)] = {registry.findIndexByType<Components>()...};
         for (auto index : indices) {
             _mask.set(index);

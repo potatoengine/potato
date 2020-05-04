@@ -114,7 +114,7 @@ auto up::ArchetypeMapper::acquireArchetype(view<ComponentMeta const*> components
 
 auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional) -> ArchetypeId {
     bit_set set = _components[to_underlying(original)].clone();
-    set.set(to_underlying(additional->id));
+    set.set(additional->index);
 
     if (auto [found, arch] = _findArchetype(set); found) {
         return arch;
@@ -130,9 +130,9 @@ auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMe
     return _finalizeArchetype(id);
 }
 
-auto up::ArchetypeMapper::acquireArchetypeWithout(ArchetypeId original, ComponentId excluded) -> ArchetypeId {
+auto up::ArchetypeMapper::acquireArchetypeWithout(ArchetypeId original, ComponentMeta const* excluded) -> ArchetypeId {
     bit_set set = _components[to_underlying(original)].clone();
-    set.reset(to_underlying(excluded));
+    set.reset(excluded->index);
 
     if (auto [found, arch] = _findArchetype(set); found) {
         return arch;
@@ -142,7 +142,7 @@ auto up::ArchetypeMapper::acquireArchetypeWithout(ArchetypeId original, Componen
     auto const& originalArch = _archetypes[to_underlying(original)];
     for (int index = 0; index != originalArch.layoutLength; ++index) {
         auto const& row = _layout[originalArch.layoutOffset + index];
-        if (row.component != excluded) {
+        if (row.meta != excluded) {
             _layout.push_back(row);
         }
     }

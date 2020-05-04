@@ -36,7 +36,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         registry.registerComponent(ComponentMeta::createMeta<Counter>("Counter"));
 
         DOCTEST_SUBCASE("Direct component access") {
-            World world;
+            World world(registry);
 
             world.createEntity(Test1{'f'}, Second{7.f, 'g'});
             world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
@@ -49,12 +49,12 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         }
 
         DOCTEST_SUBCASE("EntityId management") {
-            World world;
+            World world(registry);
 
             EntityId first = world.createEntity(Test1{'f'}, Second{7.f, 'g'});
             EntityId second = world.createEntity(Test1{'h'}, Second{-1.f, 'i'});
 
-            Query<Test1> query;
+            Query<Test1> query(registry);
             query.selectChunks(world, [&](size_t count, EntityId const* entities, Test1*) {
                 DOCTEST_CHECK_EQ(2, count);
                 DOCTEST_CHECK_EQ(first, entities[0]);
@@ -64,7 +64,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
         DOCTEST_SUBCASE("Chunks") {
             constexpr int count = 100000;
-            World world;
+            World world(registry);
 
             uint64 expectedSum = 0;
             for (int i = 0; i != count; ++i) {
@@ -76,7 +76,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
             size_t total = 0;
             uint64 sum = 0;
 
-            Query<Counter> query;
+            Query<Counter> query(registry);
             query.selectChunks(world, [&](size_t count, EntityId const*, Counter* counters) {
                 ++chunks;
                 total += count;
@@ -91,7 +91,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         }
 
         DOCTEST_SUBCASE("Creates and Deletes") {
-            World world;
+            World world(registry);
 
             // create some dummy entities
             //
@@ -130,9 +130,9 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
         DOCTEST_SUBCASE("Remove Component") {
             bool found = false;
-            World world;
-            Query<Test1> queryTest1;
-            Query<Second> querySecond;
+            World world(registry);
+            Query<Test1> queryTest1(registry);
+            Query<Second> querySecond(registry);
 
             EntityId id = world.createEntity(Test1{}, Second{});
 
@@ -152,9 +152,9 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
         DOCTEST_SUBCASE("Add Component") {
             bool found = false;
-            World world;
-            Query<Test1> queryTest1;
-            Query<Second> querySecond;
+            World world(registry);
+            Query<Test1> queryTest1(registry);
+            Query<Second> querySecond(registry);
 
             EntityId id = world.createEntity(Test1{});
 
@@ -173,7 +173,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
         }
 
         DOCTEST_SUBCASE("Interroate") {
-            World world;
+            World world(registry);
 
             auto id = world.createEntity(Test1{'f'}, Another{1.0, 2.f}, Second{7.f, 'g'});
 
