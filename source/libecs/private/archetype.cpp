@@ -11,7 +11,7 @@
 up::ArchetypeMapper::ArchetypeMapper() {
     // Archetype 0 is the empty archetype
     //
-    auto id = _beginArchetype({});
+    auto id = _beginArchetype({}, 0);
     UP_ASSERT(id == ArchetypeId::Empty);
     _finalizeArchetype(id);
 }
@@ -29,11 +29,11 @@ void up::ArchetypeMapper::_bindArchetypeOffets(ArchetypeId archetype, view<Compo
     }
 }
 
-auto up::ArchetypeMapper::_beginArchetype(bit_set components) -> ArchetypeId {
+auto up::ArchetypeMapper::_beginArchetype(bit_set components, uint32 chunkOffset) -> ArchetypeId {
     // allocate a new archetype and associated id
     //
     auto id = ArchetypeId(_archetypes.size());
-    _archetypes.push_back({static_cast<uint32>(_chunks.size()), static_cast<uint32>(_layout.size())});
+    _archetypes.push_back({chunkOffset, static_cast<uint32>(_layout.size())});
     _components.push_back(std::move(components));
 
     return id;
@@ -91,7 +91,7 @@ auto up::ArchetypeMapper::_findArchetype(bit_set const& set) noexcept -> FindRes
     return {false, ArchetypeId::Empty};
 }
 
-auto up::ArchetypeMapper::acquireArchetype(view<ComponentMeta const*> components) -> ArchetypeId {
+auto up::ArchetypeMapper::acquireArchetype(view<ComponentMeta const*> components, uint32 chunkOffset) -> ArchetypeId {
     bit_set set;
     for (ComponentMeta const* meta : components) {
         set.set(meta->index);
@@ -101,7 +101,7 @@ auto up::ArchetypeMapper::acquireArchetype(view<ComponentMeta const*> components
         return arch;
     }
 
-    auto id = _beginArchetype(std::move(set));
+    auto id = _beginArchetype(std::move(set), chunkOffset);
 
     // append all the other components
     //
@@ -112,7 +112,7 @@ auto up::ArchetypeMapper::acquireArchetype(view<ComponentMeta const*> components
     return _finalizeArchetype(id);
 }
 
-auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional) -> ArchetypeId {
+auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional, uint32 chunkOffset) -> ArchetypeId {
     bit_set set = _components[to_underlying(original)].clone();
     set.set(additional->index);
 
@@ -120,7 +120,7 @@ auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMe
         return arch;
     }
 
-    auto id = _beginArchetype(std::move(set));
+    auto id = _beginArchetype(std::move(set), chunkOffset);
     auto const& originalArch = _archetypes[to_underlying(original)];
     for (int index = 0; index != originalArch.layoutLength; ++index) {
         _layout.push_back(_layout[originalArch.layoutOffset + index]);
@@ -130,7 +130,7 @@ auto up::ArchetypeMapper::acquireArchetypeWith(ArchetypeId original, ComponentMe
     return _finalizeArchetype(id);
 }
 
-auto up::ArchetypeMapper::acquireArchetypeWithout(ArchetypeId original, ComponentMeta const* excluded) -> ArchetypeId {
+auto up::ArchetypeMapper::acquireArchetypeWithout(ArchetypeId original, ComponentMeta const* excluded, uint32 chunkOffset) -> ArchetypeId {
     bit_set set = _components[to_underlying(original)].clone();
     set.reset(excluded->index);
 
@@ -138,7 +138,7 @@ auto up::ArchetypeMapper::acquireArchetypeWithout(ArchetypeId original, Componen
         return arch;
     }
 
-    auto id = _beginArchetype(std::move(set));
+    auto id = _beginArchetype(std::move(set), chunkOffset);
     auto const& originalArch = _archetypes[to_underlying(original)];
     for (int index = 0; index != originalArch.layoutLength; ++index) {
         auto const& row = _layout[originalArch.layoutOffset + index];
@@ -147,33 +147,4 @@ auto up::ArchetypeMapper::acquireArchetypeWithout(ArchetypeId original, Componen
         }
     }
     return _finalizeArchetype(id);
-}
-
-auto up::ArchetypeMapper::addChunk(ArchetypeId arch, Chunk* chunk) -> int {
-    UP_ASSERT(arch == chunk->header.archetype);
-
-    Archetype& archData = _archetypes[to_underlying(arch)];
-    int const lastIndex = archData.chunksLength;
-
-    chunk->header.capacity = archData.maxEntitiesPerChunk;
-
-    _chunks.insert(_chunks.begin() + archData.chunksOffset + archData.chunksLength, chunk);
-    ++archData.chunksLength;
-
-    for (auto index = static_cast<size_t>(arch) + 1; index != _archetypes.size(); ++index) {
-        ++_archetypes[index].chunksOffset;
-    }
-
-    return lastIndex;
-}
-
-void up::ArchetypeMapper::removeChunk(ArchetypeId arch, int chunkIndex) noexcept {
-    Archetype& archData = _archetypes[to_underlying(arch)];
-
-    _chunks.erase(_chunks.begin() + archData.chunksOffset + chunkIndex);
-    --archData.chunksLength;
-
-    for (auto index = static_cast<size_t>(arch) + 1; index != _archetypes.size(); ++index) {
-        --_archetypes[index].chunksOffset;
-    }
 }

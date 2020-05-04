@@ -37,14 +37,18 @@ namespace up {
 
         /// Constant view into Archetype state.
         ///
-        auto archetypes() const noexcept { return _archetypes.archetypes(); }
+        auto archetypes() const noexcept { return _archetypes.archetypeIds(); }
 
         /// Retrieve the chunks belonging to a specific archetype.
         ///
         /// @returns nullptr if the ArchetypeId is invalid
         ///
-        auto chunksOf(ArchetypeId arch) noexcept -> view<Chunk*> {
-            return _archetypes.chunksOf(arch);
+        auto chunksOf(ArchetypeId arch) const noexcept -> view<Chunk*> {
+            auto const* desc = _archetypes.getArchetype(arch);
+            if (desc != nullptr) {
+                return _archetypeChunks.subspan(desc->chunksOffset, desc->chunksLength);
+            }
+            return {};
         }
 
         /// @brief View of all chunks allocated in the world.
@@ -108,7 +112,7 @@ namespace up {
         auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const {
             if (auto [success, archetype, chunkIndex, index] = _entities.tryParse(entity); success) {
                 auto const layout = _archetypes.layoutOf(archetype);
-                Chunk* const chunk = _archetypes.getChunk(archetype, chunkIndex);
+                Chunk* const chunk = _getArchetypeChunk(archetype, chunkIndex);
                 for (ChunkRowDesc const& row : layout) {
                     callback(entity, archetype, row.meta, (void*)(chunk->data + row.offset + row.width * index));
                 }
@@ -140,6 +144,13 @@ namespace up {
         auto _allocateEntity(ArchetypeId archetype) -> AllocatedLocation;
         void _deleteEntity(EntityId entity);
 
+        auto _addArchetypeChunk(ArchetypeId archetype, Chunk* chunk) -> int;
+        void _removeArchetypeChunk(ArchetypeId archetype, int chunkIndex) noexcept;
+        auto _getArchetypeChunk(ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk* {
+            auto const* desc = _archetypes.getArchetype(archetype);
+            return desc != nullptr ? _archetypeChunks[desc->chunksOffset + chunkIndex] : nullptr;
+        }
+
         void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex);
         void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex);
         void _copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData);
@@ -149,6 +160,7 @@ namespace up {
         EntityMapper _entities;
         ArchetypeMapper _archetypes;
         ChunkAllocator _chunks;
+        vector<Chunk*> _archetypeChunks;
         ComponentRegistry& _registry;
     };
 

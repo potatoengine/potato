@@ -30,26 +30,33 @@ namespace up {
 
         ArchetypeMapper();
 
-        auto archetypes() const noexcept -> sequence<ArchetypeId> {
+        auto archetypeIds() const noexcept -> sequence<ArchetypeId> {
             return {ArchetypeId::Empty, static_cast<ArchetypeId>(_archetypes.size())};
         }
 
+        auto archetypes() const noexcept -> view<Archetype> { return _archetypes; }
+        auto archetypes() noexcept -> span<Archetype> { return _archetypes; }
+
         auto layouts() const noexcept -> view<ChunkRowDesc> { return _layout; }
-        auto chunks() const noexcept -> view<Chunk*> { return _chunks; }
 
         auto layoutOf(ArchetypeId archetype) const noexcept -> view<ChunkRowDesc> {
             auto const& arch = _archetypes[to_underlying(archetype)];
             return _layout.subspan(arch.layoutOffset, arch.layoutLength);
         }
 
-        auto chunksOf(ArchetypeId archetype) const noexcept -> view<Chunk*> {
-            auto const& arch = _archetypes[to_underlying(archetype)];
-            return _chunks.subspan(arch.chunksOffset, arch.chunksLength);
+        auto getArchetype(ArchetypeId archetype) const noexcept -> Archetype const* {
+            auto const index = to_underlying(archetype);
+            return index >= 0 && index < _archetypes.size() ? &_archetypes[index] : nullptr;
         }
 
-        auto acquireArchetype(view<ComponentMeta const*> components) -> ArchetypeId;
-        auto acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional) -> ArchetypeId;
-        auto acquireArchetypeWithout(ArchetypeId original, ComponentMeta const* excluded) -> ArchetypeId;
+        auto getArchetype(ArchetypeId archetype) noexcept -> Archetype* {
+            auto const index = to_underlying(archetype);
+            return index >= 0 && index < _archetypes.size() ? &_archetypes[index] : nullptr;
+        }
+
+        auto acquireArchetype(view<ComponentMeta const*> components, uint32 chunkOffset) -> ArchetypeId;
+        auto acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional, uint32 chunkOffset) -> ArchetypeId;
+        auto acquireArchetypeWithout(ArchetypeId original, ComponentMeta const* excluded, uint32 chunkOffset) -> ArchetypeId;
 
         template <size_t ComponentCount, typename Callback>
         auto selectArchetypes(size_t start, bit_set const& mask, ComponentId const (&components)[ComponentCount], Callback&& callback) const noexcept -> size_t {
@@ -65,12 +72,6 @@ namespace up {
             return _archetypes.size();
         }
 
-        auto addChunk(ArchetypeId archetype, Chunk* chunk) -> int;
-        void removeChunk(ArchetypeId archetype, int chunkIndex) noexcept;
-        auto getChunk(ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk* {
-            return _chunks[_archetypes[to_underlying(archetype)].chunksOffset + chunkIndex];
-        }
-
     private:
         struct FindResult {
             bool success = false;
@@ -78,10 +79,9 @@ namespace up {
         };
         auto _findArchetype(bit_set const& set) noexcept -> FindResult;
         UP_ECS_API void _bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept;
-        auto _beginArchetype(bit_set components) -> ArchetypeId;
+        auto _beginArchetype(bit_set components, uint32 chunkOffset) -> ArchetypeId;
         auto _finalizeArchetype(ArchetypeId archetype) noexcept -> ArchetypeId;
 
-        vector<Chunk*> _chunks;
         vector<Archetype> _archetypes;
         vector<bit_set> _components;
         vector<ChunkRowDesc> _layout;
