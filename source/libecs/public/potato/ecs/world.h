@@ -26,8 +26,6 @@ namespace up {
     ///
     class World {
     public:
-        using SelectSignature = void(ArchetypeId, view<int>);
-
         UP_ECS_API explicit World(ComponentRegistry& registry);
         World() : World(ComponentRegistry::defaultRegistry()) {}
         UP_ECS_API ~World();
