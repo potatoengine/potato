@@ -135,12 +135,12 @@ int up::ShellApp::initialize() {
     }
 
     auto& registry = ComponentRegistry::defaultRegistry();
-    registry.registerComponent(ComponentMeta::createMeta<components::Position>("Position"));
-    registry.registerComponent(ComponentMeta::createMeta<components::Rotation>("Rotation"));
-    registry.registerComponent(ComponentMeta::createMeta<components::Transform>("Transform"));
-    registry.registerComponent(ComponentMeta::createMeta<components::Mesh>("Mesh"));
-    registry.registerComponent(ComponentMeta::createMeta<components::Wave>("Wave"));
-    registry.registerComponent(ComponentMeta::createMeta<components::Spin>("Spin"));
+    registry.registerComponent<components::Position>("Position");
+    registry.registerComponent<components::Rotation>("Rotation");
+    registry.registerComponent<components::Transform>("Transform");
+    registry.registerComponent<components::Mesh>("Mesh");
+    registry.registerComponent<components::Wave>("Wave");
+    registry.registerComponent<components::Spin>("Spin");
 
     _scene = new_box<Scene>();
     _scene->create(new_shared<Model>(std::move(mesh), std::move(material)));

@@ -24,8 +24,10 @@ namespace up {
         UP_ECS_API static auto defaultRegistry() noexcept -> ComponentRegistry&;
 
         /// @brief Register a component.
-        /// @param meta A component metadata object, which cannot have been previously registered.
-        UP_ECS_API void registerComponent(ComponentMeta const& meta);
+        /// @tparam Component Component type to add.
+        /// @param name Unique name for this component.
+        template <typename Component>
+        void registerComponent(zstring_view name);
 
         /// @brief Deregister a component.
         /// @param id Component to deregister.
@@ -64,11 +66,28 @@ namespace up {
         auto components() const noexcept -> view<ComponentMeta> { return _components; }
 
     private:
+        UP_ECS_API void _registerComponent(ComponentMeta const& meta);
         UP_ECS_API auto _findByType(uint64 typeHash) const noexcept -> ComponentMeta const*;
 
         vector<ComponentMeta> _components;
         uint32 _nextIndex = 0;
     };
+
+    template <typename Component>
+    void ComponentRegistry::registerComponent(zstring_view name) {
+        _registerComponent({.name = name,
+                            .ops = {
+                                .defaultConstruct = _detail::ComponentDefaultMetaOps<Component>::defaultConstruct,
+                                .copyConstruct = _detail::ComponentDefaultMetaOps<Component>::copyConstruct,
+                                .moveAssign = _detail::ComponentDefaultMetaOps<Component>::moveAssign,
+                                .destruct = _detail::ComponentDefaultMetaOps<Component>::destruct,
+                                .serialize = _detail::ComponentDefaultMetaOps<Component>::serialize,
+                            },
+                            .id = to_enum<ComponentId>(hash_value(name)),
+                            .typeHash = typeid(Component).hash_code(),
+                            .size = sizeof(Component),
+                            .alignment = alignof(Component)});
+    }
 
     template <typename Component>
     auto ComponentRegistry::findIdByType() const noexcept -> ComponentId {

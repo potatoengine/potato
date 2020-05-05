@@ -30,10 +30,10 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
     DOCTEST_TEST_CASE("") {
         ComponentRegistry registry;
-        registry.registerComponent(ComponentMeta::createMeta<Test1>("Test1"));
-        registry.registerComponent(ComponentMeta::createMeta<Second>("Second"));
-        registry.registerComponent(ComponentMeta::createMeta<Another>("Another"));
-        registry.registerComponent(ComponentMeta::createMeta<Counter>("Counter"));
+        registry.registerComponent<Test1>("Test1");
+        registry.registerComponent<Second>("Second");
+        registry.registerComponent<Another>("Another");
+        registry.registerComponent<Counter>("Counter");
 
         DOCTEST_SUBCASE("Direct component access") {
             World world(registry);

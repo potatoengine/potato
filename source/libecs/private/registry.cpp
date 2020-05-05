@@ -9,7 +9,7 @@ auto up::ComponentRegistry::defaultRegistry() noexcept -> ComponentRegistry& {
     return instance;
 }
 
-void up::ComponentRegistry::registerComponent(ComponentMeta const& meta) {
+void up::ComponentRegistry::_registerComponent(ComponentMeta const& meta) {
     auto& newMeta = _components.push_back(meta);
     newMeta.index = _nextIndex++;
 }

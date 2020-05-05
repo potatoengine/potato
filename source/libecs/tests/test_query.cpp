@@ -27,9 +27,9 @@ DOCTEST_TEST_SUITE("[potato][ecs] Query") {
     DOCTEST_TEST_CASE("") {
 
         ComponentRegistry registry;
-        registry.registerComponent(ComponentMeta::createMeta<Test1>("Test1"));
-        registry.registerComponent(ComponentMeta::createMeta<Second>("Second"));
-        registry.registerComponent(ComponentMeta::createMeta<Another>("Another"));
+        registry.registerComponent<Test1>("Test1");
+        registry.registerComponent<Second>("Second");
+        registry.registerComponent<Another>("Another");
 
         DOCTEST_SUBCASE("Select chunks") {
             World world(registry);
