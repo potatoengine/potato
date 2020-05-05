@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "_export.h"
 #include "common.h"
 #include <potato/spud/box.h>
 #include <potato/spud/vector.h>
@@ -9,6 +10,7 @@
 namespace up {
     struct ComponentMeta;
     struct Chunk;
+    class ArchetypeMapper;
 
     /// Describes the information about how components are laid out in an Archetype
     ///
@@ -59,5 +61,17 @@ namespace up {
     private:
         vector<box<Chunk>> _chunks;
         Chunk* _freeChunkHead = nullptr;
+    };
+
+    class ChunkMapper {
+    public:
+        auto chunks() const noexcept -> view<Chunk*> { return _chunks; }
+        UP_ECS_API auto chunksOf(ArchetypeMapper const& mapper, ArchetypeId archetype) const noexcept -> view<Chunk*>;
+        auto addChunk(ArchetypeMapper& mapper, ArchetypeId archetype, Chunk* chunk) -> int;
+        void removeChunk(ArchetypeMapper& mapper, ArchetypeId archetype, int chunkIndex) noexcept;
+        UP_ECS_API auto getChunk(ArchetypeMapper const& mapper, ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk*;
+
+    private:
+        vector<Chunk*> _chunks;
     };
 } // namespace up

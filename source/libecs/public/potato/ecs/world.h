@@ -35,23 +35,19 @@ namespace up {
 
         /// Constant view into Archetype state.
         ///
-        auto archetypes() const noexcept { return _archetypes.archetypeIds(); }
+        auto archetypes() const noexcept { return _archetypeMapper.archetypeIds(); }
 
         /// Retrieve the chunks belonging to a specific archetype.
         ///
         /// @returns nullptr if the ArchetypeId is invalid
         ///
         auto chunksOf(ArchetypeId arch) const noexcept -> view<Chunk*> {
-            auto const* desc = _archetypes.getArchetype(arch);
-            if (desc != nullptr) {
-                return _archetypeChunks.subspan(desc->chunksOffset, desc->chunksLength);
-            }
-            return {};
+            return _chunkMapper.chunksOf(_archetypeMapper, arch);
         }
 
         /// @brief View of all chunks allocated in the world.
         /// @return all chunks in the world.
-        auto chunks() const noexcept { return _chunks.chunks(); }
+        auto chunks() const noexcept { return _chunkMapper.chunks(); }
 
         /// Creates a new Entity with the provided list of Component data
         ///
@@ -85,7 +81,7 @@ namespace up {
         /// @param entityId Entity to modify.
         template <typename Component>
         void removeComponent(EntityId entityId) noexcept {
-            ComponentMeta const* const meta = _registry.findByType<Component>();
+            ComponentMeta const* const meta = _componentRegistry.findByType<Component>();
             return removeComponent(entityId, meta->id);
         }
 
@@ -108,9 +104,9 @@ namespace up {
         ///
         template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, EntityId, ArchetypeId, ComponentMeta const*, void*>>>
         auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const {
-            if (auto [success, archetype, chunkIndex, index] = _entities.tryParse(entity); success) {
-                auto const layout = _archetypes.layoutOf(archetype);
-                Chunk* const chunk = _getArchetypeChunk(archetype, chunkIndex);
+            if (auto [success, archetype, chunkIndex, index] = _entityMapper.tryParse(entity); success) {
+                auto const layout = _archetypeMapper.layoutOf(archetype);
+                Chunk* const chunk = _chunkMapper.getChunk(_archetypeMapper, archetype, chunkIndex);
                 for (ChunkRowDesc const& row : layout) {
                     callback(entity, archetype, row.meta, (void*)(chunk->data + row.offset + row.width * index));
                 }
@@ -121,8 +117,8 @@ namespace up {
 
         template <typename... Components>
         auto matchArchetypesInto(size_t firstIndex, bit_set const& mask, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
-            static ComponentId const components[sizeof...(Components)] = {_registry.findIdByType<Components>()...};
-            return _archetypes.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
+            static ComponentId const components[sizeof...(Components)] = {_componentRegistry.findIdByType<Components>()...};
+            return _archetypeMapper.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
                 auto& match = matches.emplace_back();
                 match.archetype = arch;
                 std::memcpy(&match.offsets, offsets.data(), sizeof(QueryMatch<sizeof...(Components)>::offsets));
@@ -142,29 +138,22 @@ namespace up {
         auto _allocateEntity(ArchetypeId archetype) -> AllocatedLocation;
         void _deleteEntity(EntityId entity);
 
-        auto _addArchetypeChunk(ArchetypeId archetype, Chunk* chunk) -> int;
-        void _removeArchetypeChunk(ArchetypeId archetype, int chunkIndex) noexcept;
-        auto _getArchetypeChunk(ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk* {
-            auto const* desc = _archetypes.getArchetype(archetype);
-            return desc != nullptr ? _archetypeChunks[desc->chunksOffset + chunkIndex] : nullptr;
-        }
-
         void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex);
         void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex);
         void _copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData);
         void _constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component);
         void _destroyAt(ArchetypeId arch, Chunk& chunk, int index);
 
-        EntityMapper _entities;
-        ArchetypeMapper _archetypes;
-        ChunkAllocator _chunks;
-        vector<Chunk*> _archetypeChunks;
-        ComponentRegistry& _registry;
+        EntityMapper _entityMapper;
+        ArchetypeMapper _archetypeMapper;
+        ChunkAllocator _chunkAllocator;
+        ChunkMapper _chunkMapper;
+        ComponentRegistry& _componentRegistry;
     };
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentMeta const* const componentMetas[] = {_registry.findByType<Components>()...};
+        ComponentMeta const* const componentMetas[] = {_componentRegistry.findByType<Components>()...};
         void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
@@ -172,12 +161,12 @@ namespace up {
 
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
-        return static_cast<Component*>(getComponentSlowUnsafe(entity, _registry.findIdByType<Component>()));
+        return static_cast<Component*>(getComponentSlowUnsafe(entity, _componentRegistry.findIdByType<Component>()));
     }
 
     template <typename Component>
     void World::addComponent(EntityId entityId, Component const& component) noexcept {
-        ComponentMeta const* const meta = _registry.findByType<Component>();
+        ComponentMeta const* const meta = _componentRegistry.findByType<Component>();
         _addComponentRaw(entityId, *meta, &component);
     }
 } // namespace up
