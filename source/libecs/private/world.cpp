@@ -30,11 +30,12 @@ void up::World::deleteEntity(EntityId entity) noexcept {
 }
 
 auto up::World::chunksOf(ArchetypeId arch) const noexcept -> view<Chunk*> {
-    auto const* desc = _archetypeMapper.getArchetype(arch);
-    if (desc != nullptr) {
-        return _chunks.subspan(desc->chunksOffset, desc->chunksLength);
+    auto const archIndex = to_underlying(arch);
+    if (archIndex < 0 || archIndex >= _archetypeChunkRanges.size()) {
+        return {};
     }
-    return {};
+    auto const& range = _archetypeChunkRanges[archIndex];
+    return _chunks.subspan(range.offset, range.length);
 }
 
 void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept {
@@ -78,7 +79,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
     UP_ASSERT(meta != nullptr);
 
     if (auto [success, archetypeId, chunkIndex, index] = _entityMapper.tryParse(entityId); success) {
-        ArchetypeId newArchetype = _archetypeMapper.acquireArchetypeWithout(archetypeId, meta, static_cast<uint32>(_chunks.size()));
+        ArchetypeId newArchetype = _archetypeMapper.acquireArchetypeWithout(archetypeId, meta);
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
 
         auto* oldChunk = _getChunk(archetypeId, chunkIndex);
@@ -97,7 +98,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
 void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& componentMeta) {
     if (auto [success, archetypeId, chunkIndex, index] = _entityMapper.tryParse(entityId); success) {
         // find the target archetype and allocate an entry in it
-        ArchetypeId newArchetype = _archetypeMapper.acquireArchetypeWith(archetypeId, &componentMeta, static_cast<uint32>(_chunks.size()));
+        ArchetypeId newArchetype = _archetypeMapper.acquireArchetypeWith(archetypeId, &componentMeta);
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
 
         auto* chunk = _getChunk(archetypeId, chunkIndex);
@@ -118,7 +119,7 @@ void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& comp
 void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept {
     if (auto [success, archetypeId, chunkIndex, index] = _entityMapper.tryParse(entityId); success) {
         // find the target archetype and allocate an entry in it
-        ArchetypeId newArchetype = _archetypeMapper.acquireArchetypeWith(archetypeId, &componentMeta, static_cast<uint32>(_chunks.size()));
+        ArchetypeId newArchetype = _archetypeMapper.acquireArchetypeWith(archetypeId, &componentMeta);
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
 
         auto* chunk = _getChunk(archetypeId, chunkIndex);
@@ -139,7 +140,7 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& compone
 auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<void const*> data) -> EntityId {
     UP_ASSERT(components.size() == data.size());
 
-    ArchetypeId newArchetype = _archetypeMapper.acquireArchetype(components, static_cast<uint32>(_chunks.size()));
+    ArchetypeId newArchetype = _archetypeMapper.acquireArchetype(components);
     auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
 
     // Allocate EntityId
@@ -204,39 +205,51 @@ void up::World::_destroyAt(ArchetypeId arch, Chunk& chunk, int index) {
     }
 }
 
-auto up::World::_addChunk(ArchetypeId arch, Chunk* chunk) -> int {
+void up::World::_addChunk(ArchetypeId arch, Chunk* chunk) {
     UP_ASSERT(arch == chunk->header.archetype);
 
     Archetype* archData = _archetypeMapper.getArchetype(arch);
     UP_ASSERT(archData != nullptr);
 
-    int const lastIndex = archData->chunksLength;
+    auto const archIndex = to_underlying(arch);
+    UP_ASSERT(archIndex >= 0);
 
-    chunk->header.capacity = archData->maxEntitiesPerChunk;
-
-    _chunks.insert(_chunks.begin() + archData->chunksOffset + archData->chunksLength, chunk);
-    ++archData->chunksLength;
-
-    for (auto& updateArch : _archetypeMapper.archetypes().subspan(to_underlying(arch) + 1)) {
-        ++updateArch.chunksOffset;
+    if (archIndex >= _archetypeChunkRanges.size()) {
+        _archetypeChunkRanges.resize(archIndex + 1, {static_cast<uint32>(_chunks.size()), 0});
     }
 
-    return lastIndex;
+    auto& range = _archetypeChunkRanges[archIndex];
+    chunk->header.capacity = archData->maxEntitiesPerChunk;
+
+    _chunks.insert(_chunks.begin() + range.offset + range.length, chunk);
+    ++range.length;
+
+    for (auto& updateRange : _archetypeChunkRanges.subspan(archIndex + 1)) {
+        ++updateRange.offset;
+    }
 }
 
 void up::World::_removeChunk(ArchetypeId arch, int chunkIndex) noexcept {
-    Archetype* archData = _archetypeMapper.getArchetype(arch);
-    UP_ASSERT(archData != nullptr);
+    auto const archIndex = to_underlying(arch);
+    UP_ASSERT(archIndex >= 0 && archIndex < _archetypeChunkRanges.size());
 
-    _chunks.erase(_chunks.begin() + archData->chunksOffset + chunkIndex);
-    --archData->chunksLength;
+    auto& range = _archetypeChunkRanges[archIndex];
+    UP_ASSERT(chunkIndex >= 0 && chunkIndex < static_cast<int>(range.length));
 
-    for (auto& updateArch : _archetypeMapper.archetypes().subspan(to_underlying(arch) + 1)) {
-        --updateArch.chunksOffset;
+    _chunks.erase(_chunks.begin() + range.offset + chunkIndex);
+    --range.offset;
+
+    for (auto& updateRange : _archetypeChunkRanges.subspan(archIndex + 1)) {
+        --updateRange.offset;
     }
 }
 
 auto up::World::_getChunk(ArchetypeId arch, int chunkIndex) const noexcept -> Chunk* {
-    Archetype const* archData = _archetypeMapper.getArchetype(arch);
-    return archData != nullptr ? _chunks[archData->chunksOffset + chunkIndex] : nullptr;
+    auto const archIndex = to_underlying(arch);
+    if (archIndex < 0 || archIndex >= _archetypeChunkRanges.size()) {
+        return nullptr;
+    }
+    auto& range = _archetypeChunkRanges[archIndex];
+    UP_ASSERT(chunkIndex >= 0 && chunkIndex < static_cast<int>(range.length));
+    return _chunks[range.offset + chunkIndex];
 }

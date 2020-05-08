@@ -129,6 +129,11 @@ namespace up {
             uint16 index;
         };
 
+        struct ArchetypeChunkRange {
+            uint32 offset = 0;
+            uint32 length = 0;
+        };
+
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept;
 
@@ -141,12 +146,13 @@ namespace up {
         void _constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component);
         void _destroyAt(ArchetypeId arch, Chunk& chunk, int index);
 
-        auto _addChunk(ArchetypeId archetype, Chunk* chunk) -> int;
+        void _addChunk(ArchetypeId archetype, Chunk* chunk);
         void _removeChunk(ArchetypeId archetype, int chunkIndex) noexcept;
         UP_ECS_API auto _getChunk(ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk*;
 
         EntityMapper _entityMapper;
         ArchetypeMapper _archetypeMapper;
+        vector<ArchetypeChunkRange> _archetypeChunkRanges;
         vector<Chunk*> _chunks;
         _detail::EcsContext& _context;
     };

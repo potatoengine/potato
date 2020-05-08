@@ -15,11 +15,9 @@ namespace up {
     /// Archetypes are a common type of Entity with identical Component layout.
     ///
     struct Archetype {
-        uint32 chunksOffset = 0;
         uint32 layoutOffset = 0;
-        uint16 chunksLength = 0;
         uint16 layoutLength = 0;
-        uint32 maxEntitiesPerChunk = 0;
+        uint16 maxEntitiesPerChunk = 0;
     };
 
     /// Manages the known list of Archetypes
@@ -54,9 +52,9 @@ namespace up {
             return index >= 0 && index < _archetypes.size() ? &_archetypes[index] : nullptr;
         }
 
-        auto acquireArchetype(view<ComponentMeta const*> components, uint32 chunkOffset) -> ArchetypeId;
-        auto acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional, uint32 chunkOffset) -> ArchetypeId;
-        auto acquireArchetypeWithout(ArchetypeId original, ComponentMeta const* excluded, uint32 chunkOffset) -> ArchetypeId;
+        auto acquireArchetype(view<ComponentMeta const*> components) -> ArchetypeId;
+        auto acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional) -> ArchetypeId;
+        auto acquireArchetypeWithout(ArchetypeId original, ComponentMeta const* excluded) -> ArchetypeId;
 
         template <size_t ComponentCount, typename Callback>
         auto selectArchetypes(size_t start, bit_set const& mask, ComponentId const (&components)[ComponentCount], Callback&& callback) const noexcept -> size_t {
@@ -79,7 +77,7 @@ namespace up {
         };
         auto _findArchetype(bit_set const& set) noexcept -> FindResult;
         UP_ECS_API void _bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept;
-        auto _beginArchetype(bit_set components, uint32 chunkOffset) -> ArchetypeId;
+        auto _beginArchetype(bit_set components) -> ArchetypeId;
         auto _finalizeArchetype(ArchetypeId archetype) noexcept -> ArchetypeId;
 
         vector<Archetype> _archetypes;
