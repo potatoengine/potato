@@ -3,9 +3,9 @@
 #pragma once
 
 #include "_export.h"
+#include "_detail/ecs_context.h"
 #include "world.h"
 #include "archetype.h"
-#include "registry.h"
 #include "potato/spud/typelist.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
@@ -23,8 +23,7 @@ namespace up {
     public:
         static_assert(sizeof...(Components) != 0, "Empty Query objects are not allowed");
 
-        explicit Query(ComponentRegistry& registry);
-        Query() : Query(ComponentRegistry::defaultRegistry()) {}
+        explicit Query(_detail::EcsContext& context);
 
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
         /// callback once for each Chunk belonging to the Archetypes, with appropriate pointers.
@@ -56,8 +55,8 @@ namespace up {
     };
 
     template <typename... Components>
-    Query<Components...>::Query(ComponentRegistry& registry) {
-        static uint32 const indices[sizeof...(Components)] = {registry.findIndexByType<Components>()...};
+    Query<Components...>::Query(_detail::EcsContext& context) {
+        static uint32 const indices[sizeof...(Components)] = {context.findByType<Components>()->index...};
         for (auto index : indices) {
             _mask.set(index);
         }

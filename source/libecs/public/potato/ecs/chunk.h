@@ -48,30 +48,4 @@ namespace up {
     };
 
     static_assert(sizeof(up::Chunk) == up::ChunkSizeBytes, "Chunk has incorrect size; possibly unexpected member padding");
-
-    /// Chunk allocator
-    ///
-    class ChunkAllocator {
-    public:
-        auto allocate(ArchetypeId archetype) -> Chunk*;
-        void recycle(Chunk* chunk);
-
-        auto chunks() const noexcept -> view<box<Chunk>> { return _chunks; }
-
-    private:
-        vector<box<Chunk>> _chunks;
-        Chunk* _freeChunkHead = nullptr;
-    };
-
-    class ChunkMapper {
-    public:
-        auto chunks() const noexcept -> view<Chunk*> { return _chunks; }
-        UP_ECS_API auto chunksOf(ArchetypeMapper const& mapper, ArchetypeId archetype) const noexcept -> view<Chunk*>;
-        auto addChunk(ArchetypeMapper& mapper, ArchetypeId archetype, Chunk* chunk) -> int;
-        void removeChunk(ArchetypeMapper& mapper, ArchetypeId archetype, int chunkIndex) noexcept;
-        UP_ECS_API auto getChunk(ArchetypeMapper const& mapper, ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk*;
-
-    private:
-        vector<Chunk*> _chunks;
-    };
 } // namespace up

@@ -1,6 +1,6 @@
 #include "potato/ecs/world.h"
 #include "potato/ecs/query.h"
-#include "potato/ecs/registry.h"
+#include "potato/ecs/universe.h"
 #include <doctest/doctest.h>
 
 namespace {
@@ -26,13 +26,14 @@ DOCTEST_TEST_SUITE("[potato][ecs] Query") {
 
     DOCTEST_TEST_CASE("") {
 
-        ComponentRegistry registry;
-        registry.registerComponent<Test1>("Test1");
-        registry.registerComponent<Second>("Second");
-        registry.registerComponent<Another>("Another");
+        Universe universe;
+
+        universe.registerComponent<Test1>("Test1");
+        universe.registerComponent<Second>("Second");
+        universe.registerComponent<Another>("Another");
 
         DOCTEST_SUBCASE("Select chunks") {
-            World world(registry);
+            auto world = universe.createWorld();
 
             world.createEntity(Test1{'f'}, Second{7.f, 'g'});
             world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
@@ -46,7 +47,7 @@ DOCTEST_TEST_SUITE("[potato][ecs] Query") {
             size_t entityCount = 0;
             float weight = 0;
 
-            Query<Second> query(registry);
+            auto query = universe.createQuery<Second>();
             query.selectChunks(world, [&](size_t count, EntityId const*, Second* second) {
                 ++invokeCount;
                 entityCount += count;
@@ -67,14 +68,14 @@ DOCTEST_TEST_SUITE("[potato][ecs] Query") {
         }
 
         DOCTEST_SUBCASE("Select entities") {
-            World world(registry);
+            auto world = universe.createWorld();
 
             world.createEntity(Second{1.f, 'g'});
             world.createEntity(Second{2.f, 'g'});
             world.createEntity(Second{3.f, 'g'});
             world.createEntity(Second{4.f, 'g'});
 
-            Query<Second> query(registry);
+            auto query = universe.createQuery<Second>();
             float sum = 0;
             int count = 0;
             query.select(world, [&](EntityId, Second const& second) {

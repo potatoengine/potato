@@ -12,8 +12,6 @@
 #include "potato/shell/panel.h"
 #include "potato/shell/selection.h"
 
-#include "potato/ecs/registry.h"
-
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_texture.h"
 #include "potato/render/gpu_resource_view.h"
@@ -23,22 +21,25 @@
 #include "potato/render/context.h"
 #include "potato/render/draw_imgui.h"
 
+#include <potato/spud/delegate.h>
+
 namespace up::shell {
     class InspectorPanel : public shell::Panel {
     public:
-        explicit InspectorPanel(Scene& scene, Selection& selection) : _scene(scene), _selection(selection) {}
+        explicit InspectorPanel(Scene& scene, Selection& selection, delegate<view<ComponentMeta>()> components) : _scene(scene), _selection(selection), _components(std::move(components)) {}
         virtual ~InspectorPanel() = default;
 
         zstring_view displayName() const override { return "Inspector"; }
         void ui() override;
 
     private:
+        delegate<view<ComponentMeta>()> _components;
         Scene& _scene;
         Selection& _selection;
     };
 
-    auto createInspectorPanel(Scene& scene, Selection& selection) -> box<Panel> {
-        return new_box<InspectorPanel>(scene, selection);
+    auto createInspectorPanel(Scene& scene, Selection& selection, delegate<view<ComponentMeta>()> components) -> box<Panel> {
+        return new_box<InspectorPanel>(scene, selection, std::move(components));
     }
 
     void InspectorPanel::ui() {
@@ -79,7 +80,7 @@ namespace up::shell {
                     ImGui::OpenPopup("##add_component_list");
                 }
                 if (ImGui::BeginPopup("##add_component_list")) {
-                    for (auto const& meta : ComponentRegistry::defaultRegistry().components()) {
+                    for (auto const& meta : _components()) {
                         if (_scene.world().getComponentSlowUnsafe(_selection.selected(), meta.id) == nullptr) {
                             if (ImGui::MenuItem(meta.name.c_str())) {
                                 _scene.world().addComponentDefault(_selection.selected(), meta);

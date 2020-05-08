@@ -2,11 +2,11 @@
 
 #pragma once
 
+#include "_detail/ecs_context.h"
 #include "_export.h"
 #include "chunk.h"
 #include "entity_mapper.h"
 #include "archetype.h"
-#include "registry.h"
 #include "potato/ecs/component.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
@@ -26,8 +26,7 @@ namespace up {
     ///
     class World {
     public:
-        UP_ECS_API explicit World(ComponentRegistry& registry);
-        World() : World(ComponentRegistry::defaultRegistry()) {}
+        UP_ECS_API explicit World(_detail::EcsContext& context);
         UP_ECS_API ~World();
 
         World(World&&) = delete;
@@ -41,13 +40,11 @@ namespace up {
         ///
         /// @returns nullptr if the ArchetypeId is invalid
         ///
-        auto chunksOf(ArchetypeId arch) const noexcept -> view<Chunk*> {
-            return _chunkMapper.chunksOf(_archetypeMapper, arch);
-        }
+        UP_ECS_API auto chunksOf(ArchetypeId archetype) const noexcept -> view<Chunk*>;
 
         /// @brief View of all chunks allocated in the world.
         /// @return all chunks in the world.
-        auto chunks() const noexcept { return _chunkMapper.chunks(); }
+        auto chunks() const noexcept -> view<Chunk*> { return _chunks; }
 
         /// Creates a new Entity with the provided list of Component data
         ///
@@ -81,7 +78,7 @@ namespace up {
         /// @param entityId Entity to modify.
         template <typename Component>
         void removeComponent(EntityId entityId) noexcept {
-            ComponentMeta const* const meta = _componentRegistry.findByType<Component>();
+            ComponentMeta const* const meta = _context.findByType<Component>();
             return removeComponent(entityId, meta->id);
         }
 
@@ -106,7 +103,7 @@ namespace up {
         auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const {
             if (auto [success, archetype, chunkIndex, index] = _entityMapper.tryParse(entity); success) {
                 auto const layout = _archetypeMapper.layoutOf(archetype);
-                Chunk* const chunk = _chunkMapper.getChunk(_archetypeMapper, archetype, chunkIndex);
+                Chunk* const chunk = _getChunk(archetype, chunkIndex);
                 for (ChunkRowDesc const& row : layout) {
                     callback(entity, archetype, row.meta, (void*)(chunk->data + row.offset + row.width * index));
                 }
@@ -117,7 +114,7 @@ namespace up {
 
         template <typename... Components>
         auto matchArchetypesInto(size_t firstIndex, bit_set const& mask, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
-            static ComponentId const components[sizeof...(Components)] = {_componentRegistry.findIdByType<Components>()...};
+            static ComponentId const components[sizeof...(Components)] = {_context.findByType<Components>()->id...};
             return _archetypeMapper.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
                 auto& match = matches.emplace_back();
                 match.archetype = arch;
@@ -144,16 +141,19 @@ namespace up {
         void _constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component);
         void _destroyAt(ArchetypeId arch, Chunk& chunk, int index);
 
+        auto _addChunk(ArchetypeId archetype, Chunk* chunk) -> int;
+        void _removeChunk(ArchetypeId archetype, int chunkIndex) noexcept;
+        UP_ECS_API auto _getChunk(ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk*;
+
         EntityMapper _entityMapper;
         ArchetypeMapper _archetypeMapper;
-        ChunkAllocator _chunkAllocator;
-        ChunkMapper _chunkMapper;
-        ComponentRegistry& _componentRegistry;
+        vector<Chunk*> _chunks;
+        _detail::EcsContext& _context;
     };
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentMeta const* const componentMetas[] = {_componentRegistry.findByType<Components>()...};
+        ComponentMeta const* const componentMetas[] = {_context.findByType<Components>()...};
         void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
@@ -161,12 +161,16 @@ namespace up {
 
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
-        return static_cast<Component*>(getComponentSlowUnsafe(entity, _componentRegistry.findIdByType<Component>()));
+        auto meta = _context.findByType<Component>();
+        if (meta == nullptr) {
+            return nullptr;
+        }
+        return static_cast<Component*>(getComponentSlowUnsafe(entity, meta->id));
     }
 
     template <typename Component>
     void World::addComponent(EntityId entityId, Component const& component) noexcept {
-        ComponentMeta const* const meta = _componentRegistry.findByType<Component>();
+        ComponentMeta const* const meta = _context.findByType<Component>();
         _addComponentRaw(entityId, *meta, &component);
     }
 } // namespace up

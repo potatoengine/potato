@@ -3,6 +3,7 @@
 #include <potato/spud/box.h>
 #include <potato/spud/rc.h>
 #include <potato/runtime/stream.h>
+#include <potato/ecs/universe.h>
 #include <potato/ecs/query.h>
 
 namespace up::components {
@@ -21,7 +22,7 @@ namespace up {
 
     class Scene {
     public:
-        Scene();
+        explicit Scene(Universe& universe);
         ~Scene();
 
         Scene(Scene const&) = delete;
@@ -38,12 +39,12 @@ namespace up {
         bool playing() const { return _playing; }
         bool playing(bool active) { return _playing = active; }
 
-        World& world() noexcept { return *_world; }
+        World& world() noexcept { return _world; }
         EntityId main() const noexcept { return _main; }
 
     private:
         rc<Model> _cube;
-        box<World> _world;
+        World _world;
         EntityId _main;
         bool _playing = false;
 
