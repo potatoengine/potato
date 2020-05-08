@@ -259,7 +259,7 @@ namespace up {
         if (size < new_size) {
             reserve(new_size);
             default_construct_n(_last, new_size - size);
-            _last += new_size;
+            _last = _first + new_size;
         }
         else if (size > new_size) {
             destruct_n(_first + new_size, _last - _first);
@@ -269,12 +269,13 @@ namespace up {
 
     template <typename T>
     void vector<T>::resize(size_type new_size, const_reference init) {
-        size_type const count = _last - _first;
-        if (count < new_size) {
+        size_type const size = _last - _first;
+        if (size < new_size) {
             reserve(new_size);
-            uninitialized_value_construct_n(_last, new_size - count, init);
+            uninitialized_value_construct_n(_last, new_size - size, init);
+            _last = _first + new_size;
         }
-        else if (count > new_size) {
+        else if (size > new_size) {
             destruct_n(_first + new_size, _last - _first);
             _last = _first + new_size;
         }
