@@ -5,7 +5,6 @@
 #include "_detail/ecs_context.h"
 #include "_export.h"
 #include "chunk.h"
-#include "entity_mapper.h"
 #include "archetype.h"
 #include "potato/ecs/component.h"
 #include "potato/spud/vector.h"
@@ -101,7 +100,7 @@ namespace up {
         ///
         template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, EntityId, ArchetypeId, ComponentMeta const*, void*>>>
         auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const {
-            if (auto [success, archetype, chunkIndex, index] = _entityMapper.tryParse(entity); success) {
+            if (auto [success, archetype, chunkIndex, index] = _parseEntityId(entity); success) {
                 auto const layout = _archetypeMapper.layoutOf(archetype);
                 Chunk* const chunk = _getChunk(archetype, chunkIndex);
                 for (ChunkRowDesc const& row : layout) {
@@ -134,11 +133,25 @@ namespace up {
             uint32 length = 0;
         };
 
+        struct EntityLocation {
+            bool success = false;
+            ArchetypeId archetype = ArchetypeId::Empty;
+            uint16 chunk = 0;
+            uint16 index = 0;
+        };
+
+        static constexpr uint32 freeEntityIndex = ~0U;
+
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept;
 
-        auto _allocateEntity(ArchetypeId archetype) -> AllocatedLocation;
-        void _deleteEntity(EntityId entity);
+        auto _allocateEntitySpace(ArchetypeId archetype) -> AllocatedLocation;
+        auto _allocateEntityId(ArchetypeId archetype, uint16 chunk, uint16 index) -> EntityId;
+        void _recycleEntityId(EntityId entity) noexcept;
+
+        UP_ECS_API auto _parseEntityId(EntityId entity) const noexcept -> EntityLocation;
+
+        void _remapEntityId(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept;
 
         void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex);
         void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex);
@@ -150,10 +163,11 @@ namespace up {
         void _removeChunk(ArchetypeId archetype, int chunkIndex) noexcept;
         UP_ECS_API auto _getChunk(ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk*;
 
-        EntityMapper _entityMapper;
         ArchetypeMapper _archetypeMapper;
         vector<ArchetypeChunkRange> _archetypeChunkRanges;
         vector<Chunk*> _chunks;
+        vector<uint64> _entityMapping;
+        uint32 _freeEntityHead = freeEntityIndex;
         _detail::EcsContext& _context;
     };
 

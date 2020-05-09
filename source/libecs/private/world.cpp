@@ -1,6 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "potato/ecs/world.h"
+#include "entity_id.h"
 #include "potato/ecs/_detail/ecs_context.h"
 #include "potato/ecs/archetype.h"
 #include <potato/spud/find.h>
@@ -22,13 +23,6 @@ up::World::World(_detail::EcsContext& context) : _context(context) {}
 
 up::World::~World() = default;
 
-void up::World::deleteEntity(EntityId entity) noexcept {
-    if (_entityMapper.isValid(entity)) {
-        _deleteEntity(entity);
-        _entityMapper.recycle(entity);
-    }
-}
-
 auto up::World::chunksOf(ArchetypeId arch) const noexcept -> view<Chunk*> {
     auto const archIndex = to_underlying(arch);
     if (archIndex < 0 || archIndex >= _archetypeChunkRanges.size()) {
@@ -39,7 +33,7 @@ auto up::World::chunksOf(ArchetypeId arch) const noexcept -> view<Chunk*> {
 }
 
 void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept {
-    if (auto [success, archetypeId, chunkIndex, index] = _entityMapper.tryParse(entity); success) {
+    if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entity); success) {
         auto const layout = _archetypeMapper.layoutOf(archetypeId);
 
         if (auto const row = findRowDesc(layout, component); row != nullptr) {
@@ -50,8 +44,11 @@ void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) 
     return nullptr;
 }
 
-void up::World::_deleteEntity(EntityId entity) {
-    auto [archetypeId, chunkIndex, index] = _entityMapper.parse(entity);
+void up::World::deleteEntity(EntityId entity) noexcept {
+    auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entity);
+    if (!success) {
+        return;
+    }
 
     Chunk* chunk = _getChunk(archetypeId, chunkIndex);
 
@@ -61,7 +58,7 @@ void up::World::_deleteEntity(EntityId entity) {
     if (index != lastIndex) {
         auto const movedEntity = static_cast<EntityId*>(static_cast<void*>(chunk->data))[index] = static_cast<EntityId*>(static_cast<void*>(chunk->data))[lastIndex];
         _moveTo(archetypeId, *chunk, index, *chunk, lastIndex);
-        _entityMapper.setIndex(movedEntity, chunkIndex, index);
+        _remapEntityId(movedEntity, archetypeId, chunkIndex, index);
     }
 
     _destroyAt(archetypeId, *chunk, lastIndex);
@@ -72,15 +69,17 @@ void up::World::_deleteEntity(EntityId entity) {
         _removeChunk(archetypeId, chunkIndex);
         _context.recycle(chunk);
     }
+
+    _recycleEntityId(entity);
 }
 
 void up::World::removeComponent(EntityId entityId, ComponentId componentId) noexcept {
     ComponentMeta const* const meta = _context.findById(componentId);
     UP_ASSERT(meta != nullptr);
 
-    if (auto [success, archetypeId, chunkIndex, index] = _entityMapper.tryParse(entityId); success) {
+    if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
         ArchetypeId newArchetype = _archetypeMapper.acquireArchetypeWithout(archetypeId, meta);
-        auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
+        auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
         auto* oldChunk = _getChunk(archetypeId, chunkIndex);
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *oldChunk, index);
@@ -88,18 +87,18 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
         static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
 
         // remove old entity (must be gone before remap)
-        _deleteEntity(entityId);
+        deleteEntity(entityId);
 
         // update mapping (must be done after delete)
-        _entityMapper.setArchetype(entityId, newArchetype, newChunkIndex, newIndex);
+        _remapEntityId(entityId, newArchetype, newChunkIndex, newIndex);
     }
 }
 
 void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& componentMeta) {
-    if (auto [success, archetypeId, chunkIndex, index] = _entityMapper.tryParse(entityId); success) {
+    if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
         // find the target archetype and allocate an entry in it
         ArchetypeId newArchetype = _archetypeMapper.acquireArchetypeWith(archetypeId, &componentMeta);
-        auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
+        auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
         auto* chunk = _getChunk(archetypeId, chunkIndex);
         static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
@@ -108,19 +107,19 @@ void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& comp
 
         // remove old entity (must be gone before remap)
         //
-        _deleteEntity(entityId);
+        deleteEntity(entityId);
 
         // update mapping (must be done after delete)
         //
-        _entityMapper.setArchetype(entityId, newArchetype, newChunkIndex, newIndex);
+        _remapEntityId(entityId, newArchetype, newChunkIndex, newIndex);
     }
 }
 
 void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept {
-    if (auto [success, archetypeId, chunkIndex, index] = _entityMapper.tryParse(entityId); success) {
+    if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
         // find the target archetype and allocate an entry in it
         ArchetypeId newArchetype = _archetypeMapper.acquireArchetypeWith(archetypeId, &componentMeta);
-        auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
+        auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
         auto* chunk = _getChunk(archetypeId, chunkIndex);
         static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
@@ -129,11 +128,11 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& compone
 
         // remove old entity (must be gone before remap)
         //
-        _deleteEntity(entityId);
+        deleteEntity(entityId);
 
         // update mapping (must be done after delete)
         //
-        _entityMapper.setArchetype(entityId, newArchetype, newChunkIndex, newIndex);
+        _remapEntityId(entityId, newArchetype, newChunkIndex, newIndex);
     }
 }
 
@@ -141,10 +140,10 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     UP_ASSERT(components.size() == data.size());
 
     ArchetypeId newArchetype = _archetypeMapper.acquireArchetype(components);
-    auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
+    auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
     // Allocate EntityId
-    auto const entity = _entityMapper.allocate(newArchetype, newChunkIndex, newIndex);
+    auto const entity = _allocateEntityId(newArchetype, newChunkIndex, newIndex);
     static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entity;
 
     for (auto index : sequence(components.size())) {
@@ -154,7 +153,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     return entity;
 }
 
-auto up::World::_allocateEntity(ArchetypeId archetype) -> AllocatedLocation {
+auto up::World::_allocateEntitySpace(ArchetypeId archetype) -> AllocatedLocation {
     size_t chunkIndex = 0;
     Chunk* chunk = nullptr;
 
@@ -172,6 +171,57 @@ auto up::World::_allocateEntity(ArchetypeId archetype) -> AllocatedLocation {
 
     uint16 index = chunk->header.entities++;
     return {*chunk, static_cast<uint16>(chunkIndex), index};
+}
+
+auto up::World::_allocateEntityId(ArchetypeId archetype, uint16 chunk, uint16 index) -> EntityId {
+    // if there's a free ID, recycle it
+    if (_freeEntityHead != freeEntityIndex) {
+        auto const mappingIndex = _freeEntityHead;
+        auto const mapping = _entityMapping[mappingIndex];
+        auto const generation = getMappedGeneration(mapping);
+
+        _freeEntityHead = getMappedIndex(_entityMapping[mappingIndex]);
+
+        _entityMapping[mappingIndex] = makeMapped(generation, to_underlying(archetype), chunk, index);
+
+        return makeEntityId(mappingIndex, generation);
+    }
+
+    // there was no ID to recycle, so create a new one
+    uint32 const mappingIndex = static_cast<uint32>(_entityMapping.size());
+
+    _entityMapping.push_back(makeMapped(1, to_underlying(archetype), chunk, index));
+
+    return makeEntityId(mappingIndex, 1);
+}
+
+void up::World::_recycleEntityId(EntityId entity) noexcept {
+    uint32 const entityMappingIndex = getEntityMappingIndex(entity);
+    uint32 const newGeneration = getEntityGeneration(entity) + 1;
+
+    _entityMapping[entityMappingIndex] = makeFreeEntry(newGeneration != 0 ? newGeneration : 1, _freeEntityHead);
+
+    _freeEntityHead = entityMappingIndex;
+}
+
+auto up::World::_parseEntityId(EntityId entity) const noexcept -> EntityLocation {
+    auto const mappingIndex = getEntityMappingIndex(entity);
+    if (mappingIndex < 0 || mappingIndex >= _entityMapping.size()) {
+        return {false};
+    }
+
+    auto const mapped = _entityMapping[mappingIndex];
+    if (getMappedGeneration(_entityMapping[mappingIndex]) != getEntityGeneration(entity)) {
+        return {false};
+    }
+
+    return {true, ArchetypeId(getMappedArchetype(mapped)), getMappedChunk(mapped), getMappedIndex(mapped)};
+}
+
+void up::World::_remapEntityId(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept {
+    auto const entityMappingIndex = getEntityMappingIndex(entity);
+    auto const mapped = _entityMapping[entityMappingIndex];
+    _entityMapping[entityMappingIndex] = makeMapped(getMappedGeneration(mapped), to_underlying(newArchetype), newChunk, newIndex);
 }
 
 void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex) {
