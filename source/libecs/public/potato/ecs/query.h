@@ -81,8 +81,8 @@ namespace up {
         for (auto const& match : _matches) {
             for (auto const& chunk : world.chunksOf(match.archetype)) {
                 callback(chunk->header.entities,
-                         static_cast<EntityId const*>(static_cast<void*>(chunk->data)),
-                         static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices]))...);
+                         static_cast<EntityId const*>(static_cast<void*>(chunk->payload)),
+                         static_cast<Components*>(static_cast<void*>(chunk->payload + match.offsets[Indices]))...);
             }
         }
     }
@@ -94,8 +94,8 @@ namespace up {
             for (auto const& chunk : world.chunksOf(match.archetype)) {
                 for (unsigned index = 0; index < chunk->header.entities; ++index) {
                     callback(
-                        *(static_cast<EntityId*>(static_cast<void*>(chunk->data)) + index),
-                        *(static_cast<Components*>(static_cast<void*>(chunk->data + match.offsets[Indices])) + index)...);
+                        *(static_cast<EntityId*>(static_cast<void*>(chunk->payload)) + index),
+                        *(static_cast<Components*>(static_cast<void*>(chunk->payload + match.offsets[Indices])) + index)...);
                 }
             }
         }

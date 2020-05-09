@@ -8,7 +8,7 @@
 #include <potato/spud/span.h>
 #include <potato/spud/vector.h>
 #include <potato/spud/find.h>
-
+#include <potato/spud/box.h>
 #include <potato/spud/sort.h>
 #include <potato/spud/bit_set.h>
 
@@ -155,7 +155,7 @@ namespace up::_detail {
 
         // calculate how many entities with this layout can fit in a single chunk
         //
-        archData.maxEntitiesPerChunk = size != 0 ? static_cast<uint32>((sizeof(ChunkPayload) - padding) / size) : 0;
+        archData.maxEntitiesPerChunk = size != 0 ? static_cast<uint32>((sizeof(Chunk::Payload) - padding) / size) : 0;
         UP_ASSERT(archData.maxEntitiesPerChunk > 0);
 
         // calculate the row offets for the layout
@@ -165,7 +165,7 @@ namespace up::_detail {
             offset = align_to(offset, row.meta->alignment);
             row.offset = static_cast<uint32>(offset);
             offset += row.width * archData.maxEntitiesPerChunk;
-            UP_ASSERT(offset <= sizeof(Chunk::data));
+            UP_ASSERT(offset <= sizeof(Chunk::payload));
 
             compSet.set(row.meta->index);
         }

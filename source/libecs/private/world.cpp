@@ -37,7 +37,7 @@ void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) 
 
         if (auto const row = findRowDesc(layout, component); row != nullptr) {
             auto& chunk = *_getChunk(archetypeId, chunkIndex);
-            return chunk.data + row->offset + row->width * index;
+            return chunk.payload + row->offset + row->width * index;
         }
     }
     return nullptr;
@@ -55,7 +55,7 @@ void up::World::deleteEntity(EntityId entity) noexcept {
     //
     auto const lastIndex = chunk->header.entities - 1;
     if (index != lastIndex) {
-        auto const movedEntity = static_cast<EntityId*>(static_cast<void*>(chunk->data))[index] = static_cast<EntityId*>(static_cast<void*>(chunk->data))[lastIndex];
+        auto const movedEntity = chunk->entities()[index] = chunk->entities()[lastIndex];
         _moveTo(archetypeId, *chunk, index, *chunk, lastIndex);
         _remapEntityId(movedEntity, archetypeId, chunkIndex, index);
     }
@@ -83,7 +83,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
         auto* oldChunk = _getChunk(archetypeId, chunkIndex);
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *oldChunk, index);
 
-        static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
+        newChunk.entities()[newIndex] = entityId;
 
         // remove old entity (must be gone before remap)
         deleteEntity(entityId);
@@ -100,7 +100,7 @@ void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& comp
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
         auto* chunk = _getChunk(archetypeId, chunkIndex);
-        static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
+        newChunk.entities()[newIndex] = entityId;
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *chunk, index);
         _constructAt(newArchetype, newChunk, newIndex, componentMeta.id);
 
@@ -121,7 +121,7 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& compone
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
         auto* chunk = _getChunk(archetypeId, chunkIndex);
-        static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entityId;
+        newChunk.entities()[newIndex] = entityId;
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *chunk, index);
         _copyTo(newArchetype, newChunk, newIndex, componentMeta.id, componentData);
 
@@ -143,7 +143,7 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
 
     // Allocate EntityId
     auto const entity = _allocateEntityId(newArchetype, newChunkIndex, newIndex);
-    static_cast<EntityId*>(static_cast<void*>(newChunk.data))[newIndex] = entity;
+    static_cast<EntityId*>(static_cast<void*>(newChunk.payload))[newIndex] = entity;
 
     for (auto index : sequence(components.size())) {
         _copyTo(newArchetype, newChunk, newIndex, components[index]->id, data[index]);
@@ -227,30 +227,30 @@ void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, A
     auto const srcLayout = _context.layoutOf(srcArch);
     for (ChunkRowDesc const& row : _context.layoutOf(destArch)) {
         if (auto const srcRow = findRowDesc(srcLayout, row.component); srcRow != nullptr) {
-            row.meta->ops.moveAssign(destChunk.data + row.offset + row.width * destIndex, srcChunk.data + srcRow->offset + srcRow->width * srcIndex);
+            row.meta->ops.moveAssign(destChunk.payload + row.offset + row.width * destIndex, srcChunk.payload + srcRow->offset + srcRow->width * srcIndex);
         }
     }
 }
 
 void up::World::_moveTo(ArchetypeId arch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex) {
     for (ChunkRowDesc const& layout : _context.layoutOf(arch)) {
-        layout.meta->ops.moveAssign(destChunk.data + layout.offset + layout.width * destIndex, srcChunk.data + layout.offset + layout.width * srcIndex);
+        layout.meta->ops.moveAssign(destChunk.payload + layout.offset + layout.width * destIndex, srcChunk.payload + layout.offset + layout.width * srcIndex);
     }
 }
 
 void up::World::_copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData) {
     auto const destRow = findRowDesc(_context.layoutOf(destArch), srcComponent);
-    destRow->meta->ops.copyConstruct(destChunk.data + destRow->offset + destRow->width * destIndex, srcData);
+    destRow->meta->ops.copyConstruct(destChunk.payload + destRow->offset + destRow->width * destIndex, srcData);
 }
 
 void up::World::_constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component) {
     auto const row = findRowDesc(_context.layoutOf(arch), component);
-    row->meta->ops.defaultConstruct(chunk.data + row->offset + row->width * index);
+    row->meta->ops.defaultConstruct(chunk.payload + row->offset + row->width * index);
 }
 
 void up::World::_destroyAt(ArchetypeId arch, Chunk& chunk, int index) {
     for (ChunkRowDesc const& layout : _context.layoutOf(arch)) {
-        layout.meta->ops.destruct(chunk.data + layout.offset + layout.width * index);
+        layout.meta->ops.destruct(chunk.payload + layout.offset + layout.width * index);
     }
 }
 

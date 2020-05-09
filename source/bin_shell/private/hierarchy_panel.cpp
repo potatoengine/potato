@@ -39,8 +39,7 @@ namespace up::shell {
             fixed_string_writer label;
 
             for (auto const& chunk : _scene.world().chunks()) {
-                EntityId const* const entities = reinterpret_cast<EntityId const*>(chunk->data);
-                for (EntityId entityId : span{entities, chunk->header.entities}) {
+                for (EntityId entityId : chunk->entities()) {
                     label.clear();
                     format_append(label, "Entity (#{})", entityId);
 

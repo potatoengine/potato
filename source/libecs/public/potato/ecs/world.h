@@ -99,7 +99,7 @@ namespace up {
                 auto const layout = _context.layoutOf(archetype);
                 Chunk* const chunk = _getChunk(archetype, chunkIndex);
                 for (ChunkRowDesc const& row : layout) {
-                    callback(entity, archetype, row.meta, (void*)(chunk->data + row.offset + row.width * index));
+                    callback(entity, archetype, row.meta, static_cast<void*>(chunk->payload + row.offset + row.width * index));
                 }
                 return true;
             }
