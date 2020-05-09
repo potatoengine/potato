@@ -32,7 +32,9 @@ namespace up::_detail {
 
 #    define _up_FORMAT_FAIL(condition_text, ...) \
         do { \
-            char _up_fail_buffer[512]; \
+            char _up_fail_buffer[512] = { \
+                0, \
+            }; \
             ::up::fixed_writer _up_fail_writer(_up_fail_buffer); \
             ::up::_detail::formatAssertion(_up_fail_writer, ##__VA_ARGS__); \
             _up_FAIL((condition_text), _up_fail_buffer); \
