@@ -5,7 +5,6 @@
 #include "_export.h"
 #include "_detail/ecs_context.h"
 #include "world.h"
-#include "archetype.h"
 #include "potato/spud/typelist.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"

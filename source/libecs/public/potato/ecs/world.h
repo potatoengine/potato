@@ -5,7 +5,6 @@
 #include "_detail/ecs_context.h"
 #include "_export.h"
 #include "chunk.h"
-#include "archetype.h"
 #include "potato/ecs/component.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/delegate_ref.h"
@@ -30,10 +29,6 @@ namespace up {
 
         World(World&&) = delete;
         World& operator=(World&&) = delete;
-
-        /// Constant view into Archetype state.
-        ///
-        auto archetypes() const noexcept { return _archetypeMapper.archetypeIds(); }
 
         /// Retrieve the chunks belonging to a specific archetype.
         ///
@@ -101,7 +96,7 @@ namespace up {
         template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, EntityId, ArchetypeId, ComponentMeta const*, void*>>>
         auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const {
             if (auto [success, archetype, chunkIndex, index] = _parseEntityId(entity); success) {
-                auto const layout = _archetypeMapper.layoutOf(archetype);
+                auto const layout = _context.layoutOf(archetype);
                 Chunk* const chunk = _getChunk(archetype, chunkIndex);
                 for (ChunkRowDesc const& row : layout) {
                     callback(entity, archetype, row.meta, (void*)(chunk->data + row.offset + row.width * index));
@@ -114,7 +109,7 @@ namespace up {
         template <typename... Components>
         auto matchArchetypesInto(size_t firstIndex, bit_set const& mask, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
             static ComponentId const components[sizeof...(Components)] = {_context.findByType<Components>()->id...};
-            return _archetypeMapper.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
+            return _context.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
                 auto& match = matches.emplace_back();
                 match.archetype = arch;
                 std::memcpy(&match.offsets, offsets.data(), sizeof(QueryMatch<sizeof...(Components)>::offsets));
@@ -163,7 +158,6 @@ namespace up {
         void _removeChunk(ArchetypeId archetype, int chunkIndex) noexcept;
         UP_ECS_API auto _getChunk(ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk*;
 
-        ArchetypeMapper _archetypeMapper;
         vector<ArchetypeChunkRange> _archetypeChunkRanges;
         vector<Chunk*> _chunks;
         vector<uint64> _entityMapping;
