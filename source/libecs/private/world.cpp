@@ -237,7 +237,7 @@ void up::World::_removeChunk(ArchetypeId arch, int chunkIndex) noexcept {
     UP_ASSERT(chunkIndex >= 0 && chunkIndex < static_cast<int>(range.length));
 
     _chunks.erase(_chunks.begin() + range.offset + chunkIndex);
-    --range.offset;
+    --range.length;
 
     for (auto& updateRange : _archetypeChunkRanges.subspan(archIndex + 1)) {
         --updateRange.offset;
