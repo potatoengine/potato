@@ -2,15 +2,10 @@
 
 #pragma once
 
-#include "_export.h"
 #include "common.h"
 #include "reflector.h"
 #include <potato/spud/zstring_view.h>
-#include <potato/spud/traits.h>
-#include <potato/spud/hash.h>
 #include <typeindex>
-#include <atomic>
-#include <new>
 
 namespace up {
 

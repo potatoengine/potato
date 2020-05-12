@@ -6,6 +6,7 @@
 #include "world.h"
 #include "component.h"
 #include <potato/spud/box.h>
+#include <potato/spud/hash.h>
 #include <potato/spud/zstring_view.h>
 
 namespace up::_detail {

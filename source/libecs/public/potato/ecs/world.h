@@ -72,7 +72,7 @@ namespace up {
         /// @param entityId Entity to modify.
         template <typename Component>
         void removeComponent(EntityId entityId) noexcept {
-            ComponentMeta const* const meta = _context.findByType<Component>();
+            ComponentMeta const* const meta = _context.findComponentByType<Component>();
             return removeComponent(entityId, meta->id);
         }
 
@@ -108,7 +108,7 @@ namespace up {
 
         template <typename... Components>
         auto matchArchetypesInto(size_t firstIndex, bit_set const& mask, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
-            static ComponentId const components[sizeof...(Components)] = {_context.findByType<Components>()->id...};
+            static ComponentId const components[sizeof...(Components)] = {_context.findComponentByType<Components>()->id...};
             return _context.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
                 auto& match = matches.emplace_back();
                 match.archetype = arch;
@@ -167,7 +167,7 @@ namespace up {
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentMeta const* const componentMetas[] = {_context.findByType<Components>()...};
+        ComponentMeta const* const componentMetas[] = {_context.findComponentByType<Components>()...};
         void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
@@ -175,7 +175,7 @@ namespace up {
 
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
-        auto meta = _context.findByType<Component>();
+        auto meta = _context.findComponentByType<Component>();
         if (meta == nullptr) {
             return nullptr;
         }
@@ -184,7 +184,7 @@ namespace up {
 
     template <typename Component>
     void World::addComponent(EntityId entityId, Component const& component) noexcept {
-        ComponentMeta const* const meta = _context.findByType<Component>();
+        ComponentMeta const* const meta = _context.findComponentByType<Component>();
         _addComponentRaw(entityId, *meta, &component);
     }
 } // namespace up

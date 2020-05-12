@@ -55,7 +55,7 @@ namespace up {
 
     template <typename... Components>
     Query<Components...>::Query(_detail::EcsContext& context) {
-        static uint32 const indices[sizeof...(Components)] = {context.findByType<Components>()->index...};
+        static uint32 const indices[sizeof...(Components)] = {context.findComponentByType<Components>()->index...};
         for (auto index : indices) {
             _mask.set(index);
         }

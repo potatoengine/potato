@@ -66,14 +66,14 @@ void up::World::deleteEntity(EntityId entity) noexcept {
     //
     if (--chunk->header.entities == 0) {
         _removeChunk(archetypeId, chunkIndex);
-        _context.recycle(chunk);
+        _context.recycleChunk(chunk);
     }
 
     _recycleEntityId(entity);
 }
 
 void up::World::removeComponent(EntityId entityId, ComponentId componentId) noexcept {
-    ComponentMeta const* const meta = _context.findById(componentId);
+    ComponentMeta const* const meta = _context.findComponentById(componentId);
     UP_ASSERT(meta != nullptr);
 
     if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
@@ -164,7 +164,7 @@ auto up::World::_allocateEntitySpace(ArchetypeId archetype) -> AllocatedLocation
         }
     }
     if (chunkIndex == chunks.size()) {
-        chunk = _context.allocate(archetype);
+        chunk = _context.acquireChunk(archetype);
         _addChunk(archetype, chunk);
     }
 

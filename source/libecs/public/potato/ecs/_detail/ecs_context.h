@@ -25,14 +25,14 @@ namespace up::_detail {
             ArchetypeId archetype = ArchetypeId::Empty;
         };
 
-        inline auto findById(ComponentId id) const noexcept -> ComponentMeta const*;
-        inline auto findByTypeHash(uint64 typeHash) const noexcept -> ComponentMeta const*;
+        inline auto findComponentById(ComponentId id) const noexcept -> ComponentMeta const*;
+        inline auto findComponentByTypeHash(uint64 typeHash) const noexcept -> ComponentMeta const*;
 
         template <typename Component>
-        auto findByType() const noexcept -> ComponentMeta const* { return findByTypeHash(typeid(Component).hash_code()); }
+        auto findComponentByType() const noexcept -> ComponentMeta const* { return findComponentByTypeHash(typeid(Component).hash_code()); }
 
-        inline auto allocate(ArchetypeId archetype) -> Chunk*;
-        inline void recycle(Chunk* chunk) noexcept;
+        inline auto acquireChunk(ArchetypeId archetype) -> Chunk*;
+        inline void recycleChunk(Chunk* chunk) noexcept;
 
         auto layoutOf(ArchetypeId archetype) const noexcept -> view<ChunkRowDesc> {
             auto const& arch = _archetypes[to_underlying(archetype)];
@@ -75,17 +75,17 @@ namespace up::_detail {
         Chunk* _freeChunkHead = nullptr;
     };
 
-    auto EcsContext::findById(ComponentId id) const noexcept -> ComponentMeta const* {
+    auto EcsContext::findComponentById(ComponentId id) const noexcept -> ComponentMeta const* {
         auto const* it = find(components, id, equality{}, &ComponentMeta::id);
         return it != components.end() ? it : nullptr;
     }
 
-    auto EcsContext::findByTypeHash(uint64 typeHash) const noexcept -> ComponentMeta const* {
+    auto EcsContext::findComponentByTypeHash(uint64 typeHash) const noexcept -> ComponentMeta const* {
         auto const* it = find(components, typeHash, equality{}, &ComponentMeta::typeHash);
         return it != components.end() ? it : nullptr;
     }
 
-    auto EcsContext::allocate(ArchetypeId archetype) -> Chunk* {
+    auto EcsContext::acquireChunk(ArchetypeId archetype) -> Chunk* {
         if (_freeChunkHead != nullptr) {
             Chunk* const chunk = _freeChunkHead;
             _freeChunkHead = chunk->header.next;
@@ -100,7 +100,7 @@ namespace up::_detail {
         return chunk;
     }
 
-    void EcsContext::recycle(Chunk* chunk) noexcept {
+    void EcsContext::recycleChunk(Chunk* chunk) noexcept {
         if (chunk == nullptr) {
             return;
         }
