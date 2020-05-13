@@ -3,16 +3,16 @@
 #pragma once
 
 #include "_export.h"
-#include "_detail/ecs_context.h"
+#include "shared_context.h"
 #include "world.h"
-#include "potato/spud/typelist.h"
-#include "potato/spud/vector.h"
-#include "potato/spud/delegate_ref.h"
-#include "potato/spud/span.h"
-#include "potato/spud/traits.h"
-#include "potato/spud/bit_set.h"
-#include "potato/spud/utility.h"
-#include "potato/ecs/component.h"
+#include "component.h"
+#include <potato/spud/typelist.h>
+#include <potato/spud/vector.h>
+#include <potato/spud/delegate_ref.h>
+#include <potato/spud/span.h>
+#include <potato/spud/traits.h>
+#include <potato/spud/bit_set.h>
+#include <potato/spud/utility.h>
 
 namespace up {
     /// A Query is used to select a list of Archetypes that provide a particular set of Components,
@@ -22,7 +22,7 @@ namespace up {
     public:
         static_assert(sizeof...(Components) != 0, "Empty Query objects are not allowed");
 
-        explicit Query(_detail::EcsContext& context);
+        explicit Query(EcsSharedContext& context);
 
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
         /// callback once for each Chunk belonging to the Archetypes, with appropriate pointers.
@@ -54,7 +54,7 @@ namespace up {
     };
 
     template <typename... Components>
-    Query<Components...>::Query(_detail::EcsContext& context) {
+    Query<Components...>::Query(EcsSharedContext& context) {
         static uint32 const indices[sizeof...(Components)] = {context.findComponentByType<Components>()->index...};
         for (auto index : indices) {
             _mask.set(index);

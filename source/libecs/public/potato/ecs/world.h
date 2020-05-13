@@ -2,16 +2,19 @@
 
 #pragma once
 
-#include "_detail/ecs_context.h"
 #include "_export.h"
 #include "chunk.h"
-#include "potato/ecs/component.h"
-#include "potato/spud/vector.h"
-#include "potato/spud/delegate_ref.h"
-#include "potato/spud/rc.h"
-#include "potato/spud/box.h"
+#include "component.h"
+#include "shared_context.h"
+#include <potato/spud/vector.h>
+#include <potato/spud/delegate_ref.h>
+#include <potato/spud/rc.h>
+#include <potato/spud/box.h>
+#include <potato/spud/bit_set.h>
 
 namespace up {
+    struct EcsSharedContext;
+
     template <int Count>
     struct QueryMatch {
         ArchetypeId archetype;
@@ -24,7 +27,7 @@ namespace up {
     ///
     class World {
     public:
-        UP_ECS_API explicit World(_detail::EcsContext& context);
+        UP_ECS_API explicit World(rc<EcsSharedContext> context);
         UP_ECS_API ~World();
 
         World(World&&) = delete;
@@ -72,7 +75,7 @@ namespace up {
         /// @param entityId Entity to modify.
         template <typename Component>
         void removeComponent(EntityId entityId) noexcept {
-            ComponentMeta const* const meta = _context.findComponentByType<Component>();
+            ComponentMeta const* const meta = _context->findComponentByType<Component>();
             return removeComponent(entityId, meta->id);
         }
 
@@ -96,7 +99,7 @@ namespace up {
         template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, EntityId, ArchetypeId, ComponentMeta const*, void*>>>
         auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const {
             if (auto [success, archetype, chunkIndex, index] = _parseEntityId(entity); success) {
-                auto const layout = _context.layoutOf(archetype);
+                auto const layout = _context->layoutOf(archetype);
                 Chunk* const chunk = _getChunk(archetype, chunkIndex);
                 for (ChunkRowDesc const& row : layout) {
                     callback(entity, archetype, row.meta, static_cast<void*>(chunk->payload + row.offset + row.width * index));
@@ -108,8 +111,8 @@ namespace up {
 
         template <typename... Components>
         auto matchArchetypesInto(size_t firstIndex, bit_set const& mask, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
-            static ComponentId const components[sizeof...(Components)] = {_context.findComponentByType<Components>()->id...};
-            return _context.selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
+            static ComponentId const components[sizeof...(Components)] = {_context->findComponentByType<Components>()->id...};
+            return _context->selectArchetypes(firstIndex, mask, components, [&matches](ArchetypeId arch, view<int> offsets) {
                 auto& match = matches.emplace_back();
                 match.archetype = arch;
                 std::memcpy(&match.offsets, offsets.data(), sizeof(QueryMatch<sizeof...(Components)>::offsets));
@@ -145,7 +148,6 @@ namespace up {
         void _recycleEntityId(EntityId entity) noexcept;
 
         UP_ECS_API auto _parseEntityId(EntityId entity) const noexcept -> EntityLocation;
-
         void _remapEntityId(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept;
 
         void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex);
@@ -162,12 +164,12 @@ namespace up {
         vector<Chunk*> _chunks;
         vector<uint64> _entityMapping;
         uint32 _freeEntityHead = freeEntityIndex;
-        _detail::EcsContext& _context;
+        rc<EcsSharedContext> _context;
     };
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentMeta const* const componentMetas[] = {_context.findComponentByType<Components>()...};
+        ComponentMeta const* const componentMetas[] = {_context->findComponentByType<Components>()...};
         void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
@@ -175,7 +177,7 @@ namespace up {
 
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
-        auto meta = _context.findComponentByType<Component>();
+        auto meta = _context->findComponentByType<Component>();
         if (meta == nullptr) {
             return nullptr;
         }
@@ -184,7 +186,7 @@ namespace up {
 
     template <typename Component>
     void World::addComponent(EntityId entityId, Component const& component) noexcept {
-        ComponentMeta const* const meta = _context.findComponentByType<Component>();
+        ComponentMeta const* const meta = _context->findComponentByType<Component>();
         _addComponentRaw(entityId, *meta, &component);
     }
 } // namespace up

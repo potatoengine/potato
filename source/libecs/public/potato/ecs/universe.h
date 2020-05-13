@@ -5,13 +5,10 @@
 #include "_export.h"
 #include "world.h"
 #include "component.h"
+#include "shared_context.h"
 #include <potato/spud/box.h>
 #include <potato/spud/hash.h>
 #include <potato/spud/zstring_view.h>
-
-namespace up::_detail {
-    struct EcsContext;
-}
 
 namespace up {
 
@@ -26,7 +23,7 @@ namespace up {
         UP_ECS_API Universe();
         UP_ECS_API ~Universe();
 
-        auto createWorld() noexcept -> World { return World(*_context); }
+        auto createWorld() noexcept -> World { return World(_context); }
 
         template <typename... Components>
         auto createQuery() -> Query<Components...> { return Query<Components...>(*_context); }
@@ -39,7 +36,7 @@ namespace up {
     private:
         UP_ECS_API void _registerComponent(ComponentMeta const& meta);
 
-        box<_detail::EcsContext> _context;
+        rc<EcsSharedContext> _context;
     };
 
     template <typename Component>

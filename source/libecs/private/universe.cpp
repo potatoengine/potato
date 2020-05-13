@@ -1,11 +1,11 @@
 // Copyright (C) 2020 Sean Middleditch, all rights reserverd.
 
-#include "potato/ecs/_detail/ecs_context.h"
+#include "potato/ecs/shared_context.h"
 #include "potato/ecs/universe.h"
 #include "potato/ecs/world.h"
 #include <potato/runtime/assertion.h>
 
-up::Universe::Universe() : _context(new_box<_detail::EcsContext>()) {}
+up::Universe::Universe() : _context(new_shared<EcsSharedContext>()) {}
 up::Universe::~Universe() = default;
 
 void up::Universe::_registerComponent(ComponentMeta const& meta) {
