@@ -4,6 +4,11 @@
 #include <potato/spud/find.h>
 #include <potato/spud/sort.h>
 
+up::EcsSharedContext::EcsSharedContext() {
+    archetypes.emplace_back();
+    archetypeMasks.emplace_back();
+}
+
 auto up::EcsSharedContext::findComponentById(ComponentId id) const noexcept -> ComponentMeta const* {
     auto const* it = find(components, id, equality{}, &ComponentMeta::id);
     return it != components.end() ? it : nullptr;
@@ -117,8 +122,11 @@ auto up::EcsSharedContext::_findArchetype(bit_set const& set) noexcept -> FindRe
     return {false, ArchetypeId::Empty};
 }
 
-auto up::EcsSharedContext::acquireArchetype(view<ComponentMeta const*> include, view<ComponentMeta const*> exclude) -> ArchetypeId {
+auto up::EcsSharedContext::acquireArchetype(ArchetypeId original, view<ComponentMeta const*> include, view<ComponentMeta const*> exclude) -> ArchetypeId {
     bit_set set;
+    for (auto const& row : layoutOf(original)) {
+        set.set(row.meta->index);
+    }
     for (ComponentMeta const* meta : include) {
         set.set(meta->index);
     }
@@ -134,48 +142,17 @@ auto up::EcsSharedContext::acquireArchetype(view<ComponentMeta const*> include, 
 
     // append all the other components
     //
-    for (ComponentMeta const* meta : include) {
-        layout.push_back({meta->id, meta});
-    }
-
-    return _finalizeArchetype(id);
-}
-
-auto up::EcsSharedContext::acquireArchetypeWith(ArchetypeId original, ComponentMeta const* additional) -> ArchetypeId {
-    bit_set set = archetypeMasks[to_underlying(original)].clone();
-    set.set(additional->index);
-
-    if (auto [found, arch] = _findArchetype(set); found) {
-        return arch;
-    }
-
-    auto id = _beginArchetype(std::move(set));
-    auto const& originalArch = archetypes[to_underlying(original)];
-    for (int index = 0; index != originalArch.layoutLength; ++index) {
-        auto const rowIndex = originalArch.layoutOffset + index;
-        layout.push_back(layout[rowIndex]);
-    }
-    layout.push_back({additional->id, additional});
-
-    return _finalizeArchetype(id);
-}
-
-auto up::EcsSharedContext::acquireArchetypeWithout(ArchetypeId original, ComponentMeta const* excluded) -> ArchetypeId {
-    bit_set set = archetypeMasks[to_underlying(original)].clone();
-    set.reset(excluded->index);
-
-    if (auto [found, arch] = _findArchetype(set); found) {
-        return arch;
-    }
-
-    auto id = _beginArchetype(std::move(set));
     auto const& originalArch = archetypes[to_underlying(original)];
     for (int index = 0; index != originalArch.layoutLength; ++index) {
         auto const rowIndex = originalArch.layoutOffset + index;
         auto const& row = layout[rowIndex];
-        if (row.meta != excluded) {
-            layout.push_back(row);
+        if (find(exclude, row.meta) == exclude.end()) {
+            layout.push_back(layout[rowIndex]);
         }
     }
+    for (ComponentMeta const* meta : include) {
+        layout.push_back({meta->id, meta});
+    }
+
     return _finalizeArchetype(id);
 }

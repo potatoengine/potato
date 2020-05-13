@@ -77,7 +77,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
     UP_ASSERT(meta != nullptr);
 
     if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
-        ArchetypeId newArchetype = _context->acquireArchetypeWithout(archetypeId, meta);
+        ArchetypeId newArchetype = _context->acquireArchetype(archetypeId, {}, {&meta, 1});
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
         auto* oldChunk = _getChunk(archetypeId, chunkIndex);
@@ -96,7 +96,8 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
 void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& componentMeta) {
     if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
         // find the target archetype and allocate an entry in it
-        ArchetypeId newArchetype = _context->acquireArchetypeWith(archetypeId, &componentMeta);
+        auto const& metaPtr = &componentMeta;
+        ArchetypeId newArchetype = _context->acquireArchetype(archetypeId, {&metaPtr, 1}, {});
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
         auto* chunk = _getChunk(archetypeId, chunkIndex);
@@ -117,7 +118,8 @@ void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& comp
 void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept {
     if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
         // find the target archetype and allocate an entry in it
-        ArchetypeId newArchetype = _context->acquireArchetypeWith(archetypeId, &componentMeta);
+        auto const& metaPtr = &componentMeta;
+        ArchetypeId newArchetype = _context->acquireArchetype(archetypeId, {&metaPtr, 1}, {});
         auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
         auto* chunk = _getChunk(archetypeId, chunkIndex);
@@ -138,7 +140,7 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& compone
 auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<void const*> data) -> EntityId {
     UP_ASSERT(components.size() == data.size());
 
-    ArchetypeId newArchetype = _context->acquireArchetype(components, {});
+    ArchetypeId newArchetype = _context->acquireArchetype(ArchetypeId::Empty, components, {});
     auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
     // Allocate EntityId
