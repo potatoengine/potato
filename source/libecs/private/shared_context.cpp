@@ -3,10 +3,10 @@
 #include "potato/ecs/shared_context.h"
 #include <potato/spud/find.h>
 #include <potato/spud/sort.h>
+#include <potato/spud/utility.h>
 
 up::EcsSharedContext::EcsSharedContext() {
     archetypes.emplace_back();
-    archetypeMasks.emplace_back();
 }
 
 auto up::EcsSharedContext::findComponentById(ComponentId id) const noexcept -> ComponentMeta const* {
@@ -42,41 +42,83 @@ void up::EcsSharedContext::recycleChunk(Chunk* chunk) noexcept {
     freeChunkHead = chunk;
 }
 
-void up::EcsSharedContext::_bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept {
+auto up::EcsSharedContext::_bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool {
     UP_ASSERT(componentIds.size() == offsets.size());
 
     auto const layout = layoutOf(archetype);
 
+    if (layout.size() < componentIds.size()) {
+        return false;
+    }
+
     for (ComponentId const component : componentIds) {
         auto const desc = find(layout, component, {}, &ChunkRowDesc::component);
-        UP_ASSERT(desc != layout.end());
+        if (desc == layout.end()) {
+            return false;
+        }
         offsets.front() = desc->offset;
         offsets.pop_front();
     }
+
+    return true;
 }
 
-auto up::EcsSharedContext::_beginArchetype(bit_set components) -> ArchetypeId {
-    // allocate a new archetype and associated id
+auto up::EcsSharedContext::acquireArchetype(ArchetypeId original, view<ComponentMeta const*> include, view<ComponentMeta const*> exclude) -> ArchetypeId {
+    // attempt to find any existing archetype with the same component set
     //
+    {
+        auto const originalLayout = layoutOf(original);
+        for (size_t index = 0; index != archetypes.size(); ++index) {
+            auto const layout = layoutOf(ArchetypeId(index));
+            if (any(exclude, [&layout](auto const* meta) noexcept { return contains(layout, meta, {}, &ChunkRowDesc::meta); })) {
+                continue;
+            }
+            if (!all(include, [&layout](auto const* meta) noexcept { return contains(layout, meta, {}, &ChunkRowDesc::meta); })) {
+                continue;
+            }
+            if (!all(originalLayout, [&layout](auto const& row) noexcept { return contains(layout, row.meta, {}, &ChunkRowDesc::meta); })) {
+                continue;
+            }
+            return ArchetypeId(index);
+        }
+    }
+
+    // allocate a new Archetype entry
     auto id = ArchetypeId(archetypes.size());
-    archetypes.push_back({static_cast<uint32>(layout.size())});
-    archetypeMasks.push_back(std::move(components));
+    auto& archData = archetypes.push_back({static_cast<uint32>(layout.size())});
 
-    return id;
-}
+    // append component from the original archetype
+    //
+    // NOTE: be careful since we're pushing into the container that stores the
+    // original layout, so we can't safely use a span here!
+    //
+    auto const& originalArch = archetypes[to_underlying(original)];
+    for (int index = 0; index != originalArch.layoutLength; ++index) {
+        auto const rowIndex = originalArch.layoutOffset + index;
+        auto const& row = layout[rowIndex];
+        if (!contains(exclude, row.meta)) {
+            layout.push_back(layout[rowIndex]);
+        }
+    }
 
-auto up::EcsSharedContext::_finalizeArchetype(ArchetypeId archetype) noexcept -> ArchetypeId {
-    auto& archData = archetypes[to_underlying(archetype)];
-    auto& compSet = archetypeMasks[to_underlying(archetype)];
+    // append all the new components
+    //
+    for (ComponentMeta const* meta : include) {
+        layout.push_back({meta->id, meta});
+    }
+
+    // now that all components are added, we can calculate the total number of them
+    // excluding all the duplicates
+    //
     archData.layoutLength = static_cast<uint16>(layout.size() - archData.layoutOffset);
-
     auto const newLayout = layout.subspan(archData.layoutOffset, archData.layoutLength);
 
     // sort rows by alignment for ideal packing
     //
     sort(newLayout, {}, [](const auto& row) noexcept { return row.meta->alignment; });
 
-    // calculate total size of all components
+    // calculate total size of all components including padding, used to determine how many
+    // entities we can store in a chunk for this archetype
     //
     size_t size = sizeof(EntityId);
     size_t padding = 0;
@@ -90,7 +132,7 @@ auto up::EcsSharedContext::_finalizeArchetype(ArchetypeId archetype) noexcept ->
     archData.maxEntitiesPerChunk = size != 0 ? static_cast<uint32>((sizeof(Chunk::Payload) - padding) / size) : 0;
     UP_ASSERT(archData.maxEntitiesPerChunk > 0);
 
-    // calculate the row offets for the layout
+    // calculate the chunk offsets for each row of components in a chunk
     //
     size_t offset = sizeof(EntityId) * archData.maxEntitiesPerChunk;
     for (auto& row : newLayout) {
@@ -102,57 +144,12 @@ auto up::EcsSharedContext::_finalizeArchetype(ArchetypeId archetype) noexcept ->
 
         offset += row.width * archData.maxEntitiesPerChunk;
         UP_ASSERT(offset <= sizeof(Chunk::payload));
-
-        compSet.set(row.meta->index);
     }
 
-    // sort all rows by component id
+    // sort all rows by component id in the new layout, so we can use binary search for
+    // component id lookups
     //
     sort(newLayout, {}, &ChunkRowDesc::component);
 
-    return archetype;
-}
-
-auto up::EcsSharedContext::_findArchetype(bit_set const& set) noexcept -> FindResult {
-    for (size_t index = 0; index != archetypes.size(); ++index) {
-        if (archetypeMasks[index] == set) {
-            return {true, static_cast<ArchetypeId>(index)};
-        }
-    }
-    return {false, ArchetypeId::Empty};
-}
-
-auto up::EcsSharedContext::acquireArchetype(ArchetypeId original, view<ComponentMeta const*> include, view<ComponentMeta const*> exclude) -> ArchetypeId {
-    bit_set set;
-    for (auto const& row : layoutOf(original)) {
-        set.set(row.meta->index);
-    }
-    for (ComponentMeta const* meta : include) {
-        set.set(meta->index);
-    }
-    for (ComponentMeta const* meta : exclude) {
-        set.reset(meta->index);
-    }
-
-    if (auto [found, arch] = _findArchetype(set); found) {
-        return arch;
-    }
-
-    auto id = _beginArchetype(std::move(set));
-
-    // append all the other components
-    //
-    auto const& originalArch = archetypes[to_underlying(original)];
-    for (int index = 0; index != originalArch.layoutLength; ++index) {
-        auto const rowIndex = originalArch.layoutOffset + index;
-        auto const& row = layout[rowIndex];
-        if (find(exclude, row.meta) == exclude.end()) {
-            layout.push_back(layout[rowIndex]);
-        }
-    }
-    for (ComponentMeta const* meta : include) {
-        layout.push_back({meta->id, meta});
-    }
-
-    return _finalizeArchetype(id);
+    return id;
 }

@@ -8,10 +8,8 @@
 #include "component.h"
 #include <potato/spud/typelist.h>
 #include <potato/spud/vector.h>
-#include <potato/spud/delegate_ref.h>
 #include <potato/spud/span.h>
 #include <potato/spud/traits.h>
-#include <potato/spud/bit_set.h>
 #include <potato/spud/utility.h>
 
 namespace up {
@@ -22,7 +20,7 @@ namespace up {
     public:
         static_assert(sizeof...(Components) != 0, "Empty Query objects are not allowed");
 
-        explicit Query(EcsSharedContext& context);
+        explicit Query(EcsSharedContext& context) : _context(context) {}
 
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
         /// callback once for each Chunk belonging to the Archetypes, with appropriate pointers.
@@ -50,28 +48,20 @@ namespace up {
 
         vector<Match> _matches;
         size_t _matchIndex = 0;
-        bit_set _mask;
+        EcsSharedContext& _context;
     };
-
-    template <typename... Components>
-    Query<Components...>::Query(EcsSharedContext& context) {
-        static uint32 const indices[sizeof...(Components)] = {context.findComponentByType<Components>()->index...};
-        for (auto index : indices) {
-            _mask.set(index);
-        }
-    }
 
     template <typename... Components>
     template <typename Callback, typename Void>
     void Query<Components...>::selectChunks(World& world, Callback&& callback) {
-        _matchIndex = world.matchArchetypesInto<Components...>(_matchIndex, _mask, _matches);
+        _matchIndex = world.matchArchetypesInto<Components...>(_matchIndex, _matches);
         _executeChunks(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
 
     template <typename... Components>
     template <typename Callback, typename Void>
     void Query<Components...>::select(World& world, Callback&& callback) {
-        _matchIndex = world.matchArchetypesInto<Components...>(_matchIndex, _mask, _matches);
+        _matchIndex = world.matchArchetypesInto<Components...>(_matchIndex, _matches);
         _execute(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
 

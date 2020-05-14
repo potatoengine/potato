@@ -9,7 +9,6 @@
 #include <potato/spud/span.h>
 #include <potato/spud/vector.h>
 #include <potato/spud/box.h>
-#include <potato/spud/bit_set.h>
 #include <potato/spud/rc.h>
 
 namespace up {
@@ -40,19 +39,14 @@ namespace up {
         auto acquireArchetype(ArchetypeId original, view<ComponentMeta const*> include, view<ComponentMeta const*> exclude) -> ArchetypeId;
 
         template <size_t ComponentCount, typename Callback>
-        auto selectArchetypes(size_t start, bit_set const& mask, ComponentId const (&components)[ComponentCount], Callback&& callback) const noexcept -> size_t
+        auto selectArchetypes(size_t start, ComponentId const (&components)[ComponentCount], Callback&& callback) const noexcept -> size_t
             requires is_invocable_v<Callback, ArchetypeId, int (&)[ComponentCount]>;
 
         UP_ECS_API auto _findComponentByTypeHash(uint64 typeHash) const noexcept -> ComponentMeta const*;
-
-        UP_ECS_API void _bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept;
-        auto _findArchetype(bit_set const& set) noexcept -> FindResult;
-        auto _beginArchetype(bit_set components) -> ArchetypeId;
-        auto _finalizeArchetype(ArchetypeId archetype) noexcept -> ArchetypeId;
+        UP_ECS_API auto _bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool;
 
         vector<ComponentMeta> components;
         vector<ArchetypeLayout> archetypes;
-        vector<bit_set> archetypeMasks;
         vector<ChunkRowDesc> layout;
         vector<box<Chunk>> freeChunks;
         Chunk* freeChunkHead = nullptr;
@@ -71,13 +65,12 @@ namespace up {
     }
 
     template <size_t ComponentCount, typename Callback>
-    auto EcsSharedContext::selectArchetypes(size_t start, bit_set const& mask, ComponentId const (&components)[ComponentCount], Callback&& callback) const noexcept -> size_t
+    auto EcsSharedContext::selectArchetypes(size_t start, ComponentId const (&components)[ComponentCount], Callback&& callback) const noexcept -> size_t
         requires is_invocable_v<Callback, ArchetypeId, int (&)[ComponentCount]> {
         int offsets[ComponentCount];
 
         for (auto index = start; index < archetypes.size(); ++index) {
-            if (archetypeMasks[index].has_all(mask)) {
-                _bindArchetypeOffets(ArchetypeId(index), components, offsets);
+            if (_bindArchetypeOffets(ArchetypeId(index), components, offsets)) {
                 callback(ArchetypeId(index), offsets);
             }
         }
