@@ -27,16 +27,16 @@ namespace up {
         ///
         /// This is the primary mechanism for finding or mutating Entities.
         ///
-        template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, size_t, EntityId const*, Components*...>>>
-        void selectChunks(World& world, Callback&& callback);
+        template <typename Callback>
+        void selectChunks(World& world, Callback&& callback) requires is_invocable_v<Callback, size_t, EntityId const*, Components*...>;
 
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
         /// callback once for each entity.
         ///
         /// This is the primary mechanism for finding or mutating Entities.
         ///
-        template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, EntityId, Components&...>>>
-        void select(World& world, Callback&& callback);
+        template <typename Callback>
+        void select(World& world, Callback&& callback) requires is_invocable_v<Callback, EntityId, Components&...>;
 
     private:
         struct Match {
@@ -56,15 +56,15 @@ namespace up {
     };
 
     template <typename... Components>
-    template <typename Callback, typename Void>
-    void Query<Components...>::selectChunks(World& world, Callback&& callback) {
+    template <typename Callback>
+    void Query<Components...>::selectChunks(World& world, Callback&& callback) requires is_invocable_v<Callback, size_t, EntityId const*, Components*...> {
         _match();
         _executeChunks(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
 
     template <typename... Components>
-    template <typename Callback, typename Void>
-    void Query<Components...>::select(World& world, Callback&& callback) {
+    template <typename Callback>
+    void Query<Components...>::select(World& world, Callback&& callback) requires is_invocable_v<Callback, EntityId, Components&...> {
         _match();
         _execute(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
