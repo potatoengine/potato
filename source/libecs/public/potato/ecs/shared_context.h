@@ -24,8 +24,6 @@ namespace up {
             ArchetypeId archetype = ArchetypeId::Empty;
         };
 
-        EcsSharedContext();
-
         auto findComponentById(ComponentId id) const noexcept -> ComponentMeta const*;
 
         template <typename Component>
@@ -46,9 +44,9 @@ namespace up {
         UP_ECS_API auto _bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool;
 
         vector<ComponentMeta> components;
-        vector<ArchetypeLayout> archetypes;
-        vector<ChunkRowDesc> layout;
-        vector<box<Chunk>> freeChunks;
+        vector<ArchetypeLayout> archetypes = {ArchetypeLayout{0, 0, 0}};
+        vector<ChunkRowDesc> chunkRows;
+        vector<box<Chunk>> allocatedChunks;
         Chunk* freeChunkHead = nullptr;
     };
 
@@ -61,7 +59,7 @@ namespace up {
         auto const index = to_underlying(archetype);
         UP_ASSERT(index >= 0 && index < archetypes.size());
         auto const& arch = archetypes[to_underlying(archetype)];
-        return layout.subspan(arch.layoutOffset, arch.layoutLength);
+        return chunkRows.subspan(arch.layoutOffset, arch.layoutLength);
     }
 
     template <size_t ComponentCount, typename Callback>

@@ -5,10 +5,6 @@
 #include <potato/spud/sort.h>
 #include <potato/spud/utility.h>
 
-up::EcsSharedContext::EcsSharedContext() {
-    archetypes.emplace_back();
-}
-
 auto up::EcsSharedContext::findComponentById(ComponentId id) const noexcept -> ComponentMeta const* {
     auto const* it = find(components, id, equality{}, &ComponentMeta::id);
     return it != components.end() ? it : nullptr;
@@ -27,7 +23,7 @@ auto up::EcsSharedContext::acquireChunk() -> Chunk* {
         return chunk;
     }
 
-    Chunk* const chunk = freeChunks.push_back(new_box<Chunk>()).get();
+    Chunk* const chunk = allocatedChunks.push_back(new_box<Chunk>()).get();
     return chunk;
 }
 
@@ -85,7 +81,7 @@ auto up::EcsSharedContext::acquireArchetype(ArchetypeId original, view<Component
 
     // allocate a new Archetype entry
     auto id = ArchetypeId(archetypes.size());
-    auto& archData = archetypes.push_back({static_cast<uint32>(layout.size())});
+    auto& archData = archetypes.push_back({static_cast<uint32>(chunkRows.size())});
 
     // append component from the original archetype
     //
@@ -95,23 +91,23 @@ auto up::EcsSharedContext::acquireArchetype(ArchetypeId original, view<Component
     auto const& originalArch = archetypes[to_underlying(original)];
     for (int index = 0; index != originalArch.layoutLength; ++index) {
         auto const rowIndex = originalArch.layoutOffset + index;
-        auto const& row = layout[rowIndex];
+        auto const& row = chunkRows[rowIndex];
         if (!contains(exclude, row.meta)) {
-            layout.push_back(layout[rowIndex]);
+            chunkRows.push_back(chunkRows[rowIndex]);
         }
     }
 
     // append all the new components
     //
     for (ComponentMeta const* meta : include) {
-        layout.push_back({meta->id, meta});
+        chunkRows.push_back({meta->id, meta});
     }
 
     // now that all components are added, we can calculate the total number of them
     // excluding all the duplicates
     //
-    archData.layoutLength = static_cast<uint16>(layout.size() - archData.layoutOffset);
-    auto const newLayout = layout.subspan(archData.layoutOffset, archData.layoutLength);
+    archData.layoutLength = static_cast<uint16>(chunkRows.size() - archData.layoutOffset);
+    auto const newLayout = chunkRows.subspan(archData.layoutOffset, archData.layoutLength);
 
     // sort rows by alignment for ideal packing
     //
