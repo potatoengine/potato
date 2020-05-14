@@ -36,10 +36,6 @@ namespace up {
 
         auto acquireArchetype(ArchetypeId original, view<ComponentMeta const*> include, view<ComponentMeta const*> exclude) -> ArchetypeId;
 
-        template <size_t ComponentCount, typename Callback>
-        auto selectArchetypes(size_t start, ComponentId const (&components)[ComponentCount], Callback&& callback) const noexcept -> size_t
-            requires is_invocable_v<Callback, ArchetypeId, int (&)[ComponentCount]>;
-
         UP_ECS_API auto _findComponentByTypeHash(uint64 typeHash) const noexcept -> ComponentMeta const*;
         UP_ECS_API auto _bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool;
 
@@ -60,20 +56,6 @@ namespace up {
         UP_ASSERT(index >= 0 && index < archetypes.size());
         auto const& arch = archetypes[to_underlying(archetype)];
         return chunkRows.subspan(arch.layoutOffset, arch.layoutLength);
-    }
-
-    template <size_t ComponentCount, typename Callback>
-    auto EcsSharedContext::selectArchetypes(size_t start, ComponentId const (&components)[ComponentCount], Callback&& callback) const noexcept -> size_t
-        requires is_invocable_v<Callback, ArchetypeId, int (&)[ComponentCount]> {
-        int offsets[ComponentCount];
-
-        for (auto index = start; index < archetypes.size(); ++index) {
-            if (_bindArchetypeOffets(ArchetypeId(index), components, offsets)) {
-                callback(ArchetypeId(index), offsets);
-            }
-        }
-
-        return archetypes.size();
     }
 
 } // namespace up

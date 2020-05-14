@@ -26,7 +26,7 @@ namespace up {
         auto createWorld() noexcept -> World { return World(_context); }
 
         template <typename... Components>
-        auto createQuery() -> Query<Components...> { return Query<Components...>(*_context); }
+        auto createQuery() -> Query<Components...> { return Query<Components...>(_context); }
 
         template <typename Component>
         void registerComponent(zstring_view name);

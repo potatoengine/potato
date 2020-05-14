@@ -15,12 +15,6 @@
 namespace up {
     struct EcsSharedContext;
 
-    template <int Count>
-    struct QueryMatch {
-        ArchetypeId archetype;
-        int offsets[Count];
-    };
-
     /// A world contains a collection of Entities, Archetypes, and their associated Components.
     ///
     /// Entities from different Worlds cannot interact.
@@ -107,16 +101,6 @@ namespace up {
                 return true;
             }
             return false;
-        }
-
-        template <typename... Components>
-        auto matchArchetypesInto(size_t firstIndex, vector<QueryMatch<sizeof...(Components)>>& matches) const noexcept -> size_t {
-            static ComponentId const components[sizeof...(Components)] = {_context->findComponentByType<Components>()->id...};
-            return _context->selectArchetypes(firstIndex, components, [&matches](ArchetypeId arch, view<int> offsets) {
-                auto& match = matches.emplace_back();
-                match.archetype = arch;
-                std::memcpy(&match.offsets, offsets.data(), sizeof(QueryMatch<sizeof...(Components)>::offsets));
-            });
         }
 
     private:

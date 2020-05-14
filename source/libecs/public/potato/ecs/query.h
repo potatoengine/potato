@@ -20,7 +20,7 @@ namespace up {
     public:
         static_assert(sizeof...(Components) != 0, "Empty Query objects are not allowed");
 
-        explicit Query(EcsSharedContext& context) : _context(context) {}
+        explicit Query(rc<EcsSharedContext> context) : _context(std::move(context)) {}
 
         /// Given a World and a callback, finds all matching Archetypes, and invokes the
         /// callback once for each Chunk belonging to the Archetypes, with appropriate pointers.
@@ -39,8 +39,12 @@ namespace up {
         void select(World& world, Callback&& callback);
 
     private:
-        using Match = QueryMatch<sizeof...(Components)>;
+        struct Match {
+            ArchetypeId archetype;
+            int offsets[sizeof...(Components)];
+        };
 
+        void _match();
         template <typename Callback, size_t... Indices>
         void _executeChunks(World& world, Callback&& callback, std::index_sequence<Indices...>) const;
         template <typename Callback, size_t... Indices>
@@ -48,21 +52,40 @@ namespace up {
 
         vector<Match> _matches;
         size_t _matchIndex = 0;
-        EcsSharedContext& _context;
+        rc<EcsSharedContext> _context;
     };
 
     template <typename... Components>
     template <typename Callback, typename Void>
     void Query<Components...>::selectChunks(World& world, Callback&& callback) {
-        _matchIndex = world.matchArchetypesInto<Components...>(_matchIndex, _matches);
+        _match();
         _executeChunks(world, callback, std::make_index_sequence<sizeof...(Components)>{});
     }
 
     template <typename... Components>
     template <typename Callback, typename Void>
     void Query<Components...>::select(World& world, Callback&& callback) {
-        _matchIndex = world.matchArchetypesInto<Components...>(_matchIndex, _matches);
+        _match();
         _execute(world, callback, std::make_index_sequence<sizeof...(Components)>{});
+    }
+
+    template <typename... Components>
+    void Query<Components...>::_match() {
+        if (_matchIndex >= _context->archetypes.size()) {
+            return;
+        }
+
+        ComponentId const components[sizeof...(Components)] = {_context->findComponentByType<Components>()->id...};
+        int offsets[sizeof...(Components)] = {
+            0,
+        };
+
+        for (; _matchIndex < _context->archetypes.size(); ++_matchIndex) {
+            auto& match = _matches.push_back({ArchetypeId(_matchIndex)});
+            if (!_context->_bindArchetypeOffets(match.archetype, components, match.offsets)) {
+                _matches.pop_back();
+            }
+        }
     }
 
     template <typename... Components>
