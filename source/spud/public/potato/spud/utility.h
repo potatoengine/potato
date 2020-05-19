@@ -43,8 +43,8 @@ namespace up {
         }
     };
 
-    template <typename Value, typename Projection, typename = enable_if_t<std::is_invocable_v<Projection, Value const&>>>
-    decltype(auto) project(Projection const& projection, Value const& value) noexcept(noexcept(invoke(projection, value))) {
+    template <typename Value, typename Projection>
+    decltype(auto) project(Projection const& projection, Value const& value) noexcept(noexcept(invoke(projection, value))) requires std::is_invocable_v<Projection, Value const&> {
         return invoke(projection, value);
     }
     template <typename Class, typename ReturnType>
