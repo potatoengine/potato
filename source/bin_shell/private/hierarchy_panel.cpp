@@ -36,21 +36,19 @@ namespace up::shell {
         }
 
         if (ImGui::Begin("Hierarchy", &_enabled, ImGuiWindowFlags_NoCollapse)) {
-            for (size_t i = 1, e = _scene.world().archetypes().archetypes(); i != e; ++i) {
-                auto const archetypeId = static_cast<ArchetypeId>(i);
-                for (Chunk* chunk : _scene.world().getChunks(archetypeId)) {
-                    auto const rows = _scene.world().archetypes().layoutOf(archetypeId);
-                    for (auto const& row : rows) {
-                        if (row.meta == &ComponentMeta::get<Entity>()) {
-                            Entity const* const entities = reinterpret_cast<Entity const*>(chunk->data + row.offset);
-                            for (int j = 0; j != chunk->header.entities; ++j) {
-                                fixed_string_writer label;
-                                format_append(label, "Entity (#{})", (unsigned)entities[j].id);
-                                if (ImGui::Selectable(label.c_str())) {
-                                    _selection.select(entities[j].id);
-                                }
-                            }
-                        }
+            fixed_string_writer label;
+
+            for (auto const& chunk : _scene.world().chunks()) {
+                for (EntityId entityId : chunk->entities()) {
+                    label.clear();
+                    format_append(label, "Entity (#{})", entityId);
+
+                    bool selected = entityId == _selection.selected();
+                    if (ImGui::Selectable(label.c_str(), selected)) {
+                        _selection.select(entityId);
+                    }
+                    if (selected) {
+                        ImGui::SetItemDefaultFocus();
                     }
                 }
             }

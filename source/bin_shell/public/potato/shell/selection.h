@@ -1,6 +1,6 @@
 // Copyright (C) 2020 Sean Middleditch, all rights reserverd.
 
-#include <potato/ecs/entity.h>
+#include <potato/ecs/common.h>
 
 namespace up::shell {
     class Selection {

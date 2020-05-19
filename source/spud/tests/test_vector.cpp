@@ -45,6 +45,20 @@ DOCTEST_TEST_SUITE("[potato][spud] vector") {
         DOCTEST_CHECK_EQ(vec.back(), 10000 * 10000);
     }
 
+    DOCTEST_TEST_CASE("vector resize") {
+        vector vec{1, 2, 3, 4};
+
+        vec.resize(5);
+
+        DOCTEST_CHECK_EQ(vec.size(), 5);
+
+        vec.resize(6, 7);
+
+        DOCTEST_CHECK_EQ(vec.size(), 6);
+        DOCTEST_CHECK_EQ(vec.front(), 1);
+        DOCTEST_CHECK_EQ(vec.back(), 7);
+    }
+
     DOCTEST_TEST_CASE("vector erase") {
         vector vec{1, 2, 3, 4};
 

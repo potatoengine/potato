@@ -27,6 +27,7 @@ namespace up {
     class Scene;
     class Camera;
     class CameraController;
+    class Universe;
 } // namespace up
 
 class up::ShellApp {
@@ -67,6 +68,7 @@ private:
     rc<GpuSwapChain> _swapChain;
     box<Renderer> _renderer;
     box<RenderCamera> _uiRenderCamera;
+    box<Universe> _universe;
     box<Scene> _scene;
     string _resourceDir;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;

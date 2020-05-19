@@ -1,6 +1,7 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
 #include "scene.h"
+#include "components.h"
 #include <potato/runtime/json.h>
 #include <potato/render/model.h>
 #include "potato/ecs/world.h"
@@ -16,65 +17,12 @@
 
 #include <nlohmann/json.hpp>
 
-namespace up::components {
-    struct Position {
-        glm::vec3 xyz;
-    };
-
-    struct Rotation {
-        glm::quat rot;
-    };
-
-    struct Transform {
-        glm::mat4x4 trans;
-    };
-
-    struct Mesh {
-        rc<up::Model> model;
-    };
-
-    struct Wave {
-        float time;
-        float offset;
-    };
-
-    struct Spin {
-        float radians;
-    };
-
-    UP_REFLECT_TYPE(Position) {
-        reflect("xyz", &Position::xyz);
-    }
-    UP_REFLECT_TYPE(Rotation) {
-        reflect("rotation", &Rotation::rot);
-    }
-    UP_REFLECT_TYPE(Transform) {}
-    UP_REFLECT_TYPE(Mesh) {}
-    UP_REFLECT_TYPE(Wave) {
-        reflect("time", &Wave::time);
-        reflect("offset", &Wave::offset);
-    }
-    UP_REFLECT_TYPE(Spin) {
-        reflect("radians", &Spin::radians);
-    }
-} // namespace up::components
-
-UP_DECLARE_COMPONENT(up::components::Position);
-UP_DECLARE_COMPONENT(up::components::Rotation);
-UP_DECLARE_COMPONENT(up::components::Transform);
-UP_DECLARE_COMPONENT(up::components::Mesh);
-UP_DECLARE_COMPONENT(up::components::Wave);
-UP_DECLARE_COMPONENT(up::components::Spin);
-
-UP_DEFINE_COMPONENT(up::components::Position);
-UP_DEFINE_COMPONENT(up::components::Rotation);
-UP_DEFINE_COMPONENT(up::components::Transform);
-UP_DEFINE_COMPONENT(up::components::Mesh);
-UP_DEFINE_COMPONENT(up::components::Wave);
-UP_DEFINE_COMPONENT(up::components::Spin);
-
-up::Scene::Scene() : _world(new_box<World>()) {
-}
+up::Scene::Scene(Universe& universe) : _world{universe.createWorld()},
+                                       _waveQuery{universe.createQuery<components::Position, components::Wave>()},
+                                       _orbitQuery{universe.createQuery<components::Position>()},
+                                       _spinQuery{universe.createQuery<components::Rotation, components::Spin>()},
+                                       _transformQuery{universe.createQuery<components::Rotation, components::Position, components::Transform>()},
+                                       _renderableMeshQuery{universe.createQuery<components::Mesh, components::Transform>()} {}
 
 void up::Scene::create(rc<Model> const& cube) {
     auto pi = glm::pi<float>();
@@ -82,7 +30,7 @@ void up::Scene::create(rc<Model> const& cube) {
     for (size_t i = 0; i <= 100; ++i) {
         float p = i / 100.0f;
         float r = p * 2.f * pi;
-        _world->createEntity(
+        _world.createEntity(
             components::Position{{(20 + glm::cos(r) * 10.f) * glm::sin(r),
                                   1 + glm::sin(r * 10.f) * 5.f,
                                   (20 + glm::sin(r) * 10.f) * glm::cos(r)}},
@@ -93,7 +41,7 @@ void up::Scene::create(rc<Model> const& cube) {
             components::Spin{glm::sin(r) * 2.f - 1.f});
     }
 
-    _main = _world->createEntity(
+    _main = _world.createEntity(
         components::Position{{0, 5, 0}},
         components::Rotation{glm::identity<glm::quat>()},
         components::Transform(),
@@ -109,28 +57,28 @@ void up::Scene::tick(float frameTime) {
         return;
     }
 
-    _waveQuery.select(*_world, [&](components::Position& pos, components::Wave& wave) {
+    _waveQuery.select(_world, [&](EntityId, components::Position& pos, components::Wave& wave) {
         wave.offset += frameTime * .2f;
         pos.xyz.y = 1 + 5 * glm::sin(wave.offset * 10);
     });
 
-    _orbitQuery.select(*_world, [&](components::Position& pos) {
+    _orbitQuery.select(_world, [&](EntityId, components::Position& pos) {
         pos.xyz = glm::rotateY(pos.xyz, frameTime);
     });
 
-    _spinQuery.select(*_world, [&](components::Rotation& rot, components::Spin const& spin) {
+    _spinQuery.select(_world, [&](EntityId, components::Rotation& rot, components::Spin const& spin) {
         rot.rot = glm::angleAxis(spin.radians * frameTime, glm::vec3(0.f, 1.f, 0.f)) * rot.rot;
     });
 }
 
 void up::Scene::flush() {
-    _transformQuery.select(*_world, [&](components::Rotation const& rot, components::Position const& pos, components::Transform& trans) {
+    _transformQuery.select(_world, [&](EntityId, components::Rotation const& rot, components::Position const& pos, components::Transform& trans) {
         trans.trans = glm::translate(pos.xyz) * glm::mat4_cast(rot.rot);
     });
 }
 
 void up::Scene::render(RenderContext& ctx) {
-    _renderableMeshQuery.select(*_world, [&](components::Mesh& mesh, components::Transform const& trans) {
+    _renderableMeshQuery.select(_world, [&](EntityId, components::Mesh& mesh, components::Transform const& trans) {
         mesh.model->render(ctx, trans.trans);
     });
 }

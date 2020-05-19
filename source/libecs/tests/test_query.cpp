@@ -1,6 +1,6 @@
 #include "potato/ecs/world.h"
 #include "potato/ecs/query.h"
-#include "potato/ecs/entity.h"
+#include "potato/ecs/universe.h"
 #include <doctest/doctest.h>
 
 namespace {
@@ -21,69 +21,67 @@ namespace {
     UP_REFLECT_TYPE(Another) {}
 } // namespace
 
-UP_DECLARE_COMPONENT(Test1);
-UP_DECLARE_COMPONENT(Second);
-UP_DECLARE_COMPONENT(Another);
-
-UP_DEFINE_COMPONENT(Test1);
-UP_DEFINE_COMPONENT(Second);
-UP_DEFINE_COMPONENT(Another);
-
 DOCTEST_TEST_SUITE("[potato][ecs] Query") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("Select chunks") {
-        World world;
+    DOCTEST_TEST_CASE("") {
 
-        world.createEntity(Test1{'f'}, Second{7.f, 'g'});
-        world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
-        world.createEntity(Second{-2.f, 'h'}, Another{2.f, 1.f});
-        world.createEntity(Test1{'j'}, Another{3.f, 4.f});
+        Universe universe;
 
-        // Exactly two of the entities should be in the same archetype; and the empty Archetype, for 4
-        DOCTEST_CHECK_EQ(4, world.archetypes().archetypes());
+        universe.registerComponent<Test1>("Test1");
+        universe.registerComponent<Second>("Second");
+        universe.registerComponent<Another>("Another");
 
-        size_t invokeCount = 0;
-        size_t entityCount = 0;
-        float weight = 0;
+        DOCTEST_SUBCASE("Select chunks") {
+            auto world = universe.createWorld();
 
-        Query<Second> query;
-        query.selectChunks(world, [&](size_t count, Second* second) {
-            ++invokeCount;
-            entityCount += count;
+            world.createEntity(Test1{'f'}, Second{7.f, 'g'});
+            world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
+            world.createEntity(Second{-2.f, 'h'}, Another{2.f, 1.f});
+            world.createEntity(Test1{'j'}, Another{3.f, 4.f});
 
-            for (size_t index = 0; index != count; ++index) {
-                weight += second[index].b;
-            }
-        });
+            size_t invokeCount = 0;
+            size_t entityCount = 0;
+            float weight = 0;
 
-        // Only two archetypes should have matches
-        DOCTEST_CHECK_EQ(2, invokeCount);
+            auto query = universe.createQuery<Second>();
+            query.selectChunks(world, [&](size_t count, EntityId const*, Second* second) {
+                ++invokeCount;
+                entityCount += count;
 
-        // Three total entities between the two archetypes should exist that match
-        DOCTEST_CHECK_EQ(3, entityCount);
+                for (size_t index = 0; index != count; ++index) {
+                    weight += second[index].b;
+                }
+            });
 
-        // Ensure we're storing/retrieving correct values
-        DOCTEST_CHECK_EQ(14.f, weight);
-    }
+            // Only two archetypes should have matches
+            DOCTEST_CHECK_EQ(2, invokeCount);
 
-    DOCTEST_TEST_CASE("Select entities") {
-        World world;
+            // Three total entities between the two archetypes should exist that match
+            DOCTEST_CHECK_EQ(3, entityCount);
 
-        world.createEntity(Second{1.f, 'g'});
-        world.createEntity(Second{2.f, 'g'});
-        world.createEntity(Second{3.f, 'g'});
-        world.createEntity(Second{4.f, 'g'});
+            // Ensure we're storing/retrieving correct values
+            DOCTEST_CHECK_EQ(14.f, weight);
+        }
 
-        Query<Second> query;
-        float sum = 0;
-        int count = 0;
-        query.select(world, [&](Second const& second) {
-            ++count;
-            sum += second.b;
-        });
+        DOCTEST_SUBCASE("Select entities") {
+            auto world = universe.createWorld();
 
-        DOCTEST_CHECK_EQ(4, count);
-        DOCTEST_CHECK_EQ(10.f, sum);
+            world.createEntity(Second{1.f, 'g'});
+            world.createEntity(Second{2.f, 'g'});
+            world.createEntity(Second{3.f, 'g'});
+            world.createEntity(Second{4.f, 'g'});
+
+            auto query = universe.createQuery<Second>();
+            float sum = 0;
+            int count = 0;
+            query.select(world, [&](EntityId, Second const& second) {
+                ++count;
+                sum += second.b;
+            });
+
+            DOCTEST_CHECK_EQ(4, count);
+            DOCTEST_CHECK_EQ(10.f, sum);
+        }
     }
 }

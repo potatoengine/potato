@@ -7,6 +7,7 @@
 #include "scene.h"
 #include "camera.h"
 #include "camera_controller.h"
+#include "imgui_reflector.h"
 
 #include "potato/shell/panel.h"
 #include "potato/shell/selection.h"
@@ -20,66 +21,26 @@
 #include "potato/render/context.h"
 #include "potato/render/draw_imgui.h"
 
+#include <potato/spud/delegate.h>
+
 namespace up::shell {
     class InspectorPanel : public shell::Panel {
     public:
-        explicit InspectorPanel(Scene& scene, Selection& selection) : _scene(scene), _selection(selection) {}
+        explicit InspectorPanel(Scene& scene, Selection& selection, delegate<view<ComponentMeta>()> components) : _scene(scene), _selection(selection), _components(std::move(components)) {}
         virtual ~InspectorPanel() = default;
 
         zstring_view displayName() const override { return "Inspector"; }
         void ui() override;
 
     private:
+        delegate<view<ComponentMeta>()> _components;
         Scene& _scene;
         Selection& _selection;
     };
 
-    auto createInspectorPanel(Scene& scene, Selection& selection) -> box<Panel> {
-        return new_box<InspectorPanel>(scene, selection);
+    auto createInspectorPanel(Scene& scene, Selection& selection, delegate<view<ComponentMeta>()> components) -> box<Panel> {
+        return new_box<InspectorPanel>(scene, selection, std::move(components));
     }
-
-    namespace {
-        class ImGuiComponentReflector final : public up::ComponentReflector {
-        protected:
-            void onField(up::zstring_view name) override {
-                _name = name;
-            }
-
-            void onValue(int& value) override {
-                ImGui::InputInt(_name.c_str(), &value);
-            }
-
-            void onValue(float& value) override {
-                ImGui::InputFloat(_name.c_str(), &value);
-            }
-
-            void onValue(up::EntityId value) override {
-                ImGui::LabelText(_name.c_str(), "%u", (unsigned)value);
-            }
-
-            void onValue(glm::vec3& value) override {
-                ImGui::InputFloat3(_name.c_str(), &value.x);
-            }
-
-            void onValue(glm::quat& value) override {
-                auto euler = glm::eulerAngles(value);
-                auto eulerDegrees = glm::vec3(
-                    glm::degrees(euler.x),
-                    glm::degrees(euler.y),
-                    glm::degrees(euler.z));
-
-                if (ImGui::SliderFloat3(_name.c_str(), &eulerDegrees.x, 0, +359.f)) {
-                    value = glm::vec3(
-                        glm::radians(eulerDegrees.x),
-                        glm::radians(eulerDegrees.y),
-                        glm::radians(eulerDegrees.z));
-                }
-            }
-
-        private:
-            up::zstring_view _name;
-        };
-    } // namespace
 
     void InspectorPanel::ui() {
         auto& io = ImGui::GetIO();
@@ -88,13 +49,47 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::Begin(as_char(u8"\uf085 Inspector"), &_enabled, ImGuiWindowFlags_NoCollapse)) {
-            _scene.world().interrogateEntity(_selection.selected(), [](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
-                if (ImGui::CollapsingHeader(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::Begin("Inspector", &_enabled, ImGuiWindowFlags_NoCollapse)) {
+            ComponentId deletedComponent = ComponentId::Unknown;
+
+            _scene.world().interrogateEntityUnsafe(_selection.selected(), [&](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
+                if (ImGui::TreeNodeEx(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+                        ImGui::OpenPopup("##component_context_menu");
+                    }
+
+                    if (ImGui::BeginPopupContextItem("##component_context_menu")) {
+                        if (ImGui::MenuItem(as_char(u8"\uf1f8 Remove"))) {
+                            deletedComponent = meta->id;
+                        }
+                        ImGui::EndPopup();
+                    }
+
                     ImGuiComponentReflector ref;
-                    meta->reflect(data, ref);
+                    meta->ops.serialize(data, ref);
+                    ImGui::TreePop();
                 }
             });
+
+            if (deletedComponent != ComponentId::Unknown) {
+                _scene.world().removeComponent(_selection.selected(), deletedComponent);
+            }
+
+            if (_selection.hasSelection()) {
+                if (ImGui::Button(as_char(u8"\uf067 Add Component"))) {
+                    ImGui::OpenPopup("##add_component_list");
+                }
+                if (ImGui::BeginPopup("##add_component_list")) {
+                    for (auto const& meta : _components()) {
+                        if (_scene.world().getComponentSlowUnsafe(_selection.selected(), meta.id) == nullptr) {
+                            if (ImGui::MenuItem(meta.name.c_str())) {
+                                _scene.world().addComponentDefault(_selection.selected(), meta);
+                            }
+                        }
+                    }
+                    ImGui::EndPopup();
+                }
+            }
         }
         ImGui::End();
     }

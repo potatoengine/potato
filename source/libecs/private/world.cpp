@@ -1,15 +1,15 @@
 // Copyright (C) 2019 Sean Middleditch, all rights reserverd.
 
-#include <potato/runtime/assertion.h>
 #include "potato/ecs/world.h"
-#include "potato/ecs/archetype.h"
-#include "potato/ecs/entity.h"
-#include "potato/spud/find.h"
+#include "entity_id.h"
+#include "potato/ecs/shared_context.h"
+#include <potato/spud/find.h>
+#include <potato/runtime/assertion.h>
 #include <algorithm>
 
 namespace up {
-    static auto findRowDesc(view<ChunkRowDesc> layout, ComponentId component) noexcept -> ChunkRowDesc const* {
-        for (ChunkRowDesc const& row : layout) {
+    static auto findRowDesc(view<LayoutRow> layout, ComponentId component) noexcept -> LayoutRow const* {
+        for (LayoutRow const& row : layout) {
             if (row.component == component) {
                 return &row;
             }
@@ -18,44 +18,46 @@ namespace up {
     }
 } // namespace up
 
-up::World::World() = default;
+up::World::World(rc<EcsSharedContext> context) : _context(std::move(context)) {}
 
 up::World::~World() = default;
 
-void up::World::deleteEntity(EntityId entity) noexcept {
-    if (_entities.isValid(entity)) {
-        _deleteEntity(entity);
-        _entities.recycle(entity);
+auto up::World::chunksOf(ArchetypeId arch) const noexcept -> view<Chunk*> {
+    auto const archIndex = to_underlying(arch);
+    if (archIndex < 0 || archIndex >= _archetypeChunkRanges.size()) {
+        return {};
     }
+    auto const& range = _archetypeChunkRanges[archIndex];
+    return _chunks.subspan(range.offset, range.length);
 }
 
 void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) noexcept {
-    if (auto [success, archetypeId, chunkIndex, index] = _entities.tryParse(entity); success) {
-        auto const layout = _archetypes.layoutOf(archetypeId);
+    if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entity); success) {
+        auto const layout = _context->layoutOf(archetypeId);
 
         if (auto const row = findRowDesc(layout, component); row != nullptr) {
-            auto& chunk = *_archetypes.getChunk(archetypeId, chunkIndex);
-            return chunk.data + row->offset + row->width * index;
+            auto& chunk = *_getChunk(archetypeId, chunkIndex);
+            return chunk.payload + row->offset + row->width * index;
         }
     }
     return nullptr;
 }
 
-void up::World::_deleteEntity(EntityId entity) {
-    auto [archetypeId, chunkIndex, index] = _entities.parse(entity);
+void up::World::deleteEntity(EntityId entity) noexcept {
+    auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entity);
+    if (!success) {
+        return;
+    }
 
-    Chunk* chunk = _archetypes.getChunk(archetypeId, chunkIndex);
+    Chunk* chunk = _getChunk(archetypeId, chunkIndex);
 
     // Copy the last element over the to-be-removed element, so we don't have holes in our array
     //
-    auto const lastIndex = chunk->header.entities;
+    auto const lastIndex = chunk->header.entities - 1;
     if (index != lastIndex) {
+        auto const movedEntity = chunk->entities()[index] = chunk->entities()[lastIndex];
         _moveTo(archetypeId, *chunk, index, *chunk, lastIndex);
-
-        auto const layout = _archetypes.layoutOf(archetypeId);
-        auto const row = findRowDesc(layout, getComponentId<Entity>());
-        auto const movedEntity = static_cast<Entity const*>(static_cast<void*>(chunk->data + row->offset + row->width * lastIndex))->id;
-        _entities.setIndex(movedEntity, chunkIndex, index);
+        _remapEntityId(movedEntity, archetypeId, chunkIndex, index);
     }
 
     _destroyAt(archetypeId, *chunk, lastIndex);
@@ -63,56 +65,87 @@ void up::World::_deleteEntity(EntityId entity) {
     // if this was the last entity, deallocate the whole chunk
     //
     if (--chunk->header.entities == 0) {
-        _archetypes.removeChunk(archetypeId, chunkIndex);
-        _chunks.recycle(chunk);
+        _removeChunk(archetypeId, chunkIndex);
+        _context->recycleChunk(chunk);
     }
+
+    _recycleEntityId(entity);
 }
 
 void up::World::removeComponent(EntityId entityId, ComponentId componentId) noexcept {
-    if (auto [success, archetypeId, chunkIndex, index] = _entities.tryParse(entityId); success) {
-        ArchetypeId newArchetype = _archetypes.acquireArchetypeWithout(archetypeId, componentId);
-        auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
+    ComponentMeta const* const meta = _context->findComponentById(componentId);
+    UP_ASSERT(meta != nullptr);
 
-        auto* oldChunk = _archetypes.getChunk(archetypeId, chunkIndex);
+    if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
+        ArchetypeId newArchetype = _context->acquireArchetype(archetypeId, {}, {&meta, 1});
+        auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
+
+        auto* oldChunk = _getChunk(archetypeId, chunkIndex);
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *oldChunk, index);
 
+        newChunk.entities()[newIndex] = entityId;
+
         // remove old entity (must be gone before remap)
-        _deleteEntity(entityId);
+        deleteEntity(entityId);
 
         // update mapping (must be done after delete)
-        _entities.setArchetype(entityId, newArchetype, newChunkIndex, newIndex);
+        _remapEntityId(entityId, newArchetype, newChunkIndex, newIndex);
+    }
+}
+
+void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& componentMeta) {
+    if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
+        // find the target archetype and allocate an entry in it
+        auto const& metaPtr = &componentMeta;
+        ArchetypeId newArchetype = _context->acquireArchetype(archetypeId, {&metaPtr, 1}, {});
+        auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
+
+        auto* chunk = _getChunk(archetypeId, chunkIndex);
+        newChunk.entities()[newIndex] = entityId;
+        _moveTo(newArchetype, newChunk, newIndex, archetypeId, *chunk, index);
+        _constructAt(newArchetype, newChunk, newIndex, componentMeta.id);
+
+        // remove old entity (must be gone before remap)
+        //
+        deleteEntity(entityId);
+
+        // update mapping (must be done after delete)
+        //
+        _remapEntityId(entityId, newArchetype, newChunkIndex, newIndex);
     }
 }
 
 void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept {
-    if (auto [success, archetypeId, chunkIndex, index] = _entities.tryParse(entityId); success) {
+    if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
         // find the target archetype and allocate an entry in it
-        ArchetypeId newArchetype = _archetypes.acquireArchetypeWith(archetypeId, &componentMeta);
-        auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
+        auto const& metaPtr = &componentMeta;
+        ArchetypeId newArchetype = _context->acquireArchetype(archetypeId, {&metaPtr, 1}, {});
+        auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
-        auto* chunk = _archetypes.getChunk(archetypeId, chunkIndex);
+        auto* chunk = _getChunk(archetypeId, chunkIndex);
+        newChunk.entities()[newIndex] = entityId;
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *chunk, index);
         _copyTo(newArchetype, newChunk, newIndex, componentMeta.id, componentData);
 
         // remove old entity (must be gone before remap)
         //
-        _deleteEntity(entityId);
+        deleteEntity(entityId);
 
         // update mapping (must be done after delete)
         //
-        _entities.setArchetype(entityId, newArchetype, newChunkIndex, newIndex);
+        _remapEntityId(entityId, newArchetype, newChunkIndex, newIndex);
     }
 }
 
 auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<void const*> data) -> EntityId {
     UP_ASSERT(components.size() == data.size());
 
-    ArchetypeId newArchetype = _archetypes.acquireArchetype(components);
-    auto [newChunk, newChunkIndex, newIndex] = _allocateEntity(newArchetype);
+    ArchetypeId newArchetype = _context->acquireArchetype(ArchetypeId::Empty, components, {});
+    auto [newChunk, newChunkIndex, newIndex] = _allocateEntitySpace(newArchetype);
 
     // Allocate EntityId
-    auto const entity = _entities.allocate(newArchetype, newChunkIndex, newIndex);
-    _copyTo(newArchetype, newChunk, newIndex, getComponentId<Entity>(), &entity);
+    auto const entity = _allocateEntityId(newArchetype, newChunkIndex, newIndex);
+    static_cast<EntityId*>(static_cast<void*>(newChunk.payload))[newIndex] = entity;
 
     for (auto index : sequence(components.size())) {
         _copyTo(newArchetype, newChunk, newIndex, components[index]->id, data[index]);
@@ -121,11 +154,11 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
     return entity;
 }
 
-auto up::World::_allocateEntity(ArchetypeId archetype) -> AllocatedLocation {
+auto up::World::_allocateEntitySpace(ArchetypeId archetype) -> AllocatedLocation {
     size_t chunkIndex = 0;
     Chunk* chunk = nullptr;
 
-    auto const chunks = _archetypes.chunksOf(archetype);
+    auto const chunks = chunksOf(archetype);
     for (; chunkIndex != chunks.size(); ++chunkIndex) {
         chunk = chunks[chunkIndex];
         if (chunk->header.entities < chunk->header.capacity) {
@@ -133,36 +166,140 @@ auto up::World::_allocateEntity(ArchetypeId archetype) -> AllocatedLocation {
         }
     }
     if (chunkIndex == chunks.size()) {
-        chunk = _chunks.allocate(archetype);
-        _archetypes.addChunk(archetype, chunk);
+        chunk = _context->acquireChunk();
+        _addChunk(archetype, chunk);
     }
 
     uint16 index = chunk->header.entities++;
     return {*chunk, static_cast<uint16>(chunkIndex), index};
 }
 
+auto up::World::_allocateEntityId(ArchetypeId archetype, uint16 chunk, uint16 index) -> EntityId {
+    // if there's a free ID, recycle it
+    if (_freeEntityHead != freeEntityIndex) {
+        auto const mappingIndex = _freeEntityHead;
+        auto const mapping = _entityMapping[mappingIndex];
+        auto const generation = getMappedGeneration(mapping);
+
+        _freeEntityHead = getMappedIndex(_entityMapping[mappingIndex]);
+
+        _entityMapping[mappingIndex] = makeMapped(generation, to_underlying(archetype), chunk, index);
+
+        return makeEntityId(mappingIndex, generation);
+    }
+
+    // there was no ID to recycle, so create a new one
+    uint32 const mappingIndex = static_cast<uint32>(_entityMapping.size());
+
+    _entityMapping.push_back(makeMapped(1, to_underlying(archetype), chunk, index));
+
+    return makeEntityId(mappingIndex, 1);
+}
+
+void up::World::_recycleEntityId(EntityId entity) noexcept {
+    uint32 const entityMappingIndex = getEntityMappingIndex(entity);
+    uint32 const newGeneration = getEntityGeneration(entity) + 1;
+
+    _entityMapping[entityMappingIndex] = makeFreeEntry(newGeneration != 0 ? newGeneration : 1, _freeEntityHead);
+
+    _freeEntityHead = entityMappingIndex;
+}
+
+auto up::World::_parseEntityId(EntityId entity) const noexcept -> EntityLocation {
+    auto const mappingIndex = getEntityMappingIndex(entity);
+    if (mappingIndex < 0 || mappingIndex >= _entityMapping.size()) {
+        return {false};
+    }
+
+    auto const mapped = _entityMapping[mappingIndex];
+    if (getMappedGeneration(_entityMapping[mappingIndex]) != getEntityGeneration(entity)) {
+        return {false};
+    }
+
+    return {true, ArchetypeId(getMappedArchetype(mapped)), getMappedChunk(mapped), getMappedIndex(mapped)};
+}
+
+void up::World::_remapEntityId(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept {
+    auto const entityMappingIndex = getEntityMappingIndex(entity);
+    auto const mapped = _entityMapping[entityMappingIndex];
+    _entityMapping[entityMappingIndex] = makeMapped(getMappedGeneration(mapped), to_underlying(newArchetype), newChunk, newIndex);
+}
+
 void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex) {
-    auto const srcLayout = _archetypes.layoutOf(srcArch);
-    for (ChunkRowDesc const& row : _archetypes.layoutOf(destArch)) {
+    auto const srcLayout = _context->layoutOf(srcArch);
+    for (LayoutRow const& row : _context->layoutOf(destArch)) {
         if (auto const srcRow = findRowDesc(srcLayout, row.component); srcRow != nullptr) {
-            row.meta->relocate(destChunk.data + row.offset + row.width * destIndex, srcChunk.data + srcRow->offset + srcRow->width * srcIndex);
+            row.meta->ops.moveAssign(destChunk.payload + row.offset + row.width * destIndex, srcChunk.payload + srcRow->offset + srcRow->width * srcIndex);
         }
     }
 }
 
-void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex) {
-    for (ChunkRowDesc const& layout : _archetypes.layoutOf(destArch)) {
-        layout.meta->relocate(destChunk.data + layout.offset + layout.width * destIndex, srcChunk.data + layout.offset + layout.width * srcIndex);
+void up::World::_moveTo(ArchetypeId arch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex) {
+    for (LayoutRow const& layout : _context->layoutOf(arch)) {
+        layout.meta->ops.moveAssign(destChunk.payload + layout.offset + layout.width * destIndex, srcChunk.payload + layout.offset + layout.width * srcIndex);
     }
 }
 
 void up::World::_copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData) {
-    auto const destRow = findRowDesc(_archetypes.layoutOf(destArch), srcComponent);
-    destRow->meta->copy(destChunk.data + destRow->offset + destRow->width * destIndex, srcData);
+    auto const destRow = findRowDesc(_context->layoutOf(destArch), srcComponent);
+    destRow->meta->ops.copyConstruct(destChunk.payload + destRow->offset + destRow->width * destIndex, srcData);
+}
+
+void up::World::_constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component) {
+    auto const row = findRowDesc(_context->layoutOf(arch), component);
+    row->meta->ops.defaultConstruct(chunk.payload + row->offset + row->width * index);
 }
 
 void up::World::_destroyAt(ArchetypeId arch, Chunk& chunk, int index) {
-    for (ChunkRowDesc const& layout : _archetypes.layoutOf(arch)) {
-        layout.meta->destroy(chunk.data + layout.offset + layout.width * index);
+    for (LayoutRow const& layout : _context->layoutOf(arch)) {
+        layout.meta->ops.destruct(chunk.payload + layout.offset + layout.width * index);
     }
+}
+
+void up::World::_addChunk(ArchetypeId arch, Chunk* chunk) {
+    UP_ASSERT(chunk != nullptr);
+
+    auto const archIndex = to_underlying(arch);
+    UP_ASSERT(archIndex >= 0 && archIndex < _context->archetypes.size());
+
+    chunk->header.archetype = arch;
+    chunk->header.capacity = _context->archetypes[archIndex].maxEntitiesPerChunk;
+
+    if (archIndex >= _archetypeChunkRanges.size()) {
+        _archetypeChunkRanges.resize(archIndex + 1, {static_cast<uint32>(_chunks.size()), 0});
+    }
+
+    auto& range = _archetypeChunkRanges[archIndex];
+
+    _chunks.insert(_chunks.begin() + range.offset + range.length, chunk);
+    ++range.length;
+
+    for (auto& updateRange : _archetypeChunkRanges.subspan(archIndex + 1)) {
+        ++updateRange.offset;
+    }
+}
+
+void up::World::_removeChunk(ArchetypeId arch, int chunkIndex) noexcept {
+    auto const archIndex = to_underlying(arch);
+    UP_ASSERT(archIndex >= 0 && archIndex < _archetypeChunkRanges.size());
+
+    auto& range = _archetypeChunkRanges[archIndex];
+    UP_ASSERT(chunkIndex >= 0 && chunkIndex < static_cast<int>(range.length));
+
+    _chunks.erase(_chunks.begin() + range.offset + chunkIndex);
+    --range.length;
+
+    for (auto& updateRange : _archetypeChunkRanges.subspan(archIndex + 1)) {
+        --updateRange.offset;
+    }
+}
+
+auto up::World::_getChunk(ArchetypeId arch, int chunkIndex) const noexcept -> Chunk* {
+    auto const archIndex = to_underlying(arch);
+    if (archIndex < 0 || archIndex >= _archetypeChunkRanges.size()) {
+        return nullptr;
+    }
+    auto& range = _archetypeChunkRanges[archIndex];
+    UP_ASSERT(chunkIndex >= 0 && chunkIndex < static_cast<int>(range.length));
+    return _chunks[range.offset + chunkIndex];
 }

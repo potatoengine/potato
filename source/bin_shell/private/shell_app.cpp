@@ -4,32 +4,34 @@
 #include "camera.h"
 #include "camera_controller.h"
 #include "scene.h"
+#include "components.h"
 
-#include "potato/spud/box.h"
-#include "potato/spud/platform.h"
-#include "potato/spud/unique_resource.h"
-#include "potato/spud/vector.h"
-#include "potato/runtime/stream.h"
-#include "potato/runtime/path.h"
-#include "potato/runtime/json.h"
-#include "potato/runtime/native.h"
-#include "potato/render/gpu_device.h"
-#include "potato/render/gpu_factory.h"
-#include "potato/render/gpu_command_list.h"
-#include "potato/render/gpu_swap_chain.h"
-#include "potato/render/gpu_texture.h"
-#include "potato/render/gpu_resource_view.h"
-#include "potato/render/renderer.h"
-#include "potato/render/camera.h"
-#include "potato/render/context.h"
-#include "potato/render/model.h"
-#include "potato/render/mesh.h"
-#include "potato/render/material.h"
-#include "potato/render/shader.h"
-#include "potato/render/draw_imgui.h"
-#include "potato/render/debug_draw.h"
-#include "potato/ecs/world.h"
-#include "potato/ecs/query.h"
+#include <potato/render/gpu_device.h>
+#include <potato/render/gpu_factory.h>
+#include <potato/render/gpu_command_list.h>
+#include <potato/render/gpu_swap_chain.h>
+#include <potato/render/gpu_texture.h>
+#include <potato/render/gpu_resource_view.h>
+#include <potato/render/renderer.h>
+#include <potato/render/camera.h>
+#include <potato/render/context.h>
+#include <potato/render/model.h>
+#include <potato/render/mesh.h>
+#include <potato/render/material.h>
+#include <potato/render/shader.h>
+#include <potato/render/draw_imgui.h>
+#include <potato/render/debug_draw.h>
+#include <potato/ecs/world.h>
+#include <potato/ecs/query.h>
+#include <potato/runtime/stream.h>
+#include <potato/runtime/path.h>
+#include <potato/runtime/json.h>
+#include <potato/runtime/native.h>
+#include <potato/spud/box.h>
+#include <potato/spud/platform.h>
+#include <potato/spud/unique_resource.h>
+#include <potato/spud/vector.h>
+#include <potato/spud/delegate.h>
 
 #include <chrono>
 #include <SDL.h>
@@ -49,11 +51,11 @@
 namespace up::shell {
     extern auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
     extern auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
-    extern auto createInspectorPanel(Scene& scene, Selection& selection) -> box<Panel>;
+    extern auto createInspectorPanel(Scene& scene, Selection& selection, delegate<view<ComponentMeta>()> components) -> box<Panel>;
     extern auto createHierarchyPanel(Scene& scene, Selection& selection) -> box<Panel>;
 } // namespace up::shell
 
-up::ShellApp::ShellApp() : _scene(new_box<Scene>()), _logger("shell") {}
+up::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 
 up::ShellApp::~ShellApp() {
     _documents.clear();
@@ -132,6 +134,16 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
+    _universe = new_box<Universe>();
+
+    _universe->registerComponent<components::Position>("Position");
+    _universe->registerComponent<components::Rotation>("Rotation");
+    _universe->registerComponent<components::Transform>("Transform");
+    _universe->registerComponent<components::Mesh>("Mesh");
+    _universe->registerComponent<components::Wave>("Wave");
+    _universe->registerComponent<components::Spin>("Spin");
+
+    _scene = new_box<Scene>(*_universe);
     _scene->create(new_shared<Model>(std::move(mesh), std::move(material)));
 
     _selection.select(_scene->main());
@@ -165,7 +177,7 @@ int up::ShellApp::initialize() {
 
     _documents.push_back(shell::createScenePanel(*_renderer, *_scene));
     _documents.push_back(shell::createGamePanel(*_renderer, *_scene));
-    _documents.push_back(shell::createInspectorPanel(*_scene, _selection));
+    _documents.push_back(shell::createInspectorPanel(*_scene, _selection, [this] { return _universe->components(); }));
     _documents.push_back(shell::createHierarchyPanel(*_scene, _selection));
 
     return 0;
@@ -399,7 +411,7 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
             auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
 
-            ImGui::DockBuilderDockWindow(as_char(u8"\uf085 Inspector"), inspectedDockId);
+            ImGui::DockBuilderDockWindow("Inspector", inspectedDockId);
             ImGui::DockBuilderDockWindow("Hierarchy", hierarchyDockId);
             ImGui::DockBuilderDockWindow("ScenePanel", contentDockId);
             ImGui::DockBuilderDockWindow("GamePanel", contentDockId);
