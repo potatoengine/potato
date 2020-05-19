@@ -51,7 +51,6 @@ DOCTEST_TEST_SUITE("[potato][spud] vector") {
         vec.resize(5);
 
         DOCTEST_CHECK_EQ(vec.size(), 5);
-        DOCTEST_CHECK_EQ(vec.back(), 0);
 
         vec.resize(6, 7);
 
