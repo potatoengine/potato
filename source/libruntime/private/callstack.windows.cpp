@@ -1,4 +1,4 @@
-// Copyright (C) 22015 Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "potato/runtime/callstack.h"
 #include "potato/spud/platform.h"

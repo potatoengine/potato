@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "potato/assetdb/hash_cache.h"
 #include "potato/spud/hash_fnv1a.h"

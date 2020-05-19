@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Potato Engine authors and contributors, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #pragma once
 

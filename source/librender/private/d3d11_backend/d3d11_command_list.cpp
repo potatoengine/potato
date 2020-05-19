@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "d3d11_command_list.h"
 #include "d3d11_pipeline_state.h"

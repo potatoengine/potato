@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #pragma once
 

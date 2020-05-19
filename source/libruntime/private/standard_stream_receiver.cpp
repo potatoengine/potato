@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "potato/runtime/standard_stream_receiver.h"
 #include "potato/runtime/lock_guard.h"

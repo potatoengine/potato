@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "null_objects.h"
 

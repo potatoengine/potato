@@ -1,4 +1,4 @@
-// Copyright (C) 2014,2019 Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 // Based on Howard Hinnant's "Types Don't Know #"
 
