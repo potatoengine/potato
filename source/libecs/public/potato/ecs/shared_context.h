@@ -5,6 +5,7 @@
 #include "_export.h"
 #include "component.h"
 #include "chunk.h"
+#include "layout.h"
 #include <potato/spud/int_types.h>
 #include <potato/spud/span.h>
 #include <potato/spud/vector.h>
@@ -32,7 +33,7 @@ namespace up {
         auto acquireChunk() -> Chunk*;
         void recycleChunk(Chunk* chunk) noexcept;
 
-        inline auto layoutOf(ArchetypeId archetype) const noexcept -> view<ChunkRowDesc>;
+        inline auto layoutOf(ArchetypeId archetype) const noexcept -> view<LayoutRow>;
 
         auto acquireArchetype(ArchetypeId original, view<ComponentMeta const*> include, view<ComponentMeta const*> exclude) -> ArchetypeId;
 
@@ -41,7 +42,7 @@ namespace up {
 
         vector<ComponentMeta> components;
         vector<ArchetypeLayout> archetypes = {ArchetypeLayout{0, 0, 0}};
-        vector<ChunkRowDesc> chunkRows;
+        vector<LayoutRow> chunkRows;
         vector<box<Chunk>> allocatedChunks;
         Chunk* freeChunkHead = nullptr;
     };
@@ -51,7 +52,7 @@ namespace up {
         return _findComponentByTypeHash(typeid(Component).hash_code());
     }
 
-    auto EcsSharedContext::layoutOf(ArchetypeId archetype) const noexcept -> view<ChunkRowDesc> {
+    auto EcsSharedContext::layoutOf(ArchetypeId archetype) const noexcept -> view<LayoutRow> {
         auto const index = to_underlying(archetype);
         UP_ASSERT(index >= 0 && index < archetypes.size());
         auto const& arch = archetypes[to_underlying(archetype)];

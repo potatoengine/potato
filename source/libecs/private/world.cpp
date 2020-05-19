@@ -8,8 +8,8 @@
 #include <algorithm>
 
 namespace up {
-    static auto findRowDesc(view<ChunkRowDesc> layout, ComponentId component) noexcept -> ChunkRowDesc const* {
-        for (ChunkRowDesc const& row : layout) {
+    static auto findRowDesc(view<LayoutRow> layout, ComponentId component) noexcept -> LayoutRow const* {
+        for (LayoutRow const& row : layout) {
             if (row.component == component) {
                 return &row;
             }
@@ -227,7 +227,7 @@ void up::World::_remapEntityId(EntityId entity, ArchetypeId newArchetype, uint16
 
 void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex) {
     auto const srcLayout = _context->layoutOf(srcArch);
-    for (ChunkRowDesc const& row : _context->layoutOf(destArch)) {
+    for (LayoutRow const& row : _context->layoutOf(destArch)) {
         if (auto const srcRow = findRowDesc(srcLayout, row.component); srcRow != nullptr) {
             row.meta->ops.moveAssign(destChunk.payload + row.offset + row.width * destIndex, srcChunk.payload + srcRow->offset + srcRow->width * srcIndex);
         }
@@ -235,7 +235,7 @@ void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, A
 }
 
 void up::World::_moveTo(ArchetypeId arch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex) {
-    for (ChunkRowDesc const& layout : _context->layoutOf(arch)) {
+    for (LayoutRow const& layout : _context->layoutOf(arch)) {
         layout.meta->ops.moveAssign(destChunk.payload + layout.offset + layout.width * destIndex, srcChunk.payload + layout.offset + layout.width * srcIndex);
     }
 }
@@ -251,7 +251,7 @@ void up::World::_constructAt(ArchetypeId arch, Chunk& chunk, int index, Componen
 }
 
 void up::World::_destroyAt(ArchetypeId arch, Chunk& chunk, int index) {
-    for (ChunkRowDesc const& layout : _context->layoutOf(arch)) {
+    for (LayoutRow const& layout : _context->layoutOf(arch)) {
         layout.meta->ops.destruct(chunk.payload + layout.offset + layout.width * index);
     }
 }

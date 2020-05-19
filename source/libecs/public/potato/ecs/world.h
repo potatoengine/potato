@@ -90,12 +90,12 @@ namespace up {
 
         /// Interrogate an entity and enumerate all of its components.
         ///
-        template <typename Callback, typename Void = enable_if_t<is_invocable_v<Callback, EntityId, ArchetypeId, ComponentMeta const*, void*>>>
-        auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const {
+        template <typename Callback>
+        auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const -> bool requires is_invocable_v<Callback, EntityId, ArchetypeId, ComponentMeta const*, void*> {
             if (auto [success, archetype, chunkIndex, index] = _parseEntityId(entity); success) {
                 auto const layout = _context->layoutOf(archetype);
                 Chunk* const chunk = _getChunk(archetype, chunkIndex);
-                for (ChunkRowDesc const& row : layout) {
+                for (LayoutRow const& row : layout) {
                     callback(entity, archetype, row.meta, static_cast<void*>(chunk->payload + row.offset + row.width * index));
                 }
                 return true;

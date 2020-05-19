@@ -48,7 +48,7 @@ auto up::EcsSharedContext::_bindArchetypeOffets(ArchetypeId archetype, view<Comp
     }
 
     for (ComponentId const component : componentIds) {
-        auto const desc = find(layout, component, {}, &ChunkRowDesc::component);
+        auto const desc = find(layout, component, {}, &LayoutRow::component);
         if (desc == layout.end()) {
             return false;
         }
@@ -66,13 +66,13 @@ auto up::EcsSharedContext::acquireArchetype(ArchetypeId original, view<Component
         auto const originalLayout = layoutOf(original);
         for (size_t index = 0; index != archetypes.size(); ++index) {
             auto const layout = layoutOf(ArchetypeId(index));
-            if (any(exclude, [&layout](auto const* meta) noexcept { return contains(layout, meta, {}, &ChunkRowDesc::meta); })) {
+            if (any(exclude, [&layout](auto const* meta) noexcept { return contains(layout, meta, {}, &LayoutRow::meta); })) {
                 continue;
             }
-            if (!all(include, [&layout](auto const* meta) noexcept { return contains(layout, meta, {}, &ChunkRowDesc::meta); })) {
+            if (!all(include, [&layout](auto const* meta) noexcept { return contains(layout, meta, {}, &LayoutRow::meta); })) {
                 continue;
             }
-            if (!all(originalLayout, [&layout](auto const& row) noexcept { return contains(layout, row.meta, {}, &ChunkRowDesc::meta); })) {
+            if (!all(originalLayout, [&layout](auto const& row) noexcept { return contains(layout, row.meta, {}, &LayoutRow::meta); })) {
                 continue;
             }
             return ArchetypeId(index);
@@ -145,7 +145,7 @@ auto up::EcsSharedContext::acquireArchetype(ArchetypeId original, view<Component
     // sort all rows by component id in the new layout, so we can use binary search for
     // component id lookups
     //
-    sort(newLayout, {}, &ChunkRowDesc::component);
+    sort(newLayout, {}, &LayoutRow::component);
 
     return id;
 }
