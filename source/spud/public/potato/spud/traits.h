@@ -40,9 +40,6 @@ namespace up {
     template <template <class...> class Op, class... Args>
     constexpr bool is_detected_v = _detail::detector<void, Op, Args...>::value;
 
-    template <bool C, typename T = void>
-    using enable_if_t = typename std::enable_if_t<C, T>;
-
     template <typename T>
     using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
     static_assert(std::is_same_v<int, remove_cvref_t<int const&>>);
