@@ -93,12 +93,12 @@ namespace up {
         void shrink_to_fit();
 
         template <typename... ParamsT>
-        auto emplace(const_iterator pos, ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, reference>;
+        auto emplace(const_iterator pos, ParamsT&&... params) -> reference requires std::is_constructible_v<T, ParamsT...>;
         template <typename... ParamsT>
-        auto emplace_back(ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, reference>;
+        auto emplace_back(ParamsT&&... params) -> reference requires std::is_constructible_v<T, ParamsT...>;
 
         template <typename InsertT>
-        auto insert(const_iterator pos, InsertT&& value) -> enable_if_t<std::is_constructible_v<T, decltype(value)>, reference> { return emplace(pos, std::forward<InsertT>(value)); }
+        auto insert(const_iterator pos, InsertT&& value) -> reference requires std::is_constructible_v<T, decltype(value)> { return emplace(pos, std::forward<InsertT>(value)); }
 
         template <typename IteratorT, typename SentinelT>
         iterator insert(const_iterator pos, IteratorT begin, SentinelT end);
@@ -308,7 +308,7 @@ namespace up {
 
     template <typename T>
     template <typename... ParamsT>
-    auto vector<T>::emplace(const_iterator pos, ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, reference> {
+    auto vector<T>::emplace(const_iterator pos, ParamsT&&... params) -> reference requires std::is_constructible_v<T, ParamsT...> {
         if (pos == _last) {
             return emplace_back(std::forward<ParamsT>(params)...);
         }
@@ -321,7 +321,7 @@ namespace up {
 
     template <typename T>
     template <typename... ParamsT>
-    auto vector<T>::emplace_back(ParamsT&&... params) -> enable_if_t<std::is_constructible<T, ParamsT...>::value, reference> {
+    auto vector<T>::emplace_back(ParamsT&&... params) -> reference requires std::is_constructible_v<T, ParamsT...> {
         if (_last != _sentinel) {
             T* value = new (_last++) value_type(std::forward<ParamsT>(params)...);
             return *value;
