@@ -1,4 +1,4 @@
-// Copyright (C) 2016,2019 Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 // Inspired by the technique in the "LightweightSemaphore" at
 //   https://github.com/preshing/cpp11-on-multicore

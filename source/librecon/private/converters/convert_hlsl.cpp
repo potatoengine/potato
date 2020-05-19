@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "convert_hlsl.h"
 #include "potato/runtime/com_ptr.h"

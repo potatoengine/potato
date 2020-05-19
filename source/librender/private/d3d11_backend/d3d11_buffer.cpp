@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "d3d11_buffer.h"
 #include "potato/spud/int_types.h"

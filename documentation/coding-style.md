@@ -1,6 +1,21 @@
 Coding Style
 ============
 
+EditorConfig and ClangFormat
+----------------------------
+
+The `.editorconfig` and `clang-format` tools are used to enforce style guides. Ensure support for these is enabled in your editor for the smoothest experience.
+
+File Header
+-----------
+
+Every file should contain the following copyright header:
+
+```c++
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
+```
+
 Spacing and Indentation
 -----------------------
 
