@@ -122,11 +122,11 @@ namespace up {
 
             /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
             /// <param name="function"> The function to bind. </param>
-            template <typename Functor, typename = enable_if_t<is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
-            /*implicit*/ delegate_typed(Functor&& functor) { assign(std::forward<Functor>(functor)); }
+            template <typename Functor>
+            /*implicit*/ delegate_typed(Functor&& functor) requires(is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>) { assign(std::forward<Functor>(functor)); }
 
-            template <typename Functor, typename = enable_if_t<is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
-            delegate_typed& operator=(Functor&& functor);
+            template <typename Functor>
+            delegate_typed& operator=(Functor&& functor) requires(is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>);
 
         private:
             template <typename Functor>
@@ -218,8 +218,8 @@ void up::_detail::delegate_base::reset(std::nullptr_t) {
     }
 }
 template <typename ReturnType, bool Const, typename... ParamTypes>
-template <typename Functor, typename>
-auto up::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::operator=(Functor&& functor) -> delegate_typed& {
+template <typename Functor>
+auto up::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::operator=(Functor&& functor) -> delegate_typed& requires(is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>) {
     if (this->_vtable != nullptr) {
         this->_vtable->destruct(&this->_storage);
     }

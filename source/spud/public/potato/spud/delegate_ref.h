@@ -54,11 +54,11 @@ public:
     delegate_ref(delegate_ref const&) noexcept = default;
     delegate_ref& operator=(delegate_ref const&) noexcept = default;
 
-    template <typename Functor, typename = enable_if_t<is_compatible_v<Functor>>>
-    /*implicit*/ delegate_ref(Functor&& functor) noexcept : _holder(std::forward<Functor>(functor)) {}
+    template <typename Functor>
+    /*implicit*/ delegate_ref(Functor&& functor) noexcept requires is_compatible_v<Functor> : _holder(std::forward<Functor>(functor)) {}
 
-    template <typename Functor, typename = enable_if_t<is_compatible_v<Functor>>>
-    delegate_ref& operator=(Functor&& functor) noexcept {
+    template <typename Functor>
+    delegate_ref& operator=(Functor&& functor) noexcept requires is_compatible_v<Functor> {
         _holder = holder_t(std::forward<Functor>(functor));
         return *this;
     }
