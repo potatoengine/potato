@@ -20,34 +20,31 @@ namespace up::_detail {
     template <typename T>
     using formattable_t = decay_array_t<std::remove_reference_t<T>>;
 
-    template <typename T, typename V = void>
-    struct _is_format_writer_helper { static constexpr bool value = false; };
-    template <typename T>
-    struct _is_format_writer_helper<T, std::void_t<decltype(std::declval<T>().write(std::declval<string_view>()))>> {
-        static constexpr bool value = true;
-    };
-
     template <typename W, typename T, typename V = void>
-    struct _has_format_value { static constexpr bool value = false; };
+    struct has_format_value { static constexpr bool value = false; };
     template <typename W, typename T>
-    struct _has_format_value<W, T, std::void_t<decltype(format_value(std::declval<W&>(), std::declval<T>()))>> {
+    struct has_format_value<W, T, std::void_t<decltype(format_value(std::declval<W&>(), std::declval<T>()))>> {
         static constexpr bool value = true;
     };
 
     template <typename T>
-    constexpr bool _is_string = std::is_convertible_v<T, char const*>;
+    constexpr bool is_native_formattable_v = std::is_integral_v<T> || std::is_floating_point_v<T> || std::is_pointer_v<T> || std::is_enum_v<T> || std::is_convertible_v<T, char const*>;
 
     template <typename T>
-    constexpr bool _is_formattable = std::is_integral_v<T> || std::is_floating_point_v<T> || std::is_pointer_v<T> || std::is_enum_v<T> || ::up::_detail::_is_string<T> || _has_format_value<::up::_empty_format_writer, T>::value;
+    constexpr bool is_formattable_v = is_native_formattable_v<T> || has_format_value<_empty_format_writer, T>::value;
 } // namespace up::_detail
 
 namespace up {
     template <typename T>
-    constexpr bool is_format_writer = ::up::_detail::_is_format_writer_helper<T>::value;
-
-    template <typename Writer, typename T>
-    constexpr bool has_format_value = ::up::_detail::_has_format_value<Writer, T>::value;
+    concept format_writable = requires(T& w) {
+        {w.write(string_view{})};
+    };
 
     template <typename T>
-    constexpr bool is_formattable = ::up::_detail::_is_formattable<::up::remove_cvref_t<T>>;
+    concept format_appendable = requires(T& w) {
+        {w.append("", 0)};
+    };
+
+    template <typename T>
+    concept formattable = _detail::is_formattable_v<std::remove_cvref_t<T>>;
 } // namespace up
