@@ -118,7 +118,7 @@ namespace up {
             using storage_t = typename delegate_base::storage_t;
 
             template <typename F>
-            static constexpr bool is_functor_v = is_invocable_v<F, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<F>>;
+            static constexpr bool is_compatible_v = is_invocable_v<F, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<F>>;
 
         public:
             using delegate_base::delegate_base;
@@ -126,10 +126,17 @@ namespace up {
             /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
             /// <param name="function"> The function to bind. </param>
             template <typename Functor>
-            /*implicit*/ delegate_typed(Functor&& functor) requires(is_functor_v<Functor>) { assign(std::forward<Functor>(functor)); }
+            /*implicit*/ delegate_typed(Functor&& functor) requires is_compatible_v<Functor> { assign(std::forward<Functor>(functor)); }
 
             template <typename Functor>
-            delegate_typed& operator=(Functor&& functor) requires(is_functor_v<Functor>);
+            auto operator=(Functor&& functor) -> delegate_typed& requires is_compatible_v<Functor> {
+                if (this->_vtable != nullptr) {
+                    this->_vtable->destruct(&this->_storage);
+                }
+
+                assign(std::forward<Functor>(functor));
+                return *this;
+            }
 
         private:
             template <typename Functor>
@@ -219,16 +226,6 @@ void up::_detail::delegate_base::reset(std::nullptr_t) {
         _vtable->destruct(&_storage);
         _vtable = nullptr;
     }
-}
-template <typename ReturnType, bool Const, typename... ParamTypes>
-template <typename Functor>
-auto up::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::operator=(Functor&& functor) -> delegate_typed& requires(is_functor_v<Functor>) {
-    if (this->_vtable != nullptr) {
-        this->_vtable->destruct(&this->_storage);
-    }
-
-    assign(std::forward<Functor>(functor));
-    return *this;
 }
 
 template <typename ReturnType, bool Const, typename... ParamTypes>
