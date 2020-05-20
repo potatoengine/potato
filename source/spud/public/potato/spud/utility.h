@@ -65,7 +65,7 @@ namespace up {
     }
 
     template <typename Enum>
-    constexpr auto to_underlying(Enum value) noexcept -> std::underlying_type_t<Enum> requires std::is_enum_v<Enum> {
+    constexpr auto to_underlying(Enum value) noexcept -> std::underlying_type_t<Enum> requires(std::is_enum_v<Enum>) {
         return static_cast<std::underlying_type_t<Enum>>(value);
     }
 
