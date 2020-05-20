@@ -4,6 +4,7 @@
 
 #include "_assertion.h"
 #include "traits.h"
+#include "concepts.h"
 #include "functional.h"
 
 #include <new>
@@ -117,19 +118,16 @@ namespace up {
             using vtable_c = _detail::delegate_vtable_typed<ReturnType, Const, ParamTypes...>;
             using storage_t = typename delegate_base::storage_t;
 
-            template <typename F>
-            static constexpr bool is_compatible_v = is_invocable_v<F, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<F>>;
-
         public:
             using delegate_base::delegate_base;
 
             /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
             /// <param name="function"> The function to bind. </param>
-            template <typename Functor>
-            /*implicit*/ delegate_typed(Functor&& functor) requires is_compatible_v<Functor> { assign(std::forward<Functor>(functor)); }
+            template <callable_r<ReturnType, ParamTypes...> Functor>
+            /*implicit*/ delegate_typed(Functor&& functor) { assign(std::forward<Functor>(functor)); }
 
-            template <typename Functor>
-            auto operator=(Functor&& functor) -> delegate_typed& requires is_compatible_v<Functor> {
+            template <callable_r<ReturnType, ParamTypes...> Functor>
+            auto operator=(Functor&& functor) -> delegate_typed& {
                 if (this->_vtable != nullptr) {
                     this->_vtable->destruct(&this->_storage);
                 }

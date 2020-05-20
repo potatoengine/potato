@@ -3,6 +3,7 @@
 #pragma once
 
 #include "traits.h"
+#include "concepts.h"
 
 namespace up {
     template <typename Signature>
@@ -46,19 +47,16 @@ class up::delegate_ref<ReturnType(ParamTypes...)> {
 private:
     using holder_t = _detail::delegate_ref_holder<ReturnType, ParamTypes...>;
 
-    template <typename Functor>
-    static constexpr bool is_compatible_v = is_invocable_v<Functor, ParamTypes...> && !std::is_member_function_pointer_v<Functor> && !std::is_base_of_v<delegate_ref, std::decay_t<Functor>>;
-
 public:
     delegate_ref() = delete;
     delegate_ref(delegate_ref const&) noexcept = default;
     delegate_ref& operator=(delegate_ref const&) noexcept = default;
 
-    template <typename Functor>
-    /*implicit*/ delegate_ref(Functor&& functor) noexcept requires is_compatible_v<Functor> : _holder(std::forward<Functor>(functor)) {}
+    template <callable_r<ReturnType, ParamTypes...> Functor>
+    /*implicit*/ delegate_ref(Functor&& functor) noexcept : _holder(std::forward<Functor>(functor)) {}
 
-    template <typename Functor>
-    delegate_ref& operator=(Functor&& functor) noexcept requires is_compatible_v<Functor> {
+    template <callable_r<ReturnType, ParamTypes...> Functor>
+    delegate_ref& operator=(Functor&& functor) noexcept {
         _holder = holder_t(std::forward<Functor>(functor));
         return *this;
     }
