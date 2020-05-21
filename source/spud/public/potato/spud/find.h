@@ -3,13 +3,15 @@
 #pragma once
 
 #include "utility.h"
+#include "concepts.h"
+#include "traits.h"
 #include <cstdint>
 
 namespace up {
-    template <typename C, typename T>
-    constexpr auto find(C const& container, T const& value) noexcept(noexcept(*begin(container) == value)) {
-        auto iter = begin(container);
-        auto last = end(container);
+    template <range Range, equality_comparable_with<range_value_t<Range>> T>
+    constexpr auto find(Range const& range, T const& value) noexcept(noexcept(*begin(range) == value)) {
+        auto iter = begin(range);
+        auto last = end(range);
 
         for (; iter != last; ++iter) {
             if (*iter == value) {
@@ -20,10 +22,10 @@ namespace up {
         return last;
     }
 
-    template <typename C, typename T, typename E = equality, typename P = identity>
-    constexpr auto find(C const& container, T const& value, E const& equals, P const& projection = {}) noexcept(noexcept(equals(project(projection, *begin(container)), value))) {
-        auto iter = begin(container);
-        auto last = end(container);
+    template <range Range, typename T, typename E = equality, projection<range_value_t<Range>> P = identity>
+    constexpr auto find(Range const& range, T const& value, E const& equals, P const& projection) noexcept(noexcept(equals(project(projection, *begin(range)), value))) {
+        auto iter = begin(range);
+        auto last = end(range);
 
         for (; iter != last; ++iter) {
             if (equals(project(projection, *iter), value)) {
@@ -34,10 +36,24 @@ namespace up {
         return last;
     }
 
-    template <typename C, typename P>
-    constexpr auto find_if(C const& container, P const& predicate) noexcept(noexcept(predicate(*begin(container)))) {
-        auto iter = begin(container);
-        auto last = end(container);
+    template <range Range, typename T, typename E = equality>
+    constexpr auto find(Range const& range, T const& value, E const& equals) noexcept(noexcept(equals(*begin(range), value))) {
+        auto iter = begin(range);
+        auto last = end(range);
+
+        for (; iter != last; ++iter) {
+            if (equals(*iter, value)) {
+                return iter;
+            }
+        }
+
+        return last;
+    }
+
+    template <range Range, predicate<range_value_t<Range>> P = identity>
+    constexpr auto find_if(Range const& range, P const& predicate) noexcept(noexcept(predicate(*begin(range)))) {
+        auto iter = begin(range);
+        auto last = end(range);
 
         for (; iter != last; ++iter) {
             if (predicate(*iter)) {
@@ -48,10 +64,10 @@ namespace up {
         return last;
     }
 
-    template <typename C, typename T>
-    constexpr auto contains(C const& container, T const& value) noexcept(noexcept(*begin(container) == value)) {
-        auto iter = begin(container);
-        auto last = end(container);
+    template <range Range, equality_comparable_with<range_value_t<Range>> T>
+    constexpr auto contains(Range const& range, T const& value) noexcept(noexcept(*begin(range) == value)) {
+        auto iter = begin(range);
+        auto last = end(range);
 
         for (; iter != last; ++iter) {
             if (*iter == value) {
@@ -62,10 +78,10 @@ namespace up {
         return false;
     }
 
-    template <typename C, typename T, typename E = equality, typename P = identity>
-    constexpr auto contains(C const& container, T const& value, E const& equals, P const& projection = {}) noexcept(noexcept(equals(project(projection, *begin(container)), value))) {
-        auto iter = begin(container);
-        auto last = end(container);
+    template <range Range, typename T, typename E = equality, projection<range_value_t<Range>> P = identity>
+    constexpr auto contains(Range const& range, T const& value, E const& equals, P const& projection) noexcept(noexcept(equals(project(projection, *begin(range)), value))) {
+        auto iter = begin(range);
+        auto last = end(range);
 
         for (; iter != last; ++iter) {
             if (equals(project(projection, *iter), value)) {
@@ -76,10 +92,24 @@ namespace up {
         return false;
     }
 
-    template <typename C, typename P>
-    constexpr auto any(C const& container, P const& predicate) noexcept(noexcept(predicate(*begin(container)))) {
-        auto iter = begin(container);
-        auto last = end(container);
+    template <range Range, typename T, typename E = equality>
+    constexpr auto contains(Range const& range, T const& value, E const& equals) noexcept(noexcept(equals(*begin(range), value))) {
+        auto iter = begin(range);
+        auto last = end(range);
+
+        for (; iter != last; ++iter) {
+            if (equals(*iter, value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    template <range Range, predicate<range_value_t<Range>> P>
+    constexpr auto any(Range const& range, P const& predicate) noexcept(noexcept(predicate(*begin(range)))) {
+        auto iter = begin(range);
+        auto last = end(range);
 
         for (; iter != last; ++iter) {
             if (predicate(*iter)) {
@@ -90,10 +120,10 @@ namespace up {
         return false;
     }
 
-    template <typename C, typename P>
-    constexpr auto all(C const& container, P const& predicate) noexcept(noexcept(predicate(*begin(container)))) {
-        auto iter = begin(container);
-        auto last = end(container);
+    template <range Range, predicate<range_value_t<Range>> P>
+    constexpr auto all(Range const& range, P const& predicate) noexcept(noexcept(predicate(*begin(range)))) {
+        auto iter = begin(range);
+        auto last = end(range);
 
         for (; iter != last; ++iter) {
             if (!predicate(*iter)) {

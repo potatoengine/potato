@@ -4,6 +4,7 @@
 
 #include "traits.h"
 #include "functional.h"
+#include "concepts.h"
 #include <utility>
 
 namespace up {
@@ -30,7 +31,7 @@ namespace up {
     };
 
     struct equality {
-        template <typename T, typename U>
+        template <typename T, equality_comparable_with<T> U>
         constexpr bool operator()(T const& lhs, U const& rhs) const noexcept(noexcept(lhs == rhs)) {
             return lhs == rhs;
         }
@@ -38,13 +39,13 @@ namespace up {
 
     struct less {
         template <typename T, typename U>
-        constexpr bool operator()(T const& lhs, U const& rhs) const noexcept(noexcept(lhs < rhs)) {
+        requires less_than_comparable_with<T, U> constexpr bool operator()(T const& lhs, U const& rhs) const noexcept(noexcept(lhs < rhs)) {
             return lhs < rhs;
         }
     };
 
-    template <typename Value, typename Projection>
-    decltype(auto) project(Projection const& projection, Value const& value) noexcept(noexcept(invoke(projection, value))) requires std::is_invocable_v<Projection, Value const&> {
+    template <typename Value, callable<Value const&> Projection>
+    decltype(auto) project(Projection const& projection, Value const& value) noexcept(noexcept(invoke(projection, value))) {
         return invoke(projection, value);
     }
     template <typename Class, typename ReturnType>
@@ -56,7 +57,7 @@ namespace up {
         return value->*member;
     }
 
-    template <typename First, typename Last, typename Out, typename Projection = identity>
+    template <typename First, typename Last, typename Out, projection<deref_t<First> const&> Projection>
     constexpr auto copy(First first, Last last, Out out, Projection const& proj = {}) noexcept(noexcept(*out = project(proj, *first))) -> Out {
         for (; first != last; ++first) {
             *out++ = project(proj, *first);
@@ -64,13 +65,21 @@ namespace up {
         return out;
     }
 
-    template <typename Enum>
-    constexpr auto to_underlying(Enum value) noexcept -> std::underlying_type_t<Enum> requires(std::is_enum_v<Enum>) {
+    template <typename First, typename Last, typename Out>
+    constexpr auto copy(First first, Last last, Out out) noexcept(noexcept(*out = *first)) -> Out {
+        for (; first != last; ++first) {
+            *out++ = *first;
+        }
+        return out;
+    }
+
+    template <enumeration Enum>
+    constexpr auto to_underlying(Enum value) noexcept -> std::underlying_type_t<Enum> {
         return static_cast<std::underlying_type_t<Enum>>(value);
     }
 
-    template <typename Enum, typename T>
-    constexpr auto to_enum(T value) noexcept -> Enum requires std::is_enum_v<Enum>&& std::is_same_v<std::underlying_type_t<Enum>, T> {
+    template <enumeration Enum, same_as<std::underlying_type_t<Enum>> T>
+    constexpr auto to_enum(T value) noexcept -> Enum {
         return static_cast<Enum>(value);
     }
 
