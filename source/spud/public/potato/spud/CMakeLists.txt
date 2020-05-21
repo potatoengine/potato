@@ -22,6 +22,7 @@ target_sources(potato_spud PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/platform.h
     ${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.h
     ${CMAKE_CURRENT_SOURCE_DIR}/rc.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sequence.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sort.h
     ${CMAKE_CURRENT_SOURCE_DIR}/span.h
     ${CMAKE_CURRENT_SOURCE_DIR}/std_hash.h
