@@ -37,6 +37,9 @@ namespace up {
     template <typename E>
     concept enumeration = std::is_enum_v<E>;
 
+    template <typename T>
+    concept integral = std::is_integral_v<T>;
+
     template <typename R>
     concept range = std::is_array_v<std::remove_cv_t<std::remove_reference_t<R>>> || requires(R rng) {
         typename R::value_type;
