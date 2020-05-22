@@ -329,15 +329,12 @@ namespace up {
 
         auto const size = _last - _first;
 
-        // temp
-        auto temp = value_type(std::forward<ParamsT>(params)...);
-
         // grow
         auto const newCapacity = _grow(size + 1);
         T* tmp = _allocate(newCapacity);
 
-        // insert new elements
-        new (tmp + size) value_type(std::move(temp));
+        // insert new element
+        new (tmp + size) value_type(std::forward<ParamsT>(params)...);
 
         // move over old elements
         unitialized_move_n(_first, size, tmp);
