@@ -26,6 +26,11 @@ namespace up {
 
     template <typename T>
     class vector {
+        static_assert(std::is_nothrow_default_constructible_v<T>);
+        static_assert(std::is_nothrow_move_constructible_v<T>);
+        static_assert(std::is_nothrow_move_assignable_v<T>);
+        static_assert(std::is_nothrow_destructible_v<T>);
+
     public:
         using value_type = T;
         using iterator = T*;
@@ -89,8 +94,8 @@ namespace up {
         void reserve(size_type required);
         void resize(size_type new_size);
         void resize(size_type new_size, const_reference init);
-        void clear();
-        void shrink_to_fit();
+        void clear() noexcept;
+        void shrink_to_fit() noexcept;
 
         template <typename... ParamsT>
         auto emplace(const_iterator pos, ParamsT&&... params) -> reference requires std::is_constructible_v<T, ParamsT...>;
@@ -282,13 +287,13 @@ namespace up {
     }
 
     template <typename T>
-    void vector<T>::clear() {
+    void vector<T>::clear() noexcept {
         destruct_n(_first, _last - _first);
         _last = _first;
     }
 
     template <typename T>
-    void vector<T>::shrink_to_fit() {
+    void vector<T>::shrink_to_fit() noexcept {
         if (_sentinel == nullptr) { /* do nothing */
         }
         else if (_first == _last) {
