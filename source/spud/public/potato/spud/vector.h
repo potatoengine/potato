@@ -317,11 +317,39 @@ namespace up {
         if (pos == _last) {
             return emplace_back(std::forward<ParamsT>(params)...);
         }
+        else if (_last < _sentinel) {
+            iterator mpos = const_cast<iterator>(pos);
+            _rshift(mpos, 1);
+            mpos->~value_type();
+            new (mpos) value_type(std::forward<ParamsT>(params)...);
+            return *mpos;
+        }
+        else {
+            auto const size = _last - _first;
+            auto const index = pos - _first;
 
-        iterator mpos = const_cast<iterator>(pos);
-        _rshift(mpos, 1);
-        *mpos = value_type(std::forward<ParamsT>(params)...);
-        return *mpos;
+            // grow
+            auto const newCapacity = _grow(size + 1);
+            T* tmp = _allocate(newCapacity);
+
+            // insert new element
+            new (tmp + index) value_type(std::forward<ParamsT>(params)...);
+
+            // move over old elements
+            unitialized_move_n(_first, index, tmp);
+            unitialized_move_n(_first + index, size - index, tmp + index + 1);
+
+            // free up old space
+            destruct_n(_first, size);
+            _deallocate(_first, _sentinel - _first);
+
+            // commit new space
+            _first = tmp;
+            _last = _first + size + 1;
+            _sentinel = _first + newCapacity;
+
+            return _first[size];
+        }
     }
 
     template <typename T>
@@ -345,7 +373,7 @@ namespace up {
         unitialized_move_n(_first, size, tmp);
 
         // free up old space
-        destruct_n(_first, _last - _first);
+        destruct_n(_first, size);
         _deallocate(_first, _sentinel - _first);
 
         // commit new space
@@ -365,10 +393,10 @@ namespace up {
 
         auto const count = end - begin;
 
-        if (_sentinel - _last == count) {
+        if (_sentinel - _last >= count) {
             iterator mpos = const_cast<iterator>(pos);
             _rshift(mpos, count);
-            move_n(begin, count, mpos);
+            copy_n(begin, count, mpos);
             return mpos;
         }
 
