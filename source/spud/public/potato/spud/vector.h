@@ -314,39 +314,39 @@ namespace up {
         if (pos == _last) {
             return emplace_back(std::forward<ParamsT>(params)...);
         }
-        else if (_last < _sentinel) {
+
+        if (_last < _sentinel) {
             iterator mpos = const_cast<iterator>(pos);
             _rshift(mpos, 1);
             mpos->~value_type();
             new (mpos) value_type(std::forward<ParamsT>(params)...);
             return *mpos;
         }
-        else {
-            auto const size = _last - _first;
-            auto const index = pos - _first;
 
-            // grow
-            auto const newCapacity = _grow(size + 1);
-            T* tmp = _allocate(newCapacity);
+        auto const size = _last - _first;
+        auto const index = pos - _first;
 
-            // insert new element
-            new (tmp + index) value_type(std::forward<ParamsT>(params)...);
+        // grow
+        auto const newCapacity = _grow(size + 1);
+        T* tmp = _allocate(newCapacity);
 
-            // move over old elements
-            unitialized_move_n(_first, index, tmp);
-            unitialized_move_n(_first + index, size - index, tmp + index + 1);
+        // insert new element
+        new (tmp + index) value_type(std::forward<ParamsT>(params)...);
 
-            // free up old space
-            destruct_n(_first, size);
-            _deallocate(_first, _sentinel - _first);
+        // move over old elements
+        unitialized_move_n(_first, index, tmp);
+        unitialized_move_n(_first + index, size - index, tmp + index + 1);
 
-            // commit new space
-            _first = tmp;
-            _last = _first + size + 1;
-            _sentinel = _first + newCapacity;
+        // free up old space
+        destruct_n(_first, size);
+        _deallocate(_first, _sentinel - _first);
 
-            return _first[size];
-        }
+        // commit new space
+        _first = tmp;
+        _last = _first + size + 1;
+        _sentinel = _first + newCapacity;
+
+        return _first[size];
     }
 
     template <typename T>
