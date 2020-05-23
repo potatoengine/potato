@@ -26,7 +26,6 @@ namespace up {
 
     template <typename T>
     class vector {
-        static_assert(std::is_nothrow_default_constructible_v<T>);
         static_assert(std::is_nothrow_move_constructible_v<T>);
         static_assert(std::is_nothrow_move_assignable_v<T>);
         static_assert(std::is_nothrow_destructible_v<T>);
@@ -46,13 +45,13 @@ namespace up {
         vector() noexcept = default;
 
         template <typename IteratorT, typename SentinelT>
-        inline explicit vector(IteratorT begin, SentinelT end);
+        inline explicit vector(IteratorT begin, SentinelT end) requires std::is_constructible_v<T, deref_t<IteratorT>>;
         template <typename InsertT>
-        inline /*implicit*/ vector(std::initializer_list<InsertT> initial);
-        inline explicit vector(size_type size, const_reference initial);
+        inline /*implicit*/ vector(std::initializer_list<InsertT> initial) requires std::is_constructible_v<T, InsertT const>;
+        inline explicit vector(size_type size, const_reference initial) requires std::is_copy_constructible_v<T>;
         template <typename InsertT>
-        inline explicit vector(span<InsertT> source);
-        inline explicit vector(size_type size);
+        inline explicit vector(span<InsertT> source) requires std::is_constructible_v<T, InsertT>;
+        inline explicit vector(size_type size) requires std::is_default_constructible_v<T>;
 
         vector(vector const&) = delete;
         vector& operator=(vector const&) = delete;
@@ -108,10 +107,10 @@ namespace up {
         template <typename IteratorT, typename SentinelT>
         iterator insert(const_iterator pos, IteratorT begin, SentinelT end);
 
-        reference push_back(const_reference value) { return emplace_back(value); }
-        reference push_back(rvalue_reference value) { return emplace_back(std::move(value)); }
+        reference push_back(const_reference value) requires std::is_copy_constructible_v<T> { return emplace_back(value); }
+        reference push_back(rvalue_reference value) requires std::is_move_constructible_v<T> { return emplace_back(std::move(value)); }
         template <typename InsertT>
-        reference push_back(InsertT&& value) { return emplace_back(std::forward<InsertT>(value)); }
+        reference push_back(InsertT&& value) requires std::is_constructible_v<T, decltype(value)> { return emplace_back(std::forward<InsertT>(value)); }
 
         iterator erase(const_iterator pos);
         iterator erase(const_iterator begin, const_iterator end);
@@ -142,29 +141,29 @@ namespace up {
 
     template <typename T>
     template <typename IteratorT, typename SentinelT>
-    vector<T>::vector(IteratorT begin, SentinelT end) {
+    vector<T>::vector(IteratorT begin, SentinelT end) requires std::is_constructible_v<T, deref_t<IteratorT>> {
         insert(_first, begin, end);
     }
 
     template <typename T>
     template <typename InsertT>
-    vector<T>::vector(std::initializer_list<InsertT> initial) {
+    vector<T>::vector(std::initializer_list<InsertT> initial) requires std::is_constructible_v<T, InsertT const> {
         insert(_first, initial.begin(), initial.end());
     }
 
     template <typename T>
-    vector<T>::vector(size_type size, const_reference initial) {
+    vector<T>::vector(size_type size, const_reference initial) requires std::is_copy_constructible_v<T> {
         resize(size, initial);
     }
 
     template <typename T>
     template <typename InsertT>
-    vector<T>::vector(span<InsertT> source) {
+    vector<T>::vector(span<InsertT> source) requires std::is_constructible_v<T, InsertT> {
         insert(_first, source.begin(), source.end());
     }
 
     template <typename T>
-    vector<T>::vector(size_type size) {
+    vector<T>::vector(size_type size) requires std::is_default_constructible_v<T> {
         resize(size);
     }
 
@@ -264,12 +263,11 @@ namespace up {
         if (size < new_size) {
             reserve(new_size);
             default_construct_n(_last, new_size - size);
-            _last = _first + new_size;
         }
         else if (size > new_size) {
-            destruct_n(_first + new_size, _last - _first);
-            _last = _first + new_size;
+            destruct_n(_first + new_size, size - new_size);
         }
+        _last = _first + new_size;
     }
 
     template <typename T>
@@ -278,12 +276,11 @@ namespace up {
         if (size < new_size) {
             reserve(new_size);
             uninitialized_value_construct_n(_last, new_size - size, init);
-            _last = _first + new_size;
         }
         else if (size > new_size) {
-            destruct_n(_first + new_size, _last - _first);
-            _last = _first + new_size;
+            destruct_n(_first + new_size, size - new_size);
         }
+        _last = _first + new_size;
     }
 
     template <typename T>
