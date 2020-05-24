@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "concepts.h"
 #include <type_traits>
 
 namespace up {
@@ -12,12 +13,12 @@ namespace up {
 
         class iterator {
         public:
-            constexpr explicit iterator(T value, T end) noexcept : _value(value), _end(end) {}
+            iterator() noexcept = default;
 
             constexpr auto operator*() const noexcept { return _value; }
 
             constexpr auto operator++() noexcept -> iterator& requires enumeration<T> {
-                _value = static_cast<T>(++static_cast<std::underlying_type_t<T>>(_value));
+                _value = static_cast<T>(static_cast<std::underlying_type_t<T>>(_value) + 1);
                 return *this;
             }
 
@@ -26,9 +27,26 @@ namespace up {
                 return *this;
             }
 
+            constexpr auto operator++(int) noexcept -> iterator requires enumeration<T> {
+                auto tmp = *this;
+                _value = static_cast<T>(static_cast<std::underlying_type_t<T>>(_value) + 1);
+                return tmp;
+            }
+
+            constexpr auto operator++(int) noexcept -> iterator {
+                auto tmp = *this;
+                ++_value;
+                return tmp;
+            }
+
+            constexpr auto operator==(sentinel) const noexcept { return _value == _end; }
             constexpr auto operator!=(sentinel) const noexcept { return _value != _end; }
 
         private:
+            constexpr iterator(T value, T end) noexcept : _value(value), _end(end) {}
+
+            friend sequence;
+
             T _value = {};
             T _end = {};
         };
@@ -41,7 +59,11 @@ namespace up {
         constexpr auto begin() const noexcept -> iterator { return iterator{_start, _end}; }
         constexpr auto end() const noexcept -> sentinel { return {}; }
 
-        constexpr explicit operator bool() const noexcept { return !_start != _end; }
+        constexpr auto front() const noexcept { return _start; }
+        constexpr auto back() const noexcept requires enumeration<T> { return static_cast<T>(static_cast<std::underlying_type_t<T>>(_end) - 1); }
+        constexpr auto back() const noexcept { return _end - 1; }
+
+        constexpr explicit operator bool() const noexcept { return _start != _end; }
 
         constexpr bool empty() const noexcept { return _start == _end; }
 

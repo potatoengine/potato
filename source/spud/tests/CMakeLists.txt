@@ -10,12 +10,13 @@ add_executable(potato_spud_test
     test_nameof.cpp
     test_rc.cpp
     test_span.cpp
+    test_sequence.cpp
     test_string.cpp
     test_string_writer.cpp
     test_string_view.cpp
     test_vector.cpp
     test_zstring_view.cpp
-)
+ )
 
 include(up_set_common_properties)
 up_set_common_properties(potato_spud_test)
