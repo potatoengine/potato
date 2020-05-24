@@ -2,16 +2,18 @@
 
 #pragma once
 
-#include "_assertion.h"
-#include "memory_util.h"
-#include "numeric_util.h"
-#include "traits.h"
-#include "span.h"
-#include "int_types.h"
+#if !defined(DOXYGEN_SHOULD_SKIP_THIS) // Doxygen can't handle our use of C++20 concepts currently
 
-#include <initializer_list>
-#include <type_traits>
-#include <new>
+#    include "_assertion.h"
+#    include "memory_util.h"
+#    include "numeric_util.h"
+#    include "traits.h"
+#    include "span.h"
+#    include "int_types.h"
+
+#    include <initializer_list>
+#    include <type_traits>
+#    include <new>
 
 namespace up {
     template <typename T>
@@ -465,3 +467,5 @@ namespace up {
         return hasher;
     }
 } // namespace up
+
+#endif
