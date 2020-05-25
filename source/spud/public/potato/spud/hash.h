@@ -26,7 +26,7 @@ namespace up {
 
 namespace up {
     template <typename HashAlgorithm, typename T>
-    inline enable_if_t<is_contiguous<T>::value, HashAlgorithm&> hash_append(HashAlgorithm& hasher, T const& value) {
+    inline HashAlgorithm& hash_append(HashAlgorithm& hasher, T const& value) noexcept requires is_contiguous_v<T> {
         hasher.append_bytes(reinterpret_cast<char const*>(&value), sizeof(value));
         return hasher;
     }

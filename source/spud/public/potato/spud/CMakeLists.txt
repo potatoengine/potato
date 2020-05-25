@@ -3,6 +3,7 @@ target_sources(potato_spud PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ascii.h
     ${CMAKE_CURRENT_SOURCE_DIR}/bit_set.h
     ${CMAKE_CURRENT_SOURCE_DIR}/box.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/concepts.h
     ${CMAKE_CURRENT_SOURCE_DIR}/const_util.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/delegate_ref.h
@@ -21,6 +22,7 @@ target_sources(potato_spud PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/platform.h
     ${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.h
     ${CMAKE_CURRENT_SOURCE_DIR}/rc.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sequence.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sort.h
     ${CMAKE_CURRENT_SOURCE_DIR}/span.h
     ${CMAKE_CURRENT_SOURCE_DIR}/std_hash.h

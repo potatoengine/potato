@@ -54,7 +54,7 @@ namespace up::_detail {
         return {format_result::success, index, spec_string};
     }
 
-    template <typename Writer>
+    template <format_writable Writer>
     constexpr format_result format_impl(Writer& out, string_view format, std::initializer_list<format_arg> args) {
         unsigned next_index = 0;
 

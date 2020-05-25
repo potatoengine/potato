@@ -4,6 +4,7 @@
 
 #include "_assertion.h"
 #include "traits.h"
+#include "concepts.h"
 #include "functional.h"
 
 #include <new>
@@ -122,11 +123,18 @@ namespace up {
 
             /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
             /// <param name="function"> The function to bind. </param>
-            template <typename Functor, typename = enable_if_t<is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
+            template <callable_r<ReturnType, ParamTypes...> Functor>
             /*implicit*/ delegate_typed(Functor&& functor) { assign(std::forward<Functor>(functor)); }
 
-            template <typename Functor, typename = enable_if_t<is_invocable_v<Functor, ParamTypes...> && !std::is_base_of_v<delegate_typed, std::decay_t<Functor>>>>
-            delegate_typed& operator=(Functor&& functor);
+            template <callable_r<ReturnType, ParamTypes...> Functor>
+            auto operator=(Functor&& functor) -> delegate_typed& {
+                if (this->_vtable != nullptr) {
+                    this->_vtable->destruct(&this->_storage);
+                }
+
+                assign(std::forward<Functor>(functor));
+                return *this;
+            }
 
         private:
             template <typename Functor>
@@ -216,16 +224,6 @@ void up::_detail::delegate_base::reset(std::nullptr_t) {
         _vtable->destruct(&_storage);
         _vtable = nullptr;
     }
-}
-template <typename ReturnType, bool Const, typename... ParamTypes>
-template <typename Functor, typename>
-auto up::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::operator=(Functor&& functor) -> delegate_typed& {
-    if (this->_vtable != nullptr) {
-        this->_vtable->destruct(&this->_storage);
-    }
-
-    assign(std::forward<Functor>(functor));
-    return *this;
 }
 
 template <typename ReturnType, bool Const, typename... ParamTypes>

@@ -48,7 +48,7 @@ public:
     constexpr format_arg(thunk_type thunk, void const* value) noexcept : _type(_detail::format_arg_type::custom), _thunk(thunk), _value(value) {}
 
     template <typename Writer>
-    constexpr format_result format_into(Writer& output, string_view spec_string) const;
+    constexpr format_result format_into(Writer& output, string_view spec_string = {}) const;
 
 private:
     _detail::format_arg_type _type = _detail::format_arg_type::unknown;
@@ -69,6 +69,11 @@ public:
     template <typename Writer>
     constexpr format_result format_arg_into(Writer& output, size_type index, string_view spec_string) const {
         return index < _count ? _args[index].format_into(output, spec_string) : format_result::out_of_range;
+    }
+
+    template <typename Writer>
+    constexpr format_result format_arg_into(Writer& output, size_type index) const {
+        return index < _count ? _args[index].format_into(output) : format_result::out_of_range;
     }
 
 private:
@@ -119,7 +124,7 @@ namespace up::_detail {
         if constexpr (type != format_arg_type::unknown) {
             return {type, &value};
         }
-        else if constexpr (_has_format_value<Writer, T>::value) {
+        else if constexpr (_detail::has_format_value<Writer, T>::value) {
             return format_arg(&format_value_thunk<Writer, T>, &value);
         }
         else if constexpr (std::is_pointer_v<T>) {

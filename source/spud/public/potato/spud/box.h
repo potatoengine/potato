@@ -9,7 +9,7 @@ namespace up {
     template <typename>
     class box;
     template <typename T, typename... Args>
-    auto new_box(Args&&... args) -> enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>>;
+    auto new_box(Args&&... args) -> box<T> requires std::is_constructible_v<T, Args&&...>;
 
     namespace _detail {
         template <typename>
@@ -55,9 +55,9 @@ public:
     }
 
     template <typename U>
-    box(box<U>&& src) noexcept : _ptr(src.release()) {}
+    box(box<U>&& src) noexcept requires std::is_convertible_v<U*, T*> : _ptr(src.release()) {}
     template <typename U>
-    enable_if_t<std::is_assignable_v<T*, U*>, box&> operator=(box<U>&& src) noexcept {
+    auto operator=(box<U>&& src) noexcept -> box<T>& requires std::is_convertible_v<U*, T*> {
         if (this != &src) {
             reset(src.release());
         }
@@ -135,6 +135,6 @@ void up::box<T>::reset(pointer ptr) noexcept {
 /// <param name="args"> Parameters to pass to the constructor. </param>
 /// <returns> A box containing a new instance of the requested object. </returns>
 template <typename T, typename... Args>
-auto up::new_box(Args&&... args) -> enable_if_t<std::is_constructible_v<T, Args&&...>, box<T>> {
+auto up::new_box(Args&&... args) -> box<T> requires std::is_constructible_v<T, Args&&...> {
     return box<T>(new T(std::forward<Args>(args)...));
 }

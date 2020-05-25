@@ -14,6 +14,9 @@ namespace up {
     inline void hash_append(HashAlgorithm& hasher, string_view const& string);
 
     inline string_view operator"" _sv(char const* str, size_t size) noexcept;
+
+    template <typename T>
+    concept has_c_str = std::is_convertible_v<decltype(std::declval<T>().c_str()), char const*>;
 } // namespace up
 
 class up::string_view {
@@ -35,8 +38,9 @@ public:
     /*implicit*/ constexpr string_view(pointer zstr) noexcept : _data(zstr), _size(zstr != nullptr ? stringLength(zstr) : 0) {}
     /*implicit*/ constexpr string_view(pointer data, size_type size) noexcept : _data(data), _size(size) {}
     /*implicit*/ constexpr string_view(pointer begin, pointer end) noexcept : _data(begin), _size(end - begin) {}
-    template <typename StringT, typename = std::enable_if_t<std::is_convertible_v<decltype(std::declval<StringT>().c_str()), pointer>>>
-    /*implicit*/ constexpr string_view(StringT const& str) : _data(str.c_str()), _size(str.size()) {}
+    template <typename StringT>
+    /*implicit*/ constexpr string_view(StringT const& str) noexcept requires has_c_str<StringT> : _data(str.c_str())
+        , _size(str.size()) {}
 
     constexpr string_view& operator=(string_view const&) noexcept = default;
     constexpr string_view& operator=(string_view&&) noexcept = default;

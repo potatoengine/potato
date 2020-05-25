@@ -13,6 +13,15 @@ namespace up {
 
         template <template <typename...> class C, typename... A>
         struct detector<std::void_t<C<A...>>, C, A...> : std::true_type {};
+
+        template <typename T>
+        struct range_value {
+            using type = decltype(*begin(std::declval<T>()));
+        };
+        template <typename T, int N>
+        struct range_value<T[N]> {
+            using type = T;
+        };
     } // namespace _detail
 
     template <typename T>
@@ -40,12 +49,15 @@ namespace up {
     template <template <class...> class Op, class... Args>
     constexpr bool is_detected_v = _detail::detector<void, Op, Args...>::value;
 
-    template <bool C, typename T = void>
-    using enable_if_t = typename std::enable_if_t<C, T>;
-
     template <typename T>
     using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
     static_assert(std::is_same_v<int, remove_cvref_t<int const&>>);
+
+    template <typename T>
+    using deref_t = decltype(*std::declval<T>());
+
+    template <typename T>
+    using range_value_t = typename _detail::range_value<std::remove_cvref_t<T>>::type;
 
     template <typename T>
     constexpr bool is_numeric_v = std::is_integral_v<T> || std::is_floating_point_v<T>;
