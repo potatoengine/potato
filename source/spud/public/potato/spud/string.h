@@ -6,6 +6,7 @@
 #include "zstring_view.h"
 #include "string_util.h"
 #include <cstring>
+#include <compare>
 
 namespace up {
     class string;
@@ -149,20 +150,26 @@ public:
         return npos;
     }
 
+    friend std::strong_ordering operator<=>(string const& lhs, string const& rhs) noexcept {
+        auto len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
+        auto rs = stringCompare(lhs.data(), rhs.data(), len);
+        return rs <=> 0;
+    }
+
     friend bool operator==(string const& lhs, string const& rhs) noexcept {
         return lhs.size() == rhs.size() && stringCompare(lhs.data(), rhs.data(), lhs.size()) == 0;
     }
+
+    friend std::strong_ordering operator<=>(string const& lhs, const_pointer rhs) noexcept {
+        auto rhsSize = rhs != nullptr ? stringLength(rhs) : 0;
+        auto len = lhs.size() < rhsSize ? lhs.size() : rhsSize;
+        auto rs = stringCompare(lhs.data(), rhs, len);
+        return rs <=> 0;
+    };
+
     friend bool operator==(string const& lhs, const_pointer rhs) noexcept {
         auto rhsSize = rhs != nullptr ? stringLength(rhs) : 0;
         return lhs.size() == rhsSize && stringCompare(lhs.data(), rhs, rhsSize) == 0;
-    }
-    friend bool operator!=(string const& lhs, string const& rhs) noexcept {
-        return lhs.size() != rhs.size() || stringCompare(lhs.data(), rhs.data(), lhs.size()) != 0;
-    }
-    friend bool operator<(string const& lhs, string const& rhs) noexcept {
-        auto len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
-        auto rs = stringCompare(lhs.data(), rhs.data(), len);
-        return rs < 0 || (rs == 0 && lhs.size() < rhs.size());
     }
 
     /*implicit*/ operator string_view() const noexcept {

@@ -84,12 +84,12 @@ namespace up {
             size_type rhsSize = rhs.size();
             return lhsSize == rhsSize && stringCompare(lhs._str, rhs._str, lhsSize) == 0;
         }
+
         friend constexpr bool operator==(zstring_view lhs, pointer rhs) noexcept {
             size_type lhsSize = lhs.size();
             size_type rhsSize = rhs != nullptr ? stringLength(rhs) : 0;
             return lhsSize == rhsSize && stringCompare(lhs._str, rhs, lhsSize) == 0;
         }
-        friend constexpr bool operator==(pointer lhs, zstring_view rhs) noexcept { return rhs == lhs; }
 
     private:
         pointer _str = nullptr;

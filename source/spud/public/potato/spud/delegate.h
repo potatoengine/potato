@@ -100,7 +100,6 @@ namespace up {
 
             inline void reset(std::nullptr_t = nullptr);
 
-            bool operator!=(std::nullptr_t) const noexcept { return _vtable != nullptr; }
             bool operator==(std::nullptr_t) const noexcept { return _vtable == nullptr; }
 
         protected:

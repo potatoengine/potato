@@ -39,8 +39,9 @@ namespace up {
                 return tmp;
             }
 
-            constexpr auto operator==(sentinel) const noexcept { return _value == _end; }
-            constexpr auto operator!=(sentinel) const noexcept { return _value != _end; }
+            friend bool operator==(iterator const& lhs, iterator const& rhs) noexcept = default;
+            friend constexpr bool operator==(iterator const& lhs, sentinel) noexcept { return lhs._value == lhs._end; }
+            friend constexpr bool operator==(sentinel, iterator const& rhs) noexcept { return rhs._value == rhs._end; }
 
         private:
             constexpr iterator(T value, T end) noexcept : _value(value), _end(end) {}

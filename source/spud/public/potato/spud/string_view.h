@@ -156,13 +156,11 @@ public:
     friend bool constexpr operator==(string_view lhs, string_view rhs) noexcept {
         return lhs.size() == rhs.size() && stringCompare(lhs.data(), rhs.data(), lhs.size()) == 0;
     }
-    friend bool constexpr operator!=(string_view lhs, string_view rhs) noexcept {
-        return lhs.size() != rhs.size() || stringCompare(lhs.data(), rhs.data(), lhs.size()) != 0;
-    }
-    friend bool constexpr operator<(string_view lhs, string_view rhs) noexcept {
+
+    friend std::strong_ordering constexpr operator<=>(string_view lhs, string_view rhs) noexcept {
         auto const len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
         auto const rs = stringCompare(lhs.data(), rhs.data(), len);
-        return rs < 0 || (rs == 0 || lhs.size() < rhs.size());
+        return rs <=> 0;
     }
 
 private:
