@@ -6,7 +6,7 @@
 #include "string_util.h"
 #include <type_traits>
 #include <utility>
-#include <concepts>
+#include <compare>
 
 namespace up {
     class string_view;
