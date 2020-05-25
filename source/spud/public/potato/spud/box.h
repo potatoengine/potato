@@ -4,6 +4,7 @@
 
 #include "traits.h"
 #include <utility>
+#include <compare>
 
 namespace up {
     template <typename>
@@ -83,41 +84,19 @@ public:
     friend class box;
 
     template <typename U>
+    friend auto operator<=>(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr <=> rhs._ptr; }
+    template <typename U>
     friend bool operator==(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr == rhs._ptr; }
-    template <typename U>
-    friend bool operator!=(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr != rhs._ptr; }
-    template <typename U>
-    friend bool operator<=(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr <= rhs._ptr; }
-    template <typename U>
-    friend bool operator<(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr < rhs._ptr; }
 
+    template <typename U>
+    friend bool operator<=>(box const& lhs, U const* rhs) noexcept { return lhs._ptr <=> rhs; }
     template <typename U>
     friend bool operator==(box const& lhs, U const* rhs) noexcept { return lhs._ptr == rhs; }
-    template <typename U>
-    friend bool operator!=(box const& lhs, U const* rhs) noexcept { return lhs._ptr != rhs; }
-    template <typename U>
-    friend bool operator<=(box const& lhs, U const* rhs) noexcept { return lhs._ptr <= rhs; }
-    template <typename U>
-    friend bool operator<(box const& lhs, U const* rhs) noexcept { return lhs._ptr < rhs; }
 
     template <typename U>
-    friend bool operator==(U const* lhs, box const& rhs) noexcept { return lhs == rhs._ptr; }
+    friend bool operator<=>(box const& lhs, std::nullptr_t rhs) noexcept { return lhs._ptr <=> rhs; }
     template <typename U>
-    friend bool operator!=(U const* lhs, box const& rhs) noexcept { return lhs != rhs._ptr; }
-    template <typename U>
-    friend bool operator<=(U const* lhs, box const& rhs) noexcept { return lhs <= rhs._ptr; }
-    template <typename U>
-    friend bool operator<(U const* lhs, box const& rhs) noexcept { return lhs < rhs._ptr; }
-
-    friend bool operator==(box const& lhs, std::nullptr_t) noexcept { return lhs._ptr == nullptr; }
-    friend bool operator!=(box const& lhs, std::nullptr_t) noexcept { return lhs._ptr != nullptr; }
-    friend bool operator<=(box const& lhs, std::nullptr_t) noexcept { return lhs._ptr == nullptr; }
-    friend bool operator<(box const&, std::nullptr_t) noexcept { return false; }
-
-    friend bool operator==(std::nullptr_t, box const& rhs) noexcept { return rhs._ptr == nullptr; }
-    friend bool operator!=(std::nullptr_t, box const& rhs) noexcept { return rhs._ptr != nullptr; }
-    friend bool operator<=(std::nullptr_t, box const&) noexcept { return true; }
-    friend bool operator<(std::nullptr_t, box const& rhs) noexcept { return rhs._ptr != nullptr; }
+    friend bool operator==(box const& lhs, std::nullptr_t* rhs) noexcept { return lhs._ptr == rhs; }
 
 private:
     pointer _ptr = nullptr;

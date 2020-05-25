@@ -2,8 +2,10 @@
 
 #pragma once
 
-#include <utility>
-#include <atomic>
+#if !defined(DOXYGEN_SHOULD_SKIP_THIS) // Doxygen can't handle our use of C++20 concepts currently
+
+#    include <utility>
+#    include <atomic>
 
 namespace up {
     template <typename T>
@@ -52,17 +54,17 @@ namespace up {
         rc(rc const& rhs) noexcept : _ptr(rhs._ptr) { _addRef(); }
         rc(rc&& rhs) noexcept : _ptr(rhs.release()) {}
         template <typename U>
-        /*implicit*/ rc(rc<U> const& rhs) noexcept : _ptr(rhs.get()) { _addRef(); }
+        /*implicit*/ rc(rc<U> const& rhs) noexcept requires std::is_convertible_v<U*, T*> : _ptr(rhs.get()) { _addRef(); }
         template <typename U>
-        /*implicit*/ rc(rc<U>&& rhs) noexcept : _ptr(rhs.release()) {}
+        /*implicit*/ rc(rc<U>&& rhs) noexcept requires std::is_convertible_v<U*, T*> : _ptr(rhs.release()) {}
         /*implicit*/ rc(std::nullptr_t) noexcept {}
 
         inline rc& operator=(rc const& rhs) noexcept;
         inline rc& operator=(rc&& rhs) noexcept;
         template <typename U>
-        inline rc& operator=(rc<U> const& rhs) noexcept;
+        inline rc& operator=(rc<U> const& rhs) noexcept requires std::is_convertible_v<U*, T*>;
         template <typename U>
-        inline rc& operator=(rc<U>&& rhs) noexcept;
+        inline rc& operator=(rc<U>&& rhs) noexcept requires std::is_convertible_v<U*, T*>;
         inline rc& operator=(std::nullptr_t) noexcept;
 
         explicit operator bool() const noexcept { return _ptr != nullptr; }
@@ -76,12 +78,16 @@ namespace up {
         pointer operator->() const noexcept { return _ptr; }
         reference operator*() const noexcept { return *_ptr; }
 
+        friend auto operator<=>(rc const& lhs, rc const& rhs) noexcept { return lhs.get() <=> rhs.get(); }
         friend bool operator==(rc const& lhs, rc const& rhs) noexcept { return lhs.get() == rhs.get(); }
-        friend bool operator!=(rc const& lhs, rc const& rhs) noexcept { return lhs.get() != rhs.get(); }
-        friend bool operator==(rc const& lhs, std::nullptr_t) noexcept { return lhs.get() == nullptr; }
-        friend bool operator!=(rc const& lhs, std::nullptr_t) noexcept { return lhs.get() != nullptr; }
-        friend bool operator==(std::nullptr_t, rc const& rhs) noexcept { return nullptr == rhs.get(); }
-        friend bool operator!=(std::nullptr_t, rc const& rhs) noexcept { return nullptr != rhs.get(); }
+
+        template <typename U>
+        friend auto operator<=>(rc const& lhs, rc<U> const& rhs) noexcept { return lhs.get() <=> rhs.get(); }
+        template <typename U>
+        friend bool operator==(rc const& lhs, rc<U> const& rhs) noexcept { return lhs.get() == rhs.get(); }
+
+        friend auto operator<=>(rc const& lhs, std::nullptr_t rhs) noexcept { return lhs.get() <=> rhs; }
+        friend bool operator==(rc const& lhs, std::nullptr_t rhs) noexcept { return lhs.get() == rhs; }
 
     private:
         void _addRef() noexcept {
@@ -110,7 +116,7 @@ namespace up {
 
     template <typename T>
     template <typename U>
-    auto rc<T>::operator=(rc<U> const& rhs) noexcept -> rc& {
+    auto rc<T>::operator=(rc<U> const& rhs) noexcept -> rc& requires std::is_convertible_v<U*, T*> {
         if (this != std::addressof(rhs)) {
             _removeRef();
             _ptr = rhs.get();
@@ -130,7 +136,7 @@ namespace up {
 
     template <typename T>
     template <typename U>
-    auto rc<T>::operator=(rc<U>&& rhs) noexcept -> rc& {
+    auto rc<T>::operator=(rc<U>&& rhs) noexcept -> rc& requires std::is_convertible_v<U*, T*> {
         if (this != std::addressof(rhs)) {
             _removeRef();
             _ptr = rhs.release();
@@ -166,3 +172,5 @@ namespace up {
     }
 
 } // namespace up
+
+#endif

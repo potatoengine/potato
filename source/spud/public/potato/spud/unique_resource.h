@@ -31,8 +31,7 @@ public:
     bool empty() const { return _object == Default; }
     explicit operator bool() const { return _object != Default; }
 
-    friend bool operator==(unique_resource const& lhs, T const& rhs) { return lhs._object == rhs; }
-    friend bool operator!=(unique_resource const& lhs, T const& rhs) { return lhs._object != rhs; }
+    friend bool operator==(unique_resource const& lhs, T const& rhs) noexcept(noexcept(lhs._object == rhs)) { return lhs._object == rhs; }
 
     const_reference get() const { return _object; }
     reference get() { return _object; }
