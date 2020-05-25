@@ -89,14 +89,14 @@ public:
     friend bool operator==(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr == rhs._ptr; }
 
     template <typename U>
-    friend bool operator<=>(box const& lhs, U const* rhs) noexcept { return lhs._ptr <=> rhs._ptr; }
+    friend bool operator<=>(box const& lhs, U const* rhs) noexcept { return lhs._ptr <=> rhs; }
     template <typename U>
-    friend bool operator==(box const& lhs, U const* rhs) noexcept { return lhs._ptr == rhs._ptr; }
+    friend bool operator==(box const& lhs, U const* rhs) noexcept { return lhs._ptr == rhs; }
 
     template <typename U>
-    friend bool operator<=>(box const& lhs, std::nullptr_t rhs) noexcept { return lhs._ptr <=> rhs._ptr; }
+    friend bool operator<=>(box const& lhs, std::nullptr_t rhs) noexcept { return lhs._ptr <=> rhs; }
     template <typename U>
-    friend bool operator==(box const& lhs, std::nullptr_t* rhs) noexcept { return lhs._ptr == rhs._ptr; }
+    friend bool operator==(box const& lhs, std::nullptr_t* rhs) noexcept { return lhs._ptr == rhs; }
 
 private:
     pointer _ptr = nullptr;
