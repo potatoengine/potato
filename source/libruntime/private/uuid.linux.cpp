@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/uuid.h"
+#include "uuid.h"
 
 #include "potato/spud/platform.h"
 
