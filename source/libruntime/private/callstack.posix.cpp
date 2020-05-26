@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/callstack.h"
+#include "callstack.h"
 
 #include "potato/spud/numeric_util.h"
 #include "potato/spud/platform.h"
