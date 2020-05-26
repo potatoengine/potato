@@ -110,7 +110,7 @@ jobs:
         run: apt-get -yq install clang-format-10
       - name: Check Format
         run: |
-          python3 .github/scripts/run-clang-format.py -j -r --clang-format-executable clang-format-10 --exclude ./external --extensions h,cpp,cc ./source
+          python3 .github/scripts/run-clang-format.py -r --clang-format-executable clang-format-10 --exclude ./external --extensions h,cpp,cc ./source
 
   doxygen:
     name: Documentation
