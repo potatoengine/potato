@@ -5,6 +5,7 @@
 #include "traits.h"
 
 #include "potato/spud/utility.h"
+#include "potato/spud/zstring_view.h"
 
 namespace up::reflex {
     template <typename DerivedType> class SerializerBase {
