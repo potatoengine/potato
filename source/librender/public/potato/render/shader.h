@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include "potato/spud/int_types.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/vector.h"
-#include "potato/spud/int_types.h"
 
 namespace up {
     class RenderContext;

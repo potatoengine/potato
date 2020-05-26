@@ -1,7 +1,8 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "d3d11_platform.h"
-#include <potato/runtime/assertion.h>
+
+#include "potato/runtime/assertion.h"
 
 auto up::d3d11::toNative(GpuShaderSemantic semantic) noexcept -> zstring_view {
     switch (semantic) {
@@ -38,15 +39,11 @@ auto up::d3d11::fromNative(DXGI_FORMAT format) noexcept -> GpuFormat {
 
 auto up::d3d11::toByteSize(GpuFormat format) noexcept -> up::uint32 {
     switch (format) {
-    case GpuFormat::R32G32B32A32Float:
-        return 16;
-    case GpuFormat::R32G32B32Float:
-        return 12;
-    case GpuFormat::R32G32Float:
-        return 8;
+    case GpuFormat::R32G32B32A32Float: return 16;
+    case GpuFormat::R32G32B32Float: return 12;
+    case GpuFormat::R32G32Float: return 8;
     case GpuFormat::R8G8B8A8UnsignedNormalized:
-    case GpuFormat::D32Float:
-        return 4;
+    case GpuFormat::D32Float: return 4;
     default: UP_UNREACHABLE("Unknown Format"); return 0;
     }
 }

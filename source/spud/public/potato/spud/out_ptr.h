@@ -3,15 +3,12 @@
 #pragma once
 
 namespace up {
-    template <typename S, typename P>
-    class out_ptr_t;
+    template <typename S, typename P> class out_ptr_t;
 
-    template <typename S>
-    auto out_ptr(S& out) -> out_ptr_t<S, typename S::pointer>;
+    template <typename S> auto out_ptr(S& out) -> out_ptr_t<S, typename S::pointer>;
 } // namespace up
 
-template <typename S, typename P>
-class up::out_ptr_t {
+template <typename S, typename P> class up::out_ptr_t {
 public:
     using pointer = P;
 
@@ -34,7 +31,4 @@ private:
     S& _out;
 };
 
-template <typename S>
-auto up::out_ptr(S& out) -> out_ptr_t<S, typename S::pointer> {
-    return out_ptr_t<S, typename S::pointer>(out);
-}
+template <typename S> auto up::out_ptr(S& out) -> out_ptr_t<S, typename S::pointer> { return out_ptr_t<S, typename S::pointer>(out); }

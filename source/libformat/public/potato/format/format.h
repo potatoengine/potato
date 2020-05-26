@@ -2,22 +2,21 @@
 
 #pragma once
 
-#include "_detail/format_traits.h"
-#include "_detail/format_result.h"
 #include "_detail/append_writer.h"
 #include "_detail/fixed_writer.h"
 #include "_detail/format_arg.h"
 #include "_detail/format_arg_impl.h"
 #include "_detail/format_impl.h"
-#include <potato/spud/string_view.h>
+#include "_detail/format_result.h"
+#include "_detail/format_traits.h"
+
+#include "potato/spud/string_view.h"
+
 #include <type_traits>
 
 namespace up {
     /// Default format helpers.
-    template <format_writable Writer>
-    constexpr void format_value(Writer& out, string_view str) noexcept(noexcept(out.write(str))) {
-        out.write(str);
-    }
+    template <format_writable Writer> constexpr void format_value(Writer& out, string_view str) noexcept(noexcept(out.write(str))) { out.write(str); }
 
     /// Write the string format using the given parameters into a buffer.
     /// @param writer The write buffer that will receive the formatted text.
@@ -36,8 +35,7 @@ namespace up {
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args The arguments used by the formatting string.
     /// @returns a formatted string.
-    template <format_appendable ResultT, formattable... Args>
-    constexpr auto format_as(string_view format_str, Args const&... args) -> ResultT {
+    template <format_appendable ResultT, formattable... Args> constexpr auto format_as(string_view format_str, Args const&... args) -> ResultT {
         ResultT result;
         format_append(result, format_str, args...);
         return result;
@@ -57,8 +55,7 @@ namespace up {
     /// @param writer The write buffer that will receive the formatted text.
     /// @param value The value to format.
     /// @returns a result code indicating any errors.
-    template <format_writable Writer, formattable T>
-    constexpr auto format_value_to(Writer& writer, T const& value) -> format_result {
+    template <format_writable Writer, formattable T> constexpr auto format_value_to(Writer& writer, T const& value) -> format_result {
         return _detail::make_format_arg<Writer>(value).format_into(writer);
     }
 

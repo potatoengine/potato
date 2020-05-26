@@ -1,14 +1,19 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "convert_material.h"
-#include "potato/spud/std_iostream.h"
-#include "potato/runtime/path.h"
-#include "potato/runtime/filesystem.h"
-#include "potato/runtime/logger.h"
-#include "potato/runtime/json.h"
+
 #include "potato/render/material_generated.h"
-#include <fstream>
+
+#include "potato/runtime/filesystem.h"
+#include "potato/runtime/json.h"
+#include "potato/runtime/logger.h"
+#include "potato/runtime/path.h"
+
+#include "potato/spud/std_iostream.h"
+
 #include <nlohmann/json.hpp>
+
+#include <fstream>
 
 up::recon::MaterialConverter::MaterialConverter() = default;
 

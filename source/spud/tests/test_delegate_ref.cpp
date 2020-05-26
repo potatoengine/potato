@@ -1,4 +1,5 @@
 #include "potato/spud/delegate_ref.h"
+
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][spud] up::delegate_ref") {

@@ -1,6 +1,8 @@
 #include "potato/spud/find.h"
 #include "potato/spud/vector.h"
+
 #include <doctest/doctest.h>
+
 #include <iostream>
 
 namespace {

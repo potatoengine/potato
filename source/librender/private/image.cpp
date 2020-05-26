@@ -1,7 +1,9 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/render/image.h"
+#include "image.h"
+
 #include "potato/runtime/stream.h"
+
 #include <stb_image.h>
 
 static int stb_read(void* user, char* data, int size) {
@@ -42,15 +44,9 @@ auto up::loadImage(Stream& stream) -> Image {
     free(image);
 
     switch (channels) {
-    case 1:
-        header.pixelFormat = PixelFormat::R8UnsignedNormalized;
-        break;
-    case 3:
-        header.pixelFormat = PixelFormat::R8G8B8UnsignedNormalized;
-        break;
-    case 4:
-        header.pixelFormat = PixelFormat::R8G8B8A8UnsignedNormalized;
-        break;
+    case 1: header.pixelFormat = PixelFormat::R8UnsignedNormalized; break;
+    case 3: header.pixelFormat = PixelFormat::R8G8B8UnsignedNormalized; break;
+    case 4: header.pixelFormat = PixelFormat::R8G8B8A8UnsignedNormalized; break;
     }
 
     return Image(header, std::move(data));

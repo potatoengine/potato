@@ -95,12 +95,9 @@ namespace up {
         pointer _str = nullptr;
     };
 
-    template <typename HashAlgorithm>
-    void hash_append(HashAlgorithm& hasher, zstring_view string) {
+    template <typename HashAlgorithm> void hash_append(HashAlgorithm& hasher, zstring_view string) {
         hasher.append_bytes(string.data(), string.size());
     }
 
-    inline auto operator"" _zsv(char const* str, size_t) noexcept -> zstring_view {
-        return {str};
-    }
+    inline auto operator"" _zsv(char const* str, size_t) noexcept -> zstring_view { return {str}; }
 } // namespace up

@@ -1,15 +1,18 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "convert_hlsl.h"
+
 #include "potato/runtime/com_ptr.h"
+#include "potato/runtime/filesystem.h"
+#include "potato/runtime/logger.h"
+#include "potato/runtime/path.h"
+#include "potato/runtime/stream.h"
+
 #include "potato/spud/out_ptr.h"
+#include "potato/spud/std_iostream.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/string_writer.h"
-#include "potato/spud/std_iostream.h"
-#include "potato/runtime/filesystem.h"
-#include "potato/runtime/stream.h"
-#include "potato/runtime/path.h"
-#include "potato/runtime/logger.h"
+
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <fstream>
@@ -17,9 +20,9 @@
 namespace {
     struct ReconIncludeHandler : public ID3DInclude {
         ReconIncludeHandler(up::FileSystem& fileSystem, up::recon::Context& ctx, up::string_view folder)
-            : _fileSystem(fileSystem),
-              _ctx(ctx),
-              _folder(folder) {}
+            : _fileSystem(fileSystem)
+            , _ctx(ctx)
+            , _folder(folder) {}
 
         HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override {
             up::string absolutePath = up::path::join({_folder, pFileName});
@@ -47,9 +50,7 @@ namespace {
             return S_OK;
         }
 
-        HRESULT __stdcall Close(LPCVOID pData) override {
-            return S_OK;
-        }
+        HRESULT __stdcall Close(LPCVOID pData) override { return S_OK; }
 
         up::FileSystem& _fileSystem;
         up::recon::Context& _ctx;
@@ -84,14 +85,32 @@ bool up::recon::HlslConverter::convert(Context& ctx) {
     return success;
 }
 
-bool up::recon::HlslConverter::compile(Context& ctx, FileSystem& fileSys, zstring_view absoluteSourcePath, string_view source, zstring_view entryName, zstring_view targetProfileName) {
+bool up::recon::HlslConverter::compile(Context& ctx,
+    FileSystem& fileSys,
+    zstring_view absoluteSourcePath,
+    string_view source,
+    zstring_view entryName,
+    zstring_view targetProfileName) {
     ctx.logger().info("Compiling `{}':{} ({})", ctx.sourceFilePath(), entryName, targetProfileName);
 
     ReconIncludeHandler includeHandler(fileSys, ctx, up::path::parent(absoluteSourcePath));
 
     com_ptr<ID3DBlob> blob;
     com_ptr<ID3DBlob> errors;
-    HRESULT hr = D3DCompile2(source.data(), source.size(), ctx.sourceFilePath().c_str(), nullptr, &includeHandler, entryName.c_str(), targetProfileName.c_str(), D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS, 0, 0, nullptr, 0, out_ptr(blob), out_ptr(errors));
+    HRESULT hr = D3DCompile2(source.data(),
+        source.size(),
+        ctx.sourceFilePath().c_str(),
+        nullptr,
+        &includeHandler,
+        entryName.c_str(),
+        targetProfileName.c_str(),
+        D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS,
+        0,
+        0,
+        nullptr,
+        0,
+        out_ptr(blob),
+        out_ptr(errors));
     if (!SUCCEEDED(hr)) {
         ctx.logger().error("Compilation failed for `{}':{} ({})", ctx.sourceFilePath(), entryName, targetProfileName);
         ctx.logger().error(string_view{static_cast<char const*>(errors->GetBufferPointer()), errors->GetBufferSize()});

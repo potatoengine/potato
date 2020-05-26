@@ -1,10 +1,12 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include <potato/spud/box.h>
-#include <potato/spud/rc.h>
-#include <potato/runtime/stream.h>
-#include <potato/ecs/universe.h>
-#include <potato/ecs/query.h>
+#include "potato/ecs/query.h"
+#include "potato/ecs/universe.h"
+
+#include "potato/runtime/stream.h"
+
+#include "potato/spud/box.h"
+#include "potato/spud/rc.h"
 
 namespace up::components {
     struct Position;

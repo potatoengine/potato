@@ -1,15 +1,18 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/debug.h"
-#include "potato/runtime/callstack.h"
+#include "callstack.h"
+#include "debug.h"
+
 #include "potato/spud/string_format.h"
 #include "potato/spud/string_writer.h"
-#include <iostream>
+
 #include <array>
+#include <iostream>
 
 namespace up::_detail {
     // platform-specific function that must be implemented
-    UP_RUNTIME_API UP_NOINLINE FatalErrorAction handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
+    UP_RUNTIME_API UP_NOINLINE FatalErrorAction
+    handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
 } // namespace up::_detail
 
 auto up::_detail::raiseFatalError(char const* file, int line, char const* failedConditionText, char const* messageText) -> FatalErrorAction {

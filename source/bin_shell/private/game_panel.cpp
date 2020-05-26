@@ -1,23 +1,24 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include <glm/glm.hpp>
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <SDL.h>
-
-#include "scene.h"
 #include "camera.h"
 #include "camera_controller.h"
+#include "panel.h"
+#include "scene.h"
 
-#include "potato/shell/panel.h"
-#include "potato/render/gpu_device.h"
-#include "potato/render/gpu_texture.h"
-#include "potato/render/gpu_resource_view.h"
-#include "potato/render/renderer.h"
 #include "potato/render/camera.h"
-#include "potato/render/debug_draw.h"
 #include "potato/render/context.h"
+#include "potato/render/debug_draw.h"
 #include "potato/render/draw_imgui.h"
+#include "potato/render/gpu_device.h"
+#include "potato/render/gpu_resource_view.h"
+#include "potato/render/gpu_texture.h"
+#include "potato/render/renderer.h"
+
+#include <glm/glm.hpp>
+
+#include <SDL.h>
+#include <imgui.h>
+#include <imgui_internal.h>
 
 namespace up::shell {
     class GamePanel : public Panel {
@@ -45,9 +46,7 @@ namespace up::shell {
         bool _isInputBound = false;
     };
 
-    auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel> {
-        return new_box<GamePanel>(renderer, scene);
-    }
+    auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel> { return new_box<GamePanel>(renderer, scene); }
 
     void GamePanel::ui() {
         auto const contentId = ImGui::GetID("GameContentView");
@@ -76,8 +75,8 @@ namespace up::shell {
 
             auto keys = SDL_GetKeyboardState(nullptr);
             relMove = {ImGui::IsKeyPressed(SDL_SCANCODE_D) - ImGui::IsKeyPressed(SDL_SCANCODE_A),
-                       ImGui::IsKeyPressed(SDL_SCANCODE_SPACE) - ImGui::IsKeyPressed(SDL_SCANCODE_C),
-                       ImGui::IsKeyPressed(SDL_SCANCODE_W) - ImGui::IsKeyPressed(SDL_SCANCODE_S)};
+                ImGui::IsKeyPressed(SDL_SCANCODE_SPACE) - ImGui::IsKeyPressed(SDL_SCANCODE_C),
+                ImGui::IsKeyPressed(SDL_SCANCODE_W) - ImGui::IsKeyPressed(SDL_SCANCODE_S)};
 
             _cameraController.apply(_camera, relMove, relMotion, io.DeltaTime);
         }

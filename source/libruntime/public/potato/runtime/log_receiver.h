@@ -4,8 +4,10 @@
 
 #include "_export.h"
 #include "log_severity.h"
-#include "potato/spud/string_view.h"
+
 #include "potato/spud/rc.h"
+#include "potato/spud/string_view.h"
+
 #include <utility>
 
 namespace up {

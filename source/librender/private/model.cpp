@@ -1,12 +1,13 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/render/model.h"
-#include "potato/render/material.h"
-#include "potato/render/mesh.h"
-#include "potato/render/context.h"
-#include "potato/render/gpu_buffer.h"
-#include "potato/render/gpu_device.h"
-#include "potato/render/gpu_command_list.h"
+#include "model.h"
+#include "context.h"
+#include "gpu_buffer.h"
+#include "gpu_command_list.h"
+#include "gpu_device.h"
+#include "material.h"
+#include "mesh.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 namespace {

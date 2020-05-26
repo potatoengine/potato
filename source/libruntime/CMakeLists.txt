@@ -35,9 +35,9 @@ target_link_libraries(potato_libruntime
 )
 
 target_compile_definitions(potato_libruntime
-    PUBLIC
-        UP_SPUD_ASSERT_HEADER="potato/runtime/assertion.h"
-        UP_SPUD_ASSERT=UP_ASSERT
+    INTERFACE UP_SPUD_ASSERT_HEADER="potato/runtime/assertion.h"
+    PRIVATE   UP_SPUD_ASSERT_HEADER="assertion.h"
+    PUBLIC    UP_SPUD_ASSERT=UP_ASSERT
 )
 
 add_subdirectory(public/potato/runtime)

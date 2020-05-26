@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include <potato/runtime/assertion.h>
+#include "assertion.h"
+
 #include <atomic>
 #include <thread>
 
@@ -35,9 +36,7 @@ namespace up {
         return _owner.compare_exchange_strong(expected, desired, std::memory_order_acquire);
     }
 
-    bool Spinlock::isLocked() const noexcept {
-        return _owner != std::thread::id();
-    }
+    bool Spinlock::isLocked() const noexcept { return _owner != std::thread::id(); }
 
     void Spinlock::unlock() noexcept {
         UP_ASSERT(_owner == std::this_thread::get_id());

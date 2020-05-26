@@ -1,15 +1,16 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "camera.h"
+#include "panel.h"
+#include "selection.h"
 
-#include "potato/shell/panel.h"
-#include "potato/shell/selection.h"
+#include "potato/render/draw_imgui.h"
 
-#include <potato/spud/box.h>
-#include <potato/spud/unique_resource.h>
-#include <potato/runtime/native.h>
-#include <potato/render/draw_imgui.h>
-#include <potato/runtime/logger.h>
+#include "potato/runtime/logger.h"
+#include "potato/runtime/native.h"
+
+#include "potato/spud/box.h"
+#include "potato/spud/unique_resource.h"
 
 #include <SDL.h>
 #include <chrono>

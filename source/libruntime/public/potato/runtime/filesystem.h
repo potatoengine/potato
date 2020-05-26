@@ -3,10 +3,11 @@
 #pragma once
 
 #include "_export.h"
-#include "potato/spud/zstring_view.h"
-#include "potato/spud/string.h"
-#include "potato/spud/rc.h"
 #include "common.h"
+
+#include "potato/spud/rc.h"
+#include "potato/spud/string.h"
+#include "potato/spud/zstring_view.h"
 
 namespace up {
     class Stream;

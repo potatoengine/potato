@@ -1,5 +1,7 @@
 #include "potato/runtime/callstack.h"
+
 #include <doctest/doctest.h>
+
 #include <array>
 
 DOCTEST_TEST_SUITE("[potato][runtime] up::callstack") {

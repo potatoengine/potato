@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include <potato/spud/zstring_view.h>
+#include "potato/spud/zstring_view.h"
 
 using SDL_Event = union SDL_Event;
 

@@ -1,11 +1,14 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "d3d11_swap_chain.h"
-#include "d3d11_texture.h"
 #include "d3d11_platform.h"
+#include "d3d11_texture.h"
+
 #include "potato/runtime/com_ptr.h"
+
 #include "potato/spud/box.h"
 #include "potato/spud/out_ptr.h"
+
 #include <utility>
 
 up::d3d11::SwapChainD3D11::SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain) : _swapChain(std::move(swapChain)) {}
@@ -54,6 +57,4 @@ auto up::d3d11::SwapChainD3D11::getBuffer(int index) -> rc<GpuTexture> {
     return new_shared<TextureD3D11>(std::move(buffer));
 }
 
-int up::d3d11::SwapChainD3D11::getCurrentBufferIndex() {
-    return _bufferIndex;
-}
+int up::d3d11::SwapChainD3D11::getCurrentBufferIndex() { return _bufferIndex; }

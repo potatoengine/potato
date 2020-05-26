@@ -1,5 +1,7 @@
 #include "potato/spud/fixed_string.h"
+
 #include <doctest/doctest.h>
+
 #include <iostream>
 
 DOCTEST_TEST_SUITE("[potato][spud] up::fixed_string") {

@@ -1,20 +1,23 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/spud/numeric_util.h"
-#include "potato/render/renderer.h"
-#include "potato/render/context.h"
-#include "potato/render/material.h"
-#include "potato/render/mesh.h"
-#include "potato/render/shader.h"
-#include "potato/render/texture.h"
-#include "potato/render/debug_draw.h"
-#include "potato/render/gpu_buffer.h"
-#include "potato/render/gpu_command_list.h"
-#include "potato/render/gpu_device.h"
-#include "potato/render/gpu_swap_chain.h"
-#include "potato/render/gpu_texture.h"
+#include "renderer.h"
+#include "context.h"
+#include "debug_draw.h"
+#include "gpu_buffer.h"
+#include "gpu_command_list.h"
+#include "gpu_device.h"
+#include "gpu_swap_chain.h"
+#include "gpu_texture.h"
+#include "material.h"
+#include "mesh.h"
+#include "shader.h"
+#include "texture.h"
+
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
+
+#include "potato/spud/numeric_util.h"
+
 #include <chrono>
 
 namespace {
@@ -45,10 +48,7 @@ void up::Renderer::beginFrame() {
     }
 
     double const now = static_cast<double>(nowNanoseconds - _startTimestamp) / 1000000000.0;
-    FrameData frame = {
-        _frameCounter++,
-        static_cast<float>(now - _frameTimestamp),
-        now};
+    FrameData frame = {_frameCounter++, static_cast<float>(now - _frameTimestamp), now};
     _frameTimestamp = now;
 
     _commandList->clear();
@@ -93,12 +93,7 @@ void up::Renderer::flushDebugDraw(float frameTime) {
     up::flushDebugDraw(frameTime);
 }
 
-auto up::Renderer::context() -> RenderContext {
-    return RenderContext{
-        _frameTimestamp,
-        *_commandList,
-        *_device};
-}
+auto up::Renderer::context() -> RenderContext { return RenderContext{_frameTimestamp, *_commandList, *_device}; }
 
 auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     vector<byte> contents;

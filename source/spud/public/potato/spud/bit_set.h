@@ -4,6 +4,7 @@
 
 #include "_assertion.h"
 #include "int_types.h"
+
 #include <cstring>
 
 namespace up {
@@ -42,13 +43,9 @@ namespace up {
         size_type _elemSize = 0;
     };
 
-    bit_set::bit_set(size_type capacity) {
-        resize(capacity);
-    }
+    bit_set::bit_set(size_type capacity) { resize(capacity); }
 
-    bit_set::~bit_set() {
-        delete[] _elems;
-    }
+    bit_set::~bit_set() { delete[] _elems; }
 
     bit_set::bit_set(bit_set&& rhs) noexcept : _elems(rhs._elems), _elemSize(rhs._elemSize) {
         rhs._elems = nullptr;

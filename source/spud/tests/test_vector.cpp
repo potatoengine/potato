@@ -1,5 +1,6 @@
-#include "potato/spud/vector.h"
 #include "potato/spud/string.h"
+#include "potato/spud/vector.h"
+
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][spud] vector") {
@@ -87,11 +88,5 @@ DOCTEST_TEST_SUITE("[potato][spud] vector") {
         DOCTEST_CHECK_EQ(vec.front(), 2);
     }
 
-    DOCTEST_TEST_CASE("vector<string>") {
-        vector<string> vec1{
-            "first"_sv,
-            "second"_sv,
-            "third"_sv,
-            "fourth"_sv};
-    }
+    DOCTEST_TEST_CASE("vector<string>") { vector<string> vec1{"first"_sv, "second"_sv, "third"_sv, "fourth"_sv}; }
 }

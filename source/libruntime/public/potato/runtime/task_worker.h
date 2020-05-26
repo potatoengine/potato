@@ -3,10 +3,12 @@
 #pragma once
 
 #include "_export.h"
-#include "thread_util.h"
 #include "concurrent_queue.h"
-#include "potato/spud/zstring_view.h"
+#include "thread_util.h"
+
 #include "potato/spud/delegate.h"
+#include "potato/spud/zstring_view.h"
+
 #include <thread>
 
 namespace up {

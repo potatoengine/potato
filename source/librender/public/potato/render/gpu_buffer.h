@@ -3,6 +3,7 @@
 #pragma once
 
 #include "gpu_common.h"
+
 #include "potato/spud/int_types.h"
 #include "potato/spud/span.h"
 

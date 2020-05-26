@@ -1,4 +1,5 @@
 #include "potato/spud/span.h"
+
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][spud] up::span") {

@@ -1,8 +1,8 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/task_worker.h"
-#include "potato/runtime/semaphore.h"
-#include "potato/runtime/thread_util.h"
+#include "task_worker.h"
+#include "semaphore.h"
+#include "thread_util.h"
 
 up::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _queue(queue) {
     // just to make sure this is called at least once on the main thread...

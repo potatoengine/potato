@@ -1,5 +1,7 @@
 #include "potato/runtime/task_worker.h"
+
 #include <doctest/doctest.h>
+
 #include <thread>
 
 DOCTEST_TEST_SUITE("[potato][runtime] TaskWorker") {

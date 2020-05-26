@@ -2,19 +2,22 @@
 
 #pragma once
 
+#include "converter.h"
+#include "converter_config.h"
+
+#include "potato/assetdb/asset_library.h"
+#include "potato/assetdb/hash_cache.h"
+
+#include "potato/runtime/filesystem.h"
+#include "potato/runtime/logger.h"
+
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/span.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
-#include "potato/spud/zstring_view.h"
 #include "potato/spud/vector.h"
-#include "potato/runtime/filesystem.h"
-#include "potato/runtime/logger.h"
-#include "potato/recon/converter.h"
-#include "potato/recon/converter_config.h"
-#include "potato/assetdb/asset_library.h"
-#include "potato/assetdb/hash_cache.h"
+#include "potato/spud/zstring_view.h"
 
 namespace up::recon {
     class Converter;

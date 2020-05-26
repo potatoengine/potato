@@ -1,11 +1,13 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/assetdb/_export.h"
-#include "potato/assetdb/asset_library.h"
-#include "potato/spud/hash_fnv1a.h"
-#include "potato/spud/hash.h"
-#include "potato/runtime/stream.h"
+#include "asset_library.h"
+
 #include "potato/runtime/json.h"
+#include "potato/runtime/stream.h"
+
+#include "potato/spud/hash.h"
+#include "potato/spud/hash_fnv1a.h"
+
 #include <nlohmann/json.hpp>
 
 // 4. fixing bug in hlsli path generation and adding meta files to source deps
@@ -109,15 +111,11 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
         newRecord.importerRevision = record["importerRevision"];
 
         for (auto const& output : record["outputs"]) {
-            newRecord.outputs.push_back(AssetOutputRecord{
-                output["path"],
-                output["hash"]});
+            newRecord.outputs.push_back(AssetOutputRecord{output["path"], output["hash"]});
         }
 
         for (auto const& output : record["sourceDeps"]) {
-            newRecord.sourceDependencies.push_back(AssetDependencyRecord{
-                output["path"],
-                output["hash"]});
+            newRecord.sourceDependencies.push_back(AssetDependencyRecord{output["path"], output["hash"]});
         }
 
         insertRecord(std::move(newRecord));

@@ -3,9 +3,10 @@
 #pragma once
 
 #include "_export.h"
+#include "image.h"
+
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
-#include "potato/render/image.h"
 
 namespace up {
     class GpuTexture;

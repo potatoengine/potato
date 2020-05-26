@@ -3,7 +3,8 @@
 #pragma once
 
 #include "common.h"
-#include <potato/spud/span.h>
+
+#include "potato/spud/span.h"
 
 namespace up {
     /// Chunks are the storage mechanism of Entities and their Components. A Chunk
@@ -23,14 +24,10 @@ namespace up {
         using Payload = char[SizeBytes - sizeof(Header)];
 
         /// @brief Retrieves a span of EntityIds associated with this Chunk
-        auto entities() noexcept -> span<EntityId> {
-            return {reinterpret_cast<EntityId*>(payload), header.entities};
-        }
+        auto entities() noexcept -> span<EntityId> { return {reinterpret_cast<EntityId*>(payload), header.entities}; }
 
         /// @brief Retrieves a span of EntityIds associated with this Chunk
-        auto entities() const noexcept -> view<EntityId> {
-            return {reinterpret_cast<EntityId const*>(payload), header.entities};
-        }
+        auto entities() const noexcept -> view<EntityId> { return {reinterpret_cast<EntityId const*>(payload), header.entities}; }
 
         Header header;
         Payload payload;

@@ -3,16 +3,16 @@
 #pragma once
 
 #include "_export.h"
+#include "common.h"
+
 #include "potato/spud/box.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/span.h"
-#include "common.h"
 
 namespace up {
     class string;
     class string_view;
-    template <typename>
-    class vector;
+    template <typename> class vector;
 
     class Stream {
     public:

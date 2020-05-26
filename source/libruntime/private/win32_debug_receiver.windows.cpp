@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/win32_debug_receiver.h"
+#include "win32_debug_receiver.h"
+
 #include "potato/spud/platform_windows.h"
 
 void up::Win32DebugReceiver::log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location) noexcept {

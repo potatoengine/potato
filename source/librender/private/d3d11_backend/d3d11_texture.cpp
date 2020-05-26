@@ -2,12 +2,13 @@
 
 #include "d3d11_texture.h"
 #include "d3d11_platform.h"
-#include "potato/runtime/com_ptr.h"
-#include "potato/spud/out_ptr.h"
-#include <potato/runtime/assertion.h>
 
-up::d3d11::TextureD3D11::TextureD3D11(com_ptr<ID3D11Resource> texture) : _texture(std::move(texture)) {
-}
+#include "potato/runtime/assertion.h"
+#include "potato/runtime/com_ptr.h"
+
+#include "potato/spud/out_ptr.h"
+
+up::d3d11::TextureD3D11::TextureD3D11(com_ptr<ID3D11Resource> texture) : _texture(std::move(texture)) {}
 
 up::d3d11::TextureD3D11::~TextureD3D11() = default;
 
@@ -21,9 +22,7 @@ auto up::d3d11::TextureD3D11::type() const noexcept -> GpuTextureType {
     return GpuTextureType::Texture2D;
 }
 
-auto up::d3d11::TextureD3D11::format() const noexcept -> GpuFormat {
-    return fromNative(nativeFormat());
-}
+auto up::d3d11::TextureD3D11::format() const noexcept -> GpuFormat { return fromNative(nativeFormat()); }
 
 DXGI_FORMAT up::d3d11::TextureD3D11::nativeFormat() const noexcept {
     com_ptr<ID3D11Texture2D> texture2D;

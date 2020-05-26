@@ -2,32 +2,24 @@
 
 #pragma once
 
-#include "traits.h"
-#include "functional.h"
 #include "concepts.h"
+#include "functional.h"
+#include "traits.h"
+
 #include <utility>
 
 namespace up {
     // reimplemented to avoid pulling in the <iterator> monstrosity (bloated in some stdlib implementations)
-    template <class C>
-    constexpr auto begin(C& c) noexcept(noexcept(c.begin())) { return c.begin(); }
-    template <class C>
-    constexpr auto begin(const C& c) noexcept(noexcept(c.begin())) { return c.begin(); }
-    template <class T, std::size_t N>
-    constexpr T* begin(T (&array)[N]) noexcept { return array; }
+    template <class C> constexpr auto begin(C& c) noexcept(noexcept(c.begin())) { return c.begin(); }
+    template <class C> constexpr auto begin(const C& c) noexcept(noexcept(c.begin())) { return c.begin(); }
+    template <class T, std::size_t N> constexpr T* begin(T (&array)[N]) noexcept { return array; }
 
-    template <class C>
-    constexpr auto end(C& c) noexcept(noexcept(c.end())) { return c.end(); }
-    template <class C>
-    constexpr auto end(const C& c) noexcept(noexcept(c.end())) { return c.end(); }
-    template <class T, std::size_t N>
-    constexpr T* end(T (&array)[N]) noexcept { return array + N; }
+    template <class C> constexpr auto end(C& c) noexcept(noexcept(c.end())) { return c.end(); }
+    template <class C> constexpr auto end(const C& c) noexcept(noexcept(c.end())) { return c.end(); }
+    template <class T, std::size_t N> constexpr T* end(T (&array)[N]) noexcept { return array + N; }
 
     struct identity {
-        template <typename T>
-        constexpr T const& operator()(T const& value) const noexcept {
-            return value;
-        }
+        template <typename T> constexpr T const& operator()(T const& value) const noexcept { return value; }
     };
 
     struct equality {
@@ -48,12 +40,10 @@ namespace up {
     decltype(auto) project(Projection const& projection, Value const& value) noexcept(noexcept(invoke(projection, value))) {
         return invoke(projection, value);
     }
-    template <typename Class, typename ReturnType>
-    auto project(ReturnType Class::*member, Class const& value) noexcept -> ReturnType {
+    template <typename Class, typename ReturnType> auto project(ReturnType Class::*member, Class const& value) noexcept -> ReturnType {
         return value.*member;
     }
-    template <typename Class, typename ReturnType>
-    auto project(ReturnType Class::*member, Class const* value) noexcept -> ReturnType {
+    template <typename Class, typename ReturnType> auto project(ReturnType Class::*member, Class const* value) noexcept -> ReturnType {
         return value->*member;
     }
 
@@ -73,13 +63,11 @@ namespace up {
         return out;
     }
 
-    template <enumeration Enum>
-    constexpr auto to_underlying(Enum value) noexcept -> std::underlying_type_t<Enum> {
+    template <enumeration Enum> constexpr auto to_underlying(Enum value) noexcept -> std::underlying_type_t<Enum> {
         return static_cast<std::underlying_type_t<Enum>>(value);
     }
 
-    template <enumeration Enum, same_as<std::underlying_type_t<Enum>> T>
-    constexpr auto to_enum(T value) noexcept -> Enum {
+    template <enumeration Enum, same_as<std::underlying_type_t<Enum>> T> constexpr auto to_enum(T value) noexcept -> Enum {
         return static_cast<Enum>(value);
     }
 
@@ -88,12 +76,8 @@ namespace up {
         return (value + alignLessOne) & ~alignLessOne;
     }
 
-    template <typename To, typename From>
-    constexpr auto narrow_cast(From&& from) noexcept -> To {
-        return static_cast<To>(std::forward<From>(from));
-    }
+    template <typename To, typename From> constexpr auto narrow_cast(From&& from) noexcept -> To { return static_cast<To>(std::forward<From>(from)); }
 
-    template <typename T>
-    struct tag {};
+    template <typename T> struct tag {};
 
 } // namespace up

@@ -1,14 +1,16 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "d3d11_command_list.h"
-#include "d3d11_pipeline_state.h"
-#include "d3d11_resource_view.h"
 #include "d3d11_buffer.h"
+#include "d3d11_pipeline_state.h"
 #include "d3d11_platform.h"
-#include "d3d11_texture.h"
+#include "d3d11_resource_view.h"
 #include "d3d11_sampler.h"
+#include "d3d11_texture.h"
+
+#include "potato/runtime/assertion.h"
+
 #include "potato/spud/int_types.h"
-#include <potato/runtime/assertion.h>
 #include "potato/spud/out_ptr.h"
 
 up::d3d11::CommandListD3D11::CommandListD3D11(com_ptr<ID3D11DeviceContext> context) : _context(std::move(context)) {}
@@ -179,12 +181,13 @@ void up::d3d11::CommandListD3D11::clearRenderTarget(GpuResourceView* view, glm::
 void up::d3d11::CommandListD3D11::clearDepthStencil(GpuResourceView* view) {
     UP_ASSERT(view != nullptr);
 
-    _context->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), D3D11_CLEAR_DEPTH, 1.f, 0);
+    _context->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()),
+        D3D11_CLEAR_DEPTH,
+        1.f,
+        0);
 }
 
-void up::d3d11::CommandListD3D11::finish() {
-    _context->FinishCommandList(FALSE, out_ptr(_commands));
-}
+void up::d3d11::CommandListD3D11::finish() { _context->FinishCommandList(FALSE, out_ptr(_commands)); }
 
 void up::d3d11::CommandListD3D11::clear(GpuPipelineState* pipelineState) {
     _context->ClearState();
@@ -208,7 +211,7 @@ auto up::d3d11::CommandListD3D11::map(GpuBuffer* buffer, up::uint64 size, up::ui
     UP_ASSERT(offset < buffer->size());
     UP_ASSERT(size <= buffer->size() - offset);
 
-    //bool writeAll = offset == 0 && size == buffer->size();
+    // bool writeAll = offset == 0 && size == buffer->size();
 
     //_context->Map(d3dBuffer, 0, writeAll ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &sub);
     _context->Map(d3dBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &sub);

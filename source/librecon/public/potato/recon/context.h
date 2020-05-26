@@ -2,11 +2,13 @@
 
 #pragma once
 
-#include "potato/spud/string.h"
-#include "potato/spud/zstring_view.h"
-#include "potato/spud/vector.h"
-#include "potato/spud/std_iostream.h"
 #include "potato/assetdb/asset_record.h"
+
+#include "potato/spud/std_iostream.h"
+#include "potato/spud/string.h"
+#include "potato/spud/vector.h"
+#include "potato/spud/zstring_view.h"
+
 #include <string>
 
 namespace up {
@@ -18,15 +20,15 @@ namespace up::recon {
     class Context {
     public:
         Context(zstring_view sourceFilePath,
-                zstring_view sourceFolderPath,
-                zstring_view destinationFolderPath,
-                FileSystem& fileSystem,
-                Logger& logger)
-            : _sourceFilePath(sourceFilePath),
-              _sourceFolderPath(sourceFolderPath),
-              _destinationFolderPath(destinationFolderPath),
-              _fileSystem(fileSystem),
-              _logger(logger) {}
+            zstring_view sourceFolderPath,
+            zstring_view destinationFolderPath,
+            FileSystem& fileSystem,
+            Logger& logger)
+            : _sourceFilePath(sourceFilePath)
+            , _sourceFolderPath(sourceFolderPath)
+            , _destinationFolderPath(destinationFolderPath)
+            , _fileSystem(fileSystem)
+            , _logger(logger) {}
 
         Context(Context&&) = delete;
         Context& operator=(Context&&) = delete;

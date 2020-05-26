@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include <potato/ecs/common.h>
+#include "potato/ecs/common.h"
 
 namespace up::shell {
     class Selection {

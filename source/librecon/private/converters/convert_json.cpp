@@ -1,19 +1,22 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "convert_json.h"
-#include "potato/spud/std_iostream.h"
-#include "potato/runtime/path.h"
+
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
-#include <fstream>
+#include "potato/runtime/path.h"
+
+#include "potato/spud/std_iostream.h"
+
 #include <nlohmann/json.hpp>
+
+#include <fstream>
 
 up::recon::JsonConverter::JsonConverter() = default;
 
 up::recon::JsonConverter::~JsonConverter() = default;
 
 bool up::recon::JsonConverter::convert(Context& ctx) {
-
     auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 

@@ -3,14 +3,19 @@
 #pragma once
 
 #include "d3d11_platform.h"
+#include "gpu_device.h"
+
 #include "potato/runtime/com_ptr.h"
+
 #include "potato/spud/unique_resource.h"
-#include "potato/render/gpu_device.h"
 
 namespace up::d3d11 {
     class DeviceD3D11 final : public GpuDevice {
     public:
-        DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context);
+        DeviceD3D11(com_ptr<IDXGIFactory2> factory,
+            com_ptr<IDXGIAdapter1> adapter,
+            com_ptr<ID3D11Device> device,
+            com_ptr<ID3D11DeviceContext> context);
         virtual ~DeviceD3D11();
 
         DeviceD3D11(DeviceD3D11&&) = delete;

@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/native.h"
+#include "native.h"
+
 #include <filesystem>
 
 static auto errorCodeToResult(std::error_code ec) noexcept -> up::IOResult {
@@ -28,10 +29,14 @@ bool up::NativeFileSystem::directoryExists(zstring_view path) const noexcept {
 auto up::NativeFileSystem::fileStat(zstring_view path, FileStat& outInfo) const -> IOResult {
     std::error_code ec;
     outInfo.size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
-    outInfo.mtime = std::chrono::duration_cast<std::chrono::microseconds>(std::filesystem::last_write_time(std::string_view(path.c_str(), path.size()), ec).time_since_epoch()).count();
+    outInfo.mtime = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::filesystem::last_write_time(std::string_view(path.c_str(), path.size()), ec).time_since_epoch())
+                        .count();
     auto const status = std::filesystem::status(std::string_view(path.c_str(), path.size()), ec);
-    outInfo.type =
-        status.type() == std::filesystem::file_type::regular ? FileType::Regular : status.type() == std::filesystem::file_type::directory ? FileType::Directory : status.type() == std::filesystem::file_type::symlink ? FileType::SymbolicLink : FileType::Other;
+    outInfo.type = status.type() == std::filesystem::file_type::regular ? FileType::Regular
+                                                                        : status.type() == std::filesystem::file_type::directory
+            ? FileType::Directory
+            : status.type() == std::filesystem::file_type::symlink ? FileType::SymbolicLink : FileType::Other;
     return errorCodeToResult(ec);
 }
 
@@ -41,12 +46,15 @@ auto up::NativeFileSystem::enumerate(zstring_view path, EnumerateCallback cb, En
 
     while (iter != end) {
         std::string genPath =
-            ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath ? iter->path() : std::filesystem::relative(iter->path(), path.c_str())).generic_string();
+            ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath ? iter->path() : std::filesystem::relative(iter->path(), path.c_str()))
+                .generic_string();
 
         FileInfo info;
         info.path = genPath.c_str();
         info.size = iter->file_size();
-        info.type = iter->is_regular_file() ? FileType::Regular : iter->is_directory() ? FileType::Directory : iter->is_symlink() ? FileType::SymbolicLink : FileType::Other;
+        info.type = iter->is_regular_file()
+            ? FileType::Regular
+            : iter->is_directory() ? FileType::Directory : iter->is_symlink() ? FileType::SymbolicLink : FileType::Other;
 
         auto result = cb(info);
         if (result == EnumerateResult::Break) {

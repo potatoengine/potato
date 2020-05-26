@@ -1,21 +1,23 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/native.h"
-#include "potato/runtime/path.h"
-#include "potato/spud/platform.h"
-#include "potato/spud/unique_resource.h"
-#include "potato/spud/string_writer.h"
-#include "potato/spud/span.h"
+#include "native.h"
+#include "path.h"
 
-#include <sys/types.h>
+#include "potato/spud/platform.h"
+#include "potato/spud/span.h"
+#include "potato/spud/string_writer.h"
+#include "potato/spud/unique_resource.h"
+
 #include <sys/stat.h>
-#include <unistd.h>
+#include <sys/types.h>
+
 #include <dirent.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <ftw.h>
-#include <errno.h>
-#include <stdio.h>
 #include <limits.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #if !UP_PLATFORM_POSIX
 #    error "Invalid platform"
@@ -52,7 +54,8 @@ auto up::NativeFileSystem::fileStat(zstring_view path, FileStat& outInfo) const 
 
     outInfo.size = st.st_size;
     outInfo.mtime = st.st_mtime;
-    outInfo.type = S_ISREG(st.st_mode) ? FileType::Regular : S_ISDIR(st.st_mode) ? FileType::Directory : S_ISLNK(st.st_mode) ? FileType::SymbolicLink : FileType::Other;
+    outInfo.type = S_ISREG(st.st_mode) ? FileType::Regular
+                                       : S_ISDIR(st.st_mode) ? FileType::Directory : S_ISLNK(st.st_mode) ? FileType::SymbolicLink : FileType::Other;
     return IOResult::Success;
 }
 
@@ -78,7 +81,9 @@ static auto enumerateWorker(up::zstring_view path, up::EnumerateCallback cb, up:
         up::FileInfo info;
         info.path = writer.c_str();
         info.size = 0;
-        info.type = entry->d_type == DT_REG ? up::FileType::Regular : entry->d_type == DT_DIR ? up::FileType::Directory : entry->d_type == DT_LNK ? up::FileType::SymbolicLink : up::FileType::Other;
+        info.type = entry->d_type == DT_REG
+            ? up::FileType::Regular
+            : entry->d_type == DT_DIR ? up::FileType::Directory : entry->d_type == DT_LNK ? up::FileType::SymbolicLink : up::FileType::Other;
 
         struct stat st;
         if (stat(writer.c_str(), &st) == 0) {
@@ -157,9 +162,7 @@ auto up::NativeFileSystem::remove(zstring_view path) -> IOResult {
 }
 
 auto up::NativeFileSystem::removeRecursive(zstring_view path) -> IOResult {
-    auto cb = [](char const* path, struct stat const* st, int flags, struct FTW* ftw) -> int {
-        return ::remove(path);
-    };
+    auto cb = [](char const* path, struct stat const* st, int flags, struct FTW* ftw) -> int { return ::remove(path); };
     int rs = nftw(path.c_str(), +cb, 64, FTW_DEPTH | FTW_PHYS);
     if (rs != 0) {
         return errnoToResult(errno);
@@ -176,6 +179,4 @@ auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
     return result != nullptr ? string(buffer) : string{};
 }
 
-bool up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
-    return 0 == chdir(path.c_str());
-}
+bool up::NativeFileSystem::currentWorkingDirectory(zstring_view path) { return 0 == chdir(path.c_str()); }

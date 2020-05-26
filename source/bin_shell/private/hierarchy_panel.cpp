@@ -1,14 +1,13 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include <imgui.h>
-#include <SDL.h>
-
+#include "panel.h"
 #include "scene.h"
-
-#include "potato/shell/panel.h"
-#include "potato/shell/selection.h"
+#include "selection.h"
 
 #include "potato/spud/fixed_string_writer.h"
+
+#include <SDL.h>
+#include <imgui.h>
 
 namespace up::shell {
     class HierarchyPanel : public shell::Panel {
@@ -24,9 +23,7 @@ namespace up::shell {
         Selection& _selection;
     };
 
-    auto createHierarchyPanel(Scene& scene, Selection& selection) -> box<Panel> {
-        return new_box<HierarchyPanel>(scene, selection);
-    }
+    auto createHierarchyPanel(Scene& scene, Selection& selection) -> box<Panel> { return new_box<HierarchyPanel>(scene, selection); }
 
     void HierarchyPanel::ui() {
         auto& io = ImGui::GetIO();

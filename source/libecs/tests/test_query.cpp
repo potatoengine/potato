@@ -1,6 +1,7 @@
-#include "potato/ecs/world.h"
 #include "potato/ecs/query.h"
 #include "potato/ecs/universe.h"
+#include "potato/ecs/world.h"
+
 #include <doctest/doctest.h>
 
 namespace {
@@ -25,7 +26,6 @@ DOCTEST_TEST_SUITE("[potato][ecs] Query") {
     using namespace up;
 
     DOCTEST_TEST_CASE("") {
-
         Universe universe;
 
         universe.registerComponent<Test1>("Test1");

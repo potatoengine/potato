@@ -1,25 +1,30 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/recon/converter_app.h"
+#include "converter_app.h"
+#include "converters/convert_copy.h"
+#include "converters/convert_hlsl.h"
+#include "converters/convert_ignore.h"
+#include "converters/convert_json.h"
+#include "converters/convert_material.h"
+#include "converters/convert_model.h"
+
+#include "potato/assetdb/hash_cache.h"
+
+#include "potato/runtime/filesystem.h"
+#include "potato/runtime/json.h"
+#include "potato/runtime/native.h"
+#include "potato/runtime/path.h"
+#include "potato/runtime/stream.h"
+#include "potato/runtime/uuid.h"
+
+#include "potato/spud/std_iostream.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/string_writer.h"
-#include "potato/spud/std_iostream.h"
-#include "potato/runtime/uuid.h"
-#include "potato/runtime/path.h"
-#include "potato/runtime/filesystem.h"
-#include "potato/runtime/native.h"
-#include "potato/runtime/stream.h"
-#include "potato/runtime/json.h"
-#include "potato/assetdb/hash_cache.h"
-#include "converters/convert_hlsl.h"
-#include "converters/convert_copy.h"
-#include "converters/convert_json.h"
-#include "converters/convert_ignore.h"
-#include "converters/convert_model.h"
-#include "converters/convert_material.h"
+
 #include <nlohmann/json.hpp>
-#include <set>
+
 #include <algorithm>
+#include <set>
 
 up::recon::ConverterApp::ConverterApp() : _programName("recon"), _fileSystem(new_box<NativeFileSystem>()), _hashes(*_fileSystem), _logger("recon") {}
 
@@ -132,35 +137,24 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
 
 void up::recon::ConverterApp::registerConverters() {
 #if UP_GPU_ENABLE_D3D11
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; },
-                           new_box<HlslConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, new_box<HlslConverter>()});
 #else
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; },
-                           new_box<IgnoreConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, new_box<IgnoreConverter>()});
 #endif
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsli"; },
-                           new_box<IgnoreConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".txt"; },
-                           new_box<IgnoreConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".json"; },
-                           new_box<JsonConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".png"; },
-                           new_box<CopyConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".jpg"; },
-                           new_box<CopyConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".ttf"; },
-                           new_box<CopyConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".obj"; },
-                           new_box<ModelConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".mat"; },
-                           new_box<MaterialConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsli"; }, new_box<IgnoreConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".txt"; }, new_box<IgnoreConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".json"; }, new_box<JsonConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".png"; }, new_box<CopyConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".jpg"; }, new_box<CopyConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".ttf"; }, new_box<CopyConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".obj"; }, new_box<ModelConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".mat"; }, new_box<MaterialConverter>()});
 }
 
 bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
     bool failed = false;
 
     for (auto const& path : files) {
-
         auto assetId = _library.pathToAssetId(string_view(path));
         auto record = _library.findRecord(assetId);
 
@@ -211,17 +205,13 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         for (auto const& sourceDepPath : context.sourceDependencies()) {
             auto osPath = path::join({_config.sourceFolderPath.c_str(), sourceDepPath.c_str()});
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
-            newRecord.sourceDependencies.push_back(AssetDependencyRecord{
-                string(sourceDepPath),
-                contentHash});
+            newRecord.sourceDependencies.push_back(AssetDependencyRecord{string(sourceDepPath), contentHash});
         }
 
         for (auto const& outputPath : context.outputs()) {
             auto osPath = path::join({_config.destinationFolderPath.c_str(), outputPath.c_str()});
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
-            newRecord.outputs.push_back(AssetOutputRecord{
-                string(outputPath),
-                contentHash});
+            newRecord.outputs.push_back(AssetOutputRecord{string(outputPath), contentHash});
         }
 
         _library.insertRecord(std::move(newRecord));
@@ -259,9 +249,8 @@ bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
 }
 
 bool up::recon::ConverterApp::isUpToDate(AssetImportRecord const& record, up::uint64 contentHash, Converter const& converter) const noexcept {
-    return record.contentHash == contentHash &&
-           string_view(record.importerName) == converter.name() &&
-           record.importerRevision == converter.revision();
+    return record.contentHash == contentHash && string_view(record.importerName) == converter.name() &&
+        record.importerRevision == converter.revision();
 }
 
 bool up::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> records) {

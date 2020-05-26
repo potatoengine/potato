@@ -1,9 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/ecs/shared_context.h"
-#include <potato/spud/find.h>
-#include <potato/spud/sort.h>
-#include <potato/spud/utility.h>
+#include "shared_context.h"
+
+#include "potato/spud/find.h"
+#include "potato/spud/sort.h"
+#include "potato/spud/utility.h"
 
 auto up::EcsSharedContext::findComponentById(ComponentId id) const noexcept -> ComponentMeta const* {
     auto const* it = find(components, id, equality{}, &ComponentMeta::id);
@@ -59,7 +60,8 @@ auto up::EcsSharedContext::_bindArchetypeOffets(ArchetypeId archetype, view<Comp
     return true;
 }
 
-auto up::EcsSharedContext::acquireArchetype(ArchetypeId original, view<ComponentMeta const*> include, view<ComponentMeta const*> exclude) -> ArchetypeId {
+auto up::EcsSharedContext::acquireArchetype(ArchetypeId original, view<ComponentMeta const*> include, view<ComponentMeta const*> exclude)
+    -> ArchetypeId {
     // attempt to find any existing archetype with the same component set
     //
     {

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "potato/spud/delegate_ref.h"
-#include "potato/spud/zstring_view.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/utility.h"
+#include "potato/spud/zstring_view.h"
 
 namespace up {
     enum class IOResult {
@@ -25,23 +25,11 @@ namespace up {
         Break,
     };
 
-    enum class FileOpenMode {
-        Binary,
-        Text
-    };
+    enum class FileOpenMode { Binary, Text };
 
-    enum class FileType {
-        Regular,
-        Directory,
-        SymbolicLink,
-        Other
-    };
+    enum class FileType { Regular, Directory, SymbolicLink, Other };
 
-    enum class SeekPosition {
-        Begin,
-        End,
-        Current
-    };
+    enum class SeekPosition { Begin, End, Current };
 
     struct FileStat {
         size_t size = 0;

@@ -1,12 +1,15 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/recon/converter_config.h"
-#include "potato/spud/string_view.h"
-#include "potato/spud/zstring_view.h"
+#include "converter_config.h"
+
 #include "potato/runtime/filesystem.h"
-#include "potato/runtime/stream.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/logger.h"
+#include "potato/runtime/stream.h"
+
+#include "potato/spud/string_view.h"
+#include "potato/spud/zstring_view.h"
+
 #include <nlohmann/json.hpp>
 
 bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, FileSystem& fileSystem, Logger& logger) {
@@ -56,9 +59,7 @@ bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
         }
 
         switch (argMode) {
-        case ArgNone:
-            logger.error("Unexpected value: {}", arg.c_str());
-            return false;
+        case ArgNone: logger.error("Unexpected value: {}", arg.c_str()); return false;
         case ArgSourceFolder:
             config.sourceFolderPath = string(arg);
             argMode = ArgNone;
@@ -81,23 +82,12 @@ bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
     }
 
     switch (argMode) {
-    case ArgNone:
-        return true;
-    case ArgSourceFolder:
-        logger.error("No value provided after `-source' argument");
-        return false;
-    case ArgDestinationFolder:
-        logger.error("No value provided after `-dest' argument");
-        return false;
-    case ArgCacheFolder:
-        logger.error("No value provided after `-cache' argument");
-        return false;
-    case ArgConfig:
-        logger.error("No value provided after `-config' argument");
-        return false;
-    default:
-        logger.error("No value provided");
-        return false;
+    case ArgNone: return true;
+    case ArgSourceFolder: logger.error("No value provided after `-source' argument"); return false;
+    case ArgDestinationFolder: logger.error("No value provided after `-dest' argument"); return false;
+    case ArgCacheFolder: logger.error("No value provided after `-cache' argument"); return false;
+    case ArgConfig: logger.error("No value provided after `-config' argument"); return false;
+    default: logger.error("No value provided"); return false;
     }
 }
 

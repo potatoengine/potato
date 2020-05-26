@@ -1,22 +1,23 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include <glm/glm.hpp>
-#include <imgui.h>
-#include <SDL.h>
-
-#include "scene.h"
 #include "camera.h"
 #include "camera_controller.h"
+#include "panel.h"
+#include "scene.h"
 
-#include "potato/shell/panel.h"
-#include "potato/render/gpu_device.h"
-#include "potato/render/gpu_texture.h"
-#include "potato/render/gpu_resource_view.h"
-#include "potato/render/renderer.h"
 #include "potato/render/camera.h"
-#include "potato/render/debug_draw.h"
 #include "potato/render/context.h"
+#include "potato/render/debug_draw.h"
 #include "potato/render/draw_imgui.h"
+#include "potato/render/gpu_device.h"
+#include "potato/render/gpu_resource_view.h"
+#include "potato/render/gpu_texture.h"
+#include "potato/render/renderer.h"
+
+#include <glm/glm.hpp>
+
+#include <SDL.h>
+#include <imgui.h>
 
 namespace up::shell {
     class ScenePanel : public shell::Panel {
@@ -46,9 +47,7 @@ namespace up::shell {
         bool _isControllingCamera = false;
     };
 
-    auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel> {
-        return new_box<ScenePanel>(renderer, scene);
-    }
+    auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel> { return new_box<ScenePanel>(renderer, scene); }
 
     void ScenePanel::ui() {
         auto& io = ImGui::GetIO();

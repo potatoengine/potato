@@ -1,4 +1,5 @@
 #include "potato/spud/rc.h"
+
 #include <doctest/doctest.h>
 
 namespace {

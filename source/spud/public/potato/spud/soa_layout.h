@@ -2,27 +2,24 @@
 
 #pragma once
 
-#include "typelist.h"
 #include "const_util.h"
-#include "traits.h"
 #include "tie_struct.h"
+#include "traits.h"
+#include "typelist.h"
 
 namespace up {
     namespace _detail {
         // Calculates the sum of sizes in a typelist
         //
-        template <typename Types>
-        struct sizeof_all;
+        template <typename Types> struct sizeof_all;
 
-        template <typename... Types>
-        struct sizeof_all<typelist<Types...>> {
+        template <typename... Types> struct sizeof_all<typelist<Types...>> {
             static constexpr int value = static_cast<int>(sum_v<sizeof(Types)...>);
         };
 
         // Calculates offsets for consecutive items in a typelist
         //
-        template <int Stride, int Offset, typename Types, int... Results>
-        struct layout_calculator;
+        template <int Stride, int Offset, typename Types, int... Results> struct layout_calculator;
 
         template <int Stride, int Offset, typename Next, typename... Types, int... Results>
         struct layout_calculator<Stride, Offset, typelist<Next, Types...>, Results...> {
@@ -32,21 +29,18 @@ namespace up {
             using result = typename layout_calculator<Stride, aligned + span, typelist<Types...>, Results..., aligned>::result;
         };
 
-        template <int Stride, int Offset, int... Results>
-        struct layout_calculator<Stride, Offset, typelist<>, Results...> {
+        template <int Stride, int Offset, int... Results> struct layout_calculator<Stride, Offset, typelist<>, Results...> {
             using result = value_list<int, Results...>;
         };
 
-        template <int Stride, typename Types>
-        using layout_calculator_t = typename layout_calculator<Stride, 0, Types>::result;
+        template <int Stride, typename Types> using layout_calculator_t = typename layout_calculator<Stride, 0, Types>::result;
     } // namespace _detail
 
     // Provides a mechanism for decoding a struct of pointers into a memory block of size ChunkSize.
     //
     // Note: the provided structure must only contain pointer-type members.
     //
-    template <typename Struct, int ChunkSize = 64 * 1024>
-    struct soa_layout {
+    template <typename Struct, int ChunkSize = 64 * 1024> struct soa_layout {
         using type = Struct;
         using member_types = typelist_map_t<std::remove_pointer_t, member_typelist_t<Struct>>;
 

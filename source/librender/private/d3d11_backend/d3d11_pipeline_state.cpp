@@ -1,7 +1,9 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "d3d11_pipeline_state.h"
-#include <potato/runtime/assertion.h>
+
+#include "potato/runtime/assertion.h"
+
 #include "potato/spud/out_ptr.h"
 
 up::d3d11::PipelineStateD3D11::PipelineStateD3D11(PipelineStateParamsD3D11 params) : _params(std::move(params)) {

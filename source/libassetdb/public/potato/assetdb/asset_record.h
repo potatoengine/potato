@@ -4,10 +4,11 @@
 
 #include "_export.h"
 #include "common.h"
-#include "potato/spud/string.h"
-#include "potato/spud/span.h"
-#include "potato/spud/vector.h"
+
 #include "potato/spud/int_types.h"
+#include "potato/spud/span.h"
+#include "potato/spud/string.h"
+#include "potato/spud/vector.h"
 
 namespace up {
     enum class AssetCategory : uint8 {
@@ -19,11 +20,7 @@ namespace up {
     UP_ASSETDB_API string_view assetCategoryName(AssetCategory category) noexcept;
     UP_ASSETDB_API AssetCategory assetCategoryFromName(string_view name) noexcept;
 
-    enum class AssetDependencyType : uint8 {
-        Source,
-        Runtime,
-        Tool
-    };
+    enum class AssetDependencyType : uint8 { Source, Runtime, Tool };
     UP_ASSETDB_API span<string_view const> assetDependencyTypeNames() noexcept;
 
     struct AssetDependencyRecord {

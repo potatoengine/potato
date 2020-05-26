@@ -2,9 +2,11 @@
 
 #pragma once
 
-#include <type_traits>
-#include <initializer_list>
+#include "format_result.h"
 #include "format_traits.h"
+
+#include <initializer_list>
+#include <type_traits>
 
 namespace up::_detail {
     enum class format_arg_type;
@@ -12,8 +14,7 @@ namespace up::_detail {
     class format_arg;
     class format_arg_list;
 
-    template <typename Writer, typename T>
-    constexpr format_arg make_format_arg(T const& value) noexcept;
+    template <typename Writer, typename T> constexpr format_arg make_format_arg(T const& value) noexcept;
 } // namespace up::_detail
 
 enum class up::_detail::format_arg_type {
@@ -47,8 +48,7 @@ public:
     constexpr format_arg(_detail::format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
     constexpr format_arg(thunk_type thunk, void const* value) noexcept : _type(_detail::format_arg_type::custom), _thunk(thunk), _value(value) {}
 
-    template <typename Writer>
-    constexpr format_result format_into(Writer& output, string_view spec_string = {}) const;
+    template <typename Writer> constexpr format_result format_into(Writer& output, string_view spec_string = {}) const;
 
 private:
     _detail::format_arg_type _type = _detail::format_arg_type::unknown;
@@ -66,13 +66,11 @@ public:
     constexpr format_arg_list() noexcept = default;
     constexpr format_arg_list(format_arg_type const* args, size_type count) noexcept : _args(args), _count(count) {}
 
-    template <typename Writer>
-    constexpr format_result format_arg_into(Writer& output, size_type index, string_view spec_string) const {
+    template <typename Writer> constexpr format_result format_arg_into(Writer& output, size_type index, string_view spec_string) const {
         return index < _count ? _args[index].format_into(output, spec_string) : format_result::out_of_range;
     }
 
-    template <typename Writer>
-    constexpr format_result format_arg_into(Writer& output, size_type index) const {
+    template <typename Writer> constexpr format_result format_arg_into(Writer& output, size_type index) const {
         return index < _count ? _args[index].format_into(output) : format_result::out_of_range;
     }
 
@@ -83,11 +81,9 @@ private:
 
 namespace up::_detail {
 
-    template <typename T>
-    struct type_of { static constexpr format_arg_type value = format_arg_type::unknown; };
+    template <typename T> struct type_of { static constexpr format_arg_type value = format_arg_type::unknown; };
 #define FORMATXX_TYPE(x, e) \
-    template <> \
-    struct type_of<x> { static constexpr format_arg_type value = format_arg_type::e; };
+    template <> struct type_of<x> { static constexpr format_arg_type value = format_arg_type::e; };
     FORMATXX_TYPE(char, char_t);
     FORMATXX_TYPE(signed char, signed_char);
     FORMATXX_TYPE(unsigned char, unsigned_char);
@@ -109,16 +105,14 @@ namespace up::_detail {
     FORMATXX_TYPE(void const*, void_pointer);
 #undef FORMTAXX_TYPE
 
-    template <typename Writer, typename T>
-    constexpr format_result format_value_thunk(void* out, void const* ptr) {
+    template <typename Writer, typename T> constexpr format_result format_value_thunk(void* out, void const* ptr) {
         auto& writer = *static_cast<Writer*>(out);
         auto const& value = *static_cast<T const*>(ptr);
         format_value(writer, value);
         return format_result::success;
     }
 
-    template <typename Writer, typename T>
-    constexpr format_arg make_format_arg(T const& value) noexcept {
+    template <typename Writer, typename T> constexpr format_arg make_format_arg(T const& value) noexcept {
         constexpr format_arg_type type = type_of<T>::value;
 
         if constexpr (type != format_arg_type::unknown) {

@@ -3,7 +3,9 @@
 #pragma once
 
 #include "_export.h"
+
 #include "potato/spud/string.h"
+
 #include <array>
 
 namespace up {

@@ -3,10 +3,11 @@
 // Inspired by the technique in the "LightweightSemaphore" at
 //   https://github.com/preshing/cpp11-on-multicore
 
-#include "potato/runtime/semaphore.h"
+#include "semaphore.h"
+
+#include <condition_variable>
 #include <limits>
 #include <mutex>
-#include <condition_variable>
 
 namespace {
     struct SemaphoreImplementation {
@@ -24,12 +25,9 @@ namespace {
     };
 } // namespace
 
-up::Semaphore::Semaphore(int initial) noexcept : _counter(initial), _handle(new SemaphoreImplementation) {
-}
+up::Semaphore::Semaphore(int initial) noexcept : _counter(initial), _handle(new SemaphoreImplementation) {}
 
-up::Semaphore::~Semaphore() noexcept {
-    delete static_cast<SemaphoreImplementation*>(_handle);
-}
+up::Semaphore::~Semaphore() noexcept { delete static_cast<SemaphoreImplementation*>(_handle); }
 
 void up::Semaphore::_signal(int n) noexcept {
     auto sema = static_cast<SemaphoreImplementation*>(_handle);
@@ -54,9 +52,7 @@ void up::Semaphore::_wait() noexcept {
 
         ++sema->waiters;
         for (;;) {
-            sema->cond.wait(lock, [sema] {
-                return sema->waiters <= 0;
-            });
+            sema->cond.wait(lock, [sema] { return sema->waiters <= 0; });
 
             if (sema->waiters <= 0) {
                 return;

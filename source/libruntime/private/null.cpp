@@ -1,7 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/null.h"
-#include "potato/runtime/stream.h"
+#include "null.h"
+#include "stream.h"
 
 bool up::NullFileSystem::fileExists(zstring_view path) const noexcept { return false; }
 
@@ -13,7 +13,9 @@ auto up::NullFileSystem::openRead(zstring_view, FileOpenMode) const noexcept -> 
 
 auto up::NullFileSystem::openWrite(zstring_view, FileOpenMode) noexcept -> Stream { return {}; }
 
-auto up::NullFileSystem::enumerate(zstring_view, EnumerateCallback, EnumerateOptions) const noexcept -> EnumerateResult { return EnumerateResult::Continue; }
+auto up::NullFileSystem::enumerate(zstring_view, EnumerateCallback, EnumerateOptions) const noexcept -> EnumerateResult {
+    return EnumerateResult::Continue;
+}
 
 auto up::NullFileSystem::createDirectories(zstring_view path) noexcept -> IOResult { return IOResult::UnsupportedOperation; }
 

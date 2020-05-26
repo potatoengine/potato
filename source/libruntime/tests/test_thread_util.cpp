@@ -1,5 +1,7 @@
 #include "potato/runtime/thread_util.h"
+
 #include <doctest/doctest.h>
+
 #include <thread>
 
 DOCTEST_TEST_SUITE("[potato][runtime] thread_util") {
@@ -7,9 +9,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] thread_util") {
 
     DOCTEST_TEST_CASE("setCurrentThreadName") {
         // basically just making sure we're not crashing
-        auto thread = std::thread([] {
-            setCurrentThreadName("test thread");
-        });
+        auto thread = std::thread([] { setCurrentThreadName("test thread"); });
 
         thread.join();
     }
@@ -25,9 +25,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] thread_util") {
         struct Task {
             SmallThreadId& id;
             Task(SmallThreadId& i) : id(i) {}
-            void operator()() const {
-                DOCTEST_CHECK_NE(id = currentSmallThreadId(), 0);
-            }
+            void operator()() const { DOCTEST_CHECK_NE(id = currentSmallThreadId(), 0); }
         };
 
         // ensure it doesn't change

@@ -3,14 +3,15 @@
 #pragma once
 
 #include "_export.h"
-#include "component.h"
 #include "chunk.h"
+#include "component.h"
 #include "layout.h"
-#include <potato/spud/int_types.h>
-#include <potato/spud/span.h>
-#include <potato/spud/vector.h>
-#include <potato/spud/box.h>
-#include <potato/spud/rc.h>
+
+#include "potato/spud/box.h"
+#include "potato/spud/int_types.h"
+#include "potato/spud/rc.h"
+#include "potato/spud/span.h"
+#include "potato/spud/vector.h"
 
 namespace up {
     struct EcsSharedContext : shared<EcsSharedContext> {
@@ -27,8 +28,7 @@ namespace up {
 
         auto findComponentById(ComponentId id) const noexcept -> ComponentMeta const*;
 
-        template <typename Component>
-        auto findComponentByType() const noexcept -> ComponentMeta const*;
+        template <typename Component> auto findComponentByType() const noexcept -> ComponentMeta const*;
 
         auto acquireChunk() -> Chunk*;
         void recycleChunk(Chunk* chunk) noexcept;
@@ -47,8 +47,7 @@ namespace up {
         Chunk* freeChunkHead = nullptr;
     };
 
-    template <typename Component>
-    auto EcsSharedContext::findComponentByType() const noexcept -> ComponentMeta const* {
+    template <typename Component> auto EcsSharedContext::findComponentByType() const noexcept -> ComponentMeta const* {
         return _findComponentByTypeHash(typeid(Component).hash_code());
     }
 
