@@ -15,11 +15,9 @@
 #include "potato/render/gpu_resource_view.h"
 #include "potato/render/gpu_texture.h"
 #include "potato/render/renderer.h"
-
 #include "potato/spud/delegate.h"
 
 #include <glm/glm.hpp>
-
 #include <SDL.h>
 #include <imgui.h>
 

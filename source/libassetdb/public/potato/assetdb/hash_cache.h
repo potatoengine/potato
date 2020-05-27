@@ -6,7 +6,6 @@
 
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
-
 #include "potato/spud/box.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/int_types.h"

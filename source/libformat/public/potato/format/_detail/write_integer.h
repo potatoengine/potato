@@ -5,7 +5,6 @@
 #include "format_spec.h"
 
 #include "potato/format/format.h"
-
 #include "potato/spud/utility.h"
 
 #include <charconv>

@@ -8,7 +8,6 @@
 #include "potato/reflex/json_serializer.h"
 #include "potato/reflex/reflect.h"
 #include "potato/render/model.h"
-
 #include "potato/runtime/json.h"
 
 #include <glm/common.hpp>

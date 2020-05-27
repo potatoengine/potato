@@ -9,7 +9,6 @@
 #include "d3d11_texture.h"
 
 #include "potato/runtime/assertion.h"
-
 #include "potato/spud/int_types.h"
 #include "potato/spud/out_ptr.h"
 

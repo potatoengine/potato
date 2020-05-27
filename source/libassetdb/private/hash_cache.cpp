@@ -4,7 +4,6 @@
 
 #include "potato/runtime/json.h"
 #include "potato/runtime/stream.h"
-
 #include "potato/spud/hash_fnv1a.h"
 
 #include <nlohmann/json.hpp>

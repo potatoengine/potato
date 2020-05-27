@@ -5,10 +5,8 @@
 #include "selection.h"
 
 #include "potato/render/draw_imgui.h"
-
 #include "potato/runtime/logger.h"
 #include "potato/runtime/native.h"
-
 #include "potato/spud/box.h"
 #include "potato/spud/unique_resource.h"
 

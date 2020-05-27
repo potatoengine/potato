@@ -15,7 +15,6 @@
 
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
-
 #include "potato/spud/numeric_util.h"
 
 #include <chrono>

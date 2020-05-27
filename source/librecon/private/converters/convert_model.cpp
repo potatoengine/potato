@@ -3,12 +3,10 @@
 #include "convert_model.h"
 
 #include "potato/render/model_generated.h"
-
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/path.h"
 #include "potato/runtime/stream.h"
-
 #include "potato/spud/std_iostream.h"
 
 #include <assimp/Exporter.hpp>

@@ -5,7 +5,6 @@
 #include "d3d11_platform.h"
 
 #include "potato/runtime/assertion.h"
-
 #include "potato/spud/out_ptr.h"
 
 up::d3d11::FactoryD3D11::FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory) : _dxgiFactory(std::move(dxgiFactory)) {

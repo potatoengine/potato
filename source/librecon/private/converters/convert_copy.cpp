@@ -5,7 +5,6 @@
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/path.h"
-
 #include "potato/spud/std_iostream.h"
 
 up::recon::CopyConverter::CopyConverter() = default;

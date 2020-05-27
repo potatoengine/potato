@@ -6,7 +6,6 @@
 #include "gpu_device.h"
 
 #include "potato/runtime/com_ptr.h"
-
 #include "potato/spud/unique_resource.h"
 
 namespace up::d3d11 {

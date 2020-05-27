@@ -23,12 +23,10 @@
 #include "potato/render/model.h"
 #include "potato/render/renderer.h"
 #include "potato/render/shader.h"
-
 #include "potato/runtime/json.h"
 #include "potato/runtime/native.h"
 #include "potato/runtime/path.h"
 #include "potato/runtime/stream.h"
-
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/platform.h"
@@ -41,7 +39,6 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/vec3.hpp>
 #include <nlohmann/json.hpp>
-
 #include <SDL.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>

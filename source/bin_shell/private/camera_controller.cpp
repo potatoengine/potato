@@ -6,7 +6,6 @@
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtx/rotate_vector.hpp>
-
 #include <cmath>
 
 constexpr glm::vec3 forward{0, 0, -1};

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "potato/runtime/logger.h"
-
 #include "potato/spud/span.h"
 #include "potato/spud/std_iostream.h"
 #include "potato/spud/string.h"

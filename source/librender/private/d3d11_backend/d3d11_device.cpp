@@ -12,7 +12,6 @@
 
 #include "potato/runtime/assertion.h"
 #include "potato/runtime/com_ptr.h"
-
 #include "potato/spud/out_ptr.h"
 
 #include <utility>

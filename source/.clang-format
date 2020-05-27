@@ -66,18 +66,23 @@ IncludeCategories:
     Priority: 0
     SortPriority: 10
   - Regex: '^["<]potato/spud/'
-    Priority: 70
-  - Regex: '^"[^/]+/[^/]+"'
+    Priority: 50
+    SortPriority: 70
+  - Regex: '^["<]potato/runtime/'
+    Priority: 50
+    SortPriority: 60
+  - Regex: '^["<]potato/'
+    Priority: 50
+    SortPriority: 30
+  - Regex: '^".*"'
     Priority: 0
     SortPriority: 20
-  - Regex: '^["<]potato/runtime/'
-    Priority: 60
-  - Regex: '^["<]potato/'
-    Priority: 30
-  - Regex: '^<[^/]+>$'
+  - Regex: '/'
     Priority: 100
+    SortPriority: 80
   - Regex: '.*'
-    Priority: 90
+    Priority: 100
+    SortPriority: 90
 IncludeIsMainRegex: '([.][a-z]+)?$'
 #IndentCaseBlocks: false
 IndentCaseLabels: false

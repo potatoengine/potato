@@ -7,10 +7,8 @@
 
 #include "potato/assetdb/asset_library.h"
 #include "potato/assetdb/hash_cache.h"
-
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
-
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/span.h"

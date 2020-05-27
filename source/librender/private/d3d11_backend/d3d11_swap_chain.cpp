@@ -5,7 +5,6 @@
 #include "d3d11_texture.h"
 
 #include "potato/runtime/com_ptr.h"
-
 #include "potato/spud/box.h"
 #include "potato/spud/out_ptr.h"
 

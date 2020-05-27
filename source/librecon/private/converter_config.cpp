@@ -6,7 +6,6 @@
 #include "potato/runtime/json.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/stream.h"
-
 #include "potato/spud/string_view.h"
 #include "potato/spud/zstring_view.h"
 

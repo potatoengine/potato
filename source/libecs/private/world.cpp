@@ -5,7 +5,6 @@
 #include "shared_context.h"
 
 #include "potato/runtime/assertion.h"
-
 #include "potato/spud/find.h"
 #include "potato/spud/sequence.h"
 

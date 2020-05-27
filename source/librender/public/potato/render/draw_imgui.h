@@ -5,7 +5,6 @@
 #include "_export.h"
 
 #include "potato/runtime/stream.h"
-
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/string.h"

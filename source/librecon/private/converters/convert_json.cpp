@@ -5,11 +5,9 @@
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/path.h"
-
 #include "potato/spud/std_iostream.h"
 
 #include <nlohmann/json.hpp>
-
 #include <fstream>
 
 up::recon::JsonConverter::JsonConverter() = default;

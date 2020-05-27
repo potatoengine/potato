@@ -15,7 +15,6 @@
 #include "potato/render/renderer.h"
 
 #include <glm/glm.hpp>
-
 #include <SDL.h>
 #include <imgui.h>
 

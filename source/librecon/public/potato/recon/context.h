@@ -3,7 +3,6 @@
 #pragma once
 
 #include "potato/assetdb/asset_record.h"
-
 #include "potato/spud/std_iostream.h"
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"

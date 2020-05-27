@@ -6,7 +6,6 @@
 #include "gpu_resource_view.h"
 
 #include "potato/runtime/com_ptr.h"
-
 #include "potato/spud/box.h"
 
 namespace up::d3d11 {
