@@ -1,21 +1,29 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/com_ptr.h"
 #include "d3d11_device.h"
+#include "d3d11_buffer.h"
 #include "d3d11_command_list.h"
 #include "d3d11_pipeline_state.h"
-#include "d3d11_buffer.h"
-#include "d3d11_resource_view.h"
-#include "d3d11_swap_chain.h"
 #include "d3d11_platform.h"
-#include "d3d11_texture.h"
+#include "d3d11_resource_view.h"
 #include "d3d11_sampler.h"
-#include <potato/runtime/assertion.h>
+#include "d3d11_swap_chain.h"
+#include "d3d11_texture.h"
+
+#include "potato/runtime/assertion.h"
+#include "potato/runtime/com_ptr.h"
 #include "potato/spud/out_ptr.h"
+
 #include <utility>
 
-up::d3d11::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter, com_ptr<ID3D11Device> device, com_ptr<ID3D11DeviceContext> context)
-    : _factory(std::move(factory)), _adaptor(std::move(adapter)), _device(std::move(device)), _context(std::move(context)) {
+up::d3d11::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory,
+    com_ptr<IDXGIAdapter1> adapter,
+    com_ptr<ID3D11Device> device,
+    com_ptr<ID3D11DeviceContext> context)
+    : _factory(std::move(factory))
+    , _adaptor(std::move(adapter))
+    , _device(std::move(device))
+    , _context(std::move(context)) {
     UP_ASSERT(_factory != nullptr);
     UP_ASSERT(_adaptor != nullptr);
     UP_ASSERT(_device != nullptr);
@@ -45,7 +53,16 @@ auto up::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_pt
 
     com_ptr<ID3D11Device> device;
     com_ptr<ID3D11DeviceContext> context;
-    D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_DEBUG, levels, 1, D3D11_SDK_VERSION, out_ptr(device), nullptr, out_ptr(context));
+    D3D11CreateDevice(adapter.get(),
+        D3D_DRIVER_TYPE_UNKNOWN,
+        nullptr,
+        D3D11_CREATE_DEVICE_DEBUG,
+        levels,
+        1,
+        D3D11_SDK_VERSION,
+        out_ptr(device),
+        nullptr,
+        out_ptr(context));
     if (device == nullptr || context == nullptr) {
         return nullptr;
     }
@@ -133,10 +150,8 @@ auto up::d3d11::DeviceD3D11::createShaderResourceView(GpuTexture* texture) -> bo
         desc.Texture2D.MostDetailedMip = 0;
         break;
     case GpuTextureType::Texture3D:
-    case GpuTextureType::DepthStencil:
-        UP_UNREACHABLE("unsupporte texture type");
-    default:
-        UP_UNREACHABLE("missing");
+    case GpuTextureType::DepthStencil: UP_UNREACHABLE("unsupporte texture type");
+    default: UP_UNREACHABLE("missing");
     }
 
     com_ptr<ID3D11ShaderResourceView> view;

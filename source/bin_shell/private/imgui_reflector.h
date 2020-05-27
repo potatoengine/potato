@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include <potato/ecs/reflector.h>
+#include "potato/ecs/reflector.h"
 
 namespace up::shell {
     class ImGuiComponentReflector final : public up::ComponentReflector {

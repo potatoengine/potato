@@ -1,6 +1,9 @@
-#include "potato/ecs/world.h"
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/ecs/query.h"
 #include "potato/ecs/universe.h"
+#include "potato/ecs/world.h"
+
 #include <doctest/doctest.h>
 
 namespace {

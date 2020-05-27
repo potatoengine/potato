@@ -3,35 +3,29 @@
 #pragma once
 
 #include "traits.h"
-#include <utility>
+
 #include <compare>
+#include <utility>
 
 namespace up {
-    template <typename>
-    class box;
-    template <typename T, typename... Args>
-    auto new_box(Args&&... args) -> box<T> requires std::is_constructible_v<T, Args&&...>;
+    template <typename> class box;
+    template <typename T, typename... Args> auto new_box(Args&&... args) -> box<T> requires std::is_constructible_v<T, Args&&...>;
 
     namespace _detail {
-        template <typename>
-        struct box_traits;
+        template <typename> struct box_traits;
     }
 } // namespace up
 
-template <typename T>
-struct up::_detail::box_traits {
+template <typename T> struct up::_detail::box_traits {
     using pointer = T*;
     using reference = T&;
 
-    static void _deallocate(T* ptr) {
-        delete ptr;
-    }
+    static void _deallocate(T* ptr) { delete ptr; }
 };
 
 /// <summary> An owning non-copyable pointer to a heap-allocated object, analogous to std::unique_ptr but without custom deleter support. </summary>
 /// <typeparam name="T"> Type of the object owned by the box. </typeparam>
-template <typename T>
-class up::box : private up::_detail::box_traits<T> {
+template <typename T> class up::box : private up::_detail::box_traits<T> {
 public:
     using pointer = typename up::_detail::box_traits<T>::pointer;
     using reference = typename up::_detail::box_traits<T>::reference;
@@ -55,10 +49,8 @@ public:
         return *this;
     }
 
-    template <typename U>
-    box(box<U>&& src) noexcept requires std::is_convertible_v<U*, T*> : _ptr(src.release()) {}
-    template <typename U>
-    auto operator=(box<U>&& src) noexcept -> box<T>& requires std::is_convertible_v<U*, T*> {
+    template <typename U> box(box<U>&& src) noexcept requires std::is_convertible_v<U*, T*> : _ptr(src.release()) {}
+    template <typename U> auto operator=(box<U>&& src) noexcept -> box<T>& requires std::is_convertible_v<U*, T*> {
         if (this != &src) {
             reset(src.release());
         }
@@ -80,30 +72,22 @@ public:
         return tmp;
     }
 
-    template <typename U>
-    friend class box;
+    template <typename U> friend class box;
 
-    template <typename U>
-    friend auto operator<=>(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr <=> rhs._ptr; }
-    template <typename U>
-    friend bool operator==(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr == rhs._ptr; }
+    template <typename U> friend auto operator<=>(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr <=> rhs._ptr; }
+    template <typename U> friend bool operator==(box const& lhs, box<U> const& rhs) noexcept { return lhs._ptr == rhs._ptr; }
 
-    template <typename U>
-    friend bool operator<=>(box const& lhs, U const* rhs) noexcept { return lhs._ptr <=> rhs; }
-    template <typename U>
-    friend bool operator==(box const& lhs, U const* rhs) noexcept { return lhs._ptr == rhs; }
+    template <typename U> friend bool operator<=>(box const& lhs, U const* rhs) noexcept { return lhs._ptr <=> rhs; }
+    template <typename U> friend bool operator==(box const& lhs, U const* rhs) noexcept { return lhs._ptr == rhs; }
 
-    template <typename U>
-    friend bool operator<=>(box const& lhs, std::nullptr_t rhs) noexcept { return lhs._ptr <=> rhs; }
-    template <typename U>
-    friend bool operator==(box const& lhs, std::nullptr_t* rhs) noexcept { return lhs._ptr == rhs; }
+    template <typename U> friend bool operator<=>(box const& lhs, std::nullptr_t rhs) noexcept { return lhs._ptr <=> rhs; }
+    template <typename U> friend bool operator==(box const& lhs, std::nullptr_t* rhs) noexcept { return lhs._ptr == rhs; }
 
 private:
     pointer _ptr = nullptr;
 };
 
-template <typename T>
-void up::box<T>::reset(pointer ptr) noexcept {
+template <typename T> void up::box<T>::reset(pointer ptr) noexcept {
     static_assert(sizeof(T) > 0, "box can not delete incomplete type");
     this->_deallocate(_ptr);
     _ptr = ptr;
@@ -113,7 +97,6 @@ void up::box<T>::reset(pointer ptr) noexcept {
 /// <typeparam name="T"> Type of object to box. </typeparam>
 /// <param name="args"> Parameters to pass to the constructor. </param>
 /// <returns> A box containing a new instance of the requested object. </returns>
-template <typename T, typename... Args>
-auto up::new_box(Args&&... args) -> box<T> requires std::is_constructible_v<T, Args&&...> {
+template <typename T, typename... Args> auto up::new_box(Args&&... args) -> box<T> requires std::is_constructible_v<T, Args&&...> {
     return box<T>(new T(std::forward<Args>(args)...));
 }

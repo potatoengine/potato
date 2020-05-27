@@ -3,10 +3,12 @@
 #pragma once
 
 #include "_export.h"
-#include "common.h"
 #include "asset_record.h"
+#include "common.h"
+
 #include "potato/spud/string_view.h"
 #include "potato/spud/vector.h"
+
 #include <unordered_map>
 
 namespace up {

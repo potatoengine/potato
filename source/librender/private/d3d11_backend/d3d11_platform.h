@@ -2,9 +2,11 @@
 
 #pragma once
 
-#include "potato/render/gpu_common.h"
-#include "potato/spud/zstring_view.h"
+#include "gpu_common.h"
+
 #include "potato/spud/platform_windows.h"
+#include "potato/spud/zstring_view.h"
+
 #include <d3d11.h>
 #include <dxgi1_2.h>
 

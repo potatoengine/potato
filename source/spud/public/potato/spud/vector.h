@@ -5,29 +5,25 @@
 #if !defined(DOXYGEN_SHOULD_SKIP_THIS) // Doxygen can't handle our use of C++20 concepts currently
 
 #    include "_assertion.h"
+#    include "int_types.h"
 #    include "memory_util.h"
 #    include "numeric_util.h"
-#    include "traits.h"
 #    include "span.h"
-#    include "int_types.h"
+#    include "traits.h"
 
 #    include <initializer_list>
-#    include <type_traits>
 #    include <new>
+#    include <type_traits>
 
 namespace up {
-    template <typename T>
-    class vector;
+    template <typename T> class vector;
 
-    template <typename T>
-    vector(span<T>) -> vector<std::remove_const_t<T>>;
-    template <typename T>
-    vector(std::initializer_list<T>) -> vector<std::remove_const_t<T>>;
+    template <typename T> vector(span<T>) -> vector<std::remove_const_t<T>>;
+    template <typename T> vector(std::initializer_list<T>) -> vector<std::remove_const_t<T>>;
     template <typename IteratorT, typename SentinelT>
     vector(IteratorT, SentinelT) -> vector<std::remove_const_t<decltype(*std::declval<IteratorT>())>>;
 
-    template <typename T>
-    class vector {
+    template <typename T> class vector {
         static_assert(std::is_nothrow_move_constructible_v<T>);
         static_assert(std::is_nothrow_move_assignable_v<T>);
         static_assert(std::is_nothrow_destructible_v<T>);
@@ -51,8 +47,7 @@ namespace up {
         template <typename InsertT>
         inline /*implicit*/ vector(std::initializer_list<InsertT> initial) requires std::is_constructible_v<T, InsertT const>;
         inline explicit vector(size_type size, const_reference initial) requires std::is_copy_constructible_v<T>;
-        template <typename InsertT>
-        inline explicit vector(span<InsertT> source) requires std::is_constructible_v<T, InsertT>;
+        template <typename InsertT> inline explicit vector(span<InsertT> source) requires std::is_constructible_v<T, InsertT>;
         inline explicit vector(size_type size) requires std::is_default_constructible_v<T>;
 
         vector(vector const&) = delete;
@@ -100,19 +95,20 @@ namespace up {
 
         template <typename... ParamsT>
         auto emplace(const_iterator pos, ParamsT&&... params) -> reference requires std::is_constructible_v<T, ParamsT...>;
-        template <typename... ParamsT>
-        auto emplace_back(ParamsT&&... params) -> reference requires std::is_constructible_v<T, ParamsT...>;
+        template <typename... ParamsT> auto emplace_back(ParamsT&&... params) -> reference requires std::is_constructible_v<T, ParamsT...>;
 
         template <typename InsertT>
-        auto insert(const_iterator pos, InsertT&& value) -> reference requires std::is_constructible_v<T, decltype(value)> { return emplace(pos, std::forward<InsertT>(value)); }
+        auto insert(const_iterator pos, InsertT&& value) -> reference requires std::is_constructible_v<T, decltype(value)> {
+            return emplace(pos, std::forward<InsertT>(value));
+        }
 
-        template <typename IteratorT, typename SentinelT>
-        iterator insert(const_iterator pos, IteratorT begin, SentinelT end);
+        template <typename IteratorT, typename SentinelT> iterator insert(const_iterator pos, IteratorT begin, SentinelT end);
 
         reference push_back(const_reference value) requires std::is_copy_constructible_v<T> { return emplace_back(value); }
         reference push_back(rvalue_reference value) requires std::is_move_constructible_v<T> { return emplace_back(std::move(value)); }
-        template <typename InsertT>
-        reference push_back(InsertT&& value) requires std::is_constructible_v<T, decltype(value)> { return emplace_back(std::forward<InsertT>(value)); }
+        template <typename InsertT> reference push_back(InsertT&& value) requires std::is_constructible_v<T, decltype(value)> {
+            return emplace_back(std::forward<InsertT>(value));
+        }
 
         iterator erase(const_iterator pos);
         iterator erase(const_iterator begin, const_iterator end);
@@ -126,7 +122,9 @@ namespace up {
         operator span<T>() noexcept { return span<T>(_first, _last); }
         operator span<T const>() const noexcept { return span<T const>(_first, _last); }
 
-        span<byte const> as_bytes() const noexcept { return span<byte const>(reinterpret_cast<byte const*>(_first), reinterpret_cast<byte const*>(_last)); }
+        span<byte const> as_bytes() const noexcept {
+            return span<byte const>(reinterpret_cast<byte const*>(_first), reinterpret_cast<byte const*>(_last));
+        }
 
         void pop_back();
 
@@ -153,35 +151,26 @@ namespace up {
         insert(_first, initial.begin(), initial.end());
     }
 
-    template <typename T>
-    vector<T>::vector(size_type size, const_reference initial) requires std::is_copy_constructible_v<T> {
+    template <typename T> vector<T>::vector(size_type size, const_reference initial) requires std::is_copy_constructible_v<T> {
         resize(size, initial);
     }
 
-    template <typename T>
-    template <typename InsertT>
-    vector<T>::vector(span<InsertT> source) requires std::is_constructible_v<T, InsertT> {
+    template <typename T> template <typename InsertT> vector<T>::vector(span<InsertT> source) requires std::is_constructible_v<T, InsertT> {
         insert(_first, source.begin(), source.end());
     }
 
-    template <typename T>
-    vector<T>::vector(size_type size) requires std::is_default_constructible_v<T> {
-        resize(size);
-    }
+    template <typename T> vector<T>::vector(size_type size) requires std::is_default_constructible_v<T> { resize(size); }
 
-    template <typename T>
-    vector<T>::vector(vector&& src) noexcept : _first(src._first), _last(src._last), _sentinel(src._sentinel) {
+    template <typename T> vector<T>::vector(vector&& src) noexcept : _first(src._first), _last(src._last), _sentinel(src._sentinel) {
         src._sentinel = src._last = src._first = nullptr;
     }
 
-    template <typename T>
-    vector<T>::~vector() {
+    template <typename T> vector<T>::~vector() {
         destruct_n(_first, _last - _first);
         _deallocate(_first, _sentinel - _first);
     }
 
-    template <typename T>
-    auto vector<T>::operator=(vector&& src) noexcept -> vector& {
+    template <typename T> auto vector<T>::operator=(vector&& src) noexcept -> vector& {
         if (this != &src) {
             clear();
             shrink_to_fit();
@@ -195,42 +184,36 @@ namespace up {
         return *this;
     }
 
-    template <typename T>
-    auto vector<T>::acquire(T* memory, size_type count) noexcept -> vector {
+    template <typename T> auto vector<T>::acquire(T* memory, size_type count) noexcept -> vector {
         vector rs;
         rs._first = memory;
         rs._last = rs._sentinel = count;
         return rs;
     }
 
-    template <typename T>
-    T* vector<T>::release() noexcept {
+    template <typename T> T* vector<T>::release() noexcept {
         UP_SPUD_ASSERT(_last == _sentinel, "Releasing memory from a vector that has uninitialized capacity; call resize(capacity()) first!");
         T* tmp = _first;
         _first = _last = _sentinel = nullptr;
         return tmp;
     }
 
-    template <typename T>
-    T* vector<T>::_allocate(size_type capacity) {
+    template <typename T> T* vector<T>::_allocate(size_type capacity) {
         return static_cast<T*>(operator new(capacity * sizeof(T), std::align_val_t(alignof(T))));
     }
 
-    template <typename T>
-    void vector<T>::_deallocate(T* ptr, size_type capacity) {
+    template <typename T> void vector<T>::_deallocate(T* ptr, size_type capacity) {
         ::operator delete(ptr, capacity * sizeof(T), std::align_val_t(alignof(T)));
     }
 
-    template <typename T>
-    size_t vector<T>::_grow(size_t minimum) {
+    template <typename T> size_t vector<T>::_grow(size_t minimum) {
         size_type capacity = _sentinel - _first;
         capacity += capacity >> 1;
 
         return max(minimum, capacity); // grow by 50%
     }
 
-    template <typename T>
-    void vector<T>::_rshift(T* pos, size_t shift) {
+    template <typename T> void vector<T>::_rshift(T* pos, size_t shift) {
         size_t size = _last - pos;
 
         // copy elements to the new area, as needed
@@ -244,8 +227,7 @@ namespace up {
         move_backwards_n(pos, head, pos + head);
     }
 
-    template <typename T>
-    void vector<T>::reserve(size_type required) {
+    template <typename T> void vector<T>::reserve(size_type required) {
         size_type const capacity = _sentinel - _first;
         if (capacity < required) {
             T* tmp = _allocate(required);
@@ -259,8 +241,7 @@ namespace up {
         }
     }
 
-    template <typename T>
-    void vector<T>::resize(size_type new_size) {
+    template <typename T> void vector<T>::resize(size_type new_size) {
         size_type const size = _last - _first;
         if (size < new_size) {
             reserve(new_size);
@@ -272,8 +253,7 @@ namespace up {
         _last = _first + new_size;
     }
 
-    template <typename T>
-    void vector<T>::resize(size_type new_size, const_reference init) {
+    template <typename T> void vector<T>::resize(size_type new_size, const_reference init) {
         size_type const size = _last - _first;
         if (size < new_size) {
             reserve(new_size);
@@ -285,14 +265,12 @@ namespace up {
         _last = _first + new_size;
     }
 
-    template <typename T>
-    void vector<T>::clear() noexcept {
+    template <typename T> void vector<T>::clear() noexcept {
         destruct_n(_first, _last - _first);
         _last = _first;
     }
 
-    template <typename T>
-    void vector<T>::shrink_to_fit() noexcept {
+    template <typename T> void vector<T>::shrink_to_fit() noexcept {
         if (_sentinel == nullptr) { /* do nothing */
         }
         else if (_first == _last) {
@@ -428,16 +406,14 @@ namespace up {
         return _first + offset;
     }
 
-    template <typename T>
-    auto vector<T>::erase(const_iterator pos) -> iterator {
+    template <typename T> auto vector<T>::erase(const_iterator pos) -> iterator {
         iterator mpos = const_cast<iterator>(pos);
         move_n(mpos + 1, _last - mpos - 1, mpos);
         pop_back();
         return mpos;
     }
 
-    template <typename T>
-    auto vector<T>::erase(const_iterator begin, const_iterator end) -> iterator {
+    template <typename T> auto vector<T>::erase(const_iterator begin, const_iterator end) -> iterator {
         iterator mbegin = const_cast<iterator>(begin);
         auto const count = end - begin;
         move_n(mbegin + count, _last - begin - count, mbegin);
@@ -446,16 +422,12 @@ namespace up {
         return mbegin;
     }
 
-    template <typename T>
-    void vector<T>::pop_back() {
-        (--_last)->~value_type();
-    }
+    template <typename T> void vector<T>::pop_back() { (--_last)->~value_type(); }
 
     // note: [[1, 2], 3] will hash the same as [1, [2, 3]]
     //       likewise, ["a", "bc"] will hash the same as ["ab", "c"]
 
-    template <typename HashAlgorithm, typename ValueT>
-    inline auto& hash_append(HashAlgorithm& hasher, vector<ValueT> const& container) {
+    template <typename HashAlgorithm, typename ValueT> inline auto& hash_append(HashAlgorithm& hasher, vector<ValueT> const& container) {
         if constexpr (is_contiguous_v<ValueT>) {
             hasher.append_bytes({container.data(), container.size() * sizeof(ValueT)});
         }

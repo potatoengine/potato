@@ -3,9 +3,10 @@
 #pragma once
 
 #include "d3d11_platform.h"
+#include "gpu_command_list.h"
+
 #include "potato/runtime/com_ptr.h"
 #include "potato/spud/box.h"
-#include "potato/render/gpu_command_list.h"
 
 namespace up::d3d11 {
     class CommandListD3D11 final : public GpuCommandList {

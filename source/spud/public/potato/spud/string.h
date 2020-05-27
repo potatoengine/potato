@@ -2,17 +2,17 @@
 
 #pragma once
 
+#include "string_util.h"
 #include "string_view.h"
 #include "zstring_view.h"
-#include "string_util.h"
-#include <cstring>
+
 #include <compare>
+#include <cstring>
 
 namespace up {
     class string;
 
-    template <typename HashAlgorithm>
-    inline void hash_append(HashAlgorithm& hasher, string const& string);
+    template <typename HashAlgorithm> inline void hash_append(HashAlgorithm& hasher, string const& string);
 
     inline string operator"" _s(char const* str, size_t size);
 } // namespace up
@@ -60,48 +60,24 @@ public:
         return *this;
     }
 
-    const_pointer c_str() const noexcept {
-        return _data != nullptr ? _data : _empty;
-    }
+    const_pointer c_str() const noexcept { return _data != nullptr ? _data : _empty; }
 
-    const_pointer data() const noexcept {
-        return _data != nullptr ? _data : _empty;
-    }
-    size_type size() const noexcept {
-        return _size;
-    }
+    const_pointer data() const noexcept { return _data != nullptr ? _data : _empty; }
+    size_type size() const noexcept { return _size; }
 
-    bool empty() const noexcept {
-        return _size == 0;
-    }
-    explicit operator bool() const noexcept {
-        return _size != 0;
-    }
+    bool empty() const noexcept { return _size == 0; }
+    explicit operator bool() const noexcept { return _size != 0; }
 
-    const_iterator begin() const noexcept {
-        return _data;
-    }
-    const_iterator end() const noexcept {
-        return _data + _size;
-    }
+    const_iterator begin() const noexcept { return _data; }
+    const_iterator end() const noexcept { return _data + _size; }
 
-    value_type front() const noexcept {
-        return *_data;
-    }
-    value_type back() const noexcept {
-        return *(_data + _size - 1);
-    }
+    value_type front() const noexcept { return *_data; }
+    value_type back() const noexcept { return *(_data + _size - 1); }
 
-    value_type operator[](size_type index) const noexcept {
-        return _data[index];
-    }
+    value_type operator[](size_type index) const noexcept { return _data[index]; }
 
-    string_view first(size_type count) const noexcept {
-        return {_data, count};
-    }
-    string_view last(size_type count) const noexcept {
-        return {_data + _size - count, count};
-    }
+    string_view first(size_type count) const noexcept { return {_data, count}; }
+    string_view last(size_type count) const noexcept { return {_data + _size - count, count}; }
 
     string_view substr(size_type offset, size_type count = npos) const noexcept {
         if (offset > _size) {
@@ -172,13 +148,9 @@ public:
         return lhs.size() == rhsSize && stringCompare(lhs.data(), rhs, rhsSize) == 0;
     }
 
-    /*implicit*/ operator string_view() const noexcept {
-        return {_data, _size};
-    }
+    /*implicit*/ operator string_view() const noexcept { return {_data, _size}; }
 
-    /*implicit*/ operator zstring_view() const noexcept {
-        return {_data};
-    }
+    /*implicit*/ operator zstring_view() const noexcept { return {_data}; }
 
     string& assign(const_pointer str, size_type length) {
         // RAII ensures self-assign of a range works
@@ -251,11 +223,8 @@ private:
     size_type _size = 0;
 };
 
-template <typename HashAlgorithm>
-void up::hash_append(HashAlgorithm& hasher, string const& string) {
+template <typename HashAlgorithm> void up::hash_append(HashAlgorithm& hasher, string const& string) {
     hasher({reinterpret_cast<std::byte const*>(string.data()), string.size()});
 }
 
-inline auto up::operator"" _s(char const* str, size_t size) -> string {
-    return string{str, size};
-}
+inline auto up::operator"" _s(char const* str, size_t size) -> string { return string{str, size}; }

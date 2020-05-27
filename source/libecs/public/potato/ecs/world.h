@@ -6,11 +6,12 @@
 #include "chunk.h"
 #include "component.h"
 #include "shared_context.h"
-#include <potato/spud/vector.h>
-#include <potato/spud/delegate_ref.h>
-#include <potato/spud/rc.h>
-#include <potato/spud/box.h>
-#include <potato/spud/bit_set.h>
+
+#include "potato/spud/bit_set.h"
+#include "potato/spud/box.h"
+#include "potato/spud/delegate_ref.h"
+#include "potato/spud/rc.h"
+#include "potato/spud/vector.h"
 
 namespace up {
     struct EcsSharedContext;
@@ -39,8 +40,7 @@ namespace up {
 
         /// Creates a new Entity with the provided list of Component data
         ///
-        template <typename... Components>
-        EntityId createEntity(Components const&... components) noexcept;
+        template <typename... Components> EntityId createEntity(Components const&... components) noexcept;
 
         /// Deletes an existing Entity
         ///
@@ -50,8 +50,7 @@ namespace up {
         ///
         /// Changes the Entity's Archetype and home Chunk
         ///
-        template <typename Component>
-        void addComponent(EntityId entityId, Component const& component) noexcept;
+        template <typename Component> void addComponent(EntityId entityId, Component const& component) noexcept;
 
         /// @brief Add a default-constructed component to an existing entity.
         /// @param entity The entity to add the componet to.
@@ -67,8 +66,7 @@ namespace up {
         /// @brief Removes a component from an entity.
         /// @tparam Component Component type to remove.
         /// @param entityId Entity to modify.
-        template <typename Component>
-        void removeComponent(EntityId entityId) noexcept {
+        template <typename Component> void removeComponent(EntityId entityId) noexcept {
             ComponentMeta const* const meta = _context->findComponentByType<Component>();
             return removeComponent(entityId, meta->id);
         }
@@ -79,8 +77,7 @@ namespace up {
         /// and searches. This should only be used by tools and debug aids, typically,
         /// and a Query should be used for runtime code.
         ///
-        template <typename Component>
-        Component* getComponentSlow(EntityId entity) noexcept;
+        template <typename Component> Component* getComponentSlow(EntityId entity) noexcept;
 
         /// Retrieves a pointer to a Component on the specified Entity.
         ///
@@ -91,7 +88,8 @@ namespace up {
         /// Interrogate an entity and enumerate all of its components.
         ///
         template <typename Callback>
-        auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const -> bool requires is_invocable_v<Callback, EntityId, ArchetypeId, ComponentMeta const*, void*> {
+        auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const
+            -> bool requires is_invocable_v<Callback, EntityId, ArchetypeId, ComponentMeta const*, void*> {
             if (auto [success, archetype, chunkIndex, index] = _parseEntityId(entity); success) {
                 auto const layout = _context->layoutOf(archetype);
                 Chunk* const chunk = _getChunk(archetype, chunkIndex);
@@ -151,16 +149,14 @@ namespace up {
         rc<EcsSharedContext> _context;
     };
 
-    template <typename... Components>
-    EntityId World::createEntity(Components const&... components) noexcept {
+    template <typename... Components> EntityId World::createEntity(Components const&... components) noexcept {
         ComponentMeta const* const componentMetas[] = {_context->findComponentByType<Components>()...};
         void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
     }
 
-    template <typename Component>
-    Component* World::getComponentSlow(EntityId entity) noexcept {
+    template <typename Component> Component* World::getComponentSlow(EntityId entity) noexcept {
         auto meta = _context->findComponentByType<Component>();
         if (meta == nullptr) {
             return nullptr;
@@ -168,8 +164,7 @@ namespace up {
         return static_cast<Component*>(getComponentSlowUnsafe(entity, meta->id));
     }
 
-    template <typename Component>
-    void World::addComponent(EntityId entityId, Component const& component) noexcept {
+    template <typename Component> void World::addComponent(EntityId entityId, Component const& component) noexcept {
         ComponentMeta const* const meta = _context->findComponentByType<Component>();
         _addComponentRaw(entityId, *meta, &component);
     }

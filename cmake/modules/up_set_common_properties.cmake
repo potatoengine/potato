@@ -6,6 +6,7 @@ function(up_set_common_properties TARGET)
         message(FATAL_ERROR "Target '${TARGET}' must start with potato_ prefix")
     endif()
     string(REGEX REPLACE "^(potato_)" "" SHORT_NAME ${TARGET})
+    string(REGEX REPLACE "^lib|_test$" "" SIMPLE_NAME ${SHORT_NAME})
 
     # Detect type of target
     #
@@ -111,8 +112,7 @@ function(up_set_common_properties TARGET)
     # the linking stage.
     #
     if(NOT IS_INTERFACE)
-        string(REGEX REPLACE "^lib|_test$" "" EXPORT_NAME ${SHORT_NAME})
-        string(TOUPPER ${EXPORT_NAME} EXPORT_NAME)
+        string(TOUPPER ${SIMPLE_NAME} EXPORT_NAME)
         set_target_properties(${TARGET} PROPERTIES
             DEFINE_SYMBOL "UP_${EXPORT_NAME}_EXPORTS"
             CXX_VISIBILITY_PRESET hidden
@@ -141,8 +141,18 @@ function(up_set_common_properties TARGET)
     #
     target_include_directories(${TARGET} ${PUBLIC_INTERFACE}
         $<INSTALL_INTERFACE:public>
+    )
+    target_include_directories(${TARGET} INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
     )
+
+    # Private include directories
+    #
+    if(NOT IS_INTERFACE)
+        target_include_directories(${TARGET} PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/public/potato/${SIMPLE_NAME}
+        )
+    endif()
 
     ## Set test output directory.
     ## Not actually a good idea without figuring out how to place

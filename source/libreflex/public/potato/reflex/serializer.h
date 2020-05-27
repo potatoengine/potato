@@ -4,14 +4,13 @@
 
 #include "traits.h"
 
+#include "potato/spud/utility.h"
+#include "potato/spud/zstring_view.h"
+
 namespace up::reflex {
-    template <typename DerivedType>
-    class SerializerBase {
+    template <typename DerivedType> class SerializerBase {
     public:
-        enum class Action {
-            Enter,
-            Skip
-        };
+        enum class Action { Enter, Skip };
 
         template <typename ObjectType, typename ClassType, typename FieldType, typename Annotations>
         constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field, Annotations&& annotations) {
@@ -29,8 +28,7 @@ namespace up::reflex {
             }
         }
 
-        template <typename ValueType>
-        void value(ValueType&& value) {
+        template <typename ValueType> void value(ValueType&& value) {
             using Type = remove_cvref_t<ValueType>;
             if constexpr (is_vector_v<Type>) {
                 size_t size = value.size();

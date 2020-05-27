@@ -1,11 +1,14 @@
-#include "potato/spud/vector.h"
-#include "potato/spud/string.h"
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/runtime/native.h"
 #include "potato/runtime/stream.h"
+#include "potato/spud/string.h"
+#include "potato/spud/vector.h"
+
 #include <doctest/doctest.h>
-#include <string>
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <string>
 
 DOCTEST_TEST_SUITE("[potato][runtime] up::NativeFileSystem") {
     using namespace up;
@@ -45,11 +48,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::NativeFileSystem") {
     }
 
     DOCTEST_TEST_CASE("enumerate") {
-        vector<string> const expected{
-            "parent"_sv,
-            "parent/child"_sv,
-            "parent/child/hello.txt"_sv,
-            "test.txt"_sv};
+        vector<string> const expected{"parent"_sv, "parent/child"_sv, "parent/child/hello.txt"_sv, "test.txt"_sv};
 
         auto native = NativeFileSystem();
 

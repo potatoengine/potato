@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include "traits.h"
+
 #include <functional>
 #include <utility>
-#include "traits.h"
 
 namespace up {
 #if defined(__cpp_lib_constexpr_invoke)

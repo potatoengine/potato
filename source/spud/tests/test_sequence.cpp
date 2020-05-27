@@ -1,19 +1,12 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/spud/sequence.h"
+
 #include <doctest/doctest.h>
 
 namespace {
-    enum WeakEnum {
-        A,
-        B,
-        C,
-        Max
-    };
-    enum class StrongEnum {
-        A,
-        B,
-        C,
-        Max
-    };
+    enum WeakEnum { A, B, C, Max };
+    enum class StrongEnum { A, B, C, Max };
 } // namespace
 
 DOCTEST_TEST_SUITE("[potato][spud] up::sequence") {

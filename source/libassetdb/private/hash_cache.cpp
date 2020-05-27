@@ -1,14 +1,14 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/assetdb/hash_cache.h"
-#include "potato/spud/hash_fnv1a.h"
-#include "potato/runtime/stream.h"
+#include "hash_cache.h"
+
 #include "potato/runtime/json.h"
+#include "potato/runtime/stream.h"
+#include "potato/spud/hash_fnv1a.h"
+
 #include <nlohmann/json.hpp>
 
-auto up::HashCache::hashAssetContent(span<up::byte const> contents) noexcept -> up::uint64 {
-    return hash_value<fnv1a>(contents);
-}
+auto up::HashCache::hashAssetContent(span<up::byte const> contents) noexcept -> up::uint64 { return hash_value<fnv1a>(contents); }
 
 auto up::HashCache::hashAssetStream(Stream& stream) -> up::uint64 {
     auto hasher = fnv1a();

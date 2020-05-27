@@ -3,11 +3,11 @@
 #pragma once
 
 #include "concepts.h"
+
 #include <type_traits>
 
 namespace up {
-    template <typename T>
-    class sequence {
+    template <typename T> class sequence {
     public:
         struct sentinel {};
 
@@ -68,7 +68,9 @@ namespace up {
 
         constexpr bool empty() const noexcept { return _start == _end; }
 
-        constexpr auto size() const noexcept requires enumeration<T> { return static_cast<std::underlying_type_t<T>>(_end) - static_cast<std::underlying_type_t<T>>(_start); }
+        constexpr auto size() const noexcept requires enumeration<T> {
+            return static_cast<std::underlying_type_t<T>>(_end) - static_cast<std::underlying_type_t<T>>(_start);
+        }
         constexpr auto size() const noexcept { return _end - _start; }
 
     private:

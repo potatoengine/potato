@@ -2,17 +2,18 @@
 
 #pragma once
 
+#include "format_spec.h"
+
 #include "potato/format/format.h"
 #include "potato/spud/utility.h"
-#include "format_spec.h"
+
+#include <charconv>
 #include <climits>
 #include <limits>
-#include <charconv>
 
 namespace up::_detail {
 
-    template <char PadChar, typename Writer>
-    constexpr void write_padding(Writer& out, size_t width) noexcept {
+    template <char PadChar, typename Writer> constexpr void write_padding(Writer& out, size_t width) noexcept {
         constexpr auto pad_run_count = 8;
         constexpr auto pad_run_mask = pad_run_count - 1;
         static_assert((pad_run_count & pad_run_mask) == 0);
@@ -53,8 +54,7 @@ namespace up::_detail {
         return spec;
     }
 
-    template <typename Writer, typename T>
-    constexpr void write_integer(Writer& out, T raw, string_view spec_string) {
+    template <typename Writer, typename T> constexpr void write_integer(Writer& out, T raw, string_view spec_string) {
         constexpr auto max_hex_chars = sizeof(raw) * CHAR_BIT + 1 /*negative*/;
         constexpr auto max_dec_chars = std::numeric_limits<T>::digits10 + 2 /*overflow digit, negative*/;
         constexpr auto max_bin_chars = std::numeric_limits<T>::digits + 1 /*negative*/;

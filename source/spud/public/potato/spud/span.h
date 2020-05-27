@@ -3,43 +3,32 @@
 #pragma once
 
 #include "traits.h"
+
 #include <array>
 #include <cstddef>
 
 namespace up {
-    template <typename T>
-    struct span;
+    template <typename T> struct span;
 
-    template <typename T>
-    using view = span<T const>;
+    template <typename T> using view = span<T const>;
 
-    template <typename T>
-    span(T*, T*) -> span<T>;
-    template <typename T>
-    span(T*, std::size_t) -> span<T>;
-    template <typename T, std::size_t N>
-    span(T (&src)[N]) -> span<T>;
-    template <typename T, std::size_t N>
-    span(std::array<T, N>&) -> span<T>;
-    template <typename T, std::size_t N>
-    span(std::array<T, N> const&) -> span<T const>;
+    template <typename T> span(T*, T*) -> span<T>;
+    template <typename T> span(T*, std::size_t) -> span<T>;
+    template <typename T, std::size_t N> span(T (&src)[N]) -> span<T>;
+    template <typename T, std::size_t N> span(std::array<T, N>&) -> span<T>;
+    template <typename T, std::size_t N> span(std::array<T, N> const&) -> span<T const>;
 
-    template <typename T>
-    class vector;
+    template <typename T> class vector;
 
-    template <typename T>
-    span(vector<T> const&) -> span<T const>;
-    template <typename T>
-    span(vector<T>&) -> span<T>;
+    template <typename T> span(vector<T> const&) -> span<T const>;
+    template <typename T> span(vector<T>&) -> span<T>;
 
-    template <typename HashAlgorithm, typename T>
-    inline void hash_append(HashAlgorithm&, up::span<T> const&) noexcept;
+    template <typename HashAlgorithm, typename T> inline void hash_append(HashAlgorithm&, up::span<T> const&) noexcept;
 } // namespace up
 
 /// <summary> A non-owning slice of an array. </summary>
 /// <typeparam name="T"> Type of the elements in the array. </typeparam>
-template <typename T>
-struct up::span {
+template <typename T> struct up::span {
 public:
     using value_type = T;
     using iterator = T*;
@@ -53,21 +42,19 @@ public:
     constexpr span(span const&) noexcept = default;
     constexpr span(span&&) noexcept = default;
     template <typename U>
-    /*implicit*/ constexpr span(span<U> src) noexcept
-        : _begin(src.begin()), _end(src.end()) {}
-    /*implicit*/ constexpr span(T* begin, T* end) noexcept
-        : _begin(begin), _end(end) {}
-    /*implicit*/ constexpr span(T* ptr, std::size_t size) noexcept
-        : _begin(ptr), _end(ptr + size) {}
+    /*implicit*/ constexpr span(span<U> src) noexcept : _begin(src.begin())
+                                                      , _end(src.end()) {}
+    /*implicit*/ constexpr span(T* begin, T* end) noexcept : _begin(begin), _end(end) {}
+    /*implicit*/ constexpr span(T* ptr, std::size_t size) noexcept : _begin(ptr), _end(ptr + size) {}
     template <std::size_t N>
-    /*implicit*/ constexpr span(T (&src)[N]) noexcept
-        : _begin(src), _end(src + N) {}
+    /*implicit*/ constexpr span(T (&src)[N]) noexcept : _begin(src)
+                                                      , _end(src + N) {}
     template <std::size_t N>
-    /*implicit*/ constexpr span(std::array<T, N> const& array) noexcept
-        : _begin(array.data()), _end(_begin + array.size()) {}
+    /*implicit*/ constexpr span(std::array<T, N> const& array) noexcept : _begin(array.data())
+                                                                        , _end(_begin + array.size()) {}
     template <std::size_t N>
-    /*implicit*/ constexpr span(std::array<T, N>& array) noexcept
-        : _begin(array.data()), _end(_begin + array.size()) {}
+    /*implicit*/ constexpr span(std::array<T, N>& array) noexcept : _begin(array.data())
+                                                                  , _end(_begin + array.size()) {}
 
     constexpr span& operator=(span&&) noexcept = default;
 
@@ -118,8 +105,7 @@ private:
     pointer _end = nullptr;
 };
 
-template <typename HashAlgorithm, typename T>
-void up::hash_append(HashAlgorithm& hasher, up::span<T> const& view) noexcept {
+template <typename HashAlgorithm, typename T> void up::hash_append(HashAlgorithm& hasher, up::span<T> const& view) noexcept {
     if constexpr (up::is_contiguous_v<T>) {
         hasher.append_bytes(reinterpret_cast<char const*>(view.data()), view.size() * sizeof(T));
     }

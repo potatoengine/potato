@@ -1,19 +1,21 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/render/draw_imgui.h"
-#include "potato/render/shader.h"
-#include "potato/render/gpu_buffer.h"
-#include "potato/render/gpu_command_list.h"
-#include "potato/render/gpu_device.h"
-#include "potato/render/gpu_pipeline_state.h"
-#include "potato/render/gpu_texture.h"
-#include "potato/render/gpu_resource_view.h"
-#include "potato/render/gpu_sampler.h"
-#include "potato/render/context.h"
-#include <potato/runtime/assertion.h>
-#include <imgui.h>
-#include <SDL_events.h>
+#include "context.h"
+#include "draw_imgui.h"
+#include "gpu_buffer.h"
+#include "gpu_command_list.h"
+#include "gpu_device.h"
+#include "gpu_pipeline_state.h"
+#include "gpu_resource_view.h"
+#include "gpu_sampler.h"
+#include "gpu_texture.h"
+#include "shader.h"
+
+#include "potato/runtime/assertion.h"
+
 #include <SDL_clipboard.h>
+#include <SDL_events.h>
+#include <imgui.h>
 
 static constexpr up::uint32 bufferSize = 1024 * 1024;
 
@@ -152,9 +154,7 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
     };
 
     switch (ev.type) {
-    case SDL_MOUSEMOTION:
-        io.MousePos = {(float)ev.motion.x, (float)ev.motion.y};
-        return io.WantCaptureMouse;
+    case SDL_MOUSEMOTION: io.MousePos = {(float)ev.motion.x, (float)ev.motion.y}; return io.WantCaptureMouse;
     case SDL_MOUSEBUTTONDOWN:
         io.MouseDown[toImguiButton(ev.button.button)] = true;
         io.MouseClickedPos[toImguiButton(ev.button.button)] = {(float)ev.button.x, (float)ev.button.y};
@@ -178,9 +178,7 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
             io.MouseWheelH -= 1;
         }
         return io.WantCaptureMouse;
-    case SDL_TEXTINPUT:
-        io.AddInputCharactersUTF8(ev.text.text);
-        return io.WantTextInput;
+    case SDL_TEXTINPUT: io.AddInputCharactersUTF8(ev.text.text); return io.WantTextInput;
     case SDL_KEYDOWN:
     case SDL_KEYUP: {
         int key = ev.key.keysym.scancode;
@@ -320,7 +318,7 @@ void up::DrawImgui::_ensureContext() {
     ImGui::SetCurrentContext(_context.get());
     auto& io = ImGui::GetIO();
 
-    //io.Fonts->AddFontDefault();
+    // io.Fonts->AddFontDefault();
 
     _applyStyle();
 

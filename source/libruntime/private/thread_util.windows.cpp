@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/thread_util.h"
+#include "thread_util.h"
+
 #include "potato/spud/platform_windows.h"
 
 // https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
@@ -26,7 +27,8 @@ void up::setCurrentThreadName(zstring_view name) noexcept {
 #pragma warning(disable : 6320 6322)
     __try {
         RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), reinterpret_cast<ULONG_PTR*>(&info));
-    } __except (EXCEPTION_EXECUTE_HANDLER) {
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER) {
     }
 #pragma warning(pop)
 }

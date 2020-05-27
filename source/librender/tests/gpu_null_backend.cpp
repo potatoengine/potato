@@ -1,9 +1,11 @@
-#include <doctest/doctest.h>
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/render/gpu_factory.h"
 #include "potato/render/gpu_device.h"
-#include "potato/render/gpu_swap_chain.h"
+#include "potato/render/gpu_factory.h"
 #include "potato/render/gpu_pipeline_state.h"
+#include "potato/render/gpu_swap_chain.h"
+
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][gpu] DeviceNull") {
     using namespace up;

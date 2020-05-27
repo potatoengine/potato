@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "potato/recon/converter.h"
+#include "converter.h"
 
 namespace up::recon {
     class CopyConverter : public Converter {

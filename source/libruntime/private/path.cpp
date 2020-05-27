@@ -1,7 +1,8 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/path.h"
-#include <potato/runtime/assertion.h>
+#include "path.h"
+#include "assertion.h"
+
 #include "potato/spud/string_writer.h"
 
 // returns extension, including dot, e.g. foo.txt -> .txt
@@ -24,7 +25,6 @@ up::string_view up::path::extension(string_view path) noexcept {
 
 // extension must include the dot, e.g. .txt
 auto up::path::changeExtension(string_view path, string_view extension) -> string {
-
     UP_ASSERT(extension.empty() || extension.front() == '.');
 
     auto const sepPos = path.find_last_of("/\\.");
@@ -77,11 +77,7 @@ bool up::path::isNormalized(string_view path) noexcept {
         return false;
     }
 
-    enum class Part {
-        Component,
-        Slash,
-        Dot
-    } mode = Part::Slash;
+    enum class Part { Component, Slash, Dot } mode = Part::Slash;
 
     for (auto const ch : path.substr(1)) {
         if (ch == '\\') {
@@ -137,11 +133,7 @@ auto up::path::normalize(string_view path) -> string {
     string_writer result;
     result.reserve(path.size());
 
-    enum class Part {
-        Component,
-        Slash,
-        Dot
-    } mode = Part::Slash;
+    enum class Part { Component, Slash, Dot } mode = Part::Slash;
 
     for (auto const ch : path) {
         switch (mode) {

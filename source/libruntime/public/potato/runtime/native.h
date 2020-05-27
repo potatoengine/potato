@@ -18,7 +18,9 @@ namespace up {
         UP_RUNTIME_API Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const override;
         UP_RUNTIME_API Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) override;
 
-        UP_RUNTIME_API EnumerateResult enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts = EnumerateOptions::None) const override;
+        UP_RUNTIME_API EnumerateResult enumerate(zstring_view path,
+            EnumerateCallback cb,
+            EnumerateOptions opts = EnumerateOptions::None) const override;
 
         UP_RUNTIME_API IOResult createDirectories(zstring_view path) override;
 

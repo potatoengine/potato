@@ -1,14 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/callstack.h"
-#include "potato/spud/platform.h"
+#include "callstack.h"
+
 #include "potato/spud/int_types.h"
-
-#if !defined(UP_PLATFORM_WINDOWS)
-#    error "Unsupported platform"
-#endif
-
 #include "potato/spud/numeric_util.h"
+#include "potato/spud/platform.h"
 #include "potato/spud/platform_windows.h"
 
 #pragma warning(disable : 4091)
@@ -104,7 +100,6 @@ namespace {
     }
 
     CallstackHelper::~CallstackHelper() {
-
 #if !defined(NDEBUG)
         if (_symCleanup != nullptr) {
             _symCleanup(_process);
@@ -190,7 +185,7 @@ auto up::callstack::resolveTraceRecords(span<up::uintptr const> addresses, span<
         auto& record = records[index];
         record.address = addresses[index];
         record.symbol = string_view(static_cast<char*>(symbolInfoPtr->Name), symbolInfoPtr->NameLen);
-        //record.filename = imagehlpLine64.FileName;
+        // record.filename = imagehlpLine64.FileName;
         record.line = imagehlpLine64.LineNumber;
 
         // show only the last directory and file name

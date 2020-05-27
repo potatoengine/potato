@@ -4,19 +4,17 @@
 
 #pragma once
 
-#include <type_traits>
 #include <atomic>
 #include <cstdint>
+#include <type_traits>
 
 namespace up {
-    template <typename T, std::size_t CacheLineWidth = 64>
-    struct alignas(CacheLineWidth) AlignedAtomic : std::atomic<T> {
+    template <typename T, std::size_t CacheLineWidth = 64> struct alignas(CacheLineWidth) AlignedAtomic : std::atomic<T> {
         using std::atomic<T>::atomic;
         char _padding[CacheLineWidth - sizeof(std::atomic<T>)];
     };
 
-    template <typename T, std::size_t Capacity = 512, std::size_t CacheLineWidth = 64>
-    class LockFreeQueue {
+    template <typename T, std::size_t Capacity = 512, std::size_t CacheLineWidth = 64> class LockFreeQueue {
         static constexpr std::uint32_t kBufferSize = Capacity;
         static constexpr std::uint32_t kBufferMask = kBufferSize - 1;
 
@@ -31,8 +29,7 @@ namespace up {
 
         constexpr auto capacity() const noexcept { return Capacity; }
 
-        template <typename InsertT>
-        [[nodiscard]] inline bool tryEnque(InsertT&& value);
+        template <typename InsertT>[[nodiscard]] inline bool tryEnque(InsertT&& value);
         [[nodiscard]] inline bool tryDeque(T& out);
 
     private:
@@ -44,13 +41,15 @@ namespace up {
 
     template <typename T, std::size_t Capacity, std::size_t CacheLineWidth>
     LockFreeQueue<T, Capacity, CacheLineWidth>::LockFreeQueue()
-        : _enque(0), _deque(0), _sequence(new AlignedAtomic<std::uint32_t, CacheLineWidth>[kBufferSize]), _buffer(new std::aligned_storage_t<sizeof(T), alignof(T)>[kBufferSize]) {
+        : _enque(0)
+        , _deque(0)
+        , _sequence(new AlignedAtomic<std::uint32_t, CacheLineWidth>[kBufferSize])
+        , _buffer(new std::aligned_storage_t<sizeof(T), alignof(T)>[kBufferSize]) {
         for (std::uint32_t i = 0; i != kBufferSize; ++i)
             _sequence[i].store(i, std::memory_order_relaxed);
     }
 
-    template <typename T, std::size_t Capacity, std::size_t CacheLineWidth>
-    LockFreeQueue<T, Capacity, CacheLineWidth>::~LockFreeQueue() {
+    template <typename T, std::size_t Capacity, std::size_t CacheLineWidth> LockFreeQueue<T, Capacity, CacheLineWidth>::~LockFreeQueue() {
         delete[] _sequence;
         delete[] _buffer;
     }
@@ -77,8 +76,7 @@ namespace up {
         return true;
     }
 
-    template <typename T, std::size_t Capacity, std::size_t CacheLineWidth>
-    bool LockFreeQueue<T, Capacity, CacheLineWidth>::tryDeque(T& out) {
+    template <typename T, std::size_t Capacity, std::size_t CacheLineWidth> bool LockFreeQueue<T, Capacity, CacheLineWidth>::tryDeque(T& out) {
         std::uint32_t target = _deque.load(std::memory_order_relaxed);
         std::uint32_t id = _sequence[target & kBufferMask].load(std::memory_order_acquire);
         std::int32_t delta = id - (target + 1);

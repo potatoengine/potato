@@ -4,9 +4,7 @@
 
 namespace up::_detail {
 
-    constexpr bool is_digit(char ch) noexcept {
-        return ch >= '0' && ch <= '9';
-    }
+    constexpr bool is_digit(char ch) noexcept { return ch >= '0' && ch <= '9'; }
 
     // std::from_chars is not (yet) constexpr
     constexpr char const* parse_unsigned(char const* start, char const* end, unsigned& result) noexcept {

@@ -1,18 +1,17 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/render/mesh.h"
-#include "potato/render/context.h"
-#include "potato/render/gpu_buffer.h"
-#include "potato/render/gpu_command_list.h"
-#include "potato/render/gpu_device.h"
+#include "mesh.h"
+#include "context.h"
+#include "gpu_buffer.h"
+#include "gpu_command_list.h"
+#include "gpu_device.h"
 #include "model_generated.h"
 
 up::Mesh::Mesh(vector<up::uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels)
-    : _buffers(buffers.begin(), buffers.end()),
-      _channels(channels.begin(), channels.end()),
-      _indices(std::move(indices)),
-      _data(std::move(data)) {
-}
+    : _buffers(buffers.begin(), buffers.end())
+    , _channels(channels.begin(), channels.end())
+    , _indices(std::move(indices))
+    , _data(std::move(data)) {}
 
 up::Mesh::~Mesh() = default;
 

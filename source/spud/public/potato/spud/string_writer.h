@@ -3,9 +3,11 @@
 #pragma once
 
 #include "_assertion.h"
-#include "potato/spud/string_view.h"
-#include "potato/spud/string.h"
+
 #include "potato/spud/span.h"
+#include "potato/spud/string.h"
+#include "potato/spud/string_view.h"
+
 #include <cstring>
 
 namespace up {
@@ -135,9 +137,7 @@ void up::string_writer::reset() {
     *_ptr = '\0';
 }
 
-auto up::string_writer::to_string() const& -> string {
-    return string(_ptr, _size);
-}
+auto up::string_writer::to_string() const& -> string { return string(_ptr, _size); }
 
 auto up::string_writer::to_string() && -> string {
     string result;

@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "utility.h"
 #include "concepts.h"
 #include "traits.h"
+#include "utility.h"
+
 #include <cstdint>
 
 namespace up {
@@ -23,7 +24,8 @@ namespace up {
     }
 
     template <range Range, typename T, typename E = equality, projection<range_value_t<Range>> P = identity>
-    constexpr auto find(Range const& range, T const& value, E const& equals, P const& projection) noexcept(noexcept(equals(project(projection, *begin(range)), value))) {
+    constexpr auto find(Range const& range, T const& value, E const& equals, P const& projection) noexcept(
+        noexcept(equals(project(projection, *begin(range)), value))) {
         auto iter = begin(range);
         auto last = end(range);
 
@@ -79,7 +81,8 @@ namespace up {
     }
 
     template <range Range, typename T, typename E = equality, projection<range_value_t<Range>> P = identity>
-    constexpr auto contains(Range const& range, T const& value, E const& equals, P const& projection) noexcept(noexcept(equals(project(projection, *begin(range)), value))) {
+    constexpr auto contains(Range const& range, T const& value, E const& equals, P const& projection) noexcept(
+        noexcept(equals(project(projection, *begin(range)), value))) {
         auto iter = begin(range);
         auto last = end(range);
 

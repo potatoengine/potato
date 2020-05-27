@@ -1,7 +1,10 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/spud/zstring_view.h"
+
 #include <doctest/doctest.h>
-#include <ostream>
 #include <cstring>
+#include <ostream>
 
 DOCTEST_TEST_SUITE("[potato][spud] up::zstring_view") {
     using namespace up;

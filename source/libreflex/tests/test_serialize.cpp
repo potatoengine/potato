@@ -1,22 +1,22 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
+#include "potato/reflex/json_serializer.h"
 #include "potato/reflex/reflect.h"
 #include "potato/reflex/serializer.h"
-#include "potato/reflex/json_serializer.h"
 #include "potato/spud/vector.h"
+
 #include <doctest/doctest.h>
 #include <sstream>
 
 namespace {
     struct RecordingSerializer {
-        template <typename T>
-        constexpr void value(T&) noexcept {}
+        template <typename T> constexpr void value(T&) noexcept {}
     };
 
     struct RecordingReflector {
-        template <typename T>
-        constexpr void value() noexcept {}
+        template <typename T> constexpr void value() noexcept {}
 
-        template <typename T, typename F>
-        constexpr void field(up::zstring_view, F T::*) noexcept {}
+        template <typename T, typename F> constexpr void field(up::zstring_view, F T::*) noexcept {}
     };
 
     struct Fields {
@@ -52,11 +52,7 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         auto root = nlohmann::json::object();
         auto serializer = JsonStreamSerializer{root};
 
-        auto const big = Complex{
-            {1, 2, 3},
-            42.f,
-            "bob",
-            {4, 5, 6}};
+        auto const big = Complex{{1, 2, 3}, 42.f, "bob", {4, 5, 6}};
 
         serialize(big, serializer);
 

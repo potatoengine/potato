@@ -2,16 +2,14 @@
 
 #pragma once
 
-#include <utility>
 #include <type_traits>
+#include <utility>
 
 namespace up {
-    template <typename T, auto D, auto Default = T{}>
-    class unique_resource;
+    template <typename T, auto D, auto Default = T{}> class unique_resource;
 }
 
-template <typename T, auto D, auto Default>
-class up::unique_resource {
+template <typename T, auto D, auto Default> class up::unique_resource {
 public:
     using value_type = T;
     using reference = T&;
@@ -44,26 +42,26 @@ private:
 };
 
 template <typename T, auto D, auto Default>
-auto up::unique_resource<T, D, Default>::operator=(unique_resource&& src) noexcept(std::is_nothrow_move_assignable_v<T>) -> up::unique_resource<T, D, Default>& {
+auto up::unique_resource<T, D, Default>::operator=(unique_resource&& src) noexcept(std::is_nothrow_move_assignable_v<T>)
+    -> up::unique_resource<T, D, Default>& {
     reset(std::move(src.get()));
     return *this;
 }
 
 template <typename T, auto D, auto Default>
-auto up::unique_resource<T, D, Default>::operator=(rvalue_reference obj) noexcept(std::is_nothrow_move_assignable_v<T>) -> up::unique_resource<T, D, Default>& {
+auto up::unique_resource<T, D, Default>::operator=(rvalue_reference obj) noexcept(std::is_nothrow_move_assignable_v<T>)
+    -> up::unique_resource<T, D, Default>& {
     D(_object);
     _object = std::move(obj);
     return *this;
 }
 
-template <typename T, auto D, auto Default>
-void up::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
+template <typename T, auto D, auto Default> void up::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
     D(_object);
     _object = std::move(obj);
 }
 
-template <typename T, auto D, auto Default>
-void up::unique_resource<T, D, Default>::reset() {
+template <typename T, auto D, auto Default> void up::unique_resource<T, D, Default>::reset() {
     D(_object);
     _object = Default;
 }

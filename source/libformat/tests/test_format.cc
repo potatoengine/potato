@@ -1,46 +1,39 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/format/format.h"
 #include "potato/format/std_string.h"
+
 #include <doctest/doctest.h>
 #include <ostream>
 
 // Not support in MSVC yet
-//static_assert(requires(up::formattable<int>));
-//static_assert(requires(up::formattable<float>));
-//static_assert(requires(up::formattable<char>));
-//static_assert(requires(up::formattable<up::byte>));
-//static_assert(requires(up::formattable<std::string>));
-//static_assert(requires(up::formattable<decltype("test")>));
+// static_assert(requires(up::formattable<int>));
+// static_assert(requires(up::formattable<float>));
+// static_assert(requires(up::formattable<char>));
+// static_assert(requires(up::formattable<up::byte>));
+// static_assert(requires(up::formattable<std::string>));
+// static_assert(requires(up::formattable<decltype("test")>));
 
-enum class standard_enum { one,
-                           two };
-enum class custom_enum { foo,
-                         bar };
+enum class standard_enum { one, two };
+enum class custom_enum { foo, bar };
 
 class custom_type {};
 
-template <typename Writer>
-void format_value(Writer& writer, custom_enum value) noexcept {
+template <typename Writer> void format_value(Writer& writer, custom_enum value) noexcept {
     switch (value) {
     case custom_enum::foo: format_value_to(writer, "foo"); return;
     case custom_enum::bar: format_value_to(writer, "bar"); return;
     }
 }
-//static_assert(up::formattable<custom_enum>);
+// static_assert(up::formattable<custom_enum>);
 
-template <typename Writer>
-void format_value(Writer& writer, custom_type) noexcept {
-    format_value_to(writer, "custom");
-}
-//static_assert(up::formattable<custom_type>);
+template <typename Writer> void format_value(Writer& writer, custom_type) noexcept { format_value_to(writer, "custom"); }
+// static_assert(up::formattable<custom_type>);
 
-template <typename Writer>
-void format_value(Writer& writer, custom_type const*) noexcept {
-    format_value_to(writer, "custom pointer");
-}
-//static_assert(up::formattable<custom_type const*>);
+template <typename Writer> void format_value(Writer& writer, custom_type const*) noexcept { format_value_to(writer, "custom pointer"); }
+// static_assert(up::formattable<custom_type const*>);
 
-template <typename T>
-std::string format_as_string(T const& value) {
+template <typename T> std::string format_as_string(T const& value) {
     std::string result;
     up::append_writer writer(result);
     up::format_value_to(writer, value, {});
@@ -96,12 +89,13 @@ DOCTEST_TEST_CASE("format") {
 
         // assumes IEEE754 single- and double-precision types
         DOCTEST_CHECK_EQ("340282346638528859811704183484516925440.000000", format_as<std::string>("{}", std::numeric_limits<float>::max()));
-        DOCTEST_CHECK_EQ("17976931348623157081452742373170435679807056752584499659891747680315"
-                         "72607800285387605895586327668781715404589535143824642343213268894641827684675"
-                         "46703537516986049910576551282076245490090389328944075868508455133942304583236"
-                         "90322294816580855933212334827479782620414472316873817718091929988125040402618"
-                         "4124858368.000000",
-                         format_as<std::string>("{}", std::numeric_limits<double>::max()));
+        DOCTEST_CHECK_EQ(
+            "17976931348623157081452742373170435679807056752584499659891747680315"
+            "72607800285387605895586327668781715404589535143824642343213268894641827684675"
+            "46703537516986049910576551282076245490090389328944075868508455133942304583236"
+            "90322294816580855933212334827479782620414472316873817718091929988125040402618"
+            "4124858368.000000",
+            format_as<std::string>("{}", std::numeric_limits<double>::max()));
 
         DOCTEST_CHECK_EQ("234987324.454500", format_as<std::string>("{:f}", 234987324.4545));
         DOCTEST_CHECK_EQ("2.34987e+08", format_as<std::string>("{:g}", 234987324.4545));
@@ -160,7 +154,5 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ(up::format_result::out_of_range, format_to(writer, "{0} {1} {5}", "abc", 9, 12.57));
     }
 
-    DOCTEST_SUBCASE("format_value_into") {
-        DOCTEST_CHECK_EQ("123", format_as_string(123));
-    }
+    DOCTEST_SUBCASE("format_value_into") { DOCTEST_CHECK_EQ("123", format_as_string(123)); }
 }

@@ -3,50 +3,48 @@
 #include "shell_app.h"
 #include "camera.h"
 #include "camera_controller.h"
-#include "scene.h"
 #include "components.h"
+#include "scene.h"
 
-#include <potato/render/gpu_device.h>
-#include <potato/render/gpu_factory.h>
-#include <potato/render/gpu_command_list.h>
-#include <potato/render/gpu_swap_chain.h>
-#include <potato/render/gpu_texture.h>
-#include <potato/render/gpu_resource_view.h>
-#include <potato/render/renderer.h>
-#include <potato/render/camera.h>
-#include <potato/render/context.h>
-#include <potato/render/model.h>
-#include <potato/render/mesh.h>
-#include <potato/render/material.h>
-#include <potato/render/shader.h>
-#include <potato/render/draw_imgui.h>
-#include <potato/render/debug_draw.h>
-#include <potato/ecs/world.h>
-#include <potato/ecs/query.h>
-#include <potato/runtime/stream.h>
-#include <potato/runtime/path.h>
-#include <potato/runtime/json.h>
-#include <potato/runtime/native.h>
-#include <potato/spud/box.h>
-#include <potato/spud/platform.h>
-#include <potato/spud/unique_resource.h>
-#include <potato/spud/vector.h>
-#include <potato/spud/delegate.h>
+#include "potato/ecs/query.h"
+#include "potato/ecs/world.h"
+#include "potato/render/camera.h"
+#include "potato/render/context.h"
+#include "potato/render/debug_draw.h"
+#include "potato/render/draw_imgui.h"
+#include "potato/render/gpu_command_list.h"
+#include "potato/render/gpu_device.h"
+#include "potato/render/gpu_factory.h"
+#include "potato/render/gpu_resource_view.h"
+#include "potato/render/gpu_swap_chain.h"
+#include "potato/render/gpu_texture.h"
+#include "potato/render/material.h"
+#include "potato/render/mesh.h"
+#include "potato/render/model.h"
+#include "potato/render/renderer.h"
+#include "potato/render/shader.h"
+#include "potato/runtime/json.h"
+#include "potato/runtime/native.h"
+#include "potato/runtime/path.h"
+#include "potato/runtime/stream.h"
+#include "potato/spud/box.h"
+#include "potato/spud/delegate.h"
+#include "potato/spud/platform.h"
+#include "potato/spud/unique_resource.h"
+#include "potato/spud/vector.h"
 
-#include <chrono>
+#include <glm/common.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/functions.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/vec3.hpp>
+#include <nlohmann/json.hpp>
 #include <SDL.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
+#include <chrono>
 #include <imgui.h>
 #include <imgui_internal.h>
-
-#include <glm/vec3.hpp>
-#include <glm/common.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtx/functions.hpp>
-
-#include <nlohmann/json.hpp>
 
 namespace up::shell {
     extern auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
@@ -215,13 +213,9 @@ void up::ShellApp::run() {
     }
 }
 
-void up::ShellApp::quit() {
-    _running = false;
-}
+void up::ShellApp::quit() { _running = false; }
 
-void up::ShellApp::_onWindowClosed() {
-    quit();
-}
+void up::ShellApp::_onWindowClosed() { quit(); }
 
 void up::ShellApp::_onWindowSizeChanged() {
     int width = 0;
@@ -249,33 +243,15 @@ void up::ShellApp::_processEvents() {
         }
         else {
             switch (guiCursor) {
-            case ImGuiMouseCursor_TextInput:
-                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM));
-                break;
-            case ImGuiMouseCursor_ResizeAll:
-                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL));
-                break;
-            case ImGuiMouseCursor_ResizeNS:
-                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS));
-                break;
-            case ImGuiMouseCursor_ResizeEW:
-                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE));
-                break;
-            case ImGuiMouseCursor_ResizeNESW:
-                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW));
-                break;
-            case ImGuiMouseCursor_ResizeNWSE:
-                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE));
-                break;
-            case ImGuiMouseCursor_Hand:
-                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
-                break;
-            case ImGuiMouseCursor_NotAllowed:
-                _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO));
-                break;
-            default:
-                _cursor.reset(SDL_GetDefaultCursor());
-                break;
+            case ImGuiMouseCursor_TextInput: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM)); break;
+            case ImGuiMouseCursor_ResizeAll: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL)); break;
+            case ImGuiMouseCursor_ResizeNS: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS)); break;
+            case ImGuiMouseCursor_ResizeEW: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE)); break;
+            case ImGuiMouseCursor_ResizeNESW: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW)); break;
+            case ImGuiMouseCursor_ResizeNWSE: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE)); break;
+            case ImGuiMouseCursor_Hand: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND)); break;
+            case ImGuiMouseCursor_NotAllowed: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO)); break;
+            default: _cursor.reset(SDL_GetDefaultCursor()); break;
             }
             SDL_SetCursor(_cursor.get());
         }
@@ -284,22 +260,15 @@ void up::ShellApp::_processEvents() {
     SDL_Event ev;
     while (_running && SDL_PollEvent(&ev) > 0) {
         switch (ev.type) {
-        case SDL_QUIT:
-            quit();
-            break;
+        case SDL_QUIT: quit(); break;
         case SDL_WINDOWEVENT:
             switch (ev.window.event) {
-            case SDL_WINDOWEVENT_CLOSE:
-                _onWindowClosed();
-                break;
+            case SDL_WINDOWEVENT_CLOSE: _onWindowClosed(); break;
             case SDL_WINDOWEVENT_MAXIMIZED:
             case SDL_WINDOWEVENT_RESIZED:
-            case SDL_WINDOWEVENT_SIZE_CHANGED:
-                _onWindowSizeChanged();
-                break;
+            case SDL_WINDOWEVENT_SIZE_CHANGED: _onWindowSizeChanged(); break;
             case SDL_WINDOWEVENT_ENTER:
-            case SDL_WINDOWEVENT_EXPOSED:
-                break;
+            case SDL_WINDOWEVENT_EXPOSED: break;
             }
             _drawImgui.handleEvent(ev);
             break;
@@ -307,9 +276,7 @@ void up::ShellApp::_processEvents() {
         case SDL_MOUSEMOTION:
         case SDL_KEYDOWN:
         case SDL_MOUSEWHEEL:
-        default:
-            _drawImgui.handleEvent(ev);
-            break;
+        default: _drawImgui.handleEvent(ev); break;
         }
     }
 }
@@ -395,7 +362,9 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::SetNextWindowPos({rect.x, rect.y});
     ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus)) {
+    if (ImGui::Begin("MainWindow",
+            nullptr,
+            ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus)) {
         auto dockSize = ImGui::GetContentRegionAvail();
 
         auto const dockId = ImGui::GetID("MainDockspace");
@@ -421,7 +390,9 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
 
         ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_None);
 
-        if (ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (ImGui::Begin("Statistics",
+                nullptr,
+                ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
             ImGui::SetWindowPos(ImVec2(io.DisplaySize.x - contentSize.x - 20, rect.y));
 

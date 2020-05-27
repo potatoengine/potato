@@ -1,5 +1,8 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/runtime/null.h"
 #include "potato/runtime/stream.h"
+
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][runtime] up::NullFileSystem") {

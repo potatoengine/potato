@@ -3,10 +3,12 @@
 #pragma once
 
 #include "common.h"
-#include <potato/reflex/reflect.h>
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
+
+#include "potato/reflex/reflect.h"
+
 #include <glm/gtc/quaternion.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 
 namespace up {
     class ComponentReflector {
@@ -25,10 +27,7 @@ namespace up {
             value(field);
         }
 
-        template <typename ValueType>
-        void value(ValueType&& value) {
-            onValue(value);
-        }
+        template <typename ValueType> void value(ValueType&& value) { onValue(value); }
 
     protected:
         virtual void onField(zstring_view name) = 0;

@@ -4,20 +4,19 @@
 
 #include "numeric_util.h"
 #include "string_util.h"
+
+#include <compare>
 #include <type_traits>
 #include <utility>
-#include <compare>
 
 namespace up {
     class string_view;
 
-    template <typename HashAlgorithm>
-    inline void hash_append(HashAlgorithm& hasher, string_view const& string);
+    template <typename HashAlgorithm> inline void hash_append(HashAlgorithm& hasher, string_view const& string);
 
     inline string_view operator"" _sv(char const* str, size_t size) noexcept;
 
-    template <typename T>
-    concept has_c_str = std::is_convertible_v<decltype(std::declval<T>().c_str()), char const*>;
+    template <typename T> concept has_c_str = std::is_convertible_v<decltype(std::declval<T>().c_str()), char const*>;
 } // namespace up
 
 class up::string_view {
@@ -40,7 +39,8 @@ public:
     /*implicit*/ constexpr string_view(pointer data, size_type size) noexcept : _data(data), _size(size) {}
     /*implicit*/ constexpr string_view(pointer begin, pointer end) noexcept : _data(begin), _size(end - begin) {}
     template <typename StringT>
-    /*implicit*/ constexpr string_view(StringT const& str) noexcept requires has_c_str<StringT> : _data(str.c_str())
+    /*implicit*/ constexpr string_view(StringT const& str) noexcept requires has_c_str<StringT>
+        : _data(str.c_str())
         , _size(str.size()) {}
 
     constexpr string_view& operator=(string_view const&) noexcept = default;
@@ -52,60 +52,34 @@ public:
         return *this;
     }
 
-    constexpr pointer data() const noexcept {
-        return _data;
-    }
-    constexpr size_type size() const noexcept {
-        return _size;
-    }
+    constexpr pointer data() const noexcept { return _data; }
+    constexpr size_type size() const noexcept { return _size; }
 
-    constexpr bool empty() const noexcept {
-        return _size == 0;
-    }
-    constexpr explicit operator bool() const noexcept {
-        return _size != 0;
-    }
+    constexpr bool empty() const noexcept { return _size == 0; }
+    constexpr explicit operator bool() const noexcept { return _size != 0; }
 
-    constexpr const_iterator begin() const noexcept {
-        return _data;
-    }
-    constexpr const_iterator end() const noexcept {
-        return _data + _size;
-    }
+    constexpr const_iterator begin() const noexcept { return _data; }
+    constexpr const_iterator end() const noexcept { return _data + _size; }
 
-    constexpr value_type front() const noexcept {
-        return *_data;
-    }
-    constexpr value_type back() const noexcept {
-        return *(_data + _size - 1);
-    }
+    constexpr value_type front() const noexcept { return *_data; }
+    constexpr value_type back() const noexcept { return *(_data + _size - 1); }
 
-    constexpr value_type operator[](size_type index) const noexcept {
-        return _data[index];
-    }
+    constexpr value_type operator[](size_type index) const noexcept { return _data[index]; }
 
     constexpr void pop_front() noexcept {
         ++_data;
         --_size;
     }
-    constexpr void pop_back() noexcept {
-        --_size;
-    }
+    constexpr void pop_back() noexcept { --_size; }
 
     constexpr void remove_prefix(size_type count) noexcept {
         _data += count;
         _size -= count;
     }
-    constexpr void remove_suffix(size_type count) noexcept {
-        _size -= count;
-    }
+    constexpr void remove_suffix(size_type count) noexcept { _size -= count; }
 
-    constexpr string_view first(size_type count) const noexcept {
-        return {_data, count};
-    }
-    constexpr string_view last(size_type count) const noexcept {
-        return {_data + _size - count, count};
-    }
+    constexpr string_view first(size_type count) const noexcept { return {_data, count}; }
+    constexpr string_view last(size_type count) const noexcept { return {_data + _size - count, count}; }
 
     constexpr string_view substr(size_type offset, size_type count = npos) const noexcept {
         if (offset > _size) {
@@ -169,11 +143,8 @@ private:
     size_type _size = 0;
 };
 
-template <typename HashAlgorithm>
-void up::hash_append(HashAlgorithm& hasher, string_view const& string) {
+template <typename HashAlgorithm> void up::hash_append(HashAlgorithm& hasher, string_view const& string) {
     hasher.append_bytes(string.data(), string.size());
 }
 
-inline auto up::operator"" _sv(char const* str, size_t size) noexcept -> string_view {
-    return {str, size};
-}
+inline auto up::operator"" _sv(char const* str, size_t size) noexcept -> string_view { return {str, size}; }

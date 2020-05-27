@@ -1,13 +1,14 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/runtime/lock_free_queue.h"
+
 #include <doctest/doctest.h>
 #include <thread>
 
 DOCTEST_TEST_SUITE("[potato][runtime] LockFreeQueue") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("default") {
-        LockFreeQueue<int> queue;
-    }
+    DOCTEST_TEST_CASE("default") { LockFreeQueue<int> queue; }
 
     DOCTEST_TEST_CASE("fill") {
         LockFreeQueue<std::size_t> queue;

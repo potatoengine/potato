@@ -1,11 +1,13 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/render/debug_draw.h"
+#include "debug_draw.h"
+#include "gpu_buffer.h"
+#include "gpu_command_list.h"
+#include "gpu_device.h"
+#include "gpu_pipeline_state.h"
+
 #include "potato/spud/vector.h"
-#include "potato/render/gpu_buffer.h"
-#include "potato/render/gpu_command_list.h"
-#include "potato/render/gpu_device.h"
-#include "potato/render/gpu_pipeline_state.h"
+
 #include <mutex>
 
 static std::mutex debugLock;

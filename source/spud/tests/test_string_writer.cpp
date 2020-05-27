@@ -1,5 +1,8 @@
-#include "potato/spud/string_writer.h"
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/spud/string.h"
+#include "potato/spud/string_writer.h"
+
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_SUITE("[potato][spud] up::string_writer") {

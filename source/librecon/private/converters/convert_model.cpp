@@ -1,16 +1,18 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "convert_model.h"
-#include "potato/spud/std_iostream.h"
-#include "potato/runtime/path.h"
-#include "potato/runtime/filesystem.h"
-#include "potato/runtime/stream.h"
-#include "potato/runtime/logger.h"
+
 #include "potato/render/model_generated.h"
-#include <assimp/scene.h>
-#include <assimp/Importer.hpp>
+#include "potato/runtime/filesystem.h"
+#include "potato/runtime/logger.h"
+#include "potato/runtime/path.h"
+#include "potato/runtime/stream.h"
+#include "potato/spud/std_iostream.h"
+
 #include <assimp/Exporter.hpp>
+#include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
 up::recon::ModelConverter::ModelConverter() = default;
 
@@ -42,7 +44,9 @@ bool up::recon::ModelConverter::convert(Context& ctx) {
     file.close();
 
     Assimp::Importer importer;
-    aiScene const* scene = importer.ReadFileFromMemory(contents.data(), contents.size(), aiProcess_FlipWindingOrder | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcessPreset_TargetRealtime_Fast);
+    aiScene const* scene = importer.ReadFileFromMemory(contents.data(),
+        contents.size(),
+        aiProcess_FlipWindingOrder | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcessPreset_TargetRealtime_Fast);
     if (scene == nullptr) {
         ctx.logger().error("Failed to decode");
         return false;

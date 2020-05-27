@@ -1,8 +1,8 @@
-
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include <potato/runtime/assertion.h>
-#include "potato/assetdb/asset_record.h"
+#include "asset_record.h"
+
+#include "potato/runtime/assertion.h"
 
 auto up::assetCategoryNames() noexcept -> span<string_view const> {
     constexpr static string_view const names[] = {

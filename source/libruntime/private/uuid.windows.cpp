@@ -1,8 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/uuid.h"
-#include "potato/runtime/assertion.h"
+#include "uuid.h"
+#include "assertion.h"
+
 #include "potato/spud/platform_windows.h"
+
 #include <rpc.h>
 
 #if !defined(UP_PLATFORM_WINDOWS)

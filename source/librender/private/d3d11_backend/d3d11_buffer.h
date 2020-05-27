@@ -3,8 +3,9 @@
 #pragma once
 
 #include "d3d11_platform.h"
+#include "gpu_buffer.h"
+
 #include "potato/runtime/com_ptr.h"
-#include "potato/render/gpu_buffer.h"
 
 namespace up::d3d11 {
     class BufferD3D11 final : public GpuBuffer {

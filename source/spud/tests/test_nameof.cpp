@@ -1,10 +1,12 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/spud/nameof.h"
+
 #include <doctest/doctest.h>
 
 static_assert(up::nameof<int>() == "int");
 
-template <typename T>
-struct as_template {};
+template <typename T> struct as_template {};
 
 DOCTEST_TEST_SUITE("[potato][spud] up::nameof") {
     using namespace up;

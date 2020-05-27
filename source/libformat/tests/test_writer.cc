@@ -1,9 +1,12 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/format/format.h"
 #include "potato/format/std_string.h"
-#include <potato/spud/string_view.h>
+#include "potato/spud/string_view.h"
+
 #include <doctest/doctest.h>
-#include <vector>
 #include <ostream>
+#include <vector>
 
 DOCTEST_TEST_CASE("writer") {
     using namespace up;

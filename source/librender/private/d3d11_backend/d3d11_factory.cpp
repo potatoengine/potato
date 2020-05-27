@@ -3,11 +3,11 @@
 #include "d3d11_factory.h"
 #include "d3d11_device.h"
 #include "d3d11_platform.h"
-#include <potato/runtime/assertion.h>
+
+#include "potato/runtime/assertion.h"
 #include "potato/spud/out_ptr.h"
 
-up::d3d11::FactoryD3D11::FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory)
-    : _dxgiFactory(std::move(dxgiFactory)) {
+up::d3d11::FactoryD3D11::FactoryD3D11(com_ptr<IDXGIFactory2> dxgiFactory) : _dxgiFactory(std::move(dxgiFactory)) {
     UP_ASSERT(_dxgiFactory != nullptr);
 }
 
@@ -21,9 +21,7 @@ auto up::CreateFactoryD3D11() -> box<GpuDeviceFactory> {
 }
 #endif
 
-bool up::d3d11::FactoryD3D11::isEnabled() const {
-    return true;
-}
+bool up::d3d11::FactoryD3D11::isEnabled() const { return true; }
 
 void up::d3d11::FactoryD3D11::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
     com_ptr<IDXGIAdapter1> adapter;

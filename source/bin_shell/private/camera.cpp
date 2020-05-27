@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "camera.h"
+
 #include <glm/gtx/rotate_vector.hpp>
 
 void up::Camera::lookAt(glm::vec3 pos, glm::vec3 at, glm::vec3 up) {

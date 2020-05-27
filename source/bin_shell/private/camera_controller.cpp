@@ -2,6 +2,7 @@
 
 #include "camera_controller.h"
 #include "camera.h"
+
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtx/rotate_vector.hpp>
@@ -20,9 +21,7 @@ up::FlyCameraController::FlyCameraController(Camera const& camera) noexcept {
 
 void up::FlyCameraController::apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept {
     glm::vec3 movement =
-        camera.right() * relativeMovement.x * _speed +
-        camera.up() * relativeMovement.y * _speed +
-        camera.view() * relativeMovement.z * _speed;
+        camera.right() * relativeMovement.x * _speed + camera.up() * relativeMovement.y * _speed + camera.view() * relativeMovement.z * _speed;
 
     _speed = glm::clamp(_speed + relativeMotion.z, 0.1f, 20.f);
 
@@ -47,7 +46,9 @@ up::ArcBallCameraController::ArcBallCameraController(Camera const& camera) noexc
 
 void up::ArcBallCameraController::apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept {
     _yaw = glm::mod(_yaw + relativeMotion.x + relativeMovement.x * 0.001f, glm::two_pi<float>());
-    _pitch = glm::clamp(_pitch - relativeMotion.y - relativeMovement.z * 0.001f, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
+    _pitch = glm::clamp(_pitch - relativeMotion.y - relativeMovement.z * 0.001f,
+        -glm::half_pi<float>() + glm::epsilon<float>(),
+        glm::half_pi<float>() - glm::epsilon<float>());
     _boomLength = glm::clamp(_boomLength - relativeMotion.z, 1.f, 200.f);
 
     glm::vec3 pos{0, 0, _boomLength};

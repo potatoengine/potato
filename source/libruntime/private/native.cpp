@@ -1,7 +1,8 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/native.h"
-#include "potato/runtime/stream.h"
+#include "native.h"
+#include "stream.h"
+
 #include <fstream>
 
 namespace up {
@@ -16,12 +17,11 @@ namespace up {
             bool canSeek() const noexcept override { return true; }
 
             IOResult seek(SeekPosition position, Stream::difference_type offset) override {
-                _stream.seekg(offset, position == SeekPosition::Begin ? std::ios::beg : position == SeekPosition::End ? std::ios::end : std::ios::cur);
+                _stream.seekg(offset,
+                    position == SeekPosition::Begin ? std::ios::beg : position == SeekPosition::End ? std::ios::end : std::ios::cur);
                 return IOResult::Success;
             }
-            Stream::difference_type tell() const override {
-                return _stream.tellg();
-            }
+            Stream::difference_type tell() const override { return _stream.tellg(); }
             Stream::difference_type remaining() const override {
                 auto pos = _stream.tellg();
                 _stream.seekg(0, std::ios::end);
@@ -44,13 +44,9 @@ namespace up {
                 return IOResult::Success;
             }
 
-            IOResult write([[maybe_unused]] span<byte const> ignore) override {
-                return IOResult::UnsupportedOperation;
-            }
+            IOResult write([[maybe_unused]] span<byte const> ignore) override { return IOResult::UnsupportedOperation; }
 
-            IOResult flush() override {
-                return IOResult::UnsupportedOperation;
-            }
+            IOResult flush() override { return IOResult::UnsupportedOperation; }
 
             mutable std::ifstream _stream;
         };
@@ -64,15 +60,9 @@ namespace up {
             bool canWrite() const noexcept override { return true; }
             bool canSeek() const noexcept override { return false; }
 
-            IOResult seek(SeekPosition position, Stream::difference_type offset) override {
-                return IOResult::UnsupportedOperation;
-            }
-            Stream::difference_type tell() const noexcept override {
-                return 0;
-            }
-            Stream::difference_type remaining() const noexcept override {
-                return 0;
-            }
+            IOResult seek(SeekPosition position, Stream::difference_type offset) override { return IOResult::UnsupportedOperation; }
+            Stream::difference_type tell() const noexcept override { return 0; }
+            Stream::difference_type remaining() const noexcept override { return 0; }
 
             IOResult write(span<byte const> buffer) override {
                 _stream.write(buffer.as_chars().data(), buffer.size());
@@ -84,9 +74,7 @@ namespace up {
                 return IOResult::Success;
             }
 
-            IOResult read(span<byte>&) override {
-                return IOResult::UnsupportedOperation;
-            }
+            IOResult read(span<byte>&) override { return IOResult::UnsupportedOperation; }
 
             std::ofstream _stream;
         };
@@ -94,9 +82,11 @@ namespace up {
 } // namespace up
 
 auto up::NativeFileSystem::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
-    return Stream(up::new_box<NativeInputBackend>(std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
+    return Stream(up::new_box<NativeInputBackend>(
+        std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }
 
 auto up::NativeFileSystem::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
-    return Stream(up::new_box<NativeOutputBackend>(std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
+    return Stream(up::new_box<NativeOutputBackend>(
+        std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
 }

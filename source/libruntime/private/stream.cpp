@@ -1,9 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/stream.h"
+#include "stream.h"
+
+#include "potato/spud/string.h"
 #include "potato/spud/string_writer.h"
 #include "potato/spud/vector.h"
-#include "potato/spud/string.h"
 
 auto up::readBinary(Stream& stream, vector<up::byte>& out) -> IOResult {
     if (!stream.canRead() || !stream.canSeek()) {

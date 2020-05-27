@@ -1,11 +1,13 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#include "world.h"
 #include "entity_id.h"
-#include "potato/ecs/world.h"
-#include "potato/ecs/shared_context.h"
-#include <potato/spud/find.h>
-#include <potato/spud/sequence.h>
-#include <potato/runtime/assertion.h>
+#include "shared_context.h"
+
+#include "potato/runtime/assertion.h"
+#include "potato/spud/find.h"
+#include "potato/spud/sequence.h"
+
 #include <algorithm>
 
 namespace up {
@@ -230,14 +232,16 @@ void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, A
     auto const srcLayout = _context->layoutOf(srcArch);
     for (LayoutRow const& row : _context->layoutOf(destArch)) {
         if (auto const srcRow = findRowDesc(srcLayout, row.component); srcRow != nullptr) {
-            row.meta->ops.moveAssign(destChunk.payload + row.offset + row.width * destIndex, srcChunk.payload + srcRow->offset + srcRow->width * srcIndex);
+            row.meta->ops.moveAssign(destChunk.payload + row.offset + row.width * destIndex,
+                srcChunk.payload + srcRow->offset + srcRow->width * srcIndex);
         }
     }
 }
 
 void up::World::_moveTo(ArchetypeId arch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex) {
     for (LayoutRow const& layout : _context->layoutOf(arch)) {
-        layout.meta->ops.moveAssign(destChunk.payload + layout.offset + layout.width * destIndex, srcChunk.payload + layout.offset + layout.width * srcIndex);
+        layout.meta->ops.moveAssign(destChunk.payload + layout.offset + layout.width * destIndex,
+            srcChunk.payload + layout.offset + layout.width * srcIndex);
     }
 }
 

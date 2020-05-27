@@ -1,9 +1,11 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/json.h"
-#include "potato/runtime/stream.h"
+#include "json.h"
+#include "stream.h"
+
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
+
 #include <nlohmann/json.hpp>
 
 auto up::readJson(Stream& stream, nlohmann::json& json) -> IOResult {
@@ -21,13 +23,9 @@ auto up::readJson(Stream& stream, nlohmann::json& json) -> IOResult {
     return IOResult::Success;
 }
 
-void up::to_json(nlohmann::json& json, string_view str) noexcept {
-    json = std::string(str.data(), str.size());
-}
+void up::to_json(nlohmann::json& json, string_view str) noexcept { json = std::string(str.data(), str.size()); }
 
-void up::to_json(nlohmann::json& json, string const& str) noexcept {
-    json = std::string(str.data(), str.size());
-}
+void up::to_json(nlohmann::json& json, string const& str) noexcept { json = std::string(str.data(), str.size()); }
 
 void up::from_json(const nlohmann::json& json, string& str) noexcept {
     str.reset();

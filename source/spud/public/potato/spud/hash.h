@@ -5,23 +5,19 @@
 #pragma once
 
 #include "hash_fnv1a.h"
-#include "traits.h"
 #include "int_types.h"
+#include "traits.h"
 
 namespace up {
     struct default_hash;
 
-    template <typename HashAlgorithm = default_hash>
-    struct uhash;
+    template <typename HashAlgorithm = default_hash> struct uhash;
 
-    template <typename HashAlgorithm = default_hash, typename T>
-    auto hash_value(T const& value) -> typename HashAlgorithm::result_type;
+    template <typename HashAlgorithm = default_hash, typename T> auto hash_value(T const& value) -> typename HashAlgorithm::result_type;
 
-    template <class Hash>
-    constexpr auto hash_combine(Hash left, Hash right) noexcept -> Hash;
+    template <class Hash> constexpr auto hash_combine(Hash left, Hash right) noexcept -> Hash;
 
-    template <typename>
-    class vector;
+    template <typename> class vector;
 } // namespace up
 
 namespace up {
@@ -35,9 +31,7 @@ namespace up {
 struct up::default_hash {
     using result_type = typename fnv1a::result_type;
 
-    constexpr void append_bytes(char const* data, size_t size) noexcept {
-        _fnva1.append_bytes(data, size);
-    }
+    constexpr void append_bytes(char const* data, size_t size) noexcept { _fnva1.append_bytes(data, size); }
 
     constexpr auto finalize() const noexcept {
         auto result = _fnva1.finalize();
@@ -54,26 +48,20 @@ private:
     fnv1a _fnva1;
 };
 
-template <typename HashAlgorithm>
-struct up::uhash {
+template <typename HashAlgorithm> struct up::uhash {
     using result_type = typename HashAlgorithm::result_type;
 
-    template <typename T>
-    result_type operator()(T&& value) const {
-        return hash_value(value);
-    }
+    template <typename T> result_type operator()(T&& value) const { return hash_value(value); }
 };
 
-template <typename HashAlgorithm, typename T>
-auto up::hash_value(T const& value) -> typename HashAlgorithm::result_type {
+template <typename HashAlgorithm, typename T> auto up::hash_value(T const& value) -> typename HashAlgorithm::result_type {
     HashAlgorithm hasher{};
     using up::hash_append;
     hash_append(hasher, value);
     return hasher.finalize();
 }
 
-template <class Hash>
-constexpr auto up::hash_combine(Hash left, Hash right) noexcept -> Hash {
+template <class Hash> constexpr auto up::hash_combine(Hash left, Hash right) noexcept -> Hash {
     left ^= right + 0x9e3779b9 + (left << 6) + (left >> 2);
     return left;
 }

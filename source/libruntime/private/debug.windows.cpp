@@ -1,11 +1,12 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#include "debug.h"
+#include "callstack.h"
 #include "debug.windows.h"
-#include "potato/runtime/callstack.h"
-#include "potato/runtime/debug.h"
+
+#include "potato/spud/fixed_string_writer.h"
 #include "potato/spud/platform_windows.h"
 #include "potato/spud/string_format.h"
-#include "potato/spud/fixed_string_writer.h"
 
 namespace {
     struct DialogData {
@@ -61,21 +62,11 @@ namespace {
         }
         case WM_COMMAND:
             switch (LOWORD(wparam)) {
-            case IDABORT:
-                EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::Abort));
-                return TRUE;
-            case IDBREAK:
-                EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::BreakInDebugger));
-                return TRUE;
-            case IDIGNORE:
-                EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::IgnoreOnce));
-                return TRUE;
-            case IDIGNORE_ALWAYS:
-                EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::IgnoreAlways));
-                return TRUE;
-            case IDCOPY:
-                CopyToClipboard(*reinterpret_cast<DialogData const*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA)));
-                break;
+            case IDABORT: EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::Abort)); return TRUE;
+            case IDBREAK: EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::BreakInDebugger)); return TRUE;
+            case IDIGNORE: EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::IgnoreOnce)); return TRUE;
+            case IDIGNORE_ALWAYS: EndDialog(hwnd, INT_PTR(_detail::FatalErrorAction::IgnoreAlways)); return TRUE;
+            case IDCOPY: CopyToClipboard(*reinterpret_cast<DialogData const*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))); break;
             }
             break;
         case WM_CLOSE:
@@ -88,7 +79,8 @@ namespace {
 } // namespace
 
 namespace up::_detail {
-    auto handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText) -> FatalErrorAction {
+    auto handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText)
+        -> FatalErrorAction {
         constexpr int location_buffer_bytes = 128;
         fixed_string_writer<location_buffer_bytes> location_buffer;
         format_append(location_buffer, "{}({})", file, line);
@@ -103,7 +95,11 @@ namespace up::_detail {
         HMODULE module = nullptr;
         static const LPCWSTR address = L"";
         GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, address, &module);
-        INT_PTR rs = DialogBoxParamW(module, MAKEINTRESOURCEW(IDD_ASSERT), GetActiveWindow(), static_cast<DLGPROC>(AssertDialogProc), reinterpret_cast<LPARAM>(&data));
+        INT_PTR rs = DialogBoxParamW(module,
+            MAKEINTRESOURCEW(IDD_ASSERT),
+            GetActiveWindow(),
+            static_cast<DLGPROC>(AssertDialogProc),
+            reinterpret_cast<LPARAM>(&data));
         return FatalErrorAction(rs);
     }
 } // namespace up::_detail

@@ -2,13 +2,12 @@
 
 #pragma once
 
-#include <utility>
 #include <type_traits>
+#include <utility>
 
 namespace up {
 
-    template <typename T>
-    class com_ptr {
+    template <typename T> class com_ptr {
     public:
         using pointer = T*;
         using reference = T&;
@@ -22,8 +21,7 @@ namespace up {
         com_ptr(com_ptr const& rhs) : _ptr(rhs._ptr) { _addRef(); }
         com_ptr(com_ptr&& rhs) noexcept : _ptr(rhs._ptr) { rhs._ptr = nullptr; }
 
-        template <typename To>
-        com_ptr<To> as() const noexcept {
+        template <typename To> com_ptr<To> as() const noexcept {
             To* ptr = static_cast<To*>(_ptr);
             if (_ptr != nullptr) {
                 _addRef();
@@ -66,8 +64,7 @@ namespace up {
         pointer _ptr = nullptr;
     };
 
-    template <typename T>
-    auto com_ptr<T>::operator=(com_ptr const& rhs) -> com_ptr& {
+    template <typename T> auto com_ptr<T>::operator=(com_ptr const& rhs) -> com_ptr& {
         if (this != std::addressof(rhs)) {
             _decRef();
             _ptr = rhs._ptr;
@@ -76,8 +73,7 @@ namespace up {
         return *this;
     }
 
-    template <typename T>
-    auto com_ptr<T>::operator=(com_ptr&& rhs) -> com_ptr& {
+    template <typename T> auto com_ptr<T>::operator=(com_ptr&& rhs) -> com_ptr& {
         if (this != std::addressof(rhs)) {
             _decRef();
             _ptr = rhs._ptr;
@@ -86,23 +82,20 @@ namespace up {
         return *this;
     }
 
-    template <typename T>
-    auto com_ptr<T>::operator=(std::nullptr_t) -> com_ptr& {
+    template <typename T> auto com_ptr<T>::operator=(std::nullptr_t) -> com_ptr& {
         _decRef();
         _ptr = nullptr;
         return *this;
     }
 
-    template <typename T>
-    void com_ptr<T>::reset(pointer ptr) {
+    template <typename T> void com_ptr<T>::reset(pointer ptr) {
         if (ptr != _ptr) {
             _decRef();
             _ptr = ptr;
         }
     }
 
-    template <typename T>
-    auto com_ptr<T>::release() noexcept -> pointer {
+    template <typename T> auto com_ptr<T>::release() noexcept -> pointer {
         pointer tmp = _ptr;
         _ptr = nullptr;
         return tmp;

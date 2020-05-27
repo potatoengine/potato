@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "potato/recon/converter_app.h"
+
 #include <iostream>
 
 int main(int argc, char const** argv) {

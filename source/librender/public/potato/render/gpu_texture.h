@@ -3,7 +3,9 @@
 #pragma once
 
 #include "gpu_common.h"
-#include <potato/spud/rc.h>
+
+#include "potato/spud/rc.h"
+
 #include <glm/vec3.hpp>
 
 namespace up {

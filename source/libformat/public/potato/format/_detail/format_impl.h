@@ -2,9 +2,11 @@
 
 #pragma once
 
-#include <potato/spud/string_view.h>
 #include "format_result.h"
 #include "parse_unsigned.h"
+
+#include "potato/spud/string_view.h"
+
 #include <initializer_list>
 
 namespace up::_detail {
@@ -54,8 +56,7 @@ namespace up::_detail {
         return {format_result::success, index, spec_string};
     }
 
-    template <format_writable Writer>
-    constexpr format_result format_impl(Writer& out, string_view format, std::initializer_list<format_arg> args) {
+    template <format_writable Writer> constexpr format_result format_impl(Writer& out, string_view format, std::initializer_list<format_arg> args) {
         unsigned next_index = 0;
 
         char const* begin = format.data();

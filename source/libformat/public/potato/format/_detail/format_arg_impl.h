@@ -2,18 +2,15 @@
 
 #pragma once
 
+#include "write_float.h"
 #include "write_integer.h"
 #include "write_string.h"
-#include "write_float.h"
 
 #include <cinttypes>
 
-template <typename Writer>
-constexpr up::format_result up::_detail::format_arg::format_into(Writer& output, string_view spec_string) const {
+template <typename Writer> constexpr up::format_result up::_detail::format_arg::format_into(Writer& output, string_view spec_string) const {
     switch (_type) {
-    case _detail::format_arg_type::char_t:
-        _detail::write_char(output, *static_cast<char const*>(_value), spec_string);
-        return format_result::success;
+    case _detail::format_arg_type::char_t: _detail::write_char(output, *static_cast<char const*>(_value), spec_string); return format_result::success;
     case _detail::format_arg_type::signed_char:
         _detail::write_integer(output, *static_cast<signed char const*>(_value), spec_string);
         return format_result::success;
@@ -56,15 +53,11 @@ constexpr up::format_result up::_detail::format_arg::format_into(Writer& output,
     case _detail::format_arg_type::char_string:
         _detail::write_string(output, string_view(*static_cast<char const* const*>(_value)), spec_string);
         return format_result::success;
-    case _detail::format_arg_type::null_pointer:
-        _detail::write_string(output, "nullptr"_sv, spec_string);
-        return format_result::success;
+    case _detail::format_arg_type::null_pointer: _detail::write_string(output, "nullptr"_sv, spec_string); return format_result::success;
     case _detail::format_arg_type::void_pointer:
         _detail::write_integer(output, reinterpret_cast<std::uintptr_t>(*static_cast<void const* const*>(_value)), spec_string);
         return format_result::success;
-    case _detail::format_arg_type::custom:
-        return _thunk(&output, _value);
-    default:
-        return format_result::success;
+    case _detail::format_arg_type::custom: return _thunk(&output, _value);
+    default: return format_result::success;
     }
 }

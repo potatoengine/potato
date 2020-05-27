@@ -5,7 +5,5 @@
 #include "potato/spud/int_types.h"
 
 namespace up {
-    enum class AssetId : uint64 {
-        Invalid = 0
-    };
+    enum class AssetId : uint64 { Invalid = 0 };
 }

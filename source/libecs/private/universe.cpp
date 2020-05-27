@@ -1,9 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/ecs/shared_context.h"
-#include "potato/ecs/universe.h"
-#include "potato/ecs/world.h"
-#include <potato/runtime/assertion.h>
+#include "universe.h"
+#include "shared_context.h"
+#include "world.h"
+
+#include "potato/runtime/assertion.h"
 
 up::Universe::Universe() : _context(new_shared<EcsSharedContext>()) {}
 up::Universe::~Universe() = default;
