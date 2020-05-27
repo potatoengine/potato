@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(potato VERSION 0.1 LANGUAGES CXX)
+project(potato VERSION 0.1 LANGUAGES CXX C)
 
 if(NOT UP_ROOT_DIR)
     set(UP_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Root source directory")
