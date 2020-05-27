@@ -1,8 +1,8 @@
-#include "potato/recon/converter_config.h"
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#include "potato/recon/converter_config.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/null.h"
-
 #include "potato/spud/string_view.h"
 
 #include <doctest/doctest.h>

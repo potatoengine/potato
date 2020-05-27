@@ -1,7 +1,8 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/runtime/thread_util.h"
 
 #include <doctest/doctest.h>
-
 #include <thread>
 
 DOCTEST_TEST_SUITE("[potato][runtime] thread_util") {

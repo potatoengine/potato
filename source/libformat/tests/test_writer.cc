@@ -1,10 +1,10 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/format/format.h"
 #include "potato/format/std_string.h"
-
 #include "potato/spud/string_view.h"
 
 #include <doctest/doctest.h>
-
 #include <ostream>
 #include <vector>
 

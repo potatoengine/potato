@@ -1,8 +1,9 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/spud/find.h"
 #include "potato/spud/vector.h"
 
 #include <doctest/doctest.h>
-
 #include <iostream>
 
 namespace {

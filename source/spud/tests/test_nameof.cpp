@@ -1,3 +1,5 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/spud/nameof.h"
 
 #include <doctest/doctest.h>

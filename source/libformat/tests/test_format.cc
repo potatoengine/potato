@@ -1,8 +1,9 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/format/format.h"
 #include "potato/format/std_string.h"
 
 #include <doctest/doctest.h>
-
 #include <ostream>
 
 // Not support in MSVC yet

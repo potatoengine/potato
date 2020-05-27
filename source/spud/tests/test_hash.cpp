@@ -1,3 +1,5 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/spud/hash.h"
 #include "potato/spud/span.h"
 #include "potato/spud/string_view.h"

@@ -1,11 +1,11 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
 #include "potato/runtime/native.h"
 #include "potato/runtime/stream.h"
-
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
 
 #include <doctest/doctest.h>
-
 #include <algorithm>
 #include <iostream>
 #include <string>
