@@ -23,6 +23,7 @@ if(WIN32)
         SDL2main
         imgui
         nlohmann_json::nlohmann_json
+        soloud
     )
 
     include(up_copy_library_import)
