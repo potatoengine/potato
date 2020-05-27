@@ -78,8 +78,7 @@ jobs:
       - name: Install libraries
         run: apt-get -yq install uuid-dev
       - name: Install toolchain
-        run: apt-get -yq install cmake ${{ matrix.packages }}
-        if: success() && matrix.packages != ''
+        run: apt-get -yq install cmake git ${{ matrix.packages }}
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
@@ -129,7 +128,7 @@ jobs:
       - name: Install libraries
         run: apt-get -yq install uuid-dev
       - name: Install toolchain
-        run: apt-get -yq install cmake g++-10 gcc-10 libstdc++-10-dev
+        run: apt-get -yq install cmake git g++-10 gcc-10 libstdc++-10-dev
       - name: Configure
         env:
           CXX: 'g++-10'
