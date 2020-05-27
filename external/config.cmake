@@ -29,3 +29,7 @@ FetchContent_Declare(sdl2_vc_sdk
 FetchContent_Declare(flatbuffers
     URL https://github.com/google/flatbuffers/archive/9e7e8cbe9f675123dd41b7c62868acad39188cae.zip
 )
+FetchContent_Declare(soloud
+    GIT_REPOSITORY https://github.com/jarikomppa/soloud.git
+    URL https://github.com/google/flatbuffers/archive/9e7e8cbe9f675123dd41b7c62868acad39188cae.zip
+)
