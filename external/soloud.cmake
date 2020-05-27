@@ -9,6 +9,7 @@ target_compile_definitions(soloud
         "WITH_SDL2_STATIC=$<PLATFORM_ID:Windows>"
         WITH_NULL=1
         _CRT_SECURE_NO_WARNINGS=1
+        SOLOUD_NO_ASSERTS=1 # SoLoud asserts include windows.h on Win32 _and_ have a buffer-overflow, and we can't override them
 )
 target_sources(soloud PRIVATE
     ${soloud_SOURCE_DIR}/src/core/soloud.cpp
