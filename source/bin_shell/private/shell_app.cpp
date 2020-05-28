@@ -134,6 +134,12 @@ int up::ShellApp::initialize() {
 
     _audio = AudioEngine::create(_fileSystem);
 
+    _ding = _audio->loadSound("resources/audio/kenney/highUp.mp3");
+    if (_ding == nullptr) {
+        _errorDialog("Failed to load coin mp3");
+        return 1;
+    }
+
     _universe = new_box<Universe>();
 
     _universe->registerComponent<components::Position>("Position");
@@ -142,9 +148,10 @@ int up::ShellApp::initialize() {
     _universe->registerComponent<components::Mesh>("Mesh");
     _universe->registerComponent<components::Wave>("Wave");
     _universe->registerComponent<components::Spin>("Spin");
+    _universe->registerComponent<components::Ding>("Ding");
 
     _scene = new_box<Scene>(*_universe);
-    _scene->create(new_shared<Model>(std::move(mesh), std::move(material)));
+    _scene->create(new_shared<Model>(std::move(mesh), std::move(material)), _ding);
 
     _selection.select(_scene->main());
 
@@ -284,7 +291,7 @@ void up::ShellApp::_processEvents() {
 }
 
 void up::ShellApp::_tick() {
-    _scene->tick(_lastFrameTime);
+    _scene->tick(_lastFrameTime, *_audio);
     _scene->flush();
 }
 
