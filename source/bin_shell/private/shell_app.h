@@ -4,6 +4,7 @@
 #include "panel.h"
 #include "selection.h"
 
+#include "potato/audio/audio_engine.h"
 #include "potato/render/draw_imgui.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/native.h"
@@ -69,6 +70,7 @@ private:
     box<RenderCamera> _uiRenderCamera;
     box<Universe> _universe;
     box<Scene> _scene;
+    box<AudioEngine> _audio;
     string _resourceDir;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;

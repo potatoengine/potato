@@ -133,6 +133,8 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
+    _audio = AudioEngine::create();
+
     _universe = new_box<Universe>();
 
     _universe->registerComponent<components::Position>("Position");
