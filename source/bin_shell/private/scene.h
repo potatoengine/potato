@@ -13,12 +13,15 @@ namespace up::components {
     struct Mesh;
     struct Wave;
     struct Spin;
+    struct Ding;
 } // namespace up::components
 
 namespace up {
     class Model;
     class Node;
     class RenderContext;
+    class AudioEngine;
+    class SoundResource;
 
     class Scene {
     public:
@@ -28,8 +31,8 @@ namespace up {
         Scene(Scene const&) = delete;
         Scene& operator=(Scene const&) = delete;
 
-        void create(rc<Model> const& cube);
-        void tick(float frameTime);
+        void create(rc<Model> const& cube, rc<SoundResource> const& ding);
+        void tick(float frameTime, AudioEngine& audioEngine);
         void flush();
         void render(RenderContext& ctx);
 
@@ -51,6 +54,7 @@ namespace up {
         Query<components::Position, components::Wave> _waveQuery;
         Query<components::Position> _orbitQuery;
         Query<components::Rotation, components::Spin> _spinQuery;
+        Query<components::Ding> _dingQuery;
         Query<components::Rotation, components::Position, components::Transform> _transformQuery;
         Query<components::Mesh, components::Transform> _renderableMeshQuery;
     };

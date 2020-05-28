@@ -1,5 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#include "potato/audio/sound_resource.h"
 #include "potato/ecs/component.h"
 #include "potato/reflex/reflect.h"
 #include "potato/render/model.h"
@@ -33,6 +34,12 @@ namespace up::components {
         float radians;
     };
 
+    struct Ding {
+        float period = 1;
+        float time = 0;
+        rc<SoundResource> sound;
+    };
+
     UP_REFLECT_TYPE(Position) { reflect("xyz", &Position::xyz); }
     UP_REFLECT_TYPE(Rotation) { reflect("rotation", &Rotation::rot); }
     UP_REFLECT_TYPE(Transform) { reflect("matrix", &Transform::trans); }
@@ -42,4 +49,8 @@ namespace up::components {
         reflect("offset", &Wave::offset);
     }
     UP_REFLECT_TYPE(Spin) { reflect("radians", &Spin::radians); }
+    UP_REFLECT_TYPE(Ding) {
+        reflect("period", &Ding::period);
+        reflect("time", &Ding::time);
+    }
 } // namespace up::components

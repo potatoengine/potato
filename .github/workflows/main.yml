@@ -56,11 +56,11 @@ jobs:
         include:
           - cxx: g++-10
             cc: gcc-10
-            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations
+            cxxflags: -Wall
             packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
-            cxxflags: -Wall -Werror -Wno-unused-function -Wno-unused-variable -stdlib=libc++
+            cxxflags: -Wall -stdlib=libc++
             packages: clang-10 clang-tidy-10 libc++-10-dev libc++abi-10-dev
             clang_tidy: clang-tidy-10
     
@@ -75,11 +75,14 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
         run: apt-get -yq update
+      - name: Setup timezone
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: apt-get -yq install tzdata
       - name: Install libraries
         run: apt-get -yq install uuid-dev
       - name: Install toolchain
-        run: apt-get -yq install cmake ${{ matrix.packages }}
-        if: success() && matrix.packages != ''
+        run: apt-get -yq install cmake git ${{ matrix.packages }}
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
@@ -106,6 +109,10 @@ jobs:
       - uses: actions/checkout@master
       - name: Apt update
         run: apt-get -yq update
+      - name: Setup timezone
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: apt-get -yq install tzdata
       - name: Install toolchain
         run: apt-get -yq install clang-format-10
       - name: Check Format
@@ -124,12 +131,16 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
         run: apt-get -yq update
+      - name: Setup timezone
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: apt-get -yq install tzdata
       - name: Install Doxygen
         run: apt-get -yq install doxygen
       - name: Install libraries
         run: apt-get -yq install uuid-dev
       - name: Install toolchain
-        run: apt-get -yq install cmake g++-10 gcc-10 libstdc++-10-dev
+        run: apt-get -yq install cmake git g++-10 gcc-10 libstdc++-10-dev
       - name: Configure
         env:
           CXX: 'g++-10'

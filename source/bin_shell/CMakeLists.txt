@@ -18,6 +18,7 @@ if(WIN32)
         potato::librender
         potato::libecs
         potato::libreflex
+        potato::libaudio
         glm
         SDL2
         SDL2main

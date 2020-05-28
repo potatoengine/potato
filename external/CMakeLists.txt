@@ -12,6 +12,7 @@ set(EXTERNALS
     json
     flatbuffers
     sdl2_vc
+    soloud
 )
 
 # ---------------------------- #

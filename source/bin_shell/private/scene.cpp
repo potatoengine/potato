@@ -3,6 +3,7 @@
 #include "scene.h"
 #include "components.h"
 
+#include "potato/audio/audio_engine.h"
 #include "potato/ecs/query.h"
 #include "potato/ecs/world.h"
 #include "potato/reflex/json_serializer.h"
@@ -22,10 +23,11 @@ up::Scene::Scene(Universe& universe)
     , _waveQuery{universe.createQuery<components::Position, components::Wave>()}
     , _orbitQuery{universe.createQuery<components::Position>()}
     , _spinQuery{universe.createQuery<components::Rotation, components::Spin>()}
+    , _dingQuery{universe.createQuery<components::Ding>()}
     , _transformQuery{universe.createQuery<components::Rotation, components::Position, components::Transform>()}
     , _renderableMeshQuery{universe.createQuery<components::Mesh, components::Transform>()} {}
 
-void up::Scene::create(rc<Model> const& cube) {
+void up::Scene::create(rc<Model> const& cube, rc<SoundResource> const& ding) {
     auto pi = glm::pi<float>();
 
     for (size_t i = 0; i <= 100; ++i) {
@@ -43,12 +45,13 @@ void up::Scene::create(rc<Model> const& cube) {
     _main = _world.createEntity(components::Position{{0, 5, 0}},
         components::Rotation{glm::identity<glm::quat>()},
         components::Transform(),
-        components::Mesh{cube});
+        components::Mesh{cube},
+        components::Ding{2, 0, ding});
 }
 
 up::Scene::~Scene() { _cube.reset(); }
 
-void up::Scene::tick(float frameTime) {
+void up::Scene::tick(float frameTime, AudioEngine& audioEngine) {
     if (!_playing) {
         return;
     }
@@ -62,6 +65,14 @@ void up::Scene::tick(float frameTime) {
 
     _spinQuery.select(_world, [&](EntityId, components::Rotation& rot, components::Spin const& spin) {
         rot.rot = glm::angleAxis(spin.radians * frameTime, glm::vec3(0.f, 1.f, 0.f)) * rot.rot;
+    });
+
+    _dingQuery.select(_world, [&](EntityId, components::Ding& ding) {
+        ding.time += frameTime;
+        if (ding.time > ding.period) {
+            ding.time -= ding.period;
+            audioEngine.play(ding.sound.get());
+        }
     });
 }
 

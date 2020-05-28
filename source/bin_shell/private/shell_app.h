@@ -4,6 +4,8 @@
 #include "panel.h"
 #include "selection.h"
 
+#include "potato/audio/audio_engine.h"
+#include "potato/audio/sound_resource.h"
 #include "potato/render/draw_imgui.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/native.h"
@@ -27,6 +29,7 @@ namespace up {
     class Camera;
     class CameraController;
     class Universe;
+    class SoundResource;
 } // namespace up
 
 class up::ShellApp {
@@ -69,6 +72,8 @@ private:
     box<RenderCamera> _uiRenderCamera;
     box<Universe> _universe;
     box<Scene> _scene;
+    box<AudioEngine> _audio;
+    rc<SoundResource> _ding;
     string _resourceDir;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
