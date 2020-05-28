@@ -132,7 +132,7 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _audio = AudioEngine::create();
+    _audio = AudioEngine::create(_fileSystem);
 
     _universe = new_box<Universe>();
 
