@@ -14,7 +14,7 @@ target_link_libraries(potato_libaudio
         glm
     PRIVATE
         soloud
-        SDL2
+        $<$<PLATFORM_ID:Windows>:SDL2>
         doctest
 )
 
