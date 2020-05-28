@@ -75,6 +75,10 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
         run: apt-get -yq update
+      - name: Setup timezone
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: apt-get -yq install tzdata
       - name: Install libraries
         run: apt-get -yq install uuid-dev
       - name: Install toolchain
@@ -105,6 +109,10 @@ jobs:
       - uses: actions/checkout@master
       - name: Apt update
         run: apt-get -yq update
+      - name: Setup timezone
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: apt-get -yq install tzdata
       - name: Install toolchain
         run: apt-get -yq install clang-format-10
       - name: Check Format
@@ -123,6 +131,10 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
         run: apt-get -yq update
+      - name: Setup timezone
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: apt-get -yq install tzdata
       - name: Install Doxygen
         run: apt-get -yq install doxygen
       - name: Install libraries
