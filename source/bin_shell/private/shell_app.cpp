@@ -45,7 +45,6 @@
 #include <chrono>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <soloud.h>
 
 namespace up::shell {
     extern auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
@@ -193,9 +192,6 @@ void up::ShellApp::run() {
     int width = 0;
     int height = 0;
 
-    auto soloud = SoLoud::Soloud();
-    soloud.init();
-
     while (isRunning()) {
         _processEvents();
 
@@ -217,8 +213,6 @@ void up::ShellApp::run() {
         _lastFrameTime = static_cast<float>(_lastFrameDuration.count() / 1000000000.0);
         now = endFrame;
     }
-
-    soloud.deinit();
 }
 
 void up::ShellApp::quit() { _running = false; }

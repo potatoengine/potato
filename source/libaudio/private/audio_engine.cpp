@@ -7,8 +7,19 @@
 namespace {
     class AudioEngineImpl final : public up::AudioEngine {
     public:
-        AudioEngineImpl() = default;
+        AudioEngineImpl();
+        ~AudioEngineImpl();
+
+    private:
+        SoLoud::Soloud _soloud;
     };
 } // namespace
+
+AudioEngineImpl::AudioEngineImpl() {
+    _soloud = SoLoud::Soloud();
+    _soloud.init();
+}
+
+AudioEngineImpl::~AudioEngineImpl() { _soloud.deinit(); }
 
 auto up::AudioEngine::create() -> box<AudioEngine> { return new_box<AudioEngineImpl>(); }
