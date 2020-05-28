@@ -56,7 +56,7 @@ jobs:
         include:
           - cxx: g++-10
             cc: gcc-10
-            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations
+            cxxflags: -Wall -Werror -Wno-error=maybe-uninitialized -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations -Wno-error=unused-but-set-variable -Wno-error=misleading-indentation
             packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
