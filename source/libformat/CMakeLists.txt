@@ -12,5 +12,22 @@ target_link_libraries(potato_libformat
         potato::spud
 )
 
-add_subdirectory(public/potato/format)
-add_subdirectory(tests)
+add_executable(potato_libformat_test)
+target_sources(potato_libformat_test PRIVATE
+    "tests/main.cc"
+    "tests/test_format.cc"
+    "tests/test_writer.cc"
+)
+
+up_set_common_properties(potato_libformat_test)
+
+target_link_libraries(potato_libformat_test PRIVATE
+    potato::libformat
+    doctest
+)
+
+add_test(	
+    NAME potato_libformat_test	
+    COMMAND potato_libformat_test	
+)
+

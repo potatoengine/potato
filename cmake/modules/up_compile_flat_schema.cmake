@@ -1,3 +1,5 @@
+include(up_utility)
+
 function(up_compile_flat_schema TARGET)
     cmake_parse_arguments(ARG "" "NAME" "SCHEMAS" ${ARGN})
 
@@ -8,6 +10,8 @@ function(up_compile_flat_schema TARGET)
     set(OUT_HEADER_DIR "${OUT_ROOT_DIR}/potato/${ARG_NAME}")
 
     foreach(FILE ${ARG_SCHEMAS})
+        up_path_combine(${CMAKE_CURRENT_SOURCE_DIR} ${FILE} FILE)
+
         get_filename_component(DIR ${FILE} PATH)
         get_filename_component(NAME ${FILE} NAME)
         string(REGEX REPLACE "\\.fbs$" "_generated.h" GEN_HEADER_NAME ${NAME})
@@ -30,7 +34,6 @@ function(up_compile_flat_schema TARGET)
             MAIN_DEPENDENCY "${FILE}"
             DEPENDS flatbuffers::flatc "${FILE}"
         )
-
     endforeach()
 
     add_custom_target("${GEN_TGT}"

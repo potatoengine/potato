@@ -15,6 +15,21 @@ target_link_libraries(potato_libreflex
 
 target_include_directories(potato_libreflex INTERFACE public/)
 
-#add_subdirectory(public/potato/reflex)
+add_executable(potato_libreflex_tests)
+target_sources(potato_libreflex_tests PRIVATE
+    "tests/main.cpp"
+    "tests/test_serialize.cpp"
+)
 
-add_subdirectory(tests)
+up_set_common_properties(potato_libreflex_tests)
+
+target_link_libraries(potato_libreflex_tests PRIVATE
+    potato::libreflex
+    doctest
+)
+
+target_compile_definitions(potato_libreflex_tests PRIVATE
+    DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING=1
+)
+
+add_test(NAME potato_libreflex_tests COMMAND potato_libreflex_tests)

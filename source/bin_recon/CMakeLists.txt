@@ -8,6 +8,10 @@ if(TARGET potato_librecon)
     add_executable(potato_recon)
     add_executable(potato::recon ALIAS potato_recon)
 
+    target_sources(potato_recon PRIVATE
+        "private/main.cpp"
+    )
+
     set_target_properties(potato_recon PROPERTIES OUTPUT_NAME recon)
 
     up_set_common_properties(potato_recon)
@@ -17,6 +21,4 @@ if(TARGET potato_librecon)
     target_link_libraries(potato_recon PRIVATE assimp)
     include(up_copy_library_import)
     up_copy_library_import(assimp potato_recon)
-
-    add_subdirectory(private)
 endif()

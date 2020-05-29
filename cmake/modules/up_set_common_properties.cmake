@@ -1,5 +1,6 @@
 function(up_set_common_properties TARGET)
     cmake_parse_arguments(ARG NO_NAME_TEST "" "" ${ARGN})
+
     # Potato targets must start with potato_
     #
     if(NOT ${TARGET} MATCHES "^potato_")
@@ -139,16 +140,18 @@ function(up_set_common_properties TARGET)
     # Library public include paths and private paths
     # for both library and executable targets
     #
-    target_include_directories(${TARGET} ${PUBLIC_INTERFACE}
-        $<INSTALL_INTERFACE:public>
-    )
-    target_include_directories(${TARGET} INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
-    )
+    if(NOT IS_TEST)
+        target_include_directories(${TARGET} ${PUBLIC_INTERFACE}
+            $<INSTALL_INTERFACE:public>
+        )
+        target_include_directories(${TARGET} INTERFACE
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
+        )
+    endif()
 
     # Private include directories
     #
-    if(NOT IS_INTERFACE)
+    if(NOT IS_INTERFACE AND NOT IS_TEST)
         target_include_directories(${TARGET} PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/public/potato/${SIMPLE_NAME}
         )

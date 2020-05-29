@@ -6,6 +6,18 @@ if(WIN32)
 
     add_executable(potato_shell WIN32)
     add_executable(potato::shell ALIAS potato_shell)
+    target_sources(potato_shell PRIVATE
+        "private/camera.cpp"
+        "private/camera_controller.cpp"
+        "private/game_panel.cpp"
+        "private/imgui_reflector.cpp"
+        "private/inspector_panel.cpp"
+        "private/hierarchy_panel.cpp"
+        "private/main.cpp"
+        "private/scene.cpp"
+        "private/scene_panel.cpp"
+        "private/shell_app.cpp"
+    )
 
     set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 
@@ -28,7 +40,4 @@ if(WIN32)
 
     include(up_copy_library_import)
     up_copy_library_import(SDL2::SDL2 potato_shell)
-
-    add_subdirectory(public/potato/shell)
-    add_subdirectory(private)
 endif()

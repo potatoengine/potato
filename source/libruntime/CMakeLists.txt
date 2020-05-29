@@ -4,6 +4,60 @@ project(runtime VERSION 0.1 LANGUAGES CXX)
 add_library(potato_libruntime)
 add_library(potato::libruntime ALIAS potato_libruntime)
 
+target_sources(potato_libruntime PRIVATE
+    # Callstack implementations
+    #
+    $<$<NOT:$<PLATFORM_ID:Windows>>:private/callstack.posix.cpp>
+    $<$<PLATFORM_ID:Windows>:private/callstack.windows.cpp>
+
+    # Debug handling implementations
+    #
+    $<$<NOT:$<PLATFORM_ID:Windows>>:private/debug.posix.cpp>
+    $<$<PLATFORM_ID:Windows>:private/debug.windows.cpp>
+    $<$<PLATFORM_ID:Windows>:private/debug.windows.h>
+    $<$<PLATFORM_ID:Windows>:private/debug.windows.rc>
+
+    # Filesystem implementations
+    #
+    $<$<NOT:$<BOOL:${UNIX}>>:private/native.default.cpp>
+    $<$<BOOL:${UNIX}>:private/native.posix.cpp>
+
+    # Logger backends
+    #
+    $<$<PLATFORM_ID:Windows>:private/win32_debug_receiver.windows.cpp>
+
+    # Semaphore implementations
+    #
+    $<$<BOOL:${UNIX}>:private/semaphore.posix.cpp>
+    $<$<PLATFORM_ID:Windows>:private/semaphore.windows.cpp>
+
+    # Threading backends
+    #
+    $<$<PLATFORM_ID:Darwin>:private/thread_util.darwin.cpp>
+    $<$<PLATFORM_ID:Linux>:private/thread_util.linux.cpp>
+    $<$<PLATFORM_ID:Windows>:private/thread_util.windows.cpp>
+
+    # UUID generation
+    #
+    $<$<PLATFORM_ID:Darwin>:private/uuid.darwin.cpp>
+    $<$<PLATFORM_ID:Linux>:private/uuid.linux.cpp>
+    $<$<PLATFORM_ID:Windows>:private/uuid.windows.cpp>
+
+    # General runtime code
+    #
+    private/debug.cpp
+    private/json.cpp
+    private/logger.cpp
+    private/path.cpp
+    private/native.cpp
+    private/null.cpp
+    private/standard_stream_receiver.cpp
+    private/stream.cpp
+    private/task_worker.cpp
+    private/thread_util.cpp
+    private/uuid.cpp
+)
+
 include(up_set_common_properties)
 up_set_common_properties(potato_libruntime)
 
@@ -40,6 +94,37 @@ target_compile_definitions(potato_libruntime
     PUBLIC    UP_SPUD_ASSERT=UP_ASSERT
 )
 
-add_subdirectory(public/potato/runtime)
-add_subdirectory(private)
-add_subdirectory(tests)
+add_executable(potato_libruntime_test)
+target_sources(potato_libruntime_test PRIVATE
+    "tests/main.cpp"
+    "tests/test_callstack.cpp"
+    "tests/test_concurrent_queue.cpp"
+    "tests/test_native_backend.cpp"
+    "tests/test_null_backend.cpp"
+    "tests/test_path_util.cpp"
+    "tests/test_lock_free_queue.cpp"
+    "tests/test_rwlock.cpp"
+    "tests/test_semaphore.cpp"
+    "tests/test_stream.cpp"
+    "tests/test_task_worker.cpp"
+    "tests/test_thread_util.cpp"
+    "tests/test_uuid.cpp"
+)
+
+up_set_common_properties(potato_libruntime_test)
+
+target_link_libraries(potato_libruntime_test PRIVATE
+    potato::libruntime
+    doctest
+)
+
+add_test(	
+    NAME potato_libruntime_test	
+    COMMAND potato_libruntime_test	
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"	
+)
+
+# because concurrency tests can deadlock (which is a test failure)
+#
+set_tests_properties(potato_libruntime_test PROPERTIES TIMEOUT 10) 
+

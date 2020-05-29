@@ -1,5 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+// WARNING: this has, at least twice, caused problems because the filename string.h conflicts with
+// the standard C header. If header include paths are not just right, this file will be pulled in
+// by <cstring> instead of the system version, which ironically is required by this file.
+//
+
 #pragma once
 
 #include "string_util.h"

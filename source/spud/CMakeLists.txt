@@ -7,16 +7,37 @@ add_library(potato::spud ALIAS potato_spud)
 include(up_set_common_properties)
 up_set_common_properties(potato_spud NO_NAME_TEST)
 
-target_link_libraries(potato_spud
-    INTERFACE
-)
+include(up_target_natvis)
+up_target_natvis(potato_spud "support/up_spud.natvis")
 
 target_include_directories(potato_spud INTERFACE public/)
 
-# FIXME - we don't want to add these headers to every library that
-# uses spud, but we want them to be associated with the target
-# for 'install' purposes - yay CMake
-#add_subdirectory(public/potato/spud)
+add_executable(potato_spud_test)
+target_sources(potato_spud_test PRIVATE
+    "tests/main.cpp"
+    "tests/test_bit_set.cpp"
+    "tests/test_delegate.cpp"
+    "tests/test_delegate_ref.cpp"
+    "tests/test_find.cpp"
+    "tests/test_fixed_string.cpp"
+    "tests/test_fixed_string_writer.cpp"
+    "tests/test_hash.cpp"
+    "tests/test_nameof.cpp"
+    "tests/test_rc.cpp"
+    "tests/test_span.cpp"
+    "tests/test_sequence.cpp"
+    "tests/test_string.cpp"
+    "tests/test_string_writer.cpp"
+    "tests/test_string_view.cpp"
+    "tests/test_vector.cpp"
+    "tests/test_zstring_view.cpp"
+)
 
-add_subdirectory(support)
-add_subdirectory(tests)
+up_set_common_properties(potato_spud_test)
+
+target_link_libraries(potato_spud_test PRIVATE
+    potato::spud
+    doctest
+)
+
+add_test(NAME potato_spud_test COMMAND potato_spud_test)
