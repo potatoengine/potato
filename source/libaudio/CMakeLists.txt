@@ -4,6 +4,10 @@ project(audio VERSION 0.1 LANGUAGES CXX)
 add_library(potato_libaudio)
 add_library(potato::libaudio ALIAS potato_libaudio)
 
+target_sources(potato_libaudio PRIVATE
+    "private/audio_engine.cpp"
+)
+
 include(up_set_common_properties)
 up_set_common_properties(potato_libaudio)
 
@@ -18,7 +22,17 @@ target_link_libraries(potato_libaudio
         doctest
 )
 
-add_subdirectory(public/potato/audio)
+add_executable(potato_libaudio_test)
+target_sources(potato_libaudio_test PRIVATE
+    "tests/main.cpp"
+)
 
-add_subdirectory(private)
-add_subdirectory(tests)
+up_set_common_properties(potato_libaudio_test)
+
+target_link_libraries(potato_libaudio_test PRIVATE
+    potato::libaudio
+    doctest
+)
+
+add_test(NAME potato_libaudio_test COMMAND potato_libaudio_test)
+
