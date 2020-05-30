@@ -64,5 +64,5 @@ namespace up::reflex {
 
 /// Defines reflection for a type
 #define UP_REFLECT_TYPE(T) \
-    constexpr [[maybe_unused]] auto typeName(::up::tag<up::remove_cvref_t<T>>) noexcept->::up::zstring_view { return #T; } \
+    constexpr auto typeName [[maybe_unused]] (::up::tag<up::remove_cvref_t<T>>) noexcept->::up::zstring_view { return #T; } \
     template <typename _up_ReflectObject> inline void serialize_value(::up::tag<T>, _up_ReflectObject& reflect)
