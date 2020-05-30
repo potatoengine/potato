@@ -47,6 +47,8 @@ jobs:
         run: |
           cd build
           ctest -T test -R potato --verbose
+      - name: Build Resources
+        run: cmake --build build --target potato_convert_all
 
   build-ubuntu:
     strategy:
@@ -98,6 +100,8 @@ jobs:
         run: |
           cd build
           ctest -T test -R potato --verbose
+      - name: Build Resources
+        run: cmake --build build --target potato_convert_all
 
   clang-format:
     name: 'Clang Format'
