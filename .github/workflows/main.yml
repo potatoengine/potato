@@ -80,7 +80,7 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: apt-get -yq install tzdata
       - name: Install libraries
-        run: apt-get -yq install uuid-dev
+        run: apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
       - name: Install toolchain
         run: apt-get -yq install cmake git ${{ matrix.packages }}
       - name: Configure
@@ -138,7 +138,7 @@ jobs:
       - name: Install Doxygen
         run: apt-get -yq install doxygen
       - name: Install libraries
-        run: apt-get -yq install uuid-dev
+        run: apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
       - name: Install toolchain
         run: apt-get -yq install cmake git g++-10 gcc-10 libstdc++-10-dev
       - name: Configure
