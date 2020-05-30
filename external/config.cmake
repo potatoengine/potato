@@ -5,18 +5,16 @@ FetchContent_Declare(doctest
     GIT_TAG 2.3.8
 )
 FetchContent_Declare(imgui
-    #URL https://github.com/ocornut/imgui/archive/v1.75.zip
-    #URL_HASH SHA1=2f36c5f3d36e3640d3c85abd0bb7b7c89f59e9b3
-    URL https://github.com/potatoengine/imgui/archive/up20200330.zip
-    URL_HASH SHA1=be63bf493876e806230064180a9a04a3f6fc9f06
+    GIT_REPOSITORY https://github.com/potatoengine/imgui.git
+    GIT_TAG up20200330
 )
 FetchContent_Declare(glm
     GIT_REPOSITORY https://github.com/g-truc/glm.git
     GIT_TAG 0.9.9.8
 )
 FetchContent_Declare(stb
-    URL https://github.com/nothings/stb/archive/052dce117ed989848a950308bd99eef55525dfb1.zip
-    URL_HASH SHA1=1538ab6b5ed629f77f322e4ebbdef50f71233a90
+    GIT_REPOSITORY https://github.com/potatoengine/stb.git
+    GIT_TAG up20200529
 )
 FetchContent_Declare(json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
