@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(audio VERSION 0.1 LANGUAGES CXX)
 
+find_package(SDL2 REQUIRED)
+
 add_library(potato_libaudio)
 add_library(potato::libaudio ALIAS potato_libaudio)
 
@@ -18,7 +20,7 @@ target_link_libraries(potato_libaudio
         glm
     PRIVATE
         soloud
-        $<$<PLATFORM_ID:Windows>:SDL2>
+        SDL2
         doctest
 )
 
@@ -35,4 +37,3 @@ target_link_libraries(potato_libaudio_test PRIVATE
 )
 
 add_test(NAME potato_libaudio_test COMMAND potato_libaudio_test)
-
