@@ -34,7 +34,6 @@ namespace up::shell {
         void _renderScene(float frameTime);
         void _resize(glm::ivec2 size);
 
-    private:
         Renderer& _renderer;
         Scene& _scene;
         rc<GpuTexture> _buffer;

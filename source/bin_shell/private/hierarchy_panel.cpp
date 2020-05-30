@@ -26,8 +26,6 @@ namespace up::shell {
     auto createHierarchyPanel(Scene& scene, Selection& selection) -> box<Panel> { return new_box<HierarchyPanel>(scene, selection); }
 
     void HierarchyPanel::ui() {
-        auto& io = ImGui::GetIO();
-
         if (!enabled()) {
             return;
         }

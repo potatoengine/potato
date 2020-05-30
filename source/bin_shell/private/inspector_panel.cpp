@@ -44,8 +44,6 @@ namespace up::shell {
     }
 
     void InspectorPanel::ui() {
-        auto& io = ImGui::GetIO();
-
         if (!enabled()) {
             return;
         }
