@@ -58,7 +58,7 @@ bool up::recon::MaterialConverter::convert(Context& ctx) {
     std::vector<flatbuffers::Offset<flatbuffers::String>> textures;
 
     auto jsonTextures = doc["textures"];
-    for (auto jsonTexture : jsonTextures) {
+    for (auto const& jsonTexture : jsonTextures) {
         auto texturePath = jsonTexture.get<string>();
         textures.push_back(builder.CreateString(texturePath.c_str()));
     }

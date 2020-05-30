@@ -73,9 +73,6 @@ namespace up {
         }
 
         ComponentId const components[sizeof...(Components)] = {_context->findComponentByType<Components>()->id...};
-        int offsets[sizeof...(Components)] = {
-            0,
-        };
 
         for (; _matchIndex < _context->archetypes.size(); ++_matchIndex) {
             auto& match = _matches.push_back({ArchetypeId(_matchIndex)});

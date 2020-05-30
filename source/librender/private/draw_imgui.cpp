@@ -133,8 +133,6 @@ void up::DrawImgui::beginFrame() {
 
 void up::DrawImgui::endFrame() {
     ImGui::SetCurrentContext(_context.get());
-    ImGuiIO& io = ImGui::GetIO();
-
     ImGui::EndFrame();
 }
 
