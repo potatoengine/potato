@@ -5,23 +5,13 @@
 #include "annotation.h"
 #include "serializer.h"
 
+#include "potato/runtime/json.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_format.h"
 #include "potato/spud/string_writer.h"
 #include "potato/spud/vector.h"
 
 #include <nlohmann/json.hpp>
-
-// temporary - FIXME remove
-namespace up {
-    static inline void from_json(const nlohmann::json& json, up::string& str) noexcept {
-        str.reset();
-        if (json.is_string()) {
-            const std::string& stdString = json;
-            str = up::string(stdString.data(), stdString.size());
-        }
-    }
-} // namespace up
 
 namespace up::reflex {
     struct JsonName {
