@@ -32,6 +32,7 @@ target_link_libraries(potato_librecon
         flatbuffers::flatlib
 )
 
+find_library(D3DCOMPILER_PATH d3dcompiler)
 if(D3DCOMPILER_PATH)
     target_link_libraries(potato_librecon PRIVATE ${D3DCOMPILER_PATH})
     target_sources(potato_librecon PRIVATE "private/converters/convert_hlsl.cpp")
