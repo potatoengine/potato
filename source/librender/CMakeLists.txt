@@ -66,6 +66,8 @@ if(TARGET assimp AND TARGET SDL2)
     if(D3D11_PATH AND DXGI_PATH)
         target_link_libraries(potato_librender PRIVATE ${D3D11_PATH} ${DXGI_PATH})
         target_sources(potato_librender PRIVATE ${UP_GPU_D3D11_SOURCES})
+        target_compile_definitions(potato_librender PUBLIC UP_GPU_ENABLE_D3D11=1)
+        set_target_properties(potato_librender PROPERTIES UP_GPU_ENABLE_D3D11 ON)
     else()
         # HEADER_FILE_ONLY is not consistently working for me,
         # so I'm adding a fake target to get the .cpp files registered
