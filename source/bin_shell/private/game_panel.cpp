@@ -65,7 +65,8 @@ namespace up::shell {
             ImGui::SetActiveID(contentId, ctx->CurrentWindow);
             ImGui::SetCaptureRelativeMouseMode(true);
 
-            glm::vec3 relMotion = {0, 0, 0}, relMove = {0, 0, 0};
+            glm::vec3 relMotion = {0, 0, 0};
+            glm::vec3 relMove = {0, 0, 0};
 
             relMotion.x = io.MouseDelta.x / io.DisplaySize.x;
             relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
