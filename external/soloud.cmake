@@ -6,12 +6,19 @@ add_library(soloud STATIC)
 target_include_directories(soloud PUBLIC "${soloud_SOURCE_DIR}/include")
 target_compile_definitions(soloud
     PRIVATE
-        "WITH_SDL2_STATIC=$<PLATFORM_ID:Windows>"
+        WITH_SDL2_STATIC=1
         WITH_NULL=1
         _CRT_SECURE_NO_WARNINGS=1
         SOLOUD_NO_ASSERTS=1 # SoLoud asserts include windows.h on Win32 _and_ have a buffer-overflow, and we can't override them
 )
 target_sources(soloud PRIVATE
+    ${soloud_SOURCE_DIR}/src/audiosource/wav/dr_impl.cpp
+    ${soloud_SOURCE_DIR}/src/audiosource/wav/soloud_wav.cpp
+    ${soloud_SOURCE_DIR}/src/audiosource/wav/soloud_wavstream.cpp
+    ${soloud_SOURCE_DIR}/src/audiosource/wav/stb_vorbis.c
+    ${soloud_SOURCE_DIR}/src/backend/null/soloud_null.cpp
+    ${soloud_SOURCE_DIR}/src/backend/sdl/soloud_sdl2.cpp
+    ${soloud_SOURCE_DIR}/src/backend/sdl2_static/soloud_sdl2_static.cpp
     ${soloud_SOURCE_DIR}/src/core/soloud.cpp
     ${soloud_SOURCE_DIR}/src/core/soloud_audiosource.cpp
     ${soloud_SOURCE_DIR}/src/core/soloud_bus.cpp
@@ -32,23 +39,6 @@ target_sources(soloud PRIVATE
     ${soloud_SOURCE_DIR}/src/core/soloud_queue.cpp
     ${soloud_SOURCE_DIR}/src/core/soloud_thread.cpp
 )
-target_sources(soloud PRIVATE
-    ${soloud_SOURCE_DIR}/src/backend/null/soloud_null.cpp
-)
-target_sources(soloud PRIVATE
-    ${soloud_SOURCE_DIR}/src/backend/sdl/soloud_sdl2.cpp
-)
-target_sources(soloud PRIVATE
-    ${soloud_SOURCE_DIR}/src/audiosource/wav/dr_impl.cpp
-    ${soloud_SOURCE_DIR}/src/audiosource/wav/soloud_wav.cpp
-    ${soloud_SOURCE_DIR}/src/audiosource/wav/soloud_wavstream.cpp
-    ${soloud_SOURCE_DIR}/src/audiosource/wav/stb_vorbis.c
-)
 
-if(WIN32)
-    find_package(SDL2 REQUIRED)
-    target_link_libraries(soloud PRIVATE SDL2)
-    target_sources(soloud PRIVATE
-        ${soloud_SOURCE_DIR}/src/backend/sdl2_static/soloud_sdl2_static.cpp
-    )
-endif()
+find_package(SDL2 REQUIRED)
+target_link_libraries(soloud PRIVATE SDL2)
