@@ -32,11 +32,10 @@ target_link_libraries(potato_librecon
         flatbuffers::flatlib
 )
 
-get_target_property(UP_GPU_ENABLE_D3D11 potato::librender UP_GPU_ENABLE_D3D11)
-if(UP_GPU_ENABLE_D3D11)
-    target_link_libraries(potato_librecon PRIVATE d3dcompiler)
+if(D3DCOMPILER_PATH)
+    target_link_libraries(potato_librecon PRIVATE ${D3DCOMPILER_PATH})
     target_sources(potato_librecon PRIVATE "private/converters/convert_hlsl.cpp")
-endif(UP_GPU_ENABLE_D3D11)
+endif()
 
 add_executable(potato_librecon_test)
 target_sources(potato_librecon_test PRIVATE
