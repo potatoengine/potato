@@ -60,3 +60,11 @@ configure_file(
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shell.config.json
     @ONLY
 )
+
+add_custom_target(potato_convert_all
+    COMMAND potato_recon -source "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+        -dest "${UP_OUTPUT_DIR}/resources"
+        -cache "${UP_OUTPUT_DIR}/cache"
+    DEPENDS potato_recon
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    COMMENT Converting resources...)

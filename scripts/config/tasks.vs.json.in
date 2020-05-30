@@ -2,14 +2,15 @@
   "version": "0.2.1",
   "tasks": [
     {
-      "taskName": "[Potato] Convert Resources",
+      "taskName": "[Potato] Build Resources",
       "appliesTo": "/",
-      "type": "default",
-      "command": "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@/recon.exe",
+      "types": "default",
+      "command": "cmake",
       "args": [
-        "-source", "@UP_ROOT_DIR@/resources",
-        "-dest", "@UP_OUTPUT_DIR@/resources",
-        "-cache", "@UP_OUTPUT_DIR@/cache"
+        "--build",
+        "@CMAKE_BINARY_DIR@",
+        "--target",
+        "potato_convert_all"
       ]
     }
   ]
