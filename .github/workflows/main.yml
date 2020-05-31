@@ -17,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
+        with:
+          lfs: true
       - name: Set Environment
         run: echo "::set-env name=DEPS::$Env:HOME\deps"
       - name: Install SDL2 SDK
@@ -47,6 +49,8 @@ jobs:
         run: |
           cd build
           ctest -T test -R potato --verbose
+      - name: Build Resources
+        run: cmake --build build --target potato_convert_all
 
   build-ubuntu:
     strategy:
@@ -70,9 +74,6 @@ jobs:
       image: 'ubuntu:20.04'
 
     steps:
-      - uses: actions/checkout@master
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
         run: apt-get -yq update
       - name: Setup timezone
@@ -80,9 +81,14 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: apt-get -yq install tzdata
       - name: Install libraries
-        run: apt-get -yq install uuid-dev
+        run: apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
       - name: Install toolchain
-        run: apt-get -yq install cmake git ${{ matrix.packages }}
+        run: apt-get -yq install cmake git git-lfs ${{ matrix.packages }}
+      - uses: actions/checkout@master
+        with:
+          lfs: true
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
@@ -98,6 +104,8 @@ jobs:
         run: |
           cd build
           ctest -T test -R potato --verbose
+      - name: Build Resources
+        run: cmake --build build --target potato_convert_all
 
   clang-format:
     name: 'Clang Format'
@@ -126,9 +134,6 @@ jobs:
       image: 'ubuntu:20.04'
 
     steps:
-      - uses: actions/checkout@master
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
         run: apt-get -yq update
       - name: Setup timezone
@@ -138,9 +143,14 @@ jobs:
       - name: Install Doxygen
         run: apt-get -yq install doxygen
       - name: Install libraries
-        run: apt-get -yq install uuid-dev
+        run: apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
       - name: Install toolchain
-        run: apt-get -yq install cmake git g++-10 gcc-10 libstdc++-10-dev
+        run: apt-get -yq install cmake git git-lfs g++-10 gcc-10 libstdc++-10-dev
+      - uses: actions/checkout@master
+        with:
+          lfs: true
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
         env:
           CXX: 'g++-10'

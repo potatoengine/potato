@@ -25,9 +25,9 @@ namespace up::shell {
     class InspectorPanel : public shell::Panel {
     public:
         explicit InspectorPanel(Scene& scene, Selection& selection, delegate<view<ComponentMeta>()> components)
-            : _scene(scene)
-            , _selection(selection)
-            , _components(std::move(components)) {}
+            : _components(std::move(components))
+            , _scene(scene)
+            , _selection(selection) {}
         virtual ~InspectorPanel() = default;
 
         zstring_view displayName() const override { return "Inspector"; }
@@ -44,8 +44,6 @@ namespace up::shell {
     }
 
     void InspectorPanel::ui() {
-        auto& io = ImGui::GetIO();
-
         if (!enabled()) {
             return;
         }

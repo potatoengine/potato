@@ -34,7 +34,6 @@ namespace up::shell {
         void _drawGrid();
         void _resize(glm::ivec2 size);
 
-    private:
         Renderer& _renderer;
         Scene& _scene;
         rc<GpuTexture> _buffer;
@@ -86,7 +85,8 @@ namespace up::shell {
                     _resize({contentSize.x, contentSize.y});
                 }
 
-                glm::vec3 movement = {0, 0, 0}, motion = {0, 0, 0};
+                glm::vec3 movement = {0, 0, 0};
+                glm::vec3 motion = {0, 0, 0};
 
                 auto callback = [](const ImDrawList* list, const ImDrawCmd* cmd) {
                     // Note: we'd like to do this here, but we'll need our own render data since we're in

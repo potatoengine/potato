@@ -118,8 +118,16 @@
       "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "g++-10"
+        },
+        {
+          "name": "CMAKE_C_COMPILER",
+          "value": "gcc-10"
+        },
+        {
           "name": "BUILD_SHARED_LIBS",
-          "value": "YES",
+          "value": "NO",
           "type": "BOOL"
         },
         {
@@ -148,6 +156,14 @@
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "g++-10"
+        },
+        {
+          "name": "CMAKE_C_COMPILER",
+          "value": "gcc-10"
+        },
         {
           "name": "BUILD_SHARED_LIBS",
           "value": "YES",

@@ -62,7 +62,6 @@ private:
 
     bool _loadConfig(zstring_view path);
 
-private:
     bool _running = true;
     bool _showInspector = true;
     NativeFileSystem _fileSystem;

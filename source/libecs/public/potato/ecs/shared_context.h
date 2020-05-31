@@ -54,7 +54,7 @@ namespace up {
     auto EcsSharedContext::layoutOf(ArchetypeId archetype) const noexcept -> view<LayoutRow> {
         auto const index = to_underlying(archetype);
         UP_ASSERT(index >= 0 && index < archetypes.size());
-        auto const& arch = archetypes[to_underlying(archetype)];
+        auto const& arch = archetypes[index];
         return chunkRows.subspan(arch.layoutOffset, arch.layoutLength);
     }
 

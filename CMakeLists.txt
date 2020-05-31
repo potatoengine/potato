@@ -4,10 +4,8 @@ project(potato VERSION 0.1 LANGUAGES CXX C)
 if(NOT UP_ROOT_DIR)
     set(UP_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Root source directory")
 endif()
-if(NOT UP_OUTPUT_DIR)
-    get_filename_component(UP_OUTPUT_DIR ${CMAKE_BINARY_DIR} DIRECTORY)
-    set(UP_OUTPUT_DIR "${UP_OUTPUT_DIR}" CACHE PATH "Output directory")
-endif()
+set(UP_OUTPUT_DIR "${CMAKE_BINARY_DIR}" CACHE PATH "Output directory")
+message(STATUS "[Potato] output=${UP_OUTPUT_DIR} build=${CMAKE_BINARY_DIR}")
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -60,3 +58,11 @@ configure_file(
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shell.config.json
     @ONLY
 )
+
+add_custom_target(potato_convert_all
+    COMMAND potato_recon -source "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+        -dest "${UP_OUTPUT_DIR}/resources"
+        -cache "${UP_OUTPUT_DIR}/cache"
+    DEPENDS potato_recon
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    COMMENT Converting resources...)
