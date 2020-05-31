@@ -74,8 +74,6 @@ jobs:
       image: 'ubuntu:20.04'
 
     steps:
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
         run: apt-get -yq update
       - name: Setup timezone
@@ -89,6 +87,8 @@ jobs:
       - uses: actions/checkout@master
         with:
           lfs: true
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
@@ -134,8 +134,6 @@ jobs:
       image: 'ubuntu:20.04'
 
     steps:
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
         run: apt-get -yq update
       - name: Setup timezone
@@ -151,6 +149,8 @@ jobs:
       - uses: actions/checkout@master
         with:
           lfs: true
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
         env:
           CXX: 'g++-10'
