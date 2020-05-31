@@ -11,6 +11,7 @@ target_compile_definitions(soloud
         _CRT_SECURE_NO_WARNINGS=1
         SOLOUD_NO_ASSERTS=1 # SoLoud asserts include windows.h on Win32 _and_ have a buffer-overflow, and we can't override them
 )
+set_target_properties(soloud PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
 target_sources(soloud PRIVATE
     ${soloud_SOURCE_DIR}/src/audiosource/wav/dr_impl.cpp
     ${soloud_SOURCE_DIR}/src/audiosource/wav/soloud_wav.cpp
