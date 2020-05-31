@@ -17,11 +17,6 @@ target_sources(potato_libruntime PRIVATE
     $<$<PLATFORM_ID:Windows>:private/debug.windows.h>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.rc>
 
-    # Filesystem implementations
-    #
-    $<$<NOT:$<BOOL:${UNIX}>>:private/native.default.cpp>
-    $<$<BOOL:${UNIX}>:private/native.posix.cpp>
-
     # Logger backends
     #
     $<$<PLATFORM_ID:Windows>:private/win32_debug_receiver.windows.cpp>
@@ -49,7 +44,7 @@ target_sources(potato_libruntime PRIVATE
     private/json.cpp
     private/logger.cpp
     private/path.cpp
-    private/native.cpp
+    private/native_filesystem.cpp
     private/null.cpp
     private/standard_stream_receiver.cpp
     private/stream.cpp
