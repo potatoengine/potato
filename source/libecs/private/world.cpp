@@ -48,10 +48,13 @@ void* up::World::getComponentSlowUnsafe(EntityId entity, ComponentId component) 
 
 void up::World::deleteEntity(EntityId entity) noexcept {
     auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entity);
-    if (!success) {
-        return;
+    if (success) {
+        _deleteEntityData(archetypeId, chunkIndex, index);
+        _recycleEntityId(entity);
     }
+}
 
+void up::World::_deleteEntityData(ArchetypeId archetypeId, uint16 chunkIndex, uint16 index) noexcept {
     Chunk* chunk = _getChunk(archetypeId, chunkIndex);
 
     // Copy the last element over the to-be-removed element, so we don't have holes in our array
@@ -71,8 +74,6 @@ void up::World::deleteEntity(EntityId entity) noexcept {
         _removeChunk(archetypeId, chunkIndex);
         _context->recycleChunk(chunk);
     }
-
-    _recycleEntityId(entity);
 }
 
 void up::World::removeComponent(EntityId entityId, ComponentId componentId) noexcept {
@@ -88,10 +89,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
 
         newChunk.entities()[newIndex] = entityId;
 
-        // remove old entity (must be gone before remap)
-        deleteEntity(entityId);
-
-        // update mapping (must be done after delete)
+        _deleteEntityData(archetypeId, chunkIndex, index);
         _remapEntityId(entityId, newArchetype, newChunkIndex, newIndex);
     }
 }
@@ -108,12 +106,7 @@ void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& comp
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *chunk, index);
         _constructAt(newArchetype, newChunk, newIndex, componentMeta.id);
 
-        // remove old entity (must be gone before remap)
-        //
-        deleteEntity(entityId);
-
-        // update mapping (must be done after delete)
-        //
+        _deleteEntityData(archetypeId, chunkIndex, index);
         _remapEntityId(entityId, newArchetype, newChunkIndex, newIndex);
     }
 }
@@ -130,12 +123,7 @@ void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& compone
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *chunk, index);
         _copyTo(newArchetype, newChunk, newIndex, componentMeta.id, componentData);
 
-        // remove old entity (must be gone before remap)
-        //
-        deleteEntity(entityId);
-
-        // update mapping (must be done after delete)
-        //
+        _deleteEntityData(archetypeId, chunkIndex, index);
         _remapEntityId(entityId, newArchetype, newChunkIndex, newIndex);
     }
 }
@@ -184,24 +172,26 @@ auto up::World::_allocateEntityId(ArchetypeId archetype, uint16 chunk, uint16 in
         auto const mapping = _entityMapping[mappingIndex];
         auto const generation = getMappedGeneration(mapping);
 
+        auto const newGeneration = generation + 1;
+
         _freeEntityHead = getMappedIndex(_entityMapping[mappingIndex]);
 
-        _entityMapping[mappingIndex] = makeMapped(generation, to_underlying(archetype), chunk, index);
+        _entityMapping[mappingIndex] = makeMapped(newGeneration, to_underlying(archetype), chunk, index);
 
-        return makeEntityId(mappingIndex, generation);
+        return makeEntityId(mappingIndex, newGeneration);
     }
 
     // there was no ID to recycle, so create a new one
     uint32 const mappingIndex = static_cast<uint32>(_entityMapping.size());
 
-    _entityMapping.push_back(makeMapped(1, to_underlying(archetype), chunk, index));
+    auto const mapping = _entityMapping.push_back(makeMapped(1, to_underlying(archetype), chunk, index));
 
     return makeEntityId(mappingIndex, 1);
 }
 
 void up::World::_recycleEntityId(EntityId entity) noexcept {
-    uint32 const entityMappingIndex = getEntityMappingIndex(entity);
-    uint32 const newGeneration = getEntityGeneration(entity) + 1;
+    auto const entityMappingIndex = getEntityMappingIndex(entity);
+    auto const newGeneration = getEntityGeneration(entity) + 1;
 
     _entityMapping[entityMappingIndex] = makeFreeEntry(newGeneration != 0 ? newGeneration : 1, _freeEntityHead);
 
@@ -215,7 +205,9 @@ auto up::World::_parseEntityId(EntityId entity) const noexcept -> EntityLocation
     }
 
     auto const mapped = _entityMapping[mappingIndex];
-    if (getMappedGeneration(_entityMapping[mappingIndex]) != getEntityGeneration(entity)) {
+    auto const mappedGen = getMappedGeneration(_entityMapping[mappingIndex]);
+    auto const entityGen = getEntityGeneration(entity);
+    if (mappedGen != entityGen) {
         return {false};
     }
 
@@ -225,7 +217,9 @@ auto up::World::_parseEntityId(EntityId entity) const noexcept -> EntityLocation
 void up::World::_remapEntityId(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept {
     auto const entityMappingIndex = getEntityMappingIndex(entity);
     auto const mapped = _entityMapping[entityMappingIndex];
-    _entityMapping[entityMappingIndex] = makeMapped(getMappedGeneration(mapped), to_underlying(newArchetype), newChunk, newIndex);
+    auto const mappedGen = getMappedGeneration(mapped);
+    UP_ASSERT(mappedGen == getEntityGeneration(entity));
+    _entityMapping[entityMappingIndex] = makeMapped(mappedGen, to_underlying(newArchetype), newChunk, newIndex);
 }
 
 void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex) {

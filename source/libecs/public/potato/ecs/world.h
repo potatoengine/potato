@@ -9,6 +9,7 @@
 
 #include "potato/spud/bit_set.h"
 #include "potato/spud/box.h"
+#include "potato/spud/concepts.h"
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/vector.h"
@@ -87,9 +88,8 @@ namespace up {
 
         /// Interrogate an entity and enumerate all of its components.
         ///
-        template <typename Callback>
-        auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const
-            -> bool requires is_invocable_v<Callback, EntityId, ArchetypeId, ComponentMeta const*, void*> {
+        template <callable<EntityId, ArchetypeId, ComponentMeta const*, void*> Callback>
+        auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const -> bool {
             if (auto [success, archetype, chunkIndex, index] = _parseEntityId(entity); success) {
                 auto const layout = _context->layoutOf(archetype);
                 Chunk* const chunk = _getChunk(archetype, chunkIndex);
@@ -120,10 +120,11 @@ namespace up {
             uint16 index = 0;
         };
 
-        static constexpr uint32 freeEntityIndex = ~0U;
+        static constexpr uint64 freeEntityIndex = ~0ULL;
 
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
         UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept;
+        void _deleteEntityData(ArchetypeId archetypeId, uint16 chunkIndex, uint16 index) noexcept;
 
         auto _allocateEntitySpace(ArchetypeId archetype) -> AllocatedLocation;
         auto _allocateEntityId(ArchetypeId archetype, uint16 chunk, uint16 index) -> EntityId;
@@ -145,7 +146,7 @@ namespace up {
         vector<ArchetypeChunkRange> _archetypeChunkRanges;
         vector<Chunk*> _chunks;
         vector<uint64> _entityMapping;
-        uint32 _freeEntityHead = freeEntityIndex;
+        uint64 _freeEntityHead = freeEntityIndex;
         rc<EcsSharedContext> _context;
     };
 

@@ -153,6 +153,10 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
             found = false;
             queryTest1.select(world, [&found](EntityId, Test1&) { found = true; });
             DOCTEST_CHECK(found);
+
+            found = false;
+            world.interrogateEntityUnsafe(id, [&found](EntityId, ArchetypeId, ComponentMeta const* meta, void*) { found = true; });
+            DOCTEST_CHECK(found);
         }
 
         DOCTEST_SUBCASE("Add Component") {
