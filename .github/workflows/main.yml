@@ -17,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
+        with:
+          lfs: true
       - name: Set Environment
         run: echo "::set-env name=DEPS::$Env:HOME\deps"
       - name: Install SDL2 SDK
@@ -73,6 +75,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
+        with:
+          lfs: true
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
@@ -131,6 +135,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
+        with:
+          lfs: true
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Apt update
