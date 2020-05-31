@@ -353,12 +353,20 @@ void up::ShellApp::_displayMainMenu() {
             ImGui::EndMenu();
         }
 
-        ImGui::Spacing();
-        ImGui::Spacing();
-        ImGui::Spacing();
+        ImGui::Dummy({50, 1});
 
         if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
             _scene->playing(!_scene->playing());
+        }
+
+        ImGui::Dummy({50, 1});
+
+        {
+            auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
+
+            fixed_string_writer<128> buffer;
+            format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
+            ImGui::Text("%s", buffer.c_str());
         }
 
         ImGui::EndMainMenuBar();
@@ -398,20 +406,6 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
         }
 
         ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_None);
-
-        if (ImGui::Begin("Statistics",
-                nullptr,
-                ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize)) {
-            auto const contentSize = ImGui::GetContentRegionAvail();
-            ImGui::SetWindowPos(ImVec2(io.DisplaySize.x - contentSize.x - 20, rect.y));
-
-            auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
-
-            fixed_string_writer<128> buffer;
-            format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
-            ImGui::Text("%s", buffer.c_str());
-        }
-        ImGui::End();
     }
     ImGui::End();
     ImGui::PopStyleVar(1);
