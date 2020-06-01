@@ -13,5 +13,6 @@ set_target_properties(imgui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_compile_definitions(imgui PUBLIC
     IM_ASSERT=UP_ASSERT
     IMGUI_USER_CONFIG="potato/runtime/assertion.h"
+    IMGUI_DEFINE_MATH_OPERATORS=1
 )
 target_link_libraries(imgui PUBLIC potato::libruntime)

@@ -17,6 +17,7 @@
 #include <glm/glm.hpp>
 #include <SDL.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 
 namespace up::shell {
     class ScenePanel : public shell::Panel {
@@ -104,12 +105,16 @@ namespace up::shell {
 
                 auto const pos = ImGui::GetCursorPos();
                 ImGui::Image(_bufferView.get(), contentSize);
-                ImGui::SetCursorPos(pos);
-                ImGui::InvisibleButton("SceneInteract", contentSize);
+
+                auto const id = ImGui::GetID("SceneInteract");
+                ImRect area{pos, pos + contentSize};
+                ImGui::ItemAdd(area, id);
+                ImGui::ButtonBehavior(area, id, nullptr, nullptr, ImGuiButtonFlags_PressedOnClick | ImGuiButtonFlags_MouseButtonRight);
                 if (ImGui::IsItemActive()) {
-                    motion.x = io.MouseDelta.x / contentSize.x;
-                    motion.y = io.MouseDelta.y / contentSize.y;
-                    ImGui::SetCaptureRelativeMouseMode(true);
+                    ImGui::CaptureMouseFromApp();
+
+                    motion.x = io.MouseDelta.x / contentSize.x * 2;
+                    motion.y = io.MouseDelta.y / contentSize.y * 2;
                 }
                 if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered()) {
                     motion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
