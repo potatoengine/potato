@@ -106,16 +106,28 @@ namespace up::shell {
                 auto const pos = ImGui::GetCursorPos();
                 ImGui::Image(_bufferView.get(), contentSize);
 
-                auto const id = ImGui::GetID("SceneInteract");
                 ImRect area{pos, pos + contentSize};
+
+                auto const id = ImGui::GetID("SceneControl");
                 ImGui::ItemAdd(area, id);
-                ImGui::ButtonBehavior(area, id, nullptr, nullptr, ImGuiButtonFlags_PressedOnClick | ImGuiButtonFlags_MouseButtonRight);
+                ImGui::ButtonBehavior(area,
+                    id,
+                    nullptr,
+                    nullptr,
+                    ImGuiButtonFlags_PressedOnClick | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle);
                 if (ImGui::IsItemActive()) {
                     ImGui::CaptureMouseFromApp();
 
-                    motion.x = io.MouseDelta.x / contentSize.x * 2;
-                    motion.y = io.MouseDelta.y / contentSize.y * 2;
+                    if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
+                        motion.x = io.MouseDelta.x / contentSize.x * 2;
+                        motion.y = io.MouseDelta.y / contentSize.y * 2;
+                    }
+                    else if (ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
+                        movement.x = io.MouseDelta.x;
+                        movement.y = io.MouseDelta.y;
+                    }
                 }
+
                 if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered()) {
                     motion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
                 }
