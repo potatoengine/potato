@@ -46,7 +46,7 @@ up::ArcBallCameraController::ArcBallCameraController(Camera const& camera) noexc
 
 void up::ArcBallCameraController::apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept {
     auto const move = relativeMovement.y * camera.up() + -relativeMovement.x * camera.right();
-    _target += move;
+    _target += move * frameTime;
 
     _yaw = glm::mod(_yaw + relativeMotion.x, glm::two_pi<float>());
     _pitch = glm::clamp(_pitch - relativeMotion.y, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
