@@ -353,19 +353,23 @@ void up::ShellApp::_displayMainMenu() {
             ImGui::EndMenu();
         }
 
-        ImGui::Dummy({50, 1});
-
-        if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
-            _scene->playing(!_scene->playing());
+        {
+            auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
+            auto const xPos = ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
+            ImGui::SetCursorPosX(xPos);
+            if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
+                _scene->playing(!_scene->playing());
+            }
+            ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "Shift-ESC to release input");
         }
-
-        ImGui::Dummy({50, 1});
 
         {
             auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 
             fixed_string_writer<128> buffer;
             format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
+            auto const textWidth = ImGui::CalcTextSize(buffer.c_str()).x;
+            ImGui::SameLine(ImGui::GetWindowSize().x - textWidth - 2 * ImGui::GetStyle().FramePadding.x);
             ImGui::Text("%s", buffer.c_str());
         }
 
