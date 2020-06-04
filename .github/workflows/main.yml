@@ -36,13 +36,12 @@ jobs:
         uses: seanmiddleditch/gha-setup-vsdevenv@master
       - name: Configure
         env:
-          CXXFLAGS: /W3 /WX
           CXX: cl.exe
           CC: cl.exe
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="$Env:DEPS/assimp-4.1.0" ..
+          cmake -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="$Env:DEPS/assimp-4.1.0" ..
       - name: Build
         run: cmake --build build --parallel
       - name: Test
@@ -91,13 +90,12 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
         env:
-          CXXFLAGS: '${{ matrix.cxxflags }}'
           CXX: '${{ matrix.cxx }}'
           CC: '${{ matrix.cc }}'
         run: |
           mkdir -p build
           cd build
-          cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+          cmake -G Ninja -DUP_CXXFLAGS:STRING="${{ matrix.cxxflags }}" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
       - name: Build
         run: cmake --build build --parallel
       - name: Test
