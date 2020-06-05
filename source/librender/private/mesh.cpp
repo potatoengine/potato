@@ -7,6 +7,8 @@
 #include "gpu_device.h"
 #include "model_generated.h"
 
+#include "potato/spud/sequence.h"
+
 up::Mesh::Mesh(vector<up::uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels)
     : _buffers(buffers.begin(), buffers.end())
     , _channels(channels.begin(), channels.end())
@@ -18,7 +20,7 @@ up::Mesh::~Mesh() = default;
 void up::Mesh::populateLayout(span<GpuInputLayoutElement>& inputLayout) const noexcept {
     auto size = inputLayout.size() < _channels.size() ? inputLayout.size() : _channels.size();
 
-    for (decltype(size) index = 0; index != size; ++index) {
+    for (auto index : sequence(size)) {
         inputLayout[index].format = _channels[index].format;
         inputLayout[index].semantic = _channels[index].semantic;
         inputLayout[index].semanticIndex = 0; // FIXME
@@ -41,8 +43,9 @@ void up::Mesh::updateVertexBuffers(RenderContext& ctx) {
 
 void up::Mesh::bindVertexBuffers(RenderContext& ctx) {
     ctx.commandList.bindIndexBuffer(_ibo.get(), GpuIndexFormat::Unsigned16, 0);
-    for (int i = 0; i != _buffers.size(); ++i) {
-        ctx.commandList.bindVertexBuffer(i, _vbo.get(), _buffers[i].stride, _buffers[i].offset);
+
+    for (auto i : sequence(_buffers.size())) {
+        ctx.commandList.bindVertexBuffer(static_cast<uint32>(i), _vbo.get(), _buffers[i].stride, _buffers[i].offset);
     }
 }
 
