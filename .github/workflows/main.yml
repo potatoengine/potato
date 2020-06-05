@@ -59,11 +59,12 @@ jobs:
         include:
           - cxx: g++-10
             cc: gcc-10
-            cxxflags: -Wall
+            warnings: -Wall
             packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
-            cxxflags: -Wall -stdlib=libc++
+            cxxflags: -stdlib=libc++
+            warnings: -Wall
             packages: clang-10 clang-tidy-10 libc++-10-dev libc++abi-10-dev
             clang_tidy: clang-tidy-10
     
@@ -90,12 +91,13 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
         env:
+          CXXFLAGS: '${{ matrix.cxxflags }}'
           CXX: '${{ matrix.cxx }}'
           CC: '${{ matrix.cc }}'
         run: |
           mkdir -p build
           cd build
-          cmake -G Ninja -DUP_CXXFLAGS:STRING="${{ matrix.cxxflags }}" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+          cmake -G Ninja -DUP_CXXFLAGS:STRING="${{ matrix.warnings }}" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
       - name: Build
         run: cmake --build build --parallel
       - name: Test
