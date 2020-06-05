@@ -30,7 +30,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] LockFreeQueue") {
         DOCTEST_CHECK(!queue.tryEnque(0));
 
         for (std::size_t i = 0; i < queue.capacity(); ++i) {
-            std::size_t result;
+            std::size_t result = 0;
             DOCTEST_CHECK(queue.tryDeque(result));
             DOCTEST_CHECK_EQ(i, result);
         }
