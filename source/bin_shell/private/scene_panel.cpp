@@ -43,7 +43,6 @@ namespace up::shell {
         Camera _camera;
         ArcBallCameraController _cameraController;
         bool _enableGrid = true;
-        bool _isControllingCamera = false;
     };
 
     auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel> { return new_box<ScenePanel>(renderer, scene); }

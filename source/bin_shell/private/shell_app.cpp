@@ -378,8 +378,6 @@ void up::ShellApp::_displayMainMenu() {
 }
 
 void up::ShellApp::_displayDocuments(glm::vec4 rect) {
-    auto& io = ImGui::GetIO();
-
     ImGui::SetNextWindowPos({rect.x, rect.y});
     ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});

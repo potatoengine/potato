@@ -72,7 +72,6 @@ namespace up::shell {
             relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
             relMotion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
 
-            auto keys = SDL_GetKeyboardState(nullptr);
             relMove = {ImGui::IsKeyPressed(SDL_SCANCODE_D) - ImGui::IsKeyPressed(SDL_SCANCODE_A),
                 ImGui::IsKeyPressed(SDL_SCANCODE_SPACE) - ImGui::IsKeyPressed(SDL_SCANCODE_C),
                 ImGui::IsKeyPressed(SDL_SCANCODE_W) - ImGui::IsKeyPressed(SDL_SCANCODE_S)};

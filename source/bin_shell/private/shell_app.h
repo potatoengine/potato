@@ -63,7 +63,6 @@ private:
     bool _loadConfig(zstring_view path);
 
     bool _running = true;
-    bool _showInspector = true;
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
@@ -82,6 +81,5 @@ private:
     shell::Selection _selection;
     vector<box<shell::Panel>> _documents;
     float _lastFrameTime = 0.f;
-    float _inspectorWidth = 300.f;
     std::chrono::nanoseconds _lastFrameDuration = {};
 };
