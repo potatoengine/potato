@@ -64,7 +64,7 @@ jobs:
           - cxx: clang++-10
             cc: clang-10
             cxxflags: -stdlib=libc++
-            warnings: -Wall
+            warnings: -Wall -Werror -Wno-deprecated-volatile # GLM triggers deprecated-volatile
             packages: clang-10 clang-tidy-10 libc++-10-dev libc++abi-10-dev
             clang_tidy: clang-tidy-10
     
