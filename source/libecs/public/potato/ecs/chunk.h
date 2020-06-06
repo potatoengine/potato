@@ -11,10 +11,10 @@ namespace up {
     /// is allocated to an Archetype and will store a list of Components according
     /// to the Archetype's specified layout.
     ///
-    struct Chunk {
+    struct alignas(64) Chunk { // NOLINT(readability-magic-numbers)
         static constexpr uint32 SizeBytes = 64 * 1024;
 
-        struct alignas(64) Header {
+        struct Header {
             ArchetypeId archetype = ArchetypeId::Empty;
             unsigned int entities = 0;
             unsigned int capacity = 0;
