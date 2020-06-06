@@ -11,7 +11,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace {
-    struct alignas(16) Vert {
+    struct alignas(16) Vert { // NOLINT(readability-magic-numbers)
         glm::vec3 pos;
         glm::vec3 color;
         glm::vec3 normal;
@@ -19,7 +19,7 @@ namespace {
         glm::vec2 uv;
     };
 
-    struct alignas(16) Trans {
+    struct alignas(16) Trans { // NOLINT(readability-magic-numbers)
         glm::mat4x4 modelWorld;
         glm::mat4x4 worldModel;
     };
