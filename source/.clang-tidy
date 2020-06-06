@@ -1,7 +1,4 @@
 FormatStyle: "file"
-Checks: "-*,performance-*,readability-*,-readability-named-parameter,-readability-magic-numbers,-readability-uppercase-literal-suffix,-readability-convert-member-functions-to-static,-readability-braces-around-statements,-readability-qualified-auto,-readability-implicit-bool-conversion"
-HeaderFilterRegex: "(private/.*|public/potato/.*)"
-ExtraArgs: [
-    "-D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING",
-]
+Checks: "-*,performance-*,readability-*"
+HeaderFilterRegex: "(private/.*|public/potato/.*)",
 WarningsAsErrors: "*"
