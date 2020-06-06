@@ -43,7 +43,7 @@ jobs:
           cd build
           cmake -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="$Env:DEPS/assimp-4.1.0" ..
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel -- -k 0 -v
       - name: Test
         run: |
           cd build
@@ -99,7 +99,7 @@ jobs:
           cd build
           cmake -G Ninja -DUP_CXXFLAGS:STRING="${{ matrix.warnings }}" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel -- -k 0 -v
       - name: Test
         run: |
           cd build
