@@ -6,6 +6,7 @@ Checks: >-
     readability-*,
     -readability-named-parameter,
     -readability-convert-member-functions-to-static,
+    -readability-uppercase-literal-suffix,
     -readability-qualified-auto,
 HeaderFilterRegex: "(private/.*|public/potato/.*)"
 WarningsAsErrors: "*"

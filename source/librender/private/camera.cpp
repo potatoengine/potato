@@ -12,7 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace {
-    struct alignas(16) CameraData {
+    struct alignas(16) CameraData { // NOLINT(readability-magic-numbers)
         glm::mat4x4 worldViewProjection;
         glm::mat4x4 worldView;
         glm::mat4x4 viewProjection;
@@ -57,10 +57,11 @@ void up::RenderCamera::updateBuffers(RenderContext& ctx, glm::vec3 dimensions, g
     viewport.minDepth = 0;
     viewport.maxDepth = 1;
 
-    float farZ = 400.f;
-    float nearZ = .2f;
+    constexpr float farZ = 400.f;
+    constexpr float nearZ = .2f;
+    constexpr float fovDeg = 75.f;
 
-    auto projection = glm::perspectiveFovRH_ZO(glm::radians(75.f), viewport.width, viewport.height, nearZ, farZ);
+    auto projection = glm::perspectiveFovRH_ZO(glm::radians(fovDeg), viewport.width, viewport.height, nearZ, farZ);
 
     CameraData data;
     data.worldView = transpose(cameraTransform);
@@ -99,10 +100,11 @@ void up::RenderCamera::beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, 
     viewport.minDepth = 0;
     viewport.maxDepth = 1;
 
-    float farZ = 400.f;
-    float nearZ = .2f;
+    constexpr float farZ = 400.f;
+    constexpr float nearZ = .2f;
+    constexpr float fovDeg = 75.f;
 
-    auto projection = glm::perspectiveFovRH_ZO(glm::radians(75.f), viewport.width, viewport.height, nearZ, farZ);
+    auto projection = glm::perspectiveFovRH_ZO(glm::radians(fovDeg), viewport.width, viewport.height, nearZ, farZ);
 
     CameraData data;
     data.worldView = transpose(cameraTransform);
