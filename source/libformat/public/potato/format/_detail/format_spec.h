@@ -21,7 +21,7 @@ namespace up::_detail {
         char const* const end = spec_string.end();
 
         // read in width
-        unsigned width = 0u;
+        unsigned width = 0U;
         char const* next = _detail::parse_unsigned(start, end, width);
         bool success = next != start;
 

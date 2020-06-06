@@ -7,7 +7,7 @@
 #include <cstring>
 
 namespace up {
-    template <std::size_t Capacity = 512> class fixed_string_writer {
+    template <std::size_t Capacity> class fixed_string_writer {
     public:
         using value_type = char;
         using iterator = value_type*;

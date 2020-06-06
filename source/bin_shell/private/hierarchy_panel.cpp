@@ -31,7 +31,9 @@ namespace up::shell {
         }
 
         if (ImGui::Begin("Hierarchy", &_enabled, ImGuiWindowFlags_NoCollapse)) {
-            fixed_string_writer label;
+            constexpr int label_length = 64;
+
+            fixed_string_writer<label_length> label;
 
             for (auto const& chunk : _scene.world().chunks()) {
                 for (EntityId entityId : chunk->entities()) {

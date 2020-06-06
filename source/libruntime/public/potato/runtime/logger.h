@@ -36,23 +36,27 @@ namespace up {
         void UP_RUNTIME_API detach(LogReceiver* remove) noexcept;
 
     protected:
-        template <typename... T> void _formatDispatch(LogSeverity severity, string_view format, T const&... args) {
-            if (!isEnabledFor(severity)) {
-                return;
-            }
-
-            fixed_string_writer<1024> writer;
-            format_append(writer, format, args...);
-
-            _dispatch(severity, writer, {});
-        }
+        template <typename... T> void _formatDispatch(LogSeverity severity, string_view format, T const&... args);
 
         void UP_RUNTIME_API _dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept;
 
     private:
+        static constexpr int log_length = 1024;
+
         string _name;
         LogSeverity _minimumSeverity = LogSeverity::Info;
         RWLock _receiversLock;
         vector<rc<LogReceiver>> _receivers;
     };
+
+    template <typename... T> void Logger::_formatDispatch(LogSeverity severity, string_view format, T const&... args) {
+        if (!isEnabledFor(severity)) {
+            return;
+        }
+
+        fixed_string_writer<log_length> writer;
+        format_append(writer, format, args...);
+
+        _dispatch(severity, writer, {});
+    }
 } // namespace up
