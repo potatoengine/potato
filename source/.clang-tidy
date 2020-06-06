@@ -1,4 +1,4 @@
 FormatStyle: "file"
 Checks: "-*,performance-*,readability-*"
-HeaderFilterRegex: "(private/.*|public/potato/.*)",
+HeaderFilterRegex: "(private/.*|public/potato/.*)"
 WarningsAsErrors: "*"
