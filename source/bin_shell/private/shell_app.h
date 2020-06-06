@@ -17,6 +17,7 @@
 
 namespace up {
     class ShellApp;
+    class Loader;
     class Renderer;
     class RenderCamera;
     class Node;
@@ -66,6 +67,7 @@ private:
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
+    box<Loader> _loader;
     box<Renderer> _renderer;
     box<RenderCamera> _uiRenderCamera;
     box<Universe> _universe;

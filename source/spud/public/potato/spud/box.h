@@ -43,17 +43,13 @@ public:
 
     box(box&& src) noexcept : _ptr(src.release()) {}
     box& operator=(box&& src) noexcept {
-        if (this != &src) {
-            reset(src.release());
-        }
+        reset(src.release());
         return *this;
     }
 
     template <typename U> box(box<U>&& src) noexcept requires std::is_convertible_v<U*, T*> : _ptr(src.release()) {}
     template <typename U> auto operator=(box<U>&& src) noexcept -> box<T>& requires std::is_convertible_v<U*, T*> {
-        if (this != &src) {
-            reset(src.release());
-        }
+        reset(src.release());
         return *this;
     }
 

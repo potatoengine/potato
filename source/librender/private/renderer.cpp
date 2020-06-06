@@ -27,10 +27,10 @@ namespace {
     };
 } // namespace
 
-up::Renderer::Renderer(FileSystem& fileSystem, rc<GpuDevice> device) : _device(std::move(device)), _fileSystem(fileSystem) {
+up::Renderer::Renderer(Loader& loader, rc<GpuDevice> device) : _device(std::move(device)), _loader(loader) {
     _commandList = _device->createCommandList();
 
-    _debugLineMaterial = loadMaterialSync("resources/materials/debug_line.mat");
+    _debugLineMaterial = _loader.loadMaterialSync("resources/materials/debug_line.mat");
     _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, 64 * 1024);
 }
 
@@ -94,7 +94,11 @@ void up::Renderer::flushDebugDraw(float frameTime) {
 
 auto up::Renderer::context() -> RenderContext { return RenderContext{_frameTimestamp, *_commandList, *_device}; }
 
-auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
+up::DefaultLoader::DefaultLoader(FileSystem& fileSystem, rc<GpuDevice> device) : _fileSystem(fileSystem), _device(std::move(device)) {}
+
+up::DefaultLoader::~DefaultLoader() = default;
+
+auto up::DefaultLoader::loadMeshSync(zstring_view path) -> rc<Mesh> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
     if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
@@ -105,7 +109,7 @@ auto up::Renderer::loadMeshSync(zstring_view path) -> rc<Mesh> {
     return Mesh::createFromBuffer(contents);
 }
 
-auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
+auto up::DefaultLoader::loadMaterialSync(zstring_view path) -> rc<Material> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
     if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
@@ -116,7 +120,7 @@ auto up::Renderer::loadMaterialSync(zstring_view path) -> rc<Material> {
     return Material::createFromBuffer(contents, *this);
 }
 
-auto up::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
+auto up::DefaultLoader::loadShaderSync(zstring_view path) -> rc<Shader> {
     vector<byte> contents;
     auto stream = _fileSystem.openRead(path);
     if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
@@ -127,7 +131,7 @@ auto up::Renderer::loadShaderSync(zstring_view path) -> rc<Shader> {
     return up::new_shared<Shader>(std::move(contents));
 }
 
-auto up::Renderer::loadTextureSync(zstring_view path) -> rc<Texture> {
+auto up::DefaultLoader::loadTextureSync(zstring_view path) -> rc<Texture> {
     Stream stream = _fileSystem.openRead(path);
     if (!stream) {
         return nullptr;

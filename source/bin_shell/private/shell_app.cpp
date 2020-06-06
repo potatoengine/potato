@@ -107,7 +107,8 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _renderer = new_box<Renderer>(_fileSystem, _device);
+    _loader = new_box<DefaultLoader>(_fileSystem, _device);
+    _renderer = new_box<Renderer>(*_loader, _device);
 
 #if UP_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
@@ -120,13 +121,13 @@ int up::ShellApp::initialize() {
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
-    auto material = _renderer->loadMaterialSync("resources/materials/full.mat");
+    auto material = _loader->loadMaterialSync("resources/materials/full.mat");
     if (material == nullptr) {
         _errorDialog("Failed to load basic material");
         return 1;
     }
 
-    auto mesh = _renderer->loadMeshSync("resources/meshes/cube.model");
+    auto mesh = _loader->loadMeshSync("resources/meshes/cube.model");
     if (mesh == nullptr) {
         _errorDialog("Failed to load cube mesh");
         return 1;
@@ -155,8 +156,8 @@ int up::ShellApp::initialize() {
 
     _selection.select(_scene->main());
 
-    auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
-    auto imguiPixelShader = _renderer->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
+    auto imguiVertShader = _loader->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
+    auto imguiPixelShader = _loader->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
     if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
         _errorDialog("Failed to load imgui shaders");
         return 1;
