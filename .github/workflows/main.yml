@@ -59,12 +59,12 @@ jobs:
         include:
           - cxx: g++-10
             cc: gcc-10
-            warnings: -Wall -Werror -Wno-volatile -Wno-deprecated-declarations # GLM triggers volatile, nlohmann/json triggers deprecated-declarations
+            warnings: -Wall -Werror -Wno-error=volatile -Wno-error=deprecated-declarations -Wno-error=maybe-uninitialized # GLM triggers volatile, nlohmann/json triggers deprecated-declarations, stb_dxt triggers maybe_unitialized
             packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
             cxxflags: -stdlib=libc++
-            warnings: -Wall -Werror -Wno-deprecated-volatile # GLM triggers deprecated-volatile
+            warnings: -Wall -Werror -Wno-error=deprecated-volatile # GLM triggers deprecated-volatile
             packages: clang-10 clang-tidy-10 libc++-10-dev libc++abi-10-dev
             clang_tidy: clang-tidy-10
     
