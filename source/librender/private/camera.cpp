@@ -115,7 +115,9 @@ void up::RenderCamera::beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, 
 
     ctx.commandList.update(_cameraDataBuffer.get(), span{&data, 1}.as_bytes());
 
-    ctx.commandList.clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
+    constexpr glm::vec4 clearColor{0.f, 0.f, 0.1f, 1.f};
+
+    ctx.commandList.clearRenderTarget(_rtv.get(), clearColor);
     ctx.commandList.clearDepthStencil(_dsv.get());
     ctx.commandList.bindRenderTarget(0, _rtv.get());
     ctx.commandList.bindDepthStencil(_dsv.get());
