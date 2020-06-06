@@ -78,7 +78,10 @@ int up::ShellApp::initialize() {
         _fileSystem.currentWorkingDirectory(_resourceDir.c_str());
     }
 
-    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 768, SDL_WINDOW_RESIZABLE);
+    constexpr int default_width = 1024;
+    constexpr int default_height = 768;
+
+    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, default_width, default_height, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create window", nullptr);
     }
@@ -200,6 +203,8 @@ void up::ShellApp::run() {
     int width = 0;
     int height = 0;
 
+    constexpr double nano_to_seconds = 1.0 / 1000000000.0;
+
     while (isRunning()) {
         _processEvents();
 
@@ -218,7 +223,7 @@ void up::ShellApp::run() {
 
         auto endFrame = std::chrono::high_resolution_clock::now();
         _lastFrameDuration = endFrame - now;
-        _lastFrameTime = static_cast<float>(_lastFrameDuration.count() / 1000000000.0);
+        _lastFrameTime = static_cast<float>(_lastFrameDuration.count() * 1000000000.0);
         now = endFrame;
     }
 }
@@ -367,7 +372,7 @@ void up::ShellApp::_displayMainMenu() {
         {
             auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 
-            fixed_string_writer<128> buffer;
+            fixed_string_writer<128> buffer; // NOLINT(readability-magic-numbers)
             format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
             auto const textWidth = ImGui::CalcTextSize(buffer.c_str()).x;
             ImGui::SameLine(ImGui::GetWindowSize().x - textWidth - 2 * ImGui::GetStyle().FramePadding.x);
@@ -397,7 +402,9 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_None);
 
             auto contentDockId = centralDockId;
+            // NOLINTNEXTLINE(readability-magic-numbers)
             auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
+            // NOLINTNEXTLINE(readability-magic-numbers)
             auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
 
             ImGui::DockBuilderDockWindow("Inspector", inspectedDockId);

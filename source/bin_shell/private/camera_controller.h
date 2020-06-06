@@ -20,7 +20,7 @@ namespace up {
         void apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept override;
 
     private:
-        float _moveSpeedPerSec = 10;
+        float _moveSpeedPerSec = 10; // NOLINT(readability-magic-numbers)
         float _rotateRadiansPerSec = 1;
         float _yaw = 0;
         float _pitch = 0;
@@ -33,8 +33,8 @@ namespace up {
         void apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept override;
 
     private:
-        glm::vec3 _target = {0, 5, 0};
-        float _boomLength = 10;
+        glm::vec3 _target = {0, 5, 0}; // NOLINT(readability-magic-numbers)
+        float _boomLength = 10; // NOLINT(readability-magic-numbers)
         float _yaw = 0;
         float _pitch = -glm::quarter_pi<float>();
     };
