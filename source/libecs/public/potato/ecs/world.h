@@ -139,7 +139,7 @@ namespace up {
         void _constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component);
         void _destroyAt(ArchetypeId arch, Chunk& chunk, int index);
 
-        void _addChunk(ArchetypeId archetype, Chunk* chunk);
+        auto _addChunk(ArchetypeId archetype, Chunk* chunk) -> uint16;
         void _removeChunk(ArchetypeId archetype, int chunkIndex) noexcept;
         UP_ECS_API auto _getChunk(ArchetypeId archetype, int chunkIndex) const noexcept -> Chunk*;
 

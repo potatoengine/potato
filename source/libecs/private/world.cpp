@@ -146,23 +146,20 @@ auto up::World::_createEntityRaw(view<ComponentMeta const*> components, view<voi
 }
 
 auto up::World::_allocateEntitySpace(ArchetypeId archetype) -> AllocatedLocation {
-    size_t chunkIndex = 0;
-    Chunk* chunk = nullptr;
-
     auto const chunks = chunksOf(archetype);
-    for (; chunkIndex != chunks.size(); ++chunkIndex) {
-        chunk = chunks[chunkIndex];
+
+    for (auto chunkIndex : sequence(chunks.size())) {
+        Chunk* const chunk = chunks[chunkIndex];
         if (chunk->header.entities < chunk->header.capacity) {
-            break;
+            uint16 index = chunk->header.entities++;
+            return {*chunk, static_cast<uint16>(chunkIndex), index};
         }
     }
-    if (chunkIndex == chunks.size()) {
-        chunk = _context->acquireChunk();
-        _addChunk(archetype, chunk);
-    }
 
-    uint16 index = chunk->header.entities++;
-    return {*chunk, static_cast<uint16>(chunkIndex), index};
+    Chunk* const chunk = _context->acquireChunk();
+    auto const chunkIndex = _addChunk(archetype, chunk);
+    uint16 const index = chunk->header.entities++;
+    return {*chunk, chunkIndex, index};
 }
 
 auto up::World::_allocateEntityId(ArchetypeId archetype, uint16 chunk, uint16 index) -> EntityId {
@@ -253,7 +250,7 @@ void up::World::_destroyAt(ArchetypeId arch, Chunk& chunk, int index) {
     }
 }
 
-void up::World::_addChunk(ArchetypeId arch, Chunk* chunk) {
+auto up::World::_addChunk(ArchetypeId arch, Chunk* chunk) -> uint16 {
     UP_ASSERT(chunk != nullptr);
 
     auto const archIndex = to_underlying(arch);
@@ -268,12 +265,16 @@ void up::World::_addChunk(ArchetypeId arch, Chunk* chunk) {
 
     auto& range = _archetypeChunkRanges[archIndex];
 
+    auto const chunkIndex = narrow_cast<uint16>(range.length);
+
     _chunks.insert(_chunks.begin() + range.offset + range.length, chunk);
     ++range.length;
 
     for (auto& updateRange : _archetypeChunkRanges.subspan(archIndex + 1)) {
         ++updateRange.offset;
     }
+
+    return chunkIndex;
 }
 
 void up::World::_removeChunk(ArchetypeId arch, int chunkIndex) noexcept {
