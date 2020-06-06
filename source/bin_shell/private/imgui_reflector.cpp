@@ -19,7 +19,7 @@ namespace up::shell {
         auto euler = glm::eulerAngles(value);
         auto eulerDegrees = glm::vec3(glm::degrees(euler.x), glm::degrees(euler.y), glm::degrees(euler.z));
 
-        if (ImGui::SliderFloat3(_name.c_str(), &eulerDegrees.x, 0, +359.f)) {
+        if (ImGui::SliderFloat3(_name.c_str(), &eulerDegrees.x, 0, +359.f)) { // NOLINT(readability-magic-numbers)
             value = glm::vec3(glm::radians(eulerDegrees.x), glm::radians(eulerDegrees.y), glm::radians(eulerDegrees.z));
         }
     }

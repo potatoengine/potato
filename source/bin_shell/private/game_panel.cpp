@@ -23,7 +23,7 @@ namespace up::shell {
     class GamePanel : public Panel {
     public:
         explicit GamePanel(Renderer& renderer, Scene& scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
-            _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+            _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0}); // NOLINT(readability-magic-numbers)
         }
         virtual ~GamePanel() = default;
 
@@ -72,9 +72,9 @@ namespace up::shell {
             relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
             relMotion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
 
-            relMove = {ImGui::IsKeyPressed(SDL_SCANCODE_D) - ImGui::IsKeyPressed(SDL_SCANCODE_A),
-                ImGui::IsKeyPressed(SDL_SCANCODE_SPACE) - ImGui::IsKeyPressed(SDL_SCANCODE_C),
-                ImGui::IsKeyPressed(SDL_SCANCODE_W) - ImGui::IsKeyPressed(SDL_SCANCODE_S)};
+            relMove = {static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_D)) - static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_A)),
+                static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_SPACE)) - static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_C)),
+                static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_W)) - static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_S))};
 
             _cameraController.apply(_camera, relMove, relMotion, io.DeltaTime);
         }
