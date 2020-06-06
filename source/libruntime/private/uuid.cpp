@@ -7,7 +7,7 @@
 #include "potato/spud/string_writer.h"
 
 constexpr up::UUID::UUID(Bytes const& bytes) noexcept : _data{HighLow{}} {
-    for (int i = 0; i != 16; ++i) {
+    for (unsigned i = 0; i != sizeof(bytes); ++i) {
         _data.ub[i] = bytes[i];
     }
 }
@@ -64,7 +64,7 @@ auto up::UUID::fromString(string_view id) noexcept -> UUID {
         next |= static_cast<byte>(digit);
 
         if (octect) {
-            if (bidx == 16) {
+            if (bidx == sizeof(result._data.ub)) {
                 return UUID{};
             }
             result._data.ub[bidx++] = next;
@@ -73,7 +73,7 @@ auto up::UUID::fromString(string_view id) noexcept -> UUID {
         octect = !octect;
     }
 
-    if (bidx != 16 || octect) { // NOLINT(readability-magic-numbers)
+    if (bidx != sizeof(result._data.ub) || octect) { // NOLINT(readability-magic-numbers)
         return UUID{};
     }
 
