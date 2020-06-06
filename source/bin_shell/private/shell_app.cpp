@@ -223,7 +223,7 @@ void up::ShellApp::run() {
 
         auto endFrame = std::chrono::high_resolution_clock::now();
         _lastFrameDuration = endFrame - now;
-        _lastFrameTime = static_cast<float>(_lastFrameDuration.count() * 1000000000.0);
+        _lastFrameTime = static_cast<float>(_lastFrameDuration.count() * nano_to_seconds);
         now = endFrame;
     }
 }
