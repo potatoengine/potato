@@ -19,22 +19,22 @@ auto up::UUID::toString() const -> string {
     string_writer buffer;
     format_append(buffer,
         "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-        _data.ub[0],
-        _data.ub[1],
-        _data.ub[2],
-        _data.ub[3],
-        _data.ub[4],
-        _data.ub[5],
-        _data.ub[6],
-        _data.ub[7],
-        _data.ub[8],
-        _data.ub[9],
-        _data.ub[10],
-        _data.ub[11],
-        _data.ub[12],
-        _data.ub[13],
-        _data.ub[14],
-        _data.ub[15]);
+        _data.ub[0], // NOLINT(readability-magic-numbers)
+        _data.ub[1], // NOLINT(readability-magic-numbers)
+        _data.ub[2], // NOLINT(readability-magic-numbers)
+        _data.ub[3], // NOLINT(readability-magic-numbers)
+        _data.ub[4], // NOLINT(readability-magic-numbers)
+        _data.ub[5], // NOLINT(readability-magic-numbers)
+        _data.ub[6], // NOLINT(readability-magic-numbers)
+        _data.ub[7], // NOLINT(readability-magic-numbers)
+        _data.ub[8], // NOLINT(readability-magic-numbers)
+        _data.ub[9], // NOLINT(readability-magic-numbers)
+        _data.ub[10], // NOLINT(readability-magic-numbers)
+        _data.ub[11], // NOLINT(readability-magic-numbers)
+        _data.ub[12], // NOLINT(readability-magic-numbers)
+        _data.ub[13], // NOLINT(readability-magic-numbers)
+        _data.ub[14], // NOLINT(readability-magic-numbers)
+        _data.ub[15]); // NOLINT(readability-magic-numbers)
 
     return buffer.c_str();
 }
@@ -73,7 +73,7 @@ auto up::UUID::fromString(string_view id) noexcept -> UUID {
         octect = !octect;
     }
 
-    if (bidx != 16 || octect) {
+    if (bidx != 16 || octect) { // NOLINT(readability-magic-numbers)
         return UUID{};
     }
 

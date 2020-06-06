@@ -13,9 +13,6 @@
 
 namespace up::_detail {
 
-    inline constexpr int decimal = 10;
-    inline constexpr int hexadecimal = 16;
-
     template <char PadChar, typename Writer> constexpr void write_padding(Writer& out, size_t width) noexcept {
         constexpr auto pad_run_count = 8;
         constexpr auto pad_run_mask = pad_run_count - 1;
@@ -31,7 +28,7 @@ namespace up::_detail {
 
     struct integer_spec {
         unsigned width = 0U;
-        int base = decimal;
+        int base = 10; // NOLINT(readability-magic-numbers)
         bool leading_zeroes = false;
     };
 
@@ -48,7 +45,7 @@ namespace up::_detail {
 
         if (auto const [success, printf_spec] = _detail::parse_spec(spec_string, "xb"); success) {
             switch (printf_spec) {
-            case 'x': spec.base = hexadecimal; break;
+            case 'x': spec.base = 16; break; // NOLINT(readability-magic-numbers)
             case 'b': spec.base = 2; break;
             default: break;
             }

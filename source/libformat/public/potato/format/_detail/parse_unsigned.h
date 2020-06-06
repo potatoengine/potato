@@ -8,12 +8,10 @@ namespace up::_detail {
 
     // std::from_chars is not (yet) constexpr
     constexpr char const* parse_unsigned(char const* start, char const* end, unsigned& result) noexcept {
-        constexpr int decimal = 10;
-
         if (start != end && is_digit(*start)) {
             result = 0;
             do {
-                result *= decimal;
+                result *= 10; // NOLINT(readability-magic-numbers)
                 result += *start - '0';
                 ++start;
             } while (start != end && is_digit(*start));

@@ -14,10 +14,10 @@ namespace up::ascii {
             return ch - '0';
         }
         if (ch >= 'a' && ch <= 'f') {
-            return ch - 'a' + 10;
+            return ch - 'a' + 10; // NOLINT(readability-magic-numbers)
         }
         if (ch >= 'A' && ch <= 'F') {
-            return ch - 'A' + 10;
+            return ch - 'A' + 10; // NOLINT(readability-magic-numbers)
         }
         return -1;
     }
