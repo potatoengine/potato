@@ -1,4 +1,11 @@
 FormatStyle: "file"
-Checks: "-*,performance-*,readability-*"
+# readability-qualified-auto is often "wrong" because we use raw pointers as iterators
+Checks: >-
+    -*,
+    performance-*,
+    readability-*,
+    -readability-named-parameter,
+    -readability-convert-member-functions-to-static,
+    -readability-qualified-auto,
 HeaderFilterRegex: "(private/.*|public/potato/.*)"
 WarningsAsErrors: "*"
