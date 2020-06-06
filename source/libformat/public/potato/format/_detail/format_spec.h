@@ -9,7 +9,7 @@ namespace up::_detail {
     struct format_width_precision {
         bool success = false;
         unsigned width = 0;
-        unsigned precision = ~0u;
+        unsigned precision = ~0U;
     };
 
     constexpr auto parse_width_and_precision(string_view& spec_string) noexcept -> format_width_precision {
@@ -26,7 +26,7 @@ namespace up::_detail {
         bool success = next != start;
 
         // read in precision, if present
-        unsigned precision = ~0u;
+        unsigned precision = ~0U;
         if (next != end && *next == '.') {
             char const* const prec_string = next + 1;
             next = _detail::parse_unsigned(prec_string, end, precision);
