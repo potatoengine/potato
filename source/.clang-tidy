@@ -4,13 +4,13 @@ FormatStyle: "file"
 # readability-upper-literal-suffix is just stylistically objectionable, e.g. 1.2f vs 1.2F
 # readability-convert-member-functions-to-static has side effects (e.g. calling conventions)
 # readability-named-parmater TODO consider adding this back
+# clang-analyzer-* crashed in Clang 10 on our code :/
 Checks: >-
     -*,
     performance-*,
     readability-*,
     bugprone-*,
     portability-*,
-    clang-analyzer-*,
     -readability-named-parameter,
     -readability-convert-member-functions-to-static,
     -readability-uppercase-literal-suffix,
