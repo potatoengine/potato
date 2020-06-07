@@ -29,7 +29,7 @@ namespace up {
             delegate_ref_holder& operator=(delegate_ref_holder const&) = default;
 
             template <callable_r<ReturnType, ParamTypes...> Functor>
-            delegate_ref_holder(Functor&& functor) noexcept requires !same_as<Functor, delegate_ref_holder> {
+            delegate_ref_holder(Functor&& functor) noexcept requires(!same_as<Functor, delegate_ref_holder>) {
                 using FunctorType = std::remove_reference_t<Functor>;
                 _call = &_detail::delegate_ref_thunk<FunctorType, ReturnType, ParamTypes...>;
                 _functor = &functor;
@@ -51,10 +51,10 @@ public:
     delegate_ref& operator=(delegate_ref const&) noexcept = default;
 
     template <callable_r<ReturnType, ParamTypes...> Functor>
-    /*implicit*/ delegate_ref(Functor&& functor) noexcept requires !same_as<Functor, delegate_ref> : _holder(std::forward<Functor>(functor)) {}
+    /*implicit*/ delegate_ref(Functor&& functor) noexcept requires(!same_as<Functor, delegate_ref>) : _holder(std::forward<Functor>(functor)) {}
 
     template <callable_r<ReturnType, ParamTypes...> Functor>
-    delegate_ref& operator=(Functor&& functor) noexcept requires !same_as<Functor, delegate_ref> {
+    delegate_ref& operator=(Functor&& functor) noexcept requires(!same_as<Functor, delegate_ref>) {
         _holder = holder_t(std::forward<Functor>(functor));
         return *this;
     }
