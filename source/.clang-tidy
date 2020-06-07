@@ -11,6 +11,9 @@ FormatStyle: "file"
 # cppcoreguidelines-pro-bounds-pointer-arithmetic doesn't acknowledge pointers as iterators
 # cppcoreguidelines-pro-bounds-constant-array-index is just crazy, we use [] on purpose
 # cppcoreguidelines-pro-type-reinterpret-cast is idealistic, we have to use it often
+# cppcoreguidelines-avoid-magic-numbers is the same as readability-magic-numbers
+# cppcoreguidelines-special-member-functions TODO we actually want this, but we need to configure it
+# cppcoreguidelines-owning-memory TODO we actually want this, but need to plumb the GSL hints
 Checks: >-
     -*,
     performance-*,
@@ -28,5 +31,9 @@ Checks: >-
     -cppcoreguidelines-pro-bounds-pointer-arithmetic,
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
     -cppcoreguidelines-pro-bounds-constant-array-index,
+    -cppcoreguidelines-pro-type-reinterpret-cast,
+    -cppcoreguidelines-avoid-magic-numbers,
+    -cppcoreguidelines-special-member-functions,
+    -cppcoreguidelines-owning-memory,
 HeaderFilterRegex: "(private/.*|public/potato/.*)"
 WarningsAsErrors: "*"
