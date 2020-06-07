@@ -5,6 +5,12 @@ FormatStyle: "file"
 # readability-convert-member-functions-to-static has side effects (e.g. calling conventions)
 # readability-named-parmater TODO consider adding this back
 # clang-analyzer-* crashed in Clang 10 on our code :/
+# cppcoreguidelines-macro-usage flags almost every macro, many of which _must_ be macros
+# cppcoreguidelines-avoid-c-arrays is a little idealistic
+# cppcoreguidelines-pro-bounds-array-to-pointer-decay likewise, we use char buffers for a reason
+# cppcoreguidelines-pro-bounds-pointer-arithmetic doesn't acknowledge pointers as iterators
+# cppcoreguidelines-pro-bounds-constant-array-index is just crazy, we use [] on purpose
+# cppcoreguidelines-pro-type-reinterpret-cast is idealistic, we have to use it often
 Checks: >-
     -*,
     performance-*,
@@ -17,5 +23,10 @@ Checks: >-
     -readability-uppercase-literal-suffix,
     -readability-qualified-auto,
     -readability-magic-numbers,
+    -cppcoreguidelines-macro-usage,
+    -cppcoreguidelines-avoid-c-arrays,
+    -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+    -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+    -cppcoreguidelines-pro-bounds-constant-array-index,
 HeaderFilterRegex: "(private/.*|public/potato/.*)"
 WarningsAsErrors: "*"
