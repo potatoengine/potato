@@ -62,6 +62,6 @@ template <typename HashAlgorithm, typename T> auto up::hash_value(T const& value
 }
 
 template <class Hash> constexpr auto up::hash_combine(Hash left, Hash right) noexcept -> Hash {
-    left ^= right + 0x9e3779b9 + (left << 6) + (left >> 2); // NOLINT(readability-magic-numbers)
+    left ^= right + 0x9e3779b9 + (left << 6) + (left >> 2);
     return left;
 }

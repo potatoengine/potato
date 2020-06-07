@@ -34,22 +34,21 @@ void up::Scene::create(rc<Model> const& cube, rc<SoundResource> const& ding) {
 
     for (size_t i = 0; i <= numObjects; ++i) {
         float p = i / static_cast<float>(numObjects);
-        float r = p * 2.f * pi; // NOLINT(readability-magic-numbers)
+        float r = p * 2.f * pi;
         _world.createEntity(
-            // NOLINTNEXTLINE(readability-magic-numbers)
             components::Position{{(20 + glm::cos(r) * 10.f) * glm::sin(r), 1 + glm::sin(r * 10.f) * 5.f, (20 + glm::sin(r) * 10.f) * glm::cos(r)}},
             components::Rotation{glm::identity<glm::quat>()},
             components::Transform{},
             components::Mesh{cube},
             components::Wave{0, r},
-            components::Spin{glm::sin(r) * 2.f - 1.f}); // NOLINT(readability-magic-numbers)
+            components::Spin{glm::sin(r) * 2.f - 1.f});
     }
 
-    _main = _world.createEntity(components::Position{{0, 5, 0}}, // NOLINT(readability-magic-numbers)
+    _main = _world.createEntity(components::Position{{0, 5, 0}},
         components::Rotation{glm::identity<glm::quat>()},
         components::Transform(),
         components::Mesh{cube},
-        components::Ding{2, 0, ding}); // NOLINT(readability-magic-numbers)
+        components::Ding{2, 0, ding});
 }
 
 up::Scene::~Scene() { _cube.reset(); }
@@ -60,8 +59,8 @@ void up::Scene::tick(float frameTime, AudioEngine& audioEngine) {
     }
 
     _waveQuery.select(_world, [&](EntityId, components::Position& pos, components::Wave& wave) {
-        wave.offset += frameTime * .2f; // NOLINT(readability-magic-numbers)
-        pos.xyz.y = 1 + 5 * glm::sin(wave.offset * 10); // NOLINT(readability-magic-numbers)
+        wave.offset += frameTime * .2f;
+        pos.xyz.y = 1 + 5 * glm::sin(wave.offset * 10);
     });
 
     _orbitQuery.select(_world, [&](EntityId, components::Position& pos) { pos.xyz = glm::rotateY(pos.xyz, frameTime); });

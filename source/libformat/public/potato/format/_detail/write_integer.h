@@ -28,7 +28,7 @@ namespace up::_detail {
 
     struct integer_spec {
         unsigned width = 0U;
-        int base = 10; // NOLINT(readability-magic-numbers)
+        int base = 10;
         bool leading_zeroes = false;
     };
 
@@ -45,7 +45,7 @@ namespace up::_detail {
 
         if (auto const [success, printf_spec] = _detail::parse_spec(spec_string, "xb"); success) {
             switch (printf_spec) {
-            case 'x': spec.base = 16; break; // NOLINT(readability-magic-numbers)
+            case 'x': spec.base = 16; break;
             case 'b': spec.base = 2; break;
             default: break;
             }

@@ -23,7 +23,7 @@ namespace up::shell {
     class ScenePanel : public shell::Panel {
     public:
         explicit ScenePanel(Renderer& renderer, Scene& scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
-            _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0}); // NOLINT(readability-magic-numbers)
+            _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
         virtual ~ScenePanel() = default;
 
@@ -177,7 +177,7 @@ namespace up::shell {
         DebugDrawGrid grid;
         grid.axis2 = {0, 0, 1};
         grid.offset = {x, 0, z};
-        grid.halfWidth = 1000; // NOLINT(readability-magic-numbers)
+        grid.halfWidth = 1000;
         grid.spacing = spacing;
         grid.guidelineSpacing = guidelines;
         drawDebugGrid(grid);

@@ -12,7 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace {
-    struct alignas(16) CameraData { // NOLINT(readability-magic-numbers)
+    struct alignas(16) CameraData {
         glm::mat4x4 worldViewProjection;
         glm::mat4x4 worldView;
         glm::mat4x4 viewProjection;

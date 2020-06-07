@@ -1,5 +1,4 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
-
 #pragma once
 
 namespace up::_detail {
@@ -11,7 +10,7 @@ namespace up::_detail {
         if (start != end && is_digit(*start)) {
             result = 0;
             do {
-                result *= 10; // NOLINT(readability-magic-numbers)
+                result *= 10;
                 result += *start - '0';
                 ++start;
             } while (start != end && is_digit(*start));

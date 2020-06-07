@@ -372,7 +372,7 @@ void up::ShellApp::_displayMainMenu() {
         {
             auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 
-            fixed_string_writer<128> buffer; // NOLINT(readability-magic-numbers)
+            fixed_string_writer<128> buffer;
             format_append(buffer, "{}us | FPS {}", micro, static_cast<int>(1.f / _lastFrameTime));
             auto const textWidth = ImGui::CalcTextSize(buffer.c_str()).x;
             ImGui::SameLine(ImGui::GetWindowSize().x - textWidth - 2 * ImGui::GetStyle().FramePadding.x);
@@ -402,9 +402,7 @@ void up::ShellApp::_displayDocuments(glm::vec4 rect) {
             auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_None);
 
             auto contentDockId = centralDockId;
-            // NOLINTNEXTLINE(readability-magic-numbers)
             auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
-            // NOLINTNEXTLINE(readability-magic-numbers)
             auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
 
             ImGui::DockBuilderDockWindow("Inspector", inspectedDockId);

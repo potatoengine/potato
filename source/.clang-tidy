@@ -1,5 +1,9 @@
 FormatStyle: "file"
 # readability-qualified-auto is often "wrong" because we use raw pointers as iterators
+# readability-magic-numbers is just annoying for math-heavy code, though it is valuable elsewhere
+# readability-upper-literal-suffix is just stylistically objectionable, e.g. 1.2f vs 1.2F
+# readability-convert-member-functions-to-static has side effects (e.g. calling conventions)
+# readability-named-parmater TODO consider adding this back
 Checks: >-
     -*,
     performance-*,
@@ -8,5 +12,6 @@ Checks: >-
     -readability-convert-member-functions-to-static,
     -readability-uppercase-literal-suffix,
     -readability-qualified-auto,
+    -readability-magic-numbers,
 HeaderFilterRegex: "(private/.*|public/potato/.*)"
 WarningsAsErrors: "*"

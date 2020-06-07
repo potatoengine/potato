@@ -23,7 +23,7 @@ namespace up::shell {
     class GamePanel : public Panel {
     public:
         explicit GamePanel(Renderer& renderer, Scene& scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
-            _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0}); // NOLINT(readability-magic-numbers)
+            _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
         virtual ~GamePanel() = default;
 

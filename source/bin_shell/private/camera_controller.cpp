@@ -23,13 +23,11 @@ void up::FlyCameraController::apply(Camera& camera, glm::vec3 relativeMovement, 
     glm::vec3 movement =
         camera.right() * relativeMovement.x * _speed + camera.up() * relativeMovement.y * _speed + camera.view() * relativeMovement.z * _speed;
 
-    // NOLINTNEXTLINE(readability-magic-numbers)
     _speed = glm::clamp(_speed + relativeMotion.z, 0.1f, 20.f);
 
     glm::vec3 pos = camera.position() + movement * _moveSpeedPerSec * frameTime;
 
     _yaw = glm::mod(_yaw - relativeMotion.x * _rotateRadiansPerSec, glm::two_pi<float>());
-    // NOLINTNEXTLINE(readability-magic-numbers)
     _pitch = glm::clamp(_pitch - relativeMotion.y * _rotateRadiansPerSec, -glm::half_pi<float>() * 0.9f, glm::half_pi<float>() * 0.9f);
 
     auto view = glm::rotate(forward, _pitch, right);
@@ -52,7 +50,6 @@ void up::ArcBallCameraController::apply(Camera& camera, glm::vec3 relativeMoveme
 
     _yaw = glm::mod(_yaw + relativeMotion.x, glm::two_pi<float>());
     _pitch = glm::clamp(_pitch - relativeMotion.y, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
-    // NOLINTNEXTLINE(readability-magic-numbers)
     _boomLength = glm::clamp(_boomLength - relativeMotion.z, 1.f, 200.f);
 
     glm::vec3 pos{0, 0, _boomLength};
