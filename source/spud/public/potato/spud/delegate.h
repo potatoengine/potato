@@ -115,11 +115,12 @@ namespace up {
             /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
             /// <param name="function"> The function to bind. </param>
             template <callable_r<ReturnType, ParamTypes...> Functor>
-            /*implicit*/ delegate_typed(Functor&& functor) {
+            /*implicit*/ delegate_typed(Functor&& functor) requires !same_as<Functor, delegate_typed> {
                 assign(std::forward<Functor>(functor));
             }
 
-            template <callable_r<ReturnType, ParamTypes...> Functor> auto operator=(Functor&& functor) -> delegate_typed& {
+            template <callable_r<ReturnType, ParamTypes...> Functor>
+            auto operator=(Functor&& functor) -> delegate_typed& requires !same_as<Functor, delegate_typed> {
                 if (this->_vtable != nullptr) {
                     this->_vtable->destruct(&this->_storage);
                 }

@@ -199,10 +199,12 @@ namespace up {
     }
 
     template <typename T> T* vector<T>::_allocate(size_type capacity) {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         return static_cast<T*>(operator new(capacity * sizeof(T), std::align_val_t(alignof(T))));
     }
 
     template <typename T> void vector<T>::_deallocate(T* ptr, size_type capacity) {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         ::operator delete(ptr, capacity * sizeof(T), std::align_val_t(alignof(T)));
     }
 
