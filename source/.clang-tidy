@@ -9,6 +9,7 @@ Checks: >-
     performance-*,
     readability-*,
     bugprone-*,
+    portability-*,
     -readability-named-parameter,
     -readability-convert-member-functions-to-static,
     -readability-uppercase-literal-suffix,
