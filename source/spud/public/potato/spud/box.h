@@ -84,6 +84,7 @@ private:
 };
 
 template <typename T> void up::box<T>::reset(pointer ptr) noexcept {
+    // NOLINTNEXTLINE(bugprone-sizeof-expression)
     static_assert(sizeof(T) > 0, "box can not delete incomplete type");
     this->_deallocate(_ptr);
     _ptr = ptr;

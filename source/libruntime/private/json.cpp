@@ -30,7 +30,7 @@ void up::to_json(nlohmann::json& json, string const& str) noexcept { json = std:
 void up::from_json(const nlohmann::json& json, string& str) noexcept {
     str.reset();
     if (json.is_string()) {
-        const std::string& stdString = json;
+        auto const& stdString = json.get_ref<std::string const&>();
         str = string(stdString.data(), stdString.size());
     }
 }

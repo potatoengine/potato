@@ -53,6 +53,7 @@ template <typename InputIt, typename SizeT> void up::destruct_n(InputIt first, S
 template <typename InputIt, typename SizeT, typename TypeT> void up::unitialized_copy_n(InputIt first, SizeT count, TypeT* out_first) {
     using type = std::remove_reference_t<decltype(*first)>;
     if constexpr (std::is_trivially_constructible_v<TypeT, type> && std::is_pointer_v<InputIt>) {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         std::memmove(out_first, first, count * sizeof(type));
     }
     else {
@@ -65,6 +66,7 @@ template <typename InputIt, typename SizeT, typename TypeT> void up::unitialized
 template <typename InputIt, typename SizeT, typename TypeT> void up::copy_n(InputIt first, SizeT count, TypeT* out_first) {
     using type = std::remove_reference_t<decltype(*first)>;
     if constexpr (std::is_trivially_assignable_v<TypeT, type> && std::is_pointer_v<InputIt>) {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         std::memmove(out_first, first, count * sizeof(type));
     }
     else {
@@ -78,6 +80,7 @@ template <typename InputIt, typename SizeT, typename TypeT> void up::unitialized
     using type = std::remove_reference_t<decltype(*first)>;
     using type_rvalue = type&&;
     if constexpr (std::is_trivially_constructible_v<TypeT, type_rvalue> && std::is_pointer_v<InputIt>) {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         std::memmove(out_first, first, count * sizeof(type));
     }
     else {
@@ -91,6 +94,7 @@ template <typename InputIt, typename SizeT, typename TypeT> void up::move_n(Inpu
     using type = std::remove_reference_t<decltype(*first)>;
     using type_rvalue = type&&;
     if constexpr (std::is_trivially_assignable_v<TypeT, type_rvalue> && std::is_pointer_v<InputIt>) {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         std::memmove(out_first, first, count * sizeof(type));
     }
     else {
@@ -103,6 +107,7 @@ template <typename InputIt, typename SizeT, typename TypeT> void up::move_n(Inpu
 template <typename InputIt, typename SizeT, typename TypeT> void up::move_backwards_n(InputIt first, SizeT count, TypeT* out_last) {
     using type = std::remove_reference_t<decltype(*first)>;
     if constexpr (std::is_trivially_assignable_v<TypeT, type&&> && std::is_pointer_v<InputIt>) {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         std::memmove(out_last - count, first - count, count * sizeof(type));
     }
     else {

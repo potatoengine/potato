@@ -25,7 +25,10 @@ namespace up {
             using call_t = ReturnType (*)(void const*, ParamTypes&&...);
 
             delegate_ref_holder() = delete;
-            template <typename Functor> delegate_ref_holder(Functor&& functor) noexcept {
+            delegate_ref_holder(delegate_ref_holder const&) = default;
+            delegate_ref_holder& operator=(delegate_ref_holder const&) = default;
+
+            template <callable_r<ReturnType, ParamTypes...> Functor> delegate_ref_holder(Functor&& functor) noexcept {
                 using FunctorType = std::remove_reference_t<Functor>;
                 _call = &_detail::delegate_ref_thunk<FunctorType, ReturnType, ParamTypes...>;
                 _functor = &functor;

@@ -95,28 +95,12 @@ bool up::path::isNormalized(string_view path) noexcept {
             }
             break;
         case Part::Slash:
-            if (ch == '/') {
-                // no duplicate slashes allowed
-                return false;
-            }
-            else if (ch == '.') {
-                // no leading dots allowed
+        case Part::Dot:
+            if (ch == '/' || ch == '.') {
+                // disallow slash-slash, slash-dot, dot-slash, dot-dot
                 return false;
             }
             mode = Part::Component;
-            break;
-        case Part::Dot:
-            if (ch == '.') {
-                // no duplicate dots allowed
-                return false;
-            }
-            else if (ch == '/') {
-                // no trailing dots allowed
-                return false;
-            }
-            else {
-                mode = Part::Component;
-            }
             break;
         }
     }
