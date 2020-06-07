@@ -14,6 +14,9 @@ FormatStyle: "file"
 # cppcoreguidelines-avoid-magic-numbers is the same as readability-magic-numbers
 # cppcoreguidelines-special-member-functions TODO we actually want this, but we need to configure it
 # cppcoreguidelines-owning-memory TODO we actually want this, but need to plumb the GSL hints
+# cppcoreguidelines-pro-type-const-cast TODO good idea generally, need to clean up code
+# cppcoreguidelines-pro-type-vararg needed until we have to_chars<float> everywhere
+# cppcoreguidelines-pro-type-union-access GLM runs afoul of this
 Checks: >-
     -*,
     performance-*,
@@ -35,5 +38,8 @@ Checks: >-
     -cppcoreguidelines-avoid-magic-numbers,
     -cppcoreguidelines-special-member-functions,
     -cppcoreguidelines-owning-memory,
+    -cppcoreguidelines-pro-type-const-cast,
+    -cppcoreguidelines-pro-type-vararg,
+    -cppcoreguidelines-pro-type-union-access,
 HeaderFilterRegex: "(private/.*|public/potato/.*)"
 WarningsAsErrors: "*"
