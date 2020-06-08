@@ -32,13 +32,13 @@ namespace up {
         constexpr /*implicit*/ operator string_view() const noexcept { return {_buffer, _size}; }
 
         constexpr explicit operator bool() const noexcept { return _size != 0; }
-        constexpr bool empty() const noexcept { return _size == 0; }
+        constexpr [[nodiscard]] bool empty() const noexcept { return _size == 0; }
 
-        constexpr size_type size() const noexcept { return _size; }
-        constexpr size_type capacity() const noexcept { return effective_capacity; }
+        constexpr [[nodiscard]] size_type size() const noexcept { return _size; }
+        constexpr [[nodiscard]] size_type capacity() const noexcept { return effective_capacity; }
 
-        constexpr pointer data() const noexcept { return _buffer; }
-        constexpr pointer c_str() const noexcept { return _buffer; }
+        constexpr [[nodiscard]] pointer data() const noexcept { return _buffer; }
+        constexpr [[nodiscard]] pointer c_str() const noexcept { return _buffer; }
 
         constexpr void clear() noexcept;
 
