@@ -35,7 +35,7 @@ Checks: >-
     -cppcoreguidelines-special-member-functions,
     -cppcoreguidelines-pro-type-const-cast,
     -cppcoreguidelines-pro-type-reinterpret-cast,
-    -cppcoreguidelines-pro-type-static-cast-downcast
+    -cppcoreguidelines-pro-type-static-cast-downcast,
     -cppcoreguidelines-pro-type-union-access,
     -cppcoreguidelines-pro-type-vararg,
     -readability-convert-member-functions-to-static,
