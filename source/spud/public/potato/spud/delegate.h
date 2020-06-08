@@ -96,11 +96,13 @@ namespace up {
             bool operator==(std::nullptr_t) const noexcept { return _vtable == nullptr; }
 
         protected:
-            delegate_base(delegate_vtable_base const* vtable) noexcept : _vtable(vtable) {}
+            explicit delegate_base(delegate_vtable_base const* vtable) noexcept : _vtable(vtable) {}
             ~delegate_base() = default;
 
             // we will overwrite this with an object with just a vtable - if we are nullptr, we have no real vtable
+            // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
             delegate_vtable_base const* _vtable = nullptr;
+            // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
             storage_t _storage = {};
         };
 
@@ -138,7 +140,7 @@ namespace up {
 } // namespace up
 
 template <typename ReturnType, typename... ParamTypes>
-class up::delegate<ReturnType(ParamTypes...)> : public _detail::delegate_typed<ReturnType, false, ParamTypes...> {
+class up::delegate<ReturnType(ParamTypes...)> final : public _detail::delegate_typed<ReturnType, false, ParamTypes...> {
     using vtable_c = _detail::delegate_vtable_typed<ReturnType, false, ParamTypes...>;
     using storage_t = typename _detail::delegate_typed<ReturnType, false, ParamTypes...>::storage_t;
 

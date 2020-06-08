@@ -41,7 +41,7 @@ auto up::loadImage(Stream& stream) -> Image {
 
     vector<byte> data(header.width * header.width * 4);
     std::memcpy(data.data(), image, data.size());
-    free(image);
+    free(image); // NOLINT(cppcoreguidelines-no-malloc)
 
     switch (channels) {
     case 1: header.pixelFormat = PixelFormat::R8UnsignedNormalized; break;

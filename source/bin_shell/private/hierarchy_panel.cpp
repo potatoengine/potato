@@ -30,7 +30,7 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::Begin("Hierarchy", &_enabled, ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin("Hierarchy", nullptr, ImGuiWindowFlags_NoCollapse)) {
             constexpr int label_length = 64;
 
             fixed_string_writer<label_length> label;

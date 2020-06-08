@@ -20,8 +20,8 @@ namespace up::reflex::_detail {
         constexpr auto operator()() { return _serializer.value(_object); }
 
     protected:
-        Type& _object;
-        Serializer& _serializer;
+        Type& _object; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
+        Serializer& _serializer; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
     };
 
     template <typename Type, typename Serializer>
@@ -63,7 +63,7 @@ namespace up::reflex::_detail {
         }
 
     protected:
-        Reflector& _reflector;
+        Reflector& _reflector; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
     };
 
     template <typename Type, typename Reflector>

@@ -12,7 +12,7 @@
 #include <execinfo.h>
 
 auto up::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
-    void* buffer;
+    void* buffer = nullptr;
 
     uint max = addresses.size() - min<uint>(addresses.size(), skip);
     uint count = backtrace(&buffer, max);
@@ -36,7 +36,7 @@ auto up::callstack::resolveTraceRecords(span<uintptr const> addresses, span<Trac
         record.symbol = string_view(symbols[index]);
     }
 
-    free(symbols);
+    free(symbols); // NOLINT(cppcoreguidelines-no-malloc)
 
     return records.first(max);
 #else

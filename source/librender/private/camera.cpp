@@ -63,12 +63,13 @@ void up::RenderCamera::updateBuffers(RenderContext& ctx, glm::vec3 dimensions, g
 
     auto projection = glm::perspectiveFovRH_ZO(glm::radians(fovDeg), viewport.width, viewport.height, nearZ, farZ);
 
-    CameraData data;
-    data.worldView = transpose(cameraTransform);
-    data.viewProjection = transpose(projection);
-    data.worldViewProjection = cameraTransform * projection;
-    data.cameraPosition = cameraPosition;
-    data.nearFar = {nearZ, farZ};
+    auto data = CameraData{
+        .worldViewProjection = cameraTransform * projection,
+        .worldView = transpose(cameraTransform),
+        .viewProjection = transpose(projection),
+        .cameraPosition = cameraPosition,
+        .nearFar = {nearZ, farZ},
+    };
 
     ctx.commandList.update(_cameraDataBuffer.get(), span{&data, 1}.as_bytes());
 }
@@ -106,12 +107,13 @@ void up::RenderCamera::beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, 
 
     auto projection = glm::perspectiveFovRH_ZO(glm::radians(fovDeg), viewport.width, viewport.height, nearZ, farZ);
 
-    CameraData data;
-    data.worldView = transpose(cameraTransform);
-    data.viewProjection = transpose(projection);
-    data.worldViewProjection = cameraTransform * projection;
-    data.cameraPosition = cameraPosition;
-    data.nearFar = {nearZ, farZ};
+    auto data = CameraData{
+        .worldViewProjection = cameraTransform * projection,
+        .worldView = transpose(cameraTransform),
+        .viewProjection = transpose(projection),
+        .cameraPosition = cameraPosition,
+        .nearFar = {nearZ, farZ},
+    };
 
     ctx.commandList.update(_cameraDataBuffer.get(), span{&data, 1}.as_bytes());
 

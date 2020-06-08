@@ -69,7 +69,7 @@ namespace up::shell {
         }
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-        if (ImGui::Begin("ScenePanel", &_enabled, ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin("ScenePanel", nullptr, ImGuiWindowFlags_NoCollapse)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
 
             if (contentSize.x <= 0 || contentSize.y <= 0) {

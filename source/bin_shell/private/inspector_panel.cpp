@@ -48,7 +48,7 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::Begin("Inspector", &_enabled, ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin("Inspector", nullptr, ImGuiWindowFlags_NoCollapse)) {
             ComponentId deletedComponent = ComponentId::Unknown;
 
             _scene.world().interrogateEntityUnsafe(_selection.selected(),

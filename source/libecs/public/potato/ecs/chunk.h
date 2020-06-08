@@ -30,7 +30,9 @@ namespace up {
         auto entities() const noexcept -> view<EntityId> { return {reinterpret_cast<EntityId const*>(payload), header.entities}; }
 
         Header header;
-        Payload payload;
+        Payload payload = {
+            0,
+        };
     }; // namespace up
 
     static_assert(sizeof(Chunk) == Chunk::SizeBytes, "Chunk has incorrect size; possibly unexpected member padding");
