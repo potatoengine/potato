@@ -25,7 +25,6 @@ namespace up::shell {
         explicit ScenePanel(Renderer& renderer, Scene& scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
-        virtual ~ScenePanel() = default;
 
         zstring_view displayName() const override { return "Scene"; }
         void ui() override;

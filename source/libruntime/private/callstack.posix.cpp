@@ -27,8 +27,8 @@ auto up::callstack::resolveTraceRecords(span<uintptr const> addresses, span<Trac
 #if !defined(NDEBUG)
     uint max = addresses.size() < records.size() ? addresses.size() : records.size();
 
-    void* const addrs = const_cast<uintptr*>(addresses.data());
-    char** symbols = backtrace_symbols(&addrs, addresses.size());
+    void const* const addrs = addresses.data();
+    char** const symbols = backtrace_symbols(&addrs, addresses.size());
 
     for (auto index : sequence(max)) {
         auto& record = records[index];

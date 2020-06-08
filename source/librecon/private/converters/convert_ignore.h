@@ -8,7 +8,6 @@ namespace up::recon {
     class IgnoreConverter : public Converter {
     public:
         IgnoreConverter() = default;
-        ~IgnoreConverter() = default;
 
         bool convert(Context& ctx) override { return true; }
         string_view generateSettings(Context& ctd) override { return {}; }

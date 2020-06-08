@@ -152,7 +152,7 @@ namespace up {
         }
 
         size_t const newSize = (capacity + bits - 1) / bits;
-        element* newElems = new element[newSize];
+        auto* newElems = new element[newSize];
 
         if (capacity > existingCapacity) {
             std::memcpy(newElems, _elems, _elemSize * sizeof(element));

@@ -8,7 +8,7 @@ namespace up::recon {
     class JsonConverter : public Converter {
     public:
         JsonConverter();
-        ~JsonConverter();
+        ~JsonConverter() override;
 
         bool convert(Context& ctx) override;
         string_view generateSettings(Context& ctd) override { return {}; }

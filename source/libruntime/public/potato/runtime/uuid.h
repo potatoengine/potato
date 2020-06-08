@@ -40,7 +40,7 @@ namespace up {
         };
 
         union Storage {
-            HighLow u64;
+            HighLow u64 = {};
             byte ub[octects];
         };
 

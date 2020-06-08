@@ -112,7 +112,7 @@ namespace up {
             using storage_t = typename delegate_base::storage_t;
 
         public:
-            using delegate_base::delegate_base;
+            using delegate_base::delegate_base; // NOLINT(modernize-use-equals-default)
 
             /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
             /// <param name="function"> The function to bind. </param>
@@ -145,7 +145,7 @@ class up::delegate<ReturnType(ParamTypes...)> final : public _detail::delegate_t
     using storage_t = typename _detail::delegate_typed<ReturnType, false, ParamTypes...>::storage_t;
 
 public:
-    using _detail::delegate_typed<ReturnType, false, ParamTypes...>::delegate_typed;
+    using _detail::delegate_typed<ReturnType, false, ParamTypes...>::delegate_typed; // NOLINT(modernize-use-equals-default)
 
     template <typename ClassType>
     delegate(ClassType& object, ReturnType (ClassType::*method)(ParamTypes...)) noexcept

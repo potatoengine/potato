@@ -13,7 +13,6 @@ namespace up::shell {
     class HierarchyPanel : public shell::Panel {
     public:
         explicit HierarchyPanel(Scene& scene, Selection& selection) : _scene(scene), _selection(selection) {}
-        virtual ~HierarchyPanel() = default;
 
         zstring_view displayName() const override { return "Hierarchy"; }
         void ui() override;

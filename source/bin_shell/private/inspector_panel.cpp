@@ -28,7 +28,6 @@ namespace up::shell {
             : _components(std::move(components))
             , _scene(scene)
             , _selection(selection) {}
-        virtual ~InspectorPanel() = default;
 
         zstring_view displayName() const override { return "Inspector"; }
         void ui() override;

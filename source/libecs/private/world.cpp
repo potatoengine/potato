@@ -179,7 +179,7 @@ auto up::World::_allocateEntityId(ArchetypeId archetype, uint16 chunk, uint16 in
     }
 
     // there was no ID to recycle, so create a new one
-    uint32 const mappingIndex = static_cast<uint32>(_entityMapping.size());
+    auto const mappingIndex = static_cast<uint32>(_entityMapping.size());
     _entityMapping.push_back(makeMapped(1, to_underlying(archetype), chunk, index));
     return makeEntityId(mappingIndex, 1);
 }

@@ -25,7 +25,6 @@ namespace up::shell {
         explicit GamePanel(Renderer& renderer, Scene& scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
-        virtual ~GamePanel() = default;
 
         zstring_view displayName() const override { return "Game"; }
         void ui() override;

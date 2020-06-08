@@ -8,7 +8,7 @@ namespace up::recon {
     class ModelConverter : public Converter {
     public:
         ModelConverter();
-        ~ModelConverter();
+        ~ModelConverter() override;
 
         bool convert(Context& ctx) override;
         string_view generateSettings(Context& ctd) override { return {}; }

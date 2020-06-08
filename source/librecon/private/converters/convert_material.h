@@ -8,7 +8,7 @@ namespace up::recon {
     class MaterialConverter : public Converter {
     public:
         MaterialConverter();
-        ~MaterialConverter();
+        ~MaterialConverter() override;
 
         bool convert(Context& ctx) override;
         string_view generateSettings(Context& ctd) override { return {}; }

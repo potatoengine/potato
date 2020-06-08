@@ -53,7 +53,7 @@ namespace up {
     class DefaultLoader : public Loader {
     public:
         UP_RENDER_API DefaultLoader(FileSystem& fileSystem, rc<GpuDevice> device);
-        ~DefaultLoader();
+        ~DefaultLoader() override;
 
         rc<Mesh> loadMeshSync(zstring_view path) override;
         rc<Material> loadMaterialSync(zstring_view path) override;
