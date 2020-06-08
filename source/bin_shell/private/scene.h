@@ -48,7 +48,7 @@ namespace up {
     private:
         rc<Model> _cube;
         World _world;
-        EntityId _main;
+        EntityId _main = EntityId::None;
         bool _playing = false;
 
         Query<components::Position, components::Wave> _waveQuery;

@@ -21,9 +21,9 @@ namespace up {
     class Shader;
     class Texture;
 
-    class Renderer : private Loader {
+    class Renderer {
     public:
-        UP_RENDER_API explicit Renderer(FileSystem& fileSystem, rc<GpuDevice> device);
+        UP_RENDER_API Renderer(Loader& loader, rc<GpuDevice> device);
         virtual ~Renderer();
 
         Renderer(Renderer const&) = delete;
@@ -35,11 +35,6 @@ namespace up {
 
         UP_RENDER_API RenderContext context();
 
-        UP_RENDER_API rc<Mesh> loadMeshSync(zstring_view path);
-        UP_RENDER_API rc<Material> loadMaterialSync(zstring_view path);
-        UP_RENDER_API rc<Shader> loadShaderSync(zstring_view path);
-        UP_RENDER_API rc<Texture> loadTextureSync(zstring_view path);
-
         GpuDevice& device() const noexcept { return *_device; }
         GpuCommandList& commandList() const noexcept { return *_commandList; }
 
@@ -49,9 +44,24 @@ namespace up {
         box<GpuBuffer> _frameDataBuffer;
         rc<Material> _debugLineMaterial;
         box<GpuBuffer> _debugLineBuffer;
-        FileSystem& _fileSystem;
+        Loader& _loader;
         uint32 _frameCounter = 0;
         uint64 _startTimestamp = 0;
         double _frameTimestamp = 0;
+    };
+
+    class DefaultLoader : public Loader {
+    public:
+        UP_RENDER_API DefaultLoader(FileSystem& fileSystem, rc<GpuDevice> device);
+        ~DefaultLoader() override;
+
+        rc<Mesh> loadMeshSync(zstring_view path) override;
+        rc<Material> loadMaterialSync(zstring_view path) override;
+        rc<Shader> loadShaderSync(zstring_view path) override;
+        rc<Texture> loadTextureSync(zstring_view path) override;
+
+    private:
+        FileSystem& _fileSystem;
+        rc<GpuDevice> _device;
     };
 } // namespace up

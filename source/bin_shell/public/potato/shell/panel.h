@@ -30,7 +30,7 @@ namespace up::shell {
         /// @param enabled Whether the panel should be enabled or disabled.
         void enabled(bool enabled) noexcept { _enabled = enabled; }
 
-    protected:
+    private:
         bool _enabled = true;
     };
 } // namespace up::shell

@@ -133,6 +133,8 @@ namespace up {
         void _deallocate(T* ptr, size_type capacity);
         size_type _grow(size_type minimum = 4);
         void _rshift(T* pos, size_type shift);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        static auto _to_iterator(const_iterator citer) noexcept -> iterator { return const_cast<iterator>(citer); }
 
         T* _first = nullptr;
         T* _last = nullptr;
@@ -199,10 +201,12 @@ namespace up {
     }
 
     template <typename T> T* vector<T>::_allocate(size_type capacity) {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         return static_cast<T*>(operator new(capacity * sizeof(T), std::align_val_t(alignof(T))));
     }
 
     template <typename T> void vector<T>::_deallocate(T* ptr, size_type capacity) {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         ::operator delete(ptr, capacity * sizeof(T), std::align_val_t(alignof(T)));
     }
 
@@ -296,7 +300,7 @@ namespace up {
         }
 
         if (_last < _sentinel) {
-            iterator mpos = const_cast<iterator>(pos);
+            iterator mpos = _to_iterator(pos);
             _rshift(mpos, 1);
             mpos->~value_type();
             new (mpos) value_type(std::forward<ParamsT>(params)...);
@@ -371,7 +375,7 @@ namespace up {
         auto const count = end - begin;
 
         if (_sentinel - _last >= count) {
-            iterator mpos = const_cast<iterator>(pos);
+            iterator mpos = _to_iterator(pos);
             _rshift(mpos, count);
             copy_n(begin, count, mpos);
             return mpos;
@@ -407,14 +411,14 @@ namespace up {
     }
 
     template <typename T> auto vector<T>::erase(const_iterator pos) -> iterator {
-        iterator mpos = const_cast<iterator>(pos);
+        iterator mpos = _to_iterator(pos);
         move_n(mpos + 1, _last - mpos - 1, mpos);
         pop_back();
         return mpos;
     }
 
     template <typename T> auto vector<T>::erase(const_iterator begin, const_iterator end) -> iterator {
-        iterator mbegin = const_cast<iterator>(begin);
+        iterator mbegin = _to_iterator(begin);
         auto const count = end - begin;
         move_n(mbegin + count, _last - begin - count, mbegin);
         destruct_n(_last - count, count);

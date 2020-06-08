@@ -13,7 +13,7 @@ namespace {
     class AudioEngineImpl final : public up::AudioEngine {
     public:
         explicit AudioEngineImpl(up::FileSystem& fileSystem);
-        ~AudioEngineImpl();
+        ~AudioEngineImpl() override;
 
         auto loadSound(up::zstring_view path) -> up::rc<up::SoundResource> override;
         auto play(up::SoundResource const* sound) -> up::PlayHandle override;

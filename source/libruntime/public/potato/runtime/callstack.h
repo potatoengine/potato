@@ -10,8 +10,10 @@
 
 namespace up::callstack {
     struct TraceRecord {
-        fixed_string<128> filename;
-        fixed_string<128> symbol;
+        static constexpr int symbol_length = 128;
+
+        fixed_string<symbol_length> filename;
+        fixed_string<symbol_length> symbol;
         uintptr address = 0;
         int line = 0;
     };

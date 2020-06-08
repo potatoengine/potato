@@ -8,7 +8,7 @@ namespace up::recon {
     class CopyConverter : public Converter {
     public:
         CopyConverter();
-        ~CopyConverter();
+        ~CopyConverter() override;
 
         bool convert(Context& ctx) override;
         string_view generateSettings(Context& ctd) override { return {}; }

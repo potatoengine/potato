@@ -281,7 +281,7 @@ auto up::recon::ConverterApp::checkMetafile(Context& ctx, string_view filename) 
     metaFile.append(".meta");
     if (!_fileSystem->fileExists(metaFile.c_str())) {
         Converter* conveter = findConverter(filename);
-        if (conveter) {
+        if (conveter != nullptr) {
             nlohmann::json root;
             string id = UUID::generate().toString();
             root["id"] = id.c_str();

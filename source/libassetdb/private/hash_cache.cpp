@@ -11,8 +11,10 @@
 auto up::HashCache::hashAssetContent(span<up::byte const> contents) noexcept -> up::uint64 { return hash_value<fnv1a>(contents); }
 
 auto up::HashCache::hashAssetStream(Stream& stream) -> up::uint64 {
+    constexpr int block_size = 8 * 1024;
+
     auto hasher = fnv1a();
-    up::byte buffer[8 * 1024];
+    up::byte buffer[block_size];
     while (!stream.isEof()) {
         span<up::byte> read(buffer, sizeof(buffer));
         stream.read(read);

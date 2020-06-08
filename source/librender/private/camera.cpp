@@ -57,17 +57,19 @@ void up::RenderCamera::updateBuffers(RenderContext& ctx, glm::vec3 dimensions, g
     viewport.minDepth = 0;
     viewport.maxDepth = 1;
 
-    float farZ = 400.f;
-    float nearZ = .2f;
+    constexpr float farZ = 400.f;
+    constexpr float nearZ = .2f;
+    constexpr float fovDeg = 75.f;
 
-    auto projection = glm::perspectiveFovRH_ZO(glm::radians(75.f), viewport.width, viewport.height, nearZ, farZ);
+    auto projection = glm::perspectiveFovRH_ZO(glm::radians(fovDeg), viewport.width, viewport.height, nearZ, farZ);
 
-    CameraData data;
-    data.worldView = transpose(cameraTransform);
-    data.viewProjection = transpose(projection);
-    data.worldViewProjection = cameraTransform * projection;
-    data.cameraPosition = cameraPosition;
-    data.nearFar = {nearZ, farZ};
+    auto data = CameraData{
+        .worldViewProjection = cameraTransform * projection,
+        .worldView = transpose(cameraTransform),
+        .viewProjection = transpose(projection),
+        .cameraPosition = cameraPosition,
+        .nearFar = {nearZ, farZ},
+    };
 
     ctx.commandList.update(_cameraDataBuffer.get(), span{&data, 1}.as_bytes());
 }
@@ -99,21 +101,25 @@ void up::RenderCamera::beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, 
     viewport.minDepth = 0;
     viewport.maxDepth = 1;
 
-    float farZ = 400.f;
-    float nearZ = .2f;
+    constexpr float farZ = 400.f;
+    constexpr float nearZ = .2f;
+    constexpr float fovDeg = 75.f;
 
-    auto projection = glm::perspectiveFovRH_ZO(glm::radians(75.f), viewport.width, viewport.height, nearZ, farZ);
+    auto projection = glm::perspectiveFovRH_ZO(glm::radians(fovDeg), viewport.width, viewport.height, nearZ, farZ);
 
-    CameraData data;
-    data.worldView = transpose(cameraTransform);
-    data.viewProjection = transpose(projection);
-    data.worldViewProjection = cameraTransform * projection;
-    data.cameraPosition = cameraPosition;
-    data.nearFar = {nearZ, farZ};
+    auto data = CameraData{
+        .worldViewProjection = cameraTransform * projection,
+        .worldView = transpose(cameraTransform),
+        .viewProjection = transpose(projection),
+        .cameraPosition = cameraPosition,
+        .nearFar = {nearZ, farZ},
+    };
 
     ctx.commandList.update(_cameraDataBuffer.get(), span{&data, 1}.as_bytes());
 
-    ctx.commandList.clearRenderTarget(_rtv.get(), {0.f, 0.f, 0.1f, 1.f});
+    constexpr glm::vec4 clearColor{0.f, 0.f, 0.1f, 1.f};
+
+    ctx.commandList.clearRenderTarget(_rtv.get(), clearColor);
     ctx.commandList.clearDepthStencil(_dsv.get());
     ctx.commandList.bindRenderTarget(0, _rtv.get());
     ctx.commandList.bindDepthStencil(_dsv.get());

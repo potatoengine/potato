@@ -81,6 +81,13 @@ function(up_set_common_properties TARGET)
             $<$<CXX_COMPILER_ID:MSVC>:/Zc:inline>
         )
     endif()
+
+    # Set any compiler flags
+    #
+    if (UP_CXXFLAGS AND NOT IS_INTERFACE)
+        separate_arguments(UP_CXXFLAGS NATIVE_COMMAND "${UP_CXXFLAGS}")
+        target_compile_options(${TARGET} PRIVATE ${UP_CXXFLAGS})
+    endif()
     
     # Enable clang-tidy
     #

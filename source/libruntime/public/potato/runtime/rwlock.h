@@ -45,12 +45,12 @@ namespace up {
     void RWLock::Reader::lock() noexcept {
         // FIXME - exponential backoff should be added
         unsigned expected = _lock.load(std::memory_order_relaxed);
-        while (expected == ~0u || _lock.compare_exchange_weak(expected, expected + 1, std::memory_order_acquire)) {}
+        while (expected == ~0U || _lock.compare_exchange_weak(expected, expected + 1, std::memory_order_acquire)) {}
     }
 
     bool RWLock::Reader::tryLock() noexcept {
         unsigned expected = _lock.load(std::memory_order_relaxed);
-        return expected != ~0u && _lock.compare_exchange_strong(expected, expected + 1, std::memory_order_acquire);
+        return expected != ~0U && _lock.compare_exchange_strong(expected, expected + 1, std::memory_order_acquire);
     }
 
     void RWLock::Reader::unlock() noexcept { _lock.fetch_sub(1, std::memory_order_release); }
@@ -58,12 +58,12 @@ namespace up {
     void RWLock::Writer::lock() noexcept {
         // FIXME - exponential backoff should be added
         unsigned expected = 0;
-        while (_lock.compare_exchange_weak(expected, ~0u, std::memory_order_acquire)) {}
+        while (_lock.compare_exchange_weak(expected, ~0U, std::memory_order_acquire)) {}
     }
 
     bool RWLock::Writer::tryLock() noexcept {
         unsigned expected = 0;
-        return _lock.compare_exchange_strong(expected, ~0u, std::memory_order_acquire);
+        return _lock.compare_exchange_strong(expected, ~0U, std::memory_order_acquire);
     }
 
     void RWLock::Writer::unlock() noexcept { _lock.store(0, std::memory_order_release); }

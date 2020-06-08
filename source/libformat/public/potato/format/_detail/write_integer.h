@@ -27,7 +27,7 @@ namespace up::_detail {
     }
 
     struct integer_spec {
-        unsigned width = 0u;
+        unsigned width = 0U;
         int base = 10;
         bool leading_zeroes = false;
     };
@@ -68,7 +68,7 @@ namespace up::_detail {
         auto const result = std::to_chars(buffer, buffer + sizeof(buffer), raw, spec.base);
 
         if (result.ec == std::errc()) {
-            if (spec.width > 0u) {
+            if (spec.width > 0U) {
                 auto const written_width = result.ptr - buffer;
                 auto const required_padding = spec.width - written_width;
                 if (spec.leading_zeroes) {

@@ -95,28 +95,12 @@ bool up::path::isNormalized(string_view path) noexcept {
             }
             break;
         case Part::Slash:
-            if (ch == '/') {
-                // no duplicate slashes allowed
-                return false;
-            }
-            else if (ch == '.') {
-                // no leading dots allowed
+        case Part::Dot:
+            if (ch == '/' || ch == '.') {
+                // disallow slash-slash, slash-dot, dot-slash, dot-dot
                 return false;
             }
             mode = Part::Component;
-            break;
-        case Part::Dot:
-            if (ch == '.') {
-                // no duplicate dots allowed
-                return false;
-            }
-            else if (ch == '/') {
-                // no trailing dots allowed
-                return false;
-            }
-            else {
-                mode = Part::Component;
-            }
             break;
         }
     }
@@ -149,13 +133,8 @@ auto up::path::normalize(string_view path) -> string {
             }
             break;
         case Part::Slash:
-            if (ch == '/' || ch == '\\') {
-                // ignore duplicate slash
-                break;
-            }
-            else if (ch == '.') {
-                // ignore leading dots
-                break;
+            if (ch == '/' || ch == '\\' || ch == '.') {
+                // ignore duplicate slash or leading dots
             }
             else {
                 result.append('/');
@@ -164,15 +143,11 @@ auto up::path::normalize(string_view path) -> string {
             }
             break;
         case Part::Dot:
-            if (ch == '.') {
-                // ignore duplicate dots
-                break;
-            }
-            else if (ch == '/' || ch == '\\') {
+            if (ch == '/' || ch == '\\') {
                 // ignore trailing dots
                 mode = Part::Slash;
             }
-            else {
+            else if (ch != '.') {
                 result.append('.');
                 result.append(ch);
                 mode = Part::Component;

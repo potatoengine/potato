@@ -78,7 +78,10 @@ int up::ShellApp::initialize() {
         _fileSystem.currentWorkingDirectory(_resourceDir.c_str());
     }
 
-    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 768, SDL_WINDOW_RESIZABLE);
+    constexpr int default_width = 1024;
+    constexpr int default_height = 768;
+
+    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, default_width, default_height, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create window", nullptr);
     }
@@ -107,7 +110,8 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _renderer = new_box<Renderer>(_fileSystem, _device);
+    _loader = new_box<DefaultLoader>(_fileSystem, _device);
+    _renderer = new_box<Renderer>(*_loader, _device);
 
 #if UP_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
@@ -120,13 +124,13 @@ int up::ShellApp::initialize() {
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
-    auto material = _renderer->loadMaterialSync("resources/materials/full.mat");
+    auto material = _loader->loadMaterialSync("resources/materials/full.mat");
     if (material == nullptr) {
         _errorDialog("Failed to load basic material");
         return 1;
     }
 
-    auto mesh = _renderer->loadMeshSync("resources/meshes/cube.model");
+    auto mesh = _loader->loadMeshSync("resources/meshes/cube.model");
     if (mesh == nullptr) {
         _errorDialog("Failed to load cube mesh");
         return 1;
@@ -155,8 +159,8 @@ int up::ShellApp::initialize() {
 
     _selection.select(_scene->main());
 
-    auto imguiVertShader = _renderer->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
-    auto imguiPixelShader = _renderer->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
+    auto imguiVertShader = _loader->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
+    auto imguiPixelShader = _loader->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
     if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
         _errorDialog("Failed to load imgui shaders");
         return 1;
@@ -199,6 +203,8 @@ void up::ShellApp::run() {
     int width = 0;
     int height = 0;
 
+    constexpr double nano_to_seconds = 1.0 / 1000000000.0;
+
     while (isRunning()) {
         _processEvents();
 
@@ -217,7 +223,7 @@ void up::ShellApp::run() {
 
         auto endFrame = std::chrono::high_resolution_clock::now();
         _lastFrameDuration = endFrame - now;
-        _lastFrameTime = static_cast<float>(_lastFrameDuration.count() / 1000000000.0);
+        _lastFrameTime = static_cast<float>(_lastFrameDuration.count() * nano_to_seconds);
         now = endFrame;
     }
 }
@@ -378,8 +384,6 @@ void up::ShellApp::_displayMainMenu() {
 }
 
 void up::ShellApp::_displayDocuments(glm::vec4 rect) {
-    auto& io = ImGui::GetIO();
-
     ImGui::SetNextWindowPos({rect.x, rect.y});
     ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});

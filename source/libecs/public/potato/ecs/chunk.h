@@ -11,10 +11,10 @@ namespace up {
     /// is allocated to an Archetype and will store a list of Components according
     /// to the Archetype's specified layout.
     ///
-    struct Chunk {
+    struct alignas(64) Chunk {
         static constexpr uint32 SizeBytes = 64 * 1024;
 
-        struct alignas(64) Header {
+        struct Header {
             ArchetypeId archetype = ArchetypeId::Empty;
             unsigned int entities = 0;
             unsigned int capacity = 0;
@@ -30,7 +30,9 @@ namespace up {
         auto entities() const noexcept -> view<EntityId> { return {reinterpret_cast<EntityId const*>(payload), header.entities}; }
 
         Header header;
-        Payload payload;
+        Payload payload = {
+            0,
+        };
     }; // namespace up
 
     static_assert(sizeof(Chunk) == Chunk::SizeBytes, "Chunk has incorrect size; possibly unexpected member padding");

@@ -25,7 +25,6 @@ namespace up::shell {
         explicit ScenePanel(Renderer& renderer, Scene& scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
-        virtual ~ScenePanel() = default;
 
         zstring_view displayName() const override { return "Scene"; }
         void ui() override;
@@ -43,7 +42,6 @@ namespace up::shell {
         Camera _camera;
         ArcBallCameraController _cameraController;
         bool _enableGrid = true;
-        bool _isControllingCamera = false;
     };
 
     auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel> { return new_box<ScenePanel>(renderer, scene); }
@@ -70,7 +68,7 @@ namespace up::shell {
         }
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-        if (ImGui::Begin("ScenePanel", &_enabled, ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin("ScenePanel", nullptr, ImGuiWindowFlags_NoCollapse)) {
             auto const contentSize = ImGui::GetContentRegionAvail();
 
             if (contentSize.x <= 0 || contentSize.y <= 0) {
@@ -171,9 +169,9 @@ namespace up::shell {
         auto const logDist = std::log2(std::abs(cameraPos.y));
         auto const spacing = std::max(1, static_cast<int>(logDist) - 3);
 
-        int guideSpacing = guidelines * spacing;
-        float x = static_cast<float>(static_cast<int>(cameraPos.x / guideSpacing) * guideSpacing);
-        float z = static_cast<float>(static_cast<int>(cameraPos.z / guideSpacing) * guideSpacing);
+        auto const guideSpacing = static_cast<float>(guidelines * spacing);
+        float x = std::trunc(cameraPos.x / guideSpacing) * guideSpacing;
+        float z = std::trunc(cameraPos.z / guideSpacing) * guideSpacing;
 
         DebugDrawGrid grid;
         grid.axis2 = {0, 0, 1};

@@ -74,10 +74,12 @@ namespace up {
     private:
         inline void _grow(size_type requiredSize);
 
+        static constexpr size_type fixed_size = 512;
+
         size_type _size = 0;
-        size_type _capacity = sizeof(_fixed);
+        size_type _capacity = fixed_size;
         pointer _ptr = _fixed;
-        value_type _fixed[512] = {
+        value_type _fixed[fixed_size] = {
             0,
         };
     };

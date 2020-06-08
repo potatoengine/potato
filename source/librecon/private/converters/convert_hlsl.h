@@ -10,7 +10,7 @@ namespace up::recon {
     class HlslConverter : public Converter {
     public:
         HlslConverter();
-        ~HlslConverter();
+        ~HlslConverter() override;
 
         bool convert(Context& ctx) override;
         string_view generateSettings(Context& ctd) override { return {}; }

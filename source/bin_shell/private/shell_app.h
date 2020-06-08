@@ -17,6 +17,7 @@
 
 namespace up {
     class ShellApp;
+    class Loader;
     class Renderer;
     class RenderCamera;
     class Node;
@@ -63,10 +64,10 @@ private:
     bool _loadConfig(zstring_view path);
 
     bool _running = true;
-    bool _showInspector = true;
     NativeFileSystem _fileSystem;
     rc<GpuDevice> _device;
     rc<GpuSwapChain> _swapChain;
+    box<Loader> _loader;
     box<Renderer> _renderer;
     box<RenderCamera> _uiRenderCamera;
     box<Universe> _universe;
@@ -82,6 +83,5 @@ private:
     shell::Selection _selection;
     vector<box<shell::Panel>> _documents;
     float _lastFrameTime = 0.f;
-    float _inspectorWidth = 300.f;
     std::chrono::nanoseconds _lastFrameDuration = {};
 };

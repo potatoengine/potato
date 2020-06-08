@@ -96,11 +96,13 @@ namespace up {
             bool operator==(std::nullptr_t) const noexcept { return _vtable == nullptr; }
 
         protected:
-            delegate_base(delegate_vtable_base const* vtable) noexcept : _vtable(vtable) {}
+            explicit delegate_base(delegate_vtable_base const* vtable) noexcept : _vtable(vtable) {}
             ~delegate_base() = default;
 
             // we will overwrite this with an object with just a vtable - if we are nullptr, we have no real vtable
+            // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
             delegate_vtable_base const* _vtable = nullptr;
+            // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
             storage_t _storage = {};
         };
 
@@ -110,16 +112,19 @@ namespace up {
             using storage_t = typename delegate_base::storage_t;
 
         public:
-            using delegate_base::delegate_base;
+            using delegate_base::delegate_base; // NOLINT(modernize-use-equals-default)
 
             /// <summary> Construct a new delegate from a function object, such as a lambda or function pointer. </summary>
             /// <param name="function"> The function to bind. </param>
             template <callable_r<ReturnType, ParamTypes...> Functor>
-            /*implicit*/ delegate_typed(Functor&& functor) {
+            // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
+            /*implicit*/ delegate_typed(Functor&& functor) requires(!same_as<Functor, delegate_typed>) {
                 assign(std::forward<Functor>(functor));
             }
 
-            template <callable_r<ReturnType, ParamTypes...> Functor> auto operator=(Functor&& functor) -> delegate_typed& {
+            template <callable_r<ReturnType, ParamTypes...> Functor>
+            // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
+            auto operator=(Functor&& functor) -> delegate_typed& requires(!same_as<Functor, delegate_typed>) {
                 if (this->_vtable != nullptr) {
                     this->_vtable->destruct(&this->_storage);
                 }
@@ -135,12 +140,12 @@ namespace up {
 } // namespace up
 
 template <typename ReturnType, typename... ParamTypes>
-class up::delegate<ReturnType(ParamTypes...)> : public _detail::delegate_typed<ReturnType, false, ParamTypes...> {
+class up::delegate<ReturnType(ParamTypes...)> final : public _detail::delegate_typed<ReturnType, false, ParamTypes...> {
     using vtable_c = _detail::delegate_vtable_typed<ReturnType, false, ParamTypes...>;
     using storage_t = typename _detail::delegate_typed<ReturnType, false, ParamTypes...>::storage_t;
 
 public:
-    using _detail::delegate_typed<ReturnType, false, ParamTypes...>::delegate_typed;
+    using _detail::delegate_typed<ReturnType, false, ParamTypes...>::delegate_typed; // NOLINT(modernize-use-equals-default)
 
     template <typename ClassType>
     delegate(ClassType& object, ReturnType (ClassType::*method)(ParamTypes...)) noexcept

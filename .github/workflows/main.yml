@@ -36,15 +36,14 @@ jobs:
         uses: seanmiddleditch/gha-setup-vsdevenv@master
       - name: Configure
         env:
-          CXXFLAGS: /W3 /WX
           CXX: cl.exe
           CC: cl.exe
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="$Env:DEPS/assimp-4.1.0" ..
+          cmake -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="$Env:DEPS/assimp-4.1.0" ..
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel -- -k 0 -v
       - name: Test
         run: |
           cd build
@@ -60,11 +59,12 @@ jobs:
         include:
           - cxx: g++-10
             cc: gcc-10
-            cxxflags: -Wall
+            warnings: -Wall -Werror -Wno-volatile -Wno-error=deprecated-declarations # GLM triggers volatile, nlohmann/json triggers deprecated-declarations
             packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
-            cxxflags: -Wall -stdlib=libc++
+            cxxflags: -stdlib=libc++
+            warnings: -Wall -Werror -Wno-deprecated-volatile # GLM triggers deprecated-volatile
             packages: clang-10 clang-tidy-10 libc++-10-dev libc++abi-10-dev
             clang_tidy: clang-tidy-10
     
@@ -97,9 +97,9 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+          cmake -G Ninja -DUP_CXXFLAGS:STRING="${{ matrix.warnings }}" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel -- -k 0 -v
       - name: Test
         run: |
           cd build

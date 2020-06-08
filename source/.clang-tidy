@@ -1,7 +1,52 @@
 FormatStyle: "file"
-Checks: "-*,performance-*,readability-*,-readability-named-parameter,-readability-magic-numbers,-readability-uppercase-literal-suffix,-readability-convert-member-functions-to-static,-readability-braces-around-statements,-readability-qualified-auto,-readability-implicit-bool-conversion"
-HeaderFilterRegex: "source/.*"
-ExtraArgs: [
-    "-D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING",
-]
+# clang-analyzer-* crashed in Clang 10 on our code :/
+# cppcoreguidelines-avoid-c-arrays is a little idealistic
+# cppcoreguidelines-macro-usage flags almost every macro, many of which _must_ be macros
+# cppcoreguidelines-pro-bounds-array-to-pointer-decay likewise, we use char buffers for a reason
+# cppcoreguidelines-pro-bounds-constant-array-index is just crazy, we use [] on purpose
+# cppcoreguidelines-pro-bounds-pointer-arithmetic doesn't acknowledge pointers as iterators
+# cppcoreguidelines-avoid-magic-numbers is the same as readability-magic-numbers
+# cppcoreguidelines-special-member-functions [[TODO]] we actually want this, but we need to configure it
+# cppcoreguidelines-owning-memory [[TODO]] we actually want this, but need to plumb the GSL hints
+# cppcoreguidelines-pro-type-reinterpret-cast is idealistic, we have to use it often
+# cppcoreguidelines-pro-type-static-cast-downcast recommends unnecessarily using dynamic_cast
+# cppcoreguidelines-pro-type-union-access GLM runs afoul of this
+# cppcoreguidelines-pro-type-vararg needed until we have to_chars<float> everywhere
+# modernize-avoid-c-arrays nope we use C arrays
+# modernize-use-nodiscard [[TODO]] want this, but need to do a consistency pass
+# modernize-use-trailing-return-type [[TODO]] want this, we just need to do huge consistency pass
+# readability-qualified-auto is often "wrong" because we use raw pointers as iterators
+# readability-convert-member-functions-to-static has side effects (e.g. calling conventions)
+# readability-magic-numbers is just annoying for math-heavy code, though it is valuable elsewhere
+# readability-named-parmater [[TODO]] consider adding this back
+# readability-upper-literal-suffix is just stylistically objectionable, e.g. 1.2f vs 1.2F
+Checks: >-
+    -*,
+    bugprone-*,
+    cppcoreguidelines-*,
+    modernize-*,
+    performance-*,
+    portability-*,
+    readability-*,
+    -cppcoreguidelines-avoid-c-arrays,
+    -cppcoreguidelines-avoid-magic-numbers,
+    -cppcoreguidelines-macro-usage,
+    -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+    -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+    -cppcoreguidelines-pro-bounds-constant-array-index,
+    -cppcoreguidelines-owning-memory,
+    -cppcoreguidelines-special-member-functions,
+    -cppcoreguidelines-pro-type-reinterpret-cast,
+    -cppcoreguidelines-pro-type-static-cast-downcast,
+    -cppcoreguidelines-pro-type-union-access,
+    -cppcoreguidelines-pro-type-vararg,
+    -modernize-avoid-c-arrays,
+    -modernize-use-nodiscard,
+    -modernize-use-trailing-return-type,
+    -readability-convert-member-functions-to-static,
+    -readability-magic-numbers,
+    -readability-named-parameter,
+    -readability-qualified-auto,
+    -readability-uppercase-literal-suffix,
+HeaderFilterRegex: "(private/.*|public/potato/.*)"
 WarningsAsErrors: "*"

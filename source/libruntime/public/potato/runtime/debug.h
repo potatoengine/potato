@@ -12,7 +12,7 @@
 #if defined(UP_COMPILER_MICROSOFT)
 #    define UP_DEBUG_BREAK() __debugbreak()
 #elif defined(UP_PLATFORM_POSIX)
-#    include <signal.h>
+#    include <signal.h> // NOLINT(modernize-deprecated-headers)
 #    define UP_DEBUG_BREAK() \
         do { \
             raise(SIGTRAP); \

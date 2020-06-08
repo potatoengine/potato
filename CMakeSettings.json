@@ -37,10 +37,14 @@
       "buildRoot": "${projectDir}/out/msvc-debug-static/build",
       "installRoot": "${projectDir}/out/msvc-debug-static/root",
       "ctestCommandArgs": "--verbose",
-      "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
+        {
+          "name": "UP_CXXFLAGS",
+          "value": "/W3 /WX /FC",
+          "type": "STRING"
+        },
         {
           "name": "BUILD_SHARED_LIBS",
           "value": "OFF",
@@ -61,10 +65,14 @@
       "buildRoot": "${projectDir}/out/msvc-release/build",
       "installRoot": "${projectDir}/out/msvc-release-shared/root",
       "ctestCommandArgs": "--verbose",
-      "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
+        {
+          "name": "UP_CXXFLAGS",
+          "value": "/W3 /WX /FC",
+          "type": "STRING"
+        },
         {
           "name": "BUILD_SHARED_LIBS",
           "value": "ON",
@@ -85,10 +93,14 @@
       "buildRoot": "${projectDir}/out/msvc-release-static/build",
       "installRoot": "${projectDir}/out/msvc-release-static/root",
       "ctestCommandArgs": "--verbose",
-      "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
+        {
+          "name": "UP_CXXFLAGS",
+          "value": "/W3 /WX /FC",
+          "type": "STRING"
+        },
         {
           "name": "BUILD_SHARED_LIBS",
           "value": "OFF",
@@ -117,6 +129,11 @@
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
+        {
+          "name": "UP_CXXFLAGS",
+          "value": "-Wall",
+          "type": "STRING"
+        },
         {
           "name": "CMAKE_CXX_COMPILER",
           "value": "g++-10"
@@ -157,6 +174,11 @@
       "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
+          "name": "UP_CXXFLAGS",
+          "value": "-Wall",
+          "type": "STRING"
+        },
+        {
           "name": "CMAKE_CXX_COMPILER",
           "value": "g++-10"
         },
@@ -196,6 +218,11 @@
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
+        {
+          "name": "UP_CXXFLAGS",
+          "value": "-Wall",
+          "type": "STRING"
+        },
         {
           "name": "UP_OUTPUT_DIR",
           "value": "${projectDir}/out",

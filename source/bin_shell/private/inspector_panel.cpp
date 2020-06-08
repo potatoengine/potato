@@ -28,7 +28,6 @@ namespace up::shell {
             : _components(std::move(components))
             , _scene(scene)
             , _selection(selection) {}
-        virtual ~InspectorPanel() = default;
 
         zstring_view displayName() const override { return "Inspector"; }
         void ui() override;
@@ -48,7 +47,7 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::Begin("Inspector", &_enabled, ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin("Inspector", nullptr, ImGuiWindowFlags_NoCollapse)) {
             ComponentId deletedComponent = ComponentId::Unknown;
 
             _scene.world().interrogateEntityUnsafe(_selection.selected(),

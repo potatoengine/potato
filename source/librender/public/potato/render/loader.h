@@ -13,13 +13,11 @@ namespace up {
 
     class Loader {
     public:
+        virtual ~Loader() = default;
+
         virtual auto loadMeshSync(zstring_view path) -> rc<Mesh> = 0;
         virtual auto loadMaterialSync(zstring_view path) -> rc<Material> = 0;
         virtual auto loadShaderSync(zstring_view path) -> rc<Shader> = 0;
         virtual auto loadTextureSync(zstring_view path) -> rc<Texture> = 0;
-
-    protected:
-        Loader() = default;
-        ~Loader() = default;
     };
 } // namespace up

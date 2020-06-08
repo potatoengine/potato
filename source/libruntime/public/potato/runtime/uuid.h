@@ -40,11 +40,11 @@ namespace up {
         };
 
         union Storage {
-            HighLow u64;
+            HighLow u64 = {};
             byte ub[octects];
         };
 
-        Storage _data;
+        Storage _data = {HighLow{}};
     };
 
     static_assert(sizeof(UUID) == UUID::octects, "sizeof(uuid) must be 16 octects");

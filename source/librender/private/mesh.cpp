@@ -7,6 +7,10 @@
 #include "gpu_device.h"
 #include "model_generated.h"
 
+#include "potato/spud/sequence.h"
+
+#include <glm/vec3.hpp>
+
 up::Mesh::Mesh(vector<up::uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels)
     : _buffers(buffers.begin(), buffers.end())
     , _channels(channels.begin(), channels.end())
@@ -18,7 +22,7 @@ up::Mesh::~Mesh() = default;
 void up::Mesh::populateLayout(span<GpuInputLayoutElement>& inputLayout) const noexcept {
     auto size = inputLayout.size() < _channels.size() ? inputLayout.size() : _channels.size();
 
-    for (decltype(size) index = 0; index != size; ++index) {
+    for (auto index : sequence(size)) {
         inputLayout[index].format = _channels[index].format;
         inputLayout[index].semantic = _channels[index].semantic;
         inputLayout[index].semanticIndex = 0; // FIXME
@@ -41,8 +45,9 @@ void up::Mesh::updateVertexBuffers(RenderContext& ctx) {
 
 void up::Mesh::bindVertexBuffers(RenderContext& ctx) {
     ctx.commandList.bindIndexBuffer(_ibo.get(), GpuIndexFormat::Unsigned16, 0);
-    for (int i = 0; i != _buffers.size(); ++i) {
-        ctx.commandList.bindVertexBuffer(i, _vbo.get(), _buffers[i].stride, _buffers[i].offset);
+
+    for (auto i : sequence(_buffers.size())) {
+        ctx.commandList.bindVertexBuffer(static_cast<uint32>(i), _vbo.get(), _buffers[i].stride, _buffers[i].offset);
     }
 }
 
@@ -78,7 +83,15 @@ auto up::Mesh::createFromBuffer(view<byte> buffer) -> rc<Mesh> {
         {0, GpuFormat::R32G32Float, GpuShaderSemantic::TexCoord},
     };
 
-    uint16 stride = sizeof(float) * 14;
+    struct VertData {
+        glm::vec3 pos = {0, 0, 0};
+        glm::vec3 color = {1, 1, 1};
+        glm::vec3 normal = {0, 0, 0};
+        glm::vec3 tangent = {0, 0, 0};
+        glm::vec3 uv = {0, 0, 0};
+    };
+
+    uint16 stride = sizeof(VertData);
     uint32 numVertices = flatMesh->vertices()->size();
     uint32 size = numVertices * stride;
 
@@ -87,7 +100,7 @@ auto up::Mesh::createFromBuffer(view<byte> buffer) -> rc<Mesh> {
     vector<uint16> indices;
     indices.reserve(flatMesh->indices()->size());
 
-    vector<float> data;
+    vector<VertData> data;
     data.reserve(numVertices);
 
     auto flatIndices = flatMesh->indices();
@@ -102,55 +115,38 @@ auto up::Mesh::createFromBuffer(view<byte> buffer) -> rc<Mesh> {
     }
 
     for (uint32 i = 0; i != numVertices; ++i) {
-        auto vert = *flatVerts->Get(i);
-        data.push_back(vert.x());
-        data.push_back(vert.y());
-        data.push_back(vert.z());
+        VertData& vert = data.emplace_back();
+
+        auto pos = *flatVerts->Get(i);
+        vert.pos.x = pos.x();
+        vert.pos.y = pos.y();
+        vert.pos.z = pos.z();
 
         if (flatColors != nullptr) {
             auto color = *flatColors->Get(i);
-            data.push_back(color.x());
-            data.push_back(color.y());
-            data.push_back(color.z());
-        }
-        else {
-            data.push_back(1.f);
-            data.push_back(1.f);
-            data.push_back(1.f);
+            vert.color.x = color.x();
+            vert.color.y = color.y();
+            vert.color.z = color.z();
         }
 
         if (flatNormals != nullptr) {
             auto norm = *flatNormals->Get(i);
-            data.push_back(norm.x());
-            data.push_back(norm.y());
-            data.push_back(norm.z());
-        }
-        else {
-            data.push_back(0.f);
-            data.push_back(0.f);
-            data.push_back(0.f);
+            vert.normal.x = norm.x();
+            vert.normal.y = norm.y();
+            vert.normal.z = norm.z();
         }
 
         if (flatTangents != nullptr) {
             auto tangent = *flatTangents->Get(i);
-            data.push_back(tangent.x());
-            data.push_back(tangent.y());
-            data.push_back(tangent.z());
-        }
-        else {
-            data.push_back(0.f);
-            data.push_back(0.f);
-            data.push_back(0.f);
+            vert.tangent.x = tangent.x();
+            vert.tangent.y = tangent.y();
+            vert.tangent.z = tangent.z();
         }
 
         if (flatUVs != nullptr) {
             auto tex = *flatUVs->Get(i);
-            data.push_back(tex.x());
-            data.push_back(tex.y());
-        }
-        else {
-            data.push_back(0.f);
-            data.push_back(0.f);
+            vert.uv.x = tex.x();
+            vert.uv.y = tex.y();
         }
     }
 

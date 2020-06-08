@@ -30,8 +30,10 @@ up::Scene::Scene(Universe& universe)
 void up::Scene::create(rc<Model> const& cube, rc<SoundResource> const& ding) {
     auto pi = glm::pi<float>();
 
-    for (size_t i = 0; i <= 100; ++i) {
-        float p = i / 100.0f;
+    constexpr int numObjects = 100;
+
+    for (size_t i = 0; i <= numObjects; ++i) {
+        float p = i / static_cast<float>(numObjects);
         float r = p * 2.f * pi;
         _world.createEntity(
             components::Position{{(20 + glm::cos(r) * 10.f) * glm::sin(r), 1 + glm::sin(r * 10.f) * 5.f, (20 + glm::sin(r) * 10.f) * glm::cos(r)}},

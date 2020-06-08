@@ -34,9 +34,10 @@ void UP_VECTORCALL up::Model::render(RenderContext& ctx, glm::mat4x4 transform) 
         _transformBuffer = ctx.device.createBuffer(GpuBufferType::Constant, sizeof(Trans));
     }
 
-    Trans trans;
-    trans.modelWorld = transpose(transform);
-    trans.worldModel = glm::inverse(transform);
+    auto trans = Trans{
+        .modelWorld = transpose(transform),
+        .worldModel = glm::inverse(transform),
+    };
 
     _mesh->updateVertexBuffers(ctx);
     ctx.commandList.update(_transformBuffer.get(), span{&trans, 1}.as_bytes());

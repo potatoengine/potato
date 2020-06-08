@@ -136,7 +136,7 @@ namespace up::reflex {
             return Action::Skip;
         }
 
-        template <typename T> Action beginArray(tag<T>, size_t& size) noexcept {
+        template <typename T> Action beginArray(tag<T>, size_t& size) {
             auto* node = _enter();
             if (node != nullptr && node->is_array()) {
                 _current.push_back(node);
@@ -166,7 +166,7 @@ namespace up::reflex {
         }
 
     private:
-        auto _enter() noexcept -> nlohmann::json* {
+        auto _enter() -> nlohmann::json* {
             auto* parent = _current.back();
             if (_nextField && parent->is_object() && parent->contains(_nextField.c_str())) {
                 auto& current = (*parent)[_nextField.c_str()];

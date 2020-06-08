@@ -13,7 +13,6 @@ namespace up::shell {
     class HierarchyPanel : public shell::Panel {
     public:
         explicit HierarchyPanel(Scene& scene, Selection& selection) : _scene(scene), _selection(selection) {}
-        virtual ~HierarchyPanel() = default;
 
         zstring_view displayName() const override { return "Hierarchy"; }
         void ui() override;
@@ -30,8 +29,10 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::Begin("Hierarchy", &_enabled, ImGuiWindowFlags_NoCollapse)) {
-            fixed_string_writer label;
+        if (ImGui::Begin("Hierarchy", nullptr, ImGuiWindowFlags_NoCollapse)) {
+            constexpr int label_length = 64;
+
+            fixed_string_writer<label_length> label;
 
             for (auto const& chunk : _scene.world().chunks()) {
                 for (EntityId entityId : chunk->entities()) {

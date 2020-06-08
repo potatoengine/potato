@@ -24,7 +24,7 @@ namespace {
     };
 
     struct Complex {
-        Fields xyz;
+        Fields xyz = {0, 0, 0};
         float num = 0;
         up::string name;
         up::vector<int> vec;
@@ -52,7 +52,7 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         auto root = nlohmann::json::object();
         auto serializer = JsonStreamSerializer{root};
 
-        auto const big = Complex{{1, 2, 3}, 42.f, "bob", {4, 5, 6}};
+        auto const big = Complex{{1, 2, 3}, 42.f, "bob", {4, 5, 6}}; // NOLINT
 
         serialize(big, serializer);
 
@@ -73,13 +73,13 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         DOCTEST_CHECK_EQ(2, big.xyz.y);
         DOCTEST_CHECK_EQ(3, big.xyz.z);
 
-        DOCTEST_CHECK_EQ(big.num, 42.f);
+        DOCTEST_CHECK_EQ(big.num, 42.f); // NOLINT
 
         DOCTEST_CHECK_EQ(big.name, "bob");
 
-        DOCTEST_CHECK_EQ(big.vec.size(), 2);
-        DOCTEST_CHECK_EQ(big.vec.front(), 4);
-        DOCTEST_CHECK_EQ(big.vec.back(), 6);
+        DOCTEST_CHECK_EQ(big.vec.size(), 2); // NOLINT
+        DOCTEST_CHECK_EQ(big.vec.front(), 4); // NOLINT
+        DOCTEST_CHECK_EQ(big.vec.back(), 6); // NOLINT
     }
 }
 

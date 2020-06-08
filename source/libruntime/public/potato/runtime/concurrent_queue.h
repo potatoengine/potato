@@ -15,7 +15,9 @@
 namespace up {
     template <typename T> class ConcurrentQueue {
     public:
-        explicit ConcurrentQueue(uint32 capacity = 1024);
+        static constexpr int default_capacity = 1024;
+
+        explicit ConcurrentQueue(uint32 capacity = default_capacity);
         ~ConcurrentQueue();
 
         ConcurrentQueue(ConcurrentQueue const&) = delete;
