@@ -24,7 +24,7 @@ namespace {
     };
 
     struct Complex {
-        Fields xyz;
+        Fields xyz = {0, 0, 0};
         float num = 0;
         up::string name;
         up::vector<int> vec;
