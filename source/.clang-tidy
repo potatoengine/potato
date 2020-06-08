@@ -8,7 +8,6 @@ FormatStyle: "file"
 # cppcoreguidelines-avoid-magic-numbers is the same as readability-magic-numbers
 # cppcoreguidelines-special-member-functions [[TODO]] we actually want this, but we need to configure it
 # cppcoreguidelines-owning-memory [[TODO]] we actually want this, but need to plumb the GSL hints
-# cppcoreguidelines-pro-type-const-cast [[TODO]] good idea generally, need to clean up code
 # cppcoreguidelines-pro-type-reinterpret-cast is idealistic, we have to use it often
 # cppcoreguidelines-pro-type-static-cast-downcast recommends unnecessarily using dynamic_cast
 # cppcoreguidelines-pro-type-union-access GLM runs afoul of this
@@ -37,7 +36,6 @@ Checks: >-
     -cppcoreguidelines-pro-bounds-constant-array-index,
     -cppcoreguidelines-owning-memory,
     -cppcoreguidelines-special-member-functions,
-    -cppcoreguidelines-pro-type-const-cast,
     -cppcoreguidelines-pro-type-reinterpret-cast,
     -cppcoreguidelines-pro-type-static-cast-downcast,
     -cppcoreguidelines-pro-type-union-access,

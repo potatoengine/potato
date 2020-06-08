@@ -211,7 +211,7 @@ private:
             return nullptr;
         }
 
-        pointer p = new value_type[length + 1];
+        auto* p = new value_type[length + 1];
         std::memmove(p, str, length);
         p[length] = 0;
         return p;
