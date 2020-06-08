@@ -300,7 +300,7 @@ namespace up {
         }
 
         if (_last < _sentinel) {
-            iterator mpos = _begin + (;
+            iterator mpos = _to_iterator(pos);
             _rshift(mpos, 1);
             mpos->~value_type();
             new (mpos) value_type(std::forward<ParamsT>(params)...);
@@ -418,7 +418,7 @@ namespace up {
     }
 
     template <typename T> auto vector<T>::erase(const_iterator begin, const_iterator end) -> iterator {
-        iterator mpos = _to_iterator(begin);
+        iterator mbegin = _to_iterator(begin);
         auto const count = end - begin;
         move_n(mbegin + count, _last - begin - count, mbegin);
         destruct_n(_last - count, count);
