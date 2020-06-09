@@ -25,6 +25,7 @@ target_link_libraries(potato_librecon
         potato::librender
         potato::spud
         potato::libassetdb
+        potato::libtools
         stb
         assimp
     PRIVATE
