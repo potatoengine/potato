@@ -1,0 +1,13 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
+#pragma once
+
+#if defined(UP_@SHORTNAME_UPPER@_EXPORTS)
+#    if defined(_WINDOWS)
+#        define UP_@SHORTNAME_UPPER@_API __declspec(dllexport)
+#    else
+#        define UP_@SHORTNAME_UPPER@_API [[gnu::visibility("default")]]
+#    endif
+#else
+#    define UP_@SHORTNAME_UPPER@_API
+#endif

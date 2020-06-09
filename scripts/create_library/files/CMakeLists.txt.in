@@ -1,32 +1,33 @@
 cmake_minimum_required(VERSION 3.11)
-project(@NAME@ VERSION 0.1 LANGUAGES CXX)
+project(potato_@NAME@ VERSION 0.1 LANGUAGES CXX)
 
-add_library(@NAME@)
-add_library(potato::@NAME@ ALIAS @NAME@)
+add_library(potato_@NAME@)
+add_library(potato::@NAME@ ALIAS potato_@NAME@)
 
-target_sources(@NAME@ PRIVATE
-    "private/@NAME@.cpp"
+target_sources(potato_@NAME@ PRIVATE
+    "private/@SHORTNAME@.cpp"
 )
 
 include(up_set_common_properties)
-up_set_common_properties(@NAME@)
+up_set_common_properties(potato_@NAME@)
 
-target_link_libraries(@NAME@
+target_link_libraries(potato_@NAME@
     PUBLIC
-        potato::runtime
+        potato::libruntime
         potato::spud
 )
 
-add_executable(test_potato_@NAME@
-    "tests/main.cpp""
+add_executable(potato_@NAME@_test)
+
+target_sources(potato_@NAME@_test PRIVATE
+    "tests/main.cpp"
 )
 
-include(up_set_common_properties)
-up_set_common_properties(test_potato_@NAME@)
+up_set_common_properties(potato_@NAME@_test)
 
-target_link_libraries(test_potato_@NAME@ PRIVATE
-    @NAME@
+target_link_libraries(potato_@NAME@_test PRIVATE
+    potato::@NAME@
     doctest
 )
 
-add_test(NAME test_potato_@NAME@ COMMAND test_potato_@NAME@)
+add_test(NAME potato_@NAME@_test COMMAND potato_@NAME@_test)
