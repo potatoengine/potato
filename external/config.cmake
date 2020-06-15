@@ -18,7 +18,7 @@ FetchContent_Declare(stb
 )
 FetchContent_Declare(json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.7.3
+    GIT_TAG v3.8.0
 )
 FetchContent_Declare(sdl2_vc_sdk
     URL https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
