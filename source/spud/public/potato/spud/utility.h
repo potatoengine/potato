@@ -10,12 +10,10 @@
 
 namespace up {
     // reimplemented to avoid pulling in the <iterator> monstrosity (bloated in some stdlib implementations)
-    template <class C> constexpr auto begin(C& c) noexcept(noexcept(c.begin())) { return c.begin(); }
-    template <class C> constexpr auto begin(const C& c) noexcept(noexcept(c.begin())) { return c.begin(); }
+    template <class C> constexpr auto begin(C&& c) noexcept(noexcept(c.begin())) { return c.begin(); }
     template <class T, std::size_t N> constexpr T* begin(T (&array)[N]) noexcept { return array; }
 
-    template <class C> constexpr auto end(C& c) noexcept(noexcept(c.end())) { return c.end(); }
-    template <class C> constexpr auto end(const C& c) noexcept(noexcept(c.end())) { return c.end(); }
+    template <class C> constexpr auto end(C&& c) noexcept(noexcept(c.end())) { return c.end(); }
     template <class T, std::size_t N> constexpr T* end(T (&array)[N]) noexcept { return array + N; }
 
     struct identity {
