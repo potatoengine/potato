@@ -117,7 +117,15 @@ auto up::path::normalize(string_view path) -> string {
     string_writer result;
     result.reserve(path.size());
 
-    enum class Part { Component, Slash, Dot } mode = Part::Slash;
+    auto const popPath = [&result]() {
+        string_view current = result;
+        auto endPos = current.find_last_of("/");
+        if (endPos != string_view::npos) {
+            result.resize(endPos);
+        }
+    };
+
+    enum class Part { Component, Slash, Dot, DotDot } mode = Part::Slash;
 
     for (auto const ch : path) {
         switch (mode) {
@@ -125,16 +133,16 @@ auto up::path::normalize(string_view path) -> string {
             if (ch == '/' || ch == '\\') {
                 mode = Part::Slash;
             }
-            else if (ch == '.') {
-                mode = Part::Dot;
-            }
             else {
                 result.append(ch);
             }
             break;
         case Part::Slash:
-            if (ch == '/' || ch == '\\' || ch == '.') {
-                // ignore duplicate slash or leading dots
+            if (ch == '/' || ch == '\\') {
+                // ignore duplicate slash
+            }
+            else if (ch == '.') {
+                mode = Part::Dot;
             }
             else {
                 result.append('/');
@@ -144,16 +152,36 @@ auto up::path::normalize(string_view path) -> string {
             break;
         case Part::Dot:
             if (ch == '/' || ch == '\\') {
-                // ignore trailing dots
+                // ignore single dots
                 mode = Part::Slash;
             }
-            else if (ch != '.') {
+            else if (ch == '.') {
+                mode = Part::DotDot;
+            }
+            else {
+                result.append('.');
+                result.append(ch);
+                mode = Part::Component;
+            }
+            break;
+        case Part::DotDot:
+            if (ch == '/' || ch == '\\') {
+                popPath();
+                mode = Part::Slash;
+            }
+            else {
+                result.append('.');
                 result.append('.');
                 result.append(ch);
                 mode = Part::Component;
             }
             break;
         }
+    }
+
+    switch (mode) {
+    case Part::DotDot: popPath(); break;
+    default: break;
     }
 
     if (result.empty()) {

@@ -44,8 +44,8 @@ namespace up::path {
     // empty path is returned as /
     // leading slash added to path, e.g. foo.txt -> /foo.txt
     // trailing slash is stripped, e.g. /foo/ -> /foo
-    // duplicate slashes or dots are condensed, e.g. /foo//bar..txt -> /foo/bar.txt
-    // leading or trailing dots in components are stripped, e.g. /.foo/bar. -> /foo/bar
+    // duplicate slashes are condensed, e.g. /foo//bar.txt -> /foo/bar.txt
+    // double-dot sections remove prior items, e.g. /foo/../bar -> /bar
     UP_RUNTIME_API string normalize(string_view path);
 
     // joins path components together
