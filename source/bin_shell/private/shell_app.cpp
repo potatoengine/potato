@@ -23,6 +23,7 @@
 #include "potato/render/model.h"
 #include "potato/render/renderer.h"
 #include "potato/render/shader.h"
+#include "potato/tools/project.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/native.h"
 #include "potato/runtime/path.h"
@@ -74,9 +75,14 @@ int up::ShellApp::initialize() {
         _loadConfig(configPath);
     }
 
-    if (!_resourceDir.empty()) {
-        _fileSystem.currentWorkingDirectory(_resourceDir.c_str());
+    string projectPath = path::join({_fileSystem.currentWorkingDirectory(), "..", "..", "..", "..", "resources", "sample.popr"});
+    auto project = Project::loadFromFile(_fileSystem, projectPath);
+    if (project == nullptr) {
+        _errorDialog("Could not load project file");
+        return 1;
     }
+
+    _fileSystem.currentWorkingDirectory(project->targetPath());
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;

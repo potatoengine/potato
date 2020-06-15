@@ -187,8 +187,8 @@ auto up::NativeFileSystem::removeRecursive(zstring_view path) -> IOResult {
 
 auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
     std::error_code ec;
-    if (auto path = std::filesystem::current_path(ec).generic_string(); ec) {
-        return path.c_str();
+    if (auto path = std::filesystem::current_path(ec).generic_string(); !ec) {
+        return {path.data(), path.size()};
     }
     return string();
 }
@@ -196,5 +196,5 @@ auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
 bool up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
     std::error_code ec;
     std::filesystem::current_path(std::filesystem::path(path.c_str()), ec);
-    return (bool)ec;
+    return !ec;
 }

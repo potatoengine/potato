@@ -15,6 +15,7 @@ target_link_libraries(potato_libtools
     PUBLIC
         potato::libruntime
         potato::spud
+        nlohmann_json::nlohmann_json
 )
 
 add_executable(potato_libtools_test)
