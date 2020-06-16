@@ -4,8 +4,10 @@
 
 #include "_export.h"
 
+#include "potato/spud/concepts.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/string.h"
+#include "potato/spud/string_view.h"
 #include "potato/spud/zstring_view.h"
 
 #include <initializer_list>
@@ -53,5 +55,10 @@ namespace up::path {
     // result is not normalized
     // empty components are ignored, e.g. "", bar -> bar
     UP_RUNTIME_API string join(std::initializer_list<string_view> components);
+
+    // joins path components together
+    template <typename... String> string join(String const&... components) requires(convertible_to<String, string_view>&&...) {
+        return join({string_view{components}...});
+    }
 
 } // namespace up::path
