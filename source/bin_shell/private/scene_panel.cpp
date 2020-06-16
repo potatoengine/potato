@@ -22,7 +22,7 @@
 namespace up::shell {
     class ScenePanel : public shell::Panel {
     public:
-        explicit ScenePanel(Renderer& renderer, Scene& scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
+        explicit ScenePanel(Renderer& renderer, rc<Scene> scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
 
@@ -35,7 +35,7 @@ namespace up::shell {
         void _resize(glm::ivec2 size);
 
         Renderer& _renderer;
-        Scene& _scene;
+        rc<Scene> _scene;
         rc<GpuTexture> _buffer;
         box<GpuResourceView> _bufferView;
         box<RenderCamera> _renderCamera;
@@ -44,7 +44,7 @@ namespace up::shell {
         bool _enableGrid = true;
     };
 
-    auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel> { return new_box<ScenePanel>(renderer, scene); }
+    auto createScenePanel(Renderer& renderer, rc<Scene> scene) -> box<Panel> { return new_box<ScenePanel>(renderer, scene); }
 
     void ScenePanel::ui() {
         auto& io = ImGui::GetIO();
@@ -152,7 +152,9 @@ namespace up::shell {
                 _drawGrid();
             }
             _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-            _scene.render(ctx);
+            if (_scene != nullptr) {
+                _scene->render(ctx);
+            }
             _renderer.flushDebugDraw(frameTime);
             _renderer.endFrame(frameTime);
         }

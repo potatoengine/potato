@@ -31,6 +31,7 @@ namespace up {
     class CameraController;
     class Universe;
     class SoundResource;
+    class Project;
 } // namespace up
 
 class up::ShellApp {
@@ -62,6 +63,8 @@ private:
     void _errorDialog(zstring_view message);
 
     bool _loadConfig(zstring_view path);
+    bool _loadProject(zstring_view path);
+    bool _loadScene();
 
     bool _running = true;
     NativeFileSystem _fileSystem;
@@ -71,10 +74,11 @@ private:
     box<Renderer> _renderer;
     box<RenderCamera> _uiRenderCamera;
     box<Universe> _universe;
-    box<Scene> _scene;
+    rc<Scene> _scene;
     box<AudioEngine> _audio;
+    box<Project> _project;
+    string _editorResourcePath;
     rc<SoundResource> _ding;
-    string _resourceDir;
     unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
     unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
     int _lastCursor = -1;

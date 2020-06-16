@@ -22,7 +22,7 @@
 namespace up::shell {
     class GamePanel : public Panel {
     public:
-        explicit GamePanel(Renderer& renderer, Scene& scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
+        explicit GamePanel(Renderer& renderer, rc<Scene> scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
 
@@ -34,7 +34,7 @@ namespace up::shell {
         void _resize(glm::ivec2 size);
 
         Renderer& _renderer;
-        Scene& _scene;
+        rc<Scene> _scene;
         rc<GpuTexture> _buffer;
         box<GpuResourceView> _bufferView;
         box<RenderCamera> _renderCamera;
@@ -43,7 +43,7 @@ namespace up::shell {
         bool _isInputBound = false;
     };
 
-    auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel> { return new_box<GamePanel>(renderer, scene); }
+    auto createGamePanel(Renderer& renderer, rc<Scene> scene) -> box<Panel> { return new_box<GamePanel>(renderer, scene); }
 
     void GamePanel::ui() {
         auto const contentId = ImGui::GetID("GameContentView");
@@ -51,14 +51,14 @@ namespace up::shell {
         auto const& io = ImGui::GetIO();
 
         if (ImGui::IsKeyPressed(SDL_SCANCODE_F5, false)) {
-            _scene.playing(!_scene.playing());
+            _scene->playing(!_scene->playing());
         }
 
         if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE) && io.KeyShift) {
             _isInputBound = false;
         }
 
-        _isInputBound = _isInputBound && _scene.playing() && enabled();
+        _isInputBound = _isInputBound && _scene->playing() && enabled();
 
         if (_isInputBound) {
             ImGui::SetActiveID(contentId, ctx->CurrentWindow);
@@ -110,7 +110,7 @@ namespace up::shell {
                 ImGui::Image(_bufferView.get(), contentSize);
                 ImGui::SetCursorPos(pos);
                 ImGui::InvisibleButton("GameContent", contentSize);
-                if (ImGui::IsItemActive() && _scene.playing()) {
+                if (ImGui::IsItemActive() && _scene != nullptr && _scene->playing()) {
                     _isInputBound = true;
                 }
             }
@@ -131,7 +131,9 @@ namespace up::shell {
 
             _renderCamera->resetBackBuffer(_buffer);
             _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-            _scene.render(ctx);
+            if (_scene != nullptr) {
+                _scene->render(ctx);
+            }
             _renderer.flushDebugDraw(frameTime);
             _renderer.endFrame(frameTime);
         }

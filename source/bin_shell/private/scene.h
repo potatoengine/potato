@@ -23,7 +23,7 @@ namespace up {
     class AudioEngine;
     class SoundResource;
 
-    class Scene {
+    class Scene : public shared<Scene> {
     public:
         explicit Scene(Universe& universe);
         ~Scene();

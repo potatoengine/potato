@@ -48,10 +48,10 @@
 #include <imgui_internal.h>
 
 namespace up::shell {
-    extern auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
-    extern auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
-    extern auto createInspectorPanel(Scene& scene, Selection& selection, delegate<view<ComponentMeta>()> components) -> box<Panel>;
-    extern auto createHierarchyPanel(Scene& scene, Selection& selection) -> box<Panel>;
+    extern auto createScenePanel(Renderer& renderer, rc<Scene> scene) -> box<Panel>;
+    extern auto createGamePanel(Renderer& renderer, rc<Scene> scene) -> box<Panel>;
+    extern auto createInspectorPanel(rc<Scene> scene, Selection& selection, delegate<view<ComponentMeta>()> components) -> box<Panel>;
+    extern auto createHierarchyPanel(rc<Scene> scene, Selection& selection) -> box<Panel>;
 } // namespace up::shell
 
 up::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
@@ -75,14 +75,7 @@ int up::ShellApp::initialize() {
         _loadConfig(configPath);
     }
 
-    string projectPath = path::join({_fileSystem.currentWorkingDirectory(), "..", "..", "..", "..", "resources", "sample.popr"});
-    auto project = Project::loadFromFile(_fileSystem, projectPath);
-    if (project == nullptr) {
-        _errorDialog("Could not load project file");
-        return 1;
-    }
-
-    _fileSystem.currentWorkingDirectory(project->targetPath());
+    _fileSystem.currentWorkingDirectory(_editorResourcePath);
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -130,41 +123,6 @@ int up::ShellApp::initialize() {
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
-    auto material = _loader->loadMaterialSync("resources/materials/full.mat");
-    if (material == nullptr) {
-        _errorDialog("Failed to load basic material");
-        return 1;
-    }
-
-    auto mesh = _loader->loadMeshSync("resources/meshes/cube.model");
-    if (mesh == nullptr) {
-        _errorDialog("Failed to load cube mesh");
-        return 1;
-    }
-
-    _audio = AudioEngine::create(_fileSystem);
-
-    _ding = _audio->loadSound("resources/audio/kenney/highUp.mp3");
-    if (_ding == nullptr) {
-        _errorDialog("Failed to load coin mp3");
-        return 1;
-    }
-
-    _universe = new_box<Universe>();
-
-    _universe->registerComponent<components::Position>("Position");
-    _universe->registerComponent<components::Rotation>("Rotation");
-    _universe->registerComponent<components::Transform>("Transform");
-    _universe->registerComponent<components::Mesh>("Mesh");
-    _universe->registerComponent<components::Wave>("Wave");
-    _universe->registerComponent<components::Spin>("Spin");
-    _universe->registerComponent<components::Ding>("Ding");
-
-    _scene = new_box<Scene>(*_universe);
-    _scene->create(new_shared<Model>(std::move(mesh), std::move(material)), _ding);
-
-    _selection.select(_scene->main());
-
     auto imguiVertShader = _loader->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
     auto imguiPixelShader = _loader->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
     if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
@@ -192,12 +150,63 @@ int up::ShellApp::initialize() {
 
     _drawImgui.createResources(*_device);
 
-    _documents.push_back(shell::createScenePanel(*_renderer, *_scene));
-    _documents.push_back(shell::createGamePanel(*_renderer, *_scene));
-    _documents.push_back(shell::createInspectorPanel(*_scene, _selection, [this] { return _universe->components(); }));
-    _documents.push_back(shell::createHierarchyPanel(*_scene, _selection));
+    _universe = new_box<Universe>();
+
+    _universe->registerComponent<components::Position>("Position");
+    _universe->registerComponent<components::Rotation>("Rotation");
+    _universe->registerComponent<components::Transform>("Transform");
+    _universe->registerComponent<components::Mesh>("Mesh");
+    _universe->registerComponent<components::Wave>("Wave");
+    _universe->registerComponent<components::Spin>("Spin");
+    _universe->registerComponent<components::Ding>("Ding");
+
+    if (!_loadProject(path::join(_editorResourcePath, "..", "resources", "sample.popr"))) {
+        return 1;
+    }
+
+    _documents.push_back(shell::createScenePanel(*_renderer, _scene));
+    _documents.push_back(shell::createGamePanel(*_renderer, _scene));
+    _documents.push_back(shell::createInspectorPanel(_scene, _selection, [this] { return _universe->components(); }));
+    _documents.push_back(shell::createHierarchyPanel(_scene, _selection));
 
     return 0;
+}
+
+bool up::ShellApp::_loadProject(zstring_view path) {
+    _project = Project::loadFromFile(_fileSystem, path);
+    if (_project == nullptr) {
+        _errorDialog("Could not load project file");
+        return false;
+    }
+
+    _fileSystem.currentWorkingDirectory(_project->targetPath());
+
+    auto material = _loader->loadMaterialSync("resources/materials/full.mat");
+    if (material == nullptr) {
+        _errorDialog("Failed to load basic material");
+        return false;
+    }
+
+    auto mesh = _loader->loadMeshSync("resources/meshes/cube.model");
+    if (mesh == nullptr) {
+        _errorDialog("Failed to load cube mesh");
+        return false;
+    }
+
+    _audio = AudioEngine::create(_fileSystem);
+
+    _ding = _audio->loadSound("resources/audio/kenney/highUp.mp3");
+    if (_ding == nullptr) {
+        _errorDialog("Failed to load coin mp3");
+        return false;
+    }
+
+    _scene = new_shared<Scene>(*_universe);
+    _scene->create(new_shared<Model>(std::move(mesh), std::move(material)), _ding);
+
+    _selection.select(_scene->main());
+
+    return true;
 }
 
 void up::ShellApp::run() {
@@ -448,10 +457,10 @@ bool up::ShellApp::_loadConfig(zstring_view path) {
         return false;
     }
 
-    auto jsonResourceDir = jsonRoot["resourceDir"];
+    auto const editorResourcePath = jsonRoot["editorResourcePath"];
 
-    if (jsonResourceDir.is_string()) {
-        _resourceDir = jsonResourceDir.get<string>();
+    if (editorResourcePath.is_string()) {
+        _editorResourcePath = editorResourcePath.get<string>();
     }
 
     return true;
