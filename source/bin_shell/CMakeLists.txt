@@ -8,15 +8,16 @@ add_executable(potato::shell ALIAS potato_shell)
 target_sources(potato_shell PRIVATE
     "private/camera.cpp"
     "private/camera_controller.cpp"
+    "private/document.cpp"
     "private/game_panel.cpp"
     "private/imgui_reflector.cpp"
     "private/inspector_panel.cpp"
     "private/hierarchy_panel.cpp"
     "private/main.cpp"
     "private/scene.cpp"
+    "private/scene_document.cpp"
     "private/scene_panel.cpp"
-    "private/shell_app.cpp"
-)
+    "private/shell_app.cpp" "private/document.cpp")
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 

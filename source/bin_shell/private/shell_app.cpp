@@ -48,16 +48,18 @@
 #include <imgui_internal.h>
 
 namespace up::shell {
+    extern auto createSceneDocument(rc<Scene> scene) -> box<Document>;
+
     extern auto createScenePanel(Renderer& renderer, rc<Scene> scene) -> box<Panel>;
     extern auto createGamePanel(Renderer& renderer, rc<Scene> scene) -> box<Panel>;
     extern auto createInspectorPanel(rc<Scene> scene, Selection& selection, delegate<view<ComponentMeta>()> components) -> box<Panel>;
     extern auto createHierarchyPanel(rc<Scene> scene, Selection& selection) -> box<Panel>;
 } // namespace up::shell
 
-up::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 
-up::ShellApp::~ShellApp() {
-    _documents.clear();
+up::shell::ShellApp::~ShellApp() {
+    _panels.clear();
 
     _drawImgui.releaseResources();
 
@@ -69,7 +71,7 @@ up::ShellApp::~ShellApp() {
     _device.reset();
 }
 
-int up::ShellApp::initialize() {
+int up::shell::ShellApp::initialize() {
     zstring_view configPath = "shell.config.json";
     if (_fileSystem.fileExists(configPath)) {
         _loadConfig(configPath);
@@ -123,6 +125,10 @@ int up::ShellApp::initialize() {
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
+    _documentWindowClass.ClassId = ImHashStr("DocumentClass");
+    _documentWindowClass.DockingAllowUnclassed = false;
+    _documentWindowClass.DockingAlwaysTabBar = true;
+
     auto imguiVertShader = _loader->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
     auto imguiPixelShader = _loader->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
     if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
@@ -164,15 +170,15 @@ int up::ShellApp::initialize() {
         return 1;
     }
 
-    _documents.push_back(shell::createScenePanel(*_renderer, _scene));
-    _documents.push_back(shell::createGamePanel(*_renderer, _scene));
-    _documents.push_back(shell::createInspectorPanel(_scene, _selection, [this] { return _universe->components(); }));
-    _documents.push_back(shell::createHierarchyPanel(_scene, _selection));
+    _panels.push_back(shell::createScenePanel(*_renderer, _scene));
+    _panels.push_back(shell::createGamePanel(*_renderer, _scene));
+    _panels.push_back(shell::createInspectorPanel(_scene, _selection, [this] { return _universe->components(); }));
+    _panels.push_back(shell::createHierarchyPanel(_scene, _selection));
 
     return 0;
 }
 
-bool up::ShellApp::_loadProject(zstring_view path) {
+bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _project = Project::loadFromFile(_fileSystem, path);
     if (_project == nullptr) {
         _errorDialog("Could not load project file");
@@ -204,12 +210,15 @@ bool up::ShellApp::_loadProject(zstring_view path) {
     _scene = new_shared<Scene>(*_universe);
     _scene->create(new_shared<Model>(std::move(mesh), std::move(material)), _ding);
 
+    _documents.clear();
+    _documents.push_back(createSceneDocument(_scene));
+
     _selection.select(_scene->main());
 
     return true;
 }
 
-void up::ShellApp::run() {
+void up::shell::ShellApp::run() {
     auto& imguiIO = ImGui::GetIO();
 
     auto now = std::chrono::high_resolution_clock::now();
@@ -243,11 +252,11 @@ void up::ShellApp::run() {
     }
 }
 
-void up::ShellApp::quit() { _running = false; }
+void up::shell::ShellApp::quit() { _running = false; }
 
-void up::ShellApp::_onWindowClosed() { quit(); }
+void up::shell::ShellApp::_onWindowClosed() { quit(); }
 
-void up::ShellApp::_onWindowSizeChanged() {
+void up::shell::ShellApp::_onWindowSizeChanged() {
     int width = 0;
     int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
@@ -257,7 +266,7 @@ void up::ShellApp::_onWindowSizeChanged() {
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 }
 
-void up::ShellApp::_processEvents() {
+void up::shell::ShellApp::_processEvents() {
     auto& io = ImGui::GetIO();
 
     SDL_SetRelativeMouseMode(ImGui::IsCaptureRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
@@ -311,12 +320,12 @@ void up::ShellApp::_processEvents() {
     }
 }
 
-void up::ShellApp::_tick() {
+void up::shell::ShellApp::_tick() {
     _scene->tick(_lastFrameTime, *_audio);
     _scene->flush();
 }
 
-void up::ShellApp::_render() {
+void up::shell::ShellApp::_render() {
     GpuViewportDesc viewport;
     int width = 0;
     int height = 0;
@@ -335,7 +344,7 @@ void up::ShellApp::_render() {
     _swapChain->present();
 }
 
-void up::ShellApp::_displayUI() {
+void up::shell::ShellApp::_displayUI() {
     auto& imguiIO = ImGui::GetIO();
 
     _displayMainMenu();
@@ -349,7 +358,7 @@ void up::ShellApp::_displayUI() {
     _displayDocuments({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
 }
 
-void up::ShellApp::_displayMainMenu() {
+void up::shell::ShellApp::_displayMainMenu() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu(as_char(u8"\uf094 Potato"))) {
             if (ImGui::MenuItem(as_char(u8"\uf52b Quit"), "ESC")) {
@@ -366,7 +375,7 @@ void up::ShellApp::_displayMainMenu() {
         }
 
         if (ImGui::BeginMenu(as_char(u8"\uf2d2 Windows"))) {
-            for (auto const& doc : _documents) {
+            for (auto const& doc : _panels) {
                 if (ImGui::MenuItem(doc->displayName().c_str(), nullptr, doc->enabled(), true)) {
                     doc->enabled(!doc->enabled());
                 }
@@ -398,52 +407,36 @@ void up::ShellApp::_displayMainMenu() {
     }
 }
 
-void up::ShellApp::_displayDocuments(glm::vec4 rect) {
+void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
+    auto const mainDockId = ImGui::GetID("DocumentsDockspace");
+    auto const windowFlags =
+        ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus;
+
     ImGui::SetNextWindowPos({rect.x, rect.y});
     ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    if (ImGui::Begin("MainWindow",
-            nullptr,
-            ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus)) {
-        auto dockSize = ImGui::GetContentRegionAvail();
-
-        auto const dockId = ImGui::GetID("MainDockspace");
-
-        if (ImGui::DockBuilderGetNode(dockId) == nullptr) {
-            ImGui::DockBuilderRemoveNode(dockId);
-            ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_DockSpace);
-            ImGui::DockBuilderSetNodeSize(dockId, dockSize);
-
-            auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_None);
-
-            auto contentDockId = centralDockId;
-            auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
-            auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
-
-            ImGui::DockBuilderDockWindow("Inspector", inspectedDockId);
-            ImGui::DockBuilderDockWindow("Hierarchy", hierarchyDockId);
-            ImGui::DockBuilderDockWindow("ScenePanel", contentDockId);
-            ImGui::DockBuilderDockWindow("GamePanel", contentDockId);
-
-            ImGui::DockBuilderFinish(dockId);
-        }
-
-        ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_None);
-    }
-    ImGui::End();
+    ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
+    ImGui::DockSpace(mainDockId, {}, ImGuiDockNodeFlags_NoSplit, &_documentWindowClass);
+    ImGui::End();
+
+    for (auto const& doc : _panels) {
+        doc->ui();
+    }
 
     for (auto const& doc : _documents) {
-        doc->ui();
+        ImGui::SetNextWindowDockID(mainDockId, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowClass(&_documentWindowClass);
+        doc->render(*_renderer);
     }
 }
 
-void up::ShellApp::_errorDialog(zstring_view message) {
+void up::shell::ShellApp::_errorDialog(zstring_view message) {
     _logger.error("Fatal error: {}", message);
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", message.c_str(), _window.get());
 }
 
-bool up::ShellApp::_loadConfig(zstring_view path) {
+bool up::shell::ShellApp::_loadConfig(zstring_view path) {
     auto stream = _fileSystem.openRead(path, FileOpenMode::Text);
     if (!stream) {
         _logger.error("Failed to open `{}'", path.c_str());

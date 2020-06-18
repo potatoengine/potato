@@ -3,7 +3,7 @@
 #include "shell_app.h"
 
 int main(int argc, char* argv[]) {
-    up::ShellApp app;
+    up::shell::ShellApp app;
 
     int rs = app.initialize();
     if (rs != 0) {
