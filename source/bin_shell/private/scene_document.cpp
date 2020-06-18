@@ -31,6 +31,7 @@ namespace up::shell {
     protected:
         void renderContent(Renderer& renderer) override;
         void renderMenu() override;
+        void buildDockSpace(ImGuiID dockId, zstring_view docId) override;
 
     private:
         void _renderScene(Renderer& renderer, float frameTime);
@@ -57,63 +58,64 @@ namespace up::shell {
             return;
         }
 
-        if (ImGui::BeginChild("SceneContent", contentSize, false)) {
-            glm::vec3 bufferSize = {0, 0, 0};
-            if (_buffer != nullptr) {
-                bufferSize = _buffer->dimensions();
-            }
-            if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
-                _resize(renderer, {contentSize.x, contentSize.y});
-            }
+        ImGui::BeginChild("SceneContent", contentSize, false);
 
-            glm::vec3 movement = {0, 0, 0};
-            glm::vec3 motion = {0, 0, 0};
-
-            auto callback = [](const ImDrawList* list, const ImDrawCmd* cmd) {
-                // Note: we'd like to do this here, but we'll need our own render data since we're in
-                // the middle of using the Renderer to draw the ImGui data at the time this is called.
-                /*auto& self = *static_cast<SceneDocument*>(cmd->UserCallbackData);
-                auto& io = ImGui::GetIO();
-                self._renderScene(io.DeltaTime);*/
-            };
-
-            ImGui::GetWindowDrawList()->AddCallback(callback, this);
-
-            // Note: would prefer to do this in a render callback instead
-            //
-            _renderScene(renderer, io.DeltaTime);
-
-            auto const pos = ImGui::GetCursorPos();
-            ImGui::Image(_bufferView.get(), contentSize);
-
-            ImRect area{pos, pos + contentSize};
-
-            auto const id = ImGui::GetID("SceneControl");
-            ImGui::ItemAdd(area, id);
-            ImGui::ButtonBehavior(area,
-                id,
-                nullptr,
-                nullptr,
-                ImGuiButtonFlags_PressedOnClick | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle);
-            if (ImGui::IsItemActive()) {
-                ImGui::CaptureMouseFromApp();
-
-                if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
-                    motion.x = io.MouseDelta.x / contentSize.x * 2;
-                    motion.y = io.MouseDelta.y / contentSize.y * 2;
-                }
-                else if (ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
-                    movement.x = io.MouseDelta.x;
-                    movement.y = io.MouseDelta.y;
-                }
-            }
-
-            if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered()) {
-                motion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
-            }
-
-            _cameraController.apply(_camera, movement, motion, io.DeltaTime);
+        glm::vec3 bufferSize = {0, 0, 0};
+        if (_buffer != nullptr) {
+            bufferSize = _buffer->dimensions();
         }
+        if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
+            _resize(renderer, {contentSize.x, contentSize.y});
+        }
+
+        glm::vec3 movement = {0, 0, 0};
+        glm::vec3 motion = {0, 0, 0};
+
+        auto callback = [](const ImDrawList* list, const ImDrawCmd* cmd) {
+            // Note: we'd like to do this here, but we'll need our own render data since we're in
+            // the middle of using the Renderer to draw the ImGui data at the time this is called.
+            /*auto& self = *static_cast<SceneDocument*>(cmd->UserCallbackData);
+            auto& io = ImGui::GetIO();
+            self._renderScene(io.DeltaTime);*/
+        };
+
+        ImGui::GetWindowDrawList()->AddCallback(callback, this);
+
+        // Note: would prefer to do this in a render callback instead
+        //
+        _renderScene(renderer, io.DeltaTime);
+
+        auto const pos = ImGui::GetCursorPos();
+        ImGui::Image(_bufferView.get(), contentSize);
+
+        ImRect area{pos, pos + contentSize};
+
+        auto const id = ImGui::GetID("SceneControl");
+        ImGui::ItemAdd(area, id);
+        ImGui::ButtonBehavior(area,
+            id,
+            nullptr,
+            nullptr,
+            ImGuiButtonFlags_PressedOnClick | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle);
+        if (ImGui::IsItemActive()) {
+            ImGui::CaptureMouseFromApp();
+
+            if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
+                motion.x = io.MouseDelta.x / contentSize.x * 2;
+                motion.y = io.MouseDelta.y / contentSize.y * 2;
+            }
+            else if (ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
+                movement.x = io.MouseDelta.x;
+                movement.y = io.MouseDelta.y;
+            }
+        }
+
+        if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered()) {
+            motion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
+        }
+
+        _cameraController.apply(_camera, movement, motion, io.DeltaTime);
+
         ImGui::EndChild();
     }
 
@@ -131,6 +133,18 @@ namespace up::shell {
             }
             ImGui::EndMainMenuBar();
         }
+    }
+
+    void SceneDocument::buildDockSpace(ImGuiID dockId, zstring_view docId) {
+        auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_None);
+
+        auto contentDockId = centralDockId;
+        auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
+        auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
+
+        ImGui::DockBuilderDockWindow("Inspector", inspectedDockId);
+        ImGui::DockBuilderDockWindow("Hierarchy", hierarchyDockId);
+        ImGui::DockBuilderDockWindow(docId.c_str(), contentDockId);
     }
 
     void SceneDocument::_renderScene(Renderer& renderer, float frameTime) {

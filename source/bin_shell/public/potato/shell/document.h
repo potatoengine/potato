@@ -1,5 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#include "potato/spud/string.h"
 #include "potato/spud/zstring_view.h"
 
 #include <imgui.h>
@@ -28,10 +29,11 @@ namespace up::shell {
 
         /// @brief Renders the ui for the Document.
         virtual void renderContent(Renderer& renderer) = 0;
-
-        virtual void renderMenu() = 0;
+        virtual void renderMenu() {}
+        virtual void buildDockSpace(ImGuiID dockId, zstring_view docId) {}
 
     private:
         ImGuiWindowClass _windowClass;
+        string _documentId;
     };
 } // namespace up::shell

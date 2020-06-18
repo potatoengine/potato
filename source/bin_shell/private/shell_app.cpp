@@ -49,9 +49,8 @@
 
 namespace up::shell {
     extern auto createSceneDocument(rc<Scene> scene) -> box<Document>;
+    extern auto createGameDocument(rc<Scene> scene) -> box<Document>;
 
-    extern auto createScenePanel(Renderer& renderer, rc<Scene> scene) -> box<Panel>;
-    extern auto createGamePanel(Renderer& renderer, rc<Scene> scene) -> box<Panel>;
     extern auto createInspectorPanel(rc<Scene> scene, Selection& selection, delegate<view<ComponentMeta>()> components) -> box<Panel>;
     extern auto createHierarchyPanel(rc<Scene> scene, Selection& selection) -> box<Panel>;
 } // namespace up::shell
@@ -170,8 +169,6 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _panels.push_back(shell::createScenePanel(*_renderer, _scene));
-    _panels.push_back(shell::createGamePanel(*_renderer, _scene));
     _panels.push_back(shell::createInspectorPanel(_scene, _selection, [this] { return _universe->components(); }));
     _panels.push_back(shell::createHierarchyPanel(_scene, _selection));
 
@@ -211,6 +208,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _scene->create(new_shared<Model>(std::move(mesh), std::move(material)), _ding);
 
     _documents.clear();
+    _documents.push_back(createGameDocument(_scene));
     _documents.push_back(createSceneDocument(_scene));
 
     _selection.select(_scene->main());
@@ -417,17 +415,17 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
-    ImGui::DockSpace(mainDockId, {}, ImGuiDockNodeFlags_NoSplit, &_documentWindowClass);
+    ImGui::DockSpace(mainDockId, {}, ImGuiDockNodeFlags_None, &_documentWindowClass);
     ImGui::End();
-
-    for (auto const& doc : _panels) {
-        doc->ui();
-    }
 
     for (auto const& doc : _documents) {
         ImGui::SetNextWindowDockID(mainDockId, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowClass(&_documentWindowClass);
         doc->render(*_renderer);
+    }
+
+    for (auto const& doc : _panels) {
+        doc->ui();
     }
 }
 

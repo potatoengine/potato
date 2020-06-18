@@ -2,7 +2,7 @@
 
 #include "camera.h"
 #include "camera_controller.h"
-#include "panel.h"
+#include "document.h"
 #include "scene.h"
 
 #include "potato/render/camera.h"
@@ -20,20 +20,21 @@
 #include <imgui_internal.h>
 
 namespace up::shell {
-    class GamePanel : public Panel {
+    class GameDocument : public Document {
     public:
-        explicit GamePanel(Renderer& renderer, rc<Scene> scene) : _renderer(renderer), _scene(scene), _cameraController(_camera) {
+        explicit GameDocument(rc<Scene> scene) : Document("GameDocument"_zsv), _scene(scene), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
 
         zstring_view displayName() const override { return "Game"; }
-        void ui() override;
+
+    protected:
+        virtual void renderContent(Renderer& renderer) override;
 
     private:
-        void _renderScene(float frameTime);
-        void _resize(glm::ivec2 size);
+        void _renderScene(Renderer& renderer, float frameTime);
+        void _resize(Renderer& renderer, glm::ivec2 size);
 
-        Renderer& _renderer;
         rc<Scene> _scene;
         rc<GpuTexture> _buffer;
         box<GpuResourceView> _bufferView;
@@ -43,9 +44,9 @@ namespace up::shell {
         bool _isInputBound = false;
     };
 
-    auto createGamePanel(Renderer& renderer, rc<Scene> scene) -> box<Panel> { return new_box<GamePanel>(renderer, scene); }
+    auto createGameDocument(rc<Scene> scene) -> box<Document> { return new_box<GameDocument>(scene); }
 
-    void GamePanel::ui() {
+    void GameDocument::renderContent(Renderer& renderer) {
         auto const contentId = ImGui::GetID("GameContentView");
         auto const* const ctx = ImGui::GetCurrentContext();
         auto const& io = ImGui::GetIO();
@@ -58,7 +59,7 @@ namespace up::shell {
             _isInputBound = false;
         }
 
-        _isInputBound = _isInputBound && _scene->playing() && enabled();
+        _isInputBound = _isInputBound && _scene->playing();
 
         if (_isInputBound) {
             ImGui::SetActiveID(contentId, ctx->CurrentWindow);
@@ -83,71 +84,62 @@ namespace up::shell {
             }
         }
 
-        if (!enabled()) {
+        auto const contentSize = ImGui::GetContentRegionAvail();
+
+        if (contentSize.x <= 0 || contentSize.y <= 0) {
             return;
         }
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-        if (ImGui::Begin("GamePanel", nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse)) {
-            auto const contentSize = ImGui::GetContentRegionAvail();
-
-            if (contentSize.x <= 0 || contentSize.y <= 0) {
-                return;
+        if (ImGui::BeginChild("GameContent", contentSize, false)) {
+            glm::vec3 bufferSize = {0, 0, 0};
+            if (_buffer != nullptr) {
+                bufferSize = _buffer->dimensions();
+            }
+            if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
+                _resize(renderer, {contentSize.x, contentSize.y});
             }
 
-            if (ImGui::BeginChild("GameContent", contentSize, false)) {
-                glm::vec3 bufferSize = {0, 0, 0};
-                if (_buffer != nullptr) {
-                    bufferSize = _buffer->dimensions();
-                }
-                if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
-                    _resize({contentSize.x, contentSize.y});
-                }
+            _renderScene(renderer, io.DeltaTime);
 
-                _renderScene(io.DeltaTime);
-
-                auto const pos = ImGui::GetCursorPos();
-                ImGui::Image(_bufferView.get(), contentSize);
-                ImGui::SetCursorPos(pos);
-                ImGui::InvisibleButton("GameContent", contentSize);
-                if (ImGui::IsItemActive() && _scene != nullptr && _scene->playing()) {
-                    _isInputBound = true;
-                }
+            auto const pos = ImGui::GetCursorPos();
+            ImGui::Image(_bufferView.get(), contentSize);
+            ImGui::SetCursorPos(pos);
+            ImGui::InvisibleButton("GameContent", contentSize);
+            if (ImGui::IsItemActive() && _scene != nullptr && _scene->playing()) {
+                _isInputBound = true;
             }
-            ImGui::EndChild();
         }
-        ImGui::End();
-        ImGui::PopStyleVar(1);
+        ImGui::EndChild();
     }
 
-    void GamePanel::_renderScene(float frameTime) {
+    void GameDocument::_renderScene(Renderer& renderer, float frameTime) {
         if (_renderCamera == nullptr) {
             _renderCamera = new_box<RenderCamera>();
         }
 
         if (_buffer != nullptr) {
-            _renderer.beginFrame();
-            auto ctx = _renderer.context();
+            renderer.beginFrame();
+            auto ctx = renderer.context();
 
             _renderCamera->resetBackBuffer(_buffer);
             _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
             if (_scene != nullptr) {
                 _scene->render(ctx);
             }
-            _renderer.flushDebugDraw(frameTime);
-            _renderer.endFrame(frameTime);
+            renderer.flushDebugDraw(frameTime);
+            renderer.endFrame(frameTime);
         }
     }
 
-    void GamePanel::_resize(glm::ivec2 size) {
+    void GameDocument::_resize(Renderer& renderer, glm::ivec2 size) {
         using namespace up;
         GpuTextureDesc desc;
         desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
         desc.type = GpuTextureType::Texture2D;
         desc.width = size.x;
         desc.height = size.y;
-        _buffer = _renderer.device().createTexture2D(desc, {});
+        _buffer = renderer.device().createTexture2D(desc, {});
 
-        _bufferView = _renderer.device().createShaderResourceView(_buffer.get());
+        _bufferView = renderer.device().createShaderResourceView(_buffer.get());
     }
 } // namespace up::shell
