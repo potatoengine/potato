@@ -3,7 +3,9 @@
 #include "camera.h"
 #include "camera_controller.h"
 #include "document.h"
+#include "imgui_reflector.h"
 #include "scene.h"
+#include "selection.h"
 
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
@@ -13,17 +15,23 @@
 #include "potato/render/gpu_resource_view.h"
 #include "potato/render/gpu_texture.h"
 #include "potato/render/renderer.h"
+#include "potato/spud/delegate.h"
+#include "potato/spud/fixed_string_writer.h"
 
 #include <glm/glm.hpp>
-#include <SDL.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
 namespace up::shell {
     class SceneDocument : public Document {
     public:
-        explicit SceneDocument(rc<Scene> scene) : Document("SceneDocument"_zsv), _scene(scene), _cameraController(_camera) {
+        explicit SceneDocument(rc<Scene> scene, delegate<view<ComponentMeta>()> components)
+            : Document("SceneDocument"_zsv)
+            , _scene(scene)
+            , _cameraController(_camera)
+            , _components(std::move(components)) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
+            _selection.select(_scene->root());
         }
 
         zstring_view displayName() const override { return "Scene"; }
@@ -37,6 +45,8 @@ namespace up::shell {
         void _renderScene(Renderer& renderer, float frameTime);
         void _drawGrid();
         void _resize(Renderer& renderer, glm::ivec2 size);
+        void _renderInspector();
+        void _renderHierarchy();
 
         rc<Scene> _scene;
         rc<GpuTexture> _buffer;
@@ -44,10 +54,14 @@ namespace up::shell {
         box<RenderCamera> _renderCamera;
         Camera _camera;
         ArcBallCameraController _cameraController;
+        Selection _selection;
+        delegate<view<ComponentMeta>()> _components;
         bool _enableGrid = true;
     };
 
-    auto createSceneDocument(rc<Scene> scene) -> box<Document> { return new_box<SceneDocument>(scene); }
+    auto createSceneDocument(rc<Scene> scene, delegate<view<ComponentMeta>()> components) -> box<Document> {
+        return new_box<SceneDocument>(std::move(scene), std::move(components));
+    }
 
     void SceneDocument::renderContent(Renderer& renderer) {
         auto& io = ImGui::GetIO();
@@ -117,6 +131,9 @@ namespace up::shell {
         _cameraController.apply(_camera, movement, motion, io.DeltaTime);
 
         ImGui::EndChild();
+
+        _renderInspector();
+        _renderHierarchy();
     }
 
     void SceneDocument::renderMenu() {
@@ -142,8 +159,8 @@ namespace up::shell {
         auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
         auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
 
-        ImGui::DockBuilderDockWindow("Inspector", inspectedDockId);
-        ImGui::DockBuilderDockWindow("Hierarchy", hierarchyDockId);
+        ImGui::DockBuilderDockWindow("Inspector##SceneInspector", inspectedDockId);
+        ImGui::DockBuilderDockWindow("Hierarchy##SceneDocument", hierarchyDockId);
         ImGui::DockBuilderDockWindow(docId.c_str(), contentDockId);
     }
 
@@ -203,5 +220,82 @@ namespace up::shell {
         _buffer = renderer.device().createTexture2D(desc, {});
 
         _bufferView = renderer.device().createShaderResourceView(_buffer.get());
+    }
+
+    void SceneDocument::_renderInspector() {
+        ImGui::SetNextWindowClass(&documentClass());
+        ImGui::Begin("Inspector##SceneInspector", nullptr, ImGuiWindowFlags_NoCollapse);
+        ComponentId deletedComponent = ComponentId::Unknown;
+
+        if (_scene != nullptr) {
+            _scene->world().interrogateEntityUnsafe(_selection.selected(),
+                [&](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
+                    if (ImGui::TreeNodeEx(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+                        if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+                            ImGui::OpenPopup("##component_context_menu");
+                        }
+
+                        if (ImGui::BeginPopupContextItem("##component_context_menu")) {
+                            if (ImGui::MenuItem(as_char(u8"\uf1f8 Remove"))) {
+                                deletedComponent = meta->id;
+                            }
+                            ImGui::EndPopup();
+                        }
+
+                        ImGuiComponentReflector ref;
+                        meta->ops.serialize(data, ref);
+                        ImGui::TreePop();
+                    }
+                });
+
+            if (deletedComponent != ComponentId::Unknown) {
+                _scene->world().removeComponent(_selection.selected(), deletedComponent);
+            }
+
+            if (_selection.hasSelection()) {
+                if (ImGui::Button(as_char(u8"\uf067 Add Component"))) {
+                    ImGui::OpenPopup("##add_component_list");
+                }
+                if (ImGui::BeginPopup("##add_component_list")) {
+                    for (auto const& meta : _components()) {
+                        if (_scene->world().getComponentSlowUnsafe(_selection.selected(), meta.id) == nullptr) {
+                            if (ImGui::MenuItem(meta.name.c_str())) {
+                                _scene->world().addComponentDefault(_selection.selected(), meta);
+                            }
+                        }
+                    }
+                    ImGui::EndPopup();
+                }
+            }
+        }
+
+        ImGui::End();
+    }
+
+    void SceneDocument::_renderHierarchy() {
+        ImGui::SetNextWindowClass(&documentClass());
+        ImGui::Begin("Hierarchy##SceneDocument", nullptr, ImGuiWindowFlags_NoCollapse);
+        constexpr int label_length = 64;
+
+        fixed_string_writer<label_length> label;
+
+        if (_scene != nullptr) {
+            for (auto const& chunk : _scene->world().chunks()) {
+                for (EntityId entityId : chunk->entities()) {
+                    label.clear();
+                    format_append(label, "Entity (#{})", entityId);
+
+                    bool selected = entityId == _selection.selected();
+                    if (ImGui::Selectable(label.c_str(), selected)) {
+                        _selection.select(entityId);
+                    }
+                    if (selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+            }
+        }
+
+        ImGui::End();
     }
 } // namespace up::shell

@@ -43,12 +43,12 @@ namespace up {
         bool playing(bool active) { return _playing = active; }
 
         World& world() noexcept { return _world; }
-        EntityId main() const noexcept { return _main; }
+        EntityId root() const noexcept { return _root; }
 
     private:
         rc<Model> _cube;
         World _world;
-        EntityId _main = EntityId::None;
+        EntityId _root = EntityId::None;
         bool _playing = false;
 
         Query<components::Position, components::Wave> _waveQuery;

@@ -48,18 +48,13 @@
 #include <imgui_internal.h>
 
 namespace up::shell {
-    extern auto createSceneDocument(rc<Scene> scene) -> box<Document>;
+    extern auto createSceneDocument(rc<Scene> scene, delegate<view<ComponentMeta>()>) -> box<Document>;
     extern auto createGameDocument(rc<Scene> scene) -> box<Document>;
-
-    extern auto createInspectorPanel(rc<Scene> scene, Selection& selection, delegate<view<ComponentMeta>()> components) -> box<Panel>;
-    extern auto createHierarchyPanel(rc<Scene> scene, Selection& selection) -> box<Panel>;
 } // namespace up::shell
 
 up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 
 up::shell::ShellApp::~ShellApp() {
-    _panels.clear();
-
     _drawImgui.releaseResources();
 
     _renderer.reset();
@@ -169,9 +164,6 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _panels.push_back(shell::createInspectorPanel(_scene, _selection, [this] { return _universe->components(); }));
-    _panels.push_back(shell::createHierarchyPanel(_scene, _selection));
-
     return 0;
 }
 
@@ -209,9 +201,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
 
     _documents.clear();
     _documents.push_back(createGameDocument(_scene));
-    _documents.push_back(createSceneDocument(_scene));
-
-    _selection.select(_scene->main());
+    _documents.push_back(createSceneDocument(_scene, [this] { return _universe->components(); }));
 
     return true;
 }
@@ -372,15 +362,6 @@ void up::shell::ShellApp::_displayMainMenu() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu(as_char(u8"\uf2d2 Windows"))) {
-            for (auto const& doc : _panels) {
-                if (ImGui::MenuItem(doc->displayName().c_str(), nullptr, doc->enabled(), true)) {
-                    doc->enabled(!doc->enabled());
-                }
-            }
-            ImGui::EndMenu();
-        }
-
         {
             auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
             auto const xPos = ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
@@ -422,10 +403,6 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
         ImGui::SetNextWindowDockID(mainDockId, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowClass(&_documentWindowClass);
         doc->render(*_renderer);
-    }
-
-    for (auto const& doc : _panels) {
-        doc->ui();
     }
 }
 

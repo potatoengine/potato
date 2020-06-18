@@ -2,8 +2,6 @@
 
 #include "camera.h"
 #include "document.h"
-#include "panel.h"
-#include "selection.h"
 
 #include "potato/audio/audio_engine.h"
 #include "potato/audio/sound_resource.h"
@@ -86,8 +84,6 @@ namespace up::shell {
         int _lastCursor = -1;
         DrawImgui _drawImgui;
         Logger _logger;
-        Selection _selection;
-        vector<box<Panel>> _panels;
         vector<box<Document>> _documents;
         float _lastFrameTime = 0.f;
         std::chrono::nanoseconds _lastFrameDuration = {};

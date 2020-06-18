@@ -44,7 +44,7 @@ void up::Scene::create(rc<Model> const& cube, rc<SoundResource> const& ding) {
             components::Spin{glm::sin(r) * 2.f - 1.f});
     }
 
-    _main = _world.createEntity(components::Position{{0, 5, 0}},
+    _root = _world.createEntity(components::Position{{0, 5, 0}},
         components::Rotation{glm::identity<glm::quat>()},
         components::Transform(),
         components::Mesh{cube},

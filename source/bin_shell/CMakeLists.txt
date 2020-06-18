@@ -11,8 +11,8 @@ target_sources(potato_shell PRIVATE
     "private/document.cpp"
     "private/game_document.cpp"
     "private/imgui_reflector.cpp"
-    "private/inspector_panel.cpp"
-    "private/hierarchy_panel.cpp"
+    
+    
     "private/main.cpp"
     "private/scene.cpp"
     "private/scene_document.cpp"

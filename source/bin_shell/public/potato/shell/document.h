@@ -27,6 +27,8 @@ namespace up::shell {
     protected:
         explicit Document(zstring_view className);
 
+        ImGuiWindowClass const& documentClass() const noexcept { return _windowClass; }
+
         /// @brief Renders the ui for the Document.
         virtual void renderContent(Renderer& renderer) = 0;
         virtual void renderMenu() {}

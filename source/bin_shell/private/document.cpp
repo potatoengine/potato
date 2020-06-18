@@ -10,7 +10,7 @@
 
 up::shell::Document::Document(zstring_view className) {
     _windowClass.ClassId = narrow_cast<ImU32>(reinterpret_cast<uintptr_t>(this));
-    _windowClass.DockingAllowUnclassed = true;
+    _windowClass.DockingAllowUnclassed = false;
     _windowClass.DockingAlwaysTabBar = false;
 }
 
@@ -35,7 +35,7 @@ void up::shell::Document::render(Renderer& renderer) {
         ImGui::DockBuilderFinish(dockId);
     }
 
-    ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_AutoHideTabBar, &_windowClass);
+    ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_None, &_windowClass);
 
     if (open) {
         ImGui::SetNextWindowDockID(dockId, ImGuiCond_FirstUseEver);
