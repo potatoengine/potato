@@ -24,6 +24,8 @@ namespace up::shell {
         /// @brief Renders the ui for the Document.
         void render(Renderer& renderer);
 
+        bool isClosing() const noexcept { return !_wantOpen; }
+
     protected:
         explicit Document(zstring_view className);
 
@@ -32,10 +34,13 @@ namespace up::shell {
         /// @brief Renders the ui for the Document.
         virtual void renderContent(Renderer& renderer) = 0;
         virtual void renderMenu() {}
+        virtual void renderPanels() {}
         virtual void buildDockSpace(ImGuiID dockId, zstring_view docId) {}
 
     private:
         ImGuiWindowClass _windowClass;
         string _documentId;
+        bool _dirty = false;
+        bool _wantOpen = true;
     };
 } // namespace up::shell

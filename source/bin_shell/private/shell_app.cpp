@@ -233,6 +233,15 @@ void up::shell::ShellApp::run() {
 
         _render();
 
+        for (auto it = _documents.begin(); it != _documents.end();) {
+            if (it->get()->isClosing()) {
+                it = _documents.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+
         auto endFrame = std::chrono::high_resolution_clock::now();
         _lastFrameDuration = endFrame - now;
         _lastFrameTime = static_cast<float>(_lastFrameDuration.count() * nano_to_seconds);
@@ -396,7 +405,7 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
-    ImGui::DockSpace(mainDockId, {}, ImGuiDockNodeFlags_None, &_documentWindowClass);
+    ImGui::DockSpace(mainDockId, {}, ImGuiDockNodeFlags_NoWindowMenuButton, &_documentWindowClass);
     ImGui::End();
 
     for (auto const& doc : _documents) {

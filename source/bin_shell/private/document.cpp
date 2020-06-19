@@ -17,7 +17,7 @@ up::shell::Document::Document(zstring_view className) {
 void up::shell::Document::render(Renderer& renderer) {
     ImGui::PushID(this);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    auto const open = ImGui::Begin(displayName().c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
+    auto const open = ImGui::Begin(displayName().c_str(), &_wantOpen, ImGuiWindowFlags_NoCollapse);
     ImGui::PopStyleVar(1);
 
     auto const dockId = ImGui::GetID("ContentDockspace");
@@ -52,6 +52,7 @@ void up::shell::Document::render(Renderer& renderer) {
     }
 
     renderMenu();
+    renderPanels();
 
     ImGui::End();
     ImGui::PopID();

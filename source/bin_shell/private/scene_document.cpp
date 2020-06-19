@@ -39,6 +39,7 @@ namespace up::shell {
     protected:
         void renderContent(Renderer& renderer) override;
         void renderMenu() override;
+        void renderPanels() override;
         void buildDockSpace(ImGuiID dockId, zstring_view docId) override;
 
     private:
@@ -99,7 +100,7 @@ namespace up::shell {
         //
         _renderScene(renderer, io.DeltaTime);
 
-        auto const pos = ImGui::GetCursorPos();
+        auto const pos = ImGui::GetCursorScreenPos();
         ImGui::Image(_bufferView.get(), contentSize);
 
         ImRect area{pos, pos + contentSize};
@@ -131,9 +132,6 @@ namespace up::shell {
         _cameraController.apply(_camera, movement, motion, io.DeltaTime);
 
         ImGui::EndChild();
-
-        _renderInspector();
-        _renderHierarchy();
     }
 
     void SceneDocument::renderMenu() {
@@ -153,7 +151,7 @@ namespace up::shell {
     }
 
     void SceneDocument::buildDockSpace(ImGuiID dockId, zstring_view docId) {
-        auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_None);
+        auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_NoWindowMenuButton | ImGuiDockNodeFlags_HiddenTabBar);
 
         auto contentDockId = centralDockId;
         auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
@@ -220,6 +218,11 @@ namespace up::shell {
         _buffer = renderer.device().createTexture2D(desc, {});
 
         _bufferView = renderer.device().createShaderResourceView(_buffer.get());
+    }
+
+    void SceneDocument::renderPanels() {
+        _renderInspector();
+        _renderHierarchy();
     }
 
     void SceneDocument::_renderInspector() {

@@ -101,7 +101,7 @@ namespace up::shell {
 
             _renderScene(renderer, io.DeltaTime);
 
-            auto const pos = ImGui::GetCursorPos();
+            auto const pos = ImGui::GetCursorScreenPos();
             ImGui::Image(_bufferView.get(), contentSize);
             ImGui::SetCursorPos(pos);
             ImGui::InvisibleButton("GameContent", contentSize);
