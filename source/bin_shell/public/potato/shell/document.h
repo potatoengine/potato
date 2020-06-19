@@ -25,6 +25,7 @@ namespace up::shell {
         void render(Renderer& renderer);
 
         bool isClosing() const noexcept { return !_wantOpen; }
+        void close() noexcept { _wantOpen = false; }
 
     protected:
         explicit Document(zstring_view className);
@@ -39,6 +40,7 @@ namespace up::shell {
 
     private:
         ImGuiWindowClass _windowClass;
+        string _title;
         string _documentId;
         bool _dirty = false;
         bool _wantOpen = true;

@@ -89,6 +89,8 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
+    _audio = AudioEngine::create(_fileSystem);
+
 #if defined(UP_GPU_ENABLE_D3D11)
     if (_device == nullptr) {
         auto factory = CreateFactoryD3D11();
@@ -160,10 +162,6 @@ int up::shell::ShellApp::initialize() {
     _universe->registerComponent<components::Spin>("Spin");
     _universe->registerComponent<components::Ding>("Ding");
 
-    if (!_loadProject(path::join(_editorResourcePath, "..", "resources", "sample.popr"))) {
-        return 1;
-    }
-
     return 0;
 }
 
@@ -187,8 +185,6 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
         _errorDialog("Failed to load cube mesh");
         return false;
     }
-
-    _audio = AudioEngine::create(_fileSystem);
 
     _ding = _audio->loadSound("resources/audio/kenney/highUp.mp3");
     if (_ding == nullptr) {
@@ -220,6 +216,13 @@ void up::shell::ShellApp::run() {
     while (isRunning()) {
         _processEvents();
 
+        if (_openProject && !_closeProject) {
+            _openProject = false;
+            if (!_loadProject(path::join(_editorResourcePath, "..", "resources", "sample.popr"))) {
+                return;
+            }
+        }
+
         SDL_GetWindowSize(_window.get(), &width, &height);
         imguiIO.DisplaySize.x = static_cast<float>(width);
         imguiIO.DisplaySize.y = static_cast<float>(height);
@@ -232,6 +235,13 @@ void up::shell::ShellApp::run() {
         _drawImgui.endFrame();
 
         _render();
+
+        if (_closeProject) {
+            _closeProject = false;
+            _documents.clear();
+            _project = nullptr;
+            _scene = nullptr;
+        }
 
         for (auto it = _documents.begin(); it != _documents.end();) {
             if (it->get()->isClosing()) {
@@ -318,8 +328,10 @@ void up::shell::ShellApp::_processEvents() {
 }
 
 void up::shell::ShellApp::_tick() {
-    _scene->tick(_lastFrameTime, *_audio);
-    _scene->flush();
+    if (_scene != nullptr) {
+        _scene->tick(_lastFrameTime, *_audio);
+        _scene->flush();
+    }
 }
 
 void up::shell::ShellApp::_render() {
@@ -358,6 +370,22 @@ void up::shell::ShellApp::_displayUI() {
 void up::shell::ShellApp::_displayMainMenu() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu(as_char(u8"\uf094 Potato"))) {
+            if (ImGui::BeginMenu("New")) {
+                if (ImGui::MenuItem("Game")) {
+                    _documents.push_back(createGameDocument(_scene));
+                }
+                if (ImGui::MenuItem("Scene")) {
+                    _documents.push_back(createSceneDocument(_scene, [this] { return _universe->components(); }));
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::MenuItem("Open Project...")) {
+                _openProject = true;
+                _closeProject = true;
+            }
+            if (ImGui::MenuItem("Close Project", nullptr, false, _project != nullptr)) {
+                _closeProject = true;
+            }
             if (ImGui::MenuItem(as_char(u8"\uf52b Quit"), "ESC")) {
                 _running = false;
             }
@@ -371,7 +399,7 @@ void up::shell::ShellApp::_displayMainMenu() {
             ImGui::EndMenu();
         }
 
-        {
+        if (_scene != nullptr) {
             auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
             auto const xPos = ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
             ImGui::SetCursorPosX(xPos);

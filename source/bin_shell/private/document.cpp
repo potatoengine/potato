@@ -15,17 +15,23 @@ up::shell::Document::Document(zstring_view className) {
 }
 
 void up::shell::Document::render(Renderer& renderer) {
+    if (_title.empty()) {
+        string_writer tmp;
+        format_append(tmp, "{}##{}", displayName(), this);
+        _title = std::move(tmp).to_string();
+    }
+
     ImGui::PushID(this);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    auto const open = ImGui::Begin(displayName().c_str(), &_wantOpen, ImGuiWindowFlags_NoCollapse);
+    auto const open = ImGui::Begin(_title.c_str(), &_wantOpen, ImGuiWindowFlags_NoCollapse);
     ImGui::PopStyleVar(1);
 
     auto const dockId = ImGui::GetID("ContentDockspace");
 
     if (_documentId.empty()) {
         string_writer tmp;
-        format_append(tmp, "Document##{}", displayName());
-        _documentId = tmp.to_string();
+        format_append(tmp, "Document##{}", this);
+        _documentId = std::move(tmp).to_string();
     }
 
     if (ImGui::DockBuilderGetNode(dockId) == nullptr) {

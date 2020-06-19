@@ -63,10 +63,12 @@ namespace up::shell {
         void _errorDialog(zstring_view message);
 
         bool _loadConfig(zstring_view path);
+
         bool _loadProject(zstring_view path);
-        bool _loadScene();
 
         bool _running = true;
+        bool _openProject = false;
+        bool _closeProject = false;
         NativeFileSystem _fileSystem;
         rc<GpuDevice> _device;
         rc<GpuSwapChain> _swapChain;
