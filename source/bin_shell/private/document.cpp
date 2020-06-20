@@ -26,25 +26,24 @@ void up::shell::Document::render(Renderer& renderer) {
     auto const open = ImGui::Begin(_title.c_str(), &_wantOpen, ImGuiWindowFlags_NoCollapse);
     ImGui::PopStyleVar(1);
 
-    auto const dockId = ImGui::GetID("ContentDockspace");
-
     if (_documentId.empty()) {
         string_writer tmp;
         format_append(tmp, "Document##{}", this);
         _documentId = std::move(tmp).to_string();
     }
 
-    if (ImGui::DockBuilderGetNode(dockId) == nullptr) {
-        ImGui::DockBuilderRemoveNode(dockId);
-        ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_DockSpace);
-        buildDockSpace(dockId, _documentId);
-        ImGui::DockBuilderFinish(dockId);
+    auto const dockSpaceId = ImGui::GetID("DockSpace");
+    if (ImGui::DockBuilderGetNode(dockSpaceId) == nullptr) {
+        ImGui::DockBuilderRemoveNode(dockSpaceId);
+        ImGui::DockBuilderAddNode(dockSpaceId, ImGuiDockNodeFlags_DockSpace);
+        auto const contentNodeId = buildDockSpace(dockSpaceId);
+        ImGui::DockBuilderDockWindow(_documentId.c_str(), contentNodeId);
+        ImGui::DockBuilderFinish(dockSpaceId);
     }
 
-    ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_None, &_windowClass);
+    ImGui::DockSpace(dockSpaceId, {}, ImGuiDockNodeFlags_NoWindowMenuButton, &_windowClass);
 
     if (open) {
-        ImGui::SetNextWindowDockID(dockId, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowClass(&_windowClass);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
         auto const contentOpen = ImGui::Begin(_documentId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
@@ -62,4 +61,8 @@ void up::shell::Document::render(Renderer& renderer) {
 
     ImGui::End();
     ImGui::PopID();
+}
+
+auto up::shell::Document::buildDockSpace(ImGuiID dockSpaceId) -> ImGuiID {
+    return ImGui::DockBuilderAddNode(dockSpaceId, ImGuiDockNodeFlags_HiddenTabBar);
 }

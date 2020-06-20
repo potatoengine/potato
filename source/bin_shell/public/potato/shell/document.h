@@ -36,7 +36,7 @@ namespace up::shell {
         virtual void renderContent(Renderer& renderer) = 0;
         virtual void renderMenu() {}
         virtual void renderPanels() {}
-        virtual void buildDockSpace(ImGuiID dockId, zstring_view docId) {}
+        virtual auto buildDockSpace(ImGuiID dockSpaceId) -> ImGuiID;
 
     private:
         ImGuiWindowClass _windowClass;

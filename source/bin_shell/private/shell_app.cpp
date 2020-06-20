@@ -371,10 +371,10 @@ void up::shell::ShellApp::_displayMainMenu() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu(as_char(u8"\uf094 Potato"))) {
             if (ImGui::BeginMenu("New")) {
-                if (ImGui::MenuItem("Game")) {
+                if (ImGui::MenuItem("Game", nullptr, false, _project != nullptr)) {
                     _documents.push_back(createGameDocument(_scene));
                 }
-                if (ImGui::MenuItem("Scene")) {
+                if (ImGui::MenuItem("Scene", nullptr, false, _project != nullptr)) {
                     _documents.push_back(createSceneDocument(_scene, [this] { return _universe->components(); }));
                 }
                 ImGui::EndMenu();

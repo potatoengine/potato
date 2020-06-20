@@ -40,7 +40,7 @@ namespace up::shell {
         void renderContent(Renderer& renderer) override;
         void renderMenu() override;
         void renderPanels() override;
-        void buildDockSpace(ImGuiID dockId, zstring_view docId) override;
+        auto buildDockSpace(ImGuiID dockId) -> ImGuiID override;
 
     private:
         void _renderScene(Renderer& renderer, float frameTime);
@@ -150,16 +150,15 @@ namespace up::shell {
         }
     }
 
-    void SceneDocument::buildDockSpace(ImGuiID dockId, zstring_view docId) {
-        auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_NoWindowMenuButton | ImGuiDockNodeFlags_HiddenTabBar);
+    auto SceneDocument::buildDockSpace(ImGuiID dockId) -> ImGuiID {
+        auto contentNodeId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_HiddenTabBar);
+        auto inspectedNodeId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentNodeId);
+        auto const hierarchyNodeId = ImGui::DockBuilderSplitNode(inspectedNodeId, ImGuiDir_Down, 0.65f, nullptr, &inspectedNodeId);
 
-        auto contentDockId = centralDockId;
-        auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
-        auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
+        ImGui::DockBuilderDockWindow("Inspector##SceneInspector", inspectedNodeId);
+        ImGui::DockBuilderDockWindow("Hierarchy##SceneDocument", hierarchyNodeId);
 
-        ImGui::DockBuilderDockWindow("Inspector##SceneInspector", inspectedDockId);
-        ImGui::DockBuilderDockWindow("Hierarchy##SceneDocument", hierarchyDockId);
-        ImGui::DockBuilderDockWindow(docId.c_str(), contentDockId);
+        return contentNodeId;
     }
 
     void SceneDocument::_renderScene(Renderer& renderer, float frameTime) {
