@@ -15,6 +15,17 @@
 namespace up::path {
     static constexpr uint32 maxPathLength = 4096;
 
+    enum class Separator : char {
+        Unix = '/',
+        Windows = '\\',
+        Normalized = Unix,
+#if _WIN32
+        Native = Windows
+#else
+        Native = Unix
+#endif
+    };
+
     // returns extension, including dot, e.g. foo.txt -> .txt
     // only the last extension is returned, e.g. foo.txt.gz -> .gz
     UP_RUNTIME_API zstring_view extension(zstring_view path) noexcept;
@@ -37,9 +48,7 @@ namespace up::path {
     // if the path contains no directory separator, returns /
     UP_RUNTIME_API string_view parent(string_view path) noexcept;
 
-    // returns true if the path has only forward slashes, no repeat slashes, no leading dots,
-    // no duplicate dots or duplicate slashes, non-empty, starts with leading slash,
-    // no trailing slash or trailing dot in component
+    // returns true if the path has no . or .. components
     UP_RUNTIME_API bool isNormalized(string_view path) noexcept;
 
     // converts a path so that isNormalized is true
@@ -48,7 +57,7 @@ namespace up::path {
     // trailing slash is stripped, e.g. /foo/ -> /foo
     // duplicate slashes are condensed, e.g. /foo//bar.txt -> /foo/bar.txt
     // double-dot sections remove prior items, e.g. /foo/../bar -> /bar
-    UP_RUNTIME_API string normalize(string_view path);
+    UP_RUNTIME_API string normalize(string_view path, Separator sep = Separator::Normalized);
 
     // joins path components together
     // adds a / between each component, e.g. foo/, bar -> foo//bar

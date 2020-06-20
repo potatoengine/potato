@@ -3,6 +3,7 @@
 #include "path.h"
 #include "assertion.h"
 
+#include "potato/spud/platform.h"
 #include "potato/spud/string_writer.h"
 
 // returns extension, including dot, e.g. foo.txt -> .txt
@@ -72,33 +73,55 @@ up::string_view up::path::parent(string_view path) noexcept {
 }
 
 bool up::path::isNormalized(string_view path) noexcept {
-    // ensure path starts with a /
-    if (path.empty() || path.front() != '/') {
-        return false;
+    if (path.empty()) {
+        return true;
     }
 
-    enum class Part { Component, Slash, Dot } mode = Part::Slash;
+    enum class Part { Empty, Component, Slash, Dot, DotDot } mode = Part::Empty;
 
-    for (auto const ch : path.substr(1)) {
-        if (ch == '\\') {
-            // no back-slashes allowed
-            return false;
-        }
-
+    for (auto const ch : path) {
         switch (mode) {
-        case Part::Component:
-            if (ch == '/') {
+        case Part::Empty:
+            if (ch == '/' || ch == '\\') {
                 mode = Part::Slash;
             }
             else if (ch == '.') {
                 mode = Part::Dot;
             }
+            else {
+                mode = Part::Component;
+            }
+            break;
+        case Part::Component:
+            if (ch == '/' || ch == '\\') {
+                mode = Part::Slash;
+            }
             break;
         case Part::Slash:
+            if (ch == '/' || ch == '\\') {
+                return false; // disallow // in path
+            }
+            else if (ch == '.') {
+                mode = Part::Dot;
+            }
+            else {
+                mode = Part::Component;
+            }
+            break;
         case Part::Dot:
-            if (ch == '/' || ch == '.') {
-                // disallow slash-slash, slash-dot, dot-slash, dot-dot
-                return false;
+            if (ch == '/') {
+                return false; // disallow ./
+            }
+            else if (ch == '.') {
+                mode = Part::DotDot;
+            }
+            else {
+                mode = Part::Component;
+            }
+            break;
+        case Part::DotDot:
+            if (ch == '/') {
+                return false; // disallow ../
             }
             mode = Part::Component;
             break;
@@ -109,26 +132,40 @@ bool up::path::isNormalized(string_view path) noexcept {
     return mode == Part::Component;
 }
 
-auto up::path::normalize(string_view path) -> string {
+auto up::path::normalize(string_view path, Separator sep) -> string {
+    char seps[] = {to_underlying(sep), '\0'};
+
     if (path.empty()) {
-        return string("/");
+        return path;
     }
 
     string_writer result;
     result.reserve(path.size());
 
-    auto const popPath = [&result]() {
+    auto const popPath = [&result, &seps]() {
         string_view current = result;
-        auto endPos = current.find_last_of("/");
+        auto endPos = current.find_last_of(seps);
         if (endPos != string_view::npos) {
             result.resize(endPos);
         }
     };
 
-    enum class Part { Component, Slash, Dot, DotDot } mode = Part::Slash;
+    enum class Part { Empty, Component, Slash, Dot, DotDot } mode = Part::Empty;
 
     for (auto const ch : path) {
         switch (mode) {
+        case Part::Empty:
+            if (ch == '/' || ch == '\\') {
+                mode = Part::Slash;
+            }
+            else if (ch == '.') {
+                mode = Part::Dot;
+            }
+            else {
+                mode = Part::Component;
+                result.append(ch);
+            }
+            break;
         case Part::Component:
             if (ch == '/' || ch == '\\') {
                 mode = Part::Slash;
@@ -145,7 +182,7 @@ auto up::path::normalize(string_view path) -> string {
                 mode = Part::Dot;
             }
             else {
-                result.append('/');
+                result.append(to_underlying(sep));
                 result.append(ch);
                 mode = Part::Component;
             }
