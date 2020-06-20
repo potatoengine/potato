@@ -31,6 +31,7 @@
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/platform.h"
+#include "potato/spud/string_writer.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
 
@@ -77,10 +78,11 @@ int up::shell::ShellApp::initialize() {
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
 
-    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, default_width, default_height, SDL_WINDOW_RESIZABLE);
+    _window = SDL_CreateWindow("loading", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, default_width, default_height, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create window", nullptr);
     }
+    _updateTitle();
 
     SDL_SysWMinfo wmInfo;
     SDL_VERSION(&wmInfo.version);
@@ -185,6 +187,8 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
         return false;
     }
 
+    _projectName = path::filebasename(path);
+
     _fileSystem.currentWorkingDirectory(_project->targetPath());
 
     auto material = _loader->loadMaterialSync("resources/materials/full.mat");
@@ -211,6 +215,8 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _documents.clear();
     _documents.push_back(createGameDocument(_scene));
     _documents.push_back(createSceneDocument(_scene, [this] { return _universe->components(); }));
+
+    _updateTitle();
 
     return true;
 }
@@ -254,6 +260,7 @@ void up::shell::ShellApp::run() {
             _documents.clear();
             _project = nullptr;
             _scene = nullptr;
+            _updateTitle();
         }
 
         for (auto it = _documents.begin(); it != _documents.end();) {
@@ -284,6 +291,19 @@ void up::shell::ShellApp::_onWindowSizeChanged() {
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+}
+
+void up::shell::ShellApp::_updateTitle() {
+    static constexpr char appName[] = "Potato Shell";
+
+    if (_project == nullptr) {
+        SDL_SetWindowTitle(_window.get(), appName);
+        return;
+    }
+
+    string_writer title;
+    format_append(title, "{} [{}]", appName, _projectName);
+    SDL_SetWindowTitle(_window.get(), title.c_str());
 }
 
 void up::shell::ShellApp::_processEvents() {
@@ -382,7 +402,7 @@ void up::shell::ShellApp::_displayUI() {
 
 void up::shell::ShellApp::_displayMainMenu() {
     if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu(as_char(u8"\uf094 Potato"))) {
+        if (ImGui::BeginMenu("Potato")) {
             if (ImGui::BeginMenu("New")) {
                 if (ImGui::MenuItem("Game", nullptr, false, _project != nullptr)) {
                     _documents.push_back(createGameDocument(_scene));
@@ -392,11 +412,11 @@ void up::shell::ShellApp::_displayMainMenu() {
                 }
                 ImGui::EndMenu();
             }
-            if (ImGui::MenuItem("Open Project...")) {
+            if (ImGui::MenuItem(as_char(u8"\uf542 Open Project..."))) {
                 _openProject = true;
                 _closeProject = true;
             }
-            if (ImGui::MenuItem("Close Project", nullptr, false, _project != nullptr)) {
+            if (ImGui::MenuItem(as_char(u8"\uf057 Close Project"), nullptr, false, _project != nullptr)) {
                 _closeProject = true;
             }
             if (ImGui::MenuItem(as_char(u8"\uf52b Quit"), "ESC")) {
@@ -405,7 +425,7 @@ void up::shell::ShellApp::_displayMainMenu() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu(as_char(u8"\uf06e View"))) {
+        if (ImGui::BeginMenu("View")) {
             if (ImGui::BeginMenu("Options")) {
                 ImGui::EndMenu();
             }

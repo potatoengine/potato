@@ -52,6 +52,7 @@ namespace up::shell {
         void _onWindowSizeChanged();
         void _onWindowClosed();
 
+        void _updateTitle();
         void _processEvents();
         void _tick();
         void _render();
@@ -91,5 +92,6 @@ namespace up::shell {
         float _lastFrameTime = 0.f;
         std::chrono::nanoseconds _lastFrameDuration = {};
         ImGuiWindowClass _documentWindowClass;
+        string _projectName;
     };
 } // namespace up::shell
