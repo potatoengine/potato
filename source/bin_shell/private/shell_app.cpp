@@ -46,6 +46,7 @@
 #include <chrono>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <nfd.h>
 
 namespace up::shell {
     extern auto createSceneDocument(rc<Scene> scene, delegate<view<ComponentMeta>()>) -> box<Document>;
@@ -165,6 +166,18 @@ int up::shell::ShellApp::initialize() {
     return 0;
 }
 
+bool up::shell::ShellApp::_selectAndLoadProject(zstring_view defaultPath) {
+    nfdchar_t* selectedPath = nullptr;
+    string folder = path::normalize(path::parent(defaultPath), path::Separator::Native);
+    auto const result = NFD_OpenDialog("popr", folder.c_str(), &selectedPath);
+    if (result != NFD_OKAY) {
+        return false;
+    }
+    bool success = _loadProject(selectedPath);
+    free(selectedPath); // NOLINT(cppcoreguidelines-no-malloc)
+    return success;
+}
+
 bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _project = Project::loadFromFile(_fileSystem, path);
     if (_project == nullptr) {
@@ -218,7 +231,7 @@ void up::shell::ShellApp::run() {
 
         if (_openProject && !_closeProject) {
             _openProject = false;
-            if (!_loadProject(path::join(_editorResourcePath, "..", "resources", "sample.popr"))) {
+            if (!_selectAndLoadProject(path::join(_editorResourcePath, "..", "resources", "sample.popr"))) {
                 return;
             }
         }

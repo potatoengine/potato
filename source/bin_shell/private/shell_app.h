@@ -64,6 +64,7 @@ namespace up::shell {
 
         bool _loadConfig(zstring_view path);
 
+        bool _selectAndLoadProject(zstring_view defaultPath);
         bool _loadProject(zstring_view path);
 
         bool _running = true;
