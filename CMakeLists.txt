@@ -41,12 +41,12 @@ add_subdirectory(documentation)
 
 configure_file(
     scripts/config/tasks.vs.json.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/tasks.vs.json
+    ${CMAKE_CURRENT_SOURCE_DIR}/.vs/tasks.vs.json
     @ONLY
 )
 configure_file(
     scripts/config/launch.vs.json.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/launch.vs.json
+    ${CMAKE_CURRENT_SOURCE_DIR}/.vs/launch.vs.json
     @ONLY
 )
 configure_file(
