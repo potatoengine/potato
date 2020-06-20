@@ -37,6 +37,7 @@ target_link_libraries(potato_shell PRIVATE
     SDL2
     SDL2main
     imgui
+    nfd
     nlohmann_json::nlohmann_json
 )
 

@@ -13,6 +13,7 @@ set(EXTERNALS
     flatbuffers
     sdl2_vc
     soloud
+    nfd
 )
 
 # ---------------------------- #
