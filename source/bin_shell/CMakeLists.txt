@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.16)
 project(shell VERSION 0.1 LANGUAGES CXX)
 
@@ -8,16 +9,15 @@ add_executable(potato::shell ALIAS potato_shell)
 target_sources(potato_shell PRIVATE
     "private/camera.cpp"
     "private/camera_controller.cpp"
-    "private/document.cpp"
-    "private/game_document.cpp"
+    "private/editor.cpp"
+    "private/game_editor.cpp"
     "private/imgui_reflector.cpp"
-    
-    
     "private/main.cpp"
     "private/scene.cpp"
-    "private/scene_document.cpp"
-    
-    "private/shell_app.cpp" "private/document.cpp")
+    "private/scene_editor.cpp"
+    "private/shell_app.cpp"
+    "private/filetree_editor.cpp"
+)
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 

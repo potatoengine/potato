@@ -222,9 +222,9 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
 bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, bool dryRun) {
     std::set<string> keepFiles(files.begin(), files.end());
     std::set<string> foundFiles;
-    auto cb = [&foundFiles](FileInfo const& info) {
-        if (info.type == FileType::Regular) {
-            foundFiles.insert(string(info.path));
+    auto cb = [&foundFiles](EnumerateItem const& item) {
+        if (item.info.type == FileType::Regular) {
+            foundFiles.insert(string(item.info.path));
         }
         return EnumerateResult::Recurse;
     };
@@ -310,16 +310,16 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
     }
 
     vector<string> files;
-    auto cb = [&files](FileInfo const& info) -> EnumerateResult {
-        if (info.type == FileType::Regular) {
+    auto cb = [&files](EnumerateItem const& item) -> EnumerateResult {
+        if (item.info.type == FileType::Regular) {
             // skip .meta files for now
-            if (path::extension(info.path) == ".meta") {
+            if (path::extension(item.info.path) == ".meta") {
                 return EnumerateResult::Continue;
             }
 
-            files.push_back(info.path);
+            files.push_back(item.info.path);
         }
-        else if (info.type == FileType::Directory) {
+        else if (item.info.type == FileType::Directory) {
             return EnumerateResult::Recurse;
         }
 

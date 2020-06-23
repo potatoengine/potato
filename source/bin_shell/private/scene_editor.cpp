@@ -2,7 +2,7 @@
 
 #include "camera.h"
 #include "camera_controller.h"
-#include "document.h"
+#include "editor.h"
 #include "imgui_reflector.h"
 #include "scene.h"
 #include "selection.h"
@@ -23,10 +23,10 @@
 #include <imgui_internal.h>
 
 namespace up::shell {
-    class SceneDocument : public Document {
+    class SceneEditor : public Editor {
     public:
-        explicit SceneDocument(rc<Scene> scene, delegate<view<ComponentMeta>()> components)
-            : Document("SceneDocument"_zsv)
+        explicit SceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()> components)
+            : Editor("SceneEditor"_zsv)
             , _scene(scene)
             , _cameraController(_camera)
             , _components(std::move(components)) {
@@ -60,11 +60,11 @@ namespace up::shell {
         bool _enableGrid = true;
     };
 
-    auto createSceneDocument(rc<Scene> scene, delegate<view<ComponentMeta>()> components) -> box<Document> {
-        return new_box<SceneDocument>(std::move(scene), std::move(components));
+    auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()> components) -> box<Editor> {
+        return new_box<SceneEditor>(std::move(scene), std::move(components));
     }
 
-    void SceneDocument::renderContent(Renderer& renderer) {
+    void SceneEditor::renderContent(Renderer& renderer) {
         auto& io = ImGui::GetIO();
 
         auto const contentSize = ImGui::GetContentRegionAvail();
@@ -89,7 +89,7 @@ namespace up::shell {
         auto callback = [](const ImDrawList* list, const ImDrawCmd* cmd) {
             // Note: we'd like to do this here, but we'll need our own render data since we're in
             // the middle of using the Renderer to draw the ImGui data at the time this is called.
-            /*auto& self = *static_cast<SceneDocument*>(cmd->UserCallbackData);
+            /*auto& self = *static_cast<SceneEditor*>(cmd->UserCallbackData);
             auto& io = ImGui::GetIO();
             self._renderScene(io.DeltaTime);*/
         };
@@ -134,7 +134,7 @@ namespace up::shell {
         ImGui::EndChild();
     }
 
-    void SceneDocument::renderMenu() {
+    void SceneEditor::renderMenu() {
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu(as_char(u8"\uf06e View"))) {
                 if (ImGui::BeginMenu("Options")) {
@@ -150,18 +150,18 @@ namespace up::shell {
         }
     }
 
-    auto SceneDocument::buildDockSpace(ImGuiID dockId) -> ImGuiID {
+    auto SceneEditor::buildDockSpace(ImGuiID dockId) -> ImGuiID {
         auto contentNodeId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_HiddenTabBar);
         auto inspectedNodeId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentNodeId);
         auto const hierarchyNodeId = ImGui::DockBuilderSplitNode(inspectedNodeId, ImGuiDir_Down, 0.65f, nullptr, &inspectedNodeId);
 
         ImGui::DockBuilderDockWindow("Inspector##SceneInspector", inspectedNodeId);
-        ImGui::DockBuilderDockWindow("Hierarchy##SceneDocument", hierarchyNodeId);
+        ImGui::DockBuilderDockWindow("Hierarchy##SceneEditor", hierarchyNodeId);
 
         return contentNodeId;
     }
 
-    void SceneDocument::_renderScene(Renderer& renderer, float frameTime) {
+    void SceneEditor::_renderScene(Renderer& renderer, float frameTime) {
         if (_renderCamera == nullptr) {
             _renderCamera = new_box<RenderCamera>();
         }
@@ -183,7 +183,7 @@ namespace up::shell {
         }
     }
 
-    void SceneDocument::_drawGrid() {
+    void SceneEditor::_drawGrid() {
         auto constexpr guidelines = 10;
 
         // The real intent here is to keep the grid roughly the same spacing in
@@ -207,7 +207,7 @@ namespace up::shell {
         drawDebugGrid(grid);
     }
 
-    void SceneDocument::_resize(Renderer& renderer, glm::ivec2 size) {
+    void SceneEditor::_resize(Renderer& renderer, glm::ivec2 size) {
         using namespace up;
         GpuTextureDesc desc;
         desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
@@ -219,12 +219,12 @@ namespace up::shell {
         _bufferView = renderer.device().createShaderResourceView(_buffer.get());
     }
 
-    void SceneDocument::renderPanels() {
+    void SceneEditor::renderPanels() {
         _renderInspector();
         _renderHierarchy();
     }
 
-    void SceneDocument::_renderInspector() {
+    void SceneEditor::_renderInspector() {
         ImGui::SetNextWindowClass(&documentClass());
         ImGui::Begin("Inspector##SceneInspector", nullptr, ImGuiWindowFlags_NoCollapse);
         ComponentId deletedComponent = ComponentId::Unknown;
@@ -274,9 +274,9 @@ namespace up::shell {
         ImGui::End();
     }
 
-    void SceneDocument::_renderHierarchy() {
+    void SceneEditor::_renderHierarchy() {
         ImGui::SetNextWindowClass(&documentClass());
-        ImGui::Begin("Hierarchy##SceneDocument", nullptr, ImGuiWindowFlags_NoCollapse);
+        ImGui::Begin("Hierarchy##SceneEditor", nullptr, ImGuiWindowFlags_NoCollapse);
         constexpr int label_length = 64;
 
         fixed_string_writer<label_length> label;

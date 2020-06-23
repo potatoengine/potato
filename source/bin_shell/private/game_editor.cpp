@@ -2,7 +2,7 @@
 
 #include "camera.h"
 #include "camera_controller.h"
-#include "document.h"
+#include "editor.h"
 #include "scene.h"
 
 #include "potato/render/camera.h"
@@ -20,9 +20,9 @@
 #include <imgui_internal.h>
 
 namespace up::shell {
-    class GameDocument : public Document {
+    class GameEditor : public Editor {
     public:
-        explicit GameDocument(rc<Scene> scene) : Document("GameDocument"_zsv), _scene(scene), _cameraController(_camera) {
+        explicit GameEditor(rc<Scene> scene) : Editor("GameEditor"_zsv), _scene(scene), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
 
@@ -44,9 +44,9 @@ namespace up::shell {
         bool _isInputBound = false;
     };
 
-    auto createGameDocument(rc<Scene> scene) -> box<Document> { return new_box<GameDocument>(scene); }
+    auto createGameEditor(rc<Scene> scene) -> box<Editor> { return new_box<GameEditor>(scene); }
 
-    void GameDocument::renderContent(Renderer& renderer) {
+    void GameEditor::renderContent(Renderer& renderer) {
         auto const contentId = ImGui::GetID("GameContentView");
         auto const* const ctx = ImGui::GetCurrentContext();
         auto const& io = ImGui::GetIO();
@@ -112,7 +112,7 @@ namespace up::shell {
         ImGui::EndChild();
     }
 
-    void GameDocument::_renderScene(Renderer& renderer, float frameTime) {
+    void GameEditor::_renderScene(Renderer& renderer, float frameTime) {
         if (_renderCamera == nullptr) {
             _renderCamera = new_box<RenderCamera>();
         }
@@ -131,7 +131,7 @@ namespace up::shell {
         }
     }
 
-    void GameDocument::_resize(Renderer& renderer, glm::ivec2 size) {
+    void GameEditor::_resize(Renderer& renderer, glm::ivec2 size) {
         using namespace up;
         GpuTextureDesc desc;
         desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;

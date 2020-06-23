@@ -1,5 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#include "assertion.h"
 #include "native.h"
 #include "stream.h"
 
@@ -129,6 +130,8 @@ auto up::NativeFileSystem::fileStat(zstring_view path, FileStat& outInfo) const 
 }
 
 auto up::NativeFileSystem::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
+    UP_ASSERT(!path.empty());
+
     auto iter = std::filesystem::recursive_directory_iterator(path.c_str());
     auto end = std::filesystem::recursive_directory_iterator();
 
@@ -137,14 +140,15 @@ auto up::NativeFileSystem::enumerate(zstring_view path, EnumerateCallback cb, En
             ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath ? iter->path() : std::filesystem::relative(iter->path(), path.c_str()))
                 .generic_string();
 
-        FileInfo info;
-        info.path = genPath.c_str();
-        info.type = iter->is_regular_file()
+        EnumerateItem item;
+        item.info.path = genPath.c_str();
+        item.info.type = iter->is_regular_file()
             ? FileType::Regular
             : iter->is_directory() ? FileType::Directory : iter->is_symlink() ? FileType::SymbolicLink : FileType::Other;
-        info.size = info.type == FileType::Regular ? iter->file_size() : 0;
+        item.info.size = item.info.type == FileType::Regular ? iter->file_size() : 0;
+        item.depth = iter.depth();
 
-        auto result = cb(info);
+        auto result = cb(item);
         if (result == EnumerateResult::Break) {
             return result;
         }

@@ -6,7 +6,7 @@ add_library(potato::libtools ALIAS potato_libtools)
 
 target_sources(potato_libtools PRIVATE
     "private/project.cpp"
-)
+ "private/document.cpp")
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libtools)

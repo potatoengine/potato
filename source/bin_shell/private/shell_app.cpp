@@ -50,8 +50,9 @@
 #include <nfd.h>
 
 namespace up::shell {
-    extern auto createSceneDocument(rc<Scene> scene, delegate<view<ComponentMeta>()>) -> box<Document>;
-    extern auto createGameDocument(rc<Scene> scene) -> box<Document>;
+    extern auto createFileTreeEditor(FileSystem& fileSystem) -> box<Editor>;
+    extern auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()>) -> box<Editor>;
+    extern auto createGameEditor(rc<Scene> scene) -> box<Editor>;
 } // namespace up::shell
 
 up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
@@ -212,9 +213,10 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _scene = new_shared<Scene>(*_universe);
     _scene->create(new_shared<Model>(std::move(mesh), std::move(material)), _ding);
 
-    _documents.clear();
-    _documents.push_back(createGameDocument(_scene));
-    _documents.push_back(createSceneDocument(_scene, [this] { return _universe->components(); }));
+    _editors.clear();
+    _editors.push_back(createGameEditor(_scene));
+    _editors.push_back(createSceneEditor(_scene, [this] { return _universe->components(); }));
+    _editors.push_back(createFileTreeEditor(_fileSystem));
 
     _updateTitle();
 
@@ -257,15 +259,15 @@ void up::shell::ShellApp::run() {
 
         if (_closeProject) {
             _closeProject = false;
-            _documents.clear();
+            _editors.clear();
             _project = nullptr;
             _scene = nullptr;
             _updateTitle();
         }
 
-        for (auto it = _documents.begin(); it != _documents.end();) {
+        for (auto it = _editors.begin(); it != _editors.end();) {
             if (it->get()->isClosing()) {
-                it = _documents.erase(it);
+                it = _editors.erase(it);
             }
             else {
                 ++it;
@@ -405,10 +407,10 @@ void up::shell::ShellApp::_displayMainMenu() {
         if (ImGui::BeginMenu("Potato")) {
             if (ImGui::BeginMenu("New")) {
                 if (ImGui::MenuItem("Game", nullptr, false, _project != nullptr)) {
-                    _documents.push_back(createGameDocument(_scene));
+                    _editors.push_back(createGameEditor(_scene));
                 }
                 if (ImGui::MenuItem("Scene", nullptr, false, _project != nullptr)) {
-                    _documents.push_back(createSceneDocument(_scene, [this] { return _universe->components(); }));
+                    _editors.push_back(createSceneEditor(_scene, [this] { return _universe->components(); }));
                 }
                 ImGui::EndMenu();
             }
@@ -469,10 +471,10 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::DockSpace(mainDockId, {}, ImGuiDockNodeFlags_NoWindowMenuButton, &_documentWindowClass);
     ImGui::End();
 
-    for (auto const& doc : _documents) {
+    for (auto const& editor : _editors) {
         ImGui::SetNextWindowDockID(mainDockId, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowClass(&_documentWindowClass);
-        doc->render(*_renderer);
+        editor->render(*_renderer);
     }
 }
 

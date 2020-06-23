@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "document.h"
+#include "editor.h"
 
 #include "potato/format/format.h"
 #include "potato/spud/string_writer.h"
@@ -8,13 +8,13 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-up::shell::Document::Document(zstring_view className) {
+up::shell::Editor::Editor(zstring_view className) {
     _windowClass.ClassId = narrow_cast<ImU32>(reinterpret_cast<uintptr_t>(this));
     _windowClass.DockingAllowUnclassed = false;
     _windowClass.DockingAlwaysTabBar = false;
 }
 
-void up::shell::Document::render(Renderer& renderer) {
+void up::shell::Editor::render(Renderer& renderer) {
     if (_title.empty()) {
         string_writer tmp;
         format_append(tmp, "{}##{}", displayName(), this);
@@ -63,6 +63,6 @@ void up::shell::Document::render(Renderer& renderer) {
     ImGui::PopID();
 }
 
-auto up::shell::Document::buildDockSpace(ImGuiID dockSpaceId) -> ImGuiID {
+auto up::shell::Editor::buildDockSpace(ImGuiID dockSpaceId) -> ImGuiID {
     return ImGui::DockBuilderAddNode(dockSpaceId, ImGuiDockNodeFlags_HiddenTabBar);
 }

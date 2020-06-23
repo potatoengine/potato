@@ -18,7 +18,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::NullFileSystem") {
         DOCTEST_CHECK(!null.openRead("/test.txt").isOpen());
         DOCTEST_CHECK(!null.openWrite("/test.txt").isOpen());
 
-        auto cb(EnumerateCallback{[](FileInfo const&) { return EnumerateResult::Continue; }});
+        auto cb(EnumerateCallback{[](EnumerateItem const&) { return EnumerateResult::Continue; }});
         DOCTEST_CHECK_EQ(null.enumerate("/", cb), EnumerateResult::Continue);
 
         DOCTEST_CHECK_EQ(null.createDirectories("/foo/bar"), IOResult::UnsupportedOperation);

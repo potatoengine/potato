@@ -10,12 +10,12 @@ namespace up {
 }
 
 namespace up::shell {
-    class Document {
+    class Editor {
     public:
-        virtual ~Document() = default;
+        virtual ~Editor() = default;
 
-        Document(Document const&) = delete;
-        Document& operator=(Document const&) = delete;
+        Editor(Editor const&) = delete;
+        Editor& operator=(Editor const&) = delete;
 
         /// @brief Display name of the Document, used in menus and window titles.
         /// @return display name.
@@ -28,7 +28,7 @@ namespace up::shell {
         void close() noexcept { _wantOpen = false; }
 
     protected:
-        explicit Document(zstring_view className);
+        explicit Editor(zstring_view className);
 
         ImGuiWindowClass const& documentClass() const noexcept { return _windowClass; }
 

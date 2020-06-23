@@ -54,8 +54,8 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::NativeFileSystem") {
 
         vector<string> entries;
 
-        auto cb = [&entries](FileInfo const& info) {
-            entries.push_back(info.path);
+        auto cb = [&entries](EnumerateItem const& item) {
+            entries.push_back(item.info.path);
             return EnumerateResult::Recurse;
         };
         DOCTEST_CHECK_EQ(native.enumerate(".", cb), EnumerateResult::Continue);

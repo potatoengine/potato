@@ -1,11 +1,12 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "camera.h"
-#include "document.h"
+#include "editor.h"
 
 #include "potato/audio/audio_engine.h"
 #include "potato/audio/sound_resource.h"
 #include "potato/render/draw_imgui.h"
+#include "potato/tools/document.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/native.h"
 #include "potato/spud/box.h"
@@ -88,7 +89,8 @@ namespace up::shell {
         int _lastCursor = -1;
         DrawImgui _drawImgui;
         Logger _logger;
-        vector<box<Document>> _documents;
+        vector<box<Editor>> _editors;
+        DocumentRegistry _documents;
         float _lastFrameTime = 0.f;
         std::chrono::nanoseconds _lastFrameDuration = {};
         ImGuiWindowClass _documentWindowClass;
