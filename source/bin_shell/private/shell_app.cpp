@@ -52,7 +52,7 @@
 
 namespace up::shell {
     extern auto createFileTreeEditor(FileSystem& fileSystem, delegate<void(zstring_view name)> onSelected) -> box<Editor>;
-    extern auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()>) -> box<Editor>;
+    extern auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()>, delegate<void(rc<Scene>)>) -> box<Editor>;
     extern auto createGameEditor(rc<Scene> scene) -> box<Editor>;
 } // namespace up::shell
 
@@ -195,7 +195,6 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
 
     _editors.clear();
     _editors.push_back(createFileTreeEditor(_fileSystem, [this](zstring_view name) { _onFileOpened(name); }));
-    //_editors.push_back(createGameEditor(_scene));
 
     _updateTitle();
 
@@ -242,7 +241,6 @@ void up::shell::ShellApp::run() {
             _closeProject = false;
             _editors.clear();
             _project = nullptr;
-            _scene = nullptr;
             _updateTitle();
         }
 
@@ -344,9 +342,8 @@ void up::shell::ShellApp::_processEvents() {
 }
 
 void up::shell::ShellApp::_tick() {
-    if (_scene != nullptr) {
-        _scene->tick(_lastFrameTime, *_audio);
-        _scene->flush();
+    for (auto& editor : _editors) {
+        editor->tick(_lastFrameTime);
     }
 }
 
@@ -387,9 +384,6 @@ void up::shell::ShellApp::_displayMainMenu() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("Potato")) {
             if (ImGui::BeginMenu("New")) {
-                if (ImGui::MenuItem("Game", nullptr, false, _project != nullptr)) {
-                    _editors.push_back(createGameEditor(_scene));
-                }
                 if (ImGui::MenuItem("Scene", nullptr, false, _project != nullptr)) {
                     _createScene();
                 }
@@ -413,16 +407,6 @@ void up::shell::ShellApp::_displayMainMenu() {
                 ImGui::EndMenu();
             }
             ImGui::EndMenu();
-        }
-
-        if (_scene != nullptr) {
-            auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
-            auto const xPos = ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
-            ImGui::SetCursorPosX(xPos);
-            if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
-                _scene->playing(!_scene->playing());
-            }
-            ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "Shift-ESC to release input");
         }
 
         {
@@ -514,11 +498,12 @@ void up::shell::ShellApp::_createScene() {
 
     auto model = new_shared<Model>(std::move(mesh), std::move(material));
 
-    auto scene = new_shared<Scene>(*_universe);
+    auto scene = new_shared<Scene>(*_universe, *_audio);
     scene->create(model, ding);
-    _editors.push_back(createSceneEditor(scene, [this] { return _universe->components(); }));
-
-    if (_scene == nullptr) {
-        _scene = scene;
-    }
+    _editors.push_back(createSceneEditor(
+        scene,
+        [this] { return _universe->components(); },
+        [this](rc<Scene> scene) { _createGame(scene); }));
 }
+
+void up::shell::ShellApp::_createGame(rc<Scene> scene) { _editors.push_back(createGameEditor(scene)); }

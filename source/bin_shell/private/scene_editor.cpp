@@ -25,16 +25,22 @@
 namespace up::shell {
     class SceneEditor : public Editor {
     public:
-        explicit SceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()> components)
+        using EnumerateComponents = delegate<view<ComponentMeta>()>;
+        using HandlePlayClicked = delegate<void(rc<Scene>)>;
+
+        explicit SceneEditor(rc<Scene> scene, EnumerateComponents components, HandlePlayClicked onPlayClicked)
             : Editor("SceneEditor"_zsv)
             , _scene(scene)
             , _cameraController(_camera)
-            , _components(std::move(components)) {
+            , _components(std::move(components))
+            , _onPlayClicked(std::move(onPlayClicked)) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
             _selection.select(_scene->root());
         }
 
         zstring_view displayName() const override { return "Scene"; }
+
+        void tick(float deltaTime) override;
 
     protected:
         void renderContent(Renderer& renderer) override;
@@ -56,12 +62,19 @@ namespace up::shell {
         Camera _camera;
         ArcBallCameraController _cameraController;
         Selection _selection;
-        delegate<view<ComponentMeta>()> _components;
+        EnumerateComponents _components;
+        HandlePlayClicked _onPlayClicked;
         bool _enableGrid = true;
     };
 
-    auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()> components) -> box<Editor> {
-        return new_box<SceneEditor>(std::move(scene), std::move(components));
+    auto createSceneEditor(rc<Scene> scene, SceneEditor::EnumerateComponents components, SceneEditor::HandlePlayClicked onPlayClicked)
+        -> box<Editor> {
+        return new_box<SceneEditor>(std::move(scene), std::move(components), std::move(onPlayClicked));
+    }
+
+    void SceneEditor::tick(float deltaTime) {
+        _scene->tick(deltaTime);
+        _scene->flush();
     }
 
     void SceneEditor::renderContent(Renderer& renderer) {
@@ -135,6 +148,15 @@ namespace up::shell {
     }
 
     void SceneEditor::renderMenu() {
+        if (_onPlayClicked != nullptr) {
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::MenuItem("Play")) {
+                    _onPlayClicked(_scene);
+                }
+                ImGui::EndMenuBar();
+            }
+        }
+
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu(as_char(u8"\uf06e View"))) {
                 if (ImGui::BeginMenu("Options")) {

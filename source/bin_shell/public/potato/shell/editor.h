@@ -24,6 +24,8 @@ namespace up::shell {
         /// @brief Renders the ui for the Document.
         void render(Renderer& renderer);
 
+        virtual void tick(float deltaTime) {}
+
         bool isClosed() const noexcept { return _closed; }
         void close() noexcept { _wantClose = isClosable(); }
 

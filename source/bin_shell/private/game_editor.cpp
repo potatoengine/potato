@@ -29,7 +29,8 @@ namespace up::shell {
         zstring_view displayName() const override { return "Game"; }
 
     protected:
-        virtual void renderContent(Renderer& renderer) override;
+        void renderContent(Renderer& renderer) override;
+        void renderMenu() override;
 
     private:
         void _renderScene(Renderer& renderer, float frameTime);
@@ -110,6 +111,19 @@ namespace up::shell {
             }
         }
         ImGui::EndChild();
+    }
+
+    void GameEditor::renderMenu() {
+        if (ImGui::BeginMenuBar()) {
+            auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
+            auto const xPos = ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
+            ImGui::SetCursorPosX(xPos);
+            if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
+                _scene->playing(!_scene->playing());
+            }
+            ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "Shift-ESC to release input");
+            ImGui::EndMenuBar();
+        }
     }
 
     void GameEditor::_renderScene(Renderer& renderer, float frameTime) {

@@ -24,8 +24,8 @@ namespace up {
     class GpuDevice;
     class GpuSwapChain;
     class GpuTexture;
-    class World;
     class Scene;
+    class World;
     class Camera;
     class CameraController;
     class Universe;
@@ -67,6 +67,7 @@ namespace up::shell {
         void _onFileOpened(zstring_view path);
 
         void _createScene();
+        void _createGame(rc<Scene> scene);
 
         bool _selectAndLoadProject(zstring_view defaultPath);
         bool _loadProject(zstring_view path);
@@ -81,7 +82,6 @@ namespace up::shell {
         box<Renderer> _renderer;
         box<RenderCamera> _uiRenderCamera;
         box<Universe> _universe;
-        rc<Scene> _scene;
         box<AudioEngine> _audio;
         box<Project> _project;
         string _editorResourcePath;

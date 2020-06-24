@@ -25,14 +25,14 @@ namespace up {
 
     class Scene : public shared<Scene> {
     public:
-        explicit Scene(Universe& universe);
+        explicit Scene(Universe& universe, AudioEngine& audioEngine);
         ~Scene();
 
         Scene(Scene const&) = delete;
         Scene& operator=(Scene const&) = delete;
 
         void create(rc<Model> const& cube, rc<SoundResource> const& ding);
-        void tick(float frameTime, AudioEngine& audioEngine);
+        void tick(float frameTime);
         void flush();
         void render(RenderContext& ctx);
 
@@ -46,6 +46,7 @@ namespace up {
         EntityId root() const noexcept { return _root; }
 
     private:
+        AudioEngine& _audioEngine;
         rc<Model> _cube;
         World _world;
         EntityId _root = EntityId::None;

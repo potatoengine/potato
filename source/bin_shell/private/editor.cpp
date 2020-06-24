@@ -25,13 +25,15 @@ void up::shell::Editor::render(Renderer& renderer) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     if (isClosable()) {
         bool wantOpen = true;
-        ImGui::Begin(_title.c_str(), &wantOpen, ImGuiWindowFlags_NoCollapse);
+        ImGui::Begin(_title.c_str(), &wantOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar);
         _wantClose = !wantOpen;
     }
     else {
         ImGui::Begin(_title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
     }
     ImGui::PopStyleVar(1);
+
+    renderMenu();
 
     if (_documentId.empty()) {
         string_writer tmp;
@@ -61,7 +63,6 @@ void up::shell::Editor::render(Renderer& renderer) {
 
     ImGui::End();
 
-    renderMenu();
     renderPanels();
 
     if (_wantClose && !_closed) {
