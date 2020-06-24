@@ -3,9 +3,10 @@ project(potato VERSION 0.1 LANGUAGES CXX C)
 
 if(NOT UP_ROOT_DIR)
     set(UP_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Root source directory")
+    file(TO_CMAKE_PATH "${UP_ROOT_DIR}" UP_ROOT_DIR)
 endif()
 set(UP_OUTPUT_DIR "${CMAKE_BINARY_DIR}" CACHE PATH "Output directory")
-message(STATUS "[Potato] output=${UP_OUTPUT_DIR} build=${CMAKE_BINARY_DIR}")
+file(TO_CMAKE_PATH "${UP_OUTPUT_DIR}" UP_OUTPUT_DIR)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
