@@ -4,7 +4,6 @@
 #include "editor.h"
 
 #include "potato/audio/audio_engine.h"
-#include "potato/audio/sound_resource.h"
 #include "potato/render/draw_imgui.h"
 #include "potato/tools/document.h"
 #include "potato/runtime/logger.h"
@@ -30,7 +29,6 @@ namespace up {
     class Camera;
     class CameraController;
     class Universe;
-    class SoundResource;
     class Project;
 } // namespace up
 
@@ -66,6 +64,10 @@ namespace up::shell {
 
         bool _loadConfig(zstring_view path);
 
+        void _onFileOpened(zstring_view path);
+
+        void _createScene();
+
         bool _selectAndLoadProject(zstring_view defaultPath);
         bool _loadProject(zstring_view path);
 
@@ -83,7 +85,6 @@ namespace up::shell {
         box<AudioEngine> _audio;
         box<Project> _project;
         string _editorResourcePath;
-        rc<SoundResource> _ding;
         unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
         unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
         int _lastCursor = -1;

@@ -31,6 +31,7 @@
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/platform.h"
+#include "potato/spud/sequence.h"
 #include "potato/spud/string_writer.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
@@ -50,7 +51,7 @@
 #include <nfd.h>
 
 namespace up::shell {
-    extern auto createFileTreeEditor(FileSystem& fileSystem) -> box<Editor>;
+    extern auto createFileTreeEditor(FileSystem& fileSystem, delegate<void(zstring_view name)> onSelected) -> box<Editor>;
     extern auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()>) -> box<Editor>;
     extern auto createGameEditor(rc<Scene> scene) -> box<Editor>;
 } // namespace up::shell
@@ -192,31 +193,9 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
 
     _fileSystem.currentWorkingDirectory(_project->targetPath());
 
-    auto material = _loader->loadMaterialSync("resources/materials/full.mat");
-    if (material == nullptr) {
-        _errorDialog("Failed to load basic material");
-        return false;
-    }
-
-    auto mesh = _loader->loadMeshSync("resources/meshes/cube.model");
-    if (mesh == nullptr) {
-        _errorDialog("Failed to load cube mesh");
-        return false;
-    }
-
-    _ding = _audio->loadSound("resources/audio/kenney/highUp.mp3");
-    if (_ding == nullptr) {
-        _errorDialog("Failed to load coin mp3");
-        return false;
-    }
-
-    _scene = new_shared<Scene>(*_universe);
-    _scene->create(new_shared<Model>(std::move(mesh), std::move(material)), _ding);
-
     _editors.clear();
-    _editors.push_back(createGameEditor(_scene));
-    _editors.push_back(createSceneEditor(_scene, [this] { return _universe->components(); }));
-    _editors.push_back(createFileTreeEditor(_fileSystem));
+    _editors.push_back(createFileTreeEditor(_fileSystem, [this](zstring_view name) { _onFileOpened(name); }));
+    //_editors.push_back(createGameEditor(_scene));
 
     _updateTitle();
 
@@ -235,6 +214,8 @@ void up::shell::ShellApp::run() {
     constexpr double nano_to_seconds = 1.0 / 1000000000.0;
 
     while (isRunning()) {
+        imguiIO.DeltaTime = _lastFrameTime;
+
         _processEvents();
 
         if (_openProject && !_closeProject) {
@@ -266,7 +247,7 @@ void up::shell::ShellApp::run() {
         }
 
         for (auto it = _editors.begin(); it != _editors.end();) {
-            if (it->get()->isClosing()) {
+            if (it->get()->isClosed()) {
                 it = _editors.erase(it);
             }
             else {
@@ -410,7 +391,7 @@ void up::shell::ShellApp::_displayMainMenu() {
                     _editors.push_back(createGameEditor(_scene));
                 }
                 if (ImGui::MenuItem("Scene", nullptr, false, _project != nullptr)) {
-                    _editors.push_back(createSceneEditor(_scene, [this] { return _universe->components(); }));
+                    _createScene();
                 }
                 ImGui::EndMenu();
             }
@@ -471,10 +452,10 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::DockSpace(mainDockId, {}, ImGuiDockNodeFlags_NoWindowMenuButton, &_documentWindowClass);
     ImGui::End();
 
-    for (auto const& editor : _editors) {
+    for (auto index : sequence(_editors.size())) {
         ImGui::SetNextWindowDockID(mainDockId, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowClass(&_documentWindowClass);
-        editor->render(*_renderer);
+        _editors[index]->render(*_renderer);
     }
 }
 
@@ -504,4 +485,40 @@ bool up::shell::ShellApp::_loadConfig(zstring_view path) {
     }
 
     return true;
+}
+
+void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
+    if (path::extension(filename) == ".scene") {
+        _createScene();
+    }
+}
+
+void up::shell::ShellApp::_createScene() {
+    auto material = _loader->loadMaterialSync("resources/materials/full.mat");
+    if (material == nullptr) {
+        _errorDialog("Failed to load basic material");
+        return;
+    }
+
+    auto mesh = _loader->loadMeshSync("resources/meshes/cube.model");
+    if (mesh == nullptr) {
+        _errorDialog("Failed to load cube mesh");
+        return;
+    }
+
+    auto ding = _audio->loadSound("resources/audio/kenney/highUp.mp3");
+    if (ding == nullptr) {
+        _errorDialog("Failed to load coin mp3");
+        return;
+    }
+
+    auto model = new_shared<Model>(std::move(mesh), std::move(material));
+
+    auto scene = new_shared<Scene>(*_universe);
+    scene->create(model, ding);
+    _editors.push_back(createSceneEditor(scene, [this] { return _universe->components(); }));
+
+    if (_scene == nullptr) {
+        _scene = scene;
+    }
 }

@@ -23,7 +23,14 @@ void up::shell::Editor::render(Renderer& renderer) {
 
     ImGui::PushID(this);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    auto const open = ImGui::Begin(_title.c_str(), &_wantOpen, ImGuiWindowFlags_NoCollapse);
+    if (isClosable()) {
+        bool wantOpen = true;
+        ImGui::Begin(_title.c_str(), &wantOpen, ImGuiWindowFlags_NoCollapse);
+        _wantClose = !wantOpen;
+    }
+    else {
+        ImGui::Begin(_title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
+    }
     ImGui::PopStyleVar(1);
 
     if (_documentId.empty()) {
@@ -43,21 +50,23 @@ void up::shell::Editor::render(Renderer& renderer) {
 
     ImGui::DockSpace(dockSpaceId, {}, ImGuiDockNodeFlags_NoWindowMenuButton, &_windowClass);
 
-    if (open) {
-        ImGui::SetNextWindowClass(&_windowClass);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-        auto const contentOpen = ImGui::Begin(_documentId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
-        ImGui::PopStyleVar(1);
+    ImGui::SetNextWindowClass(&_windowClass);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+    auto const contentOpen = ImGui::Begin(_documentId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
+    ImGui::PopStyleVar(1);
 
-        if (contentOpen) {
-            renderContent(renderer);
-        }
-
-        ImGui::End();
+    if (contentOpen) {
+        renderContent(renderer);
     }
+
+    ImGui::End();
 
     renderMenu();
     renderPanels();
+
+    if (_wantClose && !_closed) {
+        _closed = handleClose();
+    }
 
     ImGui::End();
     ImGui::PopID();

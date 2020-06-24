@@ -5,6 +5,7 @@
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/path.h"
 #include "potato/spud/box.h"
+#include "potato/spud/delegate.h"
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
 
@@ -14,12 +15,18 @@
 namespace up::shell {
     class FileTreeEditor : public Editor {
     public:
-        explicit FileTreeEditor(FileSystem& fileSystem) : Editor("FileTreeEditor"_zsv), _fileSystem(fileSystem) {}
+        using OnFileSelected = delegate<void(zstring_view name)>;
+
+        explicit FileTreeEditor(FileSystem& fileSystem, OnFileSelected onFileSelected)
+            : Editor("FileTreeEditor"_zsv)
+            , _fileSystem(fileSystem)
+            , _onFileSelected(std::move(onFileSelected)) {}
 
         zstring_view displayName() const override { return "Files"; }
 
     protected:
         void renderContent(Renderer& renderer) override;
+        bool isClosable() override { return false; }
 
     private:
         struct Entry {
@@ -31,14 +38,17 @@ namespace up::shell {
         };
 
         void _enumerateFiles();
+        void _handleFileClick(zstring_view name);
 
         FileSystem& _fileSystem;
+        OnFileSelected _onFileSelected;
         string _path = "resources";
         vector<Entry> _cache;
-        std::unordered_set<size_t> _open;
     };
 
-    auto createFileTreeEditor(FileSystem& fileSystem) -> box<Editor> { return new_box<FileTreeEditor>(fileSystem); }
+    auto createFileTreeEditor(FileSystem& fileSystem, FileTreeEditor::OnFileSelected onFileSelected) -> box<Editor> {
+        return new_box<FileTreeEditor>(fileSystem, std::move(onFileSelected));
+    }
 
     void FileTreeEditor::renderContent(Renderer& renderer) {
         if (_cache.empty()) {
@@ -75,6 +85,10 @@ namespace up::shell {
                 cached.open = false;
             }
 
+            if (!cached.directory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+                _handleFileClick(cached.name);
+            }
+
             ImGui::NextColumn();
             if (cached.directory) {
                 ImGui::Text("-");
@@ -98,5 +112,11 @@ namespace up::shell {
             _cache.push_back({path::filename(item.info.path), item.info.size, item.depth, item.info.type == FileType::Directory});
             return item.info.type == FileType::Directory ? EnumerateResult::Recurse : EnumerateResult::Continue;
         });
+    }
+
+    void FileTreeEditor::_handleFileClick(zstring_view name) {
+        if (_onFileSelected != nullptr && !name.empty()) {
+            _onFileSelected(name);
+        }
     }
 } // namespace up::shell

@@ -24,8 +24,8 @@ namespace up::shell {
         /// @brief Renders the ui for the Document.
         void render(Renderer& renderer);
 
-        bool isClosing() const noexcept { return !_wantOpen; }
-        void close() noexcept { _wantOpen = false; }
+        bool isClosed() const noexcept { return _closed; }
+        void close() noexcept { _wantClose = isClosable(); }
 
     protected:
         explicit Editor(zstring_view className);
@@ -36,6 +36,8 @@ namespace up::shell {
         virtual void renderContent(Renderer& renderer) = 0;
         virtual void renderMenu() {}
         virtual void renderPanels() {}
+        virtual bool isClosable() { return true; }
+        virtual bool handleClose() { return true; }
         virtual auto buildDockSpace(ImGuiID dockSpaceId) -> ImGuiID;
 
     private:
@@ -43,6 +45,7 @@ namespace up::shell {
         string _title;
         string _documentId;
         bool _dirty = false;
-        bool _wantOpen = true;
+        bool _wantClose = false;
+        bool _closed = false;
     };
 } // namespace up::shell

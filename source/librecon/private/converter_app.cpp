@@ -146,6 +146,7 @@ void up::recon::ConverterApp::registerConverters() {
     _converters.push_back({[](string_view path) { return path::extension(path) == ".ttf"; }, new_box<CopyConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".wav"; }, new_box<CopyConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".mp3"; }, new_box<CopyConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".scene"; }, new_box<CopyConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".obj"; }, new_box<ModelConverter>()});
     _converters.push_back({[](string_view path) { return path::extension(path) == ".mat"; }, new_box<MaterialConverter>()});
 }
