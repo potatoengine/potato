@@ -75,6 +75,11 @@ int up::shell::ShellApp::initialize() {
         _loadConfig(configPath);
     }
 
+    if (_editorResourcePath.empty()) {
+        _errorDialog("No editor resource path specified");
+        return 1;
+    }
+
     _fileSystem.currentWorkingDirectory(_editorResourcePath);
 
     constexpr int default_width = 1024;
@@ -82,7 +87,7 @@ int up::shell::ShellApp::initialize() {
 
     _window = SDL_CreateWindow("loading", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, default_width, default_height, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create window", nullptr);
+        _errorDialog("Could not create window");
     }
     _updateTitle();
 
