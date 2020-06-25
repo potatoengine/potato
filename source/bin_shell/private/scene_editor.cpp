@@ -30,7 +30,7 @@ namespace up::shell {
 
         explicit SceneEditor(rc<Scene> scene, EnumerateComponents components, HandlePlayClicked onPlayClicked)
             : Editor("SceneEditor"_zsv)
-            , _scene(scene)
+            , _scene(std::move(scene))
             , _cameraController(_camera)
             , _components(std::move(components))
             , _onPlayClicked(std::move(onPlayClicked)) {

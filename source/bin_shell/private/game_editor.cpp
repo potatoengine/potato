@@ -22,7 +22,7 @@
 namespace up::shell {
     class GameEditor : public Editor {
     public:
-        explicit GameEditor(rc<Scene> scene) : Editor("GameEditor"_zsv), _scene(scene), _cameraController(_camera) {
+        explicit GameEditor(rc<Scene> scene) : Editor("GameEditor"_zsv), _scene(std::move(scene)), _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
 

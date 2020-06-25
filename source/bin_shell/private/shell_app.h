@@ -64,7 +64,7 @@ namespace up::shell {
 
         bool _loadConfig(zstring_view path);
 
-        void _onFileOpened(zstring_view path);
+        void _onFileOpened(zstring_view filename);
 
         void _createScene();
         void _createGame(rc<Scene> scene);

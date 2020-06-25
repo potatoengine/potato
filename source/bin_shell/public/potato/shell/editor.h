@@ -46,7 +46,6 @@ namespace up::shell {
         ImGuiWindowClass _windowClass;
         string _title;
         string _documentId;
-        bool _dirty = false;
         bool _wantClose = false;
         bool _closed = false;
     };
