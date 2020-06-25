@@ -56,7 +56,6 @@ namespace up::shell {
         }
 
         int depth = 0;
-        int skipDepth = 0;
 
         ImGui::Columns(3);
         ImGui::Text("Name");
