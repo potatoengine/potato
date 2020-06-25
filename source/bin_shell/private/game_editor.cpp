@@ -45,7 +45,7 @@ namespace up::shell {
         bool _isInputBound = false;
     };
 
-    auto createGameEditor(rc<Scene> scene) -> box<Editor> { return new_box<GameEditor>(scene); }
+    auto createGameEditor(rc<Scene> scene) -> box<Editor> { return new_box<GameEditor>(std::move(scene)); }
 
     void GameEditor::renderContent(Renderer& renderer) {
         auto const contentId = ImGui::GetID("GameContentView");

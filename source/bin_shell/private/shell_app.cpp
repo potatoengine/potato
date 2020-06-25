@@ -511,4 +511,4 @@ void up::shell::ShellApp::_createScene() {
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
 }
 
-void up::shell::ShellApp::_createGame(rc<Scene> scene) { _editors.push_back(createGameEditor(scene)); }
+void up::shell::ShellApp::_createGame(rc<Scene> scene) { _editors.push_back(createGameEditor(std::move(scene))); }
