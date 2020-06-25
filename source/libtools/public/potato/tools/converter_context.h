@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "_export.h"
+
 #include "potato/assetdb/asset_record.h"
 #include "potato/spud/std_iostream.h"
 #include "potato/spud/string.h"
@@ -36,7 +38,7 @@ namespace up {
         auto sourceFolderPath() const noexcept { return _sourceFolderPath; }
         auto destinationFolderPath() const noexcept { return _destinationFolderPath; }
 
-        void addSourceDependency(zstring_view path);
+        UP_TOOLS_API void addSourceDependency(zstring_view path);
         void addOutput(zstring_view path);
         void addOutputDependency(zstring_view from, zstring_view on, AssetDependencyType type);
 

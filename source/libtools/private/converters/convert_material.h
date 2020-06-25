@@ -13,7 +13,7 @@ namespace up {
         bool convert(ConverterContext& ctx) override;
         string_view generateSettings(ConverterContext& ctd) override { return {}; }
 
-        string_view name() const noexcept override { return "mat"; }
+        string_view name() const noexcept override { return "material"; }
         uint64 revision() const noexcept override { return 1; }
     };
 } // namespace up

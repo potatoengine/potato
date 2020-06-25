@@ -1,12 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "converter_app.h"
-#include "converters/convert_copy.h"
-#include "converters/convert_hlsl.h"
-#include "converters/convert_ignore.h"
-#include "converters/convert_json.h"
-#include "converters/convert_material.h"
-#include "converters/convert_model.h"
 
 #include "potato/assetdb/hash_cache.h"
 #include "potato/runtime/filesystem.h"
@@ -133,23 +127,25 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
 }
 
 void up::recon::ConverterApp::registerConverters() {
+    _converterFactory.registerDefaultConverters();
+
 #if UP_GPU_ENABLE_D3D11
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, new_box<HlslConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _converterFactory.findConverterByName("hlsl")});
 #else
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, new_box<IgnoreConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _converterFactory.findConverterByName("ignore")});
 #endif
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsli"; }, new_box<IgnoreConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".txt"; }, new_box<IgnoreConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".json"; }, new_box<JsonConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".png"; }, new_box<CopyConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".jpg"; }, new_box<CopyConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".ttf"; }, new_box<CopyConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".wav"; }, new_box<CopyConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".mp3"; }, new_box<CopyConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".popr"; }, new_box<IgnoreConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".scene"; }, new_box<CopyConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".obj"; }, new_box<ModelConverter>()});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".mat"; }, new_box<MaterialConverter>()});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsli"; }, _converterFactory.findConverterByName("ignore")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".txt"; }, _converterFactory.findConverterByName("ignore")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".json"; }, _converterFactory.findConverterByName("json")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".png"; }, _converterFactory.findConverterByName("copy")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".jpg"; }, _converterFactory.findConverterByName("copy")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".ttf"; }, _converterFactory.findConverterByName("copy")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".wav"; }, _converterFactory.findConverterByName("copy")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".mp3"; }, _converterFactory.findConverterByName("copy")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".popr"; }, _converterFactory.findConverterByName("ignore")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".scene"; }, _converterFactory.findConverterByName("copy")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".obj"; }, _converterFactory.findConverterByName("model")});
+    _converters.push_back({[](string_view path) { return path::extension(path) == ".mat"; }, _converterFactory.findConverterByName("material")});
 }
 
 bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
@@ -268,7 +264,7 @@ bool up::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> recor
 auto up::recon::ConverterApp::findConverter(string_view path) const -> Converter* {
     for (auto const& mapping : _converters) {
         if (mapping.predicate(path)) {
-            return mapping.conveter.get();
+            return mapping.conveter;
         }
     }
 

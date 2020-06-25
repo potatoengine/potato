@@ -2,11 +2,12 @@
 
 #pragma once
 
-#include "converter.h"
 #include "converter_config.h"
 
 #include "potato/assetdb/asset_library.h"
 #include "potato/assetdb/hash_cache.h"
+#include "potato/tools/converter.h"
+#include "potato/tools/converter_factory.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/box.h"
@@ -44,7 +45,7 @@ namespace up::recon {
 
         struct Mapping {
             delegate<bool(string_view) const> predicate;
-            box<Converter> conveter;
+            Converter* conveter = nullptr;
         };
 
         string_view _programName;
@@ -55,5 +56,6 @@ namespace up::recon {
         AssetLibrary _library;
         HashCache _hashes;
         Logger _logger;
+        ConverterFactory _converterFactory;
     };
 } // namespace up::recon

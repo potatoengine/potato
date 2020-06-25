@@ -7,13 +7,8 @@ add_library(potato_librecon STATIC)
 add_library(potato::librecon ALIAS potato_librecon)
 
 target_sources(potato_librecon PRIVATE
-    "private/converter_context.cpp"
     "private/converter_app.cpp"
     "private/converter_config.cpp"
-    "private/converters/convert_copy.cpp"
-    "private/converters/convert_json.cpp"
-    "private/converters/convert_material.cpp"
-    "private/converters/convert_model.cpp"
 )
 
 include(up_set_common_properties)
@@ -32,12 +27,6 @@ target_link_libraries(potato_librecon
         nlohmann_json::nlohmann_json
         flatbuffers::flatlib
 )
-
-find_library(D3DCOMPILER_PATH d3dcompiler)
-if(D3DCOMPILER_PATH)
-    target_link_libraries(potato_librecon PRIVATE ${D3DCOMPILER_PATH})
-    target_sources(potato_librecon PRIVATE "private/converters/convert_hlsl.cpp")
-endif()
 
 add_executable(potato_librecon_test)
 target_sources(potato_librecon_test PRIVATE
