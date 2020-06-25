@@ -181,7 +181,7 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         auto name = converter->name();
         _logger.info("Asset `{}' requires import ({} {})", path.c_str(), string_view(name.data(), name.size()), converter->revision());
 
-        Context context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
+        ConverterContext context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
         checkMetafile(context, path);
 
         if (!converter->convert(context)) {
@@ -275,7 +275,7 @@ auto up::recon::ConverterApp::findConverter(string_view path) const -> Converter
     return nullptr;
 }
 
-auto up::recon::ConverterApp::checkMetafile(Context& ctx, string_view filename) -> void {
+auto up::recon::ConverterApp::checkMetafile(ConverterContext& ctx, string_view filename) -> void {
     // check to see if a meta file exists for this asset -- if it doesn't create one
     fixed_string_writer<256> metaFile;
 
@@ -288,7 +288,7 @@ auto up::recon::ConverterApp::checkMetafile(Context& ctx, string_view filename) 
             string id = UUID::generate().toString();
             root["id"] = id.c_str();
 
-            Context context(filename.data(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
+            ConverterContext context(filename.data(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
             string settings = conveter->generateSettings(context);
             root["settings"] = settings;
 

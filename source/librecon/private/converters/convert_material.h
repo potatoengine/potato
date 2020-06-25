@@ -4,16 +4,16 @@
 
 #include "converter.h"
 
-namespace up::recon {
+namespace up {
     class MaterialConverter : public Converter {
     public:
         MaterialConverter();
         ~MaterialConverter() override;
 
-        bool convert(Context& ctx) override;
-        string_view generateSettings(Context& ctd) override { return {}; }
+        bool convert(ConverterContext& ctx) override;
+        string_view generateSettings(ConverterContext& ctd) override { return {}; }
 
         string_view name() const noexcept override { return "mat"; }
         uint64 revision() const noexcept override { return 1; }
     };
-} // namespace up::recon
+} // namespace up

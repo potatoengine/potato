@@ -12,11 +12,11 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 
-up::recon::MaterialConverter::MaterialConverter() = default;
+up::MaterialConverter::MaterialConverter() = default;
 
-up::recon::MaterialConverter::~MaterialConverter() = default;
+up::MaterialConverter::~MaterialConverter() = default;
 
-bool up::recon::MaterialConverter::convert(Context& ctx) {
+bool up::MaterialConverter::convert(ConverterContext& ctx) {
     auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 

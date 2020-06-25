@@ -14,11 +14,11 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
-up::recon::ModelConverter::ModelConverter() = default;
+up::ModelConverter::ModelConverter() = default;
 
-up::recon::ModelConverter::~ModelConverter() = default;
+up::ModelConverter::~ModelConverter() = default;
 
-bool up::recon::ModelConverter::convert(Context& ctx) {
+bool up::ModelConverter::convert(ConverterContext& ctx) {
     using namespace flatbuffers;
 
     auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});

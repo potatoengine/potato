@@ -7,11 +7,11 @@
 #include "potato/runtime/path.h"
 #include "potato/spud/std_iostream.h"
 
-up::recon::CopyConverter::CopyConverter() = default;
+up::CopyConverter::CopyConverter() = default;
 
-up::recon::CopyConverter::~CopyConverter() = default;
+up::CopyConverter::~CopyConverter() = default;
 
-bool up::recon::CopyConverter::convert(Context& ctx) {
+bool up::CopyConverter::convert(ConverterContext& ctx) {
     auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 

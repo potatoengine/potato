@@ -18,7 +18,7 @@
 
 namespace {
     struct ReconIncludeHandler : public ID3DInclude {
-        ReconIncludeHandler(up::FileSystem& fileSystem, up::recon::Context& ctx, up::string_view folder)
+        ReconIncludeHandler(up::FileSystem& fileSystem, up::ConverterContext& ctx, up::string_view folder)
             : _fileSystem(fileSystem)
             , _ctx(ctx)
             , _folder(folder) {}
@@ -52,17 +52,17 @@ namespace {
         HRESULT __stdcall Close(LPCVOID pData) override { return S_OK; }
 
         up::FileSystem& _fileSystem;
-        up::recon::Context& _ctx;
+        up::ConverterContext& _ctx;
         up::string_view _folder;
         up::vector<up::string> _shaders;
     }; // namespace
 } // namespace
 
-up::recon::HlslConverter::HlslConverter() = default;
+up::HlslConverter::HlslConverter() = default;
 
-up::recon::HlslConverter::~HlslConverter() = default;
+up::HlslConverter::~HlslConverter() = default;
 
-bool up::recon::HlslConverter::convert(Context& ctx) {
+bool up::HlslConverter::convert(ConverterContext& ctx) {
     auto absoluteSourcePath = path::join({string_view(ctx.sourceFolderPath()), ctx.sourceFilePath()});
 
     auto stream = ctx.fileSystem().openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
@@ -78,13 +78,13 @@ bool up::recon::HlslConverter::convert(Context& ctx) {
 
     stream.close();
 
-    bool success = compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "vertex_main", "vs_5_0");
-    success = compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "pixel_main", "ps_5_0") && success;
+    bool success = _compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "vertex_main", "vs_5_0");
+    success = _compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "pixel_main", "ps_5_0") && success;
 
     return success;
 }
 
-bool up::recon::HlslConverter::compile(Context& ctx,
+bool up::HlslConverter::_compile(ConverterContext& ctx,
     FileSystem& fileSys,
     zstring_view absoluteSourcePath,
     string_view source,

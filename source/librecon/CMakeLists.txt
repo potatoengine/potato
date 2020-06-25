@@ -7,7 +7,7 @@ add_library(potato_librecon STATIC)
 add_library(potato::librecon ALIAS potato_librecon)
 
 target_sources(potato_librecon PRIVATE
-    "private/context.cpp"
+    "private/converter_context.cpp"
     "private/converter_app.cpp"
     "private/converter_config.cpp"
     "private/converters/convert_copy.cpp"

@@ -10,11 +10,11 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 
-up::recon::JsonConverter::JsonConverter() = default;
+up::JsonConverter::JsonConverter() = default;
 
-up::recon::JsonConverter::~JsonConverter() = default;
+up::JsonConverter::~JsonConverter() = default;
 
-bool up::recon::JsonConverter::convert(Context& ctx) {
+bool up::JsonConverter::convert(ConverterContext& ctx) {
     auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 

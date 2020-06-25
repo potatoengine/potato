@@ -15,10 +15,10 @@ namespace up {
     class Logger;
 } // namespace up
 
-namespace up::recon {
-    class Context {
+namespace up {
+    class ConverterContext {
     public:
-        Context(zstring_view sourceFilePath,
+        ConverterContext(zstring_view sourceFilePath,
             zstring_view sourceFolderPath,
             zstring_view destinationFolderPath,
             FileSystem& fileSystem,
@@ -29,8 +29,8 @@ namespace up::recon {
             , _fileSystem(fileSystem)
             , _logger(logger) {}
 
-        Context(Context&&) = delete;
-        Context& operator=(Context&&) = delete;
+        ConverterContext(ConverterContext&&) = delete;
+        ConverterContext& operator=(ConverterContext&&) = delete;
 
         auto sourceFilePath() const noexcept { return _sourceFilePath; }
         auto sourceFolderPath() const noexcept { return _sourceFolderPath; }
@@ -57,4 +57,4 @@ namespace up::recon {
         FileSystem& _fileSystem;
         Logger& _logger;
     };
-} // namespace up::recon
+} // namespace up
