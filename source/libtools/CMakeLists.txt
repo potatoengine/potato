@@ -5,6 +5,9 @@ add_library(potato_libtools)
 add_library(potato::libtools ALIAS potato_libtools)
 
 target_sources(potato_libtools PRIVATE
+    "private/asset_library.cpp"
+    "private/asset_record.cpp"
+    "private/hash_cache.cpp"
     "private/project.cpp"
     "private/document.cpp"
     "private/converter_context.cpp"
@@ -21,7 +24,6 @@ up_set_common_properties(potato_libtools)
 target_link_libraries(potato_libtools
     PUBLIC
         potato::libruntime
-        potato::libassetdb
         potato::librender
         potato::spud
         flatbuffers::flatlib

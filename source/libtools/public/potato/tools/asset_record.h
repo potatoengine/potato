@@ -16,12 +16,12 @@ namespace up {
         Intermediate, // lives in build/cache/
         Output // lives in build/resources/
     };
-    UP_ASSETDB_API span<string_view const> assetCategoryNames() noexcept;
-    UP_ASSETDB_API string_view assetCategoryName(AssetCategory category) noexcept;
-    UP_ASSETDB_API AssetCategory assetCategoryFromName(string_view name) noexcept;
+    UP_TOOLS_API span<string_view const> assetCategoryNames() noexcept;
+    UP_TOOLS_API string_view assetCategoryName(AssetCategory category) noexcept;
+    UP_TOOLS_API AssetCategory assetCategoryFromName(string_view name) noexcept;
 
     enum class AssetDependencyType : uint8 { Source, Runtime, Tool };
-    UP_ASSETDB_API span<string_view const> assetDependencyTypeNames() noexcept;
+    UP_TOOLS_API span<string_view const> assetDependencyTypeNames() noexcept;
 
     struct AssetDependencyRecord {
         string path;

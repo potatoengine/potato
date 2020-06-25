@@ -17,20 +17,20 @@ namespace up {
     class AssetLibrary {
     public:
         AssetLibrary() = default;
-        UP_ASSETDB_API ~AssetLibrary();
+        UP_TOOLS_API ~AssetLibrary();
 
         AssetLibrary(AssetLibrary const&) = delete;
         AssetLibrary& operator=(AssetLibrary const&) = delete;
 
-        UP_ASSETDB_API auto pathToAssetId(string_view path) const -> AssetId;
-        UP_ASSETDB_API auto assetIdToPath(AssetId assetId) const -> string_view;
+        UP_TOOLS_API auto pathToAssetId(string_view path) const -> AssetId;
+        UP_TOOLS_API auto assetIdToPath(AssetId assetId) const -> string_view;
 
-        UP_ASSETDB_API AssetImportRecord const* findRecord(AssetId assetId) const;
+        UP_TOOLS_API AssetImportRecord const* findRecord(AssetId assetId) const;
 
-        UP_ASSETDB_API bool insertRecord(AssetImportRecord record);
+        UP_TOOLS_API bool insertRecord(AssetImportRecord record);
 
-        UP_ASSETDB_API bool serialize(Stream& stream) const;
-        UP_ASSETDB_API bool deserialize(Stream& stream);
+        UP_TOOLS_API bool serialize(Stream& stream) const;
+        UP_TOOLS_API bool deserialize(Stream& stream);
 
     private:
         struct HashAssetId {

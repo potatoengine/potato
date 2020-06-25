@@ -20,13 +20,13 @@ namespace up {
     public:
         explicit HashCache(FileSystem& fileSystem) : _fileSystem(fileSystem) {}
 
-        static UP_ASSETDB_API uint64 hashAssetContent(span<byte const> contents) noexcept;
-        static UP_ASSETDB_API uint64 hashAssetStream(Stream& stream);
+        static UP_TOOLS_API uint64 hashAssetContent(span<byte const> contents) noexcept;
+        static UP_TOOLS_API uint64 hashAssetStream(Stream& stream);
 
-        UP_ASSETDB_API uint64 hashAssetAtPath(zstring_view path);
+        UP_TOOLS_API uint64 hashAssetAtPath(zstring_view path);
 
-        UP_ASSETDB_API bool serialize(Stream& stream) const;
-        UP_ASSETDB_API bool deserialize(Stream& stream);
+        UP_TOOLS_API bool serialize(Stream& stream) const;
+        UP_TOOLS_API bool deserialize(Stream& stream);
 
     private:
         struct HashRecord {

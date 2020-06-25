@@ -4,10 +4,10 @@
 
 #include "converter_config.h"
 
-#include "potato/assetdb/asset_library.h"
-#include "potato/assetdb/hash_cache.h"
+#include "potato/tools/asset_library.h"
 #include "potato/tools/converter.h"
 #include "potato/tools/converter_factory.h"
+#include "potato/tools/hash_cache.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/box.h"

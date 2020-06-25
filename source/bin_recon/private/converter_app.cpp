@@ -2,7 +2,7 @@
 
 #include "converter_app.h"
 
-#include "potato/assetdb/hash_cache.h"
+#include "potato/tools/hash_cache.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/native.h"
