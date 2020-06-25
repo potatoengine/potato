@@ -129,7 +129,7 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
 void up::recon::ConverterApp::registerConverters() {
     _converterFactory.registerDefaultConverters();
 
-#if UP_GPU_ENABLE_D3D11
+#if defined(UP_GPU_ENABLE_D3D11)
     _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _converterFactory.findConverterByName("hlsl")});
 #else
     _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _converterFactory.findConverterByName("ignore")});

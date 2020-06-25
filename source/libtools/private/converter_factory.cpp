@@ -32,7 +32,9 @@ void up::ConverterFactory::registerConverter(box<Converter> converter) {
 
 void up::ConverterFactory::registerDefaultConverters() {
     registerConverter(new_box<CopyConverter>());
+#if defined(UP_GPU_ENABLE_D3D11)
     registerConverter(new_box<HlslConverter>());
+#endif
     registerConverter(new_box<IgnoreConverter>());
     registerConverter(new_box<JsonConverter>());
     registerConverter(new_box<MaterialConverter>());
