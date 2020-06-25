@@ -5,6 +5,22 @@ find_package(Assimp REQUIRED)
 
 include(up_copy_library_import)
 
+add_library(potato_librecon STATIC)
+up_set_common_properties(potato_librecon)
+
+target_sources(potato_librecon PRIVATE
+    "private/converter_app.cpp"
+    "private/converter_config.cpp"
+)
+
+target_link_libraries(potato_librecon
+    PUBLIC
+        potato::libruntime
+        potato::libtools
+    PRIVATE
+        assimp
+)
+
 add_executable(potato_recon)
 add_executable(potato::recon ALIAS potato_recon)
 
@@ -12,12 +28,28 @@ target_sources(potato_recon PRIVATE
     "private/main.cpp"
 )
 
-set_target_properties(potato_recon PROPERTIES OUTPUT_NAME recon)
+set_target_properties(potato_recon PROPERTIES
+    OUTPUT_NAME recon
+)
 
 up_set_common_properties(potato_recon)
 
-target_link_libraries(potato_recon PRIVATE potato::librecon)
+target_link_libraries(potato_recon PRIVATE potato_librecon)
 
-target_link_libraries(potato_recon PRIVATE assimp)
 include(up_copy_library_import)
 up_copy_library_import(assimp potato_recon)
+
+add_executable(potato_recon_test)
+target_sources(potato_recon_test PRIVATE
+    "tests/main.cpp"
+    "tests/test_converter_config.cpp"
+)
+
+up_set_common_properties(potato_recon_test)
+
+target_link_libraries(potato_recon_test PRIVATE
+    potato_librecon
+    doctest
+)
+
+add_test(NAME potato_recon_test COMMAND potato_recon_test)
