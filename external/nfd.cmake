@@ -11,3 +11,4 @@ target_sources(nfd PRIVATE
 )
 target_include_directories(nfd PUBLIC "${nfd_SOURCE_DIR}/src/include")
 target_compile_definitions(nfd PRIVATE _CRT_SECURE_NO_WARNINGS=1)
+target_compile_options(nfd PRIVATE $<$<C_COMPILER_ID:GNU>:-Wno-format-truncation>)
