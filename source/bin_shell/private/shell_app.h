@@ -5,7 +5,6 @@
 
 #include "potato/audio/audio_engine.h"
 #include "potato/render/draw_imgui.h"
-#include "potato/tools/document.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/native.h"
 #include "potato/spud/box.h"
@@ -91,7 +90,6 @@ namespace up::shell {
         DrawImgui _drawImgui;
         Logger _logger;
         vector<box<Editor>> _editors;
-        DocumentRegistry _documents;
         float _lastFrameTime = 0.f;
         std::chrono::nanoseconds _lastFrameDuration = {};
         ImGuiWindowClass _documentWindowClass;

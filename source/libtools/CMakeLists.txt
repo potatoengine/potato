@@ -9,7 +9,6 @@ target_sources(potato_libtools PRIVATE
     "private/asset_record.cpp"
     "private/hash_cache.cpp"
     "private/project.cpp"
-    "private/document.cpp"
     "private/converter_context.cpp"
     "private/converter_factory.cpp"
     "private/converters/convert_copy.cpp"
