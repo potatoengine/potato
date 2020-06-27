@@ -18,8 +18,9 @@
 #include <glm/vec3.hpp>
 #include <nlohmann/json.hpp>
 
-up::Scene::Scene(Universe& universe)
-    : _world{universe.createWorld()}
+up::Scene::Scene(Universe& universe, AudioEngine& audioEngine)
+    : _audioEngine(audioEngine)
+    , _world{universe.createWorld()}
     , _waveQuery{universe.createQuery<components::Position, components::Wave>()}
     , _orbitQuery{universe.createQuery<components::Position>()}
     , _spinQuery{universe.createQuery<components::Rotation, components::Spin>()}
@@ -44,7 +45,7 @@ void up::Scene::create(rc<Model> const& cube, rc<SoundResource> const& ding) {
             components::Spin{glm::sin(r) * 2.f - 1.f});
     }
 
-    _main = _world.createEntity(components::Position{{0, 5, 0}},
+    _root = _world.createEntity(components::Position{{0, 5, 0}},
         components::Rotation{glm::identity<glm::quat>()},
         components::Transform(),
         components::Mesh{cube},
@@ -53,7 +54,7 @@ void up::Scene::create(rc<Model> const& cube, rc<SoundResource> const& ding) {
 
 up::Scene::~Scene() { _cube.reset(); }
 
-void up::Scene::tick(float frameTime, AudioEngine& audioEngine) {
+void up::Scene::tick(float frameTime) {
     if (!_playing) {
         return;
     }
@@ -69,11 +70,11 @@ void up::Scene::tick(float frameTime, AudioEngine& audioEngine) {
         rot.rot = glm::angleAxis(spin.radians * frameTime, glm::vec3(0.f, 1.f, 0.f)) * rot.rot;
     });
 
-    _dingQuery.select(_world, [&](EntityId, components::Ding& ding) {
+    _dingQuery.select(_world, [&, this](EntityId, components::Ding& ding) {
         ding.time += frameTime;
         if (ding.time > ding.period) {
             ding.time -= ding.period;
-            audioEngine.play(ding.sound.get());
+            _audioEngine.play(ding.sound.get());
         }
     });
 }

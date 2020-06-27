@@ -5,9 +5,9 @@
     {
       "type": "default",
       "project": "CMakeLists.txt",
-      "projectTarget": "test_grimm_filesystem.exe (bin\\test_grimm_filesystem.exe)",
-      "name": "test_grimm_filesystem.exe (bin\\test_grimm_filesystem.exe)",
-      "currentDir": "@UP_ROOT_DIR@/source/filesystem/tests/fixtures"
+      "projectTarget": "libruntime_test.exe (bin\\libruntime_test.exe)",
+      "name": "libruntime_test.exe (bin\\libruntime_test.exe)",
+      "currentDir": "@UP_ROOT_DIR@/source/libruntime/tests/fixtures"
     }
   ]
 }

@@ -10,6 +10,7 @@ def main(argv):
     parser.add_argument('--name', required=True, type=str, help='Name of new project')
     parser.add_argument('--template', type=str, help='Source template directory')
     parser.add_argument('--dest', type=str, help='Destination directory')
+    parser.add_argument('--shortname', type=str, help='Short name, default auto-detect')
     args = parser.parse_args(argv[1:])
 
     name = args.name
@@ -24,8 +25,13 @@ def main(argv):
     if args.dest is not None:
         dest_dir = args.dest
     else:
-        dest_dir = os.path.relpath(os.path.join(source_dir, '..', '..', '..', 'source', 'library'))
+        dest_dir = os.path.relpath(os.path.join(source_dir, '..', '..', '..', 'source'))
     target_dir = os.path.realpath(os.path.join(dest_dir, name))
+
+    if args.shortname:
+        shortname = args.shortname
+    else:
+        shortname = name if not name.startswith('lib') else name[3:]
 
     print('Creating `{1}` from `{2}`'.format(name, target_dir, source_dir))
 
@@ -36,7 +42,7 @@ def main(argv):
         relative_path=os.path.relpath(source_file, source_dir)
         dir_name=os.path.dirname(relative_path)
 
-        target_dir_name=os.path.join(target_dir, dir_name).replace('__name__', name)
+        target_dir_name=os.path.join(target_dir, dir_name).replace('__name__', name).replace('__shortname__', shortname)
 
         root_file, ext = os.path.splitext(relative_path)
 
@@ -44,17 +50,17 @@ def main(argv):
             os.makedirs(target_dir_name)
 
         if ext == '.in':
-            target_file=os.path.join(target_dir, root_file).replace('__name__', name)
+            target_file=os.path.join(target_dir, root_file).replace('__name__', name).replace('__shortname__', shortname)
             with open(source_file, 'rt') as template_file:
                 template = template_file.read()
 
-            processed = template.replace('@NAME@', name).replace('@NAME_UPPER@', name.upper()).replace('@YEAR@', str(year))
+            processed = template.replace('@NAME@', name).replace('@SHORTNAME_UPPER@', shortname.upper()).replace('@SHORTNAME@', shortname)
 
             print('write template', target_file)
             with open(target_file, 'wt') as output_file:
                output_file.write(processed)
         else:
-            target_file=os.path.join(target_dir, relative_path).replace('__name__', name)
+            target_file=os.path.join(target_dir, relative_path).replace('__name__', name).replace('__shortname__', shortname)
             print('copy to', target_file)
             shutil.copyfile(src=source_file, dst=target_file)
 

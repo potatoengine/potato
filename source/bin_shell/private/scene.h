@@ -23,16 +23,16 @@ namespace up {
     class AudioEngine;
     class SoundResource;
 
-    class Scene {
+    class Scene : public shared<Scene> {
     public:
-        explicit Scene(Universe& universe);
+        explicit Scene(Universe& universe, AudioEngine& audioEngine);
         ~Scene();
 
         Scene(Scene const&) = delete;
         Scene& operator=(Scene const&) = delete;
 
         void create(rc<Model> const& cube, rc<SoundResource> const& ding);
-        void tick(float frameTime, AudioEngine& audioEngine);
+        void tick(float frameTime);
         void flush();
         void render(RenderContext& ctx);
 
@@ -43,12 +43,13 @@ namespace up {
         bool playing(bool active) { return _playing = active; }
 
         World& world() noexcept { return _world; }
-        EntityId main() const noexcept { return _main; }
+        EntityId root() const noexcept { return _root; }
 
     private:
+        AudioEngine& _audioEngine;
         rc<Model> _cube;
         World _world;
-        EntityId _main = EntityId::None;
+        EntityId _root = EntityId::None;
         bool _playing = false;
 
         Query<components::Position, components::Wave> _waveQuery;

@@ -1,0 +1,9 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
+#include "_export.h"
+
+namespace up {
+
+    UP_@NAME_UPPER@_API auto example(int x) noexcept -> int;
+
+} // namespace up

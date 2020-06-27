@@ -32,3 +32,7 @@ FetchContent_Declare(soloud
     GIT_REPOSITORY https://github.com/jarikomppa/soloud.git
     GIT_TAG RELEASE_20200207
 )
+FetchContent_Declare(nfd 
+    GIT_REPOSITORY https://github.com/mlabbe/nativefiledialog.git
+    GIT_TAG release_116
+)

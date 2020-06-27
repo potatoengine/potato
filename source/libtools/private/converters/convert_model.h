@@ -1,0 +1,19 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
+#pragma once
+
+#include "converter.h"
+
+namespace up {
+    class ModelConverter : public Converter {
+    public:
+        ModelConverter();
+        ~ModelConverter() override;
+
+        bool convert(ConverterContext& ctx) override;
+        string_view generateSettings(ConverterContext& ctd) override { return {}; }
+
+        string_view name() const noexcept override { return "model"; }
+        uint64 revision() const noexcept override { return 2; }
+    };
+} // namespace up

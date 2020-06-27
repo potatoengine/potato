@@ -23,6 +23,7 @@
 #include "potato/render/model.h"
 #include "potato/render/renderer.h"
 #include "potato/render/shader.h"
+#include "potato/tools/project.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/native.h"
 #include "potato/runtime/path.h"
@@ -30,6 +31,8 @@
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/platform.h"
+#include "potato/spud/sequence.h"
+#include "potato/spud/string_writer.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
 
@@ -45,19 +48,17 @@
 #include <chrono>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <nfd.h>
 
 namespace up::shell {
-    extern auto createScenePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
-    extern auto createGamePanel(Renderer& renderer, Scene& scene) -> box<Panel>;
-    extern auto createInspectorPanel(Scene& scene, Selection& selection, delegate<view<ComponentMeta>()> components) -> box<Panel>;
-    extern auto createHierarchyPanel(Scene& scene, Selection& selection) -> box<Panel>;
+    extern auto createFileTreeEditor(FileSystem& fileSystem, delegate<void(zstring_view name)> onSelected) -> box<Editor>;
+    extern auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()>, delegate<void(rc<Scene>)>) -> box<Editor>;
+    extern auto createGameEditor(rc<Scene> scene) -> box<Editor>;
 } // namespace up::shell
 
-up::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 
-up::ShellApp::~ShellApp() {
-    _documents.clear();
-
+up::shell::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
 
     _renderer.reset();
@@ -68,23 +69,27 @@ up::ShellApp::~ShellApp() {
     _device.reset();
 }
 
-int up::ShellApp::initialize() {
+int up::shell::ShellApp::initialize() {
     zstring_view configPath = "shell.config.json";
     if (_fileSystem.fileExists(configPath)) {
         _loadConfig(configPath);
     }
 
-    if (!_resourceDir.empty()) {
-        _fileSystem.currentWorkingDirectory(_resourceDir.c_str());
+    if (_editorResourcePath.empty()) {
+        _errorDialog("No editor resource path specified");
+        return 1;
     }
+
+    _fileSystem.currentWorkingDirectory(_editorResourcePath);
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
 
-    _window = SDL_CreateWindow("Potato Shell", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, default_width, default_height, SDL_WINDOW_RESIZABLE);
+    _window = SDL_CreateWindow("loading", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, default_width, default_height, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", "Could not create window", nullptr);
+        _errorDialog("Could not create window");
     }
+    _updateTitle();
 
     SDL_SysWMinfo wmInfo;
     SDL_VERSION(&wmInfo.version);
@@ -93,6 +98,8 @@ int up::ShellApp::initialize() {
         _errorDialog("Could not get window info");
         return 1;
     }
+
+    _audio = AudioEngine::create(_fileSystem);
 
 #if defined(UP_GPU_ENABLE_D3D11)
     if (_device == nullptr) {
@@ -124,40 +131,9 @@ int up::ShellApp::initialize() {
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
-    auto material = _loader->loadMaterialSync("resources/materials/full.mat");
-    if (material == nullptr) {
-        _errorDialog("Failed to load basic material");
-        return 1;
-    }
-
-    auto mesh = _loader->loadMeshSync("resources/meshes/cube.model");
-    if (mesh == nullptr) {
-        _errorDialog("Failed to load cube mesh");
-        return 1;
-    }
-
-    _audio = AudioEngine::create(_fileSystem);
-
-    _ding = _audio->loadSound("resources/audio/kenney/highUp.mp3");
-    if (_ding == nullptr) {
-        _errorDialog("Failed to load coin mp3");
-        return 1;
-    }
-
-    _universe = new_box<Universe>();
-
-    _universe->registerComponent<components::Position>("Position");
-    _universe->registerComponent<components::Rotation>("Rotation");
-    _universe->registerComponent<components::Transform>("Transform");
-    _universe->registerComponent<components::Mesh>("Mesh");
-    _universe->registerComponent<components::Wave>("Wave");
-    _universe->registerComponent<components::Spin>("Spin");
-    _universe->registerComponent<components::Ding>("Ding");
-
-    _scene = new_box<Scene>(*_universe);
-    _scene->create(new_shared<Model>(std::move(mesh), std::move(material)), _ding);
-
-    _selection.select(_scene->main());
+    _documentWindowClass.ClassId = ImHashStr("DocumentClass");
+    _documentWindowClass.DockingAllowUnclassed = false;
+    _documentWindowClass.DockingAlwaysTabBar = true;
 
     auto imguiVertShader = _loader->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
     auto imguiPixelShader = _loader->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
@@ -186,15 +162,51 @@ int up::ShellApp::initialize() {
 
     _drawImgui.createResources(*_device);
 
-    _documents.push_back(shell::createScenePanel(*_renderer, *_scene));
-    _documents.push_back(shell::createGamePanel(*_renderer, *_scene));
-    _documents.push_back(shell::createInspectorPanel(*_scene, _selection, [this] { return _universe->components(); }));
-    _documents.push_back(shell::createHierarchyPanel(*_scene, _selection));
+    _universe = new_box<Universe>();
+
+    _universe->registerComponent<components::Position>("Position");
+    _universe->registerComponent<components::Rotation>("Rotation");
+    _universe->registerComponent<components::Transform>("Transform");
+    _universe->registerComponent<components::Mesh>("Mesh");
+    _universe->registerComponent<components::Wave>("Wave");
+    _universe->registerComponent<components::Spin>("Spin");
+    _universe->registerComponent<components::Ding>("Ding");
 
     return 0;
 }
 
-void up::ShellApp::run() {
+bool up::shell::ShellApp::_selectAndLoadProject(zstring_view defaultPath) {
+    nfdchar_t* selectedPath = nullptr;
+    string folder = path::normalize(path::parent(defaultPath), path::Separator::Native);
+    auto const result = NFD_OpenDialog("popr", folder.c_str(), &selectedPath);
+    if (result != NFD_OKAY) {
+        return false;
+    }
+    bool success = _loadProject(selectedPath);
+    free(selectedPath); // NOLINT(cppcoreguidelines-no-malloc)
+    return success;
+}
+
+bool up::shell::ShellApp::_loadProject(zstring_view path) {
+    _project = Project::loadFromFile(_fileSystem, path);
+    if (_project == nullptr) {
+        _errorDialog("Could not load project file");
+        return false;
+    }
+
+    _projectName = path::filebasename(path);
+
+    _fileSystem.currentWorkingDirectory(_project->targetPath());
+
+    _editors.clear();
+    _editors.push_back(createFileTreeEditor(_fileSystem, [this](zstring_view name) { _onFileOpened(name); }));
+
+    _updateTitle();
+
+    return true;
+}
+
+void up::shell::ShellApp::run() {
     auto& imguiIO = ImGui::GetIO();
 
     auto now = std::chrono::high_resolution_clock::now();
@@ -206,7 +218,16 @@ void up::ShellApp::run() {
     constexpr double nano_to_seconds = 1.0 / 1000000000.0;
 
     while (isRunning()) {
+        imguiIO.DeltaTime = _lastFrameTime;
+
         _processEvents();
+
+        if (_openProject && !_closeProject) {
+            _openProject = false;
+            if (!_selectAndLoadProject(path::join(_editorResourcePath, "..", "resources", "sample.popr"))) {
+                return;
+            }
+        }
 
         SDL_GetWindowSize(_window.get(), &width, &height);
         imguiIO.DisplaySize.x = static_cast<float>(width);
@@ -221,6 +242,22 @@ void up::ShellApp::run() {
 
         _render();
 
+        if (_closeProject) {
+            _closeProject = false;
+            _editors.clear();
+            _project = nullptr;
+            _updateTitle();
+        }
+
+        for (auto it = _editors.begin(); it != _editors.end();) {
+            if (it->get()->isClosed()) {
+                it = _editors.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+
         auto endFrame = std::chrono::high_resolution_clock::now();
         _lastFrameDuration = endFrame - now;
         _lastFrameTime = static_cast<float>(_lastFrameDuration.count() * nano_to_seconds);
@@ -228,11 +265,11 @@ void up::ShellApp::run() {
     }
 }
 
-void up::ShellApp::quit() { _running = false; }
+void up::shell::ShellApp::quit() { _running = false; }
 
-void up::ShellApp::_onWindowClosed() { quit(); }
+void up::shell::ShellApp::_onWindowClosed() { quit(); }
 
-void up::ShellApp::_onWindowSizeChanged() {
+void up::shell::ShellApp::_onWindowSizeChanged() {
     int width = 0;
     int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
@@ -242,7 +279,20 @@ void up::ShellApp::_onWindowSizeChanged() {
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 }
 
-void up::ShellApp::_processEvents() {
+void up::shell::ShellApp::_updateTitle() {
+    static constexpr char appName[] = "Potato Shell";
+
+    if (_project == nullptr) {
+        SDL_SetWindowTitle(_window.get(), appName);
+        return;
+    }
+
+    string_writer title;
+    format_append(title, "{} [{}]", appName, _projectName);
+    SDL_SetWindowTitle(_window.get(), title.c_str());
+}
+
+void up::shell::ShellApp::_processEvents() {
     auto& io = ImGui::GetIO();
 
     SDL_SetRelativeMouseMode(ImGui::IsCaptureRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
@@ -296,12 +346,13 @@ void up::ShellApp::_processEvents() {
     }
 }
 
-void up::ShellApp::_tick() {
-    _scene->tick(_lastFrameTime, *_audio);
-    _scene->flush();
+void up::shell::ShellApp::_tick() {
+    for (auto& editor : _editors) {
+        editor->tick(_lastFrameTime);
+    }
 }
 
-void up::ShellApp::_render() {
+void up::shell::ShellApp::_render() {
     GpuViewportDesc viewport;
     int width = 0;
     int height = 0;
@@ -320,7 +371,7 @@ void up::ShellApp::_render() {
     _swapChain->present();
 }
 
-void up::ShellApp::_displayUI() {
+void up::shell::ShellApp::_displayUI() {
     auto& imguiIO = ImGui::GetIO();
 
     _displayMainMenu();
@@ -334,39 +385,33 @@ void up::ShellApp::_displayUI() {
     _displayDocuments({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
 }
 
-void up::ShellApp::_displayMainMenu() {
+void up::shell::ShellApp::_displayMainMenu() {
     if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu(as_char(u8"\uf094 Potato"))) {
+        if (ImGui::BeginMenu("Potato")) {
+            if (ImGui::BeginMenu("New")) {
+                if (ImGui::MenuItem("Scene", nullptr, false, _project != nullptr)) {
+                    _createScene();
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::MenuItem(as_char(u8"\uf542 Open Project..."))) {
+                _openProject = true;
+                _closeProject = true;
+            }
+            if (ImGui::MenuItem(as_char(u8"\uf057 Close Project"), nullptr, false, _project != nullptr)) {
+                _closeProject = true;
+            }
             if (ImGui::MenuItem(as_char(u8"\uf52b Quit"), "ESC")) {
                 _running = false;
             }
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu(as_char(u8"\uf06e View"))) {
+        if (ImGui::BeginMenu("View")) {
             if (ImGui::BeginMenu("Options")) {
                 ImGui::EndMenu();
             }
             ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu(as_char(u8"\uf2d2 Windows"))) {
-            for (auto const& doc : _documents) {
-                if (ImGui::MenuItem(doc->displayName().c_str(), nullptr, doc->enabled(), true)) {
-                    doc->enabled(!doc->enabled());
-                }
-            }
-            ImGui::EndMenu();
-        }
-
-        {
-            auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
-            auto const xPos = ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
-            ImGui::SetCursorPosX(xPos);
-            if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
-                _scene->playing(!_scene->playing());
-            }
-            ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "Shift-ESC to release input");
         }
 
         {
@@ -383,52 +428,32 @@ void up::ShellApp::_displayMainMenu() {
     }
 }
 
-void up::ShellApp::_displayDocuments(glm::vec4 rect) {
+void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
+    auto const mainDockId = ImGui::GetID("DocumentsDockspace");
+    auto const windowFlags =
+        ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus;
+
     ImGui::SetNextWindowPos({rect.x, rect.y});
     ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    if (ImGui::Begin("MainWindow",
-            nullptr,
-            ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus)) {
-        auto dockSize = ImGui::GetContentRegionAvail();
-
-        auto const dockId = ImGui::GetID("MainDockspace");
-
-        if (ImGui::DockBuilderGetNode(dockId) == nullptr) {
-            ImGui::DockBuilderRemoveNode(dockId);
-            ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_DockSpace);
-            ImGui::DockBuilderSetNodeSize(dockId, dockSize);
-
-            auto const centralDockId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_None);
-
-            auto contentDockId = centralDockId;
-            auto inspectedDockId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentDockId);
-            auto const hierarchyDockId = ImGui::DockBuilderSplitNode(inspectedDockId, ImGuiDir_Down, 0.65f, nullptr, &inspectedDockId);
-
-            ImGui::DockBuilderDockWindow("Inspector", inspectedDockId);
-            ImGui::DockBuilderDockWindow("Hierarchy", hierarchyDockId);
-            ImGui::DockBuilderDockWindow("ScenePanel", contentDockId);
-            ImGui::DockBuilderDockWindow("GamePanel", contentDockId);
-
-            ImGui::DockBuilderFinish(dockId);
-        }
-
-        ImGui::DockSpace(dockId, {}, ImGuiDockNodeFlags_None);
-    }
-    ImGui::End();
+    ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
+    ImGui::DockSpace(mainDockId, {}, ImGuiDockNodeFlags_NoWindowMenuButton, &_documentWindowClass);
+    ImGui::End();
 
-    for (auto const& doc : _documents) {
-        doc->ui();
+    for (auto index : sequence(_editors.size())) {
+        ImGui::SetNextWindowDockID(mainDockId, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowClass(&_documentWindowClass);
+        _editors[index]->render(*_renderer);
     }
 }
 
-void up::ShellApp::_errorDialog(zstring_view message) {
+void up::shell::ShellApp::_errorDialog(zstring_view message) {
     _logger.error("Fatal error: {}", message);
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error", message.c_str(), _window.get());
 }
 
-bool up::ShellApp::_loadConfig(zstring_view path) {
+bool up::shell::ShellApp::_loadConfig(zstring_view path) {
     auto stream = _fileSystem.openRead(path, FileOpenMode::Text);
     if (!stream) {
         _logger.error("Failed to open `{}'", path.c_str());
@@ -442,11 +467,48 @@ bool up::ShellApp::_loadConfig(zstring_view path) {
         return false;
     }
 
-    auto jsonResourceDir = jsonRoot["resourceDir"];
+    auto const editorResourcePath = jsonRoot["editorResourcePath"];
 
-    if (jsonResourceDir.is_string()) {
-        _resourceDir = jsonResourceDir.get<string>();
+    if (editorResourcePath.is_string()) {
+        _editorResourcePath = editorResourcePath.get<string>();
     }
 
     return true;
 }
+
+void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
+    if (path::extension(filename) == ".scene") {
+        _createScene();
+    }
+}
+
+void up::shell::ShellApp::_createScene() {
+    auto material = _loader->loadMaterialSync("resources/materials/full.mat");
+    if (material == nullptr) {
+        _errorDialog("Failed to load basic material");
+        return;
+    }
+
+    auto mesh = _loader->loadMeshSync("resources/meshes/cube.model");
+    if (mesh == nullptr) {
+        _errorDialog("Failed to load cube mesh");
+        return;
+    }
+
+    auto ding = _audio->loadSound("resources/audio/kenney/highUp.mp3");
+    if (ding == nullptr) {
+        _errorDialog("Failed to load coin mp3");
+        return;
+    }
+
+    auto model = new_shared<Model>(std::move(mesh), std::move(material));
+
+    auto scene = new_shared<Scene>(*_universe, *_audio);
+    scene->create(model, ding);
+    _editors.push_back(createSceneEditor(
+        scene,
+        [this] { return _universe->components(); },
+        [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
+}
+
+void up::shell::ShellApp::_createGame(rc<Scene> scene) { _editors.push_back(createGameEditor(std::move(scene))); }

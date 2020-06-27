@@ -54,15 +54,15 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::path") {
         DOCTEST_CHECK_EQ(isNormalized("/foo"), true);
         DOCTEST_CHECK_EQ(isNormalized("/bar.txt"), true);
 
-        DOCTEST_CHECK_EQ(isNormalized(""), false);
-        DOCTEST_CHECK_EQ(isNormalized("/foo\\bar.txt"), false);
+        DOCTEST_CHECK_EQ(isNormalized(""), true);
+        DOCTEST_CHECK_EQ(isNormalized("/foo\\bar.txt"), true);
         DOCTEST_CHECK_EQ(isNormalized("//foo/bar.txt"), false);
-        DOCTEST_CHECK_EQ(isNormalized("/foo/.bar.txt"), false);
-        DOCTEST_CHECK_EQ(isNormalized("/foo/bar..txt"), false);
-        DOCTEST_CHECK_EQ(isNormalized("bar.txt"), false);
+        DOCTEST_CHECK_EQ(isNormalized("/foo/.bar.txt"), true);
+        DOCTEST_CHECK_EQ(isNormalized("/foo/../bar.txt"), false);
+        DOCTEST_CHECK_EQ(isNormalized("bar.txt"), true);
         DOCTEST_CHECK_EQ(isNormalized("/foo/bar/"), false);
-        DOCTEST_CHECK_EQ(isNormalized("/foo/bar."), false);
-        DOCTEST_CHECK_EQ(isNormalized("/foo./bar.txt"), false);
+        DOCTEST_CHECK_EQ(isNormalized("/foo/bar."), true);
+        DOCTEST_CHECK_EQ(isNormalized("/foo./bar.txt"), true);
     }
 
     DOCTEST_TEST_CASE("normalize") {
@@ -70,16 +70,26 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::path") {
         DOCTEST_CHECK_EQ(normalize("/foo"), "/foo");
         DOCTEST_CHECK_EQ(normalize("/bar.txt"), "/bar.txt");
 
-        DOCTEST_CHECK_EQ(normalize(""), "/");
+        DOCTEST_CHECK_EQ(normalize(""), "");
         DOCTEST_CHECK_EQ(normalize("/foo\\bar.txt"), "/foo/bar.txt");
         DOCTEST_CHECK_EQ(normalize("//foo/bar.txt"), "/foo/bar.txt");
-        DOCTEST_CHECK_EQ(normalize("/foo/.bar.txt"), "/foo/bar.txt");
-        DOCTEST_CHECK_EQ(normalize("/foo/bar..txt"), "/foo/bar.txt");
-        DOCTEST_CHECK_EQ(normalize("bar.txt"), "/bar.txt");
+        DOCTEST_CHECK_EQ(normalize("/foo/bar.txt"), "/foo/bar.txt");
+        DOCTEST_CHECK_EQ(normalize("bar.txt"), "bar.txt");
         DOCTEST_CHECK_EQ(normalize("/foo/bar/"), "/foo/bar");
-        DOCTEST_CHECK_EQ(normalize("/foo/bar."), "/foo/bar");
-        DOCTEST_CHECK_EQ(normalize("/foo./bar.txt"), "/foo/bar.txt");
-        DOCTEST_CHECK_EQ(normalize("foo.//.bar..txt./."), "/foo/bar.txt");
+
+        DOCTEST_CHECK_EQ(normalize("/foo/../bar/"), "/bar");
+        DOCTEST_CHECK_EQ(normalize("/foo/bar/.."), "/foo");
+        DOCTEST_CHECK_EQ(normalize("/foo/.."), "/");
+
+        DOCTEST_CHECK_EQ(normalize("/foo/./bar/"), "/foo/bar");
+        DOCTEST_CHECK_EQ(normalize("/foo/bar/."), "/foo/bar");
+        DOCTEST_CHECK_EQ(normalize("/foo/."), "/foo");
+        DOCTEST_CHECK_EQ(normalize("./foo"), "/foo");
+        DOCTEST_CHECK_EQ(normalize("./foo/../bar/./../baz/."), "/baz");
+        DOCTEST_CHECK_EQ(normalize("/foo/../.."), "/");
+        DOCTEST_CHECK_EQ(normalize("/foo/../../bar"), "/bar");
+        DOCTEST_CHECK_EQ(normalize("."), "/");
+        DOCTEST_CHECK_EQ(normalize(".."), "/");
     }
 
     DOCTEST_TEST_CASE("join") {
@@ -89,5 +99,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::path") {
         DOCTEST_CHECK_EQ(join({"", "foo", "/bar.txt"}), "foo//bar.txt");
         DOCTEST_CHECK_EQ(join({"foo", "bar", ""}), "foo/bar");
         DOCTEST_CHECK_EQ(join({}), "");
+
+        DOCTEST_CHECK_EQ(join("/foo", "/bar"_sv, "baz.txt"_s), "/foo//bar/baz.txt");
     }
 }

@@ -43,6 +43,11 @@ namespace up {
         FileType type = FileType::Regular;
     };
 
+    struct EnumerateItem {
+        FileInfo info;
+        int depth = 0;
+    };
+
     enum class EnumerateOptions {
         None = 0,
         FullPath = 1 << 0,
@@ -54,5 +59,5 @@ namespace up {
         return EnumerateOptions{to_underlying(lhs) & to_underlying(rhs)};
     }
 
-    using EnumerateCallback = up::delegate_ref<EnumerateResult(FileInfo const&)>;
+    using EnumerateCallback = up::delegate_ref<EnumerateResult(EnumerateItem const&)>;
 } // namespace up

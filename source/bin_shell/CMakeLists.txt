@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.16)
 project(shell VERSION 0.1 LANGUAGES CXX)
 
@@ -8,14 +9,14 @@ add_executable(potato::shell ALIAS potato_shell)
 target_sources(potato_shell PRIVATE
     "private/camera.cpp"
     "private/camera_controller.cpp"
-    "private/game_panel.cpp"
+    "private/editor.cpp"
+    "private/game_editor.cpp"
     "private/imgui_reflector.cpp"
-    "private/inspector_panel.cpp"
-    "private/hierarchy_panel.cpp"
     "private/main.cpp"
     "private/scene.cpp"
-    "private/scene_panel.cpp"
+    "private/scene_editor.cpp"
     "private/shell_app.cpp"
+    "private/filetree_editor.cpp"
 )
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
@@ -26,14 +27,17 @@ up_set_common_properties(potato_shell)
 target_link_libraries(potato_shell PRIVATE
     potato::libruntime
     potato::spud
+    potato::libformat
     potato::librender
     potato::libecs
     potato::libreflex
     potato::libaudio
+    potato::libtools
     glm
     SDL2
     SDL2main
     imgui
+    nfd
     nlohmann_json::nlohmann_json
 )
 

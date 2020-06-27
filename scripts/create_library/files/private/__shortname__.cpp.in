@@ -1,0 +1,7 @@
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
+#include "@SHORTNAME@.h"
+
+auto up::example(int x) noexcept -> int {
+    return x;
+}
