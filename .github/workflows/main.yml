@@ -69,21 +69,15 @@ jobs:
             clang_tidy: clang-tidy-10
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
-    runs-on: 'ubuntu-latest'
-    container:
-      image: 'ubuntu:20.04'
+    runs-on: 'ubuntu-20.04'
 
     steps:
       - name: Apt update
         run: apt-get -yq update
-      - name: Setup timezone
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: apt-get -yq install tzdata
       - name: Install libraries
         run: apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
       - name: Install toolchain
-        run: apt-get -yq install cmake git git-lfs ${{ matrix.packages }}
+        run: apt-get -yq install cmake ${{ matrix.packages }}
       - uses: actions/checkout@master
         with:
           lfs: true
@@ -109,18 +103,12 @@ jobs:
 
   clang-format:
     name: 'Clang Format'
-    runs-on: 'ubuntu-latest'
-    container:
-      image: 'ubuntu:20.04'
+    runs-on: 'ubuntu-20.04'
 
     steps:
       - uses: actions/checkout@master
       - name: Apt update
         run: apt-get -yq update
-      - name: Setup timezone
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: apt-get -yq install tzdata
       - name: Install toolchain
         run: apt-get -yq install clang-format-10
       - name: Check Format
@@ -129,23 +117,17 @@ jobs:
 
   doxygen:
     name: Documentation
-    runs-on: 'ubuntu-latest'
-    container:
-      image: 'ubuntu:20.04'
+    runs-on: 'ubuntu-20.04'
 
     steps:
       - name: Apt update
         run: apt-get -yq update
-      - name: Setup timezone
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: apt-get -yq install tzdata
       - name: Install Doxygen
         run: apt-get -yq install doxygen
       - name: Install libraries
         run: apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
       - name: Install toolchain
-        run: apt-get -yq install cmake git git-lfs g++-10 gcc-10 libstdc++-10-dev
+        run: apt-get -yq install cmake g++-10 gcc-10 libstdc++-10-dev
       - uses: actions/checkout@master
         with:
           lfs: true
