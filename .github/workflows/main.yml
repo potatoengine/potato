@@ -73,11 +73,11 @@ jobs:
 
     steps:
       - name: Apt update
-        run: apt-get -yq update
+        run: sudo apt-get -yq update
       - name: Install libraries
-        run: apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
       - name: Install toolchain
-        run: apt-get -yq install cmake ${{ matrix.packages }}
+        run: sudo apt-get -yq install cmake ${{ matrix.packages }}
       - uses: actions/checkout@master
         with:
           lfs: true
@@ -108,9 +108,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Apt update
-        run: apt-get -yq update
+        run: sudo apt-get -yq update
       - name: Install toolchain
-        run: apt-get -yq install clang-format-10
+        run: sudo apt-get -yq install clang-format-10
       - name: Check Format
         run: |
           python3 .github/scripts/run-clang-format.py -r --clang-format-executable clang-format-10 --exclude ./external --extensions h,cpp,cc ./source
@@ -121,13 +121,13 @@ jobs:
 
     steps:
       - name: Apt update
-        run: apt-get -yq update
+        run: sudo apt-get -yq update
       - name: Install Doxygen
-        run: apt-get -yq install doxygen
+        run: sudo apt-get -yq install doxygen
       - name: Install libraries
-        run: apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
       - name: Install toolchain
-        run: apt-get -yq install cmake g++-10 gcc-10 libstdc++-10-dev
+        run: sudo apt-get -yq install cmake g++-10 gcc-10 libstdc++-10-dev
       - uses: actions/checkout@master
         with:
           lfs: true
