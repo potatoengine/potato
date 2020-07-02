@@ -16,9 +16,9 @@
 #include <unordered_map>
 
 namespace up {
-    class HashCache {
+    class FileHashCache {
     public:
-        explicit HashCache(FileSystem& fileSystem) : _fileSystem(fileSystem) {}
+        explicit FileHashCache(FileSystem& fileSystem) : _fileSystem(fileSystem) {}
 
         static UP_TOOLS_API uint64 hashAssetContent(span<byte const> contents) noexcept;
         static UP_TOOLS_API uint64 hashAssetStream(Stream& stream);

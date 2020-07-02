@@ -7,7 +7,7 @@
 #include "potato/tools/asset_library.h"
 #include "potato/tools/converter.h"
 #include "potato/tools/converter_factory.h"
-#include "potato/tools/hash_cache.h"
+#include "potato/tools/file_hash_cache.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/box.h"
@@ -54,7 +54,7 @@ namespace up::recon {
         ConverterConfig _config;
         box<FileSystem> _fileSystem;
         AssetLibrary _library;
-        HashCache _hashes;
+        FileHashCache _hashes;
         Logger _logger;
         ConverterFactory _converterFactory;
     };

@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "hash_cache.h"
+#include "file_hash_cache.h"
 
 #include "potato/runtime/json.h"
 #include "potato/runtime/stream.h"
@@ -8,9 +8,9 @@
 
 #include <nlohmann/json.hpp>
 
-auto up::HashCache::hashAssetContent(span<up::byte const> contents) noexcept -> up::uint64 { return hash_value<fnv1a>(contents); }
+auto up::FileHashCache::hashAssetContent(span<up::byte const> contents) noexcept -> up::uint64 { return hash_value<fnv1a>(contents); }
 
-auto up::HashCache::hashAssetStream(Stream& stream) -> up::uint64 {
+auto up::FileHashCache::hashAssetStream(Stream& stream) -> up::uint64 {
     constexpr int block_size = 8 * 1024;
 
     auto hasher = fnv1a();
@@ -26,7 +26,7 @@ auto up::HashCache::hashAssetStream(Stream& stream) -> up::uint64 {
     return static_cast<uint64>(hasher.finalize());
 }
 
-auto up::HashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
+auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
     FileStat stat;
     auto rs = _fileSystem.fileStat(path, stat);
     if (rs != IOResult::Success) {
@@ -53,7 +53,7 @@ auto up::HashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
     return hash;
 }
 
-bool up::HashCache::serialize(Stream& stream) const {
+bool up::FileHashCache::serialize(Stream& stream) const {
     nlohmann::json jsonRoot;
 
     for (auto const& [key, value] : _hashes) {
@@ -71,7 +71,7 @@ bool up::HashCache::serialize(Stream& stream) const {
     return writeAllText(stream, {json.data(), json.size()}) == IOResult::Success;
 }
 
-bool up::HashCache::deserialize(Stream& stream) {
+bool up::FileHashCache::deserialize(Stream& stream) {
     string jsonText;
     if (readText(stream, jsonText) != IOResult::Success) {
         return false;

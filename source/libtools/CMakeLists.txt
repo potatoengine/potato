@@ -7,7 +7,7 @@ add_library(potato::libtools ALIAS potato_libtools)
 target_sources(potato_libtools PRIVATE
     "private/asset_library.cpp"
     "private/asset_record.cpp"
-    "private/hash_cache.cpp"
+    "private/file_hash_cache.cpp"
     "private/project.cpp"
     "private/converter_context.cpp"
     "private/converter_factory.cpp"
