@@ -2,7 +2,7 @@ include(FetchContent)
 
 FetchContent_Declare(doctest
     GIT_REPOSITORY https://github.com/onqtam/doctest.git
-    GIT_TAG 2.3.8
+    GIT_TAG 2.4.0
 )
 FetchContent_Declare(imgui
     GIT_REPOSITORY https://github.com/potatoengine/imgui.git
