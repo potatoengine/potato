@@ -21,8 +21,8 @@ FetchContent_Declare(json
     GIT_TAG v3.8.0
 )
 FetchContent_Declare(sdl2_vc_sdk
-    URL https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
-    URL_HASH SHA1=0b4d2a9bd0c66847d669ae664c5b9e2ae5cc8f00
+    URL https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip
+    URL_HASH SHA1=6839B6EC345EF754A6585AB24F04E125E88C3392
 )
 FetchContent_Declare(flatbuffers
     GIT_REPOSITORY https://github.com/google/flatbuffers.git
