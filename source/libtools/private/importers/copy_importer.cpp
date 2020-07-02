@@ -1,17 +1,17 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "convert_copy.h"
+#include "copy_importer.h"
 
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/path.h"
 #include "potato/spud/std_iostream.h"
 
-up::CopyConverter::CopyConverter() = default;
+up::CopyImporter::CopyImporter() = default;
 
-up::CopyConverter::~CopyConverter() = default;
+up::CopyImporter::~CopyImporter() = default;
 
-bool up::CopyConverter::convert(ConverterContext& ctx) {
+bool up::CopyImporter::import(ImporterContext& ctx) {
     auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 

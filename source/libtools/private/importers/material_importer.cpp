@@ -1,8 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "convert_json.h"
+#include "material_importer.h"
 
+#include "potato/render/material_generated.h"
 #include "potato/runtime/filesystem.h"
+#include "potato/runtime/json.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/path.h"
 #include "potato/spud/std_iostream.h"
@@ -10,11 +12,11 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 
-up::JsonConverter::JsonConverter() = default;
+up::MaterialImporter::MaterialImporter() = default;
 
-up::JsonConverter::~JsonConverter() = default;
+up::MaterialImporter::~MaterialImporter() = default;
 
-bool up::JsonConverter::convert(ConverterContext& ctx) {
+bool up::MaterialImporter::import(ImporterContext& ctx) {
     auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
     auto destAbsolutePath = path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
 
@@ -41,25 +43,44 @@ bool up::JsonConverter::convert(ConverterContext& ctx) {
 
     inFile.close();
 
+    auto jsonShaders = doc["shaders"];
+    if (!jsonShaders.is_object()) {
+        return false;
+    }
+
+    auto vertexPath = jsonShaders["vertex"].get<string>();
+    auto pixelPath = jsonShaders["pixel"].get<string>();
+
+    flatbuffers::FlatBufferBuilder builder;
+
+    auto shader = schema::CreateMaterialShaderDirect(builder, vertexPath.c_str(), pixelPath.c_str());
+
+    std::vector<flatbuffers::Offset<flatbuffers::String>> textures;
+
+    auto jsonTextures = doc["textures"];
+    for (auto const& jsonTexture : jsonTextures) {
+        auto texturePath = jsonTexture.get<string>();
+        textures.push_back(builder.CreateString(texturePath.c_str()));
+    }
+
+    auto mat = schema::CreateMaterialDirect(builder, shader, &textures);
+
+    builder.Finish(mat);
+
     std::ofstream outFile(destAbsolutePath.c_str());
     if (!outFile) {
         ctx.logger().error("Failed to open `{}'", destAbsolutePath);
         return false;
     }
 
-    outFile << doc;
-
-    if (!outFile) {
-        ctx.logger().error("Failed to write to `{}'", destAbsolutePath);
-        return false;
-    }
+    outFile.write(reinterpret_cast<char const*>(builder.GetBufferPointer()), builder.GetSize());
 
     outFile.close();
 
     // output has same name as input
     ctx.addOutput(ctx.sourceFilePath());
 
-    ctx.logger().info("Minified `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
+    ctx.logger().info("Compiled `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
 
     return true;
 }

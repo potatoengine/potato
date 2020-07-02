@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "convert_hlsl.h"
+#include "hlsl_importer.h"
 
 #include "potato/runtime/com_ptr.h"
 #include "potato/runtime/filesystem.h"
@@ -18,7 +18,7 @@
 
 namespace {
     struct ReconIncludeHandler : public ID3DInclude {
-        ReconIncludeHandler(up::FileSystem& fileSystem, up::ConverterContext& ctx, up::string_view folder)
+        ReconIncludeHandler(up::FileSystem& fileSystem, up::ImporterContext& ctx, up::string_view folder)
             : _fileSystem(fileSystem)
             , _ctx(ctx)
             , _folder(folder) {}
@@ -52,17 +52,17 @@ namespace {
         HRESULT __stdcall Close(LPCVOID pData) override { return S_OK; }
 
         up::FileSystem& _fileSystem;
-        up::ConverterContext& _ctx;
+        up::ImporterContext& _ctx;
         up::string_view _folder;
         up::vector<up::string> _shaders;
     }; // namespace
 } // namespace
 
-up::HlslConverter::HlslConverter() = default;
+up::HlslImporter::HlslImporter() = default;
 
-up::HlslConverter::~HlslConverter() = default;
+up::HlslImporter::~HlslImporter() = default;
 
-bool up::HlslConverter::convert(ConverterContext& ctx) {
+bool up::HlslImporter::import(ImporterContext& ctx) {
     auto absoluteSourcePath = path::join({string_view(ctx.sourceFolderPath()), ctx.sourceFilePath()});
 
     auto stream = ctx.fileSystem().openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
@@ -84,7 +84,7 @@ bool up::HlslConverter::convert(ConverterContext& ctx) {
     return success;
 }
 
-bool up::HlslConverter::_compile(ConverterContext& ctx,
+bool up::HlslImporter::_compile(ImporterContext& ctx,
     FileSystem& fileSys,
     zstring_view absoluteSourcePath,
     string_view source,

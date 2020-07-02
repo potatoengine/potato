@@ -9,12 +9,12 @@ target_sources(potato_libtools PRIVATE
     "private/asset_record.cpp"
     "private/file_hash_cache.cpp"
     "private/project.cpp"
-    "private/converter_context.cpp"
-    "private/converter_factory.cpp"
-    "private/converters/convert_copy.cpp"
-    "private/converters/convert_json.cpp"
-    "private/converters/convert_material.cpp"
-    "private/converters/convert_model.cpp"
+    "private/importer_context.cpp"
+    "private/importer_factory.cpp"
+    "private/importers/copy_importer.cpp"
+    "private/importers/json_importer.cpp"
+    "private/importers/material_importer.cpp"
+    "private/importers/model_importer.cpp"
 )
 
 include(up_set_common_properties)
@@ -33,7 +33,7 @@ target_link_libraries(potato_libtools
 find_library(D3DCOMPILER_PATH d3dcompiler)
 if(D3DCOMPILER_PATH)
     target_link_libraries(potato_libtools PRIVATE ${D3DCOMPILER_PATH})
-    target_sources(potato_libtools PRIVATE "private/converters/convert_hlsl.cpp")
+    target_sources(potato_libtools PRIVATE "private/importers/hlsl_importer.cpp")
 endif()
 
 add_executable(potato_libtools_test)

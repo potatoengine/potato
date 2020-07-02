@@ -33,7 +33,7 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
         return false;
     }
 
-    registerConverters();
+    registerImporters();
 
     auto libraryPath = path::join({string_view(_config.destinationFolderPath), "library$.json"});
     _outputs.push_back("library$.json");
@@ -100,7 +100,7 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
         }
     }
 
-    bool success = convertFiles(sources);
+    bool success = importFiles(sources);
     if (!success) {
         _logger.error("Conversion failed");
     }
@@ -126,29 +126,29 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
     return success;
 }
 
-void up::recon::ConverterApp::registerConverters() {
-    _converterFactory.registerDefaultConverters();
+void up::recon::ConverterApp::registerImporters() {
+    _importerFactory.registerDefaultImporters();
 
 #if defined(UP_GPU_ENABLE_D3D11)
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _converterFactory.findConverterByName("hlsl")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _importerFactory.findImporterByName("hlsl")});
 #else
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _converterFactory.findConverterByName("ignore")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _importerFactory.findImporterByName("ignore")});
 #endif
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".hlsli"; }, _converterFactory.findConverterByName("ignore")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".txt"; }, _converterFactory.findConverterByName("ignore")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".json"; }, _converterFactory.findConverterByName("json")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".png"; }, _converterFactory.findConverterByName("copy")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".jpg"; }, _converterFactory.findConverterByName("copy")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".ttf"; }, _converterFactory.findConverterByName("copy")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".wav"; }, _converterFactory.findConverterByName("copy")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".mp3"; }, _converterFactory.findConverterByName("copy")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".popr"; }, _converterFactory.findConverterByName("ignore")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".scene"; }, _converterFactory.findConverterByName("copy")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".obj"; }, _converterFactory.findConverterByName("model")});
-    _converters.push_back({[](string_view path) { return path::extension(path) == ".mat"; }, _converterFactory.findConverterByName("material")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".hlsli"; }, _importerFactory.findImporterByName("ignore")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".txt"; }, _importerFactory.findImporterByName("ignore")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".json"; }, _importerFactory.findImporterByName("json")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".png"; }, _importerFactory.findImporterByName("copy")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".jpg"; }, _importerFactory.findImporterByName("copy")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".ttf"; }, _importerFactory.findImporterByName("copy")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".wav"; }, _importerFactory.findImporterByName("copy")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".mp3"; }, _importerFactory.findImporterByName("copy")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".popr"; }, _importerFactory.findImporterByName("ignore")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".scene"; }, _importerFactory.findImporterByName("copy")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".obj"; }, _importerFactory.findImporterByName("model")});
+    _importers.push_back({[](string_view path) { return path::extension(path) == ".mat"; }, _importerFactory.findImporterByName("material")});
 }
 
-bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
+bool up::recon::ConverterApp::importFiles(vector<string> const& files) {
     bool failed = false;
 
     for (auto const& path : files) {
@@ -158,14 +158,14 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         auto osPath = path::join({_config.sourceFolderPath.c_str(), path.c_str()});
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
 
-        Converter* converter = findConverter(string_view(path));
-        if (converter == nullptr) {
+        Importer* importer = findConverter(string_view(path));
+        if (importer == nullptr) {
             failed = true;
-            _logger.error("Converter not found for `{}'", path);
+            _logger.error("Importer not found for `{}'", path);
             continue;
         }
 
-        bool upToDate = record != nullptr && isUpToDate(*record, contentHash, *converter) && isUpToDate(record->sourceDependencies);
+        bool upToDate = record != nullptr && isUpToDate(*record, contentHash, *importer) && isUpToDate(record->sourceDependencies);
         if (upToDate) {
             _logger.info("Asset `{}' is up-to-date", path);
             for (auto const& rec : record->outputs) {
@@ -174,15 +174,15 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
             continue;
         }
 
-        auto name = converter->name();
-        _logger.info("Asset `{}' requires import ({} {})", path.c_str(), string_view(name.data(), name.size()), converter->revision());
+        auto name = importer->name();
+        _logger.info("Asset `{}' requires import ({} {})", path.c_str(), string_view(name.data(), name.size()), importer->revision());
 
-        ConverterContext context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
+        ImporterContext context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
         checkMetafile(context, path);
 
-        if (!converter->convert(context)) {
+        if (!importer->import(context)) {
             failed = true;
-            _logger.error("Failed conversion for `{}'", path);
+            _logger.error("Failed import for `{}'", path);
             continue;
         }
 
@@ -196,8 +196,8 @@ bool up::recon::ConverterApp::convertFiles(vector<string> const& files) {
         newRecord.path = string(path);
         newRecord.contentHash = contentHash;
         newRecord.category = AssetCategory::Source;
-        newRecord.importerName = string(converter->name());
-        newRecord.importerRevision = converter->revision();
+        newRecord.importerName = string(importer->name());
+        newRecord.importerRevision = importer->revision();
 
         for (auto const& sourceDepPath : context.sourceDependencies()) {
             auto osPath = path::join({_config.sourceFolderPath.c_str(), sourceDepPath.c_str()});
@@ -245,9 +245,8 @@ bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
     return true;
 }
 
-bool up::recon::ConverterApp::isUpToDate(AssetImportRecord const& record, up::uint64 contentHash, Converter const& converter) const noexcept {
-    return record.contentHash == contentHash && string_view(record.importerName) == converter.name() &&
-        record.importerRevision == converter.revision();
+bool up::recon::ConverterApp::isUpToDate(AssetImportRecord const& record, up::uint64 contentHash, Importer const& importer) const noexcept {
+    return record.contentHash == contentHash && string_view(record.importerName) == importer.name() && record.importerRevision == importer.revision();
 }
 
 bool up::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> records) {
@@ -261,8 +260,8 @@ bool up::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> recor
     return true;
 }
 
-auto up::recon::ConverterApp::findConverter(string_view path) const -> Converter* {
-    for (auto const& mapping : _converters) {
+auto up::recon::ConverterApp::findConverter(string_view path) const -> Importer* {
+    for (auto const& mapping : _importers) {
         if (mapping.predicate(path)) {
             return mapping.conveter;
         }
@@ -271,20 +270,20 @@ auto up::recon::ConverterApp::findConverter(string_view path) const -> Converter
     return nullptr;
 }
 
-auto up::recon::ConverterApp::checkMetafile(ConverterContext& ctx, string_view filename) -> void {
+auto up::recon::ConverterApp::checkMetafile(ImporterContext& ctx, string_view filename) -> void {
     // check to see if a meta file exists for this asset -- if it doesn't create one
     fixed_string_writer<256> metaFile;
 
     metaFile.append(filename);
     metaFile.append(".meta");
     if (!_fileSystem->fileExists(metaFile.c_str())) {
-        Converter* conveter = findConverter(filename);
+        Importer* conveter = findConverter(filename);
         if (conveter != nullptr) {
             nlohmann::json root;
             string id = UUID::generate().toString();
             root["id"] = id.c_str();
 
-            ConverterContext context(filename.data(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
+            ImporterContext context(filename.data(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
             string settings = conveter->generateSettings(context);
             root["settings"] = settings;
 

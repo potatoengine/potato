@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "converter.h"
+#include "importer.h"
 
 namespace up {
-    class MaterialConverter : public Converter {
+    class MaterialImporter : public Importer {
     public:
-        MaterialConverter();
-        ~MaterialConverter() override;
+        MaterialImporter();
+        ~MaterialImporter() override;
 
-        bool convert(ConverterContext& ctx) override;
-        string_view generateSettings(ConverterContext& ctd) override { return {}; }
+        bool import(ImporterContext& ctx) override;
+        string_view generateSettings(ImporterContext& ctd) override { return {}; }
 
         string_view name() const noexcept override { return "material"; }
         uint64 revision() const noexcept override { return 1; }

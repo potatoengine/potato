@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "convert_model.h"
+#include "model_importer.h"
 
 #include "potato/render/model_generated.h"
 #include "potato/runtime/filesystem.h"
@@ -14,11 +14,11 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
-up::ModelConverter::ModelConverter() = default;
+up::ModelImporter::ModelImporter() = default;
 
-up::ModelConverter::~ModelConverter() = default;
+up::ModelImporter::~ModelImporter() = default;
 
-bool up::ModelConverter::convert(ConverterContext& ctx) {
+bool up::ModelImporter::import(ImporterContext& ctx) {
     using namespace flatbuffers;
 
     auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});

@@ -5,9 +5,9 @@
 #include "converter_config.h"
 
 #include "potato/tools/asset_library.h"
-#include "potato/tools/converter.h"
-#include "potato/tools/converter_factory.h"
 #include "potato/tools/file_hash_cache.h"
+#include "potato/tools/importer.h"
+#include "potato/tools/importer_factory.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/box.h"
@@ -30,32 +30,32 @@ namespace up::recon {
         bool run(span<char const*> args);
 
     private:
-        void registerConverters();
+        void registerImporters();
 
         vector<string> collectSourceFiles();
-        bool convertFiles(vector<string> const& files);
+        bool importFiles(vector<string> const& files);
         bool deleteUnusedFiles(vector<string> const& files, bool dryRun = true);
 
-        bool isUpToDate(AssetImportRecord const& record, uint64 contentHash, Converter const& converter) const noexcept;
+        bool isUpToDate(AssetImportRecord const& record, uint64 contentHash, Importer const& importer) const noexcept;
         bool isUpToDate(span<AssetDependencyRecord const> records);
 
-        void checkMetafile(ConverterContext& ctx, string_view filename);
+        void checkMetafile(ImporterContext& ctx, string_view filename);
 
-        Converter* findConverter(string_view path) const;
+        Importer* findConverter(string_view path) const;
 
         struct Mapping {
             delegate<bool(string_view) const> predicate;
-            Converter* conveter = nullptr;
+            Importer* conveter = nullptr;
         };
 
         string_view _programName;
-        vector<Mapping> _converters;
+        vector<Mapping> _importers;
         vector<string> _outputs;
         ConverterConfig _config;
         box<FileSystem> _fileSystem;
         AssetLibrary _library;
         FileHashCache _hashes;
         Logger _logger;
-        ConverterFactory _converterFactory;
+        ImporterFactory _importerFactory;
     };
 } // namespace up::recon

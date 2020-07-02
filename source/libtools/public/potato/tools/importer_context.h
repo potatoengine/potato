@@ -18,9 +18,9 @@ namespace up {
 } // namespace up
 
 namespace up {
-    class ConverterContext {
+    class ImporterContext {
     public:
-        ConverterContext(zstring_view sourceFilePath,
+        ImporterContext(zstring_view sourceFilePath,
             zstring_view sourceFolderPath,
             zstring_view destinationFolderPath,
             FileSystem& fileSystem,
@@ -31,8 +31,8 @@ namespace up {
             , _fileSystem(fileSystem)
             , _logger(logger) {}
 
-        ConverterContext(ConverterContext&&) = delete;
-        ConverterContext& operator=(ConverterContext&&) = delete;
+        ImporterContext(ImporterContext&&) = delete;
+        ImporterContext& operator=(ImporterContext&&) = delete;
 
         auto sourceFilePath() const noexcept { return _sourceFilePath; }
         auto sourceFolderPath() const noexcept { return _sourceFolderPath; }
