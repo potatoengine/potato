@@ -23,9 +23,9 @@ jobs:
         run: echo "::set-env name=DEPS::$Env:HOME\deps"
       - name: Install SDL2 SDK
         run: |
-          curl -s -S -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.9-VC.zip
+          curl -s -S -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip
           unzip SDL2-devel-2.0.9-VC.zip -d "$Env:DEPS"
-          echo "::set-env name=SDL2DIR::$Env:DEPS\SDL2-2.0.9"
+          echo "::set-env name=SDL2DIR::$Env:DEPS\SDL2-2.0.12"
       - name: Install Assimp SDK
         run: |
           curl -s -S -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
