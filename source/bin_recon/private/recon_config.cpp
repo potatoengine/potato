@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "converter_config.h"
+#include "recon_config.h"
 
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
@@ -11,7 +11,7 @@
 
 #include <nlohmann/json.hpp>
 
-bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, FileSystem& fileSystem, Logger& logger) {
+bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, FileSystem& fileSystem, Logger& logger) {
     if (args.empty()) {
         return false;
     }
@@ -90,7 +90,7 @@ bool up::recon::parseArguments(ConverterConfig& config, span<char const*> args, 
     }
 }
 
-bool up::recon::parseConfigFile(ConverterConfig& config, FileSystem& fileSystem, zstring_view path, Logger& logger) {
+bool up::recon::parseConfigFile(ReconConfig& config, FileSystem& fileSystem, zstring_view path, Logger& logger) {
     auto stream = fileSystem.openRead(path, FileOpenMode::Text);
     if (!stream) {
         logger.error("Failed to open `{}'", path.c_str());
@@ -106,32 +106,48 @@ bool up::recon::parseConfigFile(ConverterConfig& config, FileSystem& fileSystem,
     return parseConfigString(config, text, path, logger);
 }
 
-bool up::recon::parseConfigString(ConverterConfig& config, string_view json, zstring_view filename, Logger& logger) {
+bool up::recon::parseConfigString(ReconConfig& config, string_view json, zstring_view filename, Logger& logger) {
     auto jsonRoot = nlohmann::json::parse(json.begin(), json.end(), nullptr, false);
     if (!jsonRoot.is_object()) {
         logger.error("Failed to parse file `{}': {}", filename, "unknown parse error");
         return false;
     }
 
-    auto jsonSourceDir = jsonRoot["sourceDir"];
-    auto jsonDestDir = jsonRoot["destDir"];
-    auto jsonCacheDir = jsonRoot["cacheDir"];
-    auto jsonDeleteStale = jsonRoot["deleteStale"];
-
-    if (jsonSourceDir.is_string()) {
+    if (auto jsonSourceDir = jsonRoot["sourceDir"]; jsonSourceDir.is_string()) {
         config.sourceFolderPath = jsonSourceDir.get<string>();
     }
 
-    if (jsonDestDir.is_string()) {
+    if (auto jsonDestDir = jsonRoot["destDir"]; jsonDestDir.is_string()) {
         config.destinationFolderPath = jsonDestDir.get<string>();
     }
 
-    if (jsonCacheDir.is_string()) {
+    if (auto jsonCacheDir = jsonRoot["cacheDir"]; jsonCacheDir.is_string()) {
         config.cacheFolderPath = jsonCacheDir.get<string>();
     }
 
-    if (jsonDeleteStale.is_boolean()) {
+    if (auto jsonDeleteStale = jsonRoot["deleteStale"]; jsonDeleteStale.is_boolean()) {
         config.deleteStale = jsonDeleteStale.get<bool>();
     }
+
+    if (auto jsonMappings = jsonRoot["mapping"]; jsonMappings.is_array()) {
+        for (auto jsonMapping : jsonMappings) {
+            if (!jsonMappings.is_object()) {
+                continue;
+            }
+
+            ReconConfig::ImportMapping mapping;
+            if (auto jsonMappingPattern = jsonMappings["match"]; jsonMappingPattern.is_string()) {
+                mapping.pattern = jsonMappingPattern.get<string>();
+            }
+            if (auto jsonMappingImporter = jsonMappings["importer"]; jsonMappingImporter.is_string()) {
+                mapping.importer = jsonMappingImporter.get<string>();
+            }
+
+            if (!mapping.pattern.empty()) {
+                config.mapping.push_back(std::move(mapping));
+            }
+        }
+    }
+
     return true;
 }

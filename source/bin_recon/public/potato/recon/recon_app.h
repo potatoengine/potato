@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "converter_config.h"
+#include "recon_config.h"
 
 #include "potato/tools/asset_library.h"
 #include "potato/tools/file_hash_cache.h"
@@ -19,13 +19,13 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up::recon {
-    class ConverterApp {
+    class ReconApp {
     public:
-        ConverterApp();
-        ~ConverterApp();
+        ReconApp();
+        ~ReconApp();
 
-        ConverterApp(ConverterApp const&) = delete;
-        ConverterApp& operator=(ConverterApp const&) = delete;
+        ReconApp(ReconApp const&) = delete;
+        ReconApp& operator=(ReconApp const&) = delete;
 
         bool run(span<char const*> args);
 
@@ -51,7 +51,7 @@ namespace up::recon {
         string_view _programName;
         vector<Mapping> _importers;
         vector<string> _outputs;
-        ConverterConfig _config;
+        ReconConfig _config;
         box<FileSystem> _fileSystem;
         AssetLibrary _library;
         FileHashCache _hashes;

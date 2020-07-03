@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "converter_app.h"
+#include "recon_app.h"
 
 #include "potato/tools/file_hash_cache.h"
 #include "potato/runtime/filesystem.h"
@@ -17,11 +17,11 @@
 #include <algorithm>
 #include <set>
 
-up::recon::ConverterApp::ConverterApp() : _programName("recon"), _fileSystem(new_box<NativeFileSystem>()), _hashes(*_fileSystem), _logger("recon") {}
+up::recon::ReconApp::ReconApp() : _programName("recon"), _fileSystem(new_box<NativeFileSystem>()), _hashes(*_fileSystem), _logger("recon") {}
 
-up::recon::ConverterApp::~ConverterApp() = default;
+up::recon::ReconApp::~ReconApp() = default;
 
-bool up::recon::ConverterApp::run(span<char const*> args) {
+bool up::recon::ReconApp::run(span<char const*> args) {
     zstring_view const configFile = "recon.config.json";
     if (_fileSystem->fileExists(configFile)) {
         _logger.info("Loading config file `{}'", configFile);
@@ -102,7 +102,7 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
 
     bool success = importFiles(sources);
     if (!success) {
-        _logger.error("Conversion failed");
+        _logger.error("Import failed");
     }
 
     auto hashesWriteStream = _fileSystem->openWrite(hashCachePath.c_str(), FileOpenMode::Text);
@@ -126,8 +126,17 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
     return success;
 }
 
-void up::recon::ConverterApp::registerImporters() {
+void up::recon::ReconApp::registerImporters() {
     _importerFactory.registerDefaultImporters();
+
+    for (auto const& mapping : _config.mapping) {
+        auto const importer = _importerFactory.findImporterByName(mapping.importer);
+        if (importer == nullptr) {
+            _logger.error("Unknown importer `{}'", mapping.importer);
+        }
+
+        _importers.push_back({[pattern = mapping.pattern, importer](string_view path) { return path::extension(path) == ".hlsli"; }, importer});
+    }
 
 #if defined(UP_GPU_ENABLE_D3D11)
     _importers.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _importerFactory.findImporterByName("hlsl")});
@@ -148,7 +157,7 @@ void up::recon::ConverterApp::registerImporters() {
     _importers.push_back({[](string_view path) { return path::extension(path) == ".mat"; }, _importerFactory.findImporterByName("material")});
 }
 
-bool up::recon::ConverterApp::importFiles(vector<string> const& files) {
+bool up::recon::ReconApp::importFiles(vector<string> const& files) {
     bool failed = false;
 
     for (auto const& path : files) {
@@ -217,7 +226,7 @@ bool up::recon::ConverterApp::importFiles(vector<string> const& files) {
     return !failed;
 }
 
-bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, bool dryRun) {
+bool up::recon::ReconApp::deleteUnusedFiles(vector<string> const& files, bool dryRun) {
     std::set<string> keepFiles(files.begin(), files.end());
     std::set<string> foundFiles;
     auto cb = [&foundFiles](EnumerateItem const& item) {
@@ -245,11 +254,11 @@ bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
     return true;
 }
 
-bool up::recon::ConverterApp::isUpToDate(AssetImportRecord const& record, up::uint64 contentHash, Importer const& importer) const noexcept {
+bool up::recon::ReconApp::isUpToDate(AssetImportRecord const& record, up::uint64 contentHash, Importer const& importer) const noexcept {
     return record.contentHash == contentHash && string_view(record.importerName) == importer.name() && record.importerRevision == importer.revision();
 }
 
-bool up::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> records) {
+bool up::recon::ReconApp::isUpToDate(span<AssetDependencyRecord const> records) {
     for (auto const& rec : records) {
         auto osPath = path::join({_config.sourceFolderPath.c_str(), rec.path.c_str()});
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
@@ -260,7 +269,7 @@ bool up::recon::ConverterApp::isUpToDate(span<AssetDependencyRecord const> recor
     return true;
 }
 
-auto up::recon::ConverterApp::findConverter(string_view path) const -> Importer* {
+auto up::recon::ReconApp::findConverter(string_view path) const -> Importer* {
     for (auto const& mapping : _importers) {
         if (mapping.predicate(path)) {
             return mapping.conveter;
@@ -270,7 +279,7 @@ auto up::recon::ConverterApp::findConverter(string_view path) const -> Importer*
     return nullptr;
 }
 
-auto up::recon::ConverterApp::checkMetafile(ImporterContext& ctx, string_view filename) -> void {
+auto up::recon::ReconApp::checkMetafile(ImporterContext& ctx, string_view filename) -> void {
     // check to see if a meta file exists for this asset -- if it doesn't create one
     fixed_string_writer<256> metaFile;
 
@@ -300,7 +309,7 @@ auto up::recon::ConverterApp::checkMetafile(ImporterContext& ctx, string_view fi
     ctx.addSourceDependency(metaFile.c_str());
 }
 
-auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
+auto up::recon::ReconApp::collectSourceFiles() -> vector<string> {
     if (!_fileSystem->directoryExists(_config.sourceFolderPath.c_str())) {
         _logger.error("`{}' does not exist or is not a directory", _config.sourceFolderPath);
         return {};

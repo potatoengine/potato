@@ -7,6 +7,7 @@
 #include "potato/spud/std_iostream.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
+#include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
 namespace up {
@@ -14,14 +15,20 @@ namespace up {
 }
 
 namespace up::recon {
-    struct ConverterConfig {
+    struct ReconConfig {
         string sourceFolderPath;
         string destinationFolderPath;
         string cacheFolderPath;
         bool deleteStale = false;
+
+        struct ImportMapping {
+            string pattern;
+            string importer;
+        };
+        vector<ImportMapping> mapping;
     };
 
-    bool parseArguments(ConverterConfig& config, span<char const*> args, FileSystem& fileSystem, Logger& logger);
-    bool parseConfigFile(ConverterConfig& config, FileSystem& fileSystem, zstring_view path, Logger& logger);
-    bool parseConfigString(ConverterConfig& config, string_view json, zstring_view filename, Logger& logger);
+    bool parseArguments(ReconConfig& config, span<char const*> args, FileSystem& fileSystem, Logger& logger);
+    bool parseConfigFile(ReconConfig& config, FileSystem& fileSystem, zstring_view path, Logger& logger);
+    bool parseConfigString(ReconConfig& config, string_view json, zstring_view filename, Logger& logger);
 } // namespace up::recon
