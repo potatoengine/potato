@@ -7,6 +7,7 @@
 #include "potato/spud/span.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
+#include "potato/spud/zstring_view.h"
 
 #include <cstring>
 
@@ -46,6 +47,7 @@ namespace up {
         }
 
         /*implicit*/ operator string_view() const noexcept { return {_ptr, _size}; }
+        /*implicit*/ operator zstring_view() const noexcept { return c_str(); }
 
         inline void append(value_type ch);
         inline void append(const_pointer data, size_type length);
