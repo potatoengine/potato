@@ -131,15 +131,15 @@ bool up::recon::parseConfigString(ReconConfig& config, string_view json, zstring
 
     if (auto jsonMappings = jsonRoot["mapping"]; jsonMappings.is_array()) {
         for (auto jsonMapping : jsonMappings) {
-            if (!jsonMappings.is_object()) {
+            if (!jsonMapping.is_object()) {
                 continue;
             }
 
             ReconConfig::ImportMapping mapping;
-            if (auto jsonMappingPattern = jsonMappings["match"]; jsonMappingPattern.is_string()) {
+            if (auto jsonMappingPattern = jsonMapping["pattern"]; jsonMappingPattern.is_string()) {
                 mapping.pattern = jsonMappingPattern.get<string>();
             }
-            if (auto jsonMappingImporter = jsonMappings["importer"]; jsonMappingImporter.is_string()) {
+            if (auto jsonMappingImporter = jsonMapping["importer"]; jsonMappingImporter.is_string()) {
                 mapping.importer = jsonMappingImporter.get<string>();
             }
 

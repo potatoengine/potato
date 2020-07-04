@@ -24,6 +24,10 @@
       "importer": "copy"
     },
     {
+      "pattern": ".jpg",
+      "importer": "copy"
+    },
+    {
       "pattern": ".ttf",
       "importer": "copy"
     },
@@ -44,12 +48,12 @@
       "importer": "json"
     },
     {
-      "pattern": ".model",
+      "pattern": ".obj",
       "importer": "model"
     },
     {
-      "pattern": ".materal",
-      "importer": "materal"
+      "pattern": ".mat",
+      "importer": "material"
     }
   ]
 }

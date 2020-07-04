@@ -135,26 +135,9 @@ void up::recon::ReconApp::registerImporters() {
             _logger.error("Unknown importer `{}'", mapping.importer);
         }
 
-        _importers.push_back({[pattern = mapping.pattern, importer](string_view path) { return path::extension(path) == ".hlsli"; }, importer});
+        string_view pattern = mapping.pattern;
+        _importers.push_back({[pattern, importer](string_view filename) { return path::extension(filename) == pattern; }, importer});
     }
-
-#if defined(UP_GPU_ENABLE_D3D11)
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _importerFactory.findImporterByName("hlsl")});
-#else
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".hlsl"; }, _importerFactory.findImporterByName("ignore")});
-#endif
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".hlsli"; }, _importerFactory.findImporterByName("ignore")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".txt"; }, _importerFactory.findImporterByName("ignore")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".json"; }, _importerFactory.findImporterByName("json")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".png"; }, _importerFactory.findImporterByName("copy")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".jpg"; }, _importerFactory.findImporterByName("copy")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".ttf"; }, _importerFactory.findImporterByName("copy")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".wav"; }, _importerFactory.findImporterByName("copy")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".mp3"; }, _importerFactory.findImporterByName("copy")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".popr"; }, _importerFactory.findImporterByName("ignore")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".scene"; }, _importerFactory.findImporterByName("copy")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".obj"; }, _importerFactory.findImporterByName("model")});
-    _importers.push_back({[](string_view path) { return path::extension(path) == ".mat"; }, _importerFactory.findImporterByName("material")});
 }
 
 bool up::recon::ReconApp::importFiles(vector<string> const& files) {
