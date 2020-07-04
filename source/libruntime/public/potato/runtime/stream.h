@@ -71,6 +71,8 @@ namespace up {
         IOResult write(span<byte const> buffer) { return _impl->write(buffer); }
         IOResult flush() { return _impl->flush(); }
 
+        void write(string_view text) { _impl->write({reinterpret_cast<byte const*>(text.data()), text.size()}); }
+
         void close() noexcept { _impl.reset(); }
 
     private:
