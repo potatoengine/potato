@@ -19,6 +19,12 @@ auto up::readBinary(Stream& stream, vector<up::byte>& out) -> IOResult {
     return stream.read(read);
 }
 
+auto up::readBinary(Stream& stream) -> IOResultValue<vector<up::byte>> {
+    vector<up::byte> data;
+    auto rs = readBinary(stream, data);
+    return {rs, std::move(data)};
+}
+
 auto up::readText(Stream& stream, string& out) -> IOResult {
     if (!stream.canRead() || !stream.canSeek()) {
         return IOResult::UnsupportedOperation;
@@ -37,6 +43,12 @@ auto up::readText(Stream& stream, string& out) -> IOResult {
     out = std::move(writer).to_string();
 
     return rs;
+}
+
+auto up::readText(Stream& stream) -> IOResultValue<string> {
+    string text;
+    auto rs = readText(stream, text);
+    return {rs, std::move(text)};
 }
 
 auto up::writeAllText(Stream& stream, string_view text) -> IOResult {

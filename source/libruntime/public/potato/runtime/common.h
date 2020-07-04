@@ -19,6 +19,11 @@ namespace up {
         Unknown,
     };
 
+    template <typename T> struct IOResultValue {
+        IOResult result;
+        T value;
+    };
+
     enum class EnumerateResult {
         Continue,
         Recurse,

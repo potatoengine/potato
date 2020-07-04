@@ -54,7 +54,7 @@ namespace up {
         };
 
         struct NativeOutputBackend final : public Stream::Backend {
-            NativeOutputBackend(std::ofstream stream) : _stream(std::move(stream)) {}
+            explicit NativeOutputBackend(std::ofstream stream) : _stream(std::move(stream)) {}
 
             bool isOpen() const noexcept override { return _stream.is_open(); }
             bool isEof() const noexcept override { return _stream.eof(); }
@@ -84,13 +84,20 @@ namespace up {
 } // namespace up
 
 auto up::NativeFileSystem::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
-    return Stream(up::new_box<NativeStreamBackend>(
-        std::ifstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
+    std::ifstream nativeStream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{});
+    if (!nativeStream) {
+        return nullptr;
+    }
+    return Stream(up::new_box<NativeStreamBackend>(std::move(nativeStream)));
 }
 
 auto up::NativeFileSystem::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
-    return Stream(up::new_box<NativeOutputBackend>(
-        std::ofstream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{})));
+    std::ofstream nativeStream(path.c_str(),
+        mode == FileOpenMode::Binary ? std::ios_base::out | std::ios_base::trunc | std::ios_base::binary : std::ios_base::trunc | std::ios_base::out);
+    if (!nativeStream) {
+        return nullptr;
+    }
+    return Stream(up::new_box<NativeOutputBackend>(std::move(nativeStream)));
 }
 
 static auto errorCodeToResult(std::error_code ec) noexcept -> up::IOResult {
