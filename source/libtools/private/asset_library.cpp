@@ -9,9 +9,6 @@
 
 #include <nlohmann/json.hpp>
 
-// 4. fixing bug in hlsli path generation and adding meta files to source deps
-static constexpr up::uint64 libraryRevision = 4;
-
 up::AssetLibrary::~AssetLibrary() = default;
 
 auto up::AssetLibrary::pathToAssetId(string_view path) const -> AssetId {
@@ -37,7 +34,8 @@ bool up::AssetLibrary::insertRecord(AssetImportRecord record) {
 bool up::AssetLibrary::serialize(Stream& stream) const {
     nlohmann::json jsonRoot;
 
-    jsonRoot["revision"] = libraryRevision;
+    jsonRoot["$type"] = typeName;
+    jsonRoot["$version"] = version;
 
     nlohmann::json jsonRecords;
     for (auto const& [assetId, record] : _assets) {
@@ -90,8 +88,11 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
         return false;
     }
 
-    auto revision = jsonRoot["revision"];
-    if (!revision.is_number_integer() || revision != libraryRevision) {
+    if (auto type = jsonRoot["$type"]; !type.is_string() || type != typeName) {
+        return false;
+    }
+
+    if (auto revision = jsonRoot["$version"]; !revision.is_number_integer() || revision != version) {
         return false;
     }
 

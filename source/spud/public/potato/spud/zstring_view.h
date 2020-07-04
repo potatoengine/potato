@@ -99,5 +99,5 @@ namespace up {
         hasher.append_bytes(string.data(), string.size());
     }
 
-    inline auto operator"" _zsv(char const* str, size_t) noexcept -> zstring_view { return {str}; }
+    constexpr auto operator"" _zsv(char const* str, size_t) noexcept -> zstring_view { return {str}; }
 } // namespace up

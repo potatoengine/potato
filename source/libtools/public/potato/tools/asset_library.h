@@ -16,6 +16,9 @@ namespace up {
 
     class AssetLibrary {
     public:
+        static constexpr zstring_view typeName = "potato.asset.library"_zsv;
+        static constexpr int version = 5;
+
         AssetLibrary() = default;
         UP_TOOLS_API ~AssetLibrary();
 

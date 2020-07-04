@@ -9,6 +9,9 @@
 
 namespace up {
     struct MetaFile {
+        static constexpr zstring_view typeName = "potato.asset.meta"_zsv;
+        static constexpr int version = 1;
+
         UUID uuid;
         string importerName;
         string importerSettings;

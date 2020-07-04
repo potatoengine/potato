@@ -11,6 +11,9 @@ void up::MetaFile::generate() { uuid = UUID::generate(); }
 auto up::MetaFile::toJson() const -> string {
     nlohmann::json doc;
 
+    doc["$type"] = "potato.asset.meta";
+    doc["$version"] = 1;
+
     doc["id"] = uuid.toString();
     auto importerJson = nlohmann::json();
     importerJson["name"] = importerName;
@@ -21,7 +24,14 @@ auto up::MetaFile::toJson() const -> string {
 }
 
 bool up::MetaFile::parseJson(string_view json) {
-    auto const doc = nlohmann::json::parse(json);
+    auto doc = nlohmann::json::parse(json);
+
+    if (auto type = doc["$type"]; !type.is_string() || type != "potato.asset.meta") {
+        return false;
+    }
+    if (auto version = doc["$version"]; !version.is_number_integer() || version != 1) {
+        return false;
+    }
 
     if (auto const idJson = doc["id"]; idJson.is_string()) {
         uuid = UUID::fromString(idJson.get<string>());
