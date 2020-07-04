@@ -1,4 +1,7 @@
 {
-  "id": "e35b4d19-0ecf-43fb-8308-89a88c39ff25",
-  "settings": []
+  "id": "2bb09dcd-c100-d844-bbef-d0c54076798e",
+  "importer": {
+    "name": "hlsl",
+    "settings": ""
+  }
 }
