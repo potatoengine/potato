@@ -1,5 +1,7 @@
 {
-  "id": "dc9a5f04-6259-b042-9550-408a76f25583",
+  "$type": "potato.asset.meta",
+  "$version": 1,
+  "id": "8dfc4aee-5e94-7b42-a3b4-bb07c16863af",
   "importer": {
     "name": "ignore",
     "settings": ""

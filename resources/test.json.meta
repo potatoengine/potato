@@ -1,5 +1,7 @@
 {
-  "id": "3374bb24-965e-7148-a2ca-bd1ead4bd684",
+  "$type": "potato.asset.meta",
+  "$version": 1,
+  "id": "75dccbc3-79bb-8b41-8bdc-c24ba31259da",
   "importer": {
     "name": "json",
     "settings": ""
