@@ -3,6 +3,7 @@
 #include "recon_app.h"
 
 #include "potato/tools/file_hash_cache.h"
+#include "potato/tools/meta_file.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/native.h"
@@ -170,7 +171,9 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         _logger.info("Asset `{}' requires import ({} {})", path.c_str(), string_view(name.data(), name.size()), importer->revision());
 
         ImporterContext context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
-        checkMetafile(context, path);
+        if (!_checkMetafile(context, path)) {
+            continue;
+        }
 
         if (!importer->import(context)) {
             failed = true;
@@ -262,34 +265,65 @@ auto up::recon::ReconApp::_findConverter(string_view path) const -> Importer* {
     return nullptr;
 }
 
-auto up::recon::ReconApp::checkMetafile(ImporterContext& ctx, string_view filename) -> void {
-    // check to see if a meta file exists for this asset -- if it doesn't create one
-    fixed_string_writer<256> metaFile;
+auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, string_view filename) -> bool {
+    string_writer metaFilePath;
+    metaFilePath.append(filename);
+    metaFilePath.append(".meta");
 
-    metaFile.append(filename);
-    metaFile.append(".meta");
-    if (!_fileSystem->fileExists(metaFile.c_str())) {
-        Importer* conveter = findConverter(filename);
-        if (conveter != nullptr) {
-            nlohmann::json root;
-            string id = UUID::generate().toString();
-            root["id"] = id.c_str();
+    string metaFileOsPath = path::join(_config.sourceFolderPath, metaFilePath);
 
-            ImporterContext context(filename.data(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
-            string settings = conveter->generateSettings(context);
-            root["settings"] = settings;
+    MetaFile metaFile;
+    bool dirty = false;
 
-            auto stream = _fileSystem->openWrite(metaFile.c_str(), FileOpenMode::Text);
-            auto json = root.dump(2);
-
-            if (writeAllText(stream, {json.data(), json.size()}) != IOResult::Success) {
-                _logger.error("Failed to write meta file for {}", metaFile.c_str());
+    if (Stream stream = _fileSystem->openRead(metaFileOsPath, FileOpenMode::Text); stream) {
+        auto [result, jsonText] = readText(stream);
+        if (result == IOResult::Success) {
+            if (!metaFile.parseJson(jsonText)) {
+                metaFile.generate();
+                dirty = true;
             }
         }
+        else {
+            metaFile.generate();
+            dirty = true;
+        }
     }
+    else {
+        metaFile.generate();
+        dirty = true;
+    }
+
+    Importer* importer = _findConverter(filename);
+    if (importer != nullptr) {
+        if (importer->name() != string_view{metaFile.importerName}) {
+            metaFile.importerName = importer->name();
+            dirty = true;
+        }
+
+        ImporterContext context(filename.data(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
+        string settings = importer->generateSettings(context);
+        if (settings != metaFile.importerSettings) {
+            metaFile.importerSettings = std::move(settings);
+            dirty = true;
+        }
+    }
+
+    if (dirty) {
+        _logger.info("Writing meta file `{}'", metaFilePath);
+
+        string jsonText = metaFile.toJson();
+
+        auto stream = _fileSystem->openWrite(metaFileOsPath, FileOpenMode::Text);
+        if (!stream || writeAllText(stream, jsonText) != IOResult::Success) {
+            _logger.error("Failed to write meta file for {}", metaFilePath);
+            return false;
+        }
+    }
+
     // adding meta files to source deps to ensure proper rebuild when meta files change for any reason
     // (like convert settings for a file)
-    ctx.addSourceDependency(metaFile.c_str());
+    ctx.addSourceDependency(metaFilePath);
+    return true;
 }
 
 auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {

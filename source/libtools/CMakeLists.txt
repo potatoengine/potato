@@ -15,6 +15,7 @@ target_sources(potato_libtools PRIVATE
     "private/importers/json_importer.cpp"
     "private/importers/material_importer.cpp"
     "private/importers/model_importer.cpp"
+    "private/meta_file.cpp"
 )
 
 include(up_set_common_properties)
