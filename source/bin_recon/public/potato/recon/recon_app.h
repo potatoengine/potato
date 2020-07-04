@@ -30,18 +30,18 @@ namespace up::recon {
         bool run(span<char const*> args);
 
     private:
-        void registerImporters();
+        void _registerImporters();
 
-        vector<string> collectSourceFiles();
-        bool importFiles(vector<string> const& files);
-        bool deleteUnusedFiles(vector<string> const& files, bool dryRun = true);
+        auto _collectSourceFiles() -> vector<string>;
+        bool _importFiles(view<string> files);
+        bool _deleteUnusedFiles(view<string> files, bool dryRun = true);
 
-        bool isUpToDate(AssetImportRecord const& record, uint64 contentHash, Importer const& importer) const noexcept;
-        bool isUpToDate(span<AssetDependencyRecord const> records);
+        bool _isUpToDate(AssetImportRecord const& record, uint64 contentHash, Importer const& importer) const noexcept;
+        bool _isUpToDate(span<AssetDependencyRecord const> records);
 
         void checkMetafile(ImporterContext& ctx, string_view filename);
 
-        Importer* findConverter(string_view path) const;
+        auto _findConverter(string_view path) const -> Importer*;
 
         struct Mapping {
             delegate<bool(string_view) const> predicate;
