@@ -4,6 +4,7 @@
 
 #include "potato/tools/file_hash_cache.h"
 #include "potato/tools/meta_file.h"
+#include "potato/tools/resource_manifest.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/native.h"
@@ -119,6 +120,17 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         return false;
     }
     libraryWriteStream.close();
+
+    auto const manifest = _generateManifest();
+    auto manifestPath = path::join(_config.destinationFolderPath, "manifest$.pom");
+    _outputs.push_back("manifest$.pom");
+    _logger.info("Writing manifest `{}`", manifestPath);
+    auto manifestFile = _fileSystem->openWrite(manifestPath.c_str(), FileOpenMode::Text);
+    if (!manifestFile || !manifest.writeManifest(manifestFile)) {
+        _logger.error("Failed to write manifest `{}'", manifestPath);
+        return false;
+    };
+    manifestFile.close();
 
     if (success) {
         _deleteUnusedFiles(_outputs, !_config.deleteStale);
@@ -352,3 +364,5 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
     _fileSystem->enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
     return files;
 };
+
+auto up::recon::ReconApp::_generateManifest() -> ResourceManifest { return _library.generateManifest(); }

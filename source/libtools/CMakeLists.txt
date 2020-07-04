@@ -16,6 +16,7 @@ target_sources(potato_libtools PRIVATE
     "private/importers/material_importer.cpp"
     "private/importers/model_importer.cpp"
     "private/meta_file.cpp"
+    "private/resource_manifest.cpp"
 )
 
 include(up_set_common_properties)

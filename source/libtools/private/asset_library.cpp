@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "asset_library.h"
+#include "resource_manifest.h"
 
 #include "potato/runtime/json.h"
 #include "potato/runtime/stream.h"
@@ -122,4 +123,12 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
     }
 
     return true;
+}
+
+auto up::AssetLibrary::generateManifest() const -> ResourceManifest {
+    ResourceManifest manifest;
+    for (auto const& [assetId, record] : _assets) {
+        manifest.addRecord(ResourceId{to_underlying(record.assetId)}, record.contentHash, record.path);
+    }
+    return manifest;
 }

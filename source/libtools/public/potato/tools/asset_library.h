@@ -13,6 +13,7 @@
 
 namespace up {
     class Stream;
+    class ResourceManifest;
 
     class AssetLibrary {
     public:
@@ -34,6 +35,8 @@ namespace up {
 
         UP_TOOLS_API bool serialize(Stream& stream) const;
         UP_TOOLS_API bool deserialize(Stream& stream);
+
+        UP_TOOLS_API auto generateManifest() const -> ResourceManifest;
 
     private:
         struct HashAssetId {
