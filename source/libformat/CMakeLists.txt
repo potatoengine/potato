@@ -17,7 +17,7 @@ target_sources(potato_libformat_test PRIVATE
     "tests/main.cc"
     "tests/test_format.cc"
     "tests/test_writer.cc"
-)
+ "public/potato/format/_detail/erased_writer.h")
 
 up_set_common_properties(potato_libformat_test)
 
