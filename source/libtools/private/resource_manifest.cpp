@@ -25,21 +25,53 @@ auto up::ResourceManifest::findFilename(ResourceId id) const noexcept -> zstring
     return {};
 }
 
-bool up::ResourceManifest::parseManifest(Stream& stream) { return false; }
-
-bool up::ResourceManifest::writeManifest(Stream& stream) const {
-    if (!stream) {
-        return false;
+bool up::ResourceManifest::parseManifest(string_view input) {
+    while (!input.empty()) {
+        switch (input.front()) {
+        case '#': // comment
+            if (auto const eol = input.find('\n'); eol != string_view::npos) {
+                input = input.substr(eol);
+            }
+            else {
+                input = {};
+            }
+            break;
+        case '\n': // blank line
+            input.pop_front();
+            break;
+        case '.': // metadata
+            if (auto const eol = input.find('\n'); eol != string_view::npos) {
+                input = input.substr(eol);
+            }
+            else {
+                input = {};
+            }
+            break;
+        default
+            : // content line
+        {
+            auto const sep = input.find_first_of("|\n");
+            bool eol = false;
+            while (sep != string_view::npos && !eol) {
+                eol = input[sep] == '\n';
+                input = input.substr(sep);
+            }
+        } break;
+        }
     }
 
-    format_to(stream,
+    return true;
+}
+
+bool up::ResourceManifest::writeManifest(erased_writer writer) const {
+    format_to(writer,
         "# Potato Manifest\n"
         ".version={}\n"
         ":ID|HASH|NAME\n",
         version);
 
     for (auto const& record : _records) {
-        format_to(stream, "{}|{}|{}\n", record.id, record.hash, record.filename);
+        format_to(writer, "{}|{}|{}\n", record.id, record.hash, record.filename);
     }
 
     return true;

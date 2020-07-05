@@ -42,6 +42,7 @@ add_executable(potato_libtools_test)
 
 target_sources(potato_libtools_test PRIVATE
     "tests/main.cpp"
+    "tests/test_resource_manifest.cpp"
 )
 
 up_set_common_properties(potato_libtools_test)
