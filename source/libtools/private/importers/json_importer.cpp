@@ -57,7 +57,7 @@ bool up::JsonImporter::import(ImporterContext& ctx) {
     outFile.close();
 
     // output has same name as input
-    ctx.addOutput(ctx.sourceFilePath());
+    ctx.addMainOutput(ctx.sourceFilePath());
 
     ctx.logger().info("Minified `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
 

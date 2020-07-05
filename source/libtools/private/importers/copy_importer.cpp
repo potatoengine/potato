@@ -25,7 +25,7 @@ bool up::CopyImporter::import(ImporterContext& ctx) {
     }
 
     // output has same name as input
-    ctx.addOutput(ctx.sourceFilePath());
+    ctx.addMainOutput(ctx.sourceFilePath());
 
     auto rs = ctx.fileSystem().copyFileTo(sourceAbsolutePath.c_str(), destAbsolutePath.c_str());
     if (rs != IOResult::Success) {

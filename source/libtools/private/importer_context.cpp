@@ -4,6 +4,8 @@
 
 void up::ImporterContext::addSourceDependency(zstring_view path) { _sourceDependencies.push_back(string(path)); }
 
-void up::ImporterContext::addOutput(zstring_view path) { _outputs.push_back(string(path.c_str())); }
+void up::ImporterContext::addLogicalAsset(string name) { _logicalAssets.push_back(std::move(name)); }
 
-void up::ImporterContext::addOutputDependency(zstring_view from, zstring_view on, AssetDependencyType type) {}
+void up::ImporterContext::addOutput(string_view logicalAsset, zstring_view path) { _outputs.push_back(Output{logicalAsset, string(path.c_str())}); }
+
+void up::ImporterContext::addMainOutput(zstring_view path) { _outputs.push_back(Output{{}, string(path.c_str())}); }

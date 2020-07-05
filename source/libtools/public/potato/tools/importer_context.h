@@ -20,6 +20,11 @@ namespace up {
 namespace up {
     class ImporterContext {
     public:
+        struct Output {
+            string_view logicalAsset;
+            string path;
+        };
+
         ImporterContext(zstring_view sourceFilePath,
             zstring_view sourceFolderPath,
             zstring_view destinationFolderPath,
@@ -38,12 +43,13 @@ namespace up {
         auto sourceFolderPath() const noexcept { return _sourceFolderPath; }
         auto destinationFolderPath() const noexcept { return _destinationFolderPath; }
 
+        UP_TOOLS_API void addLogicalAsset(string name);
         UP_TOOLS_API void addSourceDependency(zstring_view path);
-        void addOutput(zstring_view path);
-        void addOutputDependency(zstring_view from, zstring_view on, AssetDependencyType type);
+        void addOutput(string_view logicalAsset, zstring_view path);
+        void addMainOutput(zstring_view path);
 
         span<string const> sourceDependencies() const noexcept { return span{_sourceDependencies.data(), _sourceDependencies.size()}; }
-        span<string const> outputs() const noexcept { return span{_outputs.data(), _outputs.size()}; }
+        span<Output const> outputs() const noexcept { return span{_outputs.data(), _outputs.size()}; }
 
         FileSystem& fileSystem() noexcept { return _fileSystem; }
         Logger& logger() noexcept { return _logger; }
@@ -54,7 +60,8 @@ namespace up {
         zstring_view _destinationFolderPath;
 
         vector<string> _sourceDependencies;
-        vector<string> _outputs;
+        vector<string> _logicalAssets;
+        vector<Output> _outputs;
 
         FileSystem& _fileSystem;
         Logger& _logger;

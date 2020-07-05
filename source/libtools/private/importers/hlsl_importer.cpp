@@ -139,7 +139,8 @@ bool up::HlslImporter::_compile(ImporterContext& ctx,
         return false;
     }
 
-    ctx.addOutput(destPath.c_str());
+    ctx.addLogicalAsset(targetProfileName);
+    ctx.addOutput(targetProfileName, destPath.c_str());
 
     compiledOutput.write({(up::byte const*)blob->GetBufferPointer(), blob->GetBufferSize()});
     compiledOutput.close();

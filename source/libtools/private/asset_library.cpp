@@ -58,7 +58,7 @@ bool up::AssetLibrary::serialize(Stream& stream) const {
         nlohmann::json jsonOutputs;
         for (auto const& output : record.outputs) {
             nlohmann::json jsonOutput;
-            jsonOutput["path"] = std::string(output.path.data(), output.path.size());
+            jsonOutput["logical"] = to_underlying(output.logicalAssetId);
             jsonOutput["hash"] = output.contentHash;
             jsonOutputs.push_back(std::move(jsonOutput));
         }
@@ -117,7 +117,7 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
         newRecord.importerRevision = record["importerRevision"];
 
         for (auto const& output : record["outputs"]) {
-            newRecord.outputs.push_back(AssetOutputRecord{output["path"], output["hash"]});
+            newRecord.outputs.push_back(AssetOutputRecord{output["logical"], output["hash"]});
         }
 
         for (auto const& output : record["sourceDeps"]) {
@@ -131,7 +131,9 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
 auto up::AssetLibrary::generateManifest() const -> ResourceManifest {
     ResourceManifest manifest;
     for (auto const& record : _records) {
-        manifest.addRecord(ResourceId{to_underlying(record.assetId)}, record.contentHash, record.path);
+        for (auto const& output : record.outputs) {
+            manifest.addRecord(ResourceId{output.logicalAssetId}, output.contentHash, record.path);
+        }
     }
     return manifest;
 }

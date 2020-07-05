@@ -23,13 +23,18 @@ namespace up {
     enum class AssetDependencyType : uint8 { Source, Runtime, Tool };
     UP_TOOLS_API span<string_view const> assetDependencyTypeNames() noexcept;
 
+    struct LogicalAsset {
+        AssetId assetId = AssetId::Invalid;
+        string name;
+    };
+
     struct AssetDependencyRecord {
         string path;
         uint64 contentHash = 0;
     };
 
     struct AssetOutputRecord {
-        string path;
+        AssetId logicalAssetId = AssetId::Invalid;
         uint64 contentHash = 0;
     };
 
@@ -41,6 +46,7 @@ namespace up {
         uint64 importerRevision = 0;
         AssetCategory category = AssetCategory::Source;
 
+        vector<LogicalAsset> logicalAssets;
         vector<AssetDependencyRecord> sourceDependencies;
         vector<AssetOutputRecord> outputs;
     };

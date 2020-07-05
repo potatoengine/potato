@@ -148,9 +148,6 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         bool upToDate = record != nullptr && _isUpToDate(*record, contentHash, *importer) && _isUpToDate(record->sourceDependencies);
         if (upToDate) {
             _logger.info("Asset `{}' is up-to-date", path);
-            for (auto const& rec : record->outputs) {
-                _outputs.push_back(rec.path);
-            }
             continue;
         }
 
@@ -179,22 +176,28 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         // move outputs to CAS
         //
         for (auto const& output : context.outputs()) {
-            auto outputOsPath = path::join(_temporaryOutputPath, output);
+            auto outputOsPath = path::join(_temporaryOutputPath, output.path);
             auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
+
             fixed_string_writer<64> casPath;
             format_append(casPath,
                 "{:02X}/{:04X}/{:010X}{}",
                 (outputHash >> 56) & 0xFF,
                 (outputHash >> 40) & 0XFFFF,
                 outputHash & 0xFF'FFFF'FFFF,
-                path::extension(string_view{output}));
+                path::extension(string_view{output.path}));
 
             auto casOsPath = path::join(_libraryPath, "cache", casPath);
             string casOsFolder = path::parent(casOsPath);
+
             _fileSystem->createDirectories(casOsFolder);
             _fileSystem->moveFileTo(outputOsPath, casOsPath);
 
-            newRecord.outputs.push_back(AssetOutputRecord{string(casPath), contentHash});
+            string_writer logicalAssetName;
+            format_append(logicalAssetName, "{}:{}", newRecord.path, output.logicalAsset);
+            auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
+
+            newRecord.outputs.push_back(AssetOutputRecord{logicalAssetId, outputHash});
         }
 
         for (auto const& sourceDepPath : context.sourceDependencies()) {
