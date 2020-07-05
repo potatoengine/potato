@@ -127,12 +127,12 @@ auto up::NativeFileSystem::fileStat(zstring_view path, FileStat& outInfo) const 
     outInfo.size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
     outInfo.mtime = std::chrono::duration_cast<std::chrono::microseconds>(
         std::filesystem::last_write_time(std::string_view(path.c_str(), path.size()), ec).time_since_epoch())
-                        .count();
+        .count();
     auto const status = std::filesystem::status(std::string_view(path.c_str(), path.size()), ec);
     outInfo.type = status.type() == std::filesystem::file_type::regular ? FileType::Regular
-                                                                        : status.type() == std::filesystem::file_type::directory
-            ? FileType::Directory
-            : status.type() == std::filesystem::file_type::symlink ? FileType::SymbolicLink : FileType::Other;
+        : status.type() == std::filesystem::file_type::directory
+        ? FileType::Directory
+        : status.type() == std::filesystem::file_type::symlink ? FileType::SymbolicLink : FileType::Other;
     return errorCodeToResult(ec);
 }
 
@@ -145,7 +145,7 @@ auto up::NativeFileSystem::enumerate(zstring_view path, EnumerateCallback cb, En
     while (iter != end) {
         std::string genPath =
             ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath ? iter->path() : std::filesystem::relative(iter->path(), path.c_str()))
-                .generic_string();
+            .generic_string();
 
         EnumerateItem item;
         item.info.path = genPath.c_str();
@@ -204,14 +204,14 @@ bool up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
     return !ec;
 }
 
-auto up::NativeFileSystem::copyFile(zstring_view destPath, zstring_view sourcePath) -> IOResult {
+auto up::NativeFileSystem::copyFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult {
     std::error_code ec;
-    std::filesystem::copy_file(sourcePath.c_str(), destPath.c_str(), std::filesystem::copy_options::overwrite_existing, ec);
+    std::filesystem::copy_file(fromPath.c_str(), toPath.c_str(), std::filesystem::copy_options::overwrite_existing, ec);
     return errorCodeToResult(ec);
 }
 
-auto up::NativeFileSystem::moveFile(zstring_view destPath, zstring_view sourcePath) -> IOResult {
+auto up::NativeFileSystem::moveFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult {
     std::error_code ec;
-    std::filesystem::rename(sourcePath.c_str(), destPath.c_str(), ec);
+    std::filesystem::rename(fromPath.c_str(), toPath.c_str(), ec);
     return errorCodeToResult(ec);
 }

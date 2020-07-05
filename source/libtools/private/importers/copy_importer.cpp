@@ -27,7 +27,7 @@ bool up::CopyImporter::import(ImporterContext& ctx) {
     // output has same name as input
     ctx.addOutput(ctx.sourceFilePath());
 
-    auto rs = ctx.fileSystem().copyFile(sourceAbsolutePath.c_str(), destAbsolutePath.c_str());
+    auto rs = ctx.fileSystem().copyFileTo(sourceAbsolutePath.c_str(), destAbsolutePath.c_str());
     if (rs != IOResult::Success) {
         ctx.logger().error("Failed to copy `{}' to `{}': {}", sourceAbsolutePath, destAbsolutePath, static_cast<uint64>(rs));
         return false;

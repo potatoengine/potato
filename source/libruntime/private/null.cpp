@@ -27,6 +27,6 @@ auto up::NullFileSystem::currentWorkingDirectory() const noexcept -> string { re
 
 auto up::NullFileSystem::currentWorkingDirectory(zstring_view) -> bool { return false; }
 
-auto up::NullFileSystem::copyFile(zstring_view destPath, zstring_view sourcePath) -> IOResult { return IOResult::UnsupportedOperation; }
+auto up::NullFileSystem::copyFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult { return IOResult::UnsupportedOperation; }
 
-auto up::NullFileSystem::moveFile(zstring_view destPath, zstring_view sourcePath) -> IOResult { return IOResult::UnsupportedOperation; }
+auto up::NullFileSystem::moveFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult { return IOResult::UnsupportedOperation; }

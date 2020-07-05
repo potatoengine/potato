@@ -220,7 +220,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             auto casOsPath = path::join(_libraryPath, "cache", casPath);
             string casOsFolder = path::parent(casOsPath);
             _fileSystem->createDirectories(casOsFolder);
-            _fileSystem->moveFile(casOsPath, outputOsPath);
+            _fileSystem->moveFileTo(outputOsPath, casOsPath);
 
             newRecord.outputs.push_back(AssetOutputRecord{string(casPath), contentHash});
         }

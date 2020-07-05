@@ -23,6 +23,6 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::NullFileSystem") {
 
         DOCTEST_CHECK_EQ(null.createDirectories("/foo/bar"), IOResult::UnsupportedOperation);
 
-        DOCTEST_CHECK_EQ(null.copyFile("/test.txt", "/out.txt"), IOResult::UnsupportedOperation);
+        DOCTEST_CHECK_EQ(null.copyFileTo("/test.txt", "/out.txt"), IOResult::UnsupportedOperation);
     }
 }

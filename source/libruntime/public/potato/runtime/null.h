@@ -30,7 +30,7 @@ namespace up {
         UP_RUNTIME_API string currentWorkingDirectory() const noexcept override;
         UP_RUNTIME_API bool currentWorkingDirectory(zstring_view path) override;
 
-        UP_RUNTIME_API IOResult copyFile(zstring_view destPath, zstring_view sourcePath) override;
-        UP_RUNTIME_API IOResult moveFile(zstring_view destPath, zstring_view sourcePath) override;
+        UP_RUNTIME_API IOResult copyFileTo(zstring_view fromPath, zstring_view toPath) override;
+        UP_RUNTIME_API IOResult moveFileTo(zstring_view fromPath, zstring_view toPath) override;
     };
 } // namespace up

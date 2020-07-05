@@ -37,8 +37,8 @@ namespace up {
         virtual string currentWorkingDirectory() const noexcept = 0;
         virtual bool currentWorkingDirectory(zstring_view path) = 0;
 
-        virtual IOResult copyFile(zstring_view destPath, zstring_view sourcePath) = 0;
-        virtual IOResult moveFile(zstring_view destPath, zstring_view sourcePath) = 0;
+        virtual IOResult copyFileTo(zstring_view fromPath, zstring_view toPath) = 0;
+        virtual IOResult moveFileTo(zstring_view fromPath, zstring_view toPath) = 0;
 
     protected:
         FileSystem() = default;
