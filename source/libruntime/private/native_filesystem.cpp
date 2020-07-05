@@ -176,12 +176,6 @@ auto up::NativeFileSystem::createDirectories(zstring_view path) -> IOResult {
     return errorCodeToResult(ec);
 }
 
-auto up::NativeFileSystem::copyFile(zstring_view from, zstring_view to) -> IOResult {
-    std::error_code ec;
-    std::filesystem::copy_file(from.c_str(), to.c_str(), std::filesystem::copy_options::overwrite_existing, ec);
-    return errorCodeToResult(ec);
-}
-
 auto up::NativeFileSystem::remove(zstring_view path) -> IOResult {
     std::error_code ec;
     if (!std::filesystem::remove(path.c_str(), ec)) {
@@ -208,4 +202,16 @@ bool up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
     std::error_code ec;
     std::filesystem::current_path(std::filesystem::path(path.c_str()), ec);
     return !ec;
+}
+
+auto up::NativeFileSystem::copyFile(zstring_view destPath, zstring_view sourcePath) -> IOResult {
+    std::error_code ec;
+    std::filesystem::copy_file(sourcePath.c_str(), destPath.c_str(), std::filesystem::copy_options::overwrite_existing, ec);
+    return errorCodeToResult(ec);
+}
+
+auto up::NativeFileSystem::moveFile(zstring_view destPath, zstring_view sourcePath) -> IOResult {
+    std::error_code ec;
+    std::filesystem::rename(sourcePath.c_str(), destPath.c_str(), ec);
+    return errorCodeToResult(ec);
 }

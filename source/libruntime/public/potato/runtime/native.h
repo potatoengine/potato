@@ -24,12 +24,13 @@ namespace up {
 
         UP_RUNTIME_API IOResult createDirectories(zstring_view path) override;
 
-        UP_RUNTIME_API IOResult copyFile(zstring_view from, zstring_view to) override;
-
         UP_RUNTIME_API IOResult remove(zstring_view path) override;
         UP_RUNTIME_API IOResult removeRecursive(zstring_view path) override;
 
         UP_RUNTIME_API string currentWorkingDirectory() const noexcept override;
         UP_RUNTIME_API bool currentWorkingDirectory(zstring_view path) override;
+
+        UP_RUNTIME_API IOResult copyFile(zstring_view destPath, zstring_view sourcePath) override;
+        UP_RUNTIME_API IOResult moveFile(zstring_view destPath, zstring_view sourcePath) override;
     };
 } // namespace up
