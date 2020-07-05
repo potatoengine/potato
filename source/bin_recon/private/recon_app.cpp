@@ -35,10 +35,15 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         return false;
     }
 
+    _libraryPath = path::join(_config.sourceFolderPath, ".library");
+    if (auto const rs = _fileSystem->createDirectories(_libraryPath); rs != IOResult::Success) {
+        _logger.error("Failed to create library folder `{}`: {}", _libraryPath, rs);
+        return false;
+    }
+
     _registerImporters();
 
-    auto libraryPath = path::join({string_view(_config.destinationFolderPath), "library$.json"});
-    _outputs.push_back("library$.json");
+    auto libraryPath = path::join(_libraryPath, "assets.json");
     if (_fileSystem->fileExists(libraryPath.c_str())) {
         auto libraryReadStream = _fileSystem->openRead(libraryPath.c_str(), FileOpenMode::Text);
         if (!libraryReadStream) {
@@ -50,8 +55,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.info("Loaded asset library `{}'", libraryPath);
     }
 
-    auto hashCachePath = path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
-    _outputs.push_back("hashes$.json");
+    auto hashCachePath = path::join(_libraryPath, "hashes.json");
     if (_fileSystem->fileExists(hashCachePath.c_str())) {
         auto hashesReadStream = _fileSystem->openRead(hashCachePath.c_str(), FileOpenMode::Text);
         if (!hashesReadStream) {
@@ -122,9 +126,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     libraryWriteStream.close();
 
     auto const manifest = _generateManifest();
-    auto manifestPath = path::join(_config.destinationFolderPath, "manifest$.pom");
-    _outputs.push_back("manifest$.pom");
-    _logger.info("Writing manifest `{}`", manifestPath);
+    auto manifestPath = path::join(_libraryPath, "manifest.txt");
     auto manifestFile = _fileSystem->openWrite(manifestPath.c_str(), FileOpenMode::Text);
     if (!manifestFile || !manifest.writeManifest(manifestFile)) {
         _logger.error("Failed to write manifest `{}'", manifestPath);
@@ -228,6 +230,12 @@ bool up::recon::ReconApp::_deleteUnusedFiles(view<string> files, bool dryRun) {
     std::set<string> keepFiles(files.begin(), files.end());
     std::set<string> foundFiles;
     auto cb = [&foundFiles](EnumerateItem const& item) {
+        // do not recurse into the library folder
+        //
+        if (item.info.path.starts_with(".library")) {
+            return EnumerateResult::Continue;
+        }
+
         if (item.info.type == FileType::Regular) {
             foundFiles.insert(string(item.info.path));
         }
@@ -346,19 +354,23 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
 
     vector<string> files;
     auto cb = [&files](EnumerateItem const& item) -> EnumerateResult {
+        // do not recurse into the library folder
+        //
+        if (item.info.path.starts_with(".library")) {
+            return EnumerateResult::Continue;
+        }
+
         if (item.info.type == FileType::Regular) {
-            // skip .meta files for now
+            // skip .meta files
+            //
             if (path::extension(item.info.path) == ".meta") {
                 return EnumerateResult::Continue;
             }
 
             files.push_back(item.info.path);
         }
-        else if (item.info.type == FileType::Directory) {
-            return EnumerateResult::Recurse;
-        }
 
-        return EnumerateResult::Continue;
+        return EnumerateResult::Recurse;
     };
 
     _fileSystem->enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);

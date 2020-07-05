@@ -55,6 +55,7 @@ namespace up::recon {
         };
 
         string_view _programName;
+        string _libraryPath;
         vector<Mapping> _importers;
         vector<string> _outputs;
         ReconConfig _config;

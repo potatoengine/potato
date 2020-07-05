@@ -12,3 +12,4 @@ deps/
 # Generated files
 tasks.vs.json
 launch.vs.json
+resources/.library
