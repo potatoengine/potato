@@ -71,7 +71,7 @@ bool up::ResourceManifest::writeManifest(erased_writer writer) const {
         version);
 
     for (auto const& record : _records) {
-        format_to(writer, "{}|{}|{}\n", record.id, record.hash, record.filename);
+        format_to(writer, "{:016X}|{:016X}|{}\n", record.id, record.hash, record.filename);
     }
 
     return true;
