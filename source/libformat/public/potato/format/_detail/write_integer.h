@@ -16,14 +16,15 @@ namespace up::_detail {
 
     template <char PadChar, typename Writer> constexpr void write_padding(Writer& out, size_t width) noexcept {
         constexpr auto pad_run_count = 8;
-        constexpr auto pad_run_mask = pad_run_count - 1;
-        static_assert((pad_run_count & pad_run_mask) == 0);
         constexpr char padding[pad_run_count] = {PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar};
 
-        while (width > 0) {
-            auto const to_write = width & pad_run_mask;
-            out.write({padding, narrow_cast<string_view::size_type>(to_write)});
-            width -= to_write;
+        while (width > pad_run_count) {
+            out.write({padding, pad_run_count});
+            width -= pad_run_count;
+        }
+
+        if (width > 0) {
+            out.write({padding, width});
         }
     }
 
