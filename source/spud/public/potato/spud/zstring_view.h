@@ -46,6 +46,22 @@ namespace up {
 
         constexpr string_view first(size_type count) const noexcept { return string_view{_str, count}; }
 
+        constexpr bool starts_with(string_view str) const noexcept {
+            auto const len = size();
+            if (str.size() > len) {
+                return false;
+            }
+            return stringCompare(_str, str.data(), str.size()) == 0;
+        }
+
+        constexpr bool ends_with(string_view str) const noexcept {
+            auto const len = size();
+            if (str.size() > len) {
+                return false;
+            }
+            return stringCompare(_str + len - str.size(), str.data(), str.size()) == 0;
+        }
+
         constexpr size_type find(value_type ch) const noexcept {
             if (_str != nullptr) {
                 for (pointer p = _str; *p != 0; ++p) {
