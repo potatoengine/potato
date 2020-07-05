@@ -5,6 +5,7 @@
 #include "format_spec.h"
 
 #include "potato/format/format.h"
+#include "potato/spud/ascii.h"
 #include "potato/spud/utility.h"
 
 #include <charconv>
@@ -30,6 +31,7 @@ namespace up::_detail {
         unsigned width = 0U;
         int base = 10;
         bool leading_zeroes = false;
+        bool uppercase = false;
     };
 
     constexpr integer_spec parse_integer_spec(string_view spec_string) noexcept {
@@ -43,9 +45,13 @@ namespace up::_detail {
         char const* next = _detail::parse_unsigned(spec_string.data(), spec_string.data() + spec_string.size(), spec.width);
         spec_string = {next, end};
 
-        if (auto const [success, printf_spec] = _detail::parse_spec(spec_string, "xb"); success) {
+        if (auto const [success, printf_spec] = _detail::parse_spec(spec_string, "xbX"); success) {
             switch (printf_spec) {
             case 'x': spec.base = 16; break;
+            case 'X':
+                spec.base = 16;
+                spec.uppercase = true;
+                break;
             case 'b': spec.base = 2; break;
             default: break;
             }
@@ -68,9 +74,15 @@ namespace up::_detail {
         auto const result = std::to_chars(buffer, buffer + sizeof(buffer), raw, spec.base);
 
         if (result.ec == std::errc()) {
+            if (spec.uppercase) {
+                for (char* c = buffer; c != result.ptr; ++c) {
+                    *c = ascii::to_uppercase(*c);
+                }
+            }
+
             if (spec.width > 0U) {
                 auto const written_width = result.ptr - buffer;
-                auto const required_padding = spec.width - written_width;
+                auto const required_padding = spec.width > written_width ? spec.width - written_width : 0;
                 if (spec.leading_zeroes) {
                     write_padding<'0'>(out, required_padding);
                 }
