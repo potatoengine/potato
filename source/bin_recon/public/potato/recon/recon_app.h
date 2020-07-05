@@ -38,12 +38,11 @@ namespace up::recon {
 
         auto _collectSourceFiles() -> vector<string>;
         bool _importFiles(view<string> files);
-        bool _deleteUnusedFiles(view<string> files, bool dryRun = true);
 
         bool _isUpToDate(AssetImportRecord const& record, uint64 contentHash, Importer const& importer) const noexcept;
         bool _isUpToDate(span<AssetDependencyRecord const> records);
 
-        bool _checkMetafile(ImporterContext& ctx, string_view filename);
+        bool _checkMetafile(ImporterContext& ctx, zstring_view filename);
 
         auto _findConverter(string_view path) const -> Importer*;
 
@@ -56,6 +55,7 @@ namespace up::recon {
 
         string_view _programName;
         string _libraryPath;
+        string _temporaryOutputPath;
         vector<Mapping> _importers;
         vector<string> _outputs;
         ReconConfig _config;

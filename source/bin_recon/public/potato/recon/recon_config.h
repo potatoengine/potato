@@ -17,9 +17,6 @@ namespace up {
 namespace up::recon {
     struct ReconConfig {
         string sourceFolderPath;
-        string destinationFolderPath;
-        string cacheFolderPath;
-        bool deleteStale = false;
 
         struct ImportMapping {
             string pattern;

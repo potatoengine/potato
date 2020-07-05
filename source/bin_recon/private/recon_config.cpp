@@ -22,8 +22,6 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, File
     enum {
         ArgNone,
         ArgSourceFolder,
-        ArgDestinationFolder,
-        ArgCacheFolder,
         ArgConfig,
     } argMode = ArgNone;
 
@@ -38,17 +36,8 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, File
             if (name == "source") {
                 argMode = ArgSourceFolder;
             }
-            else if (name == "dest") {
-                argMode = ArgDestinationFolder;
-            }
-            else if (name == "cache") {
-                argMode = ArgCacheFolder;
-            }
             else if (name == "config") {
                 argMode = ArgConfig;
-            }
-            else if (name == "delete") {
-                config.deleteStale = true;
             }
             else {
                 logger.error("Unknown option: {}", arg.c_str());
@@ -63,14 +52,6 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, File
             config.sourceFolderPath = string(arg);
             argMode = ArgNone;
             break;
-        case ArgDestinationFolder:
-            config.destinationFolderPath = string(arg);
-            argMode = ArgNone;
-            break;
-        case ArgCacheFolder:
-            config.cacheFolderPath = string(arg);
-            argMode = ArgNone;
-            break;
         case ArgConfig:
             if (!parseConfigFile(config, fileSystem, arg, logger)) {
                 return false;
@@ -83,8 +64,6 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, File
     switch (argMode) {
     case ArgNone: return true;
     case ArgSourceFolder: logger.error("No value provided after `-source' argument"); return false;
-    case ArgDestinationFolder: logger.error("No value provided after `-dest' argument"); return false;
-    case ArgCacheFolder: logger.error("No value provided after `-cache' argument"); return false;
     case ArgConfig: logger.error("No value provided after `-config' argument"); return false;
     default: logger.error("No value provided"); return false;
     }
@@ -115,18 +94,6 @@ bool up::recon::parseConfigString(ReconConfig& config, string_view json, zstring
 
     if (auto jsonSourceDir = jsonRoot["sourceDir"]; jsonSourceDir.is_string()) {
         config.sourceFolderPath = jsonSourceDir.get<string>();
-    }
-
-    if (auto jsonDestDir = jsonRoot["destDir"]; jsonDestDir.is_string()) {
-        config.destinationFolderPath = jsonDestDir.get<string>();
-    }
-
-    if (auto jsonCacheDir = jsonRoot["cacheDir"]; jsonCacheDir.is_string()) {
-        config.cacheFolderPath = jsonCacheDir.get<string>();
-    }
-
-    if (auto jsonDeleteStale = jsonRoot["deleteStale"]; jsonDeleteStale.is_boolean()) {
-        config.deleteStale = jsonDeleteStale.get<bool>();
     }
 
     if (auto jsonMappings = jsonRoot["mapping"]; jsonMappings.is_array()) {

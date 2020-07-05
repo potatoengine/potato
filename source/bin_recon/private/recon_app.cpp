@@ -17,8 +17,6 @@
 #include "potato/spud/string_writer.h"
 
 #include <nlohmann/json.hpp>
-#include <algorithm>
-#include <set>
 
 up::recon::ReconApp::ReconApp() : _programName("recon"), _fileSystem(new_box<NativeFileSystem>()), _hashes(*_fileSystem), _logger("recon") {}
 
@@ -41,6 +39,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.error("Failed to create library folder `{}`: {}", _libraryPath, rs);
         return false;
     }
+
+    _temporaryOutputPath = path::join(_libraryPath, "temp");
 
     _registerImporters();
 
@@ -80,32 +80,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.error("Source directory must be specified.");
         return false;
     }
-    if (_config.destinationFolderPath.empty()) {
-        _logger.error("Destination directory must be specified.");
-        return false;
-    }
-    if (_config.cacheFolderPath.empty()) {
-        _logger.error("Cache directory must be specified.");
-        return false;
-    }
 
-    _logger.info("Source: `{}'", _config.sourceFolderPath);
-    _logger.info("Destination: `{}'", _config.destinationFolderPath);
-    _logger.info("Cache: `{}'", _config.cacheFolderPath);
-
-    if (!_fileSystem->directoryExists(_config.destinationFolderPath.c_str())) {
-        if (_fileSystem->createDirectories(_config.destinationFolderPath.c_str()) != IOResult::Success) {
-            _logger.error("Failed to create `{}'", _config.destinationFolderPath);
-            return false;
-        }
-    }
-
-    if (!_fileSystem->directoryExists(_config.cacheFolderPath.c_str())) {
-        if (_fileSystem->createDirectories(_config.cacheFolderPath.c_str()) != IOResult::Success) {
-            _logger.error("Failed to create `{}'", _config.cacheFolderPath);
-            return false;
-        }
-    }
+    _logger.info("Source at `{}'", _config.sourceFolderPath);
 
     bool success = _importFiles(sources);
     if (!success) {
@@ -134,10 +110,6 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         return false;
     };
     manifestFile.close();
-
-    if (success) {
-        _deleteUnusedFiles(_outputs, !_config.deleteStale);
-    }
 
     return success;
 }
@@ -185,7 +157,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         auto name = importer->name();
         _logger.info("Asset `{}' requires import ({} {})", path.c_str(), string_view(name.data(), name.size()), importer->revision());
 
-        ImporterContext context(path.c_str(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
+        ImporterContext context(path, _config.sourceFolderPath, _temporaryOutputPath, *_fileSystem, _logger);
         if (!_checkMetafile(context, path)) {
             continue;
         }
@@ -207,7 +179,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         // move outputs to CAS
         //
         for (auto const& output : context.outputs()) {
-            auto outputOsPath = path::join(_config.destinationFolderPath, output);
+            auto outputOsPath = path::join(_temporaryOutputPath, output);
             auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
             fixed_string_writer<64> casPath;
             format_append(casPath,
@@ -237,40 +209,6 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
     return !failed;
 }
 
-bool up::recon::ReconApp::_deleteUnusedFiles(view<string> files, bool dryRun) {
-    std::set<string> keepFiles(files.begin(), files.end());
-    std::set<string> foundFiles;
-    auto cb = [&foundFiles](EnumerateItem const& item) {
-        // do not recurse into the library folder
-        //
-        if (item.info.path.starts_with(".library")) {
-            return EnumerateResult::Continue;
-        }
-
-        if (item.info.type == FileType::Regular) {
-            foundFiles.insert(string(item.info.path));
-        }
-        return EnumerateResult::Recurse;
-    };
-    _fileSystem->enumerate(_config.destinationFolderPath.c_str(), cb);
-
-    vector<string> deleteFiles;
-    std::set_difference(foundFiles.begin(), foundFiles.end(), keepFiles.begin(), keepFiles.end(), std::back_inserter(deleteFiles));
-
-    for (auto const& deletePath : deleteFiles) {
-        _logger.info("Stale output file `{}'", deletePath);
-        if (!dryRun) {
-            string osPath = path::join({_config.destinationFolderPath.c_str(), deletePath.c_str()});
-            auto rs = _fileSystem->remove(osPath.c_str());
-            if (rs != IOResult::Success) {
-                _logger.error("Failed to remove `{}'", osPath);
-            }
-        }
-    }
-
-    return true;
-}
-
 bool up::recon::ReconApp::_isUpToDate(AssetImportRecord const& record, up::uint64 contentHash, Importer const& importer) const noexcept {
     return record.contentHash == contentHash && string_view(record.importerName) == importer.name() && record.importerRevision == importer.revision();
 }
@@ -296,7 +234,7 @@ auto up::recon::ReconApp::_findConverter(string_view path) const -> Importer* {
     return nullptr;
 }
 
-auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, string_view filename) -> bool {
+auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view filename) -> bool {
     string_writer metaFilePath;
     metaFilePath.append(filename);
     metaFilePath.append(".meta");
@@ -331,7 +269,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, string_view filen
             dirty = true;
         }
 
-        ImporterContext context(filename.data(), _config.sourceFolderPath.c_str(), _config.destinationFolderPath.c_str(), *_fileSystem, _logger);
+        ImporterContext context(filename, _config.sourceFolderPath, _temporaryOutputPath, *_fileSystem, _logger);
         string settings = importer->generateSettings(context);
         if (settings != metaFile.importerSettings) {
             metaFile.importerSettings = std::move(settings);

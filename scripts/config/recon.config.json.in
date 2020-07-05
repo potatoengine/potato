@@ -1,7 +1,5 @@
 {
   "sourceDir": "@UP_ROOT_DIR@/resources",
-  "destDir": "@UP_OUTPUT_DIR@/resources",
-  "cacheDir": "@UP_OUTPUT_DIR@/cache",
   "mapping": [
     {
       "pattern": ".hlsl",

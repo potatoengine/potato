@@ -12,7 +12,7 @@ DOCTEST_TEST_SUITE("[potato][recon] ReconConfig") {
     using namespace recon;
 
     DOCTEST_TEST_CASE("args") {
-        char const* args[] = {"/bin/test/", "-source", "ABC", "-dest", "DEF", "-cache", "GHI"};
+        char const* args[] = {"/bin/test/", "-source", "ABC"};
         ReconConfig config;
         NullFileSystem fs;
         Logger logger("test");
@@ -21,12 +21,10 @@ DOCTEST_TEST_SUITE("[potato][recon] ReconConfig") {
         DOCTEST_CHECK(ok);
 
         DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");
-        DOCTEST_CHECK_EQ(config.destinationFolderPath.c_str(), "DEF");
-        DOCTEST_CHECK_EQ(config.cacheFolderPath.c_str(), "GHI");
     }
 
     DOCTEST_TEST_CASE("json") {
-        string_view json = R"--({"sourceDir":"ABC","destDir":"DEF","cacheDir":"GHI"})--";
+        string_view json = R"--({"sourceDir":"ABC"})--";
         ReconConfig config;
         Logger logger("test");
 
@@ -34,7 +32,5 @@ DOCTEST_TEST_SUITE("[potato][recon] ReconConfig") {
         DOCTEST_CHECK(ok);
 
         DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");
-        DOCTEST_CHECK_EQ(config.destinationFolderPath.c_str(), "DEF");
-        DOCTEST_CHECK_EQ(config.cacheFolderPath.c_str(), "GHI");
     }
 }
