@@ -2,6 +2,7 @@
 
 #include "recon_app.h"
 
+#include "potato/format/format.h"
 #include "potato/tools/file_hash_cache.h"
 #include "potato/tools/meta_file.h"
 #include "potato/tools/resource_manifest.h"
@@ -195,11 +196,6 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             continue;
         }
 
-        // range insert won't work - explicit copy fails
-        for (auto const& output : context.outputs()) {
-            _outputs.push_back(string(output));
-        }
-
         AssetImportRecord newRecord;
         newRecord.assetId = assetId;
         newRecord.path = string(path);
@@ -208,16 +204,31 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         newRecord.importerName = string(importer->name());
         newRecord.importerRevision = importer->revision();
 
+        // move outputs to CAS
+        //
+        for (auto const& output : context.outputs()) {
+            auto outputOsPath = path::join(_config.destinationFolderPath, output);
+            auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
+            fixed_string_writer<64> casPath;
+            format_append(casPath,
+                "{:02X}/{:04X}/{:010X}{}",
+                (outputHash >> 56) & 0xFF,
+                (outputHash >> 40) & 0XFFFF,
+                outputHash & 0xFF'FFFF'FFFF,
+                path::extension(string_view{output}));
+
+            auto casOsPath = path::join(_libraryPath, "cache", casPath);
+            string casOsFolder = path::parent(casOsPath);
+            _fileSystem->createDirectories(casOsFolder);
+            _fileSystem->moveFile(casOsPath, outputOsPath);
+
+            newRecord.outputs.push_back(AssetOutputRecord{string(casPath), contentHash});
+        }
+
         for (auto const& sourceDepPath : context.sourceDependencies()) {
             auto osPath = path::join({_config.sourceFolderPath.c_str(), sourceDepPath.c_str()});
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
             newRecord.sourceDependencies.push_back(AssetDependencyRecord{string(sourceDepPath), contentHash});
-        }
-
-        for (auto const& outputPath : context.outputs()) {
-            auto osPath = path::join({_config.destinationFolderPath.c_str(), outputPath.c_str()});
-            auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
-            newRecord.outputs.push_back(AssetOutputRecord{string(outputPath), contentHash});
         }
 
         _library.insertRecord(std::move(newRecord));
