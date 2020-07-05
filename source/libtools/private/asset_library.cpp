@@ -23,12 +23,16 @@ auto up::AssetLibrary::assetIdToPath(AssetId assetId) const -> string_view {
 }
 
 auto up::AssetLibrary::findRecord(AssetId assetId) const -> AssetImportRecord const* {
-    auto it = _assets.find(assetId);
-    return it != _assets.end() ? &it->second : nullptr;
+    for (auto const& record : _records) {
+        if (record.assetId == assetId) {
+            return &record;
+        }
+    }
+    return nullptr;
 }
 
 bool up::AssetLibrary::insertRecord(AssetImportRecord record) {
-    _assets[record.assetId] = std::move(record);
+    _records.push_back(std::move(record));
     return true;
 }
 
@@ -39,12 +43,12 @@ bool up::AssetLibrary::serialize(Stream& stream) const {
     jsonRoot["$version"] = version;
 
     nlohmann::json jsonRecords;
-    for (auto const& [assetId, record] : _assets) {
+    for (auto const& record : _records) {
         nlohmann::json jsonRecord;
 
         auto catName = assetCategoryName(record.category);
 
-        jsonRecord["id"] = static_cast<uint64>(assetId);
+        jsonRecord["id"] = to_underlying(record.assetId);
         jsonRecord["path"] = std::string(record.path.data(), record.path.size());
         jsonRecord["contentHash"] = record.contentHash;
         jsonRecord["category"] = std::string(catName.data(), catName.size());
@@ -103,7 +107,8 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
     }
 
     for (auto const& record : records) {
-        AssetImportRecord newRecord;
+        AssetImportRecord& newRecord = _records.emplace_back();
+
         newRecord.assetId = record["id"];
         newRecord.path = record["path"].get<string>();
         newRecord.contentHash = record["contentHash"];
@@ -118,8 +123,6 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
         for (auto const& output : record["sourceDeps"]) {
             newRecord.sourceDependencies.push_back(AssetDependencyRecord{output["path"], output["hash"]});
         }
-
-        insertRecord(std::move(newRecord));
     }
 
     return true;
@@ -127,7 +130,7 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
 
 auto up::AssetLibrary::generateManifest() const -> ResourceManifest {
     ResourceManifest manifest;
-    for (auto const& [assetId, record] : _assets) {
+    for (auto const& record : _records) {
         manifest.addRecord(ResourceId{to_underlying(record.assetId)}, record.contentHash, record.path);
     }
     return manifest;

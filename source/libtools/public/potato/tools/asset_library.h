@@ -43,6 +43,6 @@ namespace up {
             constexpr uint64 operator()(AssetId assetId) const noexcept { return static_cast<uint64>(assetId); }
         };
 
-        std::unordered_map<AssetId, AssetImportRecord, HashAssetId> _assets;
+        vector<AssetImportRecord> _records;
     };
 } // namespace up
