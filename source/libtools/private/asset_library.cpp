@@ -7,6 +7,7 @@
 #include "potato/runtime/stream.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/hash_fnv1a.h"
+#include "potato/spud/string_writer.h"
 
 #include <nlohmann/json.hpp>
 
@@ -54,6 +55,15 @@ bool up::AssetLibrary::serialize(Stream& stream) const {
         jsonRecord["category"] = std::string(catName.data(), catName.size());
         jsonRecord["importerName"] = std::string(record.importerName.data(), record.importerName.size());
         jsonRecord["importerRevision"] = record.importerRevision;
+
+        nlohmann::json jsonLogicals;
+        for (auto const& logical : record.logicalAssets) {
+            nlohmann::json jsonLogical;
+            jsonLogical["id"] = to_underlying(logical.assetId);
+            jsonLogical["name"] = logical.name;
+            jsonLogicals.push_back(std::move(jsonLogical));
+        }
+        jsonRecord["logical"] = std::move(jsonLogicals);
 
         nlohmann::json jsonOutputs;
         for (auto const& output : record.outputs) {
@@ -116,6 +126,10 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
         newRecord.importerName = record["importerName"].get<string>();
         newRecord.importerRevision = record["importerRevision"];
 
+        for (auto const& output : record["logical"]) {
+            newRecord.logicalAssets.push_back(LogicalAsset{output["id"], output["name"]});
+        }
+
         for (auto const& output : record["outputs"]) {
             newRecord.outputs.push_back(AssetOutputRecord{output["logical"], output["hash"]});
         }
@@ -130,9 +144,25 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
 
 auto up::AssetLibrary::generateManifest() const -> ResourceManifest {
     ResourceManifest manifest;
+
+    string_writer logicalName;
+
     for (auto const& record : _records) {
         for (auto const& output : record.outputs) {
-            manifest.addRecord(ResourceId{output.logicalAssetId}, output.contentHash, record.path);
+            if (output.logicalAssetId != record.assetId) {
+                for (auto const& logical : record.logicalAssets) {
+                    if (logical.assetId == output.logicalAssetId) {
+                        logicalName.clear();
+                        format_append(logicalName, "{}:{}", record.path, logical.name);
+
+                        manifest.addRecord(ResourceId{output.logicalAssetId}, output.contentHash, logicalName.to_string());
+                        break;
+                    }
+                }
+            }
+            else {
+                manifest.addRecord(ResourceId{output.logicalAssetId}, output.contentHash, record.path);
+            }
         }
     }
     return manifest;

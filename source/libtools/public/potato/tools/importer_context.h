@@ -48,8 +48,9 @@ namespace up {
         void addOutput(string_view logicalAsset, zstring_view path);
         void addMainOutput(zstring_view path);
 
-        span<string const> sourceDependencies() const noexcept { return span{_sourceDependencies.data(), _sourceDependencies.size()}; }
-        span<Output const> outputs() const noexcept { return span{_outputs.data(), _outputs.size()}; }
+        view<string> sourceDependencies() const noexcept { return _sourceDependencies; }
+        view<string> logicalAssets() const noexcept { return _logicalAssets; }
+        view<Output> outputs() const noexcept { return _outputs; }
 
         FileSystem& fileSystem() noexcept { return _fileSystem; }
         Logger& logger() noexcept { return _logger; }

@@ -173,6 +173,8 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         newRecord.importerName = string(importer->name());
         newRecord.importerRevision = importer->revision();
 
+        string_writer logicalAssetName;
+
         // move outputs to CAS
         //
         for (auto const& output : context.outputs()) {
@@ -193,11 +195,19 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             _fileSystem->createDirectories(casOsFolder);
             _fileSystem->moveFileTo(outputOsPath, casOsPath);
 
-            string_writer logicalAssetName;
-            format_append(logicalAssetName, "{}:{}", newRecord.path, output.logicalAsset);
+            logicalAssetName.clear();
+            format_append(logicalAssetName, "{}{}{}", newRecord.path, output.logicalAsset.empty() ? "" : ":", output.logicalAsset);
             auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
 
             newRecord.outputs.push_back(AssetOutputRecord{logicalAssetId, outputHash});
+        }
+
+        for (auto const& logicalName : context.logicalAssets()) {
+            logicalAssetName.clear();
+            format_append(logicalAssetName, "{}:{}", newRecord.path, logicalName);
+            auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
+
+            newRecord.logicalAssets.push_back(LogicalAsset{logicalAssetId, logicalName});
         }
 
         for (auto const& sourceDepPath : context.sourceDependencies()) {

@@ -78,8 +78,8 @@ bool up::HlslImporter::import(ImporterContext& ctx) {
 
     stream.close();
 
-    bool success = _compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "vertex_main", "vs_5_0");
-    success = _compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "pixel_main", "ps_5_0") && success;
+    bool success = _compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "vertex", "vertex_main", "vs_5_0");
+    success = _compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "pixel", "pixel_main", "ps_5_0") && success;
 
     return success;
 }
@@ -88,6 +88,7 @@ bool up::HlslImporter::_compile(ImporterContext& ctx,
     FileSystem& fileSys,
     zstring_view absoluteSourcePath,
     string_view source,
+    string_view logicalName,
     zstring_view entryName,
     zstring_view targetProfileName) {
     ctx.logger().info("Compiling `{}':{} ({})", ctx.sourceFilePath(), entryName, targetProfileName);
@@ -139,8 +140,8 @@ bool up::HlslImporter::_compile(ImporterContext& ctx,
         return false;
     }
 
-    ctx.addLogicalAsset(targetProfileName);
-    ctx.addOutput(targetProfileName, destPath.c_str());
+    ctx.addLogicalAsset(logicalName);
+    ctx.addOutput(logicalName, destPath.c_str());
 
     compiledOutput.write({(up::byte const*)blob->GetBufferPointer(), blob->GetBufferSize()});
     compiledOutput.close();
