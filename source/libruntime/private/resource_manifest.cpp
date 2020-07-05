@@ -1,9 +1,11 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "resource_manifest.h"
+#include "stream.h"
 
 #include "potato/format/format.h"
-#include "potato/runtime/stream.h"
+
+#include <charconv>
 
 auto up::ResourceManifest::findHash(ResourceId id) const noexcept -> uint64 {
     for (auto const& record : _records) {
@@ -25,12 +27,12 @@ auto up::ResourceManifest::findFilename(ResourceId id) const noexcept -> zstring
     return {};
 }
 
-bool up::ResourceManifest::parseManifest(string_view input) {
+bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& manifest) {
     while (!input.empty()) {
         switch (input.front()) {
         case '#': // comment
             if (auto const eol = input.find('\n'); eol != string_view::npos) {
-                input = input.substr(eol);
+                input = input.substr(eol + 1);
             }
             else {
                 input = {};
@@ -41,50 +43,41 @@ bool up::ResourceManifest::parseManifest(string_view input) {
             break;
         case '.': // metadata
             if (auto const eol = input.find('\n'); eol != string_view::npos) {
-                input = input.substr(eol);
+                input = input.substr(eol + 1);
             }
             else {
                 input = {};
             }
             break;
-        default
-            : // content line
-        {
-            auto const sep = input.find_first_of("|\n");
-            bool eol = false;
-            while (sep != string_view::npos && !eol) {
-                eol = input[sep] == '\n';
-                input = input.substr(sep);
+        case ':': // header
+            if (auto const eol = input.find('\n'); eol != string_view::npos) {
+                input = input.substr(eol + 1);
             }
+            else {
+                input = {};
+            }
+            break;
+        default: { // content
+            string_view::size_type sep = {};
+            bool eol = false;
+            int column = 0;
+            Record record;
+            while (!eol && (sep = input.find_first_of("|\n")) != string_view::npos) {
+                switch (column++) {
+                case 0: std::from_chars(input.data(), input.data() + sep, static_cast<uint64&>(record.id), 16); break;
+                case 1: std::from_chars(input.data(), input.data() + sep, record.hash, 16); break;
+                case 2: record.filename = input.substr(0, sep); break;
+                default: break;
+                }
+
+                eol = input[sep] == '\n';
+                input = input.substr(sep + 1);
+            }
+
+            manifest._records.push_back(std::move(record));
         } break;
         }
     }
 
     return true;
-}
-
-bool up::ResourceManifest::writeManifest(erased_writer writer) const {
-    format_to(writer,
-        "# Potato Manifest\n"
-        ".version={}\n"
-        ":ID|HASH|NAME\n",
-        version);
-
-    for (auto const& record : _records) {
-        format_to(writer, "{:016X}|{:016X}|{}\n", record.id, record.hash, record.filename);
-    }
-
-    return true;
-}
-
-void up::ResourceManifest::addRecord(ResourceId id, uint64 hash, string filename) {
-    for (auto& record : _records) {
-        if (record.id == id) {
-            record.hash = hash;
-            record.filename = std::move(filename);
-            return;
-        }
-    }
-
-    _records.push_back({id, hash, std::move(filename)});
 }

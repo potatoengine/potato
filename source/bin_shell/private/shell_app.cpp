@@ -56,7 +56,7 @@ namespace up::shell {
     extern auto createGameEditor(rc<Scene> scene) -> box<Editor>;
 } // namespace up::shell
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell"), _resourceLoader(_fileSystem) {}
 
 up::shell::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
@@ -77,6 +77,26 @@ int up::shell::ShellApp::initialize() {
 
     if (_editorResourcePath.empty()) {
         _errorDialog("No editor resource path specified");
+        return 1;
+    }
+
+    _resourceLoader.setCasPath(path::join(_editorResourcePath, ".library", "cache"));
+
+    string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
+    if (Stream manifestFile = _fileSystem.openRead(manifestPath, FileOpenMode::Text)) {
+        string manifestText;
+        if (readText(manifestFile, manifestText) != IOResult::Success) {
+            _errorDialog("Failed to load resource manifest");
+            return 1;
+        }
+
+        if (!ResourceManifest::parseManifest(manifestText, _resourceLoader.manifest())) {
+            _errorDialog("Failed to parse resource manifest");
+            return 1;
+        }
+    }
+    else {
+        _errorDialog("Failed to open resource manifest");
         return 1;
     }
 

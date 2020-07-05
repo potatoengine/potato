@@ -5,7 +5,6 @@
 #include "potato/format/format.h"
 #include "potato/tools/file_hash_cache.h"
 #include "potato/tools/meta_file.h"
-#include "potato/tools/resource_manifest.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/native.h"
@@ -102,13 +101,13 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     }
     libraryWriteStream.close();
 
-    auto const manifest = _generateManifest();
     auto manifestPath = path::join(_libraryPath, "manifest.txt");
     auto manifestFile = _fileSystem->openWrite(manifestPath.c_str(), FileOpenMode::Text);
-    if (!manifestFile || !manifest.writeManifest(manifestFile)) {
-        _logger.error("Failed to write manifest `{}'", manifestPath);
+    if (!manifestFile) {
+        _logger.error("Failed to open manifest `{}'", manifestPath);
         return false;
     };
+    _library.generateManifest(manifestFile);
     manifestFile.close();
 
     return success;
@@ -181,13 +180,8 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             auto outputOsPath = path::join(_temporaryOutputPath, output.path);
             auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
 
-            fixed_string_writer<64> casPath;
-            format_append(casPath,
-                "{:02X}/{:04X}/{:010X}{}",
-                (outputHash >> 56) & 0xFF,
-                (outputHash >> 40) & 0XFFFF,
-                outputHash & 0xFF'FFFF'FFFF,
-                path::extension(string_view{output.path}));
+            fixed_string_writer<32> casPath;
+            format_append(casPath, "{:02X}/{:04X}/{:016X}.bin", (outputHash >> 56) & 0xFF, (outputHash >> 40) & 0XFFFF, outputHash);
 
             auto casOsPath = path::join(_libraryPath, "cache", casPath);
             string casOsFolder = path::parent(casOsPath);
@@ -338,5 +332,3 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
     _fileSystem->enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
     return files;
 };
-
-auto up::recon::ReconApp::_generateManifest() -> ResourceManifest { return _library.generateManifest(); }

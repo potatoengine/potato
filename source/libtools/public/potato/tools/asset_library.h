@@ -6,10 +6,9 @@
 #include "asset_record.h"
 #include "common.h"
 
+#include "potato/format/erased.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/vector.h"
-
-#include <unordered_map>
 
 namespace up {
     class Stream;
@@ -36,7 +35,7 @@ namespace up {
         UP_TOOLS_API bool serialize(Stream& stream) const;
         UP_TOOLS_API bool deserialize(Stream& stream);
 
-        UP_TOOLS_API auto generateManifest() const -> ResourceManifest;
+        UP_TOOLS_API void generateManifest(erased_writer writer) const;
 
     private:
         struct HashAssetId {

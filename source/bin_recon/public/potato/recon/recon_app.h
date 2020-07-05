@@ -18,10 +18,6 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
-namespace up {
-    class ResourceManifest;
-}
-
 namespace up::recon {
     class ReconApp {
     public:
@@ -45,8 +41,6 @@ namespace up::recon {
         bool _checkMetafile(ImporterContext& ctx, zstring_view filename);
 
         auto _findConverter(string_view path) const -> Importer*;
-
-        auto _generateManifest() -> ResourceManifest;
 
         struct Mapping {
             delegate<bool(string_view) const> predicate;

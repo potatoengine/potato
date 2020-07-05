@@ -1,7 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "asset_library.h"
-#include "resource_manifest.h"
 
 #include "potato/runtime/json.h"
 #include "potato/runtime/stream.h"
@@ -142,28 +141,30 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
     return true;
 }
 
-auto up::AssetLibrary::generateManifest() const -> ResourceManifest {
-    ResourceManifest manifest;
+void up::AssetLibrary::generateManifest(erased_writer writer) const {
+    format_to(writer,
+        "# Potato Manifest\n"
+        ".version={}\n"
+        ":ID|HASH|NAME\n",
+        version);
 
     string_writer logicalName;
 
     for (auto const& record : _records) {
         for (auto const& output : record.outputs) {
+            logicalName.clear();
+            logicalName.append(record.path);
+
             if (output.logicalAssetId != record.assetId) {
                 for (auto const& logical : record.logicalAssets) {
                     if (logical.assetId == output.logicalAssetId) {
-                        logicalName.clear();
-                        format_append(logicalName, "{}:{}", record.path, logical.name);
-
-                        manifest.addRecord(ResourceId{output.logicalAssetId}, output.contentHash, logicalName.to_string());
+                        format_append(logicalName, ":{}", logical.name);
                         break;
                     }
                 }
             }
-            else {
-                manifest.addRecord(ResourceId{output.logicalAssetId}, output.contentHash, record.path);
-            }
+
+            format_to(writer, "{:016X}|{:016X}|{}\n", output.logicalAssetId, output.contentHash, logicalName);
         }
     }
-    return manifest;
 }

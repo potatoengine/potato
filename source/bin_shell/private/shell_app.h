@@ -7,6 +7,7 @@
 #include "potato/render/draw_imgui.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/native.h"
+#include "potato/runtime/resource_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/unique_resource.h"
 
@@ -94,5 +95,6 @@ namespace up::shell {
         std::chrono::nanoseconds _lastFrameDuration = {};
         ImGuiWindowClass _documentWindowClass;
         string _projectName;
+        ResourceLoader _resourceLoader;
     };
 } // namespace up::shell
