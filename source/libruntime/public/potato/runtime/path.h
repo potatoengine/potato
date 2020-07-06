@@ -30,6 +30,7 @@ namespace up::path {
     // only the last extension is returned, e.g. foo.txt.gz -> .gz
     UP_RUNTIME_API zstring_view extension(zstring_view path) noexcept;
     UP_RUNTIME_API string_view extension(string_view path) noexcept;
+    inline zstring_view extension(string const& path) noexcept { return extension(zstring_view{path}); }
 
     // replaces any existing extension with the requested one
     // extension must include the dot, e.g. .txt
