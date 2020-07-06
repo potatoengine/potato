@@ -53,12 +53,14 @@ namespace up {
 
     private:
         void _addRef() const {
-            if (_ptr != nullptr)
+            if (_ptr != nullptr) {
                 _ptr->AddRef();
+            }
         }
         void _decRef() const {
-            if (_ptr != nullptr)
+            if (_ptr != nullptr) {
                 _ptr->Release();
+            }
         }
 
         pointer _ptr = nullptr;
