@@ -24,5 +24,5 @@ namespace up::ascii {
         return -1;
     }
 
-    constexpr auto to_uppercase(char const ch) noexcept -> char { return ch >= 'a' && ch <= 'z' ? ch - 'a' + 'A' : ch; }
+    constexpr auto to_uppercase(char const ch) noexcept -> char { return ch >= 'a' && ch <= 'z' ? char{ch - 'a' + 'A'} : ch; }
 } // namespace up::ascii
