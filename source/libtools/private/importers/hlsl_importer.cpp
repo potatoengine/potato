@@ -12,9 +12,10 @@
 #include "potato/spud/string_view.h"
 #include "potato/spud/string_writer.h"
 
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <fstream>
+#if defined(UP_GPU_ENABLE_D3D11)
+#    include <d3d11.h>
+#    include <d3dcompiler.h>
+#    include <fstream>
 
 namespace {
     struct ReconIncludeHandler : public ID3DInclude {
@@ -57,12 +58,14 @@ namespace {
         up::vector<up::string> _shaders;
     }; // namespace
 } // namespace
+#endif
 
 up::HlslImporter::HlslImporter() = default;
 
 up::HlslImporter::~HlslImporter() = default;
 
 bool up::HlslImporter::import(ImporterContext& ctx) {
+#if defined(UP_GPU_ENABLE_D3D11)
     auto absoluteSourcePath = path::join({string_view(ctx.sourceFolderPath()), ctx.sourceFilePath()});
 
     auto stream = ctx.fileSystem().openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
@@ -82,8 +85,12 @@ bool up::HlslImporter::import(ImporterContext& ctx) {
     success = _compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "pixel", "pixel_main", "ps_5_0") && success;
 
     return success;
+#else
+    return true;
+#endif
 }
 
+#if defined(UP_GPU_ENABLE_D3D11)
 bool up::HlslImporter::_compile(ImporterContext& ctx,
     FileSystem& fileSys,
     zstring_view absoluteSourcePath,
@@ -148,3 +155,4 @@ bool up::HlslImporter::_compile(ImporterContext& ctx,
 
     return true;
 }
+#endif

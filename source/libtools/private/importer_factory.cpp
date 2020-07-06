@@ -32,9 +32,7 @@ void up::ImporterFactory::registerImporter(box<Importer> importer) {
 
 void up::ImporterFactory::registerDefaultImporters() {
     registerImporter(new_box<CopyImporter>());
-#if defined(UP_GPU_ENABLE_D3D11)
     registerImporter(new_box<HlslImporter>());
-#endif
     registerImporter(new_box<IgnoreImporter>());
     registerImporter(new_box<JsonImporter>());
     registerImporter(new_box<MaterialImporter>());

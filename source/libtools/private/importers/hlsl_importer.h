@@ -4,9 +4,9 @@
 
 #include "importer.h"
 
-#include "potato/runtime/filesystem.h"
-
 namespace up {
+    class FileSystem;
+
     class HlslImporter : public Importer {
     public:
         HlslImporter();
