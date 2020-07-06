@@ -118,7 +118,7 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
     }
 
     for (auto const& record : records) {
-        auto& newRecord = _records.emplace_back();
+        auto& newRecord = _records.push_back({});
 
         newRecord.assetId = record["id"];
 
