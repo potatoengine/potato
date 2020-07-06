@@ -12,6 +12,7 @@ target_sources(potato_libtools PRIVATE
     "private/importer_context.cpp"
     "private/importer_factory.cpp"
     "private/importers/copy_importer.cpp"
+    "private/importers/hlsl_importer.cpp"
     "private/importers/json_importer.cpp"
     "private/importers/material_importer.cpp"
     "private/importers/model_importer.cpp"
@@ -34,7 +35,6 @@ target_link_libraries(potato_libtools
 find_library(D3DCOMPILER_PATH d3dcompiler)
 if(D3DCOMPILER_PATH)
     target_link_libraries(potato_libtools PRIVATE ${D3DCOMPILER_PATH})
-    target_sources(potato_libtools PRIVATE "private/importers/hlsl_importer.cpp")
 endif()
 
 add_executable(potato_libtools_test)
