@@ -134,7 +134,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         auto assetId = _library.pathToAssetId(string_view(path));
         auto record = _library.findRecord(assetId);
 
-        auto osPath = path::join({_config.sourceFolderPath.c_str(), path.c_str()});
+        auto osPath = path::join(_config.sourceFolderPath.c_str(), path.c_str());
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
 
         Importer* importer = _findConverter(string_view(path));
@@ -196,7 +196,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         }
 
         for (auto const& sourceDepPath : context.sourceDependencies()) {
-            auto osPath = path::join({_config.sourceFolderPath.c_str(), sourceDepPath.c_str()});
+            auto osPath = path::join(_config.sourceFolderPath.c_str(), sourceDepPath.c_str());
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
             newRecord.dependencies.push_back({string(sourceDepPath), contentHash});
         }
@@ -214,7 +214,7 @@ bool up::recon::ReconApp::_isUpToDate(AssetLibrary::Imported const& record, up::
 
 bool up::recon::ReconApp::_isUpToDate(span<AssetLibrary::Dependency const> records) {
     for (auto const& rec : records) {
-        auto osPath = path::join({_config.sourceFolderPath.c_str(), rec.path.c_str()});
+        auto osPath = path::join(_config.sourceFolderPath.c_str(), rec.path.c_str());
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
         if (contentHash != rec.contentHash) {
             return false;

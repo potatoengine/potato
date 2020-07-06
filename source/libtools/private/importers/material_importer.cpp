@@ -17,8 +17,8 @@ up::MaterialImporter::MaterialImporter() = default;
 up::MaterialImporter::~MaterialImporter() = default;
 
 bool up::MaterialImporter::import(ImporterContext& ctx) {
-    auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
-    auto destAbsolutePath = path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
+    auto sourceAbsolutePath = path::join(ctx.sourceFolderPath(), ctx.sourceFilePath());
+    auto destAbsolutePath = path::join(ctx.destinationFolderPath(), ctx.sourceFilePath());
 
     string destParentAbsolutePath(path::parent(destAbsolutePath));
 

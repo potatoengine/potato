@@ -25,7 +25,7 @@ namespace {
             , _folder(folder) {}
 
         HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override {
-            up::string absolutePath = up::path::join({_folder, pFileName});
+            up::string absolutePath = up::path::join(_folder, pFileName);
 
             _ctx.logger().info("Including `{}'", absolutePath);
 
@@ -66,7 +66,7 @@ up::HlslImporter::~HlslImporter() = default;
 
 bool up::HlslImporter::import(ImporterContext& ctx) {
 #if defined(UP_GPU_ENABLE_D3D11)
-    auto absoluteSourcePath = path::join({string_view(ctx.sourceFolderPath()), ctx.sourceFilePath()});
+    auto absoluteSourcePath = path::join(string_view(ctx.sourceFolderPath()), ctx.sourceFilePath());
 
     auto stream = ctx.fileSystem().openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
     if (!stream) {
@@ -130,7 +130,7 @@ bool up::HlslImporter::_compile(ImporterContext& ctx,
     ext.append(".cbo");
 
     auto destPath = path::changeExtension(ctx.sourceFilePath(), ext.c_str());
-    auto destAbsolutePath = path::join({string_view(ctx.destinationFolderPath()), destPath.c_str()});
+    auto destAbsolutePath = path::join(string_view(ctx.destinationFolderPath()), destPath.c_str());
 
     string destParentAbsolutePath(path::parent(destAbsolutePath));
 

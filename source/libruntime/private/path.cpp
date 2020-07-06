@@ -228,7 +228,7 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
     return std::move(result).to_string();
 }
 
-auto up::path::join(std::initializer_list<string_view> components) -> string {
+auto up::path::join(view<string_view> components) -> string {
     std::size_t size = 0;
 
     for (auto sv : components) {

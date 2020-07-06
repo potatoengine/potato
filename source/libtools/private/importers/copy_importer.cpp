@@ -12,8 +12,8 @@ up::CopyImporter::CopyImporter() = default;
 up::CopyImporter::~CopyImporter() = default;
 
 bool up::CopyImporter::import(ImporterContext& ctx) {
-    auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
-    auto destAbsolutePath = path::join({ctx.destinationFolderPath(), ctx.sourceFilePath()});
+    auto sourceAbsolutePath = path::join(ctx.sourceFolderPath(), ctx.sourceFilePath());
+    auto destAbsolutePath = path::join(ctx.destinationFolderPath(), ctx.sourceFilePath());
 
     string destParentAbsolutePath(path::parent(string_view(destAbsolutePath)));
 
