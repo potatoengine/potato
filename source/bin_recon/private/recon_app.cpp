@@ -123,7 +123,7 @@ void up::recon::ReconApp::_registerImporters() {
         }
 
         string_view pattern = mapping.pattern;
-        _importers.push_back({[pattern, importer](string_view filename) { return path::extension(filename) == pattern; }, importer});
+        _importers.push_back({[pattern](string_view filename) { return path::extension(filename) == pattern; }, importer});
     }
 }
 
