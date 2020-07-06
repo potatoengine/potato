@@ -32,6 +32,13 @@ auto up::AssetLibrary::findRecord(AssetId assetId) const -> AssetImportRecord co
 }
 
 bool up::AssetLibrary::insertRecord(AssetImportRecord record) {
+    for (auto& current : _records) {
+        if (current.assetId == record.assetId) {
+            current = std::move(record);
+            return true;
+        }
+    }
+
     _records.push_back(std::move(record));
     return true;
 }

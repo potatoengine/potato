@@ -21,8 +21,9 @@ up::ModelImporter::~ModelImporter() = default;
 bool up::ModelImporter::import(ImporterContext& ctx) {
     using namespace flatbuffers;
 
-    auto sourceAbsolutePath = path::join({ctx.sourceFolderPath(), ctx.sourceFilePath()});
-    auto destAbsolutePath = path::join({ctx.destinationFolderPath(), path::changeExtension(ctx.sourceFilePath(), ".model")});
+    auto sourceAbsolutePath = path::join(ctx.sourceFolderPath(), ctx.sourceFilePath());
+    auto destPath = path::changeExtension(ctx.sourceFilePath(), ".model");
+    auto destAbsolutePath = path::join(ctx.destinationFolderPath(), destPath);
 
     string destParentAbsolutePath(path::parent(string_view(destAbsolutePath)));
 
@@ -108,6 +109,8 @@ bool up::ModelImporter::import(ImporterContext& ctx) {
     file = ctx.fileSystem().openWrite(destAbsolutePath);
     file.write(span{reinterpret_cast<byte const*>(builder.GetBufferPointer()), builder.GetSize()});
     file.close();
+
+    ctx.addMainOutput(destPath);
 
     ctx.logger().info("Wrote optimized model to `{}'", destAbsolutePath);
 

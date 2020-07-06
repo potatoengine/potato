@@ -13,7 +13,7 @@
 #include "shader.h"
 #include "texture.h"
 
-#include "potato/runtime/filesystem.h"
+#include "potato/runtime/resource_loader.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/numeric_util.h"
 
@@ -33,7 +33,7 @@ namespace {
 up::Renderer::Renderer(Loader& loader, rc<GpuDevice> device) : _device(std::move(device)), _loader(loader) {
     _commandList = _device->createCommandList();
 
-    _debugLineMaterial = _loader.loadMaterialSync("resources/materials/debug_line.mat");
+    _debugLineMaterial = _loader.loadMaterialSync("materials/debug_line.mat");
     _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, debug_vbo_size);
 }
 
@@ -97,13 +97,15 @@ void up::Renderer::flushDebugDraw(float frameTime) {
 
 auto up::Renderer::context() -> RenderContext { return RenderContext{_frameTimestamp, *_commandList, *_device}; }
 
-up::DefaultLoader::DefaultLoader(FileSystem& fileSystem, rc<GpuDevice> device) : _fileSystem(fileSystem), _device(std::move(device)) {}
+up::DefaultLoader::DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device)
+    : _resourceLoader(resourceLoader)
+    , _device(std::move(device)) {}
 
 up::DefaultLoader::~DefaultLoader() = default;
 
 auto up::DefaultLoader::loadMeshSync(zstring_view path) -> rc<Mesh> {
     vector<byte> contents;
-    auto stream = _fileSystem.openRead(path);
+    auto stream = _resourceLoader.openAsset(path);
     if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
         return nullptr;
     }
@@ -114,7 +116,7 @@ auto up::DefaultLoader::loadMeshSync(zstring_view path) -> rc<Mesh> {
 
 auto up::DefaultLoader::loadMaterialSync(zstring_view path) -> rc<Material> {
     vector<byte> contents;
-    auto stream = _fileSystem.openRead(path);
+    auto stream = _resourceLoader.openAsset(path);
     if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
         return nullptr;
     }
@@ -123,9 +125,9 @@ auto up::DefaultLoader::loadMaterialSync(zstring_view path) -> rc<Material> {
     return Material::createFromBuffer(contents, *this);
 }
 
-auto up::DefaultLoader::loadShaderSync(zstring_view path) -> rc<Shader> {
+auto up::DefaultLoader::loadShaderSync(zstring_view path, string_view logicalName) -> rc<Shader> {
     vector<byte> contents;
-    auto stream = _fileSystem.openRead(path);
+    auto stream = _resourceLoader.openAsset(path, logicalName);
     if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
         return nullptr;
     }
@@ -135,7 +137,7 @@ auto up::DefaultLoader::loadShaderSync(zstring_view path) -> rc<Shader> {
 }
 
 auto up::DefaultLoader::loadTextureSync(zstring_view path) -> rc<Texture> {
-    Stream stream = _fileSystem.openRead(path);
+    Stream stream = _resourceLoader.openAsset(path);
     if (!stream) {
         return nullptr;
     }

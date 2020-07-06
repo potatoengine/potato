@@ -3,6 +3,7 @@
 #include "audio_engine.h"
 #include "sound_resource.h"
 
+#include "potato/runtime/resource_loader.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/vector.h"
 
@@ -12,14 +13,14 @@
 namespace {
     class AudioEngineImpl final : public up::AudioEngine {
     public:
-        explicit AudioEngineImpl(up::FileSystem& fileSystem);
+        explicit AudioEngineImpl(up::ResourceLoader& resourceLoader);
         ~AudioEngineImpl() override;
 
         auto loadSound(up::zstring_view path) -> up::rc<up::SoundResource> override;
         auto play(up::SoundResource const* sound) -> up::PlayHandle override;
 
     private:
-        up::FileSystem& _fileSystem;
+        up::ResourceLoader& _resourceLoader;
         SoLoud::Soloud _soloud;
     };
 
@@ -29,18 +30,18 @@ namespace {
     };
 } // namespace
 
-AudioEngineImpl::AudioEngineImpl(up::FileSystem& fileSystem) : _fileSystem(fileSystem) {
+AudioEngineImpl::AudioEngineImpl(up::ResourceLoader& resourceLoader) : _resourceLoader(resourceLoader) {
     _soloud = SoLoud::Soloud();
     _soloud.init();
 }
 
 AudioEngineImpl::~AudioEngineImpl() { _soloud.deinit(); }
 
-auto up::AudioEngine::create(FileSystem& fileSystem) -> box<AudioEngine> { return new_box<AudioEngineImpl>(fileSystem); }
+auto up::AudioEngine::create(ResourceLoader& resourceLoader) -> box<AudioEngine> { return new_box<AudioEngineImpl>(resourceLoader); }
 
 auto AudioEngineImpl::loadSound(up::zstring_view path) -> up::rc<up::SoundResource> {
     up::vector<up::byte> contents;
-    auto stream = _fileSystem.openRead(path);
+    auto stream = _resourceLoader.openAsset(path);
     if (auto rs = readBinary(stream, contents); rs != up::IOResult::Success) {
         return nullptr;
     }

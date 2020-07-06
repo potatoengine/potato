@@ -22,14 +22,19 @@ namespace up {
         UP_RUNTIME_API string assetPath(ResourceId id) const;
         UP_RUNTIME_API string assetPath(ResourceId id, string_view logicalName) const;
 
+        UP_RUNTIME_API ResourceId assetHash(string_view assetName) const;
+        UP_RUNTIME_API ResourceId assetHash(string_view assetName, string_view logicalName) const;
+
         UP_RUNTIME_API string casPath(uint64 contentHash) const;
 
-        UP_RUNTIME_API Stream openFile(zstring_view filename) const;
         UP_RUNTIME_API Stream openAsset(ResourceId id) const;
-        UP_RUNTIME_API Stream openAsset(ResourceId id, string_view logicalName) const;
+        UP_RUNTIME_API Stream openAsset(string_view assetName) const;
+        UP_RUNTIME_API Stream openAsset(string_view assetName, string_view logicalName) const;
         UP_RUNTIME_API Stream openCAS(uint64 contentHash) const;
 
     private:
+        Stream _openFile(zstring_view filename) const;
+
         FileSystem* _fileSystem = nullptr;
         ResourceManifest _manifest;
         string _casPath;
