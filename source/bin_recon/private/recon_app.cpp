@@ -144,7 +144,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             continue;
         }
 
-        bool upToDate = record != nullptr && _isUpToDate(*record, contentHash, *importer) && _isUpToDate(record->sourceDependencies);
+        bool upToDate = record != nullptr && _isUpToDate(*record, contentHash, *importer) && _isUpToDate(record->dependencies);
         if (upToDate) {
             _logger.info("Asset `{}' is up-to-date", path);
             continue;
@@ -164,11 +164,10 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             continue;
         }
 
-        AssetImportRecord newRecord;
+        AssetLibrary::Imported newRecord;
         newRecord.assetId = assetId;
-        newRecord.path = string(path);
-        newRecord.contentHash = contentHash;
-        newRecord.category = AssetCategory::Source;
+        newRecord.sourcePath = string(path);
+        newRecord.sourceContentHash = contentHash;
         newRecord.importerName = string(importer->name());
         newRecord.importerRevision = importer->revision();
 
@@ -190,24 +189,16 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             _fileSystem->moveFileTo(outputOsPath, casOsPath);
 
             logicalAssetName.clear();
-            format_append(logicalAssetName, "{}{}{}", newRecord.path, output.logicalAsset.empty() ? "" : ":", output.logicalAsset);
+            format_append(logicalAssetName, "{}{}{}", newRecord.sourcePath, output.logicalAsset.empty() ? "" : ":", output.logicalAsset);
             auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
 
-            newRecord.outputs.push_back(AssetOutputRecord{logicalAssetId, outputHash});
-        }
-
-        for (auto const& logicalName : context.logicalAssets()) {
-            logicalAssetName.clear();
-            format_append(logicalAssetName, "{}:{}", newRecord.path, logicalName);
-            auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
-
-            newRecord.logicalAssets.push_back(LogicalAsset{logicalAssetId, logicalName});
+            newRecord.outputs.push_back({output.logicalAsset, logicalAssetId, outputHash});
         }
 
         for (auto const& sourceDepPath : context.sourceDependencies()) {
             auto osPath = path::join({_config.sourceFolderPath.c_str(), sourceDepPath.c_str()});
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
-            newRecord.sourceDependencies.push_back(AssetDependencyRecord{string(sourceDepPath), contentHash});
+            newRecord.dependencies.push_back({string(sourceDepPath), contentHash});
         }
 
         _library.insertRecord(std::move(newRecord));
@@ -216,11 +207,12 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
     return !failed;
 }
 
-bool up::recon::ReconApp::_isUpToDate(AssetImportRecord const& record, up::uint64 contentHash, Importer const& importer) const noexcept {
-    return record.contentHash == contentHash && string_view(record.importerName) == importer.name() && record.importerRevision == importer.revision();
+bool up::recon::ReconApp::_isUpToDate(AssetLibrary::Imported const& record, up::uint64 contentHash, Importer const& importer) const noexcept {
+    return record.sourceContentHash == contentHash && string_view(record.importerName) == importer.name() &&
+        record.importerRevision == importer.revision();
 }
 
-bool up::recon::ReconApp::_isUpToDate(span<AssetDependencyRecord const> records) {
+bool up::recon::ReconApp::_isUpToDate(span<AssetLibrary::Dependency const> records) {
     for (auto const& rec : records) {
         auto osPath = path::join({_config.sourceFolderPath.c_str(), rec.path.c_str()});
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());

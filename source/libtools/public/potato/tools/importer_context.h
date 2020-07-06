@@ -3,7 +3,6 @@
 #pragma once
 
 #include "_export.h"
-#include "asset_record.h"
 
 #include "potato/spud/std_iostream.h"
 #include "potato/spud/string.h"
@@ -21,7 +20,7 @@ namespace up {
     class ImporterContext {
     public:
         struct Output {
-            string_view logicalAsset;
+            string logicalAsset;
             string path;
         };
 
@@ -43,13 +42,11 @@ namespace up {
         auto sourceFolderPath() const noexcept { return _sourceFolderPath; }
         auto destinationFolderPath() const noexcept { return _destinationFolderPath; }
 
-        UP_TOOLS_API void addLogicalAsset(string name);
         UP_TOOLS_API void addSourceDependency(zstring_view path);
-        void addOutput(string_view logicalAsset, zstring_view path);
-        void addMainOutput(zstring_view path);
+        void addOutput(string logicalAsset, string path);
+        void addMainOutput(string path);
 
         view<string> sourceDependencies() const noexcept { return _sourceDependencies; }
-        view<string> logicalAssets() const noexcept { return _logicalAssets; }
         view<Output> outputs() const noexcept { return _outputs; }
 
         FileSystem& fileSystem() noexcept { return _fileSystem; }
@@ -61,7 +58,6 @@ namespace up {
         zstring_view _destinationFolderPath;
 
         vector<string> _sourceDependencies;
-        vector<string> _logicalAssets;
         vector<Output> _outputs;
 
         FileSystem& _fileSystem;

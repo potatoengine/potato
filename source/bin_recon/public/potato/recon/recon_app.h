@@ -35,8 +35,8 @@ namespace up::recon {
         auto _collectSourceFiles() -> vector<string>;
         bool _importFiles(view<string> files);
 
-        bool _isUpToDate(AssetImportRecord const& record, uint64 contentHash, Importer const& importer) const noexcept;
-        bool _isUpToDate(span<AssetDependencyRecord const> records);
+        bool _isUpToDate(AssetLibrary::Imported const& record, uint64 contentHash, Importer const& importer) const noexcept;
+        bool _isUpToDate(span<AssetLibrary::Dependency const> records);
 
         bool _checkMetafile(ImporterContext& ctx, zstring_view filename);
 
