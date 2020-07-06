@@ -30,8 +30,8 @@ namespace up {
         }
 
         inline com_ptr& operator=(com_ptr const& rhs);
-        inline com_ptr& operator=(com_ptr&& rhs);
-        inline com_ptr& operator=(std::nullptr_t);
+        inline com_ptr& operator=(com_ptr&& rhs) noexcept;
+        inline com_ptr& operator=(std::nullptr_t) noexcept;
 
         explicit operator bool() const noexcept { return _ptr != nullptr; }
         bool empty() const noexcept { return _ptr == nullptr; }
@@ -73,7 +73,7 @@ namespace up {
         return *this;
     }
 
-    template <typename T> auto com_ptr<T>::operator=(com_ptr&& rhs) -> com_ptr& {
+    template <typename T> auto com_ptr<T>::operator=(com_ptr&& rhs) noexcept -> com_ptr& {
         if (this != std::addressof(rhs)) {
             _decRef();
             _ptr = rhs._ptr;
@@ -82,7 +82,7 @@ namespace up {
         return *this;
     }
 
-    template <typename T> auto com_ptr<T>::operator=(std::nullptr_t) -> com_ptr& {
+    template <typename T> auto com_ptr<T>::operator=(std::nullptr_t) noexcept -> com_ptr& {
         _decRef();
         _ptr = nullptr;
         return *this;
