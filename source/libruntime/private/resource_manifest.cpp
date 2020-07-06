@@ -9,7 +9,7 @@
 
 auto up::ResourceManifest::findHash(ResourceId id) const noexcept -> uint64 {
     for (auto const& record : _records) {
-        if (record.id == id) {
+        if (record.logicalId == id) {
             return record.hash;
         }
     }
@@ -19,7 +19,7 @@ auto up::ResourceManifest::findHash(ResourceId id) const noexcept -> uint64 {
 
 auto up::ResourceManifest::findFilename(ResourceId id) const noexcept -> zstring_view {
     for (auto const& record : _records) {
-        if (record.id == id) {
+        if (record.logicalId == id) {
             return record.filename;
         }
     }
@@ -64,9 +64,11 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
             Record record;
             while (!eol && (sep = input.find_first_of("|\n")) != string_view::npos) {
                 switch (column++) {
-                case 0: std::from_chars(input.data(), input.data() + sep, static_cast<uint64&>(record.id), 16); break;
-                case 1: std::from_chars(input.data(), input.data() + sep, record.hash, 16); break;
-                case 2: record.filename = input.substr(0, sep); break;
+                case 0: std::from_chars(input.data(), input.data() + sep, static_cast<uint64&>(record.rootId), 16); break;
+                case 1: std::from_chars(input.data(), input.data() + sep, static_cast<uint64&>(record.logicalId), 16); break;
+                case 2: std::from_chars(input.data(), input.data() + sep, static_cast<uint64&>(record.logicalName), 16); break;
+                case 3: std::from_chars(input.data(), input.data() + sep, record.hash, 16); break;
+                case 4: record.filename = input.substr(0, sep); break;
                 default: break;
                 }
 

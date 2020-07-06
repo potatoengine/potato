@@ -14,14 +14,22 @@ up::ResourceLoader::~ResourceLoader() = default;
 
 auto up::ResourceLoader::assetPath(ResourceId id) const -> string {
     for (auto const& record : _manifest.records()) {
-        if (record.id == id) {
+        if (record.logicalId == id) {
             return casPath(record.hash);
         }
     }
     return {};
 }
 
-auto up::ResourceLoader::assetPath(ResourceId id, string_view logicalName) const -> string { return {}; }
+auto up::ResourceLoader::assetPath(ResourceId id, string_view logicalName) const -> string {
+    auto const hash = hash_value(logicalName);
+    for (auto const& record : _manifest.records()) {
+        if (record.rootId == id && record.logicalName == hash) {
+            return casPath(record.hash);
+        }
+    }
+    return {};
+}
 
 auto up::ResourceLoader::assetHash(string_view assetName) const -> ResourceId { return ResourceId{hash_value<fnv1a>(assetName)}; }
 

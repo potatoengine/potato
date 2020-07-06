@@ -14,7 +14,9 @@ namespace up {
     class ResourceManifest {
     public:
         struct Record {
-            ResourceId id = {};
+            ResourceId rootId = {};
+            ResourceId logicalId = {};
+            uint64 logicalName = 0;
             uint64 hash = 0;
             string filename;
         };

@@ -148,21 +148,27 @@ void up::AssetLibrary::generateManifest(erased_writer writer) const {
     format_to(writer,
         "# Potato Manifest\n"
         ".version={}\n"
-        ":ID|HASH|NAME\n",
+        ":ROOT_ASSET_ID|LOGICAL_ASSET_ID|LOGICAL_NAME_ID|CONTENT_HASH|ASSET_NAME\n",
         version);
 
-    string_writer logicalName;
+    string_writer fullName;
 
     for (auto const& record : _records) {
         for (auto const& output : record.outputs) {
-            logicalName.clear();
-            logicalName.append(record.sourcePath);
+            fullName.clear();
+            fullName.append(record.sourcePath);
 
             if (output.logicalAssetId != record.assetId) {
-                format_append(logicalName, ":{}", output.name);
+                format_append(fullName, ":{}", output.name);
             }
 
-            format_to(writer, "{:016X}|{:016X}|{}\n", output.logicalAssetId, output.contentHash, logicalName);
+            format_to(writer,
+                "{:016X}|{:016X}|{:016X}|{:016X}|{}\n",
+                record.assetId,
+                output.logicalAssetId,
+                hash_value(output.name),
+                output.contentHash,
+                fullName);
         }
     }
 }

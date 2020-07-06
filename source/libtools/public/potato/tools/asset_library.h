@@ -39,7 +39,7 @@ namespace up {
         };
 
         static constexpr zstring_view typeName = "potato.asset.library"_zsv;
-        static constexpr int version = 10;
+        static constexpr int version = 11;
 
         AssetLibrary() = default;
         UP_TOOLS_API ~AssetLibrary();
