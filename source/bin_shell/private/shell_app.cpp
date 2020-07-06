@@ -85,7 +85,7 @@ int up::shell::ShellApp::initialize() {
     string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
     if (Stream manifestFile = _fileSystem.openRead(manifestPath, FileOpenMode::Text)) {
         string manifestText;
-        if (readText(manifestFile, manifestText) != IOResult::Success) {
+        if (readText(manifestFile, manifestText) != IOResult{}) {
             _errorDialog("Failed to load resource manifest");
             return 1;
         }

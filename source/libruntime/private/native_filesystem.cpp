@@ -127,12 +127,12 @@ auto up::NativeFileSystem::fileStat(zstring_view path, FileStat& outInfo) const 
     outInfo.size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
     outInfo.mtime = std::chrono::duration_cast<std::chrono::microseconds>(
         std::filesystem::last_write_time(std::string_view(path.c_str(), path.size()), ec).time_since_epoch())
-        .count();
+                        .count();
     auto const status = std::filesystem::status(std::string_view(path.c_str(), path.size()), ec);
     outInfo.type = status.type() == std::filesystem::file_type::regular ? FileType::Regular
-        : status.type() == std::filesystem::file_type::directory
-        ? FileType::Directory
-        : status.type() == std::filesystem::file_type::symlink ? FileType::SymbolicLink : FileType::Other;
+                                                                        : status.type() == std::filesystem::file_type::directory
+            ? FileType::Directory
+            : status.type() == std::filesystem::file_type::symlink ? FileType::SymbolicLink : FileType::Other;
     return errorCodeToResult(ec);
 }
 
@@ -145,7 +145,7 @@ auto up::NativeFileSystem::enumerate(zstring_view path, EnumerateCallback cb, En
     while (iter != end) {
         std::string genPath =
             ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath ? iter->path() : std::filesystem::relative(iter->path(), path.c_str()))
-            .generic_string();
+                .generic_string();
 
         EnumerateItem item;
         item.info.path = genPath.c_str();
