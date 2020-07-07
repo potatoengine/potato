@@ -83,7 +83,7 @@ namespace up {
     } // namespace
 } // namespace up
 
-auto up::FileSystem::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
+auto up::FileSystem::openRead(zstring_view path, FileOpenMode mode) -> Stream {
     std::ifstream nativeStream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{});
     if (!nativeStream) {
         return nullptr;
@@ -112,17 +112,17 @@ static auto errorCodeToResult(std::error_code ec) noexcept -> up::IOResult {
     return up::IOResult::Unknown;
 }
 
-bool up::FileSystem::fileExists(zstring_view path) const noexcept {
+bool up::FileSystem::fileExists(zstring_view path) noexcept {
     [[maybe_unused]] std::error_code ec;
     return std::filesystem::is_regular_file(std::string_view(path.c_str(), path.size()), ec);
 }
 
-bool up::FileSystem::directoryExists(zstring_view path) const noexcept {
+bool up::FileSystem::directoryExists(zstring_view path) noexcept {
     [[maybe_unused]] std::error_code ec;
     return std::filesystem::is_directory(std::string_view(path.c_str(), path.size()), ec);
 }
 
-auto up::FileSystem::fileStat(zstring_view path, FileStat& outInfo) const -> IOResult {
+auto up::FileSystem::fileStat(zstring_view path, FileStat& outInfo) -> IOResult {
     std::error_code ec;
     outInfo.size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
     outInfo.mtime = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -136,7 +136,7 @@ auto up::FileSystem::fileStat(zstring_view path, FileStat& outInfo) const -> IOR
     return errorCodeToResult(ec);
 }
 
-auto up::FileSystem::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
+auto up::FileSystem::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) -> EnumerateResult {
     UP_ASSERT(!path.empty());
 
     auto iter = std::filesystem::recursive_directory_iterator(path.c_str());
@@ -190,7 +190,7 @@ auto up::FileSystem::removeRecursive(zstring_view path) -> IOResult {
     return errorCodeToResult(ec);
 }
 
-auto up::FileSystem::currentWorkingDirectory() const noexcept -> string {
+auto up::FileSystem::currentWorkingDirectory() noexcept -> string {
     std::error_code ec;
     if (auto path = std::filesystem::current_path(ec).generic_string(); !ec) {
         return {path.data(), path.size()};
