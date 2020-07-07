@@ -148,7 +148,7 @@ void up::AssetLibrary::generateManifest(erased_writer writer) const {
     format_to(writer,
         "# Potato Manifest\n"
         ".version={}\n"
-        ":ROOT_ASSET_ID|LOGICAL_ASSET_ID|LOGICAL_NAME_ID|CONTENT_HASH|ASSET_NAME\n",
+        ":ROOT_ID|LOGICAL_ID|LOGICAL_NAME|CONTENT_HASH|DEBUG_NAME\n",
         version);
 
     string_writer fullName;

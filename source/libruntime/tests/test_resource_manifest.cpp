@@ -13,7 +13,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] ResourceManifest") {
             "\n" // blank
             ".meta=value\n"
             ".key=var\n"
-            ":ROOT_ID|LOGICAL_ID|LOGICAL_NAME|HASH|NAME\n"
+            ":ROOT_ID|LOGICAL_ID|LOGICAL_NAME|CONTENT_HASH|DEBUG_NAME\n"
             "0|0|0|DEAD|zero\n"
             "1|1|0|C0DE|one\n"
             ""_sv;
