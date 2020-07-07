@@ -12,24 +12,25 @@
 
 DOCTEST_TEST_SUITE("[potato][runtime] up::fs") {
     using namespace up;
+    using namespace up::fs;
 
     DOCTEST_TEST_CASE("fileExists") {
-        DOCTEST_CHECK(fs::fileExists("test.txt"));
-        DOCTEST_CHECK(!fs::fileExists("foobar.txt"));
+        DOCTEST_CHECK(fileExists("test.txt"));
+        DOCTEST_CHECK(!fileExists("foobar.txt"));
 
-        DOCTEST_CHECK(!fs::fileExists("parent"));
+        DOCTEST_CHECK(!fileExists("parent"));
     }
 
     DOCTEST_TEST_CASE("directoryExists") {
-        DOCTEST_CHECK(fs::directoryExists("parent"));
-        DOCTEST_CHECK(fs::directoryExists("parent/child"));
+        DOCTEST_CHECK(directoryExists("parent"));
+        DOCTEST_CHECK(directoryExists("parent/child"));
 
-        DOCTEST_CHECK(!fs::directoryExists("parent/child/grandchild"));
-        DOCTEST_CHECK(!fs::directoryExists("test.txt"));
+        DOCTEST_CHECK(!directoryExists("parent/child/grandchild"));
+        DOCTEST_CHECK(!directoryExists("test.txt"));
     }
 
     DOCTEST_TEST_CASE("openRead") {
-        auto inFile = fs::openRead("test.txt", fs::FileOpenMode::Text);
+        auto inFile = openRead("test.txt", OpenMode::Text);
         DOCTEST_CHECK(inFile.isOpen());
 
         byte buffer[1024];
@@ -45,11 +46,11 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::fs") {
 
         vector<string> entries;
 
-        auto cb = [&entries](auto const& item) {
-            entries.push_back(item.info.path);
-            return fs::EnumerateResult::Recurse;
+        auto cb = [&entries](auto const& item, int) {
+            entries.push_back(item.path);
+            return recurse;
         };
-        DOCTEST_CHECK_EQ(fs::enumerate(".", cb), fs::EnumerateResult::Continue);
+        DOCTEST_CHECK_EQ(enumerate(".", cb), next);
 
         DOCTEST_REQUIRE_EQ(entries.size(), expected.size());
 
@@ -62,10 +63,9 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::fs") {
     }
 
     DOCTEST_TEST_CASE("stat") {
-        fs::FileStat stat;
-        auto rs = fs::fileStat("test.txt", stat);
+        auto const [rs, stat] = fileStat("test.txt");
         DOCTEST_CHECK_EQ(rs, IOResult::Success);
-        DOCTEST_CHECK_EQ(stat.type, fs::FileType::Regular);
+        DOCTEST_CHECK_EQ(stat.type, FileType::Regular);
 
         // note: can't test size (Windows/UNIX line endings!) or mtime (git)
     }

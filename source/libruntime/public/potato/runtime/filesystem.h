@@ -17,54 +17,41 @@ namespace up {
 
 namespace up::fs {
     enum class EnumerateResult {
-        Continue,
+        Next,
         Recurse,
-        Break,
+        Stop,
     };
 
-    enum class EnumerateOptions {
-        None = 0,
-        FullPath = 1 << 0,
-    };
-    inline constexpr EnumerateOptions operator|(EnumerateOptions lhs, EnumerateOptions rhs) noexcept {
-        return EnumerateOptions{to_underlying(lhs) | to_underlying(rhs)};
-    }
-    inline constexpr EnumerateOptions operator&(EnumerateOptions lhs, EnumerateOptions rhs) noexcept {
-        return EnumerateOptions{to_underlying(lhs) & to_underlying(rhs)};
-    }
+    constexpr EnumerateResult next = EnumerateResult::Next;
+    constexpr EnumerateResult recurse = EnumerateResult::Recurse;
+    constexpr EnumerateResult stop = EnumerateResult::Stop;
 
-    enum class FileOpenMode { Binary, Text };
+    enum class OpenMode { Binary, Text };
 
     enum class FileType { Regular, Directory, SymbolicLink, Other };
 
-    struct FileStat {
+    struct Stat {
         size_t size = 0;
         uint64 mtime = 0;
         FileType type = FileType::Regular;
     };
 
-    struct FileInfo {
+    struct EnumerateItem {
         zstring_view path;
         size_t size = 0;
         FileType type = FileType::Regular;
     };
-
-    struct EnumerateItem {
-        FileInfo info;
-        int depth = 0;
-    };
-
-    using EnumerateCallback = up::delegate_ref<EnumerateResult(EnumerateItem const&)>;
+    using EnumerateCallback = up::delegate_ref<EnumerateResult(EnumerateItem const& item, int depth)>;
 
     UP_RUNTIME_API bool fileExists(zstring_view path) noexcept;
     UP_RUNTIME_API bool directoryExists(zstring_view path) noexcept;
 
-    UP_RUNTIME_API IOResult fileStat(zstring_view path, FileStat& outInfo);
+    UP_RUNTIME_API IOResultValue<Stat> fileStat(zstring_view path);
 
-    UP_RUNTIME_API Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary);
-    UP_RUNTIME_API Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary);
+    UP_RUNTIME_API Stream openRead(zstring_view path, OpenMode mode = OpenMode::Binary);
+    UP_RUNTIME_API Stream openWrite(zstring_view path, OpenMode mode = OpenMode::Binary);
 
-    UP_RUNTIME_API EnumerateResult enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts = EnumerateOptions::None);
+    UP_RUNTIME_API EnumerateResult enumerate(zstring_view path, EnumerateCallback cb);
 
     UP_RUNTIME_API IOResult createDirectories(zstring_view path);
 

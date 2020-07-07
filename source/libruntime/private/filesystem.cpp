@@ -83,17 +83,17 @@ namespace up {
     } // namespace
 } // namespace up
 
-auto up::fs::openRead(zstring_view path, FileOpenMode mode) -> Stream {
-    std::ifstream nativeStream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{});
+auto up::fs::openRead(zstring_view path, OpenMode mode) -> Stream {
+    std::ifstream nativeStream(path.c_str(), mode == OpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{});
     if (!nativeStream) {
         return nullptr;
     }
     return Stream(up::new_box<NativeStreamBackend>(std::move(nativeStream)));
 }
 
-auto up::fs::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
+auto up::fs::openWrite(zstring_view path, OpenMode mode) -> Stream {
     std::ofstream nativeStream(path.c_str(),
-        mode == FileOpenMode::Binary ? std::ios_base::out | std::ios_base::trunc | std::ios_base::binary : std::ios_base::trunc | std::ios_base::out);
+        mode == OpenMode::Binary ? std::ios_base::out | std::ios_base::trunc | std::ios_base::binary : std::ios_base::trunc | std::ios_base::out);
     if (!nativeStream) {
         return nullptr;
     }
@@ -122,52 +122,48 @@ bool up::fs::directoryExists(zstring_view path) noexcept {
     return std::filesystem::is_directory(std::string_view(path.c_str(), path.size()), ec);
 }
 
-auto up::fs::fileStat(zstring_view path, FileStat& outInfo) -> IOResult {
+auto up::fs::fileStat(zstring_view path) -> IOResultValue<Stat> {
     std::error_code ec;
-    outInfo.size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
-    outInfo.mtime = std::chrono::duration_cast<std::chrono::microseconds>(
+    size_t const size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
+    uint64 const mtime = std::chrono::duration_cast<std::chrono::microseconds>(
         std::filesystem::last_write_time(std::string_view(path.c_str(), path.size()), ec).time_since_epoch())
-                        .count();
+                             .count();
     auto const status = std::filesystem::status(std::string_view(path.c_str(), path.size()), ec);
-    outInfo.type = status.type() == std::filesystem::file_type::regular ? FileType::Regular
-                                                                        : status.type() == std::filesystem::file_type::directory
+    FileType const type = status.type() == std::filesystem::file_type::regular ? FileType::Regular
+                                                                               : status.type() == std::filesystem::file_type::directory
             ? FileType::Directory
             : status.type() == std::filesystem::file_type::symlink ? FileType::SymbolicLink : FileType::Other;
-    return errorCodeToResult(ec);
+    return {errorCodeToResult(ec), {size, mtime, type}};
 }
 
-auto up::fs::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) -> EnumerateResult {
+auto up::fs::enumerate(zstring_view path, EnumerateCallback cb) -> EnumerateResult {
     UP_ASSERT(!path.empty());
 
     auto iter = std::filesystem::recursive_directory_iterator(path.c_str());
     auto end = std::filesystem::recursive_directory_iterator();
 
     while (iter != end) {
-        std::string genPath =
-            ((opts & EnumerateOptions::FullPath) == EnumerateOptions::FullPath ? iter->path() : std::filesystem::relative(iter->path(), path.c_str()))
-                .generic_string();
+        std::string genPath = std::filesystem::relative(iter->path(), path.c_str()).generic_string();
 
-        EnumerateItem item;
-        item.info.path = genPath.c_str();
-        item.info.type = iter->is_regular_file()
+        zstring_view const path = genPath.c_str();
+        FileType const type = iter->is_regular_file()
             ? FileType::Regular
             : iter->is_directory() ? FileType::Directory : iter->is_symlink() ? FileType::SymbolicLink : FileType::Other;
-        item.info.size = item.info.type == FileType::Regular ? iter->file_size() : 0;
-        item.depth = iter.depth();
+        size_t const size = type == FileType::Regular ? iter->file_size() : 0;
 
-        auto result = cb(item);
-        if (result == EnumerateResult::Break) {
+        auto result = cb({path, size, type}, iter.depth());
+        if (result == EnumerateResult::Stop) {
             return result;
         }
 
-        if (iter->is_directory() && result == EnumerateResult::Continue) {
+        if (iter->is_directory() && result == EnumerateResult::Next) {
             iter.disable_recursion_pending();
         }
 
         ++iter;
     }
 
-    return EnumerateResult::Continue;
+    return EnumerateResult::Next;
 }
 
 auto up::fs::createDirectories(zstring_view path) -> IOResult {

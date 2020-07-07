@@ -37,7 +37,7 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
     auto libraryPath = path::join({string_view(_config.destinationFolderPath), "library$.json"});
     _outputs.push_back("library$.json");
     if (_fileSystem->fileExists(libraryPath.c_str())) {
-        auto libraryReadStream = _fileSystem->openRead(libraryPath.c_str(), FileOpenMode::Text);
+        auto libraryReadStream = _fileSystem->openRead(libraryPath.c_str(), OpenMode::Text);
         if (!libraryReadStream) {
             _logger.error("Failed to open asset library `{}'", libraryPath);
         }
@@ -50,7 +50,7 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
     auto hashCachePath = path::join({string_view(_config.destinationFolderPath), "hashes$.json"});
     _outputs.push_back("hashes$.json");
     if (_fileSystem->fileExists(hashCachePath.c_str())) {
-        auto hashesReadStream = _fileSystem->openRead(hashCachePath.c_str(), FileOpenMode::Text);
+        auto hashesReadStream = _fileSystem->openRead(hashCachePath.c_str(), OpenMode::Text);
         if (!hashesReadStream) {
             _logger.error("Failed to open hash cache `{}'", hashCachePath);
         }
@@ -104,14 +104,14 @@ bool up::recon::ConverterApp::run(span<char const*> args) {
         _logger.error("Conversion failed");
     }
 
-    auto hashesWriteStream = _fileSystem->openWrite(hashCachePath.c_str(), FileOpenMode::Text);
+    auto hashesWriteStream = _fileSystem->openWrite(hashCachePath.c_str(), OpenMode::Text);
     if (!_hashes.serialize(hashesWriteStream)) {
         _logger.error("Failed to write hash cache `{}'", hashCachePath);
         return false;
     }
     hashesWriteStream.close();
 
-    auto libraryWriteStream = _fileSystem->openWrite(libraryPath.c_str(), FileOpenMode::Text);
+    auto libraryWriteStream = _fileSystem->openWrite(libraryPath.c_str(), OpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
         _logger.error("Failed to write asset library `{}'", libraryPath);
         return false;
@@ -223,7 +223,7 @@ bool up::recon::ConverterApp::deleteUnusedFiles(vector<string> const& files, boo
         if (item.info.type == FileType::Regular) {
             foundFiles.insert(string(item.info.path));
         }
-        return EnumerateResult::Recurse;
+        return fs::recurse;
     };
     _fileSystem->enumerate(_config.destinationFolderPath.c_str(), cb);
 
@@ -287,7 +287,7 @@ auto up::recon::ConverterApp::checkMetafile(ConverterContext& ctx, string_view f
             string settings = conveter->generateSettings(context);
             root["settings"] = settings;
 
-            auto stream = _fileSystem->openWrite(metaFile.c_str(), FileOpenMode::Text);
+            auto stream = _fileSystem->openWrite(metaFile.c_str(), OpenMode::Text);
             auto json = root.dump(2);
 
             if (writeAllText(stream, {json.data(), json.size()}) != IOResult::Success) {
@@ -311,18 +311,18 @@ auto up::recon::ConverterApp::collectSourceFiles() -> vector<string> {
         if (item.info.type == FileType::Regular) {
             // skip .meta files for now
             if (path::extension(item.info.path) == ".meta") {
-                return EnumerateResult::Continue;
+                return EnumerateResult::Next;
             }
 
             files.push_back(item.info.path);
         }
         else if (item.info.type == FileType::Directory) {
-            return EnumerateResult::Recurse;
+            return fs::recurse;
         }
 
-        return EnumerateResult::Continue;
+        return EnumerateResult::Next;
     };
 
-    _fileSystem->enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
+    _fileSystem->enumerate(_config.sourceFolderPath.c_str(), cb);
     return files;
 };

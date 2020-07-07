@@ -28,8 +28,7 @@ auto up::FileHashCache::hashAssetStream(Stream& stream) -> up::uint64 {
 }
 
 auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
-    fs::FileStat stat;
-    auto rs = fs::fileStat(path, stat);
+    auto const [rs, stat] = fs::fileStat(path);
     if (rs != IOResult::Success) {
         return 0;
     }
