@@ -1,7 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "assertion.h"
-#include "native.h"
+#include "filesystem.h"
 #include "stream.h"
 
 #include <filesystem>
@@ -83,7 +83,7 @@ namespace up {
     } // namespace
 } // namespace up
 
-auto up::NativeFileSystem::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
+auto up::FileSystem::openRead(zstring_view path, FileOpenMode mode) const -> Stream {
     std::ifstream nativeStream(path.c_str(), mode == FileOpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{});
     if (!nativeStream) {
         return nullptr;
@@ -91,13 +91,13 @@ auto up::NativeFileSystem::openRead(zstring_view path, FileOpenMode mode) const 
     return Stream(up::new_box<NativeStreamBackend>(std::move(nativeStream)));
 }
 
-auto up::NativeFileSystem::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
+auto up::FileSystem::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
     std::ofstream nativeStream(path.c_str(),
         mode == FileOpenMode::Binary ? std::ios_base::out | std::ios_base::trunc | std::ios_base::binary : std::ios_base::trunc | std::ios_base::out);
     if (!nativeStream) {
         return nullptr;
-    }
     return Stream(up::new_box<NativeOutputBackend>(std::move(nativeStream)));
+    }
 }
 
 static auto errorCodeToResult(std::error_code ec) noexcept -> up::IOResult {
@@ -112,17 +112,17 @@ static auto errorCodeToResult(std::error_code ec) noexcept -> up::IOResult {
     return up::IOResult::Unknown;
 }
 
-bool up::NativeFileSystem::fileExists(zstring_view path) const noexcept {
+bool up::FileSystem::fileExists(zstring_view path) const noexcept {
     [[maybe_unused]] std::error_code ec;
     return std::filesystem::is_regular_file(std::string_view(path.c_str(), path.size()), ec);
 }
 
-bool up::NativeFileSystem::directoryExists(zstring_view path) const noexcept {
+bool up::FileSystem::directoryExists(zstring_view path) const noexcept {
     [[maybe_unused]] std::error_code ec;
     return std::filesystem::is_directory(std::string_view(path.c_str(), path.size()), ec);
 }
 
-auto up::NativeFileSystem::fileStat(zstring_view path, FileStat& outInfo) const -> IOResult {
+auto up::FileSystem::fileStat(zstring_view path, FileStat& outInfo) const -> IOResult {
     std::error_code ec;
     outInfo.size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
     outInfo.mtime = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -136,7 +136,7 @@ auto up::NativeFileSystem::fileStat(zstring_view path, FileStat& outInfo) const 
     return errorCodeToResult(ec);
 }
 
-auto up::NativeFileSystem::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
+auto up::FileSystem::enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts) const -> EnumerateResult {
     UP_ASSERT(!path.empty());
 
     auto iter = std::filesystem::recursive_directory_iterator(path.c_str());
@@ -170,13 +170,13 @@ auto up::NativeFileSystem::enumerate(zstring_view path, EnumerateCallback cb, En
     return EnumerateResult::Continue;
 }
 
-auto up::NativeFileSystem::createDirectories(zstring_view path) -> IOResult {
+auto up::FileSystem::createDirectories(zstring_view path) -> IOResult {
     std::error_code ec;
     std::filesystem::create_directories(path.c_str(), ec);
     return errorCodeToResult(ec);
 }
 
-auto up::NativeFileSystem::remove(zstring_view path) -> IOResult {
+auto up::FileSystem::remove(zstring_view path) -> IOResult {
     std::error_code ec;
     if (!std::filesystem::remove(path.c_str(), ec)) {
         return IOResult::FileNotFound;
@@ -184,13 +184,13 @@ auto up::NativeFileSystem::remove(zstring_view path) -> IOResult {
     return errorCodeToResult(ec);
 }
 
-auto up::NativeFileSystem::removeRecursive(zstring_view path) -> IOResult {
+auto up::FileSystem::removeRecursive(zstring_view path) -> IOResult {
     std::error_code ec;
     std::filesystem::remove_all(path.c_str(), ec);
     return errorCodeToResult(ec);
 }
 
-auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
+auto up::FileSystem::currentWorkingDirectory() const noexcept -> string {
     std::error_code ec;
     if (auto path = std::filesystem::current_path(ec).generic_string(); !ec) {
         return {path.data(), path.size()};
@@ -198,19 +198,19 @@ auto up::NativeFileSystem::currentWorkingDirectory() const noexcept -> string {
     return string();
 }
 
-bool up::NativeFileSystem::currentWorkingDirectory(zstring_view path) {
+bool up::FileSystem::currentWorkingDirectory(zstring_view path) {
     std::error_code ec;
     std::filesystem::current_path(std::filesystem::path(path.c_str()), ec);
     return !ec;
 }
 
-auto up::NativeFileSystem::copyFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult {
+auto up::FileSystem::copyFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult {
     std::error_code ec;
     std::filesystem::copy_file(fromPath.c_str(), toPath.c_str(), std::filesystem::copy_options::overwrite_existing, ec);
     return errorCodeToResult(ec);
 }
 
-auto up::NativeFileSystem::moveFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult {
+auto up::FileSystem::moveFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult {
     std::error_code ec;
     std::filesystem::rename(fromPath.c_str(), toPath.c_str(), ec);
     return errorCodeToResult(ec);

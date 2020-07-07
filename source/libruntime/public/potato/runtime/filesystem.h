@@ -14,33 +14,29 @@ namespace up {
 
     class FileSystem {
     public:
-        virtual ~FileSystem() = default;
+        FileSystem() = default;
 
         FileSystem(FileSystem const&) = delete;
         FileSystem& operator=(FileSystem const&) = delete;
+        UP_RUNTIME_API bool fileExists(zstring_view path) const noexcept;
+        UP_RUNTIME_API bool directoryExists(zstring_view path) const noexcept;
 
-        virtual bool fileExists(zstring_view path) const noexcept = 0;
-        virtual bool directoryExists(zstring_view path) const noexcept = 0;
+        UP_RUNTIME_API IOResult fileStat(zstring_view path, FileStat& outInfo) const;
 
-        virtual IOResult fileStat(zstring_view path, FileStat& outInfo) const = 0;
+        UP_RUNTIME_API Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const;
+        UP_RUNTIME_API Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary);
 
-        virtual Stream openRead(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) const = 0;
-        virtual Stream openWrite(zstring_view path, FileOpenMode mode = FileOpenMode::Binary) = 0;
+        UP_RUNTIME_API EnumerateResult enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts = EnumerateOptions::None) const;
 
-        virtual EnumerateResult enumerate(zstring_view path, EnumerateCallback cb, EnumerateOptions opts = EnumerateOptions::None) const = 0;
+        UP_RUNTIME_API IOResult createDirectories(zstring_view path);
 
-        virtual IOResult createDirectories(zstring_view path) = 0;
+        UP_RUNTIME_API IOResult remove(zstring_view path);
+        UP_RUNTIME_API IOResult removeRecursive(zstring_view path);
 
-        virtual IOResult remove(zstring_view path) = 0;
-        virtual IOResult removeRecursive(zstring_view path) = 0;
+        UP_RUNTIME_API string currentWorkingDirectory() const noexcept;
+        UP_RUNTIME_API bool currentWorkingDirectory(zstring_view path);
 
-        virtual string currentWorkingDirectory() const noexcept = 0;
-        virtual bool currentWorkingDirectory(zstring_view path) = 0;
-
-        virtual IOResult copyFileTo(zstring_view fromPath, zstring_view toPath) = 0;
-        virtual IOResult moveFileTo(zstring_view fromPath, zstring_view toPath) = 0;
-
-    protected:
-        FileSystem() = default;
+        UP_RUNTIME_API IOResult copyFileTo(zstring_view fromPath, zstring_view toPath);
+        UP_RUNTIME_API IOResult moveFileTo(zstring_view fromPath, zstring_view toPath);
     };
 } // namespace up

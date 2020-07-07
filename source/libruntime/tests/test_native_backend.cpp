@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/native.h"
+#include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
@@ -10,12 +10,12 @@
 #include <iostream>
 #include <string>
 
-DOCTEST_TEST_SUITE("[potato][runtime] up::NativeFileSystem") {
+DOCTEST_TEST_SUITE("[potato][runtime] up::FileSystem") {
     using namespace up;
     using namespace up;
 
     DOCTEST_TEST_CASE("fileExists") {
-        auto native = NativeFileSystem();
+        auto native = FileSystem();
 
         DOCTEST_CHECK(native.fileExists("test.txt"));
         DOCTEST_CHECK(!native.fileExists("foobar.txt"));
@@ -24,7 +24,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::NativeFileSystem") {
     }
 
     DOCTEST_TEST_CASE("directoryExists") {
-        auto native = NativeFileSystem();
+        auto native = FileSystem();
 
         DOCTEST_CHECK(native.directoryExists("parent"));
         DOCTEST_CHECK(native.directoryExists("parent/child"));
@@ -34,7 +34,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::NativeFileSystem") {
     }
 
     DOCTEST_TEST_CASE("openRead") {
-        auto native = NativeFileSystem();
+        auto native = FileSystem();
 
         auto inFile = native.openRead("test.txt", FileOpenMode::Text);
         DOCTEST_CHECK(inFile.isOpen());
@@ -50,7 +50,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::NativeFileSystem") {
     DOCTEST_TEST_CASE("enumerate") {
         vector<string> const expected{"parent"_sv, "parent/child"_sv, "parent/child/hello.txt"_sv, "test.txt"_sv};
 
-        auto native = NativeFileSystem();
+        auto native = FileSystem();
 
         vector<string> entries;
 
@@ -71,7 +71,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::NativeFileSystem") {
     }
 
     DOCTEST_TEST_CASE("stat") {
-        auto native = NativeFileSystem();
+        auto native = FileSystem();
 
         FileStat stat;
         auto rs = native.fileStat("test.txt", stat);

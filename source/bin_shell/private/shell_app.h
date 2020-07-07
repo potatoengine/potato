@@ -5,8 +5,8 @@
 
 #include "potato/audio/audio_engine.h"
 #include "potato/render/draw_imgui.h"
+#include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
-#include "potato/runtime/native.h"
 #include "potato/runtime/resource_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/unique_resource.h"
@@ -75,7 +75,7 @@ namespace up::shell {
         bool _running = true;
         bool _openProject = false;
         bool _closeProject = false;
-        NativeFileSystem _fileSystem;
+        FileSystem _fileSystem;
         rc<GpuDevice> _device;
         rc<GpuSwapChain> _swapChain;
         box<Loader> _loader;
