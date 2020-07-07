@@ -2,6 +2,11 @@
 
 #pragma once
 
+#include "potato/spud/fixed_string.h"
+#include "potato/spud/string.h"
+#include "potato/spud/string_view.h"
+#include "potato/spud/zstring_view.h"
+
 #include <iostream>
 
 namespace up {

@@ -51,6 +51,10 @@ target_sources(potato_libruntime PRIVATE
     private/task_worker.cpp
     private/thread_util.cpp
     private/uuid.cpp
+    "public/potato/runtime/resource_loader.h"
+    "public/potato/runtime/resource_manifest.h"
+    "private/resource_loader.cpp"
+    "private/resource_manifest.cpp"
 )
 
 include(up_set_common_properties)
@@ -104,7 +108,7 @@ target_sources(potato_libruntime_test PRIVATE
     "tests/test_task_worker.cpp"
     "tests/test_thread_util.cpp"
     "tests/test_uuid.cpp"
-)
+ "tests/test_resource_manifest.cpp")
 
 up_set_common_properties(potato_libruntime_test)
 

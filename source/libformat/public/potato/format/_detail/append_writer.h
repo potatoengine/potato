@@ -8,7 +8,7 @@
 
 namespace up {
     /// Writer that calls append(data, size) on wrapped value.
-    template <typename ContainerT> class append_writer {
+    template <typename ContainerT> class append_writer final {
     public:
         constexpr append_writer(ContainerT& container) noexcept : _container(container) {}
 

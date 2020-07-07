@@ -1,19 +1,19 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 #pragma once
 
-namespace up::_detail {
+#include "potato/spud/ascii.h"
 
-    constexpr bool is_digit(char ch) noexcept { return ch >= '0' && ch <= '9'; }
+namespace up::_detail {
 
     // std::from_chars is not (yet) constexpr
     constexpr char const* parse_unsigned(char const* start, char const* end, unsigned& result) noexcept {
-        if (start != end && is_digit(*start)) {
+        if (start != end && ascii::is_digit(*start)) {
             result = 0;
             do {
                 result *= 10;
                 result += *start - '0';
                 ++start;
-            } while (start != end && is_digit(*start));
+            } while (start != end && ascii::is_digit(*start));
         }
         return start;
     }

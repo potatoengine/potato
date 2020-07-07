@@ -9,8 +9,8 @@ add_library(potato_librecon STATIC)
 up_set_common_properties(potato_librecon)
 
 target_sources(potato_librecon PRIVATE
-    "private/converter_app.cpp"
-    "private/converter_config.cpp"
+    "private/recon_app.cpp"
+    "private/recon_config.cpp"
 )
 
 target_link_libraries(potato_librecon

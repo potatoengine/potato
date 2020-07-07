@@ -31,13 +31,14 @@ namespace up {
 
         virtual IOResult createDirectories(zstring_view path) = 0;
 
-        virtual IOResult copyFile(zstring_view from, zstring_view to) = 0;
-
         virtual IOResult remove(zstring_view path) = 0;
         virtual IOResult removeRecursive(zstring_view path) = 0;
 
         virtual string currentWorkingDirectory() const noexcept = 0;
         virtual bool currentWorkingDirectory(zstring_view path) = 0;
+
+        virtual IOResult copyFileTo(zstring_view fromPath, zstring_view toPath) = 0;
+        virtual IOResult moveFileTo(zstring_view fromPath, zstring_view toPath) = 0;
 
     protected:
         FileSystem() = default;

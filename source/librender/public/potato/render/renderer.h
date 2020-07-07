@@ -6,7 +6,6 @@
 #include "loader.h"
 
 #include "potato/runtime/concurrent_queue.h"
-#include "potato/runtime/filesystem.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/zstring_view.h"
@@ -20,6 +19,7 @@ namespace up {
     class Mesh;
     class Shader;
     class Texture;
+    class ResourceLoader;
 
     class Renderer {
     public:
@@ -52,16 +52,16 @@ namespace up {
 
     class DefaultLoader : public Loader {
     public:
-        UP_RENDER_API DefaultLoader(FileSystem& fileSystem, rc<GpuDevice> device);
+        UP_RENDER_API DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device);
         ~DefaultLoader() override;
 
         rc<Mesh> loadMeshSync(zstring_view path) override;
         rc<Material> loadMaterialSync(zstring_view path) override;
-        rc<Shader> loadShaderSync(zstring_view path) override;
+        rc<Shader> loadShaderSync(zstring_view path, string_view logicalName) override;
         rc<Texture> loadTextureSync(zstring_view path) override;
 
     private:
-        FileSystem& _fileSystem;
+        ResourceLoader& _resourceLoader;
         rc<GpuDevice> _device;
     };
 } // namespace up

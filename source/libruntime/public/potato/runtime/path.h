@@ -6,11 +6,10 @@
 
 #include "potato/spud/concepts.h"
 #include "potato/spud/int_types.h"
+#include "potato/spud/span.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/zstring_view.h"
-
-#include <initializer_list>
 
 namespace up::path {
     static constexpr uint32 maxPathLength = 4096;
@@ -30,6 +29,7 @@ namespace up::path {
     // only the last extension is returned, e.g. foo.txt.gz -> .gz
     UP_RUNTIME_API zstring_view extension(zstring_view path) noexcept;
     UP_RUNTIME_API string_view extension(string_view path) noexcept;
+    inline zstring_view extension(string const& path) noexcept { return extension(zstring_view{path}); }
 
     // replaces any existing extension with the requested one
     // extension must include the dot, e.g. .txt
@@ -63,11 +63,17 @@ namespace up::path {
     // adds a / between each component, e.g. foo/, bar -> foo//bar
     // result is not normalized
     // empty components are ignored, e.g. "", bar -> bar
-    UP_RUNTIME_API string join(std::initializer_list<string_view> components);
+    UP_RUNTIME_API string join(view<string_view> components);
 
     // joins path components together
     template <typename... String> string join(String const&... components) requires(convertible_to<String, string_view>&&...) {
-        return join({string_view{components}...});
+        if constexpr (sizeof...(String) != 0) {
+            string_view views[] = {string_view{components}...};
+            return join(views);
+        }
+        else {
+            return {};
+        }
     }
 
 } // namespace up::path

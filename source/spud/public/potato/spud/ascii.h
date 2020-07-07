@@ -1,4 +1,6 @@
-// Copyright (C) 2019 Marcin Wieczorek, Sean Middleditch, all rights reserverd.
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
+#pragma once
 
 namespace up::ascii {
     constexpr auto is_digit(char const ch) noexcept -> bool { return ch >= '0' && ch <= '9'; }
@@ -21,4 +23,6 @@ namespace up::ascii {
         }
         return -1;
     }
+
+    constexpr auto to_uppercase(char const ch) noexcept -> char { return ch >= 'a' && ch <= 'z' ? static_cast<char>(ch - 'a' + 'A') : ch; }
 } // namespace up::ascii

@@ -1,7 +1,7 @@
 {
   "shaders": {
-    "vertex": "resources/shaders/debug_line.vs_5_0.cbo",
-    "pixel": "resources/shaders/debug_line.ps_5_0.cbo"
+    "vertex": "shaders/debug_line.hlsl",
+    "pixel": "shaders/debug_line.hlsl"
   },
   "textures": []
 }

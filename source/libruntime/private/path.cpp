@@ -35,7 +35,7 @@ auto up::path::changeExtension(string_view path, string_view extension) -> strin
     result.reserve(pos + extension.size());
     result.append(path.data(), pos);
     result.append(extension.data(), extension.size());
-    return string(result);
+    return std::move(result).to_string();
 }
 
 // returns the filename of a path, e.g. foo/bar.txt -> bar.txt
@@ -225,10 +225,10 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
         result.append('/');
     }
 
-    return string(result);
+    return std::move(result).to_string();
 }
 
-auto up::path::join(std::initializer_list<string_view> components) -> string {
+auto up::path::join(view<string_view> components) -> string {
     std::size_t size = 0;
 
     for (auto sv : components) {

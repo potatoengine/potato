@@ -1,0 +1,9 @@
+{
+  "$type": "potato.asset.meta",
+  "$version": 1,
+  "id": "df3a7c47-d06a-cc44-abc4-e928aa4ab035",
+  "importer": {
+    "name": "copy",
+    "settings": ""
+  }
+}

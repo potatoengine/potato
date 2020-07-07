@@ -17,10 +17,11 @@ namespace up::shell {
     public:
         using OnFileSelected = delegate<void(zstring_view name)>;
 
-        explicit FileTreeEditor(FileSystem& fileSystem, OnFileSelected onFileSelected)
+        explicit FileTreeEditor(FileSystem& fileSystem, string path, OnFileSelected onFileSelected)
             : Editor("FileTreeEditor"_zsv)
             , _fileSystem(fileSystem)
-            , _onFileSelected(std::move(onFileSelected)) {}
+            , _onFileSelected(std::move(onFileSelected))
+            , _path(std::move(path)) {}
 
         zstring_view displayName() const override { return "Files"; }
 
@@ -46,8 +47,8 @@ namespace up::shell {
         vector<Entry> _cache;
     };
 
-    auto createFileTreeEditor(FileSystem& fileSystem, FileTreeEditor::OnFileSelected onFileSelected) -> box<Editor> {
-        return new_box<FileTreeEditor>(fileSystem, std::move(onFileSelected));
+    auto createFileTreeEditor(FileSystem& fileSystem, string path, FileTreeEditor::OnFileSelected onFileSelected) -> box<Editor> {
+        return new_box<FileTreeEditor>(fileSystem, std::move(path), std::move(onFileSelected));
     }
 
     void FileTreeEditor::renderContent(Renderer& renderer) {

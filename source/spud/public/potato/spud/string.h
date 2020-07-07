@@ -229,7 +229,7 @@ private:
 };
 
 template <typename HashAlgorithm> void up::hash_append(HashAlgorithm& hasher, string const& string) {
-    hasher({reinterpret_cast<std::byte const*>(string.data()), string.size()});
+    hasher.append_bytes(string.data(), string.size());
 }
 
 inline auto up::operator"" _s(char const* str, size_t size) -> string { return string{str, size}; }

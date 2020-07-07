@@ -78,8 +78,8 @@ auto up::Material::createFromBuffer(view<byte> buffer, Loader& loader) -> rc<Mat
     auto vertexPath = shader->vertex();
     auto pixelPath = shader->pixel();
 
-    vertex = loader.loadShaderSync(string(vertexPath->c_str(), vertexPath->size()));
-    pixel = loader.loadShaderSync(string(pixelPath->c_str(), pixelPath->size()));
+    vertex = loader.loadShaderSync(string(vertexPath->c_str(), vertexPath->size()), "vertex"_sv);
+    pixel = loader.loadShaderSync(string(pixelPath->c_str(), pixelPath->size()), "pixel"_sv);
 
     if (vertex == nullptr) {
         return nullptr;

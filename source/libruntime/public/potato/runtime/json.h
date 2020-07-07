@@ -16,6 +16,7 @@ namespace up {
 
     // nlohmann overloads
     extern UP_RUNTIME_API void to_json(nlohmann::json& json, string_view str) noexcept;
+    extern UP_RUNTIME_API void to_json(nlohmann::json& json, zstring_view str) noexcept;
     extern UP_RUNTIME_API void to_json(nlohmann::json& json, string const& str) noexcept;
     extern UP_RUNTIME_API void from_json(const nlohmann::json& json, string& str);
 } // namespace up

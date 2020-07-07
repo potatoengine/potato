@@ -3,14 +3,13 @@
 #include "asset_library.h"
 
 #include "potato/runtime/json.h"
+#include "potato/runtime/resource_manifest.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/hash_fnv1a.h"
+#include "potato/spud/string_writer.h"
 
 #include <nlohmann/json.hpp>
-
-// 4. fixing bug in hlsli path generation and adding meta files to source deps
-static constexpr up::uint64 libraryRevision = 4;
 
 up::AssetLibrary::~AssetLibrary() = default;
 
@@ -21,54 +20,70 @@ auto up::AssetLibrary::pathToAssetId(string_view path) const -> AssetId {
 
 auto up::AssetLibrary::assetIdToPath(AssetId assetId) const -> string_view {
     auto record = findRecord(assetId);
-    return record != nullptr ? string_view(record->path) : string_view{};
+    return record != nullptr ? string_view(record->sourcePath) : string_view{};
 }
 
-auto up::AssetLibrary::findRecord(AssetId assetId) const -> AssetImportRecord const* {
-    auto it = _assets.find(assetId);
-    return it != _assets.end() ? &it->second : nullptr;
+auto up::AssetLibrary::findRecord(AssetId assetId) const -> Imported const* {
+    for (auto const& record : _records) {
+        if (record.assetId == assetId) {
+            return &record;
+        }
+    }
+    return nullptr;
 }
 
-bool up::AssetLibrary::insertRecord(AssetImportRecord record) {
-    _assets[record.assetId] = std::move(record);
+bool up::AssetLibrary::insertRecord(Imported record) {
+    for (auto& current : _records) {
+        if (current.assetId == record.assetId) {
+            current = std::move(record);
+            return true;
+        }
+    }
+
+    _records.push_back(std::move(record));
     return true;
 }
 
 bool up::AssetLibrary::serialize(Stream& stream) const {
     nlohmann::json jsonRoot;
 
-    jsonRoot["revision"] = libraryRevision;
+    jsonRoot["$type"] = typeName;
+    jsonRoot["$version"] = version;
 
     nlohmann::json jsonRecords;
-    for (auto const& [assetId, record] : _assets) {
+    for (auto const& record : _records) {
         nlohmann::json jsonRecord;
 
-        auto catName = assetCategoryName(record.category);
+        jsonRecord["id"] = to_underlying(record.assetId);
 
-        jsonRecord["id"] = static_cast<uint64>(assetId);
-        jsonRecord["path"] = std::string(record.path.data(), record.path.size());
-        jsonRecord["contentHash"] = record.contentHash;
-        jsonRecord["category"] = std::string(catName.data(), catName.size());
-        jsonRecord["importerName"] = std::string(record.importerName.data(), record.importerName.size());
-        jsonRecord["importerRevision"] = record.importerRevision;
+        nlohmann::json jsonSource;
+        jsonSource["path"] = std::string(record.sourcePath.data(), record.sourcePath.size());
+        jsonSource["hash"] = record.sourceContentHash;
+        jsonRecord["source"] = jsonSource;
+
+        nlohmann::json jsonImporter;
+        jsonImporter["name"] = std::string(record.importerName.data(), record.importerName.size());
+        jsonImporter["revision"] = record.importerRevision;
+        jsonRecord["importer"] = jsonImporter;
 
         nlohmann::json jsonOutputs;
         for (auto const& output : record.outputs) {
             nlohmann::json jsonOutput;
-            jsonOutput["path"] = std::string(output.path.data(), output.path.size());
+            jsonOutput["id"] = to_underlying(output.logicalAssetId);
             jsonOutput["hash"] = output.contentHash;
+            jsonOutput["name"] = output.name;
             jsonOutputs.push_back(std::move(jsonOutput));
         }
         jsonRecord["outputs"] = std::move(jsonOutputs);
 
-        nlohmann::json jsonSourceDeps;
-        for (auto const& dep : record.sourceDependencies) {
+        nlohmann::json jsonDependencies;
+        for (auto const& dep : record.dependencies) {
             nlohmann::json jsonDep;
             jsonDep["path"] = std::string(dep.path.data(), dep.path.size());
             jsonDep["hash"] = dep.contentHash;
-            jsonSourceDeps.push_back(std::move(jsonDep));
+            jsonDependencies.push_back(std::move(jsonDep));
         }
-        jsonRecord["sourceDeps"] = std::move(jsonSourceDeps);
+        jsonRecord["dependencies"] = std::move(jsonDependencies);
 
         jsonRecords.push_back(std::move(jsonRecord));
     }
@@ -90,8 +105,11 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
         return false;
     }
 
-    auto revision = jsonRoot["revision"];
-    if (!revision.is_number_integer() || revision != libraryRevision) {
+    if (auto type = jsonRoot["$type"]; !type.is_string() || type != typeName) {
+        return false;
+    }
+
+    if (auto revision = jsonRoot["$version"]; !revision.is_number_integer() || revision != version) {
         return false;
     }
 
@@ -101,24 +119,61 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
     }
 
     for (auto const& record : records) {
-        AssetImportRecord newRecord;
+        auto& newRecord = _records.push_back({});
+
         newRecord.assetId = record["id"];
-        newRecord.path = record["path"].get<string>();
-        newRecord.contentHash = record["contentHash"];
-        newRecord.category = assetCategoryFromName(record["category"].get<string>());
-        newRecord.importerName = record["importerName"].get<string>();
-        newRecord.importerRevision = record["importerRevision"];
+
+        if (auto const jsonSource = record["source"]; jsonSource.is_object()) {
+            newRecord.sourcePath = jsonSource["path"].get<string>();
+            newRecord.sourceContentHash = jsonSource["hash"];
+        }
+
+        if (auto const jsonImporter = record["importer"]; jsonImporter.is_object()) {
+            newRecord.importerName = jsonImporter["name"].get<string>();
+            newRecord.importerRevision = jsonImporter["revision"];
+        }
 
         for (auto const& output : record["outputs"]) {
-            newRecord.outputs.push_back(AssetOutputRecord{output["path"], output["hash"]});
+            newRecord.outputs.push_back({output["name"], output["id"], output["hash"]});
         }
 
-        for (auto const& output : record["sourceDeps"]) {
-            newRecord.sourceDependencies.push_back(AssetDependencyRecord{output["path"], output["hash"]});
+        for (auto const& output : record["dependencies"]) {
+            newRecord.dependencies.push_back({output["path"], output["hash"]});
         }
-
-        insertRecord(std::move(newRecord));
     }
 
     return true;
+}
+
+void up::AssetLibrary::generateManifest(erased_writer writer) const {
+    format_to(writer, "# Potato Manifest\n");
+    format_to(writer, ".version={}\n", ResourceManifest::version);
+    format_to(writer,
+        ":{}|{}|{}|{}|{}\n",
+        ResourceManifest::columnRootId,
+        ResourceManifest::columnLogicalId,
+        ResourceManifest::columnLogicalName,
+        ResourceManifest::columnContentHash,
+        ResourceManifest::columnDebugName);
+
+    string_writer fullName;
+
+    for (auto const& record : _records) {
+        for (auto const& output : record.outputs) {
+            fullName.clear();
+            fullName.append(record.sourcePath);
+
+            if (output.logicalAssetId != record.assetId) {
+                format_append(fullName, ":{}", output.name);
+            }
+
+            format_to(writer,
+                "{:016X}|{:016X}|{:016X}|{:016X}|{}\n",
+                record.assetId,
+                output.logicalAssetId,
+                hash_value(output.name),
+                output.contentHash,
+                fullName);
+        }
+    }
 }

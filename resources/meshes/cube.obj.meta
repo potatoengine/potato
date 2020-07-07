@@ -1,4 +1,9 @@
 {
-  "id": "9a513ceb-6ffc-427f-be82-d2d76a5a212f",
-  "settings": []
+  "$type": "potato.asset.meta",
+  "$version": 1,
+  "id": "8b589d73-8596-6a45-962b-4816b33d9ca3",
+  "importer": {
+    "name": "model",
+    "settings": ""
+  }
 }

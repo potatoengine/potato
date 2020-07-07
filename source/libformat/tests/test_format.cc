@@ -73,6 +73,8 @@ DOCTEST_TEST_CASE("format") {
 
         DOCTEST_CHECK_EQ("  1234", format_as<std::string>("{:6d}", 1234));
         DOCTEST_CHECK_EQ("001234", format_as<std::string>("{:06d}", 1234));
+        DOCTEST_CHECK_EQ("0000dead", format_as<std::string>("{:08x}", 0xDEAD));
+        DOCTEST_CHECK_EQ("0000DEAD", format_as<std::string>("{:08X}", 0xDEAD));
     }
 
     DOCTEST_SUBCASE("floats") {

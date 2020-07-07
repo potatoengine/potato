@@ -1,9 +1,9 @@
 {
   "shaders": {
-    "vertex": "resources/shaders/basic.vs_5_0.cbo",
-    "pixel": "resources/shaders/basic.ps_5_0.cbo"
+    "vertex": "shaders/basic.hlsl",
+    "pixel": "shaders/basic.hlsl"
   },
   "textures": [
-    "resources/textures/test.png"
+    "textures/test.png"
   ]
 }

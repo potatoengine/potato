@@ -1,5 +1,57 @@
 {
   "sourceDir": "@UP_ROOT_DIR@/resources",
-  "destDir": "@UP_OUTPUT_DIR@/resources",
-  "cacheDir": "@UP_OUTPUT_DIR@/cache"
+  "mapping": [
+    {
+      "pattern": ".hlsl",
+      "importer": "hlsl"
+    },
+    {
+      "pattern": ".hlsli",
+      "importer": "ignore"
+    },
+    {
+      "pattern": ".txt",
+      "importer": "ignore"
+    },
+    {
+      "pattern": ".json",
+      "importer": "json"
+    },
+    {
+      "pattern": ".png",
+      "importer": "copy"
+    },
+    {
+      "pattern": ".jpg",
+      "importer": "copy"
+    },
+    {
+      "pattern": ".ttf",
+      "importer": "copy"
+    },
+    {
+      "pattern": ".wav",
+      "importer": "copy"
+    },
+    {
+      "pattern": ".mp3",
+      "importer": "copy"
+    },
+    {
+      "pattern": ".popr",
+      "importer": "ignore"
+    },
+    {
+      "pattern": ".scene",
+      "importer": "json"
+    },
+    {
+      "pattern": ".obj",
+      "importer": "model"
+    },
+    {
+      "pattern": ".mat",
+      "importer": "material"
+    }
+  ]
 }

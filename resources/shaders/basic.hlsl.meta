@@ -1,4 +1,9 @@
 {
-  "id": "c1bc66b5-1dbf-4162-9a42-d6854a3f880a",
-  "settings": []
+  "$type": "potato.asset.meta",
+  "$version": 1,
+  "id": "51ba5cbf-6ccf-d642-8e3f-3353f6ad9d69",
+  "importer": {
+    "name": "hlsl",
+    "settings": ""
+  }
 }

@@ -6,15 +6,16 @@ add_library(potato::libtools ALIAS potato_libtools)
 
 target_sources(potato_libtools PRIVATE
     "private/asset_library.cpp"
-    "private/asset_record.cpp"
-    "private/hash_cache.cpp"
+    "private/file_hash_cache.cpp"
     "private/project.cpp"
-    "private/converter_context.cpp"
-    "private/converter_factory.cpp"
-    "private/converters/convert_copy.cpp"
-    "private/converters/convert_json.cpp"
-    "private/converters/convert_material.cpp"
-    "private/converters/convert_model.cpp"
+    "private/importer_context.cpp"
+    "private/importer_factory.cpp"
+    "private/importers/copy_importer.cpp"
+    "private/importers/hlsl_importer.cpp"
+    "private/importers/json_importer.cpp"
+    "private/importers/material_importer.cpp"
+    "private/importers/model_importer.cpp"
+    "private/meta_file.cpp"
 )
 
 include(up_set_common_properties)
@@ -33,13 +34,13 @@ target_link_libraries(potato_libtools
 find_library(D3DCOMPILER_PATH d3dcompiler)
 if(D3DCOMPILER_PATH)
     target_link_libraries(potato_libtools PRIVATE ${D3DCOMPILER_PATH})
-    target_sources(potato_libtools PRIVATE "private/converters/convert_hlsl.cpp")
 endif()
 
 add_executable(potato_libtools_test)
 
 target_sources(potato_libtools_test PRIVATE
     "tests/main.cpp"
+    "tests/test_asset_library.cpp"
 )
 
 up_set_common_properties(potato_libtools_test)

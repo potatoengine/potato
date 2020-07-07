@@ -71,14 +71,18 @@ namespace up {
         IOResult write(span<byte const> buffer) { return _impl->write(buffer); }
         IOResult flush() { return _impl->flush(); }
 
+        void write(string_view text) { _impl->write({reinterpret_cast<byte const*>(text.data()), text.size()}); }
+
         void close() noexcept { _impl.reset(); }
 
     private:
         box<Backend> _impl;
     };
 
-    [[nodiscard]] UP_RUNTIME_API IOResult readBinary(Stream& stream, vector<up::byte>& out);
-    [[nodiscard]] UP_RUNTIME_API IOResult readText(Stream& stream, string& out);
+    [[nodiscard]] UP_RUNTIME_API auto readBinary(Stream& stream, vector<up::byte>& out) -> IOResult;
+    [[nodiscard]] UP_RUNTIME_API auto readBinary(Stream& stream) -> IOResultValue<vector<up::byte>>;
+    [[nodiscard]] UP_RUNTIME_API auto readText(Stream& stream, string& out) -> IOResult;
+    [[nodiscard]] UP_RUNTIME_API auto readText(Stream& stream) -> IOResultValue<string>;
 
-    [[nodiscard]] UP_RUNTIME_API IOResult writeAllText(Stream& stream, string_view text);
+    [[nodiscard]] UP_RUNTIME_API auto writeAllText(Stream& stream, string_view text) -> IOResult;
 } // namespace up

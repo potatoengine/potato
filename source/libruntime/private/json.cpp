@@ -25,6 +25,8 @@ auto up::readJson(Stream& stream, nlohmann::json& json) -> IOResult {
 
 void up::to_json(nlohmann::json& json, string_view str) noexcept { json = std::string(str.data(), str.size()); }
 
+void up::to_json(nlohmann::json& json, zstring_view str) noexcept { json = std::string(str.c_str()); }
+
 void up::to_json(nlohmann::json& json, string const& str) noexcept { json = std::string(str.data(), str.size()); }
 
 void up::from_json(const nlohmann::json& json, string& str) {

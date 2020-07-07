@@ -93,12 +93,12 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::path") {
     }
 
     DOCTEST_TEST_CASE("join") {
-        DOCTEST_CHECK_EQ(join({"/foo", "bar.txt"}), "/foo/bar.txt");
-        DOCTEST_CHECK_EQ(join({"/foo", "/bar", "baz.txt"}), "/foo//bar/baz.txt");
-        DOCTEST_CHECK_EQ(join({"/foo", "", "/bar.txt"}), "/foo//bar.txt");
-        DOCTEST_CHECK_EQ(join({"", "foo", "/bar.txt"}), "foo//bar.txt");
-        DOCTEST_CHECK_EQ(join({"foo", "bar", ""}), "foo/bar");
-        DOCTEST_CHECK_EQ(join({}), "");
+        DOCTEST_CHECK_EQ(join("/foo", "bar.txt"), "/foo/bar.txt");
+        DOCTEST_CHECK_EQ(join("/foo", "/bar", "baz.txt"), "/foo//bar/baz.txt");
+        DOCTEST_CHECK_EQ(join("/foo", "", "/bar.txt"), "/foo//bar.txt");
+        DOCTEST_CHECK_EQ(join("", "foo", "/bar.txt"), "foo//bar.txt");
+        DOCTEST_CHECK_EQ(join("foo", "bar", ""), "foo/bar");
+        DOCTEST_CHECK_EQ(join(), "");
 
         DOCTEST_CHECK_EQ(join("/foo", "/bar"_sv, "baz.txt"_s), "/foo//bar/baz.txt");
     }

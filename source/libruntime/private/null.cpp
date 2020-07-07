@@ -19,8 +19,6 @@ auto up::NullFileSystem::enumerate(zstring_view, EnumerateCallback, EnumerateOpt
 
 auto up::NullFileSystem::createDirectories(zstring_view path) noexcept -> IOResult { return IOResult::UnsupportedOperation; }
 
-auto up::NullFileSystem::copyFile(zstring_view from, zstring_view to) noexcept -> IOResult { return IOResult::UnsupportedOperation; }
-
 auto up::NullFileSystem::remove(zstring_view path) noexcept -> IOResult { return IOResult::UnsupportedOperation; }
 
 auto up::NullFileSystem::removeRecursive(zstring_view path) noexcept -> IOResult { return IOResult::UnsupportedOperation; }
@@ -28,3 +26,7 @@ auto up::NullFileSystem::removeRecursive(zstring_view path) noexcept -> IOResult
 auto up::NullFileSystem::currentWorkingDirectory() const noexcept -> string { return {}; }
 
 auto up::NullFileSystem::currentWorkingDirectory(zstring_view) -> bool { return false; }
+
+auto up::NullFileSystem::copyFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult { return IOResult::UnsupportedOperation; }
+
+auto up::NullFileSystem::moveFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult { return IOResult::UnsupportedOperation; }

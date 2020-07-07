@@ -42,9 +42,9 @@ auto up::Project::loadFromFile(FileSystem& fileSystem, zstring_view filename) ->
     auto const cachePath = assets["cache"].get<string>();
 
     auto project = new_box<Project>();
-    project->_assetRootPath = path::join({projectBasePath, rootPath});
-    project->_targetPath = path::join({projectBasePath, targetPath});
-    project->_cachePath = path::join({projectBasePath, cachePath});
+    project->_assetRootPath = path::join(projectBasePath, rootPath);
+    project->_targetPath = path::join(projectBasePath, targetPath);
+    project->_cachePath = path::join(projectBasePath, cachePath);
 
     return project;
 }

@@ -51,12 +51,12 @@
 #include <nfd.h>
 
 namespace up::shell {
-    extern auto createFileTreeEditor(FileSystem& fileSystem, delegate<void(zstring_view name)> onSelected) -> box<Editor>;
+    extern auto createFileTreeEditor(FileSystem& fileSystem, string path, delegate<void(zstring_view name)> onSelected) -> box<Editor>;
     extern auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()>, delegate<void(rc<Scene>)>) -> box<Editor>;
     extern auto createGameEditor(rc<Scene> scene) -> box<Editor>;
 } // namespace up::shell
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell"), _resourceLoader(_fileSystem) {}
 
 up::shell::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
@@ -80,6 +80,26 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
+    _resourceLoader.setCasPath(path::join(_editorResourcePath, ".library", "cache"));
+
+    string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
+    if (Stream manifestFile = _fileSystem.openRead(manifestPath, FileOpenMode::Text)) {
+        string manifestText;
+        if (readText(manifestFile, manifestText) != IOResult{}) {
+            _errorDialog("Failed to load resource manifest");
+            return 1;
+        }
+
+        if (!ResourceManifest::parseManifest(manifestText, _resourceLoader.manifest())) {
+            _errorDialog("Failed to parse resource manifest");
+            return 1;
+        }
+    }
+    else {
+        _errorDialog("Failed to open resource manifest");
+        return 1;
+    }
+
     _fileSystem.currentWorkingDirectory(_editorResourcePath);
 
     constexpr int default_width = 1024;
@@ -99,7 +119,7 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _audio = AudioEngine::create(_fileSystem);
+    _audio = AudioEngine::create(_resourceLoader);
 
 #if defined(UP_GPU_ENABLE_D3D11)
     if (_device == nullptr) {
@@ -117,7 +137,7 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _loader = new_box<DefaultLoader>(_fileSystem, _device);
+    _loader = new_box<DefaultLoader>(_resourceLoader, _device);
     _renderer = new_box<Renderer>(*_loader, _device);
 
 #if UP_PLATFORM_WINDOWS
@@ -135,22 +155,22 @@ int up::shell::ShellApp::initialize() {
     _documentWindowClass.DockingAllowUnclassed = false;
     _documentWindowClass.DockingAlwaysTabBar = true;
 
-    auto imguiVertShader = _loader->loadShaderSync("resources/shaders/imgui.vs_5_0.cbo");
-    auto imguiPixelShader = _loader->loadShaderSync("resources/shaders/imgui.ps_5_0.cbo");
+    auto imguiVertShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "vertex"_sv);
+    auto imguiPixelShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "pixel"_sv);
     if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
         _errorDialog("Failed to load imgui shaders");
         return 1;
     }
 
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
-    auto fontStream = _fileSystem.openRead("resources/fonts/roboto/Roboto-Regular.ttf");
+    auto fontStream = _fileSystem.openRead("fonts/roboto/Roboto-Regular.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open Roboto-Regular font");
         return 1;
     }
     _drawImgui.loadFont(std::move(fontStream));
 
-    fontStream = _fileSystem.openRead("resources/fonts/fontawesome5/fa-solid-900.ttf");
+    fontStream = _fileSystem.openRead("fonts/fontawesome5/fa-solid-900.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open FontAwesome font");
         return 1;
@@ -199,7 +219,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _fileSystem.currentWorkingDirectory(_project->targetPath());
 
     _editors.clear();
-    _editors.push_back(createFileTreeEditor(_fileSystem, [this](zstring_view name) { _onFileOpened(name); }));
+    _editors.push_back(createFileTreeEditor(_fileSystem, _editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
 
     _updateTitle();
 
@@ -483,21 +503,21 @@ void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
 }
 
 void up::shell::ShellApp::_createScene() {
-    auto material = _loader->loadMaterialSync("resources/materials/full.mat");
+    auto material = _loader->loadMaterialSync("materials/full.mat");
     if (material == nullptr) {
         _errorDialog("Failed to load basic material");
         return;
     }
 
-    auto mesh = _loader->loadMeshSync("resources/meshes/cube.model");
+    auto mesh = _loader->loadMeshSync("meshes/cube.obj");
     if (mesh == nullptr) {
         _errorDialog("Failed to load cube mesh");
         return;
     }
 
-    auto ding = _audio->loadSound("resources/audio/kenney/highUp.mp3");
+    auto ding = _audio->loadSound("audio/kenney/highUp.mp3");
     if (ding == nullptr) {
-        _errorDialog("Failed to load coin mp3");
+        _errorDialog("Failed to load highUp mp3");
         return;
     }
 
