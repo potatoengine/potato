@@ -83,20 +83,14 @@ int up::shell::ShellApp::initialize() {
     _resourceLoader.setCasPath(path::join(_editorResourcePath, ".library", "cache"));
 
     string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
-    if (Stream manifestFile = fs::openRead(manifestPath, fs::OpenMode::Text)) {
-        string manifestText;
-        if (readText(manifestFile, manifestText) != IOResult{}) {
-            _errorDialog("Failed to load resource manifest");
-            return 1;
-        }
-
+    if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult::Success) {
         if (!ResourceManifest::parseManifest(manifestText, _resourceLoader.manifest())) {
             _errorDialog("Failed to parse resource manifest");
             return 1;
         }
     }
     else {
-        _errorDialog("Failed to open resource manifest");
+        _errorDialog("Failed to load resource manifest");
         return 1;
     }
 

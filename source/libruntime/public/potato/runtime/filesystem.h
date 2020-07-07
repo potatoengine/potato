@@ -64,4 +64,11 @@ namespace up::fs {
 
     [[nodiscard]] UP_RUNTIME_API IOResult copyFileTo(zstring_view fromPath, zstring_view toPath);
     [[nodiscard]] UP_RUNTIME_API IOResult moveFileTo(zstring_view fromPath, zstring_view toPath);
+
+    [[nodiscard]] UP_RUNTIME_API auto readBinary(zstring_view path, vector<up::byte>& out) -> IOResult;
+    [[nodiscard]] UP_RUNTIME_API auto readBinary(zstring_view path) -> IOReturn<vector<up::byte>>;
+    [[nodiscard]] UP_RUNTIME_API auto readText(zstring_view path, string& out) -> IOResult;
+    [[nodiscard]] UP_RUNTIME_API auto readText(zstring_view path) -> IOReturn<string>;
+
+    [[nodiscard]] UP_RUNTIME_API auto writeAllText(zstring_view path, string_view text) -> IOResult;
 } // namespace up::fs

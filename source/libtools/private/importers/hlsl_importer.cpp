@@ -29,20 +29,15 @@ namespace {
             auto relPath = absolutePath.substr(_ctx.sourceFolderPath().size() + 1);
             _ctx.addSourceDependency(relPath.data());
 
-            auto stream = up::fs::openRead(absolutePath.c_str(), up::fs::OpenMode::Text);
-            if (!stream) {
+            auto [rs, source] = up::fs::readText(absolutePath.c_str());
+            if (rs != up::IOResult::Success) {
                 return E_FAIL;
             }
 
-            up::string shader;
-            if (up::readText(stream, shader) != up::IOResult::Success) {
-                return E_FAIL;
-            }
+            *ppData = source.data();
+            *pBytes = static_cast<UINT>(source.size());
 
-            *ppData = shader.data();
-            *pBytes = static_cast<UINT>(shader.size());
-
-            _shaders.push_back(std::move(shader));
+            _shaders.push_back(std::move(source));
 
             return S_OK;
         }

@@ -211,3 +211,43 @@ auto up::fs::moveFileTo(zstring_view fromPath, zstring_view toPath) -> IOResult 
     std::filesystem::rename(fromPath.c_str(), toPath.c_str(), ec);
     return errorCodeToResult(ec);
 }
+
+auto up::fs::readBinary(zstring_view path, vector<up::byte>& out) -> IOResult {
+    auto stream = openRead(path, OpenMode::Binary);
+    if (!stream) {
+        return IOResult::System;
+    }
+    return readBinary(stream, out);
+}
+
+auto up::fs::readBinary(zstring_view path) -> IOReturn<vector<up::byte>> {
+    auto stream = openRead(path, OpenMode::Binary);
+    if (!stream) {
+        return {IOResult::System, {}};
+    }
+    return readBinary(stream);
+}
+
+auto up::fs::readText(zstring_view path, string& out) -> IOResult {
+    auto stream = openRead(path, OpenMode::Text);
+    if (!stream) {
+        return IOResult::System;
+    }
+    return readText(stream, out);
+}
+
+auto up::fs::readText(zstring_view path) -> IOReturn<string> {
+    auto stream = openRead(path, OpenMode::Text);
+    if (!stream) {
+        return {IOResult::System, {}};
+    }
+    return readText(stream);
+}
+
+auto up::fs::writeAllText(zstring_view path, string_view text) -> IOResult {
+    auto stream = openWrite(path, OpenMode::Text);
+    if (!stream) {
+        return IOResult::System;
+    }
+    return writeAllText(stream, text);
+}
