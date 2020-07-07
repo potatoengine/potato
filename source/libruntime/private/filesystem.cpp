@@ -18,9 +18,9 @@ namespace up {
             bool canWrite() const noexcept override { return false; }
             bool canSeek() const noexcept override { return true; }
 
-            IOResult seek(SeekPosition position, Stream::difference_type offset) override {
+            IOResult seek(Stream::Seek position, Stream::difference_type offset) override {
                 _stream.seekg(offset,
-                    position == SeekPosition::Begin ? std::ios::beg : position == SeekPosition::End ? std::ios::end : std::ios::cur);
+                    position == Stream::Seek::Begin ? std::ios::beg : position == Stream::Seek::End ? std::ios::end : std::ios::cur);
                 return IOResult::Success;
             }
             Stream::difference_type tell() const override { return _stream.tellg(); }
@@ -62,7 +62,7 @@ namespace up {
             bool canWrite() const noexcept override { return true; }
             bool canSeek() const noexcept override { return false; }
 
-            IOResult seek(SeekPosition position, Stream::difference_type offset) override { return IOResult::UnsupportedOperation; }
+            IOResult seek(Stream::Seek position, Stream::difference_type offset) override { return IOResult::UnsupportedOperation; }
             Stream::difference_type tell() const noexcept override { return 0; }
             Stream::difference_type remaining() const noexcept override { return 0; }
 

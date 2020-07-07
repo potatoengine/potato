@@ -18,6 +18,4 @@ namespace up {
         IOResult result;
         T value;
     };
-
-    enum class SeekPosition { Begin, End, Current };
 } // namespace up

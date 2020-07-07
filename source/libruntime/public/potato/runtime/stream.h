@@ -20,6 +20,8 @@ namespace up {
         using size_type = uint64;
         using difference_type = int64;
 
+        enum class Seek { Begin, End, Current };
+
         class Backend {
         public:
             Backend() = default;
@@ -34,7 +36,7 @@ namespace up {
             virtual bool canWrite() const noexcept = 0;
             virtual bool canSeek() const noexcept = 0;
 
-            virtual IOResult seek(SeekPosition position, difference_type offset) = 0;
+            virtual IOResult seek(Seek position, difference_type offset) = 0;
             virtual difference_type tell() const = 0;
             virtual difference_type remaining() const = 0;
 
@@ -64,7 +66,7 @@ namespace up {
 
         explicit operator bool() const noexcept { return isOpen(); }
 
-        IOResult seek(SeekPosition position, difference_type offset) { return _impl->seek(position, offset); }
+        IOResult seek(Seek position, difference_type offset) { return _impl->seek(position, offset); }
         difference_type tell() const { return _impl->tell(); }
         difference_type remaining() const { return _impl->remaining(); }
 
