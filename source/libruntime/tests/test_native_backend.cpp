@@ -12,31 +12,24 @@
 
 DOCTEST_TEST_SUITE("[potato][runtime] up::FileSystem") {
     using namespace up;
-    using namespace up;
 
     DOCTEST_TEST_CASE("fileExists") {
-        auto native = FileSystem();
+        DOCTEST_CHECK(FileSystem::fileExists("test.txt"));
+        DOCTEST_CHECK(!FileSystem::fileExists("foobar.txt"));
 
-        DOCTEST_CHECK(native.fileExists("test.txt"));
-        DOCTEST_CHECK(!native.fileExists("foobar.txt"));
-
-        DOCTEST_CHECK(!native.fileExists("parent"));
+        DOCTEST_CHECK(!FileSystem::fileExists("parent"));
     }
 
     DOCTEST_TEST_CASE("directoryExists") {
-        auto native = FileSystem();
+        DOCTEST_CHECK(FileSystem::directoryExists("parent"));
+        DOCTEST_CHECK(FileSystem::directoryExists("parent/child"));
 
-        DOCTEST_CHECK(native.directoryExists("parent"));
-        DOCTEST_CHECK(native.directoryExists("parent/child"));
-
-        DOCTEST_CHECK(!native.directoryExists("parent/child/grandchild"));
-        DOCTEST_CHECK(!native.directoryExists("test.txt"));
+        DOCTEST_CHECK(!FileSystem::directoryExists("parent/child/grandchild"));
+        DOCTEST_CHECK(!FileSystem::directoryExists("test.txt"));
     }
 
     DOCTEST_TEST_CASE("openRead") {
-        auto native = FileSystem();
-
-        auto inFile = native.openRead("test.txt", FileOpenMode::Text);
+        auto inFile = FileSystem::openRead("test.txt", FileOpenMode::Text);
         DOCTEST_CHECK(inFile.isOpen());
 
         byte buffer[1024];
@@ -50,15 +43,13 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::FileSystem") {
     DOCTEST_TEST_CASE("enumerate") {
         vector<string> const expected{"parent"_sv, "parent/child"_sv, "parent/child/hello.txt"_sv, "test.txt"_sv};
 
-        auto native = FileSystem();
-
         vector<string> entries;
 
         auto cb = [&entries](EnumerateItem const& item) {
             entries.push_back(item.info.path);
             return EnumerateResult::Recurse;
         };
-        DOCTEST_CHECK_EQ(native.enumerate(".", cb), EnumerateResult::Continue);
+        DOCTEST_CHECK_EQ(FileSystem::enumerate(".", cb), EnumerateResult::Continue);
 
         DOCTEST_REQUIRE_EQ(entries.size(), expected.size());
 
@@ -71,10 +62,8 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::FileSystem") {
     }
 
     DOCTEST_TEST_CASE("stat") {
-        auto native = FileSystem();
-
         FileStat stat;
-        auto rs = native.fileStat("test.txt", stat);
+        auto rs = FileSystem::fileStat("test.txt", stat);
         DOCTEST_CHECK_EQ(rs, IOResult::Success);
         DOCTEST_CHECK_EQ(stat.type, FileType::Regular);
 

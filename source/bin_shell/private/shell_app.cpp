@@ -51,12 +51,12 @@
 #include <nfd.h>
 
 namespace up::shell {
-    extern auto createFileTreeEditor(FileSystem& fileSystem, string path, delegate<void(zstring_view name)> onSelected) -> box<Editor>;
+    extern auto createFileTreeEditor(string path, delegate<void(zstring_view name)> onSelected) -> box<Editor>;
     extern auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()>, delegate<void(rc<Scene>)>) -> box<Editor>;
     extern auto createGameEditor(rc<Scene> scene) -> box<Editor>;
 } // namespace up::shell
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell"), _resourceLoader(_fileSystem) {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 
 up::shell::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
@@ -71,7 +71,7 @@ up::shell::ShellApp::~ShellApp() {
 
 int up::shell::ShellApp::initialize() {
     zstring_view configPath = "shell.config.json";
-    if (_fileSystem.fileExists(configPath)) {
+    if (FileSystem::fileExists(configPath)) {
         _loadConfig(configPath);
     }
 
@@ -83,7 +83,7 @@ int up::shell::ShellApp::initialize() {
     _resourceLoader.setCasPath(path::join(_editorResourcePath, ".library", "cache"));
 
     string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
-    if (Stream manifestFile = _fileSystem.openRead(manifestPath, FileOpenMode::Text)) {
+    if (Stream manifestFile = FileSystem::openRead(manifestPath, FileOpenMode::Text)) {
         string manifestText;
         if (readText(manifestFile, manifestText) != IOResult{}) {
             _errorDialog("Failed to load resource manifest");
@@ -100,7 +100,7 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _fileSystem.currentWorkingDirectory(_editorResourcePath);
+    FileSystem::currentWorkingDirectory(_editorResourcePath);
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -163,14 +163,14 @@ int up::shell::ShellApp::initialize() {
     }
 
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
-    auto fontStream = _fileSystem.openRead("fonts/roboto/Roboto-Regular.ttf");
+    auto fontStream = FileSystem::openRead("fonts/roboto/Roboto-Regular.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open Roboto-Regular font");
         return 1;
     }
     _drawImgui.loadFont(std::move(fontStream));
 
-    fontStream = _fileSystem.openRead("fonts/fontawesome5/fa-solid-900.ttf");
+    fontStream = FileSystem::openRead("fonts/fontawesome5/fa-solid-900.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open FontAwesome font");
         return 1;
@@ -208,7 +208,7 @@ bool up::shell::ShellApp::_selectAndLoadProject(zstring_view defaultPath) {
 }
 
 bool up::shell::ShellApp::_loadProject(zstring_view path) {
-    _project = Project::loadFromFile(_fileSystem, path);
+    _project = Project::loadFromFile(path);
     if (_project == nullptr) {
         _errorDialog("Could not load project file");
         return false;
@@ -216,10 +216,10 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
 
     _projectName = path::filebasename(path);
 
-    _fileSystem.currentWorkingDirectory(_project->targetPath());
+    FileSystem::currentWorkingDirectory(_project->targetPath());
 
     _editors.clear();
-    _editors.push_back(createFileTreeEditor(_fileSystem, _editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
+    _editors.push_back(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
 
     _updateTitle();
 
@@ -474,7 +474,7 @@ void up::shell::ShellApp::_errorDialog(zstring_view message) {
 }
 
 bool up::shell::ShellApp::_loadConfig(zstring_view path) {
-    auto stream = _fileSystem.openRead(path, FileOpenMode::Text);
+    auto stream = FileSystem::openRead(path, FileOpenMode::Text);
     if (!stream) {
         _logger.error("Failed to open `{}'", path.c_str());
         return false;

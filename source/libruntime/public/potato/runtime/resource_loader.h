@@ -8,12 +8,11 @@
 #include "potato/spud/string.h"
 
 namespace up {
-    class FileSystem;
     class Stream;
 
     class ResourceLoader {
     public:
-        UP_RUNTIME_API explicit ResourceLoader(FileSystem& fileSystem) : _fileSystem(&fileSystem) {}
+        UP_RUNTIME_API ResourceLoader();
         UP_RUNTIME_API ~ResourceLoader();
 
         ResourceManifest& manifest() noexcept { return _manifest; }
@@ -35,7 +34,6 @@ namespace up {
     private:
         Stream _openFile(zstring_view filename) const;
 
-        FileSystem* _fileSystem = nullptr;
         ResourceManifest _manifest;
         string _casPath;
     };

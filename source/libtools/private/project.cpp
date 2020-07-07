@@ -9,9 +9,9 @@
 
 #include <nlohmann/json.hpp>
 
-auto up::Project::loadFromFile(FileSystem& fileSystem, zstring_view filename) -> box<Project> {
+auto up::Project::loadFromFile(zstring_view filename) -> box<Project> {
     string docText;
-    auto stream = fileSystem.openRead(filename);
+    auto stream = FileSystem::openRead(filename);
     if (auto rs = readText(stream, docText); rs != IOResult::Success) {
         return nullptr;
     }

@@ -8,7 +8,6 @@
 #include "potato/tools/file_hash_cache.h"
 #include "potato/tools/importer.h"
 #include "potato/tools/importer_factory.h"
-#include "potato/runtime/filesystem.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
@@ -53,7 +52,6 @@ namespace up::recon {
         vector<Mapping> _importers;
         vector<string> _outputs;
         ReconConfig _config;
-        box<FileSystem> _fileSystem;
         AssetLibrary _library;
         FileHashCache _hashes;
         Logger _logger;

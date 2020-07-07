@@ -10,6 +10,8 @@
 #include "potato/spud/hash.h"
 #include "potato/spud/hash_fnv1a.h"
 
+up::ResourceLoader::ResourceLoader() = default;
+
 up::ResourceLoader::~ResourceLoader() = default;
 
 auto up::ResourceLoader::assetPath(ResourceId id) const -> string {
@@ -54,7 +56,7 @@ auto up::ResourceLoader::_openFile(zstring_view filename) const -> Stream {
         return {};
     }
 
-    return _fileSystem->openRead(filename);
+    return FileSystem::openRead(filename);
 }
 
 auto up::ResourceLoader::openAsset(ResourceId id) const -> Stream { return _openFile(assetPath(id)); }

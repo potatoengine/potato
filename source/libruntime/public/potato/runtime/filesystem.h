@@ -13,9 +13,9 @@ namespace up {
     class Stream;
 
     class FileSystem {
-    public:
         FileSystem() = default;
 
+    public:
         FileSystem(FileSystem const&) = delete;
         FileSystem& operator=(FileSystem const&) = delete;
 

@@ -7,11 +7,9 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up {
-    class FileSystem;
-
     class Project {
     public:
-        [[nodiscard]] UP_TOOLS_API static box<Project> loadFromFile(FileSystem& fileSystem, zstring_view filename);
+        [[nodiscard]] UP_TOOLS_API static box<Project> loadFromFile(zstring_view filename);
 
         auto targetPath() noexcept -> zstring_view { return _targetPath; }
 

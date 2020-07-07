@@ -17,9 +17,8 @@ namespace up::shell {
     public:
         using OnFileSelected = delegate<void(zstring_view name)>;
 
-        explicit FileTreeEditor(FileSystem& fileSystem, string path, OnFileSelected onFileSelected)
+        explicit FileTreeEditor(string path, OnFileSelected onFileSelected)
             : Editor("FileTreeEditor"_zsv)
-            , _fileSystem(fileSystem)
             , _onFileSelected(std::move(onFileSelected))
             , _path(std::move(path)) {}
 
@@ -41,14 +40,13 @@ namespace up::shell {
         void _enumerateFiles();
         void _handleFileClick(zstring_view name);
 
-        FileSystem& _fileSystem;
         OnFileSelected _onFileSelected;
         string _path = "resources";
         vector<Entry> _cache;
     };
 
-    auto createFileTreeEditor(FileSystem& fileSystem, string path, FileTreeEditor::OnFileSelected onFileSelected) -> box<Editor> {
-        return new_box<FileTreeEditor>(fileSystem, std::move(path), std::move(onFileSelected));
+    auto createFileTreeEditor(string path, FileTreeEditor::OnFileSelected onFileSelected) -> box<Editor> {
+        return new_box<FileTreeEditor>(std::move(path), std::move(onFileSelected));
     }
 
     void FileTreeEditor::renderContent(Renderer& renderer) {
@@ -108,7 +106,7 @@ namespace up::shell {
     }
 
     void FileTreeEditor::_enumerateFiles() {
-        _fileSystem.enumerate(_path, [this](EnumerateItem const& item) -> EnumerateResult {
+        FileSystem::enumerate(_path, [this](EnumerateItem const& item) -> EnumerateResult {
             _cache.push_back({path::filename(item.info.path), item.info.size, item.depth, item.info.type == FileType::Directory});
             return item.info.type == FileType::Directory ? EnumerateResult::Recurse : EnumerateResult::Continue;
         });

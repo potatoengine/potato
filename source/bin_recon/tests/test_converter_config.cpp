@@ -14,10 +14,9 @@ DOCTEST_TEST_SUITE("[potato][recon] ReconConfig") {
     DOCTEST_TEST_CASE("args") {
         ReconConfig config;
         char const* args[] = {"/bin/test/", "-source", "ABC"};
-        FileSystem fs;
         Logger logger("test");
 
-        bool ok = parseArguments(config, args, fs, logger);
+        bool ok = parseArguments(config, args, logger);
         DOCTEST_CHECK(ok);
 
         DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");

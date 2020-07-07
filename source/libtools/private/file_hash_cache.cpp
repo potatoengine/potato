@@ -2,6 +2,7 @@
 
 #include "file_hash_cache.h"
 
+#include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/hash_fnv1a.h"
@@ -28,7 +29,7 @@ auto up::FileHashCache::hashAssetStream(Stream& stream) -> up::uint64 {
 
 auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
     FileStat stat;
-    auto rs = _fileSystem.fileStat(path, stat);
+    auto rs = FileSystem::fileStat(path, stat);
     if (rs != IOResult::Success) {
         return 0;
     }
@@ -40,7 +41,7 @@ auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
         }
     }
 
-    auto fstream = _fileSystem.openRead(path);
+    auto fstream = FileSystem::openRead(path);
     auto hash = hashAssetStream(fstream);
 
     // update the hash
