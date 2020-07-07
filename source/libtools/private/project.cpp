@@ -11,7 +11,7 @@
 
 auto up::Project::loadFromFile(zstring_view filename) -> box<Project> {
     string docText;
-    auto stream = FileSystem::openRead(filename);
+    auto stream = fs::openRead(filename);
     if (auto rs = readText(stream, docText); rs != IOResult::Success) {
         return nullptr;
     }

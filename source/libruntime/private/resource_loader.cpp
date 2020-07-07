@@ -56,7 +56,7 @@ auto up::ResourceLoader::_openFile(zstring_view filename) const -> Stream {
         return {};
     }
 
-    return FileSystem::openRead(filename);
+    return fs::openRead(filename);
 }
 
 auto up::ResourceLoader::openAsset(ResourceId id) const -> Stream { return _openFile(assetPath(id)); }

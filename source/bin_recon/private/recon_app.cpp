@@ -22,7 +22,7 @@ up::recon::ReconApp::~ReconApp() = default;
 
 bool up::recon::ReconApp::run(span<char const*> args) {
     zstring_view const configFile = "recon.config.json";
-    if (FileSystem::fileExists(configFile)) {
+    if (fs::fileExists(configFile)) {
         _logger.info("Loading config file `{}'", configFile);
         parseConfigFile(_config, configFile, _logger);
     }
@@ -33,7 +33,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     }
 
     _libraryPath = path::join(_config.sourceFolderPath, ".library");
-    if (auto const rs = FileSystem::createDirectories(_libraryPath); rs != IOResult::Success) {
+    if (auto const rs = fs::createDirectories(_libraryPath); rs != IOResult::Success) {
         _logger.error("Failed to create library folder `{}`: {}", _libraryPath, rs);
         return false;
     }
@@ -43,8 +43,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     _registerImporters();
 
     auto libraryPath = path::join(_libraryPath, "assets.json");
-    if (FileSystem::fileExists(libraryPath.c_str())) {
-        auto libraryReadStream = FileSystem::openRead(libraryPath.c_str(), FileOpenMode::Text);
+    if (fs::fileExists(libraryPath.c_str())) {
+        auto libraryReadStream = fs::openRead(libraryPath.c_str(), FileOpenMode::Text);
         if (!libraryReadStream) {
             _logger.error("Failed to open asset library `{}'", libraryPath);
         }
@@ -55,8 +55,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     }
 
     auto hashCachePath = path::join(_libraryPath, "hashes.json");
-    if (FileSystem::fileExists(hashCachePath.c_str())) {
-        auto hashesReadStream = FileSystem::openRead(hashCachePath.c_str(), FileOpenMode::Text);
+    if (fs::fileExists(hashCachePath.c_str())) {
+        auto hashesReadStream = fs::openRead(hashCachePath.c_str(), FileOpenMode::Text);
         if (!hashesReadStream) {
             _logger.error("Failed to open hash cache `{}'", hashCachePath);
         }
@@ -86,14 +86,14 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.error("Import failed");
     }
 
-    auto hashesWriteStream = FileSystem::openWrite(hashCachePath.c_str(), FileOpenMode::Text);
+    auto hashesWriteStream = fs::openWrite(hashCachePath.c_str(), FileOpenMode::Text);
     if (!_hashes.serialize(hashesWriteStream)) {
         _logger.error("Failed to write hash cache `{}'", hashCachePath);
         return false;
     }
     hashesWriteStream.close();
 
-    auto libraryWriteStream = FileSystem::openWrite(libraryPath.c_str(), FileOpenMode::Text);
+    auto libraryWriteStream = fs::openWrite(libraryPath.c_str(), FileOpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
         _logger.error("Failed to write asset library `{}'", libraryPath);
         return false;
@@ -101,7 +101,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     libraryWriteStream.close();
 
     auto manifestPath = path::join(_libraryPath, "manifest.txt");
-    auto manifestFile = FileSystem::openWrite(manifestPath.c_str(), FileOpenMode::Text);
+    auto manifestFile = fs::openWrite(manifestPath.c_str(), FileOpenMode::Text);
     if (!manifestFile) {
         _logger.error("Failed to open manifest `{}'", manifestPath);
         return false;
@@ -184,8 +184,8 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             auto casOsPath = path::join(_libraryPath, "cache", casPath);
             string casOsFolder = path::parent(casOsPath);
 
-            FileSystem::createDirectories(casOsFolder);
-            FileSystem::moveFileTo(outputOsPath, casOsPath);
+            fs::createDirectories(casOsFolder);
+            fs::moveFileTo(outputOsPath, casOsPath);
 
             logicalAssetName.clear();
             format_append(logicalAssetName, "{}{}{}", newRecord.sourcePath, output.logicalAsset.empty() ? "" : ":", output.logicalAsset);
@@ -242,7 +242,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
     MetaFile metaFile;
     bool dirty = false;
 
-    if (Stream stream = FileSystem::openRead(metaFileOsPath, FileOpenMode::Text); stream) {
+    if (Stream stream = fs::openRead(metaFileOsPath, FileOpenMode::Text); stream) {
         auto [result, jsonText] = readText(stream);
         if (result == IOResult::Success) {
             if (!metaFile.parseJson(jsonText)) {
@@ -280,7 +280,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
 
         string jsonText = metaFile.toJson();
 
-        auto stream = FileSystem::openWrite(metaFileOsPath, FileOpenMode::Text);
+        auto stream = fs::openWrite(metaFileOsPath, FileOpenMode::Text);
         if (!stream || writeAllText(stream, jsonText) != IOResult::Success) {
             _logger.error("Failed to write meta file for {}", metaFilePath);
             return false;
@@ -294,7 +294,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
 }
 
 auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
-    if (!FileSystem::directoryExists(_config.sourceFolderPath.c_str())) {
+    if (!fs::directoryExists(_config.sourceFolderPath.c_str())) {
         _logger.error("`{}' does not exist or is not a directory", _config.sourceFolderPath);
         return {};
     }
@@ -320,6 +320,6 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
         return EnumerateResult::Recurse;
     };
 
-    FileSystem::enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
+    fs::enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
     return files;
 };

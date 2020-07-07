@@ -29,7 +29,7 @@ auto up::FileHashCache::hashAssetStream(Stream& stream) -> up::uint64 {
 
 auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
     FileStat stat;
-    auto rs = FileSystem::fileStat(path, stat);
+    auto rs = fs::fileStat(path, stat);
     if (rs != IOResult::Success) {
         return 0;
     }
@@ -41,7 +41,7 @@ auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
         }
     }
 
-    auto fstream = FileSystem::openRead(path);
+    auto fstream = fs::openRead(path);
     auto hash = hashAssetStream(fstream);
 
     // update the hash

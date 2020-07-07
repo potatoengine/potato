@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <set>
 
-up::recon::ConverterApp::ConverterApp() : _programName("recon"), _fileSystem(new_box<FileSystem>()), _hashes(*_fileSystem), _logger("recon") {}
+up::recon::ConverterApp::ConverterApp() : _programName("recon"), _fileSystem(new_box<fs>()), _hashes(*_fileSystem), _logger("recon") {}
 
 up::recon::ConverterApp::~ConverterApp() = default;
 

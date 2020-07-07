@@ -71,7 +71,7 @@ up::shell::ShellApp::~ShellApp() {
 
 int up::shell::ShellApp::initialize() {
     zstring_view configPath = "shell.config.json";
-    if (FileSystem::fileExists(configPath)) {
+    if (fs::fileExists(configPath)) {
         _loadConfig(configPath);
     }
 
@@ -83,7 +83,7 @@ int up::shell::ShellApp::initialize() {
     _resourceLoader.setCasPath(path::join(_editorResourcePath, ".library", "cache"));
 
     string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
-    if (Stream manifestFile = FileSystem::openRead(manifestPath, FileOpenMode::Text)) {
+    if (Stream manifestFile = fs::openRead(manifestPath, FileOpenMode::Text)) {
         string manifestText;
         if (readText(manifestFile, manifestText) != IOResult{}) {
             _errorDialog("Failed to load resource manifest");
@@ -100,7 +100,7 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    FileSystem::currentWorkingDirectory(_editorResourcePath);
+    fs::currentWorkingDirectory(_editorResourcePath);
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -163,14 +163,14 @@ int up::shell::ShellApp::initialize() {
     }
 
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
-    auto fontStream = FileSystem::openRead("fonts/roboto/Roboto-Regular.ttf");
+    auto fontStream = fs::openRead("fonts/roboto/Roboto-Regular.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open Roboto-Regular font");
         return 1;
     }
     _drawImgui.loadFont(std::move(fontStream));
 
-    fontStream = FileSystem::openRead("fonts/fontawesome5/fa-solid-900.ttf");
+    fontStream = fs::openRead("fonts/fontawesome5/fa-solid-900.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open FontAwesome font");
         return 1;
@@ -216,7 +216,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
 
     _projectName = path::filebasename(path);
 
-    FileSystem::currentWorkingDirectory(_project->targetPath());
+    fs::currentWorkingDirectory(_project->targetPath());
 
     _editors.clear();
     _editors.push_back(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
@@ -474,7 +474,7 @@ void up::shell::ShellApp::_errorDialog(zstring_view message) {
 }
 
 bool up::shell::ShellApp::_loadConfig(zstring_view path) {
-    auto stream = FileSystem::openRead(path, FileOpenMode::Text);
+    auto stream = fs::openRead(path, FileOpenMode::Text);
     if (!stream) {
         _logger.error("Failed to open `{}'", path.c_str());
         return false;

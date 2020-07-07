@@ -13,7 +13,7 @@ namespace up {
     class Stream;
 } // namespace up
 
-namespace up::FileSystem {
+namespace up::fs {
     UP_RUNTIME_API bool fileExists(zstring_view path) noexcept;
     UP_RUNTIME_API bool directoryExists(zstring_view path) noexcept;
 
@@ -34,4 +34,4 @@ namespace up::FileSystem {
 
     UP_RUNTIME_API IOResult copyFileTo(zstring_view fromPath, zstring_view toPath);
     UP_RUNTIME_API IOResult moveFileTo(zstring_view fromPath, zstring_view toPath);
-} // namespace up::FileSystem
+} // namespace up::fs

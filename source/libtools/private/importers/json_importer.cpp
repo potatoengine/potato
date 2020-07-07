@@ -20,8 +20,8 @@ bool up::JsonImporter::import(ImporterContext& ctx) {
 
     string destParentAbsolutePath(path::parent(destAbsolutePath));
 
-    if (!FileSystem::directoryExists(destParentAbsolutePath.c_str())) {
-        if (FileSystem::createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
+    if (!fs::directoryExists(destParentAbsolutePath.c_str())) {
+        if (fs::createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }

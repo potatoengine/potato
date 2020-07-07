@@ -27,14 +27,14 @@ bool up::ModelImporter::import(ImporterContext& ctx) {
 
     string destParentAbsolutePath(path::parent(string_view(destAbsolutePath)));
 
-    if (!FileSystem::directoryExists(destParentAbsolutePath.c_str())) {
-        if (FileSystem::createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
+    if (!fs::directoryExists(destParentAbsolutePath.c_str())) {
+        if (fs::createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }
 
-    auto file = FileSystem::openRead(sourceAbsolutePath);
+    auto file = fs::openRead(sourceAbsolutePath);
 
     vector<byte> contents;
     if (readBinary(file, contents) != IOResult::Success) {
@@ -106,7 +106,7 @@ bool up::ModelImporter::import(ImporterContext& ctx) {
 
     builder.Finish(flatModel);
 
-    file = FileSystem::openWrite(destAbsolutePath);
+    file = fs::openWrite(destAbsolutePath);
     file.write(span{reinterpret_cast<byte const*>(builder.GetBufferPointer()), builder.GetSize()});
     file.close();
 

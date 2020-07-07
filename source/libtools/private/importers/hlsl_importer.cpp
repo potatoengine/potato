@@ -29,7 +29,7 @@ namespace {
             auto relPath = absolutePath.substr(_ctx.sourceFolderPath().size() + 1);
             _ctx.addSourceDependency(relPath.data());
 
-            auto stream = up::FileSystem::openRead(absolutePath.c_str(), up::FileOpenMode::Text);
+            auto stream = up::fs::openRead(absolutePath.c_str(), up::FileOpenMode::Text);
             if (!stream) {
                 return E_FAIL;
             }
@@ -64,7 +64,7 @@ bool up::HlslImporter::import(ImporterContext& ctx) {
 #if defined(UP_GPU_ENABLE_D3D11)
     auto absoluteSourcePath = path::join(string_view(ctx.sourceFolderPath()), ctx.sourceFilePath());
 
-    auto stream = FileSystem::openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
+    auto stream = fs::openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
     if (!stream) {
         return false;
     }
@@ -129,14 +129,14 @@ bool up::HlslImporter::_compile(ImporterContext& ctx,
 
     string destParentAbsolutePath(path::parent(destAbsolutePath));
 
-    if (!FileSystem::directoryExists(destParentAbsolutePath.c_str())) {
-        if (FileSystem::createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
+    if (!fs::directoryExists(destParentAbsolutePath.c_str())) {
+        if (fs::createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }
 
-    auto compiledOutput = FileSystem::openWrite(destAbsolutePath.c_str(), up::FileOpenMode::Binary);
+    auto compiledOutput = fs::openWrite(destAbsolutePath.c_str(), up::FileOpenMode::Binary);
     if (!compiledOutput.isOpen()) {
         ctx.logger().error("Cannot write `{}'", destAbsolutePath);
         return false;
