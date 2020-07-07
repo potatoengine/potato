@@ -13,7 +13,9 @@ namespace up {
         auto first = begin(range);
         auto last = end(range);
 
-        auto comparer = [&](auto const& lhs, auto const& rhs) { return compare(project(projection, lhs), project(projection, rhs)); };
+        auto comparer = [&](auto const& lhs, auto const& rhs) {
+            return compare(project(projection, lhs), project(projection, rhs));
+        };
 
         std::sort(first, last, comparer);
     }

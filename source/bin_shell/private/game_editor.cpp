@@ -22,7 +22,10 @@
 namespace up::shell {
     class GameEditor : public Editor {
     public:
-        explicit GameEditor(rc<Scene> scene) : Editor("GameEditor"_zsv), _scene(std::move(scene)), _cameraController(_camera) {
+        explicit GameEditor(rc<Scene> scene)
+            : Editor("GameEditor"_zsv)
+            , _scene(std::move(scene))
+            , _cameraController(_camera) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
 
@@ -73,9 +76,13 @@ namespace up::shell {
             relMotion.y = io.MouseDelta.y / io.DisplaySize.y;
             relMotion.z = io.MouseWheel > 0.f ? 1.f : io.MouseWheel < 0 ? -1.f : 0.f;
 
-            relMove = {static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_D)) - static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_A)),
-                static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_SPACE)) - static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_C)),
-                static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_W)) - static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_S))};
+            relMove = {
+                static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_D)) -
+                    static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_A)),
+                static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_SPACE)) -
+                    static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_C)),
+                static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_W)) -
+                    static_cast<int>(ImGui::IsKeyPressed(SDL_SCANCODE_S))};
 
             _cameraController.apply(_camera, relMove, relMotion, io.DeltaTime);
         }
@@ -116,7 +123,8 @@ namespace up::shell {
     void GameEditor::renderMenu() {
         if (ImGui::BeginMenuBar()) {
             auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
-            auto const xPos = ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
+            auto const xPos = ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f -
+                ImGui::GetStyle().ItemInnerSpacing.x;
             ImGui::SetCursorPosX(xPos);
             if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
                 _scene->playing(!_scene->playing());

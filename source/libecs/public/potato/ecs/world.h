@@ -41,7 +41,8 @@ namespace up {
 
         /// Creates a new Entity with the provided list of Component data
         ///
-        template <typename... Components> EntityId createEntity(Components const&... components) noexcept;
+        template <typename... Components>
+        EntityId createEntity(Components const&... components) noexcept;
 
         /// Deletes an existing Entity
         ///
@@ -51,7 +52,8 @@ namespace up {
         ///
         /// Changes the Entity's Archetype and home Chunk
         ///
-        template <typename Component> void addComponent(EntityId entityId, Component const& component) noexcept;
+        template <typename Component>
+        void addComponent(EntityId entityId, Component const& component) noexcept;
 
         /// @brief Add a default-constructed component to an existing entity.
         /// @param entity The entity to add the componet to.
@@ -67,7 +69,8 @@ namespace up {
         /// @brief Removes a component from an entity.
         /// @tparam Component Component type to remove.
         /// @param entityId Entity to modify.
-        template <typename Component> void removeComponent(EntityId entityId) noexcept {
+        template <typename Component>
+        void removeComponent(EntityId entityId) noexcept {
             ComponentMeta const* const meta = _context->findComponentByType<Component>();
             return removeComponent(entityId, meta->id);
         }
@@ -78,7 +81,8 @@ namespace up {
         /// and searches. This should only be used by tools and debug aids, typically,
         /// and a Query should be used for runtime code.
         ///
-        template <typename Component> Component* getComponentSlow(EntityId entity) noexcept;
+        template <typename Component>
+        Component* getComponentSlow(EntityId entity) noexcept;
 
         /// Retrieves a pointer to a Component on the specified Entity.
         ///
@@ -94,7 +98,11 @@ namespace up {
                 auto const layout = _context->layoutOf(archetype);
                 Chunk* const chunk = _getChunk(archetype, chunkIndex);
                 for (LayoutRow const& row : layout) {
-                    callback(entity, archetype, row.meta, static_cast<void*>(chunk->payload + row.offset + row.width * index));
+                    callback(
+                        entity,
+                        archetype,
+                        row.meta,
+                        static_cast<void*>(chunk->payload + row.offset + row.width * index));
                 }
                 return true;
             }
@@ -123,7 +131,10 @@ namespace up {
         static constexpr uint64 freeEntityIndex = ~0ULL;
 
         UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
-        UP_ECS_API void _addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept;
+        UP_ECS_API void _addComponentRaw(
+            EntityId entityId,
+            ComponentMeta const& componentMeta,
+            void const* componentData) noexcept;
         void _deleteEntityData(ArchetypeId archetypeId, uint16 chunkIndex, uint16 index) noexcept;
 
         auto _allocateEntitySpace(ArchetypeId archetype) -> AllocatedLocation;
@@ -133,9 +144,20 @@ namespace up {
         UP_ECS_API auto _parseEntityId(EntityId entity) const noexcept -> EntityLocation;
         void _remapEntityId(EntityId entity, ArchetypeId newArchetype, uint16 newChunk, uint16 newIndex) noexcept;
 
-        void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex);
+        void _moveTo(
+            ArchetypeId destArch,
+            Chunk& destChunk,
+            int destIndex,
+            ArchetypeId srcArch,
+            Chunk& srcChunk,
+            int srcIndex);
         void _moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex);
-        void _copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData);
+        void _copyTo(
+            ArchetypeId destArch,
+            Chunk& destChunk,
+            int destIndex,
+            ComponentId srcComponent,
+            void const* srcData);
         void _constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component);
         void _destroyAt(ArchetypeId arch, Chunk& chunk, int index);
 
@@ -150,14 +172,16 @@ namespace up {
         rc<EcsSharedContext> _context;
     };
 
-    template <typename... Components> EntityId World::createEntity(Components const&... components) noexcept {
+    template <typename... Components>
+    EntityId World::createEntity(Components const&... components) noexcept {
         ComponentMeta const* const componentMetas[] = {_context->findComponentByType<Components>()...};
         void const* const componentData[] = {&components...};
 
         return _createEntityRaw(componentMetas, componentData);
     }
 
-    template <typename Component> Component* World::getComponentSlow(EntityId entity) noexcept {
+    template <typename Component>
+    Component* World::getComponentSlow(EntityId entity) noexcept {
         auto meta = _context->findComponentByType<Component>();
         if (meta == nullptr) {
             return nullptr;
@@ -165,7 +189,8 @@ namespace up {
         return static_cast<Component*>(getComponentSlowUnsafe(entity, meta->id));
     }
 
-    template <typename Component> void World::addComponent(EntityId entityId, Component const& component) noexcept {
+    template <typename Component>
+    void World::addComponent(EntityId entityId, Component const& component) noexcept {
         ComponentMeta const* const meta = _context->findComponentByType<Component>();
         _addComponentRaw(entityId, *meta, &component);
     }

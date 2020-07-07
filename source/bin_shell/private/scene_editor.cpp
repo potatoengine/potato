@@ -67,8 +67,10 @@ namespace up::shell {
         bool _enableGrid = true;
     };
 
-    auto createSceneEditor(rc<Scene> scene, SceneEditor::EnumerateComponents components, SceneEditor::HandlePlayClicked onPlayClicked)
-        -> box<Editor> {
+    auto createSceneEditor(
+        rc<Scene> scene,
+        SceneEditor::EnumerateComponents components,
+        SceneEditor::HandlePlayClicked onPlayClicked) -> box<Editor> {
         return new_box<SceneEditor>(std::move(scene), std::move(components), std::move(onPlayClicked));
     }
 
@@ -120,7 +122,8 @@ namespace up::shell {
 
         auto const id = ImGui::GetID("SceneControl");
         ImGui::ItemAdd(area, id);
-        ImGui::ButtonBehavior(area,
+        ImGui::ButtonBehavior(
+            area,
             id,
             nullptr,
             nullptr,
@@ -175,7 +178,8 @@ namespace up::shell {
     auto SceneEditor::buildDockSpace(ImGuiID dockId) -> ImGuiID {
         auto contentNodeId = ImGui::DockBuilderAddNode(dockId, ImGuiDockNodeFlags_HiddenTabBar);
         auto inspectedNodeId = ImGui::DockBuilderSplitNode(dockId, ImGuiDir_Right, 0.25f, nullptr, &contentNodeId);
-        auto const hierarchyNodeId = ImGui::DockBuilderSplitNode(inspectedNodeId, ImGuiDir_Down, 0.65f, nullptr, &inspectedNodeId);
+        auto const hierarchyNodeId =
+            ImGui::DockBuilderSplitNode(inspectedNodeId, ImGuiDir_Down, 0.65f, nullptr, &inspectedNodeId);
 
         ImGui::DockBuilderDockWindow("Inspector##SceneInspector", inspectedNodeId);
         ImGui::DockBuilderDockWindow("Hierarchy##SceneEditor", hierarchyNodeId);
@@ -252,7 +256,8 @@ namespace up::shell {
         ComponentId deletedComponent = ComponentId::Unknown;
 
         if (_scene != nullptr) {
-            _scene->world().interrogateEntityUnsafe(_selection.selected(),
+            _scene->world().interrogateEntityUnsafe(
+                _selection.selected(),
                 [&](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
                     if (ImGui::TreeNodeEx(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
                         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {

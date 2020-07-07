@@ -19,21 +19,33 @@ enum class custom_enum { foo, bar };
 
 class custom_type {};
 
-template <typename Writer> void format_value(Writer& writer, custom_enum value) noexcept {
+template <typename Writer>
+void format_value(Writer& writer, custom_enum value) noexcept {
     switch (value) {
-    case custom_enum::foo: format_value_to(writer, "foo"); return;
-    case custom_enum::bar: format_value_to(writer, "bar"); return;
+        case custom_enum::foo:
+            format_value_to(writer, "foo");
+            return;
+        case custom_enum::bar:
+            format_value_to(writer, "bar");
+            return;
     }
 }
 // static_assert(up::formattable<custom_enum>);
 
-template <typename Writer> void format_value(Writer& writer, custom_type) noexcept { format_value_to(writer, "custom"); }
+template <typename Writer>
+void format_value(Writer& writer, custom_type) noexcept {
+    format_value_to(writer, "custom");
+}
 // static_assert(up::formattable<custom_type>);
 
-template <typename Writer> void format_value(Writer& writer, custom_type const*) noexcept { format_value_to(writer, "custom pointer"); }
+template <typename Writer>
+void format_value(Writer& writer, custom_type const*) noexcept {
+    format_value_to(writer, "custom pointer");
+}
 // static_assert(up::formattable<custom_type const*>);
 
-template <typename T> std::string format_as_string(T const& value) {
+template <typename T>
+std::string format_as_string(T const& value) {
     std::string result;
     up::append_writer writer(result);
     up::format_value_to(writer, value, {});
@@ -59,7 +71,9 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("-128", format_as<std::string>("{}", std::numeric_limits<std::int8_t>::min()));
         DOCTEST_CHECK_EQ("-32768", format_as<std::string>("{}", std::numeric_limits<std::int16_t>::min()));
         DOCTEST_CHECK_EQ("-2147483648", format_as<std::string>("{}", std::numeric_limits<std::int32_t>::min()));
-        DOCTEST_CHECK_EQ("-9223372036854775808", format_as<std::string>("{}", std::numeric_limits<std::int64_t>::min()));
+        DOCTEST_CHECK_EQ(
+            "-9223372036854775808",
+            format_as<std::string>("{}", std::numeric_limits<std::int64_t>::min()));
 
         DOCTEST_CHECK_EQ("0", format_as<std::string>("{:x}", 0));
         DOCTEST_CHECK_EQ("ff", format_as<std::string>("{:x}", 255));
@@ -90,7 +104,9 @@ DOCTEST_TEST_CASE("format") {
         DOCTEST_CHECK_EQ("012.34", format_as<std::string>("{:06.2}", 12.34));
 
         // assumes IEEE754 single- and double-precision types
-        DOCTEST_CHECK_EQ("340282346638528859811704183484516925440.000000", format_as<std::string>("{}", std::numeric_limits<float>::max()));
+        DOCTEST_CHECK_EQ(
+            "340282346638528859811704183484516925440.000000",
+            format_as<std::string>("{}", std::numeric_limits<float>::max()));
         DOCTEST_CHECK_EQ(
             "17976931348623157081452742373170435679807056752584499659891747680315"
             "72607800285387605895586327668781715404589535143824642343213268894641827684675"

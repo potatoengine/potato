@@ -31,7 +31,8 @@ namespace up {
         int guidelineSpacing = 10;
     };
 
-    UP_RENDER_API void UP_VECTORCALL drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color = {1, 0, 0, 1}, float lingerSeconds = 0.f);
+    UP_RENDER_API void UP_VECTORCALL
+    drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color = {1, 0, 0, 1}, float lingerSeconds = 0.f);
     UP_RENDER_API void UP_VECTORCALL drawDebugGrid(DebugDrawGrid const& grid);
 
     UP_RENDER_API void dumpDebugDraw(delegate_ref<void(view<DebugDrawVertex>)> callback);

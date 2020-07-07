@@ -5,7 +5,8 @@
 #include "concepts.h"
 
 namespace up {
-    template <typename ValueT, enumeration StatusT, StatusT Success = StatusT{}> struct Result {
+    template <typename ValueT, enumeration StatusT, StatusT Success = StatusT{}>
+    struct Result {
         StatusT status = StatusT{};
         ValueT value = ValueT{};
 

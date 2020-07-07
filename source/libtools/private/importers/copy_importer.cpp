@@ -29,7 +29,8 @@ bool up::CopyImporter::import(ImporterContext& ctx) {
 
     auto rs = fs::copyFileTo(sourceAbsolutePath.c_str(), destAbsolutePath.c_str());
     if (rs != IOResult::Success) {
-        ctx.logger().error("Failed to copy `{}' to `{}': {}", sourceAbsolutePath, destAbsolutePath, static_cast<uint64>(rs));
+        ctx.logger()
+            .error("Failed to copy `{}' to `{}': {}", sourceAbsolutePath, destAbsolutePath, static_cast<uint64>(rs));
         return false;
     }
 

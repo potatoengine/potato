@@ -19,8 +19,10 @@ namespace up {
             bool canSeek() const noexcept override { return true; }
 
             IOResult seek(Stream::Seek position, Stream::difference_type offset) override {
-                _stream.seekg(offset,
-                    position == Stream::Seek::Begin ? std::ios::beg : position == Stream::Seek::End ? std::ios::end : std::ios::cur);
+                _stream.seekg(
+                    offset,
+                    position == Stream::Seek::Begin ? std::ios::beg
+                                                    : position == Stream::Seek::End ? std::ios::end : std::ios::cur);
                 return IOResult::Success;
             }
             Stream::difference_type tell() const override { return _stream.tellg(); }
@@ -62,7 +64,9 @@ namespace up {
             bool canWrite() const noexcept override { return true; }
             bool canSeek() const noexcept override { return false; }
 
-            IOResult seek(Stream::Seek position, Stream::difference_type offset) override { return IOResult::UnsupportedOperation; }
+            IOResult seek(Stream::Seek position, Stream::difference_type offset) override {
+                return IOResult::UnsupportedOperation;
+            }
             Stream::difference_type tell() const noexcept override { return 0; }
             Stream::difference_type remaining() const noexcept override { return 0; }
 
@@ -84,7 +88,9 @@ namespace up {
 } // namespace up
 
 auto up::fs::openRead(zstring_view path, OpenMode mode) -> Stream {
-    std::ifstream nativeStream(path.c_str(), mode == OpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{});
+    std::ifstream nativeStream(
+        path.c_str(),
+        mode == OpenMode::Binary ? std::ios_base::binary : std::ios_base::openmode{});
     if (!nativeStream) {
         return nullptr;
     }
@@ -92,8 +98,10 @@ auto up::fs::openRead(zstring_view path, OpenMode mode) -> Stream {
 }
 
 auto up::fs::openWrite(zstring_view path, OpenMode mode) -> Stream {
-    std::ofstream nativeStream(path.c_str(),
-        mode == OpenMode::Binary ? std::ios_base::out | std::ios_base::trunc | std::ios_base::binary : std::ios_base::trunc | std::ios_base::out);
+    std::ofstream nativeStream(
+        path.c_str(),
+        mode == OpenMode::Binary ? std::ios_base::out | std::ios_base::trunc | std::ios_base::binary
+                                 : std::ios_base::trunc | std::ios_base::out);
     if (!nativeStream) {
         return nullptr;
     }
@@ -125,12 +133,14 @@ bool up::fs::directoryExists(zstring_view path) noexcept {
 auto up::fs::fileStat(zstring_view path) -> IOReturn<Stat> {
     std::error_code ec;
     size_t const size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
-    uint64 const mtime = std::chrono::duration_cast<std::chrono::microseconds>(
-        std::filesystem::last_write_time(std::string_view(path.c_str(), path.size()), ec).time_since_epoch())
-                             .count();
+    uint64 const mtime =
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            std::filesystem::last_write_time(std::string_view(path.c_str(), path.size()), ec).time_since_epoch())
+            .count();
     auto const status = std::filesystem::status(std::string_view(path.c_str(), path.size()), ec);
-    FileType const type = status.type() == std::filesystem::file_type::regular ? FileType::Regular
-                                                                               : status.type() == std::filesystem::file_type::directory
+    FileType const type = status.type() == std::filesystem::file_type::regular
+        ? FileType::Regular
+        : status.type() == std::filesystem::file_type::directory
             ? FileType::Directory
             : status.type() == std::filesystem::file_type::symlink ? FileType::SymbolicLink : FileType::Other;
     return {errorCodeToResult(ec), {size, mtime, type}};
@@ -148,7 +158,8 @@ auto up::fs::enumerate(zstring_view path, EnumerateCallback cb) -> EnumerateResu
         zstring_view const path = genPath.c_str();
         FileType const type = iter->is_regular_file()
             ? FileType::Regular
-            : iter->is_directory() ? FileType::Directory : iter->is_symlink() ? FileType::SymbolicLink : FileType::Other;
+            : iter->is_directory() ? FileType::Directory
+                                   : iter->is_symlink() ? FileType::SymbolicLink : FileType::Other;
         size_t const size = type == FileType::Regular ? iter->file_size() : 0;
 
         auto result = cb({path, size, type}, iter.depth());

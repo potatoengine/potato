@@ -17,7 +17,8 @@ namespace up {
         uint64 revision() const noexcept override { return 9; }
 
     private:
-        bool _compile(ImporterContext& ctx,
+        bool _compile(
+            ImporterContext& ctx,
             zstring_view absoluteSourcePath,
             string_view logicalName,
             string_view source,

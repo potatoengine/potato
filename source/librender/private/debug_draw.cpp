@@ -18,7 +18,8 @@ static void UP_VECTORCALL _drawDebugLine(glm::vec3 start, glm::vec3 end, glm::ve
     debugVertices.push_back({end, color, lingerSeconds});
 }
 
-static void UP_VECTORCALL _drawDebugRay(glm::vec3 start, glm::vec3 direction, float length, glm::vec4 color, float lingerSeconds = 0) {
+static void UP_VECTORCALL
+_drawDebugRay(glm::vec3 start, glm::vec3 direction, float length, glm::vec4 color, float lingerSeconds = 0) {
     debugVertices.push_back({start, color, lingerSeconds});
     debugVertices.push_back({start + direction * length, color, lingerSeconds});
 }

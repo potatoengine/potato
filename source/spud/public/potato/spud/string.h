@@ -17,7 +17,8 @@
 namespace up {
     class string;
 
-    template <typename HashAlgorithm> inline void hash_append(HashAlgorithm& hasher, string const& string);
+    template <typename HashAlgorithm>
+    inline void hash_append(HashAlgorithm& hasher, string const& string);
 
     inline string operator"" _s(char const* str, size_t size);
 } // namespace up
@@ -42,7 +43,9 @@ public:
         rhs._data = nullptr;
         rhs._size = 0;
     }
-    /*implicit*/ string(const_pointer zstr) : _size(zstr != nullptr ? stringLength(zstr) : 0) { _data = _copy(zstr, _size); }
+    /*implicit*/ string(const_pointer zstr) : _size(zstr != nullptr ? stringLength(zstr) : 0) {
+        _data = _copy(zstr, _size);
+    }
     /*implicit*/ string(const_pointer data, size_type size) : _data(_copy(data, size)), _size(size) {}
     /*implicit*/ string(zstring_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
     /*implicit*/ string(string_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
@@ -228,8 +231,11 @@ private:
     size_type _size = 0;
 };
 
-template <typename HashAlgorithm> void up::hash_append(HashAlgorithm& hasher, string const& string) {
+template <typename HashAlgorithm>
+void up::hash_append(HashAlgorithm& hasher, string const& string) {
     hasher.append_bytes(string.data(), string.size());
 }
 
-inline auto up::operator"" _s(char const* str, size_t size) -> string { return string{str, size}; }
+inline auto up::operator"" _s(char const* str, size_t size) -> string {
+    return string{str, size};
+}

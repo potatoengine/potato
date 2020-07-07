@@ -17,7 +17,11 @@ namespace up::_detail {
         string_view spec_string;
     };
 
-    constexpr format_impl_inner_result format_impl_inner(char const*& begin, char const* const end, char const*& iter, unsigned next_index) noexcept {
+    constexpr format_impl_inner_result format_impl_inner(
+        char const*& begin,
+        char const* const end,
+        char const*& iter,
+        unsigned next_index) noexcept {
         // determine which argument we're going to format
         unsigned index = next_index;
         char const* const start = iter;
@@ -56,7 +60,8 @@ namespace up::_detail {
         return {format_result::success, index, spec_string};
     }
 
-    template <format_writable Writer> constexpr format_result format_impl(Writer& out, string_view format, std::initializer_list<format_arg> args) {
+    template <format_writable Writer>
+    constexpr format_result format_impl(Writer& out, string_view format, std::initializer_list<format_arg> args) {
         unsigned next_index = 0;
 
         char const* begin = format.data();

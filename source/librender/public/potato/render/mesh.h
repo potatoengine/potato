@@ -34,7 +34,11 @@ namespace up {
 
     class Mesh : public shared<Mesh> {
     public:
-        UP_RENDER_API explicit Mesh(vector<uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels);
+        UP_RENDER_API explicit Mesh(
+            vector<uint16> indices,
+            vector<up::byte> data,
+            view<MeshBuffer> buffers,
+            view<MeshChannel> channels);
         UP_RENDER_API ~Mesh();
 
         UP_RENDER_API static auto createFromBuffer(view<byte>) -> rc<Mesh>;

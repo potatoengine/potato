@@ -28,35 +28,45 @@ namespace up::reflex {
         friend class SerializerBase<JsonStreamSerializer>;
 
     protected:
-        template <typename T, typename Annotations> Action enterField(tag<T>, zstring_view name, Annotations&& annotations) noexcept {
-            auto extract = [this](auto const& name) { _nextField = name.name; };
+        template <typename T, typename Annotations>
+        Action enterField(tag<T>, zstring_view name, Annotations&& annotations) noexcept {
+            auto extract = [this](auto const& name) {
+                _nextField = name.name;
+            };
             if (!ApplyAnnotation<JsonName>(annotations, extract)) {
                 _nextField = name;
             }
             return Action::Enter;
         }
 
-        template <typename T> Action enterItem(tag<T>, size_t) noexcept {
+        template <typename T>
+        Action enterItem(tag<T>, size_t) noexcept {
             _nextAppend = true;
             return Action::Enter;
         }
 
-        template <typename T> Action beginObject(tag<T>) {
+        template <typename T>
+        Action beginObject(tag<T>) {
             _current.push_back(_assign(nlohmann::json::object()));
             return Action::Enter;
         }
 
-        template <typename T> Action beginArray(tag<T>, size_t size) noexcept {
+        template <typename T>
+        Action beginArray(tag<T>, size_t size) noexcept {
             _current.push_back(_assign(nlohmann::json::array()));
             return Action::Enter;
         }
 
         void end() noexcept { _current.pop_back(); }
 
-        template <typename T> void handle(T&& value) { _assign(_encode(std::forward<T>(value))); }
+        template <typename T>
+        void handle(T&& value) {
+            _assign(_encode(std::forward<T>(value)));
+        }
 
     private:
-        template <typename T> auto _encode(T&& value) -> nlohmann::json {
+        template <typename T>
+        auto _encode(T&& value) -> nlohmann::json {
             using BaseT = remove_cvref_t<T>;
             if constexpr (std::is_same_v<up::string_view, BaseT>) {
                 return std::string(value.begin(), value.end());
@@ -103,9 +113,12 @@ namespace up::reflex {
         friend class SerializerBase<JsonStreamDeserializer>;
 
     protected:
-        template <typename T, typename Annotations> Action enterField(tag<T>, zstring_view name, Annotations&& annotations) noexcept {
+        template <typename T, typename Annotations>
+        Action enterField(tag<T>, zstring_view name, Annotations&& annotations) noexcept {
             zstring_view fieldName = name;
-            auto extract = [&fieldName](auto const& name) { fieldName = name.name; };
+            auto extract = [&fieldName](auto const& name) {
+                fieldName = name.name;
+            };
             if (!ApplyAnnotation<JsonName>(annotations, extract)) {
                 fieldName = name;
             }
@@ -118,7 +131,8 @@ namespace up::reflex {
             return Action::Skip;
         }
 
-        template <typename T> Action enterItem(tag<T>, size_t index) noexcept {
+        template <typename T>
+        Action enterItem(tag<T>, size_t index) noexcept {
             auto* node = _current.back();
             if (node->is_array() && index < node->size()) {
                 _nextIndex = index;
@@ -127,7 +141,8 @@ namespace up::reflex {
             return Action::Skip;
         }
 
-        template <typename T> Action beginObject(tag<T>) {
+        template <typename T>
+        Action beginObject(tag<T>) {
             auto* node = _enter();
             if (node != nullptr && node->is_object()) {
                 _current.push_back(node);
@@ -136,7 +151,8 @@ namespace up::reflex {
             return Action::Skip;
         }
 
-        template <typename T> Action beginArray(tag<T>, size_t& size) {
+        template <typename T>
+        Action beginArray(tag<T>, size_t& size) {
             auto* node = _enter();
             if (node != nullptr && node->is_array()) {
                 _current.push_back(node);
@@ -148,7 +164,8 @@ namespace up::reflex {
 
         void end() noexcept { _current.pop_back(); }
 
-        template <typename T> void handle(T&& value) {
+        template <typename T>
+        void handle(T&& value) {
             using BaseT = remove_cvref_t<T>;
             auto* node = _enter();
             if (node != nullptr) {

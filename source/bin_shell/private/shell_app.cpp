@@ -52,7 +52,8 @@
 
 namespace up::shell {
     extern auto createFileTreeEditor(string path, delegate<void(zstring_view name)> onSelected) -> box<Editor>;
-    extern auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()>, delegate<void(rc<Scene>)>) -> box<Editor>;
+    extern auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()>, delegate<void(rc<Scene>)>)
+        -> box<Editor>;
     extern auto createGameEditor(rc<Scene> scene) -> box<Editor>;
 } // namespace up::shell
 
@@ -97,7 +98,13 @@ int up::shell::ShellApp::initialize() {
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
 
-    _window = SDL_CreateWindow("loading", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, default_width, default_height, SDL_WINDOW_RESIZABLE);
+    _window = SDL_CreateWindow(
+        "loading",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        default_width,
+        default_height,
+        SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) {
         _errorDialog("Could not create window");
     }
@@ -275,9 +282,13 @@ void up::shell::ShellApp::run() {
     }
 }
 
-void up::shell::ShellApp::quit() { _running = false; }
+void up::shell::ShellApp::quit() {
+    _running = false;
+}
 
-void up::shell::ShellApp::_onWindowClosed() { quit(); }
+void up::shell::ShellApp::_onWindowClosed() {
+    quit();
+}
 
 void up::shell::ShellApp::_onWindowSizeChanged() {
     int width = 0;
@@ -318,15 +329,33 @@ void up::shell::ShellApp::_processEvents() {
         }
         else {
             switch (guiCursor) {
-            case ImGuiMouseCursor_TextInput: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM)); break;
-            case ImGuiMouseCursor_ResizeAll: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL)); break;
-            case ImGuiMouseCursor_ResizeNS: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS)); break;
-            case ImGuiMouseCursor_ResizeEW: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE)); break;
-            case ImGuiMouseCursor_ResizeNESW: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW)); break;
-            case ImGuiMouseCursor_ResizeNWSE: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE)); break;
-            case ImGuiMouseCursor_Hand: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND)); break;
-            case ImGuiMouseCursor_NotAllowed: _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO)); break;
-            default: _cursor.reset(SDL_GetDefaultCursor()); break;
+                case ImGuiMouseCursor_TextInput:
+                    _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM));
+                    break;
+                case ImGuiMouseCursor_ResizeAll:
+                    _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL));
+                    break;
+                case ImGuiMouseCursor_ResizeNS:
+                    _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS));
+                    break;
+                case ImGuiMouseCursor_ResizeEW:
+                    _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE));
+                    break;
+                case ImGuiMouseCursor_ResizeNESW:
+                    _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW));
+                    break;
+                case ImGuiMouseCursor_ResizeNWSE:
+                    _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE));
+                    break;
+                case ImGuiMouseCursor_Hand:
+                    _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
+                    break;
+                case ImGuiMouseCursor_NotAllowed:
+                    _cursor.reset(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO));
+                    break;
+                default:
+                    _cursor.reset(SDL_GetDefaultCursor());
+                    break;
             }
             SDL_SetCursor(_cursor.get());
         }
@@ -335,23 +364,32 @@ void up::shell::ShellApp::_processEvents() {
     SDL_Event ev;
     while (_running && SDL_PollEvent(&ev) > 0) {
         switch (ev.type) {
-        case SDL_QUIT: quit(); break;
-        case SDL_WINDOWEVENT:
-            switch (ev.window.event) {
-            case SDL_WINDOWEVENT_CLOSE: _onWindowClosed(); break;
-            case SDL_WINDOWEVENT_MAXIMIZED:
-            case SDL_WINDOWEVENT_RESIZED:
-            case SDL_WINDOWEVENT_SIZE_CHANGED: _onWindowSizeChanged(); break;
-            case SDL_WINDOWEVENT_ENTER:
-            case SDL_WINDOWEVENT_EXPOSED: break;
-            }
-            _drawImgui.handleEvent(ev);
-            break;
-        case SDL_MOUSEBUTTONUP:
-        case SDL_MOUSEMOTION:
-        case SDL_KEYDOWN:
-        case SDL_MOUSEWHEEL:
-        default: _drawImgui.handleEvent(ev); break;
+            case SDL_QUIT:
+                quit();
+                break;
+            case SDL_WINDOWEVENT:
+                switch (ev.window.event) {
+                    case SDL_WINDOWEVENT_CLOSE:
+                        _onWindowClosed();
+                        break;
+                    case SDL_WINDOWEVENT_MAXIMIZED:
+                    case SDL_WINDOWEVENT_RESIZED:
+                    case SDL_WINDOWEVENT_SIZE_CHANGED:
+                        _onWindowSizeChanged();
+                        break;
+                    case SDL_WINDOWEVENT_ENTER:
+                    case SDL_WINDOWEVENT_EXPOSED:
+                        break;
+                }
+                _drawImgui.handleEvent(ev);
+                break;
+            case SDL_MOUSEBUTTONUP:
+            case SDL_MOUSEMOTION:
+            case SDL_KEYDOWN:
+            case SDL_MOUSEWHEEL:
+            default:
+                _drawImgui.handleEvent(ev);
+                break;
         }
     }
 }
@@ -440,8 +478,8 @@ void up::shell::ShellApp::_displayMainMenu() {
 
 void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     auto const mainDockId = ImGui::GetID("DocumentsDockspace");
-    auto const windowFlags =
-        ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus;
+    auto const windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration |
+        ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus;
 
     ImGui::SetNextWindowPos({rect.x, rect.y});
     ImGui::SetNextWindowSize({rect.z - rect.x, rect.w - rect.y});
@@ -514,4 +552,6 @@ void up::shell::ShellApp::_createScene() {
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
 }
 
-void up::shell::ShellApp::_createGame(rc<Scene> scene) { _editors.push_back(createGameEditor(std::move(scene))); }
+void up::shell::ShellApp::_createGame(rc<Scene> scene) {
+    _editors.push_back(createGameEditor(std::move(scene)));
+}

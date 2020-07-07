@@ -16,7 +16,11 @@ namespace up {
         virtual ~ComponentReflector() = default;
 
         template <typename ObjectType, typename ClassType, typename FieldType, typename Annotations>
-        constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field, Annotations&& annotations) {
+        constexpr void field(
+            zstring_view name,
+            ObjectType& object,
+            FieldType ClassType::*field,
+            Annotations&& annotations) {
             onField(name);
             value(object.*field);
         }
@@ -27,7 +31,10 @@ namespace up {
             value(field);
         }
 
-        template <typename ValueType> void value(ValueType&& value) { onValue(value); }
+        template <typename ValueType>
+        void value(ValueType&& value) {
+            onValue(value);
+        }
 
     protected:
         virtual void onField(zstring_view name) = 0;

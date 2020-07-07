@@ -28,17 +28,22 @@ namespace up {
 
         auto findComponentById(ComponentId id) const noexcept -> ComponentMeta const*;
 
-        template <typename Component> auto findComponentByType() const noexcept -> ComponentMeta const*;
+        template <typename Component>
+        auto findComponentByType() const noexcept -> ComponentMeta const*;
 
         auto acquireChunk() -> Chunk*;
         void recycleChunk(Chunk* chunk) noexcept;
 
         inline auto layoutOf(ArchetypeId archetype) const noexcept -> view<LayoutRow>;
 
-        auto acquireArchetype(ArchetypeId original, view<ComponentMeta const*> include, view<ComponentMeta const*> exclude) -> ArchetypeId;
+        auto acquireArchetype(
+            ArchetypeId original,
+            view<ComponentMeta const*> include,
+            view<ComponentMeta const*> exclude) -> ArchetypeId;
 
         UP_ECS_API auto _findComponentByTypeHash(uint64 typeHash) const noexcept -> ComponentMeta const*;
-        UP_ECS_API auto _bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool;
+        UP_ECS_API auto _bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets)
+            const noexcept -> bool;
 
         vector<ComponentMeta> components;
         vector<ArchetypeLayout> archetypes = {ArchetypeLayout{0, 0, 0}};
@@ -47,7 +52,8 @@ namespace up {
         Chunk* freeChunkHead = nullptr;
     };
 
-    template <typename Component> auto EcsSharedContext::findComponentByType() const noexcept -> ComponentMeta const* {
+    template <typename Component>
+    auto EcsSharedContext::findComponentByType() const noexcept -> ComponentMeta const* {
         return _findComponentByTypeHash(typeid(Component).hash_code());
     }
 

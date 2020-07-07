@@ -13,7 +13,8 @@
 namespace up {
     class string;
     class string_view;
-    template <typename> class vector;
+    template <typename>
+    class vector;
 
     class Stream {
     public:

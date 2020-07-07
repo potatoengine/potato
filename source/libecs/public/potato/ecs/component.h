@@ -41,9 +41,12 @@ namespace up {
     };
 
     namespace _detail {
-        template <typename Component> struct ComponentDefaultMetaOps {
+        template <typename Component>
+        struct ComponentDefaultMetaOps {
             static constexpr void defaultConstruct(void* dest) noexcept { new (dest) Component(); };
-            static constexpr void copyConstruct(void* dest, void const* src) noexcept { new (dest) Component(*static_cast<Component const*>(src)); };
+            static constexpr void copyConstruct(void* dest, void const* src) noexcept {
+                new (dest) Component(*static_cast<Component const*>(src));
+            };
             static constexpr void moveAssign(void* dest, void* src) noexcept {
                 *static_cast<Component*>(dest) = std::move(*static_cast<Component*>(src));
             };

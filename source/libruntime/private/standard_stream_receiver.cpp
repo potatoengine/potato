@@ -7,7 +7,11 @@
 
 #include <iostream>
 
-void up::StandardStreamReceiver::log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location) noexcept {
+void up::StandardStreamReceiver::log(
+    string_view loggerName,
+    LogSeverity severity,
+    string_view message,
+    LogLocation location) noexcept {
     std::ostream& os = severity == LogSeverity::Info ? std::cout : std::cerr;
 
     // Ensure that output isn't interlaced

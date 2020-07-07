@@ -45,9 +45,11 @@ bool up::ModelImporter::import(ImporterContext& ctx) {
     file.close();
 
     Assimp::Importer importer;
-    aiScene const* scene = importer.ReadFileFromMemory(contents.data(),
+    aiScene const* scene = importer.ReadFileFromMemory(
+        contents.data(),
         contents.size(),
-        aiProcess_FlipWindingOrder | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcessPreset_TargetRealtime_Fast);
+        aiProcess_FlipWindingOrder | aiProcess_GenNormals | aiProcess_CalcTangentSpace |
+            aiProcessPreset_TargetRealtime_Fast);
     if (scene == nullptr) {
         ctx.logger().error("Failed to decode");
         return false;

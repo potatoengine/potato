@@ -7,7 +7,9 @@
 
 #include <nlohmann/json.hpp>
 
-void up::MetaFile::generate() { uuid = UUID::generate(); }
+void up::MetaFile::generate() {
+    uuid = UUID::generate();
+}
 
 auto up::MetaFile::toJson() const -> string {
     nlohmann::json doc;

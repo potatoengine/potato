@@ -8,9 +8,11 @@
 #    include <utility>
 
 namespace up {
-    template <typename T> class rc;
+    template <typename T>
+    class rc;
 
-    template <typename Derived> class shared {
+    template <typename Derived>
+    class shared {
     public:
         shared(shared const&) = delete;
         shared& operator=(shared const&) = delete;
@@ -26,7 +28,8 @@ namespace up {
         ~shared() = default;
 
     private:
-        template <typename U> friend class rc;
+        template <typename U>
+        friend class rc;
 
         void addRef() const noexcept { ++_refs; }
         void removeRef() const noexcept {
@@ -38,7 +41,8 @@ namespace up {
         mutable std::atomic<int> _refs = 1;
     };
 
-    template <typename T> class rc {
+    template <typename T>
+    class rc {
     public:
         using pointer = T*;
         using reference = T&;
@@ -59,8 +63,10 @@ namespace up {
 
         inline rc& operator=(rc const& rhs) noexcept;
         inline rc& operator=(rc&& rhs) noexcept;
-        template <typename U> inline rc& operator=(rc<U> const& rhs) noexcept requires std::is_convertible_v<U*, T*>;
-        template <typename U> inline rc& operator=(rc<U>&& rhs) noexcept requires std::is_convertible_v<U*, T*>;
+        template <typename U>
+        inline rc& operator=(rc<U> const& rhs) noexcept requires std::is_convertible_v<U*, T*>;
+        template <typename U>
+        inline rc& operator=(rc<U>&& rhs) noexcept requires std::is_convertible_v<U*, T*>;
         inline rc& operator=(std::nullptr_t) noexcept;
 
         explicit operator bool() const noexcept { return _ptr != nullptr; }
@@ -77,8 +83,14 @@ namespace up {
         friend auto operator<=>(rc const& lhs, rc const& rhs) noexcept { return lhs.get() <=> rhs.get(); }
         friend bool operator==(rc const& lhs, rc const& rhs) noexcept { return lhs.get() == rhs.get(); }
 
-        template <typename U> friend auto operator<=>(rc const& lhs, rc<U> const& rhs) noexcept { return lhs.get() <=> rhs.get(); }
-        template <typename U> friend bool operator==(rc const& lhs, rc<U> const& rhs) noexcept { return lhs.get() == rhs.get(); }
+        template <typename U>
+        friend auto operator<=>(rc const& lhs, rc<U> const& rhs) noexcept {
+            return lhs.get() <=> rhs.get();
+        }
+        template <typename U>
+        friend bool operator==(rc const& lhs, rc<U> const& rhs) noexcept {
+            return lhs.get() == rhs.get();
+        }
 
         friend auto operator<=>(rc const& lhs, std::nullptr_t rhs) noexcept { return lhs.get() <=> rhs; }
         friend bool operator==(rc const& lhs, std::nullptr_t rhs) noexcept { return lhs.get() == rhs; }
@@ -98,7 +110,8 @@ namespace up {
         pointer _ptr = nullptr;
     };
 
-    template <typename T> auto rc<T>::operator=(rc const& rhs) noexcept -> rc& {
+    template <typename T>
+    auto rc<T>::operator=(rc const& rhs) noexcept -> rc& {
         if (this != std::addressof(rhs)) {
             _removeRef();
             _ptr = rhs._ptr;
@@ -107,7 +120,9 @@ namespace up {
         return *this;
     }
 
-    template <typename T> template <typename U> auto rc<T>::operator=(rc<U> const& rhs) noexcept -> rc& requires std::is_convertible_v<U*, T*> {
+    template <typename T>
+    template <typename U>
+    auto rc<T>::operator=(rc<U> const& rhs) noexcept -> rc& requires std::is_convertible_v<U*, T*> {
         if (this != std::addressof(rhs)) {
             _removeRef();
             _ptr = rhs.get();
@@ -116,7 +131,8 @@ namespace up {
         return *this;
     }
 
-    template <typename T> auto rc<T>::operator=(rc&& rhs) noexcept -> rc& {
+    template <typename T>
+    auto rc<T>::operator=(rc&& rhs) noexcept -> rc& {
         if (this != std::addressof(rhs)) {
             _removeRef();
             _ptr = rhs.release();
@@ -124,7 +140,9 @@ namespace up {
         return *this;
     }
 
-    template <typename T> template <typename U> auto rc<T>::operator=(rc<U>&& rhs) noexcept -> rc& requires std::is_convertible_v<U*, T*> {
+    template <typename T>
+    template <typename U>
+    auto rc<T>::operator=(rc<U>&& rhs) noexcept -> rc& requires std::is_convertible_v<U*, T*> {
         if (this != std::addressof(rhs)) {
             _removeRef();
             _ptr = rhs.release();
@@ -132,26 +150,32 @@ namespace up {
         return *this;
     }
 
-    template <typename T> auto rc<T>::operator=(std::nullptr_t) noexcept -> rc& {
+    template <typename T>
+    auto rc<T>::operator=(std::nullptr_t) noexcept -> rc& {
         _removeRef();
         _ptr = nullptr;
         return *this;
     }
 
-    template <typename T> void rc<T>::reset(pointer ptr) noexcept {
+    template <typename T>
+    void rc<T>::reset(pointer ptr) noexcept {
         if (ptr != _ptr) {
             _removeRef();
             _ptr = ptr;
         }
     }
 
-    template <typename T> auto rc<T>::release() noexcept -> pointer {
+    template <typename T>
+    auto rc<T>::release() noexcept -> pointer {
         pointer tmp = _ptr;
         _ptr = nullptr;
         return tmp;
     }
 
-    template <typename T, typename... A> rc<T> new_shared(A&&... args) { return rc<T>(new T(std::forward<A>(args)...)); }
+    template <typename T, typename... A>
+    rc<T> new_shared(A&&... args) {
+        return rc<T>(new T(std::forward<A>(args)...));
+    }
 
 } // namespace up
 

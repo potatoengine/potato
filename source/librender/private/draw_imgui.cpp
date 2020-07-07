@@ -62,7 +62,8 @@ bool up::DrawImgui::createResources(GpuDevice& device) {
     texDesc.width = fontWidth;
     texDesc.height = fontHeight;
 
-    auto font = device.createTexture2D(texDesc, span{pixels, static_cast<uint32>(fontWidth * fontHeight * 4)}.as_bytes());
+    auto font =
+        device.createTexture2D(texDesc, span{pixels, static_cast<uint32>(fontWidth * fontHeight * 4)}.as_bytes());
     _srv = device.createShaderResourceView(font.get());
 
     _sampler = device.createSampler();
@@ -90,7 +91,8 @@ auto up::DrawImgui::loadFontAwesome5(Stream fontFile) -> bool {
     config.PixelSnapH = true;
     config.FontDataOwnedByAtlas = false;
 
-    auto font = io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 11.0f, &config, s_ranges);
+    auto font =
+        io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 11.0f, &config, s_ranges);
     return font != nullptr;
 }
 
@@ -144,50 +146,58 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
 
     auto const toImguiButton = [](int sdlButton) noexcept {
         switch (sdlButton) {
-        case 1: return 0;
-        case 2: return 2;
-        case 3: return 1;
-        default: return 0;
+            case 1:
+                return 0;
+            case 2:
+                return 2;
+            case 3:
+                return 1;
+            default:
+                return 0;
         }
     };
 
     switch (ev.type) {
-    case SDL_MOUSEMOTION: io.MousePos = {(float)ev.motion.x, (float)ev.motion.y}; return io.WantCaptureMouse;
-    case SDL_MOUSEBUTTONDOWN:
-        io.MouseDown[toImguiButton(ev.button.button)] = true;
-        io.MouseClickedPos[toImguiButton(ev.button.button)] = {(float)ev.button.x, (float)ev.button.y};
-        return io.WantCaptureMouse;
-    case SDL_MOUSEBUTTONUP:
-        io.MouseDown[toImguiButton(ev.button.button)] = false;
-        io.MouseClickedPos[toImguiButton(ev.button.button)] = {(float)ev.button.x, (float)ev.button.y};
-        return io.WantCaptureMouse;
-    case SDL_MOUSEWHEEL:
-        if (ev.wheel.y > 0) {
-            io.MouseWheel += 1;
-        }
-        else if (ev.wheel.y < 0) {
-            io.MouseWheel -= 1;
-        }
+        case SDL_MOUSEMOTION:
+            io.MousePos = {(float)ev.motion.x, (float)ev.motion.y};
+            return io.WantCaptureMouse;
+        case SDL_MOUSEBUTTONDOWN:
+            io.MouseDown[toImguiButton(ev.button.button)] = true;
+            io.MouseClickedPos[toImguiButton(ev.button.button)] = {(float)ev.button.x, (float)ev.button.y};
+            return io.WantCaptureMouse;
+        case SDL_MOUSEBUTTONUP:
+            io.MouseDown[toImguiButton(ev.button.button)] = false;
+            io.MouseClickedPos[toImguiButton(ev.button.button)] = {(float)ev.button.x, (float)ev.button.y};
+            return io.WantCaptureMouse;
+        case SDL_MOUSEWHEEL:
+            if (ev.wheel.y > 0) {
+                io.MouseWheel += 1;
+            }
+            else if (ev.wheel.y < 0) {
+                io.MouseWheel -= 1;
+            }
 
-        if (ev.wheel.x > 0) {
-            io.MouseWheelH += 1;
+            if (ev.wheel.x > 0) {
+                io.MouseWheelH += 1;
+            }
+            else if (ev.wheel.x < 0) {
+                io.MouseWheelH -= 1;
+            }
+            return io.WantCaptureMouse;
+        case SDL_TEXTINPUT:
+            io.AddInputCharactersUTF8(ev.text.text);
+            return io.WantTextInput;
+        case SDL_KEYDOWN:
+        case SDL_KEYUP: {
+            int key = ev.key.keysym.scancode;
+            IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
+            io.KeysDown[key] = (ev.type == SDL_KEYDOWN);
+            io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
+            io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
+            io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
+            io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
+            return io.WantCaptureKeyboard;
         }
-        else if (ev.wheel.x < 0) {
-            io.MouseWheelH -= 1;
-        }
-        return io.WantCaptureMouse;
-    case SDL_TEXTINPUT: io.AddInputCharactersUTF8(ev.text.text); return io.WantTextInput;
-    case SDL_KEYDOWN:
-    case SDL_KEYUP: {
-        int key = ev.key.keysym.scancode;
-        IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
-        io.KeysDown[key] = (ev.type == SDL_KEYDOWN);
-        io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-        io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-        io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-        io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
-        return io.WantCaptureKeyboard;
-    }
     }
     return false;
 }

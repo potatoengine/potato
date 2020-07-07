@@ -64,7 +64,8 @@ namespace up::path {
     UP_RUNTIME_API string join(view<string_view> components);
 
     // joins path components together
-    template <typename... String> string join(String const&... components) requires(convertible_to<String, string_view>&&...) {
+    template <typename... String>
+    string join(String const&... components) requires(convertible_to<String, string_view>&&...) {
         if constexpr (sizeof...(String) != 0) {
             string_view views[] = {string_view{components}...};
             return join(views);

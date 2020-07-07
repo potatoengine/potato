@@ -23,7 +23,9 @@ namespace up::d3d11 {
         explicit PipelineStateD3D11(PipelineStateParamsD3D11 params);
         virtual ~PipelineStateD3D11();
 
-        static box<PipelineStateD3D11> createGraphicsPipelineState(GpuPipelineStateDesc const& desc, ID3D11Device* device);
+        static box<PipelineStateD3D11> createGraphicsPipelineState(
+            GpuPipelineStateDesc const& desc,
+            ID3D11Device* device);
 
         PipelineStateParamsD3D11 const& params() const noexcept { return _params; }
 

@@ -39,7 +39,10 @@ void up::EcsSharedContext::recycleChunk(Chunk* chunk) noexcept {
     freeChunkHead = chunk;
 }
 
-auto up::EcsSharedContext::_bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets) const noexcept -> bool {
+auto up::EcsSharedContext::_bindArchetypeOffets(
+    ArchetypeId archetype,
+    view<ComponentId> componentIds,
+    span<int> offsets) const noexcept -> bool {
     UP_ASSERT(componentIds.size() == offsets.size());
 
     auto const layout = layoutOf(archetype);
@@ -60,21 +63,28 @@ auto up::EcsSharedContext::_bindArchetypeOffets(ArchetypeId archetype, view<Comp
     return true;
 }
 
-auto up::EcsSharedContext::acquireArchetype(ArchetypeId original, view<ComponentMeta const*> include, view<ComponentMeta const*> exclude)
-    -> ArchetypeId {
+auto up::EcsSharedContext::acquireArchetype(
+    ArchetypeId original,
+    view<ComponentMeta const*> include,
+    view<ComponentMeta const*> exclude) -> ArchetypeId {
     // attempt to find any existing archetype with the same component set
     //
     {
         auto const originalLayout = layoutOf(original);
         for (size_t index = 0; index != archetypes.size(); ++index) {
             auto const layout = layoutOf(ArchetypeId(index));
-            if (any(exclude, [&layout](auto const* meta) noexcept { return contains(layout, meta, {}, &LayoutRow::meta); })) {
+            if (any(exclude,
+                    [&layout](auto const* meta) noexcept { return contains(layout, meta, {}, &LayoutRow::meta); })) {
                 continue;
             }
-            if (!all(include, [&layout](auto const* meta) noexcept { return contains(layout, meta, {}, &LayoutRow::meta); })) {
+            if (!all(include, [&layout](auto const* meta) noexcept {
+                    return contains(layout, meta, {}, &LayoutRow::meta);
+                })) {
                 continue;
             }
-            if (!all(originalLayout, [&layout](auto const& row) noexcept { return contains(layout, row.meta, {}, &LayoutRow::meta); })) {
+            if (!all(originalLayout, [&layout](auto const& row) noexcept {
+                    return contains(layout, row.meta, {}, &LayoutRow::meta);
+                })) {
                 continue;
             }
             return ArchetypeId(index);

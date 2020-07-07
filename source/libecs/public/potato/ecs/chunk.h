@@ -27,7 +27,9 @@ namespace up {
         auto entities() noexcept -> span<EntityId> { return {reinterpret_cast<EntityId*>(payload), header.entities}; }
 
         /// @brief Retrieves a span of EntityIds associated with this Chunk
-        auto entities() const noexcept -> view<EntityId> { return {reinterpret_cast<EntityId const*>(payload), header.entities}; }
+        auto entities() const noexcept -> view<EntityId> {
+            return {reinterpret_cast<EntityId const*>(payload), header.entities};
+        }
 
         Header header;
         Payload payload = {

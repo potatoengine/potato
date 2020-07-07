@@ -10,7 +10,8 @@
 namespace up {
     enum class AdoptLock { Adopt };
 
-    template <typename LockT> class LockGuard {
+    template <typename LockT>
+    class LockGuard {
     public:
         explicit constexpr LockGuard(LockT& lock) noexcept : _lock(lock) { _lock.lock(); }
         explicit constexpr LockGuard(LockT& lock, AdoptLock) noexcept : _lock(lock) {}
@@ -23,5 +24,6 @@ namespace up {
         LockT& _lock;
     };
 
-    template <typename LockT> LockGuard(LockT&) -> LockGuard<LockT>;
+    template <typename LockT>
+    LockGuard(LockT&) -> LockGuard<LockT>;
 } // namespace up

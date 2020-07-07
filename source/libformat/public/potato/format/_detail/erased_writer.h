@@ -11,7 +11,8 @@ namespace up {
     /// Writer that calls append(data, size) on wrapped value.
     class erased_writer final {
     public:
-        template <format_writable WriterT> constexpr erased_writer(WriterT& writer) noexcept : _write([&writer](auto str) { writer.write(str); }) {}
+        template <format_writable WriterT>
+        constexpr erased_writer(WriterT& writer) noexcept : _write([&writer](auto str) { writer.write(str); }) {}
 
         void write(string_view str) { _write(str); }
 

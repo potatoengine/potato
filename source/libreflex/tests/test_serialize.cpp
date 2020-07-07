@@ -10,13 +10,16 @@
 
 namespace {
     struct RecordingSerializer {
-        template <typename T> constexpr void value(T&) noexcept {}
+        template <typename T>
+        constexpr void value(T&) noexcept {}
     };
 
     struct RecordingReflector {
-        template <typename T> constexpr void value() noexcept {}
+        template <typename T>
+        constexpr void value() noexcept {}
 
-        template <typename T, typename F> constexpr void field(up::zstring_view, F T::*) noexcept {}
+        template <typename T, typename F>
+        constexpr void field(up::zstring_view, F T::*) noexcept {}
     };
 
     struct Fields {
@@ -63,7 +66,8 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
     }
 
     DOCTEST_TEST_CASE("deserialize struct from json") {
-        auto root = nlohmann::json::parse(R"--({"name":"bob","custom":42.0,"ignore":{"num":7},"xyz":{"x":1,"y":2,"z":3},"vec":[4,6]})--");
+        auto root = nlohmann::json::parse(
+            R"--({"name":"bob","custom":42.0,"ignore":{"num":7},"xyz":{"x":1,"y":2,"z":3},"vec":[4,6]})--");
         auto serializer = JsonStreamDeserializer{root};
 
         Complex big;

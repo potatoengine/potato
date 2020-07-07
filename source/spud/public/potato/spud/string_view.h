@@ -12,11 +12,13 @@
 namespace up {
     class string_view;
 
-    template <typename HashAlgorithm> inline void hash_append(HashAlgorithm& hasher, string_view const& string);
+    template <typename HashAlgorithm>
+    inline void hash_append(HashAlgorithm& hasher, string_view const& string);
 
     inline string_view operator"" _sv(char const* str, size_t size) noexcept;
 
-    template <typename T> concept has_c_str = std::is_convertible_v<decltype(std::declval<T>().c_str()), char const*>;
+    template <typename T>
+    concept has_c_str = std::is_convertible_v<decltype(std::declval<T>().c_str()), char const*>;
 } // namespace up
 
 class up::string_view {
@@ -35,7 +37,9 @@ public:
     constexpr string_view(string_view const&) noexcept = default;
     constexpr string_view(string_view&&) noexcept = default;
 
-    /*implicit*/ constexpr string_view(pointer zstr) noexcept : _data(zstr), _size(zstr != nullptr ? stringLength(zstr) : 0) {}
+    /*implicit*/ constexpr string_view(pointer zstr) noexcept
+        : _data(zstr)
+        , _size(zstr != nullptr ? stringLength(zstr) : 0) {}
     /*implicit*/ constexpr string_view(pointer data, size_type size) noexcept : _data(data), _size(size) {}
     /*implicit*/ constexpr string_view(pointer begin, pointer end) noexcept : _data(begin), _size(end - begin) {}
     template <typename StringT>
@@ -143,8 +147,11 @@ private:
     size_type _size = 0;
 };
 
-template <typename HashAlgorithm> void up::hash_append(HashAlgorithm& hasher, string_view const& string) {
+template <typename HashAlgorithm>
+void up::hash_append(HashAlgorithm& hasher, string_view const& string) {
     hasher.append_bytes(string.data(), string.size());
 }
 
-inline auto up::operator"" _sv(char const* str, size_t size) noexcept -> string_view { return {str, size}; }
+inline auto up::operator"" _sv(char const* str, size_t size) noexcept -> string_view {
+    return {str, size};
+}

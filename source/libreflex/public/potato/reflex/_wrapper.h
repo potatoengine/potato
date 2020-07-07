@@ -10,9 +10,12 @@
 namespace up::reflex::_detail {
     // Creates the "public" interface inside of a reflect::serialize_value function
     //
-    template <typename Type, typename Serializer, bool IsClassType> class SerializerWrapper {
+    template <typename Type, typename Serializer, bool IsClassType>
+    class SerializerWrapper {
     public:
-        constexpr SerializerWrapper(Type& object, Serializer& serializer) noexcept : _object(object), _serializer(serializer) {}
+        constexpr SerializerWrapper(Type& object, Serializer& serializer) noexcept
+            : _object(object)
+            , _serializer(serializer) {}
 
         SerializerWrapper(SerializerWrapper const&) = delete;
         SerializerWrapper& operator=(SerializerWrapper const&) = delete;
@@ -32,23 +35,34 @@ namespace up::reflex::_detail {
 
         template <typename FieldType, typename... Annotations>
         constexpr auto operator()(zstring_view name, FieldType Type::*field, Annotations&&... annotations) {
-            return this->_serializer.field(name, this->_object, field, std::tuple<Annotations...>(std::forward<Annotations>(annotations)...));
+            return this->_serializer.field(
+                name,
+                this->_object,
+                field,
+                std::tuple<Annotations...>(std::forward<Annotations>(annotations)...));
         }
 
         template <typename ReturnType, typename... ArgTypes, typename... Annotations>
-        constexpr auto operator()(zstring_view name, ReturnType (Type::*function)(ArgTypes...), Annotations&&... annotations) {
+        constexpr auto operator()(
+            zstring_view name,
+            ReturnType (Type::*function)(ArgTypes...),
+            Annotations&&... annotations) {
             return this->_serializer.function(name, this->_object, function);
         }
 
         template <typename ReturnType, typename... ArgTypes, typename... Annotations>
-        constexpr auto operator()(zstring_view name, ReturnType (Type::*function)(ArgTypes...) const, Annotations&&... annotations) {
+        constexpr auto operator()(
+            zstring_view name,
+            ReturnType (Type::*function)(ArgTypes...) const,
+            Annotations&&... annotations) {
             return this->_serializer.function(name, this->_object, function);
         }
     };
 
     // Creates the "public" interface inside of a reflect::serialize_value function
     //
-    template <typename Type, typename Reflector, bool IsClass> class ReflectorWrapper {
+    template <typename Type, typename Reflector, bool IsClass>
+    class ReflectorWrapper {
     public:
         constexpr ReflectorWrapper(Reflector& reflector) noexcept : _reflector(reflector) {}
 
@@ -57,7 +71,8 @@ namespace up::reflex::_detail {
 
         constexpr auto operator()() { return _reflector.template value<Type>(); }
 
-        template <typename LambdaType> constexpr auto operator()(zstring_view name, LambdaType const& lambda) {
+        template <typename LambdaType>
+        constexpr auto operator()(zstring_view name, LambdaType const& lambda) {
             using ValueType = decltype(lambda(this->_object));
             return _reflector.template value<ValueType>();
         }
@@ -72,11 +87,13 @@ namespace up::reflex::_detail {
         using ReflectorWrapper<Type, Reflector, false>::ReflectorWrapper;
         using ReflectorWrapper<Type, Reflector, false>::operator();
 
-        template <typename FieldType> constexpr auto operator()(zstring_view name, FieldType Type::*field) {
+        template <typename FieldType>
+        constexpr auto operator()(zstring_view name, FieldType Type::*field) {
             return this->_reflector.field(name, field);
         }
 
-        template <typename ReturnType, typename... ArgTypes> constexpr auto operator()(zstring_view name, ReturnType (Type::*function)(ArgTypes...)) {
+        template <typename ReturnType, typename... ArgTypes>
+        constexpr auto operator()(zstring_view name, ReturnType (Type::*function)(ArgTypes...)) {
             return this->_reflector.function(name, function);
         }
 

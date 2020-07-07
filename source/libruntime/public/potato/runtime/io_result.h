@@ -16,5 +16,6 @@ namespace up {
         Unknown,
     };
 
-    template <typename T> using IOReturn = Result<T, IOResult>;
+    template <typename T>
+    using IOReturn = Result<T, IOResult>;
 } // namespace up

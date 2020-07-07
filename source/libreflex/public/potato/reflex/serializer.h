@@ -8,14 +8,20 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up::reflex {
-    template <typename DerivedType> class SerializerBase {
+    template <typename DerivedType>
+    class SerializerBase {
     public:
         enum class Action { Enter, Skip };
 
         template <typename ObjectType, typename ClassType, typename FieldType, typename Annotations>
-        constexpr void field(zstring_view name, ObjectType& object, FieldType ClassType::*field, Annotations&& annotations) {
+        constexpr void field(
+            zstring_view name,
+            ObjectType& object,
+            FieldType ClassType::*field,
+            Annotations&& annotations) {
             using Type = remove_cvref_t<FieldType>;
-            if (static_cast<DerivedType*>(this)->enterField(tag<Type>{}, name, std::forward<Annotations>(annotations)) == Action::Enter) {
+            if (static_cast<DerivedType*>(this)
+                    ->enterField(tag<Type>{}, name, std::forward<Annotations>(annotations)) == Action::Enter) {
                 value(object.*field);
             }
         }
@@ -23,12 +29,14 @@ namespace up::reflex {
         template <typename ObjectType, typename FieldType, typename Annotations>
         constexpr void field(zstring_view name, ObjectType& object, FieldType&& field, Annotations&& annotations) {
             using Type = remove_cvref_t<FieldType>;
-            if (static_cast<DerivedType*>(this)->enterField(tag<Type>{}, name, std::forward<Annotations>(annotations)) == Action::Enter) {
+            if (static_cast<DerivedType*>(this)
+                    ->enterField(tag<Type>{}, name, std::forward<Annotations>(annotations)) == Action::Enter) {
                 value(field);
             }
         }
 
-        template <typename ValueType> void value(ValueType&& value) {
+        template <typename ValueType>
+        void value(ValueType&& value) {
             using Type = remove_cvref_t<ValueType>;
             if constexpr (is_vector_v<Type>) {
                 size_t size = value.size();
@@ -38,7 +46,8 @@ namespace up::reflex {
                     }
                     size_t index = 0;
                     for (auto&& item : value) {
-                        if (static_cast<DerivedType*>(this)->enterItem(tag<decltype(item)>{}, index++) == Action::Enter) {
+                        if (static_cast<DerivedType*>(this)->enterItem(tag<decltype(item)>{}, index++) ==
+                            Action::Enter) {
                             serialize(item, *static_cast<DerivedType*>(this));
                         }
                     }
