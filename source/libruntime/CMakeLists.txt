@@ -45,7 +45,6 @@ target_sources(potato_libruntime PRIVATE
     private/logger.cpp
     private/path.cpp
     private/native_filesystem.cpp
-    private/null.cpp
     private/standard_stream_receiver.cpp
     private/stream.cpp
     private/task_worker.cpp
@@ -99,7 +98,6 @@ target_sources(potato_libruntime_test PRIVATE
     "tests/test_callstack.cpp"
     "tests/test_concurrent_queue.cpp"
     "tests/test_native_backend.cpp"
-    "tests/test_null_backend.cpp"
     "tests/test_path_util.cpp"
     "tests/test_lock_free_queue.cpp"
     "tests/test_rwlock.cpp"
