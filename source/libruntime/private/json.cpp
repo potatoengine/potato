@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "json.h"
+#include "filesystem.h"
 #include "stream.h"
 
 #include "potato/spud/string.h"
@@ -8,19 +9,33 @@
 
 #include <nlohmann/json.hpp>
 
-auto up::readJson(Stream& stream, nlohmann::json& json) -> IOResult {
-    string text;
-    IOResult const rs = readText(stream, text);
+namespace {
+    auto parseJson(up::string_view text) -> up::IOReturn<nlohmann::json> {
+        auto json = nlohmann::json::parse(text.begin(), text.end(), nullptr, false);
+        if (!json.is_object()) {
+            return {up::IOResult::Malformed, {}};
+        }
+
+        return {up::IOResult::Success, std::move(json)};
+    }
+} // namespace
+
+auto up::readJson(Stream& stream) -> IOReturn<nlohmann::json> {
+    auto [rs, text] = readText(stream);
     if (rs != IOResult::Success) {
-        return rs;
+        return {rs, {}};
     }
 
-    json = nlohmann::json::parse(text.begin(), text.end(), nullptr, false);
-    if (!json.is_object()) {
-        return IOResult::Malformed;
+    return parseJson(text);
+}
+
+auto up::readJson(zstring_view filename) -> IOReturn<nlohmann::json> {
+    auto [rs, text] = fs::readText(filename);
+    if (rs != IOResult::Success) {
+        return {rs, {}};
     }
 
-    return IOResult::Success;
+    return parseJson(text);
 }
 
 void up::to_json(nlohmann::json& json, string_view str) noexcept { json = std::string(str.data(), str.size()); }

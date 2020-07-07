@@ -464,15 +464,8 @@ void up::shell::ShellApp::_errorDialog(zstring_view message) {
 }
 
 bool up::shell::ShellApp::_loadConfig(zstring_view path) {
-    auto stream = fs::openRead(path, fs::OpenMode::Text);
-    if (!stream) {
-        _logger.error("Failed to open `{}'", path.c_str());
-        return false;
-    }
-
-    nlohmann::json jsonRoot;
-    IOResult rs = readJson(stream, jsonRoot);
-    if (!jsonRoot.is_object()) {
+    auto [rs, jsonRoot] = readJson(path);
+    if (rs != IOResult{} || !jsonRoot.is_object()) {
         _logger.error("Failed to parse file `{}': {}", path, rs);
         return false;
     }
