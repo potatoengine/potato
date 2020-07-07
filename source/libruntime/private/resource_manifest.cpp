@@ -45,9 +45,9 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
 
     string_view::size_type sep = 0;
     int column = 0;
-    Record record;
     bool eol = false;
     int mask = 0;
+    Record record;
 
     while (!input.empty()) {
         switch (input.front()) {
@@ -114,6 +114,7 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
             sep = 0;
             column = 0;
             mask = 0;
+            record = {};
             eol = false;
             while (!eol && (sep = input.find_first_of("|\n")) != string_view::npos) {
                 string_view const data = input.substr(0, sep);
