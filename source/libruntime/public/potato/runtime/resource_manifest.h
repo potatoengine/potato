@@ -21,6 +21,11 @@ namespace up {
             string filename;
         };
 
+        static constexpr zstring_view columnRootId = "ROOT_ID"_zsv;
+        static constexpr zstring_view columnLogicalId = "LOGICAL_ID"_zsv;
+        static constexpr zstring_view columnLogicalName = "LOGICAL_NAME"_zsv;
+        static constexpr zstring_view columnContentHash = "CONTENT_HASH"_zsv;
+        static constexpr zstring_view columnDebugName = "DEBUG_NAME"_zsv;
         static constexpr int version = 1;
 
         auto size() const noexcept { return _records.size(); }

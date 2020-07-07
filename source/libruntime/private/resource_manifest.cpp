@@ -80,23 +80,23 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
             while (!eol && (sep = input.find_first_of("|\n")) != string_view::npos) {
                 string_view const header = input.substr(0, sep);
 
-                if (header == "ROOT_ID") {
+                if (header == columnRootId) {
                     rootIdColumn = column;
                     mask |= ColumnRootIdMask;
                 }
-                else if (header == "LOGICAL_ID") {
+                else if (header == columnLogicalId) {
                     logicalIdColumn = column;
                     mask |= ColumnLogicalIdMask;
                 }
-                else if (header == "LOGICAL_NAME") {
+                else if (header == columnLogicalName) {
                     logicalNameColumn = column;
                     mask |= ColumnLogicalNameMask;
                 }
-                else if (header == "CONTENT_HASH") {
+                else if (header == columnContentHash) {
                     contentHashColumn = column;
                     mask |= ColumnContentHashMask;
                 }
-                else if (header == "DEBUG_NAME") {
+                else if (header == columnDebugName) {
                     debugNameColumn = column;
                     mask |= ColumnDebugNameMask;
                 }

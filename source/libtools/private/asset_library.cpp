@@ -3,6 +3,7 @@
 #include "asset_library.h"
 
 #include "potato/runtime/json.h"
+#include "potato/runtime/resource_manifest.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/hash_fnv1a.h"
@@ -145,11 +146,15 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
 }
 
 void up::AssetLibrary::generateManifest(erased_writer writer) const {
+    format_to(writer, "# Potato Manifest\n");
+    format_to(writer, ".version={}\n", ResourceManifest::version);
     format_to(writer,
-        "# Potato Manifest\n"
-        ".version={}\n"
-        ":ROOT_ID|LOGICAL_ID|LOGICAL_NAME|CONTENT_HASH|DEBUG_NAME\n",
-        version);
+        ":{}|{}|{}|{}|{}\n",
+        ResourceManifest::columnRootId,
+        ResourceManifest::columnLogicalId,
+        ResourceManifest::columnLogicalName,
+        ResourceManifest::columnContentHash,
+        ResourceManifest::columnDebugName);
 
     string_writer fullName;
 
