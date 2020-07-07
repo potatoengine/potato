@@ -29,7 +29,7 @@ namespace {
             auto relPath = absolutePath.substr(_ctx.sourceFolderPath().size() + 1);
             _ctx.addSourceDependency(relPath.data());
 
-            auto stream = up::fs::openRead(absolutePath.c_str(), up::FileOpenMode::Text);
+            auto stream = up::fs::openRead(absolutePath.c_str(), up::fs::FileOpenMode::Text);
             if (!stream) {
                 return E_FAIL;
             }
@@ -64,7 +64,7 @@ bool up::HlslImporter::import(ImporterContext& ctx) {
 #if defined(UP_GPU_ENABLE_D3D11)
     auto absoluteSourcePath = path::join(string_view(ctx.sourceFolderPath()), ctx.sourceFilePath());
 
-    auto stream = fs::openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
+    auto stream = fs::openRead(absoluteSourcePath.c_str(), fs::FileOpenMode::Text);
     if (!stream) {
         return false;
     }
@@ -136,7 +136,7 @@ bool up::HlslImporter::_compile(ImporterContext& ctx,
         }
     }
 
-    auto compiledOutput = fs::openWrite(destAbsolutePath.c_str(), up::FileOpenMode::Binary);
+    auto compiledOutput = fs::openWrite(destAbsolutePath.c_str(), fs::FileOpenMode::Binary);
     if (!compiledOutput.isOpen()) {
         ctx.logger().error("Cannot write `{}'", destAbsolutePath);
         return false;

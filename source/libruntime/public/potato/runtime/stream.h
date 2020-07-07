@@ -8,6 +8,7 @@
 #include "potato/spud/box.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/span.h"
+#include "potato/spud/string_view.h"
 
 namespace up {
     class string;

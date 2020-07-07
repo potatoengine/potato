@@ -44,7 +44,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
 
     auto libraryPath = path::join(_libraryPath, "assets.json");
     if (fs::fileExists(libraryPath.c_str())) {
-        auto libraryReadStream = fs::openRead(libraryPath.c_str(), FileOpenMode::Text);
+        auto libraryReadStream = fs::openRead(libraryPath.c_str(), fs::FileOpenMode::Text);
         if (!libraryReadStream) {
             _logger.error("Failed to open asset library `{}'", libraryPath);
         }
@@ -56,7 +56,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
 
     auto hashCachePath = path::join(_libraryPath, "hashes.json");
     if (fs::fileExists(hashCachePath.c_str())) {
-        auto hashesReadStream = fs::openRead(hashCachePath.c_str(), FileOpenMode::Text);
+        auto hashesReadStream = fs::openRead(hashCachePath.c_str(), fs::FileOpenMode::Text);
         if (!hashesReadStream) {
             _logger.error("Failed to open hash cache `{}'", hashCachePath);
         }
@@ -86,14 +86,14 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.error("Import failed");
     }
 
-    auto hashesWriteStream = fs::openWrite(hashCachePath.c_str(), FileOpenMode::Text);
+    auto hashesWriteStream = fs::openWrite(hashCachePath.c_str(), fs::FileOpenMode::Text);
     if (!_hashes.serialize(hashesWriteStream)) {
         _logger.error("Failed to write hash cache `{}'", hashCachePath);
         return false;
     }
     hashesWriteStream.close();
 
-    auto libraryWriteStream = fs::openWrite(libraryPath.c_str(), FileOpenMode::Text);
+    auto libraryWriteStream = fs::openWrite(libraryPath.c_str(), fs::FileOpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
         _logger.error("Failed to write asset library `{}'", libraryPath);
         return false;
@@ -101,7 +101,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     libraryWriteStream.close();
 
     auto manifestPath = path::join(_libraryPath, "manifest.txt");
-    auto manifestFile = fs::openWrite(manifestPath.c_str(), FileOpenMode::Text);
+    auto manifestFile = fs::openWrite(manifestPath.c_str(), fs::FileOpenMode::Text);
     if (!manifestFile) {
         _logger.error("Failed to open manifest `{}'", manifestPath);
         return false;
@@ -242,7 +242,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
     MetaFile metaFile;
     bool dirty = false;
 
-    if (Stream stream = fs::openRead(metaFileOsPath, FileOpenMode::Text); stream) {
+    if (Stream stream = fs::openRead(metaFileOsPath, fs::FileOpenMode::Text); stream) {
         auto [result, jsonText] = readText(stream);
         if (result == IOResult::Success) {
             if (!metaFile.parseJson(jsonText)) {
@@ -280,7 +280,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
 
         string jsonText = metaFile.toJson();
 
-        auto stream = fs::openWrite(metaFileOsPath, FileOpenMode::Text);
+        auto stream = fs::openWrite(metaFileOsPath, fs::FileOpenMode::Text);
         if (!stream || writeAllText(stream, jsonText) != IOResult::Success) {
             _logger.error("Failed to write meta file for {}", metaFilePath);
             return false;
@@ -300,26 +300,26 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
     }
 
     vector<string> files;
-    auto cb = [&files](EnumerateItem const& item) -> EnumerateResult {
+    auto cb = [&files](auto const& item) {
         // do not recurse into the library folder
         //
         if (item.info.path.starts_with(".library")) {
-            return EnumerateResult::Continue;
+            return fs::EnumerateResult::Continue;
         }
 
-        if (item.info.type == FileType::Regular) {
+        if (item.info.type == fs::FileType::Regular) {
             // skip .meta files
             //
             if (path::extension(item.info.path) == ".meta") {
-                return EnumerateResult::Continue;
+                return fs::EnumerateResult::Continue;
             }
 
             files.push_back(item.info.path);
         }
 
-        return EnumerateResult::Recurse;
+        return fs::EnumerateResult::Recurse;
     };
 
-    fs::enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
+    fs::enumerate(_config.sourceFolderPath.c_str(), cb, fs::EnumerateOptions::None);
     return files;
 };

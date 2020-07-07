@@ -83,7 +83,7 @@ int up::shell::ShellApp::initialize() {
     _resourceLoader.setCasPath(path::join(_editorResourcePath, ".library", "cache"));
 
     string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
-    if (Stream manifestFile = fs::openRead(manifestPath, FileOpenMode::Text)) {
+    if (Stream manifestFile = fs::openRead(manifestPath, fs::FileOpenMode::Text)) {
         string manifestText;
         if (readText(manifestFile, manifestText) != IOResult{}) {
             _errorDialog("Failed to load resource manifest");
@@ -474,7 +474,7 @@ void up::shell::ShellApp::_errorDialog(zstring_view message) {
 }
 
 bool up::shell::ShellApp::_loadConfig(zstring_view path) {
-    auto stream = fs::openRead(path, FileOpenMode::Text);
+    auto stream = fs::openRead(path, fs::FileOpenMode::Text);
     if (!stream) {
         _logger.error("Failed to open `{}'", path.c_str());
         return false;

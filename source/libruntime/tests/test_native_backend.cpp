@@ -29,7 +29,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::fs") {
     }
 
     DOCTEST_TEST_CASE("openRead") {
-        auto inFile = fs::openRead("test.txt", FileOpenMode::Text);
+        auto inFile = fs::openRead("test.txt", fs::FileOpenMode::Text);
         DOCTEST_CHECK(inFile.isOpen());
 
         byte buffer[1024];
@@ -45,11 +45,11 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::fs") {
 
         vector<string> entries;
 
-        auto cb = [&entries](EnumerateItem const& item) {
+        auto cb = [&entries](auto const& item) {
             entries.push_back(item.info.path);
-            return EnumerateResult::Recurse;
+            return fs::EnumerateResult::Recurse;
         };
-        DOCTEST_CHECK_EQ(fs::enumerate(".", cb), EnumerateResult::Continue);
+        DOCTEST_CHECK_EQ(fs::enumerate(".", cb), fs::EnumerateResult::Continue);
 
         DOCTEST_REQUIRE_EQ(entries.size(), expected.size());
 
@@ -62,10 +62,10 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::fs") {
     }
 
     DOCTEST_TEST_CASE("stat") {
-        FileStat stat;
+        fs::FileStat stat;
         auto rs = fs::fileStat("test.txt", stat);
         DOCTEST_CHECK_EQ(rs, IOResult::Success);
-        DOCTEST_CHECK_EQ(stat.type, FileType::Regular);
+        DOCTEST_CHECK_EQ(stat.type, fs::FileType::Regular);
 
         // note: can't test size (Windows/UNIX line endings!) or mtime (git)
     }

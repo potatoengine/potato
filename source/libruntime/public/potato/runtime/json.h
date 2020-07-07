@@ -9,6 +9,7 @@
 
 namespace up {
     class string_view;
+    class zstring_view;
     class string;
     class Stream;
 

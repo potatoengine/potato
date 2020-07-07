@@ -70,7 +70,7 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, Logg
 }
 
 bool up::recon::parseConfigFile(ReconConfig& config, zstring_view path, Logger& logger) {
-    auto stream = fs::openRead(path, FileOpenMode::Text);
+    auto stream = fs::openRead(path, fs::FileOpenMode::Text);
     if (!stream) {
         logger.error("Failed to open `{}'", path.c_str());
         return false;
