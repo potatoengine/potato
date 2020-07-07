@@ -189,7 +189,11 @@ def run_clang_format_diff(args, file):
             ),
             errs,
         )
-    return make_diff(file, original, outs), errs
+
+    if not args.i:
+        return make_diff(file, original, outs), errs
+    else:
+        return list(), errs
 
 
 def bold_red(s):
