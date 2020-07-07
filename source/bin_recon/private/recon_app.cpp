@@ -7,7 +7,6 @@
 #include "potato/tools/meta_file.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
-#include "potato/runtime/native.h"
 #include "potato/runtime/path.h"
 #include "potato/runtime/stream.h"
 #include "potato/runtime/uuid.h"
@@ -17,7 +16,7 @@
 
 #include <nlohmann/json.hpp>
 
-up::recon::ReconApp::ReconApp() : _programName("recon"), _fileSystem(new_box<NativeFileSystem>()), _hashes(*_fileSystem), _logger("recon") {}
+up::recon::ReconApp::ReconApp() : _programName("recon"), _fileSystem(new_box<FileSystem>()), _hashes(*_fileSystem), _logger("recon") {}
 
 up::recon::ReconApp::~ReconApp() = default;
 

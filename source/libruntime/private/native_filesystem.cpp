@@ -96,8 +96,8 @@ auto up::FileSystem::openWrite(zstring_view path, FileOpenMode mode) -> Stream {
         mode == FileOpenMode::Binary ? std::ios_base::out | std::ios_base::trunc | std::ios_base::binary : std::ios_base::trunc | std::ios_base::out);
     if (!nativeStream) {
         return nullptr;
-    return Stream(up::new_box<NativeOutputBackend>(std::move(nativeStream)));
     }
+    return Stream(up::new_box<NativeOutputBackend>(std::move(nativeStream)));
 }
 
 static auto errorCodeToResult(std::error_code ec) noexcept -> up::IOResult {
