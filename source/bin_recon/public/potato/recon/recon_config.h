@@ -10,10 +10,6 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
-namespace up {
-    class FileSystem;
-}
-
 namespace up::recon {
     struct ReconConfig {
         string sourceFolderPath;
@@ -25,7 +21,7 @@ namespace up::recon {
         vector<ImportMapping> mapping;
     };
 
-    bool parseArguments(ReconConfig& config, span<char const*> args, FileSystem& fileSystem, Logger& logger);
-    bool parseConfigFile(ReconConfig& config, FileSystem& fileSystem, zstring_view path, Logger& logger);
+    bool parseArguments(ReconConfig& config, span<char const*> args, Logger& logger);
+    bool parseConfigFile(ReconConfig& config, zstring_view path, Logger& logger);
     bool parseConfigString(ReconConfig& config, string_view json, zstring_view filename, Logger& logger);
 } // namespace up::recon

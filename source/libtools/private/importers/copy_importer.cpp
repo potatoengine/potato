@@ -17,8 +17,8 @@ bool up::CopyImporter::import(ImporterContext& ctx) {
 
     string destParentAbsolutePath(path::parent(string_view(destAbsolutePath)));
 
-    if (!ctx.fileSystem().directoryExists(destParentAbsolutePath.c_str())) {
-        if (ctx.fileSystem().createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
+    if (!fs::directoryExists(destParentAbsolutePath.c_str())) {
+        if (fs::createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
@@ -27,7 +27,7 @@ bool up::CopyImporter::import(ImporterContext& ctx) {
     // output has same name as input
     ctx.addMainOutput(ctx.sourceFilePath());
 
-    auto rs = ctx.fileSystem().copyFileTo(sourceAbsolutePath.c_str(), destAbsolutePath.c_str());
+    auto rs = fs::copyFileTo(sourceAbsolutePath.c_str(), destAbsolutePath.c_str());
     if (rs != IOResult::Success) {
         ctx.logger().error("Failed to copy `{}' to `{}': {}", sourceAbsolutePath, destAbsolutePath, static_cast<uint64>(rs));
         return false;

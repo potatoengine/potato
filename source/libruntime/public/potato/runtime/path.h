@@ -12,8 +12,6 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up::path {
-    static constexpr uint32 maxPathLength = 4096;
-
     enum class Separator : char {
         Unix = '/',
         Windows = '\\',

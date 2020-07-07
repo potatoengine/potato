@@ -12,7 +12,6 @@
 #include <string>
 
 namespace up {
-    class FileSystem;
     class Logger;
 } // namespace up
 
@@ -24,15 +23,10 @@ namespace up {
             string path;
         };
 
-        ImporterContext(zstring_view sourceFilePath,
-            zstring_view sourceFolderPath,
-            zstring_view destinationFolderPath,
-            FileSystem& fileSystem,
-            Logger& logger)
+        ImporterContext(zstring_view sourceFilePath, zstring_view sourceFolderPath, zstring_view destinationFolderPath, Logger& logger)
             : _sourceFilePath(sourceFilePath)
             , _sourceFolderPath(sourceFolderPath)
             , _destinationFolderPath(destinationFolderPath)
-            , _fileSystem(fileSystem)
             , _logger(logger) {}
 
         ImporterContext(ImporterContext&&) = delete;
@@ -49,7 +43,6 @@ namespace up {
         view<string> sourceDependencies() const noexcept { return _sourceDependencies; }
         view<Output> outputs() const noexcept { return _outputs; }
 
-        FileSystem& fileSystem() noexcept { return _fileSystem; }
         Logger& logger() noexcept { return _logger; }
 
     private:
@@ -60,7 +53,6 @@ namespace up {
         vector<string> _sourceDependencies;
         vector<Output> _outputs;
 
-        FileSystem& _fileSystem;
         Logger& _logger;
     };
 } // namespace up

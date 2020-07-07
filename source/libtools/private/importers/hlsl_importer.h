@@ -5,8 +5,6 @@
 #include "importer.h"
 
 namespace up {
-    class FileSystem;
-
     class HlslImporter : public Importer {
     public:
         HlslImporter();
@@ -20,7 +18,6 @@ namespace up {
 
     private:
         bool _compile(ImporterContext& ctx,
-            FileSystem& fileSys,
             zstring_view absoluteSourcePath,
             string_view logicalName,
             string_view source,

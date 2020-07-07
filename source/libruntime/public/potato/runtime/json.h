@@ -3,16 +3,18 @@
 #pragma once
 
 #include "_export.h"
-#include "common.h"
+#include "io_result.h"
 
 #include <nlohmann/json_fwd.hpp>
 
 namespace up {
     class string_view;
+    class zstring_view;
     class string;
     class Stream;
 
-    extern UP_RUNTIME_API auto readJson(Stream& stream, nlohmann::json& json) -> IOResult;
+    extern UP_RUNTIME_API auto readJson(Stream& stream) -> IOReturn<nlohmann::json>;
+    extern UP_RUNTIME_API auto readJson(zstring_view filename) -> IOReturn<nlohmann::json>;
 
     // nlohmann overloads
     extern UP_RUNTIME_API void to_json(nlohmann::json& json, string_view str) noexcept;

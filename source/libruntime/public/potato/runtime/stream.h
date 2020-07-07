@@ -3,11 +3,12 @@
 #pragma once
 
 #include "_export.h"
-#include "common.h"
+#include "io_result.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/span.h"
+#include "potato/spud/string_view.h"
 
 namespace up {
     class string;
@@ -18,6 +19,8 @@ namespace up {
     public:
         using size_type = uint64;
         using difference_type = int64;
+
+        enum class Seek { Begin, End, Current };
 
         class Backend {
         public:
@@ -33,7 +36,7 @@ namespace up {
             virtual bool canWrite() const noexcept = 0;
             virtual bool canSeek() const noexcept = 0;
 
-            virtual IOResult seek(SeekPosition position, difference_type offset) = 0;
+            virtual IOResult seek(Seek position, difference_type offset) = 0;
             virtual difference_type tell() const = 0;
             virtual difference_type remaining() const = 0;
 
@@ -63,7 +66,7 @@ namespace up {
 
         explicit operator bool() const noexcept { return isOpen(); }
 
-        IOResult seek(SeekPosition position, difference_type offset) { return _impl->seek(position, offset); }
+        IOResult seek(Seek position, difference_type offset) { return _impl->seek(position, offset); }
         difference_type tell() const { return _impl->tell(); }
         difference_type remaining() const { return _impl->remaining(); }
 
@@ -80,9 +83,9 @@ namespace up {
     };
 
     [[nodiscard]] UP_RUNTIME_API auto readBinary(Stream& stream, vector<up::byte>& out) -> IOResult;
-    [[nodiscard]] UP_RUNTIME_API auto readBinary(Stream& stream) -> IOResultValue<vector<up::byte>>;
+    [[nodiscard]] UP_RUNTIME_API auto readBinary(Stream& stream) -> IOReturn<vector<up::byte>>;
     [[nodiscard]] UP_RUNTIME_API auto readText(Stream& stream, string& out) -> IOResult;
-    [[nodiscard]] UP_RUNTIME_API auto readText(Stream& stream) -> IOResultValue<string>;
+    [[nodiscard]] UP_RUNTIME_API auto readText(Stream& stream) -> IOReturn<string>;
 
     [[nodiscard]] UP_RUNTIME_API auto writeAllText(Stream& stream, string_view text) -> IOResult;
 } // namespace up

@@ -4,7 +4,6 @@
 
 #include "_export.h"
 
-#include "potato/runtime/filesystem.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/box.h"
 #include "potato/spud/hash.h"
@@ -18,8 +17,6 @@
 namespace up {
     class FileHashCache {
     public:
-        explicit FileHashCache(FileSystem& fileSystem) : _fileSystem(fileSystem) {}
-
         static UP_TOOLS_API uint64 hashAssetContent(span<byte const> contents) noexcept;
         static UP_TOOLS_API uint64 hashAssetStream(Stream& stream);
 
@@ -36,7 +33,6 @@ namespace up {
             uint64 size = 0;
         };
 
-        FileSystem& _fileSystem;
         std::unordered_map<zstring_view, box<HashRecord>, uhash<>> _hashes;
     };
 } // namespace up

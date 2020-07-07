@@ -9,13 +9,11 @@
 
 #include <nlohmann/json.hpp>
 
-auto up::Project::loadFromFile(FileSystem& fileSystem, zstring_view filename) -> box<Project> {
-    string docText;
-    auto stream = fileSystem.openRead(filename);
-    if (auto rs = readText(stream, docText); rs != IOResult::Success) {
+auto up::Project::loadFromFile(zstring_view filename) -> box<Project> {
+    auto const [rs, docText] = fs::readText(filename);
+    if (rs != IOResult::Success) {
         return nullptr;
     }
-    stream.close();
 
     auto doc = nlohmann::json::parse(docText, nullptr, false);
     if (doc.is_discarded()) {

@@ -11,7 +11,7 @@
 
 #include <nlohmann/json.hpp>
 
-bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, FileSystem& fileSystem, Logger& logger) {
+bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, Logger& logger) {
     if (args.empty()) {
         return false;
     }
@@ -53,7 +53,7 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, File
             argMode = ArgNone;
             break;
         case ArgConfig:
-            if (!parseConfigFile(config, fileSystem, arg, logger)) {
+            if (!parseConfigFile(config, arg, logger)) {
                 return false;
             }
             argMode = ArgNone;
@@ -69,8 +69,8 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, File
     }
 }
 
-bool up::recon::parseConfigFile(ReconConfig& config, FileSystem& fileSystem, zstring_view path, Logger& logger) {
-    auto stream = fileSystem.openRead(path, FileOpenMode::Text);
+bool up::recon::parseConfigFile(ReconConfig& config, zstring_view path, Logger& logger) {
+    auto stream = fs::openRead(path, fs::OpenMode::Text);
     if (!stream) {
         logger.error("Failed to open `{}'", path.c_str());
         return false;

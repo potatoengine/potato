@@ -7,7 +7,6 @@
 #include "potato/tools/meta_file.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
-#include "potato/runtime/native.h"
 #include "potato/runtime/path.h"
 #include "potato/runtime/stream.h"
 #include "potato/runtime/uuid.h"
@@ -17,24 +16,24 @@
 
 #include <nlohmann/json.hpp>
 
-up::recon::ReconApp::ReconApp() : _programName("recon"), _fileSystem(new_box<NativeFileSystem>()), _hashes(*_fileSystem), _logger("recon") {}
+up::recon::ReconApp::ReconApp() : _programName("recon"), _logger("recon") {}
 
 up::recon::ReconApp::~ReconApp() = default;
 
 bool up::recon::ReconApp::run(span<char const*> args) {
     zstring_view const configFile = "recon.config.json";
-    if (_fileSystem->fileExists(configFile)) {
+    if (fs::fileExists(configFile)) {
         _logger.info("Loading config file `{}'", configFile);
-        parseConfigFile(_config, *_fileSystem, configFile, _logger);
+        parseConfigFile(_config, configFile, _logger);
     }
 
-    if (!parseArguments(_config, args, *_fileSystem, _logger)) {
+    if (!parseArguments(_config, args, _logger)) {
         _logger.error("Failed to parse arguments");
         return false;
     }
 
     _libraryPath = path::join(_config.sourceFolderPath, ".library");
-    if (auto const rs = _fileSystem->createDirectories(_libraryPath); rs != IOResult::Success) {
+    if (auto const rs = fs::createDirectories(_libraryPath); rs != IOResult::Success) {
         _logger.error("Failed to create library folder `{}`: {}", _libraryPath, rs);
         return false;
     }
@@ -44,8 +43,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     _registerImporters();
 
     auto libraryPath = path::join(_libraryPath, "assets.json");
-    if (_fileSystem->fileExists(libraryPath.c_str())) {
-        auto libraryReadStream = _fileSystem->openRead(libraryPath.c_str(), FileOpenMode::Text);
+    if (fs::fileExists(libraryPath.c_str())) {
+        auto libraryReadStream = fs::openRead(libraryPath.c_str(), fs::OpenMode::Text);
         if (!libraryReadStream) {
             _logger.error("Failed to open asset library `{}'", libraryPath);
         }
@@ -56,8 +55,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     }
 
     auto hashCachePath = path::join(_libraryPath, "hashes.json");
-    if (_fileSystem->fileExists(hashCachePath.c_str())) {
-        auto hashesReadStream = _fileSystem->openRead(hashCachePath.c_str(), FileOpenMode::Text);
+    if (fs::fileExists(hashCachePath.c_str())) {
+        auto hashesReadStream = fs::openRead(hashCachePath.c_str(), fs::OpenMode::Text);
         if (!hashesReadStream) {
             _logger.error("Failed to open hash cache `{}'", hashCachePath);
         }
@@ -87,14 +86,14 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.error("Import failed");
     }
 
-    auto hashesWriteStream = _fileSystem->openWrite(hashCachePath.c_str(), FileOpenMode::Text);
+    auto hashesWriteStream = fs::openWrite(hashCachePath.c_str(), fs::OpenMode::Text);
     if (!_hashes.serialize(hashesWriteStream)) {
         _logger.error("Failed to write hash cache `{}'", hashCachePath);
         return false;
     }
     hashesWriteStream.close();
 
-    auto libraryWriteStream = _fileSystem->openWrite(libraryPath.c_str(), FileOpenMode::Text);
+    auto libraryWriteStream = fs::openWrite(libraryPath.c_str(), fs::OpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
         _logger.error("Failed to write asset library `{}'", libraryPath);
         return false;
@@ -102,7 +101,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     libraryWriteStream.close();
 
     auto manifestPath = path::join(_libraryPath, "manifest.txt");
-    auto manifestFile = _fileSystem->openWrite(manifestPath.c_str(), FileOpenMode::Text);
+    auto manifestFile = fs::openWrite(manifestPath.c_str(), fs::OpenMode::Text);
     if (!manifestFile) {
         _logger.error("Failed to open manifest `{}'", manifestPath);
         return false;
@@ -153,7 +152,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         auto name = importer->name();
         _logger.info("Asset `{}' requires import ({} {})", path.c_str(), string_view(name.data(), name.size()), importer->revision());
 
-        ImporterContext context(path, _config.sourceFolderPath, _temporaryOutputPath, *_fileSystem, _logger);
+        ImporterContext context(path, _config.sourceFolderPath, _temporaryOutputPath, _logger);
         if (!_checkMetafile(context, path)) {
             continue;
         }
@@ -179,20 +178,27 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             auto outputOsPath = path::join(_temporaryOutputPath, output.path);
             auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
 
+            logicalAssetName.clear();
+            format_append(logicalAssetName, "{}{}{}", newRecord.sourcePath, output.logicalAsset.empty() ? "" : ":", output.logicalAsset);
+            auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
+
+            newRecord.outputs.push_back({output.logicalAsset, logicalAssetId, outputHash});
+
             fixed_string_writer<32> casPath;
             format_append(casPath, "{:02X}/{:04X}/{:016X}.bin", (outputHash >> 56) & 0xFF, (outputHash >> 40) & 0XFFFF, outputHash);
 
             auto casOsPath = path::join(_libraryPath, "cache", casPath);
             string casOsFolder = path::parent(casOsPath);
 
-            _fileSystem->createDirectories(casOsFolder);
-            _fileSystem->moveFileTo(outputOsPath, casOsPath);
+            if (auto const rs = fs::createDirectories(casOsFolder); rs != IOResult::Success) {
+                _logger.error("Failed to create directory `{}`", casOsFolder);
+                continue;
+            }
 
-            logicalAssetName.clear();
-            format_append(logicalAssetName, "{}{}{}", newRecord.sourcePath, output.logicalAsset.empty() ? "" : ":", output.logicalAsset);
-            auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
-
-            newRecord.outputs.push_back({output.logicalAsset, logicalAssetId, outputHash});
+            if (auto const rs = fs::moveFileTo(outputOsPath, casOsPath); rs != IOResult::Success) {
+                _logger.error("Failed to move temp file `{}` to CAAS `{}`", outputOsPath, casOsPath);
+                continue;
+            }
         }
 
         for (auto const& sourceDepPath : context.sourceDependencies()) {
@@ -243,7 +249,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
     MetaFile metaFile;
     bool dirty = false;
 
-    if (Stream stream = _fileSystem->openRead(metaFileOsPath, FileOpenMode::Text); stream) {
+    if (Stream stream = fs::openRead(metaFileOsPath, fs::OpenMode::Text); stream) {
         auto [result, jsonText] = readText(stream);
         if (result == IOResult::Success) {
             if (!metaFile.parseJson(jsonText)) {
@@ -268,7 +274,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
             dirty = true;
         }
 
-        ImporterContext context(filename, _config.sourceFolderPath, _temporaryOutputPath, *_fileSystem, _logger);
+        ImporterContext context(filename, _config.sourceFolderPath, _temporaryOutputPath, _logger);
         string settings = importer->generateSettings(context);
         if (settings != metaFile.importerSettings) {
             metaFile.importerSettings = std::move(settings);
@@ -281,7 +287,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
 
         string jsonText = metaFile.toJson();
 
-        auto stream = _fileSystem->openWrite(metaFileOsPath, FileOpenMode::Text);
+        auto stream = fs::openWrite(metaFileOsPath, fs::OpenMode::Text);
         if (!stream || writeAllText(stream, jsonText) != IOResult::Success) {
             _logger.error("Failed to write meta file for {}", metaFilePath);
             return false;
@@ -295,32 +301,32 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
 }
 
 auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
-    if (!_fileSystem->directoryExists(_config.sourceFolderPath.c_str())) {
+    if (!fs::directoryExists(_config.sourceFolderPath.c_str())) {
         _logger.error("`{}' does not exist or is not a directory", _config.sourceFolderPath);
         return {};
     }
 
     vector<string> files;
-    auto cb = [&files](EnumerateItem const& item) -> EnumerateResult {
+    auto cb = [&files](auto const& item, int) {
         // do not recurse into the library folder
         //
-        if (item.info.path.starts_with(".library")) {
-            return EnumerateResult::Continue;
+        if (item.path.starts_with(".library")) {
+            return fs::next;
         }
 
-        if (item.info.type == FileType::Regular) {
+        if (item.type == fs::FileType::Regular) {
             // skip .meta files
             //
-            if (path::extension(item.info.path) == ".meta") {
-                return EnumerateResult::Continue;
+            if (path::extension(item.path) == ".meta") {
+                return fs::next;
             }
 
-            files.push_back(item.info.path);
+            files.push_back(item.path);
         }
 
-        return EnumerateResult::Recurse;
+        return fs::recurse;
     };
 
-    _fileSystem->enumerate(_config.sourceFolderPath.c_str(), cb, EnumerateOptions::None);
+    (void)fs::enumerate(_config.sourceFolderPath.c_str(), cb);
     return files;
 };

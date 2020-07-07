@@ -3,6 +3,7 @@
 #include "meta_file.h"
 
 #include "potato/runtime/json.h"
+#include "potato/spud/string_view.h"
 
 #include <nlohmann/json.hpp>
 
@@ -24,7 +25,7 @@ auto up::MetaFile::toJson() const -> string {
 }
 
 bool up::MetaFile::parseJson(string_view json) {
-    auto doc = nlohmann::json::parse(json);
+    auto doc = nlohmann::json::parse(json.begin(), json.end(), nullptr, false);
 
     if (auto type = doc["$type"]; !type.is_string() || type != "potato.asset.meta") {
         return false;

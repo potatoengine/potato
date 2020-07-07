@@ -91,8 +91,7 @@ void up::Scene::render(RenderContext& ctx) {
 }
 
 auto up::Scene::load(Stream file) -> bool {
-    nlohmann::json doc;
-    if (readJson(file, doc) != IOResult::Success) {
+    if (auto [rs, doc] = readJson(file); rs == IOResult::Success) {
         return false;
     }
 

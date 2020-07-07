@@ -19,10 +19,7 @@
 
 namespace {
     struct ReconIncludeHandler : public ID3DInclude {
-        ReconIncludeHandler(up::FileSystem& fileSystem, up::ImporterContext& ctx, up::string_view folder)
-            : _fileSystem(fileSystem)
-            , _ctx(ctx)
-            , _folder(folder) {}
+        ReconIncludeHandler(up::ImporterContext& ctx, up::string_view folder) : _ctx(ctx), _folder(folder) {}
 
         HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override {
             up::string absolutePath = up::path::join(_folder, pFileName);
@@ -32,27 +29,21 @@ namespace {
             auto relPath = absolutePath.substr(_ctx.sourceFolderPath().size() + 1);
             _ctx.addSourceDependency(relPath.data());
 
-            auto stream = _fileSystem.openRead(absolutePath.c_str(), up::FileOpenMode::Text);
-            if (!stream) {
+            auto [rs, source] = up::fs::readText(absolutePath.c_str());
+            if (rs != up::IOResult::Success) {
                 return E_FAIL;
             }
 
-            up::string shader;
-            if (up::readText(stream, shader) != up::IOResult::Success) {
-                return E_FAIL;
-            }
+            *ppData = source.data();
+            *pBytes = static_cast<UINT>(source.size());
 
-            *ppData = shader.data();
-            *pBytes = static_cast<UINT>(shader.size());
-
-            _shaders.push_back(std::move(shader));
+            _shaders.push_back(std::move(source));
 
             return S_OK;
         }
 
         HRESULT __stdcall Close(LPCVOID pData) override { return S_OK; }
 
-        up::FileSystem& _fileSystem;
         up::ImporterContext& _ctx;
         up::string_view _folder;
         up::vector<up::string> _shaders;
@@ -68,7 +59,7 @@ bool up::HlslImporter::import(ImporterContext& ctx) {
 #if defined(UP_GPU_ENABLE_D3D11)
     auto absoluteSourcePath = path::join(string_view(ctx.sourceFolderPath()), ctx.sourceFilePath());
 
-    auto stream = ctx.fileSystem().openRead(absoluteSourcePath.c_str(), up::FileOpenMode::Text);
+    auto stream = fs::openRead(absoluteSourcePath.c_str(), fs::OpenMode::Text);
     if (!stream) {
         return false;
     }
@@ -81,8 +72,8 @@ bool up::HlslImporter::import(ImporterContext& ctx) {
 
     stream.close();
 
-    bool success = _compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "vertex", "vertex_main", "vs_5_0");
-    success = _compile(ctx, ctx.fileSystem(), absoluteSourcePath, shader, "pixel", "pixel_main", "ps_5_0") && success;
+    bool success = _compile(ctx, absoluteSourcePath, shader, "vertex", "vertex_main", "vs_5_0");
+    success = _compile(ctx, absoluteSourcePath, shader, "pixel", "pixel_main", "ps_5_0") && success;
 
     return success;
 #else
@@ -92,7 +83,6 @@ bool up::HlslImporter::import(ImporterContext& ctx) {
 
 #if defined(UP_GPU_ENABLE_D3D11)
 bool up::HlslImporter::_compile(ImporterContext& ctx,
-    FileSystem& fileSys,
     zstring_view absoluteSourcePath,
     string_view source,
     string_view logicalName,
@@ -100,7 +90,7 @@ bool up::HlslImporter::_compile(ImporterContext& ctx,
     zstring_view targetProfileName) {
     ctx.logger().info("Compiling `{}':{} ({})", ctx.sourceFilePath(), entryName, targetProfileName);
 
-    ReconIncludeHandler includeHandler(fileSys, ctx, up::path::parent(absoluteSourcePath));
+    ReconIncludeHandler includeHandler(ctx, up::path::parent(absoluteSourcePath));
 
     com_ptr<ID3DBlob> blob;
     com_ptr<ID3DBlob> errors;
@@ -134,14 +124,14 @@ bool up::HlslImporter::_compile(ImporterContext& ctx,
 
     string destParentAbsolutePath(path::parent(destAbsolutePath));
 
-    if (!fileSys.directoryExists(destParentAbsolutePath.c_str())) {
-        if (fileSys.createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
+    if (!fs::directoryExists(destParentAbsolutePath.c_str())) {
+        if (fs::createDirectories(destParentAbsolutePath.c_str()) != IOResult::Success) {
             ctx.logger().error("Failed to create `{}'", destParentAbsolutePath);
             // intentionally fall through so we still attempt the copy and get a copy error if fail
         }
     }
 
-    auto compiledOutput = fileSys.openWrite(destAbsolutePath.c_str(), up::FileOpenMode::Binary);
+    auto compiledOutput = fs::openWrite(destAbsolutePath.c_str(), fs::OpenMode::Binary);
     if (!compiledOutput.isOpen()) {
         ctx.logger().error("Cannot write `{}'", destAbsolutePath);
         return false;

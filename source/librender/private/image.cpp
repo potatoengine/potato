@@ -20,7 +20,7 @@ static int stb_read(void* user, char* data, int size) {
 static void stb_skip(void* user, int n) {
     auto* stream = static_cast<up::Stream*>(user);
 
-    stream->seek(up::SeekPosition::Current, n);
+    stream->seek(up::Stream::Seek::Current, n);
 }
 
 static int stb_eof(void* user) {

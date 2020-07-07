@@ -44,8 +44,7 @@ target_sources(potato_libruntime PRIVATE
     private/json.cpp
     private/logger.cpp
     private/path.cpp
-    private/native_filesystem.cpp
-    private/null.cpp
+    "private/filesystem.cpp"
     private/standard_stream_receiver.cpp
     private/stream.cpp
     private/task_worker.cpp
@@ -99,7 +98,6 @@ target_sources(potato_libruntime_test PRIVATE
     "tests/test_callstack.cpp"
     "tests/test_concurrent_queue.cpp"
     "tests/test_native_backend.cpp"
-    "tests/test_null_backend.cpp"
     "tests/test_path_util.cpp"
     "tests/test_lock_free_queue.cpp"
     "tests/test_rwlock.cpp"
@@ -108,7 +106,8 @@ target_sources(potato_libruntime_test PRIVATE
     "tests/test_task_worker.cpp"
     "tests/test_thread_util.cpp"
     "tests/test_uuid.cpp"
- "tests/test_resource_manifest.cpp")
+    "tests/test_resource_manifest.cpp"
+)
 
 up_set_common_properties(potato_libruntime_test)
 

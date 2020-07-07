@@ -19,7 +19,7 @@ auto up::readBinary(Stream& stream, vector<up::byte>& out) -> IOResult {
     return stream.read(read);
 }
 
-auto up::readBinary(Stream& stream) -> IOResultValue<vector<up::byte>> {
+auto up::readBinary(Stream& stream) -> IOReturn<vector<up::byte>> {
     vector<up::byte> data;
     auto rs = readBinary(stream, data);
     return {rs, std::move(data)};
@@ -45,7 +45,7 @@ auto up::readText(Stream& stream, string& out) -> IOResult {
     return rs;
 }
 
-auto up::readText(Stream& stream) -> IOResultValue<string> {
+auto up::readText(Stream& stream) -> IOReturn<string> {
     string text;
     auto rs = readText(stream, text);
     return {rs, std::move(text)};
