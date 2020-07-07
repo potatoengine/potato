@@ -178,20 +178,27 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             auto outputOsPath = path::join(_temporaryOutputPath, output.path);
             auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
 
+            logicalAssetName.clear();
+            format_append(logicalAssetName, "{}{}{}", newRecord.sourcePath, output.logicalAsset.empty() ? "" : ":", output.logicalAsset);
+            auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
+
+            newRecord.outputs.push_back({output.logicalAsset, logicalAssetId, outputHash});
+
             fixed_string_writer<32> casPath;
             format_append(casPath, "{:02X}/{:04X}/{:016X}.bin", (outputHash >> 56) & 0xFF, (outputHash >> 40) & 0XFFFF, outputHash);
 
             auto casOsPath = path::join(_libraryPath, "cache", casPath);
             string casOsFolder = path::parent(casOsPath);
 
-            fs::createDirectories(casOsFolder);
-            fs::moveFileTo(outputOsPath, casOsPath);
+            if (auto const rs = fs::createDirectories(casOsFolder); rs != IOResult::Success) {
+                _logger.error("Failed to create directory `{}`", casOsFolder);
+                continue;
+            }
 
-            logicalAssetName.clear();
-            format_append(logicalAssetName, "{}{}{}", newRecord.sourcePath, output.logicalAsset.empty() ? "" : ":", output.logicalAsset);
-            auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
-
-            newRecord.outputs.push_back({output.logicalAsset, logicalAssetId, outputHash});
+            if (auto const rs = fs::moveFileTo(outputOsPath, casOsPath); rs != IOResult::Success) {
+                _logger.error("Failed to move temp file `{}` to CAAS `{}`", outputOsPath, casOsPath);
+                continue;
+            }
         }
 
         for (auto const& sourceDepPath : context.sourceDependencies()) {
@@ -320,6 +327,6 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
         return fs::recurse;
     };
 
-    fs::enumerate(_config.sourceFolderPath.c_str(), cb);
+    (void)fs::enumerate(_config.sourceFolderPath.c_str(), cb);
     return files;
 };

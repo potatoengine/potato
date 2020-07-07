@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "potato/spud/result.h"
+
 namespace up {
     enum class IOResult {
         Success,
@@ -12,11 +14,6 @@ namespace up {
         UnsupportedOperation,
         Malformed,
         Unknown,
-    };
-
-    template <typename T, typename E = void> struct Result {
-        IOResult result;
-        T value;
     };
 
     template <typename T> using IOReturn = Result<T, IOResult>;

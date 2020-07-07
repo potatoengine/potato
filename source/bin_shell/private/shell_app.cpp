@@ -100,8 +100,6 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    fs::currentWorkingDirectory(_editorResourcePath);
-
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
 
@@ -163,14 +161,14 @@ int up::shell::ShellApp::initialize() {
     }
 
     _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
-    auto fontStream = fs::openRead("fonts/roboto/Roboto-Regular.ttf");
+    auto fontStream = _resourceLoader.openAsset("fonts/roboto/Roboto-Regular.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open Roboto-Regular font");
         return 1;
     }
     _drawImgui.loadFont(std::move(fontStream));
 
-    fontStream = fs::openRead("fonts/fontawesome5/fa-solid-900.ttf");
+    fontStream = _resourceLoader.openAsset("fonts/fontawesome5/fa-solid-900.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open FontAwesome font");
         return 1;
@@ -215,8 +213,6 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     }
 
     _projectName = path::filebasename(path);
-
-    fs::currentWorkingDirectory(_project->targetPath());
 
     _editors.clear();
     _editors.push_back(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));

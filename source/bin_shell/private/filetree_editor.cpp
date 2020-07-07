@@ -106,7 +106,7 @@ namespace up::shell {
     }
 
     void FileTreeEditor::_enumerateFiles() {
-        fs::enumerate(_path, [this](auto const& item, int depth) {
+        (void)fs::enumerate(_path, [this](auto const& item, int depth) {
             _cache.push_back({path::filename(item.path), item.size, depth, item.type == fs::FileType::Directory});
             return item.type == fs::FileType::Directory ? fs::recurse : fs::next;
         });
