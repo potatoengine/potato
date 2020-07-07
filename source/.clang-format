@@ -8,7 +8,7 @@ ColumnLimit: 120
 Language: Cpp
 Standard: c++20
 AccessModifierOffset: -4
-AlignAfterOpenBracket: DontAlign
+AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignEscapedNewlines: DontAlign
@@ -93,6 +93,7 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
 PointerAlignment: Left
+PenaltyReturnTypeOnItsOwnLine: 100000
 ReflowComments: true
 SortIncludes: true
 SortUsingDeclarations: true
