@@ -3,12 +3,10 @@ IndentWidth: 4
 ContinuationIndentWidth: 4
 TabWidth: 4
 UseTab: Never
-ColumnLimit: 150
+ColumnLimit: 120
 ---
 Language: Cpp
 Standard: c++20
-DerivePointerAlignment: false
-PointerAlignment: Left
 AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
 AlignConsecutiveAssignments: false
@@ -21,15 +19,15 @@ AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowAllConstructorInitializersOnNextLine: false
 AllowShortBlocksOnASingleLine: Empty
-AllowShortCaseLabelsOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: false
 #AllowShortEnumsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: Never
-AllowShortLambdasOnASingleLine: All
+AllowShortLambdasOnASingleLine: Inline
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
-AlwaysBreakTemplateDeclarations: MultiLine
+AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: false
 BraceWrapping:
@@ -59,6 +57,7 @@ BreakStringLiterals: true
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: true
+DerivePointerAlignment: false
 FixNamespaceComments: true
 IncludeBlocks: Regroup
 IncludeCategories:
@@ -85,7 +84,7 @@ IncludeCategories:
     SortPriority: 90
 IncludeIsMainRegex: '([.][a-z]+)?$'
 #IndentCaseBlocks: false
-IndentCaseLabels: false
+IndentCaseLabels: true
 #IndentExternBlock: Indent
 IndentGotoLabels: false
 IndentPPDirectives: AfterHash
