@@ -3,7 +3,7 @@
 #pragma once
 
 #include "_export.h"
-#include "common.h"
+#include "io_result.h"
 
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/int_types.h"
@@ -46,7 +46,7 @@ namespace up::fs {
     UP_RUNTIME_API bool fileExists(zstring_view path) noexcept;
     UP_RUNTIME_API bool directoryExists(zstring_view path) noexcept;
 
-    UP_RUNTIME_API IOResultValue<Stat> fileStat(zstring_view path);
+    UP_RUNTIME_API IOReturn<Stat> fileStat(zstring_view path);
 
     UP_RUNTIME_API Stream openRead(zstring_view path, OpenMode mode = OpenMode::Binary);
     UP_RUNTIME_API Stream openWrite(zstring_view path, OpenMode mode = OpenMode::Binary);

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "_export.h"
-#include "common.h"
+#include "io_result.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/int_types.h"
@@ -83,9 +83,9 @@ namespace up {
     };
 
     [[nodiscard]] UP_RUNTIME_API auto readBinary(Stream& stream, vector<up::byte>& out) -> IOResult;
-    [[nodiscard]] UP_RUNTIME_API auto readBinary(Stream& stream) -> IOResultValue<vector<up::byte>>;
+    [[nodiscard]] UP_RUNTIME_API auto readBinary(Stream& stream) -> IOReturn<vector<up::byte>>;
     [[nodiscard]] UP_RUNTIME_API auto readText(Stream& stream, string& out) -> IOResult;
-    [[nodiscard]] UP_RUNTIME_API auto readText(Stream& stream) -> IOResultValue<string>;
+    [[nodiscard]] UP_RUNTIME_API auto readText(Stream& stream) -> IOReturn<string>;
 
     [[nodiscard]] UP_RUNTIME_API auto writeAllText(Stream& stream, string_view text) -> IOResult;
 } // namespace up

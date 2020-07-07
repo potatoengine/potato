@@ -122,7 +122,7 @@ bool up::fs::directoryExists(zstring_view path) noexcept {
     return std::filesystem::is_directory(std::string_view(path.c_str(), path.size()), ec);
 }
 
-auto up::fs::fileStat(zstring_view path) -> IOResultValue<Stat> {
+auto up::fs::fileStat(zstring_view path) -> IOReturn<Stat> {
     std::error_code ec;
     size_t const size = std::filesystem::file_size(std::string_view(path.c_str(), path.size()), ec);
     uint64 const mtime = std::chrono::duration_cast<std::chrono::microseconds>(

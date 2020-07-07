@@ -14,8 +14,10 @@ namespace up {
         Unknown,
     };
 
-    template <typename T> struct IOResultValue {
+    template <typename T, typename E = void> struct Result {
         IOResult result;
         T value;
     };
+
+    template <typename T> using IOReturn = Result<T, IOResult>;
 } // namespace up

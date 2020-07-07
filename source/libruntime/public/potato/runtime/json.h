@@ -3,7 +3,7 @@
 #pragma once
 
 #include "_export.h"
-#include "common.h"
+#include "io_result.h"
 
 #include <nlohmann/json_fwd.hpp>
 
