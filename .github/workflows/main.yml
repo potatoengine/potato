@@ -109,8 +109,7 @@ jobs:
         run: sudo apt-get -yq install clang-format-10
       - uses: actions/checkout@master
       - name: Check Format
-        run: |
-          python3 ./scripts/tools/run-clang-format.py -r --clang-format-executable clang-format-10 --exclude ./external --extensions h,cpp,cc ./source
+        run: python3 ./scripts/tools/run-clang-format.py -r --clang-format-executable clang-format-10 --exclude ./external --extensions h,cpp,cc ./source
 
   clang-tidy:
     name: 'Clang Tidy'
