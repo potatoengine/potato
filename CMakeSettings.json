@@ -21,6 +21,11 @@
           "name": "UP_OUTPUT_DIR",
           "value": "${projectDir}/out",
           "type": "STRING"
+        },
+        {
+          "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
+          "value": "ON",
+          "type": "BOOL"
         }
       ]
     },
@@ -49,6 +54,11 @@
           "name": "UP_OUTPUT_DIR",
           "value": "${projectDir}/out",
           "type": "STRING"
+        },
+        {
+          "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
+          "value": "ON",
+          "type": "BOOL"
         }
       ]
     },
@@ -77,6 +87,11 @@
           "name": "UP_OUTPUT_DIR",
           "value": "${projectDir}/out",
           "type": "STRING"
+        },
+        {
+          "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
+          "value": "ON",
+          "type": "BOOL"
         }
       ]
     },
@@ -105,6 +120,11 @@
           "name": "UP_OUTPUT_DIR",
           "value": "${projectDir}/out",
           "type": "STRING"
+        },
+        {
+          "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
+          "value": "ON",
+          "type": "BOOL"
         }
       ]
     },

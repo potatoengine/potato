@@ -24,6 +24,18 @@
         "--target",
         "potato_format_all"
       ]
+    },
+    {
+      "taskName": "[Potato] Tidy Source",
+      "appliesTo": "/source",
+      "types": "default",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "@CMAKE_BINARY_DIR@",
+        "--target",
+        "potato_tidy_all"
+      ]
     }
   ]
 }
