@@ -65,8 +65,7 @@ jobs:
             cc: clang-10
             cxxflags: -stdlib=libc++
             warnings: -Wall -Werror -Wno-deprecated-volatile # GLM triggers deprecated-volatile
-            packages: clang-10 clang-tidy-10 libc++-10-dev libc++abi-10-dev
-            clang_tidy: clang-tidy-10
+            packages: clang-10 libc++-10-dev libc++abi-10-dev
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-20.04'
@@ -91,7 +90,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -G Ninja -DUP_CXXFLAGS:STRING="${{ matrix.warnings }}" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=${{ matrix.clang_tidy }}" "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+          cmake -G Ninja -DUP_CXXFLAGS:STRING="${{ matrix.warnings }}" -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
       - name: Test
@@ -106,14 +105,41 @@ jobs:
     runs-on: 'ubuntu-20.04'
 
     steps:
-      - uses: actions/checkout@master
       - name: Apt update
         run: sudo apt-get -yq update
       - name: Install toolchain
         run: sudo apt-get -yq install clang-format-10
+      - uses: actions/checkout@master
       - name: Check Format
         run: |
           python3 ./scripts/tools/run-clang-format.py -r --clang-format-executable clang-format-10 --exclude ./external --extensions h,cpp,cc ./source
+
+  clang-tidy:
+    name: 'Clang Tidy'
+    runs-on: 'ubuntu-20.04'
+
+    steps:
+      - name: Apt update
+        run: sudo apt-get -yq update
+      - name: Install libraries
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
+      - name: Install toolchain
+        run: sudo apt-get -yq install cmake clang-tidy-10 libc++-10-dev libc++abi-10-dev
+      - uses: actions/checkout@master
+        with:
+          lfs: true
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+      - name: Configure
+        env:
+          CXX: clang++-10
+          CC: clang-10
+        run: |
+          mkdir -p build
+          cd build
+          cmake -G Ninja -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-10" "-DCMAKE_BUILD_TYPE:STRING=Debug" ..
+      - name: Build
+        run: cmake --build build --parallel -- -k 0 -v
 
   doxygen:
     name: Documentation
@@ -151,7 +177,7 @@ jobs:
 
   build-all:
     name: All
-    needs: [ 'build-windows', 'build-ubuntu', 'doxygen', 'clang-format' ]
+    needs: [ 'build-windows', 'build-ubuntu', 'doxygen', 'clang-format', clang-tidy ]
     runs-on: 'ubuntu-latest'
 
     steps:
