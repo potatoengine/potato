@@ -132,6 +132,7 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
         env:
+          CXXFLAGS: -stdlib=libc++
           CXX: clang++-10
           CC: clang-10
         run: |
