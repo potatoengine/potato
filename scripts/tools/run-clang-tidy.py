@@ -23,7 +23,7 @@ def find_sources(inputs, extensions=None, exclude=None):
                     ext = os.path.splitext(fpath)[1][1:]
                     if ext not in extensions:
                         continue
-                    if any(functools.map(functools.partial(fnmatch, fpath), exclude)):
+                    if any(map(functools.partial(fnmatch, fpath), exclude)):
                         continue
                     result.append(os.path.abspath(fpath).replace("\\","/"))
             
