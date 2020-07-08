@@ -134,7 +134,7 @@ jobs:
           CC: clang-10
         run: |
           mkdir -p build
-          cmake -S . -B build -G Ninja -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-10" "-DCMAKE_BUILD_TYPE:STRING=Debug"
+          cmake -S . -B build -G Ninja -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-10" "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON" "-DCMAKE_BUILD_TYPE:STRING=Debug"
       - name: Tidy
         run: python3 ./scripts/tools/run-clang-tidy.py --clang-tidy=clang-tidy-10 --build build/ --quiet source/ --exclude test
 
