@@ -63,5 +63,25 @@ configure_file(
 add_custom_target(potato_convert_all
     COMMAND potato_recon -source "${CMAKE_CURRENT_SOURCE_DIR}/resources"
     DEPENDS potato_recon
+    COMMAND echo "Conversion complete!"
     WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-    COMMENT Converting resources...)
+    COMMENT "Converting resources...")
+
+if(MSVC AND NOT CLANG_FORMAT)
+    string(REGEX REPLACE "Tools[/\\].*" "Tools" VC_TOOLS_PATH ${CMAKE_CXX_COMPILER})
+    find_program(CLANG_FORMAT clang-format
+        HINTS ${VC_TOOLS_PATH}
+        PATH_SUFFIXES llvm/x64/bin
+    )
+    if(CLANG_FORMAT)
+        message(STATUS "Found clang-format at ${CLANG_FORMAT}")
+    endif()
+endif()
+
+if(CLANG_FORMAT)
+    add_custom_target(potato_format_all
+        COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/scripts/tools/run-clang-format.py" -ri "--clang-format-executable=${CLANG_FORMAT}" "${CMAKE_CURRENT_SOURCE_DIR}/source"
+        COMMAND echo "Format complete!"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        COMMENT "Formatting code...")
+endif()

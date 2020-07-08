@@ -12,12 +12,15 @@ constexpr up::UUID::UUID(Bytes const& bytes) noexcept : _data{HighLow{}} {
     }
 }
 
-constexpr char byteToString(up::byte byte) noexcept { return static_cast<char>(byte); }
+constexpr char byteToString(up::byte byte) noexcept {
+    return static_cast<char>(byte);
+}
 
 auto up::UUID::toString() const -> string {
     // format 9554084e-4100-4098-b470-2125f5eed133
     string_writer buffer;
-    format_append(buffer,
+    format_append(
+        buffer,
         "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
         _data.ub[0],
         _data.ub[1],

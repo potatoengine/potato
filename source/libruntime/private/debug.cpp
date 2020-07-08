@@ -11,11 +11,16 @@
 
 namespace up::_detail {
     // platform-specific function that must be implemented
-    UP_RUNTIME_API UP_NOINLINE FatalErrorAction
-    handleFatalError(char const* file, int line, char const* failedConditionText, char const* messageText, char const* callstackText);
+    UP_RUNTIME_API UP_NOINLINE FatalErrorAction handleFatalError(
+        char const* file,
+        int line,
+        char const* failedConditionText,
+        char const* messageText,
+        char const* callstackText);
 } // namespace up::_detail
 
-auto up::_detail::raiseFatalError(char const* file, int line, char const* failedConditionText, char const* messageText) -> FatalErrorAction {
+auto up::_detail::raiseFatalError(char const* file, int line, char const* failedConditionText, char const* messageText)
+    -> FatalErrorAction {
     constexpr int num_addresses = 64;
 
     // FIXME: this can be invoked via memory exhaustion, what do?
@@ -37,7 +42,13 @@ auto up::_detail::raiseFatalError(char const* file, int line, char const* failed
     auto const resolvedRecords = callstack::resolveTraceRecords(stack, records);
     if (!resolvedRecords.empty()) {
         for (auto const& record : resolvedRecords) {
-            format_append(buffer, "[{:016X}] ({}:{}) {}\r\n", record.address, record.filename.c_str(), record.line, record.symbol.c_str());
+            format_append(
+                buffer,
+                "[{:016X}] ({}:{}) {}\r\n",
+                record.address,
+                record.filename.c_str(),
+                record.line,
+                record.symbol.c_str());
         }
     }
     else

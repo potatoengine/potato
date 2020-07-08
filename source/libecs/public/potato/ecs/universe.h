@@ -15,7 +15,8 @@ namespace up {
 
     class ComponentRegistry;
     class World;
-    template <typename...> class Query;
+    template <typename...>
+    class Query;
 
     /// @brief Manages all of the state and data for all worlds in the ECS implementation
     class Universe {
@@ -25,9 +26,13 @@ namespace up {
 
         auto createWorld() noexcept -> World { return World(_context); }
 
-        template <typename... Components> auto createQuery() -> Query<Components...> { return Query<Components...>(_context); }
+        template <typename... Components>
+        auto createQuery() -> Query<Components...> {
+            return Query<Components...>(_context);
+        }
 
-        template <typename Component> void registerComponent(zstring_view name);
+        template <typename Component>
+        void registerComponent(zstring_view name);
 
         auto components() const noexcept -> view<ComponentMeta> { return _context->components; }
 
@@ -37,8 +42,10 @@ namespace up {
         rc<EcsSharedContext> _context;
     };
 
-    template <typename Component> void Universe::registerComponent(zstring_view name) {
-        auto const meta = ComponentMeta{.name = name,
+    template <typename Component>
+    void Universe::registerComponent(zstring_view name) {
+        auto const meta = ComponentMeta{
+            .name = name,
             .ops =
                 {
                     .defaultConstruct = _detail::ComponentDefaultMetaOps<Component>::defaultConstruct,

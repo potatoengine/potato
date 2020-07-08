@@ -13,12 +13,15 @@ namespace up {
     // Note: this only support structures up to a certain number of members. Extending
     // this to support "larger" structures is easy, if needed.
     //
-    template <typename Struct> constexpr auto tie_struct(Struct&& s) noexcept {
-        if constexpr (is_braces_constructible_v<Struct, any_type, any_type, any_type, any_type, any_type, any_type, any_type>) {
+    template <typename Struct>
+    constexpr auto tie_struct(Struct&& s) noexcept {
+        if constexpr (
+            is_braces_constructible_v<Struct, any_type, any_type, any_type, any_type, any_type, any_type, any_type>) {
             auto&& [a, b, c, d, e, f, g] = s;
             return std::tie(a, b, c, d, e, f, g);
         }
-        else if constexpr (is_braces_constructible_v<Struct, any_type, any_type, any_type, any_type, any_type, any_type>) {
+        else if constexpr (
+            is_braces_constructible_v<Struct, any_type, any_type, any_type, any_type, any_type, any_type>) {
             auto&& [a, b, c, d, e, f] = s;
             return std::tie(a, b, c, d, e, f);
         }
@@ -49,15 +52,22 @@ namespace up {
 
     // Helper to extract the types of a tuple as a typelist
     //
-    template <typename T> struct tuple_to_typelist;
+    template <typename T>
+    struct tuple_to_typelist;
 
-    template <typename... T> struct tuple_to_typelist<std::tuple<T...>> { using type = typelist<T...>; };
+    template <typename... T>
+    struct tuple_to_typelist<std::tuple<T...>> {
+        using type = typelist<T...>;
+    };
 
-    template <typename T> using tuple_to_typelist_t = typename tuple_to_typelist<T>::type;
+    template <typename T>
+    using tuple_to_typelist_t = typename tuple_to_typelist<T>::type;
 
     // Retrieves the types of members of a structure as a typelist
     // FIXME: this will never return references even when struct members are references!
     //
     template <typename Struct>
-    using member_typelist_t = typelist_map_t<std::remove_reference_t, tuple_to_typelist_t<decltype(tie_struct<Struct>(std::declval<Struct>()))>>;
+    using member_typelist_t = typelist_map_t<
+        std::remove_reference_t,
+        tuple_to_typelist_t<decltype(tie_struct<Struct>(std::declval<Struct>()))>>;
 } // namespace up

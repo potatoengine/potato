@@ -23,7 +23,11 @@ namespace up {
             string path;
         };
 
-        ImporterContext(zstring_view sourceFilePath, zstring_view sourceFolderPath, zstring_view destinationFolderPath, Logger& logger)
+        ImporterContext(
+            zstring_view sourceFilePath,
+            zstring_view sourceFolderPath,
+            zstring_view destinationFolderPath,
+            Logger& logger)
             : _sourceFilePath(sourceFilePath)
             , _sourceFolderPath(sourceFolderPath)
             , _destinationFolderPath(destinationFolderPath)

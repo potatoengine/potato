@@ -16,7 +16,8 @@ up::d3d11::CommandListD3D11::CommandListD3D11(com_ptr<ID3D11DeviceContext> conte
 
 up::d3d11::CommandListD3D11::~CommandListD3D11() = default;
 
-auto up::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, GpuPipelineState* pipelineState) -> box<CommandListD3D11> {
+auto up::d3d11::CommandListD3D11::createCommandList(ID3D11Device* device, GpuPipelineState* pipelineState)
+    -> box<CommandListD3D11> {
     com_ptr<ID3D11DeviceContext> context;
     HRESULT hr = device->CreateDeferredContext(0, out_ptr(context));
     if (FAILED(hr) || context == nullptr) {
@@ -76,7 +77,11 @@ void up::d3d11::CommandListD3D11::bindIndexBuffer(GpuBuffer* buffer, GpuIndexFor
     _context->IASetIndexBuffer(d3d11Buffer, toNative(indexType), d3dOffset);
 }
 
-void up::d3d11::CommandListD3D11::bindVertexBuffer(up::uint32 slot, GpuBuffer* buffer, up::uint64 stride, up::uint64 offset) {
+void up::d3d11::CommandListD3D11::bindVertexBuffer(
+    up::uint32 slot,
+    GpuBuffer* buffer,
+    up::uint64 stride,
+    up::uint64 offset) {
     UP_ASSERT(buffer != nullptr);
     UP_ASSERT(buffer->type() == GpuBufferType::Vertex);
 
@@ -134,8 +139,12 @@ void up::d3d11::CommandListD3D11::bindSampler(up::uint32 slot, GpuSampler* sampl
 void up::d3d11::CommandListD3D11::setPrimitiveTopology(GpuPrimitiveTopology topology) {
     D3D11_PRIMITIVE_TOPOLOGY primitive;
     switch (topology) {
-    case GpuPrimitiveTopology::Triangles: primitive = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
-    case GpuPrimitiveTopology::Lines: primitive = D3D11_PRIMITIVE_TOPOLOGY_LINELIST; break;
+        case GpuPrimitiveTopology::Triangles:
+            primitive = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+            break;
+        case GpuPrimitiveTopology::Lines:
+            primitive = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+            break;
     }
     _context->IASetPrimitiveTopology(primitive);
 }
@@ -174,19 +183,24 @@ void up::d3d11::CommandListD3D11::clearRenderTarget(GpuResourceView* view, glm::
     UP_ASSERT(view != nullptr);
 
     FLOAT c[4] = {color.x, color.y, color.z, color.w};
-    _context->ClearRenderTargetView(static_cast<ID3D11RenderTargetView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()), c);
+    _context->ClearRenderTargetView(
+        static_cast<ID3D11RenderTargetView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()),
+        c);
 }
 
 void up::d3d11::CommandListD3D11::clearDepthStencil(GpuResourceView* view) {
     UP_ASSERT(view != nullptr);
 
-    _context->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()),
+    _context->ClearDepthStencilView(
+        static_cast<ID3D11DepthStencilView*>(static_cast<ResourceViewD3D11*>(view)->getView().get()),
         D3D11_CLEAR_DEPTH,
         1.f,
         0);
 }
 
-void up::d3d11::CommandListD3D11::finish() { _context->FinishCommandList(FALSE, out_ptr(_commands)); }
+void up::d3d11::CommandListD3D11::finish() {
+    _context->FinishCommandList(FALSE, out_ptr(_commands));
+}
 
 void up::d3d11::CommandListD3D11::clear(GpuPipelineState* pipelineState) {
     _context->ClearState();
@@ -243,7 +257,10 @@ void up::d3d11::CommandListD3D11::update(GpuBuffer* buffer, span<up::byte const>
 void up::d3d11::CommandListD3D11::_flushBindings() {
     if (_bindingsDirty) {
         _bindingsDirty = false;
-        _context->OMSetRenderTargets(maxRenderTargetBindings, reinterpret_cast<ID3D11RenderTargetView**>(&_rtv), _dsv.get());
+        _context->OMSetRenderTargets(
+            maxRenderTargetBindings,
+            reinterpret_cast<ID3D11RenderTargetView**>(&_rtv),
+            _dsv.get());
         for (auto& view : _rtv) {
             view.reset();
         }

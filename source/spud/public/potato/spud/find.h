@@ -39,7 +39,8 @@ namespace up {
     }
 
     template <range Range, typename T, typename E = equality>
-    constexpr auto find(Range const& range, T const& value, E const& equals) noexcept(noexcept(equals(*begin(range), value))) {
+    constexpr auto find(Range const& range, T const& value, E const& equals) noexcept(
+        noexcept(equals(*begin(range), value))) {
         auto iter = begin(range);
         auto last = end(range);
 
@@ -96,7 +97,8 @@ namespace up {
     }
 
     template <range Range, typename T, typename E = equality>
-    constexpr auto contains(Range const& range, T const& value, E const& equals) noexcept(noexcept(equals(*begin(range), value))) {
+    constexpr auto contains(Range const& range, T const& value, E const& equals) noexcept(
+        noexcept(equals(*begin(range), value))) {
         auto iter = begin(range);
         auto last = end(range);
 

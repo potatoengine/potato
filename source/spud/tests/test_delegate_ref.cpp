@@ -6,7 +6,9 @@ DOCTEST_TEST_SUITE("[potato][spud] up::delegate_ref") {
     using namespace up;
 
     DOCTEST_TEST_CASE("lambda delegate_ref") {
-        int (*f)(int) = [](int i) { return i * 2; };
+        int (*f)(int) = [](int i) {
+            return i * 2;
+        };
         delegate_ref d = f;
 
         DOCTEST_CHECK_EQ(d(0), 0);
@@ -16,11 +18,15 @@ DOCTEST_TEST_SUITE("[potato][spud] up::delegate_ref") {
 
     DOCTEST_TEST_CASE("delegate_ref reassignment") {
         int i1 = 2;
-        auto f1 = [&i1](int i) { return i1 += i; };
+        auto f1 = [&i1](int i) {
+            return i1 += i;
+        };
         static_assert(is_invocable_v<decltype(f1), int>);
 
         int i2 = 2;
-        auto f2 = [&i2](int i) { return i2 *= i; };
+        auto f2 = [&i2](int i) {
+            return i2 *= i;
+        };
 
         delegate_ref<int(int)> d(f1);
         d(2);

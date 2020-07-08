@@ -21,7 +21,9 @@ auto up::d3d11::TextureD3D11::type() const noexcept -> GpuTextureType {
     return GpuTextureType::Texture2D;
 }
 
-auto up::d3d11::TextureD3D11::format() const noexcept -> GpuFormat { return fromNative(nativeFormat()); }
+auto up::d3d11::TextureD3D11::format() const noexcept -> GpuFormat {
+    return fromNative(nativeFormat());
+}
 
 DXGI_FORMAT up::d3d11::TextureD3D11::nativeFormat() const noexcept {
     com_ptr<ID3D11Texture2D> texture2D;

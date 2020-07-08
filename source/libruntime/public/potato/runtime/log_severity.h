@@ -10,9 +10,15 @@
 namespace up {
     enum class LogSeverity { Info, Error };
 
-    enum class LogSeverityMask : unsigned { Info = 1 << (int)LogSeverity::Info, Error = 1 << (int)LogSeverity::Error, Everything = Info | Error };
+    enum class LogSeverityMask : unsigned {
+        Info = 1 << (int)LogSeverity::Info,
+        Error = 1 << (int)LogSeverity::Error,
+        Everything = Info | Error
+    };
 
-    constexpr LogSeverityMask toMask(LogSeverity severity) noexcept { return static_cast<LogSeverityMask>(1 << static_cast<int>(severity)); }
+    constexpr LogSeverityMask toMask(LogSeverity severity) noexcept {
+        return static_cast<LogSeverityMask>(1 << static_cast<int>(severity));
+    }
 
     constexpr LogSeverityMask toInclusiveMask(LogSeverity severity) noexcept {
         unsigned const high = 1 << static_cast<int>(severity);
@@ -22,9 +28,12 @@ namespace up {
 
     constexpr string_view toString(LogSeverity severity) noexcept {
         switch (severity) {
-        case LogSeverity::Info: return "info";
-        case LogSeverity::Error: return "error";
-        default: return "unknown";
+            case LogSeverity::Info:
+                return "info";
+            case LogSeverity::Error:
+                return "error";
+            default:
+                return "unknown";
         }
     }
 } // namespace up

@@ -7,7 +7,8 @@
 #include <type_traits>
 
 namespace up {
-    template <typename T> class sequence {
+    template <typename T>
+    class sequence {
     public:
         struct sentinel {};
 
@@ -61,7 +62,9 @@ namespace up {
         constexpr auto end() const noexcept -> sentinel { return {}; }
 
         constexpr auto front() const noexcept { return _start; }
-        constexpr auto back() const noexcept requires enumeration<T> { return static_cast<T>(static_cast<std::underlying_type_t<T>>(_end) - 1); }
+        constexpr auto back() const noexcept requires enumeration<T> {
+            return static_cast<T>(static_cast<std::underlying_type_t<T>>(_end) - 1);
+        }
         constexpr auto back() const noexcept { return _end - 1; }
 
         constexpr explicit operator bool() const noexcept { return _start != _end; }

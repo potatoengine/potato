@@ -9,7 +9,9 @@
 
 #include <nlohmann/json.hpp>
 
-auto up::FileHashCache::hashAssetContent(span<up::byte const> contents) noexcept -> up::uint64 { return hash_value<fnv1a>(contents); }
+auto up::FileHashCache::hashAssetContent(span<up::byte const> contents) noexcept -> up::uint64 {
+    return hash_value<fnv1a>(contents);
+}
 
 auto up::FileHashCache::hashAssetStream(Stream& stream) -> up::uint64 {
     constexpr int block_size = 8 * 1024;

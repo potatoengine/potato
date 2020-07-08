@@ -81,50 +81,50 @@ bool up::path::isNormalized(string_view path) noexcept {
 
     for (auto const ch : path) {
         switch (mode) {
-        case Part::Empty:
-            if (ch == '/' || ch == '\\') {
-                mode = Part::Slash;
-            }
-            else if (ch == '.') {
-                mode = Part::Dot;
-            }
-            else {
+            case Part::Empty:
+                if (ch == '/' || ch == '\\') {
+                    mode = Part::Slash;
+                }
+                else if (ch == '.') {
+                    mode = Part::Dot;
+                }
+                else {
+                    mode = Part::Component;
+                }
+                break;
+            case Part::Component:
+                if (ch == '/' || ch == '\\') {
+                    mode = Part::Slash;
+                }
+                break;
+            case Part::Slash:
+                if (ch == '/' || ch == '\\') {
+                    return false; // disallow // in path
+                }
+                else if (ch == '.') {
+                    mode = Part::Dot;
+                }
+                else {
+                    mode = Part::Component;
+                }
+                break;
+            case Part::Dot:
+                if (ch == '/') {
+                    return false; // disallow ./
+                }
+                else if (ch == '.') {
+                    mode = Part::DotDot;
+                }
+                else {
+                    mode = Part::Component;
+                }
+                break;
+            case Part::DotDot:
+                if (ch == '/') {
+                    return false; // disallow ../
+                }
                 mode = Part::Component;
-            }
-            break;
-        case Part::Component:
-            if (ch == '/' || ch == '\\') {
-                mode = Part::Slash;
-            }
-            break;
-        case Part::Slash:
-            if (ch == '/' || ch == '\\') {
-                return false; // disallow // in path
-            }
-            else if (ch == '.') {
-                mode = Part::Dot;
-            }
-            else {
-                mode = Part::Component;
-            }
-            break;
-        case Part::Dot:
-            if (ch == '/') {
-                return false; // disallow ./
-            }
-            else if (ch == '.') {
-                mode = Part::DotDot;
-            }
-            else {
-                mode = Part::Component;
-            }
-            break;
-        case Part::DotDot:
-            if (ch == '/') {
-                return false; // disallow ../
-            }
-            mode = Part::Component;
-            break;
+                break;
         }
     }
 
@@ -154,71 +154,74 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
 
     for (auto const ch : path) {
         switch (mode) {
-        case Part::Empty:
-            if (ch == '/' || ch == '\\') {
-                mode = Part::Slash;
-            }
-            else if (ch == '.') {
-                mode = Part::Dot;
-            }
-            else {
-                mode = Part::Component;
-                result.append(ch);
-            }
-            break;
-        case Part::Component:
-            if (ch == '/' || ch == '\\') {
-                mode = Part::Slash;
-            }
-            else {
-                result.append(ch);
-            }
-            break;
-        case Part::Slash:
-            if (ch == '/' || ch == '\\') {
-                // ignore duplicate slash
-            }
-            else if (ch == '.') {
-                mode = Part::Dot;
-            }
-            else {
-                result.append(to_underlying(sep));
-                result.append(ch);
-                mode = Part::Component;
-            }
-            break;
-        case Part::Dot:
-            if (ch == '/' || ch == '\\') {
-                // ignore single dots
-                mode = Part::Slash;
-            }
-            else if (ch == '.') {
-                mode = Part::DotDot;
-            }
-            else {
-                result.append('.');
-                result.append(ch);
-                mode = Part::Component;
-            }
-            break;
-        case Part::DotDot:
-            if (ch == '/' || ch == '\\') {
-                popPath();
-                mode = Part::Slash;
-            }
-            else {
-                result.append('.');
-                result.append('.');
-                result.append(ch);
-                mode = Part::Component;
-            }
-            break;
+            case Part::Empty:
+                if (ch == '/' || ch == '\\') {
+                    mode = Part::Slash;
+                }
+                else if (ch == '.') {
+                    mode = Part::Dot;
+                }
+                else {
+                    mode = Part::Component;
+                    result.append(ch);
+                }
+                break;
+            case Part::Component:
+                if (ch == '/' || ch == '\\') {
+                    mode = Part::Slash;
+                }
+                else {
+                    result.append(ch);
+                }
+                break;
+            case Part::Slash:
+                if (ch == '/' || ch == '\\') {
+                    // ignore duplicate slash
+                }
+                else if (ch == '.') {
+                    mode = Part::Dot;
+                }
+                else {
+                    result.append(to_underlying(sep));
+                    result.append(ch);
+                    mode = Part::Component;
+                }
+                break;
+            case Part::Dot:
+                if (ch == '/' || ch == '\\') {
+                    // ignore single dots
+                    mode = Part::Slash;
+                }
+                else if (ch == '.') {
+                    mode = Part::DotDot;
+                }
+                else {
+                    result.append('.');
+                    result.append(ch);
+                    mode = Part::Component;
+                }
+                break;
+            case Part::DotDot:
+                if (ch == '/' || ch == '\\') {
+                    popPath();
+                    mode = Part::Slash;
+                }
+                else {
+                    result.append('.');
+                    result.append('.');
+                    result.append(ch);
+                    mode = Part::Component;
+                }
+                break;
         }
     }
 
     switch (mode) {
-    case Part::DotDot: popPath(); break;
-    default: break;
+        case Part::DotDot:
+            popPath();
+            break;
+        default:
+            break;
     }
 
     if (result.empty()) {

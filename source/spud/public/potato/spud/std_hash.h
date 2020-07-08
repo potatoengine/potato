@@ -21,7 +21,8 @@ namespace up {
         hash_append(hasher, pair.second);
     }
 
-    template <typename HashAlgorithm> inline void hash_append(HashAlgorithm& hasher, std::type_index type) {
+    template <typename HashAlgorithm>
+    inline void hash_append(HashAlgorithm& hasher, std::type_index type) {
         // hash_code might not be the same number of bits as the hasher so we rehash.
         // we rehash even if they are the same number of bits, which is probably not ideal, but works.
         hash_append(hasher, type.hash_code());

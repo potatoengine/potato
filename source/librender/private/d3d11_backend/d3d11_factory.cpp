@@ -21,7 +21,9 @@ auto up::CreateFactoryD3D11() -> box<GpuDeviceFactory> {
 }
 #endif
 
-bool up::d3d11::FactoryD3D11::isEnabled() const { return true; }
+bool up::d3d11::FactoryD3D11::isEnabled() const {
+    return true;
+}
 
 void up::d3d11::FactoryD3D11::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
     com_ptr<IDXGIAdapter1> adapter;

@@ -11,13 +11,18 @@ namespace up {
     class CameraController {
     public:
         virtual ~CameraController() = default;
-        virtual void apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept = 0;
+        virtual void apply(
+            Camera& camera,
+            glm::vec3 relativeMovement,
+            glm::vec3 relativeMotion,
+            float frameTime) noexcept = 0;
     };
 
     class FlyCameraController : public CameraController {
     public:
         explicit FlyCameraController(Camera const& camera) noexcept;
-        void apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept override;
+        void apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept
+            override;
 
     private:
         float _moveSpeedPerSec = 10;
@@ -30,7 +35,8 @@ namespace up {
     class ArcBallCameraController : public CameraController {
     public:
         explicit ArcBallCameraController(Camera const& camera) noexcept;
-        void apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept override;
+        void apply(Camera& camera, glm::vec3 relativeMovement, glm::vec3 relativeMotion, float frameTime) noexcept
+            override;
 
     private:
         glm::vec3 _target = {0, 5, 0};

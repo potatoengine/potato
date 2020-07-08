@@ -47,25 +47,34 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, Logg
         }
 
         switch (argMode) {
-        case ArgNone: logger.error("Unexpected value: {}", arg.c_str()); return false;
-        case ArgSourceFolder:
-            config.sourceFolderPath = string(arg);
-            argMode = ArgNone;
-            break;
-        case ArgConfig:
-            if (!parseConfigFile(config, arg, logger)) {
+            case ArgNone:
+                logger.error("Unexpected value: {}", arg.c_str());
                 return false;
-            }
-            argMode = ArgNone;
-            break;
+            case ArgSourceFolder:
+                config.sourceFolderPath = string(arg);
+                argMode = ArgNone;
+                break;
+            case ArgConfig:
+                if (!parseConfigFile(config, arg, logger)) {
+                    return false;
+                }
+                argMode = ArgNone;
+                break;
         }
     }
 
     switch (argMode) {
-    case ArgNone: return true;
-    case ArgSourceFolder: logger.error("No value provided after `-source' argument"); return false;
-    case ArgConfig: logger.error("No value provided after `-config' argument"); return false;
-    default: logger.error("No value provided"); return false;
+        case ArgNone:
+            return true;
+        case ArgSourceFolder:
+            logger.error("No value provided after `-source' argument");
+            return false;
+        case ArgConfig:
+            logger.error("No value provided after `-config' argument");
+            return false;
+        default:
+            logger.error("No value provided");
+            return false;
     }
 }
 

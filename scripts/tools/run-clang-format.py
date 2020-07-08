@@ -132,6 +132,9 @@ def run_clang_format_diff(args, file):
         raise DiffError(str(exc))
     invocation = [args.clang_format_executable, file]
 
+    if args.i:
+        invocation.append('-i')
+
     # Use of utf-8 to decode the process output.
     #
     # Hopefully, this is the correct thing to do.
@@ -186,7 +189,11 @@ def run_clang_format_diff(args, file):
             ),
             errs,
         )
-    return make_diff(file, original, outs), errs
+
+    if not args.i:
+        return make_diff(file, original, outs), errs
+    else:
+        return list(), errs
 
 
 def bold_red(s):
@@ -265,6 +272,11 @@ def main():
         default=0,
         help='run N clang-format jobs in parallel'
         ' (default number of cpus + 1)')
+    parser.add_argument(
+        '-i',
+        action='store_true',
+        help='inplace edit documents'
+    )
     parser.add_argument(
         '--color',
         default='auto',

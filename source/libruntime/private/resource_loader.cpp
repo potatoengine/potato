@@ -33,7 +33,9 @@ auto up::ResourceLoader::assetPath(ResourceId id, string_view logicalName) const
     return {};
 }
 
-auto up::ResourceLoader::assetHash(string_view assetName) const -> ResourceId { return ResourceId{hash_value<fnv1a>(assetName)}; }
+auto up::ResourceLoader::assetHash(string_view assetName) const -> ResourceId {
+    return ResourceId{hash_value<fnv1a>(assetName)};
+}
 
 auto up::ResourceLoader::assetHash(string_view assetName, string_view logicalName) const -> ResourceId {
     fnv1a engine;
@@ -47,7 +49,12 @@ auto up::ResourceLoader::assetHash(string_view assetName, string_view logicalNam
 
 auto up::ResourceLoader::casPath(uint64 contentHash) const -> string {
     fixed_string_writer<32> casFilePath;
-    format_append(casFilePath, "{:02X}/{:04X}/{:016X}.bin", (contentHash >> 56) & 0xFF, (contentHash >> 40) & 0XFFFF, contentHash);
+    format_append(
+        casFilePath,
+        "{:02X}/{:04X}/{:016X}.bin",
+        (contentHash >> 56) & 0xFF,
+        (contentHash >> 40) & 0XFFFF,
+        contentHash);
     return path::join(_casPath, casFilePath);
 }
 
@@ -59,11 +66,17 @@ auto up::ResourceLoader::_openFile(zstring_view filename) const -> Stream {
     return fs::openRead(filename);
 }
 
-auto up::ResourceLoader::openAsset(ResourceId id) const -> Stream { return _openFile(assetPath(id)); }
+auto up::ResourceLoader::openAsset(ResourceId id) const -> Stream {
+    return _openFile(assetPath(id));
+}
 
-auto up::ResourceLoader::openCAS(uint64 contentHash) const -> Stream { return _openFile(casPath(contentHash)); }
+auto up::ResourceLoader::openCAS(uint64 contentHash) const -> Stream {
+    return _openFile(casPath(contentHash));
+}
 
-auto up::ResourceLoader::openAsset(string_view assetName) const -> Stream { return openAsset(assetHash(assetName)); }
+auto up::ResourceLoader::openAsset(string_view assetName) const -> Stream {
+    return openAsset(assetHash(assetName));
+}
 
 auto up::ResourceLoader::openAsset(string_view assetName, string_view logicalName) const -> Stream {
     return openAsset(assetHash(assetName, logicalName));

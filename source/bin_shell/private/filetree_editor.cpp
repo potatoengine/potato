@@ -75,7 +75,9 @@ namespace up::shell {
             }
 
             ImGui::SetNextItemOpen(cached.open, ImGuiCond_Always);
-            if (ImGui::TreeNodeEx(cached.name.c_str(), cached.directory ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_Leaf)) {
+            if (ImGui::TreeNodeEx(
+                    cached.name.c_str(),
+                    cached.directory ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_Leaf)) {
                 depth = cached.depth + 1;
                 cached.open = true;
             }

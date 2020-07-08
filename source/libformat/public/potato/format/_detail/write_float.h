@@ -16,7 +16,8 @@ namespace up::_detail {
 
         int width = 0;
         int precision = -1;
-        if (auto const [success, spec_width, spec_precision] = _detail::parse_width_and_precision(spec_string); success) {
+        if (auto const [success, spec_width, spec_precision] = _detail::parse_width_and_precision(spec_string);
+            success) {
             width = static_cast<int>(spec_width);
             precision = static_cast<int>(spec_precision);
         }
@@ -56,7 +57,8 @@ namespace up::_detail {
     }
 
     // std::to_chars<float> is still mostly unsupported by vendors
-    template <typename Writer> inline void write_float(Writer& out, double value, string_view spec_string) {
+    template <typename Writer>
+    inline void write_float(Writer& out, double value, string_view spec_string) {
         constexpr std::size_t buf_size = 1078;
         char buf[buf_size] = {
             0,

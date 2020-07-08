@@ -14,7 +14,8 @@ up::d3d11::SwapChainD3D11::SwapChainD3D11(com_ptr<IDXGISwapChain1> swapChain) : 
 
 up::d3d11::SwapChainD3D11::~SwapChainD3D11() = default;
 
-auto up::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow) -> rc<GpuSwapChain> {
+auto up::d3d11::SwapChainD3D11::createSwapChain(IDXGIFactory2* factory, ID3D11Device* device, void* nativeWindow)
+    -> rc<GpuSwapChain> {
     DXGI_SWAP_CHAIN_DESC1 desc = {0};
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     desc.SampleDesc.Count = 1;
@@ -56,4 +57,6 @@ auto up::d3d11::SwapChainD3D11::getBuffer(int index) -> rc<GpuTexture> {
     return new_shared<TextureD3D11>(std::move(buffer));
 }
 
-int up::d3d11::SwapChainD3D11::getCurrentBufferIndex() { return _bufferIndex; }
+int up::d3d11::SwapChainD3D11::getCurrentBufferIndex() {
+    return _bufferIndex;
+}

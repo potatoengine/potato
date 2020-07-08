@@ -60,7 +60,8 @@ namespace {
             return;
         }
 
-        _captureStackBackTrace = reinterpret_cast<CaptureStackBackTraceType>(GetProcAddress(_kernelLib, "RtlCaptureStackBackTrace"));
+        _captureStackBackTrace =
+            reinterpret_cast<CaptureStackBackTraceType>(GetProcAddress(_kernelLib, "RtlCaptureStackBackTrace"));
         if (_captureStackBackTrace == nullptr) {
             return;
         }
@@ -81,7 +82,8 @@ namespace {
             return;
         }
 
-        _symGetLineFromAddr64 = reinterpret_cast<SymGetLineFromAddr64Type>(GetProcAddress(_dbghelpLib, "SymGetLineFromAddr64"));
+        _symGetLineFromAddr64 =
+            reinterpret_cast<SymGetLineFromAddr64Type>(GetProcAddress(_dbghelpLib, "SymGetLineFromAddr64"));
         if (_symGetLineFromAddr64 == nullptr) {
             return;
         }
@@ -152,12 +154,16 @@ auto up::callstack::readTrace(span<up::uintptr> addresses, up::uint skip) -> spa
         return {};
     }
 
-    uint count = helper.captureStackTrace(skip + 1, static_cast<uint>(addresses.size()), reinterpret_cast<void**>(addresses.data()));
+    uint count = helper.captureStackTrace(
+        skip + 1,
+        static_cast<uint>(addresses.size()),
+        reinterpret_cast<void**>(addresses.data()));
 
     return addresses.first(count);
 }
 
-auto up::callstack::resolveTraceRecords(span<up::uintptr const> addresses, span<TraceRecord> records) -> span<TraceRecord> {
+auto up::callstack::resolveTraceRecords(span<up::uintptr const> addresses, span<TraceRecord> records)
+    -> span<TraceRecord> {
 #if !defined(NDEBUG)
     CallstackHelper& helper = CallstackHelper::instance();
 

@@ -13,7 +13,8 @@
 #include <thread>
 
 namespace up {
-    template <typename T> class ConcurrentQueue {
+    template <typename T>
+    class ConcurrentQueue {
     public:
         static constexpr int default_capacity = 1024;
 
@@ -28,10 +29,12 @@ namespace up {
 
         bool isClosed() noexcept;
 
-        template <typename InsertT>[[nodiscard]] bool tryEnque(InsertT&& value);
+        template <typename InsertT>
+        [[nodiscard]] bool tryEnque(InsertT&& value);
         [[nodiscard]] bool tryDeque(T& out);
 
-        template <typename InsertT> void enqueWait(InsertT&& value);
+        template <typename InsertT>
+        void enqueWait(InsertT&& value);
         [[nodiscard]] bool dequeWait(T& out);
 
     private:
@@ -48,17 +51,21 @@ namespace up {
         storage* _buffer = nullptr;
     };
 
-    template <typename T> ConcurrentQueue<T>::ConcurrentQueue(uint32 capacity) : _mask(capacity - 1), _buffer(new storage[capacity]) {
+    template <typename T>
+    ConcurrentQueue<T>::ConcurrentQueue(uint32 capacity) : _mask(capacity - 1)
+                                                         , _buffer(new storage[capacity]) {
         UP_ASSERT((capacity & _mask) == 0, "ConcurrentQueue capacity must be a power-of-two");
     }
 
-    template <typename T> ConcurrentQueue<T>::~ConcurrentQueue() {
+    template <typename T>
+    ConcurrentQueue<T>::~ConcurrentQueue() {
         close();
         waitUntilEmpty();
         delete[] _buffer;
     }
 
-    template <typename T> void ConcurrentQueue<T>::waitUntilEmpty() {
+    template <typename T>
+    void ConcurrentQueue<T>::waitUntilEmpty() {
         for (;;) {
             {
                 std::unique_lock lock(_lock);
@@ -72,12 +79,15 @@ namespace up {
         }
     }
 
-    template <typename T> bool ConcurrentQueue<T>::isClosed() noexcept {
+    template <typename T>
+    bool ConcurrentQueue<T>::isClosed() noexcept {
         std::unique_lock lock(_lock);
         return _closed;
     }
 
-    template <typename T> template <typename InsertT> bool ConcurrentQueue<T>::tryEnque(InsertT&& value) {
+    template <typename T>
+    template <typename InsertT>
+    bool ConcurrentQueue<T>::tryEnque(InsertT&& value) {
         std::unique_lock lock(_lock);
 
         if (_closed) {
@@ -96,7 +106,8 @@ namespace up {
         return true;
     }
 
-    template <typename T> bool ConcurrentQueue<T>::tryDeque(T& out) {
+    template <typename T>
+    bool ConcurrentQueue<T>::tryDeque(T& out) {
         std::unique_lock lock(_lock);
 
         if (_size != 0) {
@@ -109,13 +120,16 @@ namespace up {
         return false;
     }
 
-    template <typename T> template <typename InsertT> void ConcurrentQueue<T>::enqueWait(InsertT&& value) {
+    template <typename T>
+    template <typename InsertT>
+    void ConcurrentQueue<T>::enqueWait(InsertT&& value) {
         while (!tryEnque(std::forward<InsertT>(value))) {
             std::this_thread::yield();
         }
     }
 
-    template <typename T> bool ConcurrentQueue<T>::dequeWait(T& out) {
+    template <typename T>
+    bool ConcurrentQueue<T>::dequeWait(T& out) {
         std::unique_lock lock(_lock);
         for (;;) {
             _condition.wait(lock, [this] { return _size != 0 || _closed; });
@@ -134,7 +148,8 @@ namespace up {
         }
     }
 
-    template <typename T> void ConcurrentQueue<T>::close() {
+    template <typename T>
+    void ConcurrentQueue<T>::close() {
         std::unique_lock lock(_lock);
 
         _closed = true;

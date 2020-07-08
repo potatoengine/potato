@@ -4,7 +4,11 @@
 
 #include "potato/spud/platform_windows.h"
 
-void up::Win32DebugReceiver::log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location) noexcept {
+void up::Win32DebugReceiver::log(
+    string_view loggerName,
+    LogSeverity severity,
+    string_view message,
+    LogLocation location) noexcept {
     fixed_string_writer<2048> buffer;
 
     if (location.file) {

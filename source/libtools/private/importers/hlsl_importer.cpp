@@ -21,7 +21,12 @@ namespace {
     struct ReconIncludeHandler : public ID3DInclude {
         ReconIncludeHandler(up::ImporterContext& ctx, up::string_view folder) : _ctx(ctx), _folder(folder) {}
 
-        HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override {
+        HRESULT __stdcall Open(
+            D3D_INCLUDE_TYPE IncludeType,
+            LPCSTR pFileName,
+            LPCVOID pParentData,
+            LPCVOID* ppData,
+            UINT* pBytes) override {
             up::string absolutePath = up::path::join(_folder, pFileName);
 
             _ctx.logger().info("Including `{}'", absolutePath);
@@ -82,7 +87,8 @@ bool up::HlslImporter::import(ImporterContext& ctx) {
 }
 
 #if defined(UP_GPU_ENABLE_D3D11)
-bool up::HlslImporter::_compile(ImporterContext& ctx,
+bool up::HlslImporter::_compile(
+    ImporterContext& ctx,
     zstring_view absoluteSourcePath,
     string_view source,
     string_view logicalName,
@@ -94,7 +100,8 @@ bool up::HlslImporter::_compile(ImporterContext& ctx,
 
     com_ptr<ID3DBlob> blob;
     com_ptr<ID3DBlob> errors;
-    HRESULT hr = D3DCompile2(source.data(),
+    HRESULT hr = D3DCompile2(
+        source.data(),
         source.size(),
         ctx.sourceFilePath().c_str(),
         nullptr,

@@ -11,7 +11,9 @@ namespace up::shell {
 
     void ImGuiComponentReflector::onValue(float& value) { ImGui::InputFloat(_name.c_str(), &value); }
 
-    void ImGuiComponentReflector::onValue(up::EntityId value) { ImGui::LabelText(_name.c_str(), "%u", (unsigned)value); }
+    void ImGuiComponentReflector::onValue(up::EntityId value) {
+        ImGui::LabelText(_name.c_str(), "%u", (unsigned)value);
+    }
 
     void ImGuiComponentReflector::onValue(glm::vec3& value) { ImGui::InputFloat3(_name.c_str(), &value.x); }
 

@@ -23,7 +23,9 @@ DOCTEST_TEST_SUITE("[potato][spud] up::delegate") {
     }
 
     DOCTEST_TEST_CASE("lambda delegate") {
-        delegate d = +[](int i) { return i * 2; };
+        delegate d = +[](int i) {
+            return i * 2;
+        };
 
         DOCTEST_CHECK(!d.empty());
         DOCTEST_CHECK_EQ(d(0), 0);
@@ -46,7 +48,9 @@ DOCTEST_TEST_SUITE("[potato][spud] up::delegate") {
 
     DOCTEST_TEST_CASE("void delegate") {
         int i = 0;
-        delegate<void()> d = [&i] { i = 1; };
+        delegate<void()> d = [&i] {
+            i = 1;
+        };
 
         d();
         DOCTEST_CHECK_EQ(i, 1);

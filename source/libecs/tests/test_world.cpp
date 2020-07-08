@@ -155,7 +155,9 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
             DOCTEST_CHECK(found);
 
             found = false;
-            world.interrogateEntityUnsafe(id, [&found](EntityId, ArchetypeId, ComponentMeta const* meta, void*) { found = true; });
+            world.interrogateEntityUnsafe(id, [&found](EntityId, ArchetypeId, ComponentMeta const* meta, void*) {
+                found = true;
+            });
             DOCTEST_CHECK(found);
         }
 
@@ -186,20 +188,21 @@ DOCTEST_TEST_SUITE("[potato][ecs] World") {
 
             auto id = world.createEntity(Test1{'f'}, Another{1.0, 2.f}, Second{7.f, 'g'});
 
-            auto success = world.interrogateEntityUnsafe(id, [&](auto entity, auto archetype, auto component, auto data) {
-                if (component->typeHash == typeid(Test1).hash_code()) {
-                    DOCTEST_CHECK_EQ('f', static_cast<Test1 const*>(data)->a);
-                }
-                else if (component->typeHash == typeid(Another).hash_code()) {
-                    DOCTEST_CHECK_EQ(1.0, static_cast<Another const*>(data)->a);
-                }
-                else if (component->typeHash == typeid(Second).hash_code()) {
-                    DOCTEST_CHECK_EQ(7.f, static_cast<Second const*>(data)->b);
-                }
-                else {
-                    DOCTEST_FAIL("unknown component");
-                }
-            });
+            auto success =
+                world.interrogateEntityUnsafe(id, [&](auto entity, auto archetype, auto component, auto data) {
+                    if (component->typeHash == typeid(Test1).hash_code()) {
+                        DOCTEST_CHECK_EQ('f', static_cast<Test1 const*>(data)->a);
+                    }
+                    else if (component->typeHash == typeid(Another).hash_code()) {
+                        DOCTEST_CHECK_EQ(1.0, static_cast<Another const*>(data)->a);
+                    }
+                    else if (component->typeHash == typeid(Second).hash_code()) {
+                        DOCTEST_CHECK_EQ(7.f, static_cast<Second const*>(data)->b);
+                    }
+                    else {
+                        DOCTEST_FAIL("unknown component");
+                    }
+                });
             DOCTEST_CHECK(success);
         }
     }

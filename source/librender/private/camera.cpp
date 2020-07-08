@@ -32,7 +32,11 @@ void up::RenderCamera::resetBackBuffer(rc<GpuTexture> texture) {
     _dsv.reset();
 }
 
-void up::RenderCamera::updateBuffers(RenderContext& ctx, glm::vec3 dimensions, glm::vec3 cameraPosition, glm::mat4x4 cameraTransform) {
+void up::RenderCamera::updateBuffers(
+    RenderContext& ctx,
+    glm::vec3 dimensions,
+    glm::vec3 cameraPosition,
+    glm::mat4x4 cameraTransform) {
     if (_rtv == nullptr && _backBuffer != nullptr) {
         _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
     }

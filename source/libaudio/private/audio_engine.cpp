@@ -35,9 +35,13 @@ AudioEngineImpl::AudioEngineImpl(up::ResourceLoader& resourceLoader) : _resource
     _soloud.init();
 }
 
-AudioEngineImpl::~AudioEngineImpl() { _soloud.deinit(); }
+AudioEngineImpl::~AudioEngineImpl() {
+    _soloud.deinit();
+}
 
-auto up::AudioEngine::create(ResourceLoader& resourceLoader) -> box<AudioEngine> { return new_box<AudioEngineImpl>(resourceLoader); }
+auto up::AudioEngine::create(ResourceLoader& resourceLoader) -> box<AudioEngine> {
+    return new_box<AudioEngineImpl>(resourceLoader);
+}
 
 auto AudioEngineImpl::loadSound(up::zstring_view path) -> up::rc<up::SoundResource> {
     up::vector<up::byte> contents;
@@ -48,8 +52,11 @@ auto AudioEngineImpl::loadSound(up::zstring_view path) -> up::rc<up::SoundResour
     stream.close();
 
     auto wav = up::new_shared<SoundResourceWav>();
-    auto const result =
-        wav->_wav.loadMem(reinterpret_cast<unsigned char const*>(contents.data()), static_cast<unsigned int>(contents.size()), true, false);
+    auto const result = wav->_wav.loadMem(
+        reinterpret_cast<unsigned char const*>(contents.data()),
+        static_cast<unsigned int>(contents.size()),
+        true,
+        false);
     if (result != 0) {
         return nullptr;
     }

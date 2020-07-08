@@ -6,7 +6,9 @@
 #    include "win32_debug_receiver.h"
 #endif
 
-up::Logger::Logger(string name, LogSeverity minimumSeverity) : _name(std::move(name)), _minimumSeverity(minimumSeverity) {
+up::Logger::Logger(string name, LogSeverity minimumSeverity)
+    : _name(std::move(name))
+    , _minimumSeverity(minimumSeverity) {
     static auto standard = up::new_shared<up::StandardStreamReceiver>();
     attach(standard);
 

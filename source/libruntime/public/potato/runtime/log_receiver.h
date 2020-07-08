@@ -21,6 +21,10 @@ namespace up {
     public:
         virtual ~LogReceiver() = default;
 
-        virtual void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept = 0;
+        virtual void log(
+            string_view loggerName,
+            LogSeverity severity,
+            string_view message,
+            LogLocation location = {}) noexcept = 0;
     };
 } // namespace up

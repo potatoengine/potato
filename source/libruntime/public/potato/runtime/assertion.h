@@ -26,10 +26,12 @@
 
 namespace up::_detail {
     // abstraction to deal with assert instances that don't have a message at all
-    template <typename Writer, typename... Args> void constexpr formatAssertion(Writer& writer, char const* format, Args&&... args) {
+    template <typename Writer, typename... Args>
+    void constexpr formatAssertion(Writer& writer, char const* format, Args&&... args) {
         format_to(writer, format, std::forward<Args>(args)...);
     }
-    template <typename Writer> void constexpr formatAssertion(Writer&) {}
+    template <typename Writer>
+    void constexpr formatAssertion(Writer&) {}
 } // namespace up::_detail
 
 #    define _up_FORMAT_FAIL(condition_text, ...) \

@@ -13,9 +13,13 @@ up::Semaphore::Semaphore(int initial) noexcept
     : _counter(initial)
     , _handle(CreateSemaphoreW(nullptr, 0, std::numeric_limits<LONG>::max(), nullptr)) {}
 
-up::Semaphore::~Semaphore() noexcept { CloseHandle(_handle); }
+up::Semaphore::~Semaphore() noexcept {
+    CloseHandle(_handle);
+}
 
-void up::Semaphore::_signal(int n) noexcept { ReleaseSemaphore(_handle, n, nullptr); }
+void up::Semaphore::_signal(int n) noexcept {
+    ReleaseSemaphore(_handle, n, nullptr);
+}
 
 void up::Semaphore::_wait() noexcept {
     constexpr int kMaxSpin = 10000;

@@ -95,7 +95,9 @@ void up::Renderer::flushDebugDraw(float frameTime) {
     up::flushDebugDraw(frameTime);
 }
 
-auto up::Renderer::context() -> RenderContext { return RenderContext{_frameTimestamp, *_commandList, *_device}; }
+auto up::Renderer::context() -> RenderContext {
+    return RenderContext{_frameTimestamp, *_commandList, *_device};
+}
 
 up::DefaultLoader::DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device)
     : _resourceLoader(resourceLoader)

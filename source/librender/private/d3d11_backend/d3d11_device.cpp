@@ -16,7 +16,8 @@
 
 #include <utility>
 
-up::d3d11::DeviceD3D11::DeviceD3D11(com_ptr<IDXGIFactory2> factory,
+up::d3d11::DeviceD3D11::DeviceD3D11(
+    com_ptr<IDXGIFactory2> factory,
     com_ptr<IDXGIAdapter1> adapter,
     com_ptr<ID3D11Device> device,
     com_ptr<ID3D11DeviceContext> context)
@@ -45,7 +46,8 @@ up::d3d11::DeviceD3D11::~DeviceD3D11() {
     }
 }
 
-auto up::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter) -> rc<GpuDevice> {
+auto up::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_ptr<IDXGIAdapter1> adapter)
+    -> rc<GpuDevice> {
     UP_ASSERT(factory != nullptr);
     UP_ASSERT(adapter != nullptr);
 
@@ -53,7 +55,8 @@ auto up::d3d11::DeviceD3D11::createDevice(com_ptr<IDXGIFactory2> factory, com_pt
 
     com_ptr<ID3D11Device> device;
     com_ptr<ID3D11DeviceContext> context;
-    D3D11CreateDevice(adapter.get(),
+    D3D11CreateDevice(
+        adapter.get(),
         D3D_DRIVER_TYPE_UNKNOWN,
         nullptr,
         D3D11_CREATE_DEVICE_DEBUG,
@@ -144,14 +147,16 @@ auto up::d3d11::DeviceD3D11::createShaderResourceView(GpuTexture* texture) -> bo
     D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
     desc.Format = toNative(texture->format());
     switch (texture->type()) {
-    case GpuTextureType::Texture2D:
-        desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        desc.Texture2D.MipLevels = 1;
-        desc.Texture2D.MostDetailedMip = 0;
-        break;
-    case GpuTextureType::Texture3D:
-    case GpuTextureType::DepthStencil: UP_UNREACHABLE("unsupporte texture type");
-    default: UP_UNREACHABLE("missing");
+        case GpuTextureType::Texture2D:
+            desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            desc.Texture2D.MipLevels = 1;
+            desc.Texture2D.MostDetailedMip = 0;
+            break;
+        case GpuTextureType::Texture3D:
+        case GpuTextureType::DepthStencil:
+            UP_UNREACHABLE("unsupporte texture type");
+        default:
+            UP_UNREACHABLE("missing");
     }
 
     com_ptr<ID3D11ShaderResourceView> view;
@@ -173,10 +178,18 @@ auto up::d3d11::DeviceD3D11::createBuffer(GpuBufferType type, up::uint64 size) -
     desc.ByteWidth = static_cast<UINT>(size);
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     switch (type) {
-    case GpuBufferType::Index: desc.BindFlags = D3D11_BIND_INDEX_BUFFER; break;
-    case GpuBufferType::Vertex: desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; break;
-    case GpuBufferType::Constant: desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER; break;
-    default: desc.BindFlags = D3D11_BIND_SHADER_RESOURCE; break;
+        case GpuBufferType::Index:
+            desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+            break;
+        case GpuBufferType::Vertex:
+            desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+            break;
+        case GpuBufferType::Constant:
+            desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+            break;
+        default:
+            desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+            break;
     }
 
     com_ptr<ID3D11Buffer> buffer;

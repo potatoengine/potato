@@ -14,9 +14,11 @@
 
 namespace up::_detail {
 
-    template <char PadChar, typename Writer> constexpr void write_padding(Writer& out, size_t width) noexcept {
+    template <char PadChar, typename Writer>
+    constexpr void write_padding(Writer& out, size_t width) noexcept {
         constexpr auto pad_run_count = 8;
-        constexpr char padding[pad_run_count] = {PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar};
+        constexpr char padding[pad_run_count] =
+            {PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar};
 
         while (width > pad_run_count) {
             out.write({padding, pad_run_count});
@@ -43,25 +45,32 @@ namespace up::_detail {
         }
 
         char const* const end = spec_string.data() + spec_string.size();
-        char const* next = _detail::parse_unsigned(spec_string.data(), spec_string.data() + spec_string.size(), spec.width);
+        char const* next =
+            _detail::parse_unsigned(spec_string.data(), spec_string.data() + spec_string.size(), spec.width);
         spec_string = {next, end};
 
         if (auto const [success, printf_spec] = _detail::parse_spec(spec_string, "xbX"); success) {
             switch (printf_spec) {
-            case 'x': spec.base = 16; break;
-            case 'X':
-                spec.base = 16;
-                spec.uppercase = true;
-                break;
-            case 'b': spec.base = 2; break;
-            default: break;
+                case 'x':
+                    spec.base = 16;
+                    break;
+                case 'X':
+                    spec.base = 16;
+                    spec.uppercase = true;
+                    break;
+                case 'b':
+                    spec.base = 2;
+                    break;
+                default:
+                    break;
             }
         }
 
         return spec;
     }
 
-    template <typename Writer, typename T> constexpr void write_integer(Writer& out, T raw, string_view spec_string) {
+    template <typename Writer, typename T>
+    constexpr void write_integer(Writer& out, T raw, string_view spec_string) {
         constexpr auto max_hex_chars = sizeof(raw) * CHAR_BIT + 1 /*negative*/;
         constexpr auto max_dec_chars = std::numeric_limits<T>::digits10 + 2 /*overflow digit, negative*/;
         constexpr auto max_bin_chars = std::numeric_limits<T>::digits + 1 /*negative*/;

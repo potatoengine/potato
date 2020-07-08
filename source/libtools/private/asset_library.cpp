@@ -148,7 +148,8 @@ bool up::AssetLibrary::deserialize(Stream& stream) {
 void up::AssetLibrary::generateManifest(erased_writer writer) const {
     format_to(writer, "# Potato Manifest\n");
     format_to(writer, ".version={}\n", ResourceManifest::version);
-    format_to(writer,
+    format_to(
+        writer,
         ":{}|{}|{}|{}|{}\n",
         ResourceManifest::columnRootId,
         ResourceManifest::columnLogicalId,
@@ -167,7 +168,8 @@ void up::AssetLibrary::generateManifest(erased_writer writer) const {
                 format_append(fullName, ":{}", output.name);
             }
 
-            format_to(writer,
+            format_to(
+                writer,
                 "{:016X}|{:016X}|{:016X}|{:016X}|{}\n",
                 record.assetId,
                 output.logicalAssetId,

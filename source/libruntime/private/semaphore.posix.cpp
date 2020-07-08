@@ -27,7 +27,9 @@ namespace {
 
 up::Semaphore::Semaphore(int initial) noexcept : _counter(initial), _handle(new SemaphoreImplementation) {}
 
-up::Semaphore::~Semaphore() noexcept { delete static_cast<SemaphoreImplementation*>(_handle); }
+up::Semaphore::~Semaphore() noexcept {
+    delete static_cast<SemaphoreImplementation*>(_handle);
+}
 
 void up::Semaphore::_signal(int n) noexcept {
     auto sema = static_cast<SemaphoreImplementation*>(_handle);

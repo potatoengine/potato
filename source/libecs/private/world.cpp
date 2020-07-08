@@ -111,7 +111,10 @@ void up::World::addComponentDefault(EntityId entityId, ComponentMeta const& comp
     }
 }
 
-void up::World::_addComponentRaw(EntityId entityId, ComponentMeta const& componentMeta, void const* componentData) noexcept {
+void up::World::_addComponentRaw(
+    EntityId entityId,
+    ComponentMeta const& componentMeta,
+    void const* componentData) noexcept {
     if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
         // find the target archetype and allocate an entry in it
         auto const& metaPtr = &componentMeta;
@@ -217,11 +220,18 @@ void up::World::_remapEntityId(EntityId entity, ArchetypeId newArchetype, uint16
     _entityMapping[entityMappingIndex] = makeMapped(mappedGen, to_underlying(newArchetype), newChunk, newIndex);
 }
 
-void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ArchetypeId srcArch, Chunk& srcChunk, int srcIndex) {
+void up::World::_moveTo(
+    ArchetypeId destArch,
+    Chunk& destChunk,
+    int destIndex,
+    ArchetypeId srcArch,
+    Chunk& srcChunk,
+    int srcIndex) {
     auto const srcLayout = _context->layoutOf(srcArch);
     for (LayoutRow const& row : _context->layoutOf(destArch)) {
         if (auto const srcRow = findRowDesc(srcLayout, row.component); srcRow != nullptr) {
-            row.meta->ops.moveAssign(destChunk.payload + row.offset + row.width * destIndex,
+            row.meta->ops.moveAssign(
+                destChunk.payload + row.offset + row.width * destIndex,
                 srcChunk.payload + srcRow->offset + srcRow->width * srcIndex);
         }
     }
@@ -229,12 +239,18 @@ void up::World::_moveTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, A
 
 void up::World::_moveTo(ArchetypeId arch, Chunk& destChunk, int destIndex, Chunk& srcChunk, int srcIndex) {
     for (LayoutRow const& layout : _context->layoutOf(arch)) {
-        layout.meta->ops.moveAssign(destChunk.payload + layout.offset + layout.width * destIndex,
+        layout.meta->ops.moveAssign(
+            destChunk.payload + layout.offset + layout.width * destIndex,
             srcChunk.payload + layout.offset + layout.width * srcIndex);
     }
 }
 
-void up::World::_copyTo(ArchetypeId destArch, Chunk& destChunk, int destIndex, ComponentId srcComponent, void const* srcData) {
+void up::World::_copyTo(
+    ArchetypeId destArch,
+    Chunk& destChunk,
+    int destIndex,
+    ComponentId srcComponent,
+    void const* srcData) {
     auto const destRow = findRowDesc(_context->layoutOf(destArch), srcComponent);
     destRow->meta->ops.copyConstruct(destChunk.payload + destRow->offset + destRow->width * destIndex, srcData);
 }

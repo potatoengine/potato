@@ -8,7 +8,8 @@
 #include <string_view>
 
 namespace up {
-    template <class T> constexpr string_view nameof() {
+    template <class T>
+    constexpr string_view nameof() {
 #ifdef __clang__
         constexpr string_view p = __PRETTY_FUNCTION__;
         return p.substr(34, p.size() - 34 - 1);

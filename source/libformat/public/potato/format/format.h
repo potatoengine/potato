@@ -16,7 +16,10 @@
 
 namespace up {
     /// Default format helpers.
-    template <format_writable Writer> constexpr void format_value(Writer& out, string_view str) noexcept(noexcept(out.write(str))) { out.write(str); }
+    template <format_writable Writer>
+    constexpr void format_value(Writer& out, string_view str) noexcept(noexcept(out.write(str))) {
+        out.write(str);
+    }
 
     /// Write the string format using the given parameters into a buffer.
     /// @param writer The write buffer that will receive the formatted text.
@@ -25,17 +28,21 @@ namespace up {
     /// @returns a result code indicating any errors.
     template <format_writable Writer, formattable... Args>
     constexpr auto format_to(Writer& writer, string_view format_str, Args const&... args) -> format_result {
-        // The argument list _must_ be a temporary in the parameter list, as conversions may be involved in formattable_t constructor;
-        // trying to store this in a local array or variable will allow those temporaries to be destructed before the call to
-        // format_impl.
-        return _detail::format_impl(writer, format_str, {_detail::make_format_arg<Writer, _detail::formattable_t<Args>>(args)...});
+        // The argument list _must_ be a temporary in the parameter list, as conversions may be involved in
+        // formattable_t constructor; trying to store this in a local array or variable will allow those temporaries to
+        // be destructed before the call to format_impl.
+        return _detail::format_impl(
+            writer,
+            format_str,
+            {_detail::make_format_arg<Writer, _detail::formattable_t<Args>>(args)...});
     }
 
     /// Write the string format using the given parameters and return a string with the result.
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args The arguments used by the formatting string.
     /// @returns a formatted string.
-    template <format_appendable ResultT, formattable... Args> constexpr auto format_as(string_view format_str, Args const&... args) -> ResultT {
+    template <format_appendable ResultT, formattable... Args>
+    constexpr auto format_as(string_view format_str, Args const&... args) -> ResultT {
         ResultT result;
         format_append(result, format_str, args...);
         return result;
@@ -55,7 +62,8 @@ namespace up {
     /// @param writer The write buffer that will receive the formatted text.
     /// @param value The value to format.
     /// @returns a result code indicating any errors.
-    template <format_writable Writer, formattable T> constexpr auto format_value_to(Writer& writer, T const& value) -> format_result {
+    template <format_writable Writer, formattable T>
+    constexpr auto format_value_to(Writer& writer, T const& value) -> format_result {
         return _detail::make_format_arg<Writer>(value).format_into(writer);
     }
 

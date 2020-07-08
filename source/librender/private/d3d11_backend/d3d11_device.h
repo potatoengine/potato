@@ -11,7 +11,8 @@
 namespace up::d3d11 {
     class DeviceD3D11 final : public GpuDevice {
     public:
-        DeviceD3D11(com_ptr<IDXGIFactory2> factory,
+        DeviceD3D11(
+            com_ptr<IDXGIFactory2> factory,
             com_ptr<IDXGIAdapter1> adapter,
             com_ptr<ID3D11Device> device,
             com_ptr<ID3D11DeviceContext> context);

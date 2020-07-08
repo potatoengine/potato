@@ -44,9 +44,15 @@ auto up::loadImage(Stream& stream) -> Image {
     free(image); // NOLINT(cppcoreguidelines-no-malloc)
 
     switch (channels) {
-    case 1: header.pixelFormat = PixelFormat::R8UnsignedNormalized; break;
-    case 3: header.pixelFormat = PixelFormat::R8G8B8UnsignedNormalized; break;
-    case 4: header.pixelFormat = PixelFormat::R8G8B8A8UnsignedNormalized; break;
+        case 1:
+            header.pixelFormat = PixelFormat::R8UnsignedNormalized;
+            break;
+        case 3:
+            header.pixelFormat = PixelFormat::R8G8B8UnsignedNormalized;
+            break;
+        case 4:
+            header.pixelFormat = PixelFormat::R8G8B8A8UnsignedNormalized;
+            break;
     }
 
     return Image(header, std::move(data));

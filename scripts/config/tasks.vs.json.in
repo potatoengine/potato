@@ -12,6 +12,18 @@
         "--target",
         "potato_convert_all"
       ]
+    },
+    {
+      "taskName": "[Potato] Format Source",
+      "appliesTo": "/source",
+      "types": "default",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "@CMAKE_BINARY_DIR@",
+        "--target",
+        "potato_format_all"
+      ]
     }
   ]
 }

@@ -13,8 +13,12 @@ namespace up {
         using const_iterator = pointer;
 
         struct const_sentinel {
-            friend constexpr bool operator==(const_iterator iter, const_sentinel) noexcept { return iter != nullptr && *iter != 0; }
-            friend constexpr bool operator<(const_iterator iter, const_sentinel) noexcept { return iter == nullptr || *iter != 0; }
+            friend constexpr bool operator==(const_iterator iter, const_sentinel) noexcept {
+                return iter != nullptr && *iter != 0;
+            }
+            friend constexpr bool operator<(const_iterator iter, const_sentinel) noexcept {
+                return iter == nullptr || *iter != 0;
+            }
         };
 
         static constexpr size_type npos = ~size_type(0);
@@ -111,7 +115,8 @@ namespace up {
         pointer _str = nullptr;
     };
 
-    template <typename HashAlgorithm> void hash_append(HashAlgorithm& hasher, zstring_view string) {
+    template <typename HashAlgorithm>
+    void hash_append(HashAlgorithm& hasher, zstring_view string) {
         hasher.append_bytes(string.data(), string.size());
     }
 

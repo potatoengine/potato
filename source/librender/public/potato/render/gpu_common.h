@@ -6,7 +6,14 @@
 #include "potato/spud/span.h"
 
 namespace up {
-    enum class GpuFormat { Unknown, R32G32B32A32Float, R32G32B32Float, R32G32Float, R8G8B8A8UnsignedNormalized, D32Float };
+    enum class GpuFormat {
+        Unknown,
+        R32G32B32A32Float,
+        R32G32B32Float,
+        R32G32Float,
+        R8G8B8A8UnsignedNormalized,
+        D32Float
+    };
 
     enum class GpuShaderSemantic { Position, Color, Normal, Tangent, TexCoord };
 

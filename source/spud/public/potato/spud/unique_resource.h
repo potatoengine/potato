@@ -6,10 +6,12 @@
 #include <utility>
 
 namespace up {
-    template <typename T, auto D, auto Default = T{}> class unique_resource;
+    template <typename T, auto D, auto Default = T{}>
+    class unique_resource;
 }
 
-template <typename T, auto D, auto Default> class up::unique_resource {
+template <typename T, auto D, auto Default>
+class up::unique_resource {
 public:
     using value_type = T;
     using reference = T&;
@@ -21,7 +23,8 @@ public:
 
     explicit unique_resource(rvalue_reference obj) noexcept(std::is_nothrow_move_constructible_v<T>) : _object(obj) {}
 
-    unique_resource(unique_resource&& src) noexcept(std::is_nothrow_move_constructible_v<T>) : _object(std::move(src.get())) {}
+    unique_resource(unique_resource&& src) noexcept(std::is_nothrow_move_constructible_v<T>)
+        : _object(std::move(src.get())) {}
 
     inline unique_resource& operator=(unique_resource&& src) noexcept(std::is_nothrow_move_assignable_v<T>);
     inline unique_resource& operator=(rvalue_reference obj) noexcept(std::is_nothrow_move_assignable_v<T>);
@@ -29,7 +32,9 @@ public:
     bool empty() const { return _object == Default; }
     explicit operator bool() const { return _object != Default; }
 
-    friend bool operator==(unique_resource const& lhs, T const& rhs) noexcept(noexcept(lhs._object == rhs)) { return lhs._object == rhs; }
+    friend bool operator==(unique_resource const& lhs, T const& rhs) noexcept(noexcept(lhs._object == rhs)) {
+        return lhs._object == rhs;
+    }
 
     const_reference get() const { return _object; }
     reference get() { return _object; }
@@ -56,12 +61,14 @@ auto up::unique_resource<T, D, Default>::operator=(rvalue_reference obj) noexcep
     return *this;
 }
 
-template <typename T, auto D, auto Default> void up::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
+template <typename T, auto D, auto Default>
+void up::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
     D(_object);
     _object = std::move(obj);
 }
 
-template <typename T, auto D, auto Default> void up::unique_resource<T, D, Default>::reset() {
+template <typename T, auto D, auto Default>
+void up::unique_resource<T, D, Default>::reset() {
     D(_object);
     _object = Default;
 }
