@@ -4,12 +4,13 @@ import subprocess
 import argparse
 import multiprocessing
 import functools
+import fnmatch
 
-import threading
-
-def find_sources(inputs, extensions=None):
+def find_sources(inputs, extensions=None, exclude=None):
     if extensions is None:
         extensions = []
+    if exclude is None:
+        exclude = []
 
     result = []
     for path in inputs:
@@ -20,8 +21,11 @@ def find_sources(inputs, extensions=None):
                 fpaths = [os.path.join(dirpath, fname) for fname in fnames]
                 for fpath in fpaths:
                     ext = os.path.splitext(fpath)[1][1:]
-                    if ext in extensions:
-                        result.append(os.path.abspath(fpath).replace("\\","/"))
+                    if ext not in extensions:
+                        continue
+                    if any(functools.map(functools.partial(fnmatch, fpath), exclude):
+                        continue
+                    result.append(os.path.abspath(fpath).replace("\\","/"))
             
     return result
 
@@ -66,11 +70,18 @@ def main():
         '--apply', '-A',
         action='store_true',
         help='apply fixes')
+    parser.add_argument(
+        '-e',
+        '--exclude',
+        metavar='PATTERN',
+        action='append',
+        default=[],
+        help='exclude glob patterns from input paths')
 
     args = parser.parse_args()
 
     inputs = args.paths
-    sources = find_sources(inputs, ['c', 'cpp'])
+    sources = find_sources(inputs, extensions=['c', 'cpp'], exclude=args.exclude)
     
     jobs = args.j
     if jobs == 0:
