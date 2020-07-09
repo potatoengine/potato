@@ -38,13 +38,13 @@ namespace up::shell {
 
     protected:
         void configure() override;
-        void renderContent(Renderer& renderer) override;
-        void renderMenu() override;
+        void content() override;
+        void render(Renderer& renderer, float deltaTime) override;
+        void menu() override;
 
     private:
-        void _renderScene(Renderer& renderer, float frameTime);
         void _drawGrid();
-        void _resize(Renderer& renderer, glm::ivec2 size);
+        void _resize(GpuDevice& device, glm::ivec2 size);
         void _inspector();
         void _hierarchy();
 
@@ -57,6 +57,7 @@ namespace up::shell {
         Selection _selection;
         EnumerateComponents _components;
         HandlePlayClicked _onPlayClicked;
+        glm::ivec2 _sceneDimensions = {0, 0};
         bool _enableGrid = true;
     };
 

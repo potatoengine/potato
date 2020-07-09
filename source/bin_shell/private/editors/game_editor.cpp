@@ -24,7 +24,7 @@ auto up::shell::createGameEditor(rc<Scene> scene) -> box<Editor> {
     return new_box<GameEditor>(std::move(scene));
 }
 
-void up::shell::GameEditor::renderContent(Renderer& renderer) {
+void up::shell::GameEditor::content() {
     auto const contentId = ImGui::GetID("GameContentView");
     auto const* const ctx = ImGui::GetCurrentContext();
     auto const& io = ImGui::GetIO();
@@ -72,19 +72,13 @@ void up::shell::GameEditor::renderContent(Renderer& renderer) {
         return;
     }
 
+    _sceneDimensions = {contentSize.x, contentSize.y};
+
     if (ImGui::BeginChild("GameContent", contentSize, false)) {
-        glm::vec3 bufferSize = {0, 0, 0};
-        if (_buffer != nullptr) {
-            bufferSize = _buffer->dimensions();
-        }
-        if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
-            _resize(renderer, {contentSize.x, contentSize.y});
-        }
-
-        _renderScene(renderer, io.DeltaTime);
-
         auto const pos = ImGui::GetCursorScreenPos();
-        ImGui::Image(_bufferView.get(), contentSize);
+        if (_bufferView != nullptr) {
+            ImGui::Image(_bufferView.get(), contentSize);
+        }
         ImGui::SetCursorPos(pos);
         ImGui::InvisibleButton("GameContent", contentSize);
         if (ImGui::IsItemActive() && _scene != nullptr && _scene->playing()) {
@@ -94,7 +88,7 @@ void up::shell::GameEditor::renderContent(Renderer& renderer) {
     ImGui::EndChild();
 }
 
-void up::shell::GameEditor::renderMenu() {
+void up::shell::GameEditor::menu() {
     if (ImGui::BeginMenuBar()) {
         auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
         auto const xPos =
@@ -108,7 +102,16 @@ void up::shell::GameEditor::renderMenu() {
     }
 }
 
-void up::shell::GameEditor::_renderScene(Renderer& renderer, float frameTime) {
+void up::shell::GameEditor::render(Renderer& renderer, float frameTime) {
+    if (_sceneDimensions.x == 0 || _sceneDimensions.y == 0) {
+        return;
+    }
+
+    glm::ivec2 bufferSize = _buffer != nullptr ? _buffer->dimensions() : glm::vec2{0, 0};
+    if (bufferSize.x != _sceneDimensions.x || bufferSize.y != _sceneDimensions.y) {
+        _resize(renderer.device(), _sceneDimensions);
+    }
+
     if (_renderCamera == nullptr) {
         _renderCamera = new_box<RenderCamera>();
     }
@@ -127,14 +130,14 @@ void up::shell::GameEditor::_renderScene(Renderer& renderer, float frameTime) {
     }
 }
 
-void up::shell::GameEditor::_resize(Renderer& renderer, glm::ivec2 size) {
+void up::shell::GameEditor::_resize(GpuDevice& device, glm::ivec2 size) {
     using namespace up;
     GpuTextureDesc desc;
     desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
     desc.type = GpuTextureType::Texture2D;
     desc.width = size.x;
     desc.height = size.y;
-    _buffer = renderer.device().createTexture2D(desc, {});
+    _buffer = device.createTexture2D(desc, {});
 
-    _bufferView = renderer.device().createShaderResourceView(_buffer.get());
+    _bufferView = device.createShaderResourceView(_buffer.get());
 }

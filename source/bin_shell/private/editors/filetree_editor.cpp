@@ -16,7 +16,7 @@ auto up::shell::createFileTreeEditor(string path, FileTreeEditor::OnFileSelected
     return new_box<FileTreeEditor>(std::move(path), std::move(onFileSelected));
 }
 
-void up::shell::FileTreeEditor::renderContent(Renderer& renderer) {
+void up::shell::FileTreeEditor::content() {
     if (_cache.empty()) {
         _enumerateFiles();
     }

@@ -24,7 +24,7 @@ namespace up::shell {
 
     protected:
         void configure() override {}
-        void renderContent(Renderer& renderer) override;
+        void content() override;
         bool isClosable() override { return false; }
 
     private:

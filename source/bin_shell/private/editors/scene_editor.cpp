@@ -43,7 +43,7 @@ void up::shell::SceneEditor::configure() {
     dockPanel(hierarchyId, ImGuiDir_Down, inspectorId, 0.65f);
 }
 
-void up::shell::SceneEditor::renderContent(Renderer& renderer) {
+void up::shell::SceneEditor::content() {
     auto& io = ImGui::GetIO();
 
     auto const contentSize = ImGui::GetContentRegionAvail();
@@ -55,32 +55,15 @@ void up::shell::SceneEditor::renderContent(Renderer& renderer) {
     ImGui::BeginChild("SceneContent", contentSize, false);
     {
         glm::vec3 bufferSize = {0, 0, 0};
-        if (_buffer != nullptr) {
-            bufferSize = _buffer->dimensions();
-        }
-        if (bufferSize.x != contentSize.x || bufferSize.y != contentSize.y) {
-            _resize(renderer, {contentSize.x, contentSize.y});
-        }
+        _sceneDimensions = {contentSize.x, contentSize.y};
 
         glm::vec3 movement = {0, 0, 0};
         glm::vec3 motion = {0, 0, 0};
 
-        auto callback = [](const ImDrawList* list, const ImDrawCmd* cmd) {
-            // Note: we'd like to do this here, but we'll need our own render data since we're in
-            // the middle of using the Renderer to draw the ImGui data at the time this is called.
-            /*auto& self = *static_cast<SceneEditor*>(cmd->UserCallbackData);
-            auto& io = ImGui::GetIO();
-            self._renderScene(io.DeltaTime);*/
-        };
-
-        ImGui::GetWindowDrawList()->AddCallback(callback, this);
-
-        // Note: would prefer to do this in a render callback instead
-        //
-        _renderScene(renderer, io.DeltaTime);
-
         auto const pos = ImGui::GetCursorScreenPos();
-        ImGui::Image(_bufferView.get(), contentSize);
+        if (_bufferView != nullptr) {
+            ImGui::Image(_bufferView.get(), contentSize);
+        }
 
         ImRect area{pos, pos + contentSize};
 
@@ -115,7 +98,7 @@ void up::shell::SceneEditor::renderContent(Renderer& renderer) {
     }
 }
 
-void up::shell::SceneEditor::renderMenu() {
+void up::shell::SceneEditor::menu() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("View")) {
             if (ImGui::BeginMenu("Options")) {
@@ -140,7 +123,16 @@ void up::shell::SceneEditor::renderMenu() {
     }
 }
 
-void up::shell::SceneEditor::_renderScene(Renderer& renderer, float frameTime) {
+void up::shell::SceneEditor::render(Renderer& renderer, float frameTime) {
+    if (_sceneDimensions.x == 0 || _sceneDimensions.y == 0) {
+        return;
+    }
+
+    glm::ivec2 bufferSize = _buffer != nullptr ? _buffer->dimensions() : glm::vec2{0, 0};
+    if (bufferSize.x != _sceneDimensions.x || bufferSize.y != _sceneDimensions.y) {
+        _resize(renderer.device(), _sceneDimensions);
+    }
+
     if (_renderCamera == nullptr) {
         _renderCamera = new_box<RenderCamera>();
     }
@@ -186,16 +178,16 @@ void up::shell::SceneEditor::_drawGrid() {
     drawDebugGrid(grid);
 }
 
-void up::shell::SceneEditor::_resize(Renderer& renderer, glm::ivec2 size) {
+void up::shell::SceneEditor::_resize(GpuDevice& device, glm::ivec2 size) {
     using namespace up;
     GpuTextureDesc desc;
     desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
     desc.type = GpuTextureType::Texture2D;
     desc.width = size.x;
     desc.height = size.y;
-    _buffer = renderer.device().createTexture2D(desc, {});
+    _buffer = device.createTexture2D(desc, {});
 
-    _bufferView = renderer.device().createShaderResourceView(_buffer.get());
+    _bufferView = device.createShaderResourceView(_buffer.get());
 }
 
 void up::shell::SceneEditor::_inspector() {

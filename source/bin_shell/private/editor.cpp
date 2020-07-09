@@ -14,7 +14,7 @@ up::shell::Editor::Editor(zstring_view className) {
     _windowClass.DockingAlwaysTabBar = false;
 }
 
-void up::shell::Editor::render(Renderer& renderer) {
+void up::shell::Editor::updateUi() {
     if (_title.empty()) {
         string_writer tmp;
         format_append(tmp, "{}##{}", displayName(), this);
@@ -37,7 +37,7 @@ void up::shell::Editor::render(Renderer& renderer) {
     }
     ImGui::PopStyleVar(1);
 
-    renderMenu();
+    menu();
 
     if (!_panels.empty() && ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("View")) {
@@ -80,7 +80,7 @@ void up::shell::Editor::render(Renderer& renderer) {
     ImGui::PopStyleVar(1);
 
     if (contentOpen) {
-        renderContent(renderer);
+        content();
     }
 
     ImGui::End();

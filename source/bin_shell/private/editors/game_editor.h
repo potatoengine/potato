@@ -25,13 +25,13 @@ namespace up::shell {
 
     protected:
         void configure() override {}
-        void renderContent(Renderer& renderer) override;
-        void renderMenu() override;
+        void content() override;
+        void render(Renderer& renderer, float deltaTime) override;
+        void menu() override;
         bool hasMenu() override { return true; }
 
     private:
-        void _renderScene(Renderer& renderer, float frameTime);
-        void _resize(Renderer& renderer, glm::ivec2 size);
+        void _resize(GpuDevice& device, glm::ivec2 size);
 
         rc<Scene> _scene;
         rc<GpuTexture> _buffer;
@@ -39,6 +39,7 @@ namespace up::shell {
         box<RenderCamera> _renderCamera;
         Camera _camera;
         FlyCameraController _cameraController;
+        glm::ivec2 _sceneDimensions = {0, 0};
         bool _isInputBound = false;
     };
 

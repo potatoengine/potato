@@ -38,8 +38,11 @@ namespace up::shell {
         /// @return display name.
         virtual zstring_view displayName() const = 0;
 
+        /// @brief Updates the UI.
+        void updateUi();
+
         /// @brief Renders the ui for the Document.
-        void render(Renderer& renderer);
+        virtual void render(Renderer& renderer, float deltaTime) {}
 
         virtual void tick(float deltaTime) {}
 
@@ -57,8 +60,8 @@ namespace up::shell {
 
         /// @brief Renders the ui for the Document.
         virtual void configure() = 0;
-        virtual void renderContent(Renderer& renderer) = 0;
-        virtual void renderMenu() {}
+        virtual void content() = 0;
+        virtual void menu() {}
         virtual bool isClosable() { return true; }
         virtual bool hasMenu() { return false; }
         virtual bool handleClose() { return true; }

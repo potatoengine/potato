@@ -492,7 +492,8 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     for (auto index : sequence(_editors.size())) {
         ImGui::SetNextWindowDockID(mainDockId, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowClass(&_documentWindowClass);
-        _editors[index]->render(*_renderer);
+        _editors[index]->render(*_renderer, _lastFrameTime);
+        _editors[index]->updateUi();
     }
 }
 
