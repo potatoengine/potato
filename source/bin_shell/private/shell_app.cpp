@@ -458,6 +458,10 @@ void up::shell::ShellApp::_displayMainMenu() {
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("Actions")) {
+            ImGui::EndMenu();
+        }
+
         {
             auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 

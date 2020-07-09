@@ -21,20 +21,25 @@ void up::shell::Editor::render(Renderer& renderer) {
         _title = std::move(tmp).to_string();
     }
 
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
+    if (hasMenu()) {
+        windowFlags |= ImGuiWindowFlags_MenuBar;
+    }
+
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     if (isClosable()) {
         bool wantOpen = true;
-        ImGui::Begin(_title.c_str(), &wantOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar);
+        ImGui::Begin(_title.c_str(), &wantOpen, windowFlags);
         _wantClose = !wantOpen;
     }
     else {
-        ImGui::Begin(_title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
+        ImGui::Begin(_title.c_str(), nullptr, windowFlags);
     }
     ImGui::PopStyleVar(1);
 
     renderMenu();
 
-    if (!_panels.empty() && ImGui::BeginMenuBar()) {
+    if (!_panels.empty() && ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("View")) {
             if (ImGui::BeginMenu("Panels")) {
                 for (auto const& panel : _panels) {
@@ -46,7 +51,7 @@ void up::shell::Editor::render(Renderer& renderer) {
             }
             ImGui::EndMenu();
         }
-        ImGui::EndMenuBar();
+        ImGui::EndMainMenuBar();
     }
 
     if (_documentId.empty()) {

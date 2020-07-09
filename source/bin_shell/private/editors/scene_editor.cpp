@@ -116,15 +116,6 @@ void up::shell::SceneEditor::renderContent(Renderer& renderer) {
 }
 
 void up::shell::SceneEditor::renderMenu() {
-    if (_onPlayClicked != nullptr) {
-        if (ImGui::BeginMenuBar()) {
-            if (ImGui::MenuItem("Play")) {
-                _onPlayClicked(_scene);
-            }
-            ImGui::EndMenuBar();
-        }
-    }
-
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("View")) {
             if (ImGui::BeginMenu("Options")) {
@@ -134,6 +125,15 @@ void up::shell::SceneEditor::renderMenu() {
                 ImGui::EndMenu();
             }
 
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Actions")) {
+            if (_onPlayClicked != nullptr) {
+                if (ImGui::MenuItem("Play")) {
+                    _onPlayClicked(_scene);
+                }
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();

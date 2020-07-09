@@ -60,6 +60,7 @@ namespace up::shell {
         virtual void renderContent(Renderer& renderer) = 0;
         virtual void renderMenu() {}
         virtual bool isClosable() { return true; }
+        virtual bool hasMenu() { return false; }
         virtual bool handleClose() { return true; }
 
     private:

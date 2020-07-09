@@ -27,6 +27,7 @@ namespace up::shell {
         void configure() override {}
         void renderContent(Renderer& renderer) override;
         void renderMenu() override;
+        bool hasMenu() override { return true; }
 
     private:
         void _renderScene(Renderer& renderer, float frameTime);
