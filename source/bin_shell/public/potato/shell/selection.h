@@ -1,5 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#pragma once
+
 #include "potato/ecs/common.h"
 
 namespace up::shell {

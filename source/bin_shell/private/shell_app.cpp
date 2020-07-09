@@ -5,6 +5,9 @@
 #include "camera_controller.h"
 #include "components.h"
 #include "scene.h"
+#include "editors/filetree_editor.h"
+#include "editors/game_editor.h"
+#include "editors/scene_editor.h"
 
 #include "potato/ecs/query.h"
 #include "potato/ecs/world.h"
@@ -49,13 +52,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <nfd.h>
-
-namespace up::shell {
-    extern auto createFileTreeEditor(string path, delegate<void(zstring_view name)> onSelected) -> box<Editor>;
-    extern auto createSceneEditor(rc<Scene> scene, delegate<view<ComponentMeta>()>, delegate<void(rc<Scene>)>)
-        -> box<Editor>;
-    extern auto createGameEditor(rc<Scene> scene) -> box<Editor>;
-} // namespace up::shell
 
 up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 

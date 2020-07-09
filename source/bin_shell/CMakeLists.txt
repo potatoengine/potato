@@ -10,14 +10,14 @@ target_sources(potato_shell PRIVATE
     "private/camera.cpp"
     "private/camera_controller.cpp"
     "private/editor.cpp"
-    "private/game_editor.cpp"
+    "private/editors/game_editor.cpp"
     "private/imgui_reflector.cpp"
     "private/main.cpp"
     "private/scene.cpp"
-    "private/scene_editor.cpp"
+    "private/editors/scene_editor.cpp"
     "private/shell_app.cpp"
-    "private/filetree_editor.cpp"
-)
+    "private/editors/filetree_editor.cpp"
+ "private/editors/filetree_editor.h" "private/editors/game_editor.h" "private/editors/scene_editor.h")
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 
