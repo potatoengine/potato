@@ -25,6 +25,7 @@ namespace up::shell {
         zstring_view displayName() const override { return "Files"; }
 
     protected:
+        void configure() override {}
         void renderContent(Renderer& renderer) override;
         bool isClosable() override { return false; }
 

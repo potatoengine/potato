@@ -32,6 +32,7 @@ namespace up::shell {
         zstring_view displayName() const override { return "Game"; }
 
     protected:
+        void configure() override {}
         void renderContent(Renderer& renderer) override;
         void renderMenu() override;
 
