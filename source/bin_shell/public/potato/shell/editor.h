@@ -1,6 +1,11 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#pragma once
+
+#include "potato/spud/box.h"
+#include "potato/spud/delegate.h"
 #include "potato/spud/string.h"
+#include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
 #include <imgui.h>
@@ -12,6 +17,18 @@ namespace up {
 namespace up::shell {
     class Editor {
     public:
+        using PanelUpdate = delegate<void()>;
+        using PanelId = ImGuiID;
+
+        struct Panel {
+            string title;
+            string imguiLabel;
+            bool open = true;
+            PanelUpdate update;
+            ImGuiID id = 0;
+            ImGuiID dockId = 0;
+        };
+
         virtual ~Editor() = default;
 
         Editor(Editor const&) = delete;
@@ -21,8 +38,11 @@ namespace up::shell {
         /// @return display name.
         virtual zstring_view displayName() const = 0;
 
+        /// @brief Updates the UI.
+        void updateUi();
+
         /// @brief Renders the ui for the Document.
-        void render(Renderer& renderer);
+        virtual void render(Renderer& renderer, float deltaTime) {}
 
         virtual void tick(float deltaTime) {}
 
@@ -34,18 +54,27 @@ namespace up::shell {
 
         ImGuiWindowClass const& documentClass() const noexcept { return _windowClass; }
 
+        auto addPanel(string title, PanelUpdate update) -> PanelId;
+        void dockPanel(PanelId panelId, ImGuiDir dir, PanelId otherId, float size);
+        auto contentId() const noexcept { return _dockId; }
+
         /// @brief Renders the ui for the Document.
-        virtual void renderContent(Renderer& renderer) = 0;
-        virtual void renderMenu() {}
-        virtual void renderPanels() {}
+        virtual void configure() = 0;
+        virtual void content() = 0;
+        virtual void menu() {}
         virtual bool isClosable() { return true; }
+        virtual bool hasMenu() { return false; }
         virtual bool handleClose() { return true; }
-        virtual auto buildDockSpace(ImGuiID dockSpaceId) -> ImGuiID;
 
     private:
+        void _content();
+
         ImGuiWindowClass _windowClass;
         string _title;
         string _documentId;
+        ImGuiID _dockId = 0;
+
+        vector<box<Panel>> _panels;
         bool _wantClose = false;
         bool _closed = false;
     };
