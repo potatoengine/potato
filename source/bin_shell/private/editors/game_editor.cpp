@@ -102,7 +102,7 @@ void up::shell::GameEditor::menu() {
     }
 }
 
-void up::shell::GameEditor::render(Renderer& renderer, float frameTime) {
+void up::shell::GameEditor::render(Renderer& renderer, float deltaTime) {
     if (_sceneDimensions.x == 0 || _sceneDimensions.y == 0) {
         return;
     }
@@ -125,8 +125,8 @@ void up::shell::GameEditor::render(Renderer& renderer, float frameTime) {
         if (_scene != nullptr) {
             _scene->render(ctx);
         }
-        renderer.flushDebugDraw(frameTime);
-        renderer.endFrame(frameTime);
+        renderer.flushDebugDraw(deltaTime);
+        renderer.endFrame(deltaTime);
     }
 }
 
