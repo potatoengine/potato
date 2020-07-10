@@ -72,9 +72,9 @@ void up::shell::GameEditor::content() {
         return;
     }
 
-    _sceneDimensions = {contentSize.x, contentSize.y};
-
     if (ImGui::BeginChild("GameContent", contentSize, false)) {
+        _sceneDimensions = {contentSize.x, contentSize.y};
+
         auto const pos = ImGui::GetCursorScreenPos();
         if (_bufferView != nullptr) {
             ImGui::Image(_bufferView.get(), contentSize);

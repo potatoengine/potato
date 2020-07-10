@@ -54,18 +54,17 @@ void up::shell::SceneEditor::content() {
 
     ImGui::BeginChild("SceneContent", contentSize, false);
     {
-        glm::vec3 bufferSize = {0, 0, 0};
-        _sceneDimensions = {contentSize.x, contentSize.y};
+        _sceneDimensions = { contentSize.x, contentSize.y };
 
-        glm::vec3 movement = {0, 0, 0};
-        glm::vec3 motion = {0, 0, 0};
+        glm::vec3 movement = { 0, 0, 0 };
+        glm::vec3 motion = { 0, 0, 0 };
 
         auto const pos = ImGui::GetCursorScreenPos();
         if (_bufferView != nullptr) {
             ImGui::Image(_bufferView.get(), contentSize);
         }
 
-        ImRect area{pos, pos + contentSize};
+        ImRect area{ pos, pos + contentSize };
 
         auto const id = ImGui::GetID("SceneControl");
         ImGui::ItemAdd(area, id);
@@ -128,7 +127,7 @@ void up::shell::SceneEditor::render(Renderer& renderer, float frameTime) {
         return;
     }
 
-    glm::ivec2 bufferSize = _buffer != nullptr ? _buffer->dimensions() : glm::vec2{0, 0};
+    glm::ivec2 bufferSize = _buffer != nullptr ? _buffer->dimensions() : glm::vec2{ 0, 0 };
     if (bufferSize.x != _sceneDimensions.x || bufferSize.y != _sceneDimensions.y) {
         _resize(renderer.device(), _sceneDimensions);
     }
@@ -170,8 +169,8 @@ void up::shell::SceneEditor::_drawGrid() {
     float z = std::trunc(cameraPos.z / guideSpacing) * guideSpacing;
 
     DebugDrawGrid grid;
-    grid.axis2 = {0, 0, 1};
-    grid.offset = {x, 0, z};
+    grid.axis2 = { 0, 0, 1 };
+    grid.offset = { x, 0, z };
     grid.halfWidth = 1000;
     grid.spacing = spacing;
     grid.guidelineSpacing = guidelines;
