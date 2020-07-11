@@ -28,7 +28,11 @@ namespace up::ascii {
         return -1;
     }
 
-    constexpr auto to_uppercase(char const ch) noexcept -> char {
+    constexpr auto toUppercase(char const ch) noexcept -> char {
         return ch >= 'a' && ch <= 'z' ? static_cast<char>(ch - 'a' + 'A') : ch;
+    }
+
+    constexpr auto toLowercase(char const ch) noexcept -> char {
+        return ch >= 'A' && ch <= 'Z' ? static_cast<char>(ch - 'A' + 'a') : ch;
     }
 } // namespace up::ascii

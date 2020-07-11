@@ -35,6 +35,7 @@
 #include "potato/spud/delegate.h"
 #include "potato/spud/platform.h"
 #include "potato/spud/sequence.h"
+#include "potato/spud/string_util.h"
 #include "potato/spud/string_writer.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
@@ -90,6 +91,17 @@ int up::shell::ShellApp::initialize() {
         _errorDialog("Failed to load resource manifest");
         return 1;
     }
+
+    _commands.push_back({.title = "Quit", .command = "quit", .callback = [this](string_view) {
+                             _running = false;
+                         }});
+    _commands.push_back({.title = "Open Project", .command = "project.open", .callback = [this](string_view) {
+                             _openProject = true;
+                             _closeProject = true;
+                         }});
+    _commands.push_back({.title = "Close Project", .command = "project.close", .callback = [this](string_view) {
+                             _closeProject = true;
+                         }});
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -427,6 +439,12 @@ void up::shell::ShellApp::_displayUI() {
     }
 
     _displayDocuments({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
+
+    _commandDialog(menuSize);
+
+    if (ImGui::IsKeyPressed(SDL_SCANCODE_P, false) && (imguiIO.KeyMods & ImGuiKeyModFlags_Ctrl) != 0) {
+        ImGui::OpenPopup("##CommandInput");
+    }
 }
 
 void up::shell::ShellApp::_displayMainMenu() {
@@ -555,4 +573,114 @@ void up::shell::ShellApp::_createScene() {
 
 void up::shell::ShellApp::_createGame(rc<Scene> scene) {
     _editors.push_back(createGameEditor(std::move(scene)));
+}
+
+void up::shell::ShellApp::_commandDialog(ImVec2 menuSize) {
+    auto& imguiIO = ImGui::GetIO();
+
+    auto const popupFlags = ImGuiWindowFlags_NoMove;
+    auto const halfScreenWidth = imguiIO.DisplaySize.x / 2;
+    auto const dialogWidth = max(halfScreenWidth, 220);
+
+    ImGui::SetNextWindowPos({halfScreenWidth - dialogWidth / 2, menuSize.y});
+    ImGui::SetNextWindowSize({dialogWidth, 0});
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+    if (ImGui::BeginPopup("##CommandInput", popupFlags)) {
+        ImGui::SetNextItemWidth(dialogWidth);
+        if (ImGui::IsWindowAppearing()) { // I cannot get SetItemDefaultFocus to work
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        auto const inputFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll |
+            ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
+
+        auto const inputName = "##command";
+
+        if (ImGui::InputText(
+                inputName,
+                _commandInput,
+                sizeof(_commandInput),
+                inputFlags,
+                [](ImGuiInputTextCallbackData* data) -> int {
+                    return static_cast<ShellApp*>(data->UserData)->_commandCallback(data);
+                },
+                this)) {
+            if (_commandMatchIndex != -1 && _handleCommand(_commands[_commandMatchIndex].command)) {
+                _commandInput[0] = '\0';
+                _commandMatchIndex = -1;
+                ImGui::CloseCurrentPopup();
+            }
+            else {
+                ImGui::SetActiveID(ImGui::GetID(inputName), ImGui::GetCurrentContext()->CurrentWindow);
+            }
+        }
+        else if (_commandInput[0] != '\0') {
+            _commandMatchIndex = _findCommandMatch(_commandInput, _commandMatchIndex);
+
+            if (_commandMatchIndex != -1) {
+                for (auto index : sequence(_commands.size())) {
+                    auto const& command = _commands[index];
+                    if (stringIndexOfNoCase(
+                            command.title.data(),
+                            command.title.size(),
+                            _commandInput,
+                            stringLength(_commandInput)) != -1) {
+                        bool const highlight = index == _commandMatchIndex;
+                        ImGui::Selectable(command.title.c_str(), highlight);
+                    }
+                }
+            }
+        }
+        else {
+            _commandMatchIndex = -1;
+        }
+
+        ImGui::EndPopup();
+    }
+    ImGui::PopStyleVar(1);
+}
+
+bool up::shell::ShellApp::_handleCommand(string_view input) {
+    for (auto& command : _commands) {
+        if (command.command == input) {
+            if (command.callback) {
+                command.callback(input);
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+auto up::shell::ShellApp::_commandCallback(ImGuiInputTextCallbackData* data) -> int {
+    switch (data->EventKey) {
+        case ImGuiKey_Tab:
+            return 0;
+        case ImGuiKey_UpArrow:
+            --_commandMatchIndex;
+            return 0;
+        case ImGuiKey_DownArrow:
+            ++_commandMatchIndex;
+            return 0;
+        default:
+            return 0;
+    }
+}
+
+auto up::shell::ShellApp::_findCommandMatch(string_view input, int desiredIndex) const noexcept -> int {
+    int lastMatchIndex = -1;
+    for (auto index : sequence(_commands.size())) {
+        auto const& command = _commands[index];
+        if (stringIndexOfNoCase(command.title.data(), command.title.size(), input.data(), input.size()) != -1) {
+            int const matchIndex = narrow_cast<int>(index);
+            if (matchIndex == desiredIndex) {
+                return matchIndex;
+            }
+            if (lastMatchIndex == -1 || desiredIndex == -1) {
+                lastMatchIndex = matchIndex;
+            }
+        }
+    }
+    return lastMatchIndex;
 }

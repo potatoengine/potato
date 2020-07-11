@@ -86,7 +86,7 @@ namespace up::_detail {
         if (result.ec == std::errc()) {
             if (spec.uppercase) {
                 for (char* c = buffer; c != result.ptr; ++c) {
-                    *c = ascii::to_uppercase(*c);
+                    *c = ascii::toUppercase(*c);
                 }
             }
 
