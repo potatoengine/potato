@@ -334,7 +334,7 @@ void up::DrawImgui::_ensureContext() {
     io.UserData = this;
     io.IniFilename = nullptr;
 
-    io.ConfigFlags = ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
 
     io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
