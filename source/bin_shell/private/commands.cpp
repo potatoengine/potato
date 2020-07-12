@@ -12,7 +12,7 @@ void up::shell::CommandRegistry::registerCommand(Command command) {
 }
 
 auto up::shell::CommandRegistry::commandAt(int index) const noexcept -> Command const* {
-    if (index < 0 || index >= _commands.size()) {
+    if (index < 0 || index >= narrow_cast<int>(_commands.size())) {
         return nullptr;
     }
 

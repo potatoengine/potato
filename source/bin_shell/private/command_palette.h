@@ -20,7 +20,7 @@ namespace up::shell {
     private:
         static int _callbackWrapper(ImGuiInputTextCallbackData* data);
         int _callback(ImGuiInputTextCallbackData* data);
-        bool _execute(CommandRegistry& registry);
+        bool _execute(CommandRegistry& registry) const;
         void _updateMatches(CommandRegistry& registry);
 
         int _activeIndex = -1;

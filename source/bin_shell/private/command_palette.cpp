@@ -142,7 +142,7 @@ void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
     registry.findMatches(_input, _activeIndex, _matches);
 }
 
-auto up::shell::CommandPalette::_execute(CommandRegistry& registry) -> bool {
+auto up::shell::CommandPalette::_execute(CommandRegistry& registry) const -> bool {
     if (_activeIndex == -1) {
         return false;
     }
@@ -153,9 +153,5 @@ auto up::shell::CommandPalette::_execute(CommandRegistry& registry) -> bool {
     }
 
     auto const result = registry.execute(command->command);
-    if (result != CommandResult::Success) {
-        return false;
-    }
-
-    return true;
+    return result == CommandResult::Success;
 }
