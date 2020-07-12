@@ -1,6 +1,8 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "camera.h"
+#include "command_palette.h"
+#include "commands.h"
 #include "editor.h"
 
 #include "potato/audio/audio_engine.h"
@@ -47,12 +49,6 @@ namespace up::shell {
         bool isRunning() const { return _running; }
 
     private:
-        struct Command {
-            zstring_view title;
-            zstring_view command;
-            delegate<void(string_view)> callback;
-        };
-
         void _onWindowSizeChanged();
         void _onWindowClosed();
 
@@ -74,11 +70,6 @@ namespace up::shell {
         void _createScene();
         void _createGame(rc<Scene> scene);
 
-        void _commandDialog(ImVec2 menuSize);
-        bool _handleCommand(string_view input);
-        int _commandCallback(ImGuiInputTextCallbackData* data);
-        int _findCommandMatch(string_view input, int desiredIndex) const noexcept;
-
         bool _selectAndLoadProject(zstring_view defaultPath);
         bool _loadProject(zstring_view path);
 
@@ -96,9 +87,8 @@ namespace up::shell {
         string _editorResourcePath;
         unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
         unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
-        vector<Command> _commands;
-        int _commandMatchIndex = -1;
-        char _commandInput[128] = {0};
+        CommandRegistry _commands;
+        CommandPalette _commandPalette;
         int _lastCursor = -1;
         DrawImgui _drawImgui;
         Logger _logger;
