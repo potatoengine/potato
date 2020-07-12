@@ -17,7 +17,7 @@ target_sources(potato_shell PRIVATE
     "private/editors/scene_editor.cpp"
     "private/shell_app.cpp"
     "private/editors/filetree_editor.cpp"
- "private/editors/filetree_editor.h" "private/editors/game_editor.h" "private/editors/scene_editor.h" "public/potato/shell/commands.h" "private/commands.cpp" "private/command_palette.h" "private/command_palette.cpp")
+ "private/editors/filetree_editor.h" "private/editors/game_editor.h" "private/editors/scene_editor.h" "public/potato/shell/commands.h" "private/commands.cpp" "private/ui/command_palette.h" "private/ui/command_palette.cpp" "private/ui/editor_group.h" "private/ui/editor_group.cpp")
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 

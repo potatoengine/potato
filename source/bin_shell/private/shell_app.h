@@ -1,9 +1,9 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "camera.h"
-#include "command_palette.h"
 #include "commands.h"
-#include "editor.h"
+#include "ui/command_palette.h"
+#include "ui/editor_group.h"
 
 #include "potato/audio/audio_engine.h"
 #include "potato/render/draw_imgui.h"
@@ -54,7 +54,6 @@ namespace up::shell {
 
         void _updateTitle();
         void _processEvents();
-        void _tick();
         void _render();
 
         void _displayUI();
@@ -89,13 +88,12 @@ namespace up::shell {
         unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
         CommandRegistry _commands;
         CommandPalette _commandPalette;
+        EditorGroup _editors;
         int _lastCursor = -1;
         DrawImgui _drawImgui;
         Logger _logger;
-        vector<box<Editor>> _editors;
         float _lastFrameTime = 0.f;
         std::chrono::nanoseconds _lastFrameDuration = {};
-        ImGuiWindowClass _documentWindowClass;
         string _projectName;
         ResourceLoader _resourceLoader;
     }; // namespace up::shell

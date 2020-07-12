@@ -49,6 +49,8 @@ namespace up::shell {
         bool isClosed() const noexcept { return _closed; }
         void close() noexcept { _wantClose = isClosable(); }
 
+        bool isActive() const noexcept { return _active; }
+
     protected:
         explicit Editor(zstring_view className);
 
@@ -77,5 +79,6 @@ namespace up::shell {
         vector<box<Panel>> _panels;
         bool _wantClose = false;
         bool _closed = false;
+        bool _active = false;
     };
 } // namespace up::shell

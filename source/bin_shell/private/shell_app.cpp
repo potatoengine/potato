@@ -92,16 +92,22 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _commands.registerCommand({.title = "Quit", .command = "quit", .callback = [this](string_view) {
+    _commands.registerCommand({.title = "Quit", .command = "potato.quit", .callback = [this](string_view) {
                                    _running = false;
                                }});
-    _commands.registerCommand({.title = "Open Project", .command = "project.open", .callback = [this](string_view) {
-                                   _openProject = true;
-                                   _closeProject = true;
-                               }});
-    _commands.registerCommand({.title = "Close Project", .command = "project.close", .callback = [this](string_view) {
-                                   _closeProject = true;
-                               }});
+    _commands.registerCommand(
+        {.title = "Close Document", .command = "potato.editors.closeActive", .callback = [this](string_view) {
+             _editors.closeActive();
+         }});
+    _commands.registerCommand(
+        {.title = "Open Project", .command = "potato.project.open", .callback = [this](string_view) {
+             _openProject = true;
+             _closeProject = true;
+         }});
+    _commands.registerCommand(
+        {.title = "Close Project", .command = "potato.project.close", .callback = [this](string_view) {
+             _closeProject = true;
+         }});
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -157,10 +163,6 @@ int up::shell::ShellApp::initialize() {
 
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
-
-    _documentWindowClass.ClassId = ImHashStr("DocumentClass");
-    _documentWindowClass.DockingAllowUnclassed = false;
-    _documentWindowClass.DockingAlwaysTabBar = true;
 
     auto imguiVertShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "vertex"_sv);
     auto imguiPixelShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "pixel"_sv);
@@ -223,8 +225,8 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
 
     _projectName = path::filebasename(path);
 
-    _editors.clear();
-    _editors.push_back(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
+    _editors.closeAll();
+    _editors.open(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
 
     _updateTitle();
 
@@ -261,7 +263,6 @@ void up::shell::ShellApp::run() {
         _drawImgui.beginFrame();
 
         _displayUI();
-        _tick();
 
         _drawImgui.endFrame();
 
@@ -269,18 +270,9 @@ void up::shell::ShellApp::run() {
 
         if (_closeProject) {
             _closeProject = false;
-            _editors.clear();
+            _editors.closeAll();
             _project = nullptr;
             _updateTitle();
-        }
-
-        for (auto it = _editors.begin(); it != _editors.end();) {
-            if (it->get()->isClosed()) {
-                it = _editors.erase(it);
-            }
-            else {
-                ++it;
-            }
         }
 
         auto endFrame = std::chrono::high_resolution_clock::now();
@@ -402,12 +394,6 @@ void up::shell::ShellApp::_processEvents() {
     }
 }
 
-void up::shell::ShellApp::_tick() {
-    for (auto& editor : _editors) {
-        editor->tick(_lastFrameTime);
-    }
-}
-
 void up::shell::ShellApp::_render() {
     GpuViewportDesc viewport;
     int width = 0;
@@ -491,7 +477,6 @@ void up::shell::ShellApp::_displayMainMenu() {
 }
 
 void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
-    auto const mainDockId = ImGui::GetID("DocumentsDockspace");
     auto const windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration |
         ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus;
 
@@ -500,15 +485,10 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
-    ImGui::DockSpace(mainDockId, {}, ImGuiDockNodeFlags_NoWindowMenuButton, &_documentWindowClass);
-    ImGui::End();
 
-    for (auto index : sequence(_editors.size())) {
-        ImGui::SetNextWindowDockID(mainDockId, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowClass(&_documentWindowClass);
-        _editors[index]->render(*_renderer, _lastFrameTime);
-        _editors[index]->updateUi();
-    }
+    _editors.update(*_renderer, _lastFrameTime);
+
+    ImGui::End();
 }
 
 void up::shell::ShellApp::_errorDialog(zstring_view message) {
@@ -561,12 +541,12 @@ void up::shell::ShellApp::_createScene() {
 
     auto scene = new_shared<Scene>(*_universe, *_audio);
     scene->create(model, ding);
-    _editors.push_back(createSceneEditor(
+    _editors.open(createSceneEditor(
         scene,
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
 }
 
 void up::shell::ShellApp::_createGame(rc<Scene> scene) {
-    _editors.push_back(createGameEditor(std::move(scene)));
+    _editors.open(createGameEditor(std::move(scene)));
 }

@@ -3,6 +3,7 @@
 #include "editor.h"
 
 #include "potato/format/format.h"
+#include "potato/spud/sequence.h"
 #include "potato/spud/string_writer.h"
 
 #include <imgui.h>
@@ -30,7 +31,7 @@ void up::shell::Editor::updateUi() {
     if (isClosable()) {
         bool wantOpen = true;
         ImGui::Begin(_title.c_str(), &wantOpen, windowFlags);
-        _wantClose = !wantOpen;
+        _wantClose = _wantClose || !wantOpen;
     }
     else {
         ImGui::Begin(_title.c_str(), nullptr, windowFlags);
@@ -99,6 +100,8 @@ void up::shell::Editor::updateUi() {
     if (_wantClose && !_closed) {
         _closed = handleClose();
     }
+
+    _active = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
 
     ImGui::End();
 }
