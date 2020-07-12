@@ -21,7 +21,7 @@ auto up::d3d11::PipelineStateD3D11::createGraphicsPipelineState(GpuPipelineState
 
     D3D11_RASTERIZER_DESC rasterDesc = {};
     rasterDesc.FillMode = D3D11_FILL_SOLID;
-    rasterDesc.CullMode = D3D11_CULL_BACK;
+    rasterDesc.CullMode = D3D11_CULL_NONE;
     rasterDesc.ScissorEnable = desc.enableScissor ? TRUE : FALSE;
     rasterDesc.DepthClipEnable = TRUE;
 
