@@ -54,6 +54,7 @@ namespace up {
         auto isCaptureRelativeMouseMode() const noexcept -> bool { return _captureRelativeMouseMode; }
 
     private:
+        void _initialize();
         void _ensureContext();
         void _applyStyle();
 
