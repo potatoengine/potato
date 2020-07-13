@@ -47,6 +47,7 @@
 #include <glm/vec3.hpp>
 #include <nlohmann/json.hpp>
 #include <SDL.h>
+#include <SDL_keycode.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
 #include <chrono>
@@ -96,9 +97,11 @@ int up::shell::ShellApp::initialize() {
                                    _running = false;
                                }});
     _commands.registerCommand(
-        {.title = "Close Document", .command = "potato.editors.closeActive", .callback = [this](string_view) {
-             _editors.closeActive();
-         }});
+        {.title = "Close Document",
+         .command = "potato.editors.closeActive",
+         .callback = [this](string_view) { _editors.closeActive(); },
+         .hotkey = SDLK_w,
+         .hotkeyMods = KMOD_CTRL});
     _commands.registerCommand(
         {.title = "Open Project", .command = "potato.project.open", .callback = [this](string_view) {
              _openProject = true;
@@ -383,9 +386,13 @@ void up::shell::ShellApp::_processEvents() {
                 }
                 _drawImgui.handleEvent(ev);
                 break;
+            case SDL_KEYDOWN:
+                if (_commands.applyHotkey(ev.key.keysym.sym, ev.key.keysym.mod) != CommandResult::Success) {
+                    _drawImgui.handleEvent(ev);
+                }
+                break;
             case SDL_MOUSEBUTTONUP:
             case SDL_MOUSEMOTION:
-            case SDL_KEYDOWN:
             case SDL_MOUSEWHEEL:
             default:
                 _drawImgui.handleEvent(ev);

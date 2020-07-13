@@ -6,8 +6,6 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
-struct ImGuiInputTextCallbackData;
-
 namespace up::shell {
     using CommandDelegate = delegate<void(string_view input)>;
 
@@ -15,6 +13,8 @@ namespace up::shell {
         zstring_view title;
         zstring_view command;
         CommandDelegate callback;
+        int hotkey = 0;
+        int hotkeyMods = 0;
     };
 
     enum CommandResult { Success, NotFound, Argument };
@@ -29,6 +29,8 @@ namespace up::shell {
         void findMatches(zstring_view input, int& inout_currentIndex, vector<int>& out_matchIndices);
 
         auto execute(string_view input) -> CommandResult;
+
+        auto applyHotkey(int key, int mods) -> CommandResult;
 
     private:
         vector<Command> _commands;

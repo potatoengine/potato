@@ -54,3 +54,15 @@ auto up::shell::CommandRegistry::execute(string_view input) -> CommandResult {
     }
     return CommandResult::NotFound;
 }
+
+auto up::shell::CommandRegistry::applyHotkey(int key, int mods) -> CommandResult {
+    for (auto& command : _commands) {
+        if (command.hotkey == key && (command.hotkeyMods & mods) != 0) {
+            if (command.callback) {
+                command.callback({});
+            }
+            return CommandResult::Success;
+        }
+    }
+    return CommandResult::NotFound;
+}
