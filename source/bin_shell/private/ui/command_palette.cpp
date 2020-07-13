@@ -3,6 +3,8 @@
 #include "command_palette.h"
 #include "commands.h"
 
+#include "potato/spud/sequence.h"
+
 #include <SDL_keycode.h>
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -95,10 +97,8 @@ void up::shell::CommandPalette::update(CommandRegistry& registry) {
         // Draw matching commands
         //
         for (auto index : _matches) {
-            auto const* command = registry.commandAt(index);
-            UP_ASSERT(command != nullptr);
             bool const highlight = index == _activeIndex;
-            ImGui::Selectable(command->title.c_str(), highlight);
+            ImGui::Selectable(registry.paletteDescs()[index].title.c_str(), highlight);
         }
 
         // Close popup if close is requested
@@ -132,16 +132,6 @@ auto up::shell::CommandPalette::_callback(ImGuiInputTextCallbackData* data) -> i
     }
 }
 
-void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
-    if (_input[0] == '\0') {
-        _activeIndex = -1;
-        _matches.clear();
-        return;
-    }
-
-    registry.findMatches(_input, _activeIndex, _matches);
-}
-
 auto up::shell::CommandPalette::_execute(CommandRegistry& registry) const -> bool {
     if (_activeIndex == -1) {
         return false;
@@ -154,4 +144,33 @@ auto up::shell::CommandPalette::_execute(CommandRegistry& registry) const -> boo
 
     auto const result = registry.execute(command->command);
     return result == CommandResult::Success;
+}
+
+void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
+    _matches.clear();
+
+    if (_input[0] == '\0') {
+        _activeIndex = -1;
+        return;
+    }
+
+    int lastMatchIndex = -1;
+
+    auto const input = string_view{_input};
+    auto const descs = registry.paletteDescs();
+    for (auto index : sequence(descs.size())) {
+        auto const& desc = descs[index];
+
+        if (stringIndexOfNoCase(desc.title.data(), desc.title.size(), input.data(), input.size()) != -1) {
+            int const matchIndex = narrow_cast<int>(index);
+
+            if (matchIndex == _activeIndex || lastMatchIndex == -1) {
+                lastMatchIndex = matchIndex;
+            }
+
+            _matches.push_back(matchIndex);
+        }
+    }
+
+    _activeIndex = lastMatchIndex;
 }

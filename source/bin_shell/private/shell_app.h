@@ -72,6 +72,8 @@ namespace up::shell {
         bool _selectAndLoadProject(zstring_view defaultPath);
         bool _loadProject(zstring_view path);
 
+        bool _applyHotKey(int keysym, unsigned mods);
+
         bool _running = true;
         bool _openProject = false;
         bool _closeProject = false;

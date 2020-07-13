@@ -93,24 +93,26 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _commands.registerCommand({.title = "Quit", .command = "potato.quit", .callback = [this](string_view) {
+    _commands.registerCommand({.command = "potato.quit", .callback = [this](string_view) {
                                    _running = false;
                                }});
-    _commands.registerCommand(
-        {.title = "Close Document",
-         .command = "potato.editors.closeActive",
-         .callback = [this](string_view) { _editors.closeActive(); },
-         .hotkey = SDLK_w,
-         .hotkeyMods = KMOD_CTRL});
-    _commands.registerCommand(
-        {.title = "Open Project", .command = "potato.project.open", .callback = [this](string_view) {
-             _openProject = true;
-             _closeProject = true;
-         }});
-    _commands.registerCommand(
-        {.title = "Close Project", .command = "potato.project.close", .callback = [this](string_view) {
-             _closeProject = true;
-         }});
+    _commands.registerCommand({.command = "potato.editors.closeActive", .callback = [this](string_view) {
+                                   _editors.closeActive();
+                               }});
+    _commands.registerCommand({.command = "potato.project.open", .callback = [this](string_view) {
+                                   _openProject = true;
+                                   _closeProject = true;
+                               }});
+    _commands.registerCommand({.command = "potato.project.close", .callback = [this](string_view) {
+                                   _closeProject = true;
+                               }});
+
+    _commands.addPalette({.title = "Quit", .command = "potato.quit"});
+    _commands.addPalette({.title = "Close Document", .command = "potato.editors.closeActive"});
+    _commands.addPalette({.title = "Open Project", .command = "potato.project.open"});
+    _commands.addPalette({.title = "Close Project", .command = "potato.project.close"});
+
+    _commands.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -234,6 +236,42 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _updateTitle();
 
     return true;
+}
+
+bool up::shell::ShellApp::_applyHotKey(int keysym, unsigned mods) {
+    if (keysym == 0) {
+        return false;
+    }
+
+    // Normalized mods so left-v-right is erased
+    //
+    mods &= KMOD_SHIFT | KMOD_CTRL | KMOD_ALT |
+        KMOD_GUI;
+
+    if (0 != (mods & KMOD_SHIFT)) {
+        mods |= KMOD_SHIFT;
+    }
+    if (0 != (mods & KMOD_CTRL)) {
+        mods |= KMOD_CTRL;
+    }
+    if (0 != (mods & KMOD_ALT)) {
+        mods |= KMOD_ALT;
+    }
+    if (0 != (mods & KMOD_GUI)) {
+        mods |= KMOD_GUI;
+    }
+
+    // Attempt to match the input with registered hot keys
+    //
+    auto const descs = _commands.hotKeyDescs();
+    for (auto const& desc : descs) {
+        if (desc.key == keysym && desc.mods == mods) {
+            _commands.execute(desc.command);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void up::shell::ShellApp::run() {
@@ -387,7 +425,7 @@ void up::shell::ShellApp::_processEvents() {
                 _drawImgui.handleEvent(ev);
                 break;
             case SDL_KEYDOWN:
-                if (_commands.applyHotkey(ev.key.keysym.sym, ev.key.keysym.mod) != CommandResult::Success) {
+                if (!_applyHotKey(ev.key.keysym.sym, ev.key.keysym.mod)) {
                     _drawImgui.handleEvent(ev);
                 }
                 break;

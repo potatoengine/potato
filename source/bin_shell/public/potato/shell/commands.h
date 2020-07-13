@@ -10,11 +10,19 @@ namespace up::shell {
     using CommandDelegate = delegate<void(string_view input)>;
 
     struct Command {
-        zstring_view title;
         zstring_view command;
         CommandDelegate callback;
-        int hotkey = 0;
-        int hotkeyMods = 0;
+    };
+
+    struct CommandPaletteDesc {
+        zstring_view title;
+        zstring_view command;
+    };
+
+    struct CommandHotKeyDesc {
+        int key = 0;
+        unsigned mods = 0;
+        zstring_view command;
     };
 
     enum CommandResult { Success, NotFound, Argument };
@@ -23,16 +31,18 @@ namespace up::shell {
     class CommandRegistry {
     public:
         auto commandAt(int index) const noexcept -> Command const*;
+        auto paletteDescs() const noexcept -> view<CommandPaletteDesc> { return _paletteDescs; }
+        auto hotKeyDescs() const noexcept -> view<CommandHotKeyDesc> { return _hotKeyDescs; }
 
         void registerCommand(Command command);
-
-        void findMatches(zstring_view input, int& inout_currentIndex, vector<int>& out_matchIndices);
+        void addPalette(CommandPaletteDesc desc);
+        void addHotKey(CommandHotKeyDesc desc);
 
         auto execute(string_view input) -> CommandResult;
 
-        auto applyHotkey(int key, int mods) -> CommandResult;
-
     private:
         vector<Command> _commands;
+        vector<CommandPaletteDesc> _paletteDescs;
+        vector<CommandHotKeyDesc> _hotKeyDescs;
     };
 } // namespace up::shell
