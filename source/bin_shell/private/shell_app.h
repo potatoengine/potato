@@ -2,6 +2,7 @@
 
 #include "camera.h"
 #include "commands.h"
+#include "menu.h"
 #include "ui/command_palette.h"
 #include "ui/editor_group.h"
 
@@ -90,6 +91,7 @@ namespace up::shell {
         unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
         CommandRegistry _commands;
         CommandPalette _commandPalette;
+        Menu _menu;
         EditorGroup _editors;
         int _lastCursor = -1;
         DrawImgui _drawImgui;

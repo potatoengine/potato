@@ -96,16 +96,22 @@ int up::shell::ShellApp::initialize() {
     _commands.registerCommand({.command = "potato.quit", .callback = [this](string_view) {
                                    _running = false;
                                }});
-    _commands.registerCommand({.command = "potato.editors.closeActive", .callback = [this](string_view) {
-                                   _editors.closeActive();
-                               }});
+    _commands.registerCommand(
+        {.command = "potato.editors.closeActive", .when = "hasEditor", .callback = [this](string_view) {
+             _editors.closeActive();
+         }});
     _commands.registerCommand({.command = "potato.project.open", .callback = [this](string_view) {
                                    _openProject = true;
                                    _closeProject = true;
                                }});
-    _commands.registerCommand({.command = "potato.project.close", .callback = [this](string_view) {
-                                   _closeProject = true;
-                               }});
+    _commands.registerCommand(
+        {.command = "potato.project.close", .when = "hasProject", .callback = [this](string_view) {
+             _closeProject = true;
+         }});
+    _commands.registerCommand(
+        {.command = "potato.assets.newScene", .when = "hasProject", .callback = [this](string_view) {
+             _createScene();
+         }});
 
     _commands.addPalette({.title = "Quit", .command = "potato.quit"});
     _commands.addPalette({.title = "Close Document", .command = "potato.editors.closeActive"});
@@ -113,6 +119,18 @@ int up::shell::ShellApp::initialize() {
     _commands.addPalette({.title = "Close Project", .command = "potato.project.close"});
 
     _commands.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
+
+    _menu.addMenu({.title = "Potato"});
+    _menu.addMenu({.title = "New", .parent = "Potato"});
+    _menu.addMenu({.title = "View"});
+    _menu.addMenu({.title = "Options", .parent = "View"});
+    _menu.addMenu({.title = "Actions"});
+
+    _menu.addMenuItem({.menu = "New", .title = "Scene", .command = "potato.assets.newScene"});
+    _menu.addMenuItem({.menu = "Potato", .title = "Open Project", .command = "potato.project.open"});
+    _menu.addMenuItem({.menu = "Potato", .title = "Close Project", .command = "potato.project.close"});
+    _menu.addMenuItem({.menu = "Potato", .title = "Close Document", .command = "potato.editors.closeActive"});
+    _menu.addMenuItem({.menu = "Potato", .title = "Quit", .command = "potato.quit"});
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -245,8 +263,7 @@ bool up::shell::ShellApp::_applyHotKey(int keysym, unsigned mods) {
 
     // Normalized mods so left-v-right is erased
     //
-    mods &= KMOD_SHIFT | KMOD_CTRL | KMOD_ALT |
-        KMOD_GUI;
+    mods &= KMOD_SHIFT | KMOD_CTRL | KMOD_ALT | KMOD_GUI;
 
     if (0 != (mods & KMOD_SHIFT)) {
         mods |= KMOD_SHIFT;
@@ -266,8 +283,8 @@ bool up::shell::ShellApp::_applyHotKey(int keysym, unsigned mods) {
     auto const descs = _commands.hotKeyDescs();
     for (auto const& desc : descs) {
         if (desc.key == keysym && desc.mods == mods) {
-            _commands.execute(desc.command);
-            return true;
+            auto const rs = _commands.execute(desc.command);
+            return rs == CommandResult::Success;
         }
     }
 
@@ -461,6 +478,9 @@ void up::shell::ShellApp::_render() {
 void up::shell::ShellApp::_displayUI() {
     auto& imguiIO = ImGui::GetIO();
 
+    _commands.setContext("hasProject", _project != nullptr ? "YES" : "NO");
+    _commands.setContext("hasEditor", _editors.active() != nullptr ? "YES" : "NO");
+
     _displayMainMenu();
 
     ImVec2 menuSize;
@@ -475,38 +495,9 @@ void up::shell::ShellApp::_displayUI() {
 }
 
 void up::shell::ShellApp::_displayMainMenu() {
+    _menu.drawMenu(_commands);
+
     if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("Potato")) {
-            if (ImGui::BeginMenu("New")) {
-                if (ImGui::MenuItem("Scene", nullptr, false, _project != nullptr)) {
-                    _createScene();
-                }
-                ImGui::EndMenu();
-            }
-            if (ImGui::MenuItem(as_char(u8"\uf542 Open Project..."))) {
-                _openProject = true;
-                _closeProject = true;
-            }
-            if (ImGui::MenuItem(as_char(u8"\uf057 Close Project"), nullptr, false, _project != nullptr)) {
-                _closeProject = true;
-            }
-            if (ImGui::MenuItem(as_char(u8"\uf52b Quit"), "ESC")) {
-                _running = false;
-            }
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("View")) {
-            if (ImGui::BeginMenu("Options")) {
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Actions")) {
-            ImGui::EndMenu();
-        }
-
         {
             auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 

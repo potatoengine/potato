@@ -161,6 +161,10 @@ void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
     for (auto index : sequence(descs.size())) {
         auto const& desc = descs[index];
 
+        if (!registry.isExecutable(desc.command)) {
+            continue;
+        }
+
         if (stringIndexOfNoCase(desc.title.data(), desc.title.size(), input.data(), input.size()) != -1) {
             int const matchIndex = narrow_cast<int>(index);
 

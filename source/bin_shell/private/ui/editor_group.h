@@ -26,6 +26,8 @@ namespace up::shell {
         void closeAll() noexcept;
         void closeActive() noexcept;
 
+        [[nodiscard]] auto active() const noexcept { return _active; }
+
         void open(box<Editor> editor);
 
     private:

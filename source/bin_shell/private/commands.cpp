@@ -11,6 +11,38 @@ void up::shell::CommandRegistry::registerCommand(Command command) {
     _commands.push_back(std::move(command));
 }
 
+void up::shell::CommandRegistry::setContext(string_view name, string_view value) {
+    for (auto& context : _context) {
+        if (string_view{context.name} == name) {
+            context.value = string{value};
+            return;
+        }
+    }
+    _context.push_back({.name = std::move(name), .value = std::move(value)});
+}
+
+auto up::shell::CommandRegistry::getContext(string_view name, string_view defaultValue) const -> string_view {
+    for (auto& context : _context) {
+        if (string_view{context.name} == name) {
+            return context.value;
+        }
+    }
+    return defaultValue;
+}
+
+void up::shell::CommandRegistry::clearContext(string_view name) {
+    for (auto it = _context.begin(); it != _context.end(); ++it) {
+        if (string_view{it->name} == name) {
+            _context.erase(it);
+            return;
+        }
+    }
+}
+
+auto up::shell::CommandRegistry::evaluate(string_view when) const noexcept -> bool {
+    return getContext(when) == "YES"_sv;
+}
+
 void up::shell::CommandRegistry::addPalette(CommandPaletteDesc desc) {
     _paletteDescs.push_back(std::move(desc));
 }
@@ -30,11 +62,26 @@ auto up::shell::CommandRegistry::commandAt(int index) const noexcept -> Command 
 auto up::shell::CommandRegistry::execute(string_view input) -> CommandResult {
     for (auto& command : _commands) {
         if (command.command == input) {
+            if (!command.when.empty() && !evaluate(command.when)) {
+                return CommandResult::Predicate;
+            }
+
             if (command.callback) {
                 command.callback(input);
             }
             return CommandResult::Success;
         }
     }
+
     return CommandResult::NotFound;
+}
+
+auto up::shell::CommandRegistry::isExecutable(string_view input) -> bool {
+    for (auto& command : _commands) {
+        if (command.command == input) {
+            return command.when.empty() || evaluate(command.when);
+        }
+    }
+
+    return false;
 }

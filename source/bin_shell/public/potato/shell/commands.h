@@ -3,6 +3,7 @@
 #pragma once
 
 #include "potato/spud/delegate.h"
+#include "potato/spud/string.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
@@ -11,6 +12,7 @@ namespace up::shell {
 
     struct Command {
         zstring_view command;
+        zstring_view when;
         CommandDelegate callback;
     };
 
@@ -25,7 +27,7 @@ namespace up::shell {
         zstring_view command;
     };
 
-    enum CommandResult { Success, NotFound, Argument };
+    enum CommandResult { Success, NotFound, Predicate, Argument };
 
     /// @brief Manages the list of all known commands in the system
     class CommandRegistry {
@@ -35,12 +37,26 @@ namespace up::shell {
         auto hotKeyDescs() const noexcept -> view<CommandHotKeyDesc> { return _hotKeyDescs; }
 
         void registerCommand(Command command);
+
+        void setContext(string_view name, string_view value);
+        [[nodiscard]] auto getContext(string_view name, string_view defaultValue = {}) const -> string_view;
+        void clearContext(string_view name);
+
+        [[nodiscard]] bool evaluate(string_view when) const noexcept;
+
         void addPalette(CommandPaletteDesc desc);
         void addHotKey(CommandHotKeyDesc desc);
 
-        auto execute(string_view input) -> CommandResult;
+        [[nodiscard]] auto execute(string_view input) -> CommandResult;
+        [[nodiscard]] auto isExecutable(string_view input) -> bool;
 
     private:
+        struct Context {
+            string name;
+            string value;
+        };
+
+        vector<Context> _context;
         vector<Command> _commands;
         vector<CommandPaletteDesc> _paletteDescs;
         vector<CommandHotKeyDesc> _hotKeyDescs;
