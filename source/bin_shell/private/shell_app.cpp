@@ -478,11 +478,9 @@ void up::shell::ShellApp::_render() {
 void up::shell::ShellApp::_displayUI() {
     auto& imguiIO = ImGui::GetIO();
 
-    _commands.setContext("hasProject", _project != nullptr ? "YES" : "NO");
-    _commands.setContext("hasEditor", _editors.active() != nullptr ? "YES" : "NO");
-    _commands.setContext(
-        "isEditorClosable",
-        _editors.active() != nullptr && _editors.active()->isClosable() ? "YES" : "NO");
+    _commands.context().set("hasProject", _project != nullptr);
+    _commands.context().set("hasEditor", _editors.active() != nullptr);
+    _commands.context().set("isEditorClosable", _editors.active() != nullptr && _editors.active()->isClosable());
 
     _displayMainMenu();
 
