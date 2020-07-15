@@ -76,12 +76,18 @@ auto up::shell::CommandRegistry::execute(string_view input) -> CommandResult {
     return CommandResult::NotFound;
 }
 
-auto up::shell::CommandRegistry::isExecutable(string_view input) -> bool {
+auto up::shell::CommandRegistry::test(string_view input) -> CommandResult {
     for (auto& command : _commands) {
         if (command.command == input) {
-            return command.when.empty() || evaluate(command.when);
+            if (!command.when.empty() && !evaluate(command.when)) {
+                return CommandResult::Predicate;
+            }
+            if (!command.enablement.empty() && !evaluate(command.enablement)) {
+                return CommandResult::Disabled;
+            }
+            return CommandResult::Success;
         }
     }
 
-    return false;
+    return CommandResult::NotFound;
 }

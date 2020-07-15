@@ -97,7 +97,7 @@ int up::shell::ShellApp::initialize() {
                                    _running = false;
                                }});
     _commands.registerCommand(
-        {.command = "potato.editors.closeActive", .when = "hasEditor", .callback = [this](string_view) {
+        {.command = "potato.editors.closeActive", .enablement = "isEditorClosable", .callback = [this](string_view) {
              _editors.closeActive();
          }});
     _commands.registerCommand({.command = "potato.project.open", .callback = [this](string_view) {
@@ -105,11 +105,11 @@ int up::shell::ShellApp::initialize() {
                                    _closeProject = true;
                                }});
     _commands.registerCommand(
-        {.command = "potato.project.close", .when = "hasProject", .callback = [this](string_view) {
+        {.command = "potato.project.close", .enablement = "hasProject", .callback = [this](string_view) {
              _closeProject = true;
          }});
     _commands.registerCommand(
-        {.command = "potato.assets.newScene", .when = "hasProject", .callback = [this](string_view) {
+        {.command = "potato.assets.newScene", .enablement = "hasProject", .callback = [this](string_view) {
              _createScene();
          }});
 
@@ -121,16 +121,16 @@ int up::shell::ShellApp::initialize() {
     _commands.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
 
     _menu.addMenu({.title = "Potato"});
-    _menu.addMenu({.title = "New", .parent = "Potato"});
+    _menu.addMenu({.parent = "Potato", .title = "New"});
     _menu.addMenu({.title = "View"});
-    _menu.addMenu({.title = "Options", .parent = "View"});
+    _menu.addMenu({.parent = "View", .title = "Options"});
     _menu.addMenu({.title = "Actions"});
 
-    _menu.addMenuItem({.menu = "New", .title = "Scene", .command = "potato.assets.newScene"});
-    _menu.addMenuItem({.menu = "Potato", .title = "Open Project", .command = "potato.project.open"});
-    _menu.addMenuItem({.menu = "Potato", .title = "Close Project", .command = "potato.project.close"});
-    _menu.addMenuItem({.menu = "Potato", .title = "Close Document", .command = "potato.editors.closeActive"});
-    _menu.addMenuItem({.menu = "Potato", .title = "Quit", .command = "potato.quit"});
+    _menu.addMenu({.parent = "New", .title = "Scene", .command = "potato.assets.newScene"});
+    _menu.addMenu({.parent = "Potato", .title = "Open Project", .command = "potato.project.open"});
+    _menu.addMenu({.parent = "Potato", .title = "Close Project", .command = "potato.project.close"});
+    _menu.addMenu({.parent = "Potato", .title = "Close Document", .command = "potato.editors.closeActive"});
+    _menu.addMenu({.parent = "Potato", .title = "Quit", .command = "potato.quit"});
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -480,6 +480,9 @@ void up::shell::ShellApp::_displayUI() {
 
     _commands.setContext("hasProject", _project != nullptr ? "YES" : "NO");
     _commands.setContext("hasEditor", _editors.active() != nullptr ? "YES" : "NO");
+    _commands.setContext(
+        "isEditorClosable",
+        _editors.active() != nullptr && _editors.active()->isClosable() ? "YES" : "NO");
 
     _displayMainMenu();
 

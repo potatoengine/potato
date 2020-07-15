@@ -9,31 +9,26 @@
 namespace up::shell {
     class CommandRegistry;
 
-    struct MenuItemDesc {
-        string menu;
+    struct MenuDesc {
+        string parent;
         char8_t const* icon = nullptr;
         string title;
         string command;
-    };
-
-    struct MenuDesc {
-        char8_t const* icon = nullptr;
-        string title;
-        string parent;
         int priority = -1;
     };
 
     class Menu {
     public:
-        void addMenuItem(MenuItemDesc desc);
         void addMenu(MenuDesc desc);
 
         void drawMenu(CommandRegistry& commands) const;
 
     private:
         void _drawMenu(CommandRegistry& commands, zstring_view parent) const;
+        auto _isVisible(CommandRegistry& commands, MenuDesc const& desc) const noexcept -> bool;
+        auto _isEnabled(CommandRegistry& commands, MenuDesc const& desc) const noexcept -> bool;
+        auto _isChecked(CommandRegistry& commands, MenuDesc const& desc) const noexcept -> bool;
 
         vector<MenuDesc> _menus;
-        vector<MenuItemDesc> _items;
     };
 } // namespace up::shell

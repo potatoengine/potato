@@ -12,6 +12,7 @@ namespace up::shell {
 
     struct Command {
         zstring_view command;
+        zstring_view enablement;
         zstring_view when;
         CommandDelegate callback;
     };
@@ -27,7 +28,7 @@ namespace up::shell {
         zstring_view command;
     };
 
-    enum CommandResult { Success, NotFound, Predicate, Argument };
+    enum CommandResult { Success, NotFound, Predicate, Disabled, Argument };
 
     /// @brief Manages the list of all known commands in the system
     class CommandRegistry {
@@ -48,7 +49,7 @@ namespace up::shell {
         void addHotKey(CommandHotKeyDesc desc);
 
         [[nodiscard]] auto execute(string_view input) -> CommandResult;
-        [[nodiscard]] auto isExecutable(string_view input) -> bool;
+        [[nodiscard]] auto test(string_view input) -> CommandResult;
 
     private:
         struct Context {

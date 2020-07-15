@@ -47,6 +47,7 @@ namespace up::shell {
         virtual void tick(float deltaTime) {}
 
         bool isClosed() const noexcept { return _closed; }
+        virtual bool isClosable() { return true; }
         void close() noexcept { _wantClose = isClosable(); }
 
         bool isActive() const noexcept { return _active; }
@@ -64,7 +65,6 @@ namespace up::shell {
         virtual void configure() = 0;
         virtual void content() = 0;
         virtual void menu() {}
-        virtual bool isClosable() { return true; }
         virtual bool hasMenu() { return false; }
         virtual bool handleClose() { return true; }
 

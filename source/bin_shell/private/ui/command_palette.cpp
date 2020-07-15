@@ -161,7 +161,7 @@ void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
     for (auto index : sequence(descs.size())) {
         auto const& desc = descs[index];
 
-        if (!registry.isExecutable(desc.command)) {
+        if (registry.test(desc.command) != CommandResult::Success) {
             continue;
         }
 

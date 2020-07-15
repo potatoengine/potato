@@ -5,10 +5,6 @@
 
 #include <imgui.h>
 
-void up::shell::Menu::addMenuItem(MenuItemDesc desc) {
-    _items.push_back(desc);
-}
-
 void up::shell::Menu::addMenu(MenuDesc desc) {
     _menus.push_back(desc);
 }
@@ -26,23 +22,59 @@ void up::shell::Menu::_drawMenu(CommandRegistry& commands, zstring_view parent) 
             continue;
         }
 
-        if (ImGui::BeginMenu(menu.title.c_str())) {
-            _drawMenu(commands, menu.title);
-            ImGui::EndMenu();
-        }
-    }
-
-    for (auto const& item : _items) {
-        if (zstring_view{item.menu} != parent) {
+        if (!_isVisible(commands, menu)) {
             continue;
         }
 
-        if (!commands.isExecutable(item.command)) {
-            continue;
+        if (menu.command.empty()) {
+            if (ImGui::BeginMenu(menu.title.c_str())) {
+                _drawMenu(commands, menu.title);
+                ImGui::EndMenu();
+            }
         }
-
-        if (ImGui::MenuItem(item.title.c_str())) {
-            (void)commands.execute(item.command);
+        else {
+            bool enabled = _isEnabled(commands, menu);
+            if (ImGui::MenuItem(menu.title.c_str(), nullptr, false, enabled)) {
+                (void)commands.execute(menu.command);
+            }
         }
     }
+}
+
+auto up::shell::Menu::_isEnabled(CommandRegistry& commands, MenuDesc const& desc) const noexcept -> bool {
+    if (desc.command.empty()) {
+        for (auto const& menu : _menus) {
+            if (menu.parent != desc.title) {
+                continue;
+            }
+            if (_isVisible(commands, menu)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    auto const result = commands.test(desc.command);
+    return result == CommandResult::Success;
+}
+
+auto up::shell::Menu::_isChecked(CommandRegistry& commands, MenuDesc const& desc) const noexcept -> bool {
+    return false;
+}
+
+auto up::shell::Menu::_isVisible(CommandRegistry& commands, MenuDesc const& desc) const noexcept -> bool {
+    if (desc.command.empty()) {
+        for (auto const& menu : _menus) {
+            if (menu.parent != desc.title) {
+                continue;
+            }
+            if (_isVisible(commands, menu)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    auto const result = commands.test(desc.command);
+    return result == CommandResult::Success || result == CommandResult::Disabled;
 }
