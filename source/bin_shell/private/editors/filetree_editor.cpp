@@ -64,8 +64,8 @@ void up::shell::FileTreeEditor::content() {
             ImGui::Text("%lu", cached.size);
         }
         ImGui::NextColumn();
-        auto ext = path::extension(zstring_view(cached.name));
-        ImGui::Text("%s", cached.directory ? "<dir>" : ext.empty() ? "" : ext.c_str());
+        auto ext = path::extension(cached.name);
+        ImGui::Text("%s", cached.directory ? "<dir>" : ext.empty() ? "" : ext.substr(1).c_str());
         ImGui::NextColumn();
     }
 
