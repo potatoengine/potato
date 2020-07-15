@@ -64,8 +64,8 @@ void up::shell::FileTreeEditor::content() {
             ImGui::Text("%lu", cached.size);
         }
         ImGui::NextColumn();
-        auto ext = path::extension(zstring_view(cached.name));
-        ImGui::Text("%s", cached.directory ? "<dir>" : ext.empty() ? "" : ext.c_str());
+        auto ext = path::extension(cached.name);
+        ImGui::Text("%s", cached.directory ? "<dir>" : ext.empty() ? "" : ext.substr(1).c_str());
         ImGui::NextColumn();
     }
 
@@ -76,6 +76,15 @@ void up::shell::FileTreeEditor::content() {
 
 void up::shell::FileTreeEditor::_enumerateFiles() {
     (void)fs::enumerate(_path, [this](auto const& item, int depth) {
+        if (item.path == ".library"_zsv) {
+            return fs::next;
+        }
+
+        auto ext = path::extension(item.path);
+        if (ext == ".meta"_zsv) {
+            return fs::recurse;
+        }
+
         _cache.push_back({path::filename(item.path), item.size, depth, item.type == fs::FileType::Directory});
         return item.type == fs::FileType::Directory ? fs::recurse : fs::next;
     });
