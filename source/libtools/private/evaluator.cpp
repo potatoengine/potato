@@ -54,9 +54,10 @@ auto up::tools::Evaluator::_get(NameHash name, Value defaultValue) const noexcep
 void up::tools::Evaluator::clear(string_view name) {
     auto const hash = hash_value(name);
 
-    for (auto it = _variables.begin(); it != _variables.end(); ++it) {
-        if (it->name == hash) {
-            _variables.erase(it);
+    for (auto& var : _variables) {
+        if (var.name == hash) {
+            std::swap(var, _variables.back());
+            _variables.pop_back();
             ++_revision;
             return;
         }
@@ -90,81 +91,9 @@ auto up::tools::Evaluator::_add(Op op, NameHash var) -> Index {
     return _add({.hash = var, .op = op});
 }
 
-auto up::tools::Evaluator::_nextToken(string_view& in) noexcept -> TokenResult {
-    while (!in.empty() && in.front() == ' ') {
-        in.pop_front();
-    }
-
-    if (in.empty()) {
-        return {Token::End};
-    }
-
-    char const c = in.front();
-
-    if (c == '(') {
-        in.pop_front();
-        return {Token::LParen};
-    }
-
-    if (c == ')') {
-        in.pop_front();
-        return {Token::RParen};
-    }
-
-    if (c == '\'') {
-        in.pop_front();
-        string_view::size_type length = 0;
-        while (length < in.size() && in[length] != '\'') {
-            ++length;
-        }
-        if (length == in.size()) {
-            return {Token::Unknown};
-        }
-        auto const data = in.substr(0, length);
-        in = in.substr(length + 1);
-        return {Token::String, data};
-    }
-
-    if (c == '!') {
-        if (in.starts_with("!=")) {
-            in = in.substr(2);
-            return {Token::NotEquals};
-        }
-        else {
-            in.pop_front();
-            return {Token::Not};
-        }
-    }
-
-    if (in.starts_with("&&")) {
-        in = in.substr(2);
-        return {Token::And};
-    }
-
-    if (in.starts_with("||")) {
-        in = in.substr(2);
-        return {Token::Or};
-    }
-
-    if (in.starts_with("==")) {
-        in = in.substr(2);
-        return {Token::Equals};
-    }
-
-    if (ascii::is_alpha(c)) {
-        string_view::size_type length = 1;
-        while (length < in.size() && (ascii::is_alnum(in[length]) || in[length] == '.')) {
-            ++length;
-        }
-        auto const data = in.substr(0, length);
-        in = in.substr(length);
-        return {.token = Token::Identifier, .data = data};
-    }
-
-    return {Token::Unknown};
-}
-
 auto up::tools::Evaluator::compile(string_view expr) -> EvaluatorId {
+    enum class Token { Unknown, Identifier, Number, String, LParen, RParen, Equals, NotEquals, Not, And, Or, End };
+
     // Shunting Yard state; values are expression indices
     //
     vector<Index> values;
@@ -242,10 +171,106 @@ auto up::tools::Evaluator::compile(string_view expr) -> EvaluatorId {
         ops.push_back(op);
     };
 
+    // Parse a string
+    //
+    auto parseString = [](string_view& in) noexcept -> string_view {
+        char const quote = in.front();
+        in.pop_front();
+
+        string_view::size_type length = 0;
+        while (length < in.size() && in[length] != quote) {
+            ++length;
+        }
+        if (length == in.size()) {
+            return {};
+        }
+
+        auto const data = in.substr(0, length);
+        in = in.substr(length + 1);
+
+        return data;
+    };
+
+    // Consume an identifier (assumes first character is a legal identifier start char
+    //
+    auto parseIdentifier = [](string_view& in) noexcept -> string_view {
+        string_view::size_type length = 1;
+        while (length < in.size() && (ascii::is_alnum(in[length]) || in[length] == '.')) {
+            ++length;
+        }
+        auto const data = in.substr(0, length);
+        in = in.substr(length);
+        return data;
+    };
+
+    // Consume a token from the input source and return its type and payload (if appropriate)
+    //
+    struct Parsed {
+        Token token;
+        string_view payload;
+    };
+    auto consume = [parseString, parseIdentifier](string_view& in) noexcept -> Parsed {
+        while (!in.empty() && in.front() == ' ') {
+            in.pop_front();
+        }
+
+        if (in.empty()) {
+            return {Token::End};
+        }
+
+        char const c = in.front();
+
+        if (c == '(') {
+            in.pop_front();
+            return {Token::LParen};
+        }
+
+        if (c == ')') {
+            in.pop_front();
+            return {Token::RParen};
+        }
+
+        if (c == '\'') {
+            return {.token = Token::String, .payload = parseString(in)};
+        }
+
+        if (c == '!') {
+            if (in.starts_with("!=")) {
+                in = in.substr(2);
+                return {Token::NotEquals};
+            }
+            else {
+                in.pop_front();
+                return {Token::Not};
+            }
+        }
+
+        if (in.starts_with("&&")) {
+            in = in.substr(2);
+            return {Token::And};
+        }
+
+        if (in.starts_with("||")) {
+            in = in.substr(2);
+            return {Token::Or};
+        }
+
+        if (in.starts_with("==")) {
+            in = in.substr(2);
+            return {Token::Equals};
+        }
+
+        if (ascii::is_alpha(c)) {
+            return {.token = Token::Identifier, .payload = parseIdentifier(in)};
+        }
+
+        return {Token::Unknown};
+    };
+
     // Shunting Yard over the input tokens
     //
     while (!expr.empty()) {
-        auto const [token, data] = _nextToken(expr);
+        auto const [token, data] = consume(expr);
         switch (token) {
             case Token::Identifier:
                 values.push_back(_add(Op::Variable, hash_value(data)));
@@ -269,6 +294,8 @@ auto up::tools::Evaluator::compile(string_view expr) -> EvaluatorId {
                     return {};
                 }
                 ops.pop_back();
+                break;
+            case Token::End:
                 break;
             default:
                 return {};

@@ -8,7 +8,7 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up::tools {
-    enum EvaluatorId : uint32 {};
+    enum class EvaluatorId : uint32 {};
 
     /// @brief Manages context variables and expressions
     class Evaluator {
@@ -32,7 +32,6 @@ namespace up::tools {
         using Version = uint32;
 
         enum class Op : char { Variable, Literal, Complement, Conjunction, Disjunction, Equality, Inequality };
-        enum class Token { Unknown, Identifier, Number, String, LParen, RParen, Equals, NotEquals, Not, And, Or, End };
 
         struct Variable {
             NameHash name = 0;
@@ -50,12 +49,6 @@ namespace up::tools {
 
         static_assert(sizeof(Expr) == 32);
 
-        struct TokenResult {
-            Token token;
-            string_view data;
-        };
-
-        static auto _nextToken(string_view& in) noexcept -> TokenResult;
         void _set(NameHash name, Value value);
         Value _get(NameHash name, Value defaultValue = 0) const noexcept;
         [[nodiscard]] Index _add(Expr expr);

@@ -29,6 +29,11 @@ DOCTEST_TEST_SUITE("[potato][tools] Evaluator") {
         DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("t || f")));
         DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("t && f")));
 
+        eval.clear("t");
+
+        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("t")));
+
+        eval.set("t", true);
         eval.set("t", false);
 
         DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("t")));
