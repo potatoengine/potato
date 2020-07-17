@@ -48,7 +48,7 @@ auto up::shell::CommandRegistry::execute(string_view input) -> CommandResult {
             if (command.callback) {
                 command.callback(input);
             }
-            return CommandResult::Success;
+            return CommandResult::Okay;
         }
     }
 
@@ -64,7 +64,7 @@ auto up::shell::CommandRegistry::test(string_view input) -> CommandResult {
             if (!_evaluate(command.enablementId)) {
                 return CommandResult::Disabled;
             }
-            return CommandResult::Success;
+            return CommandResult::Okay;
         }
     }
 

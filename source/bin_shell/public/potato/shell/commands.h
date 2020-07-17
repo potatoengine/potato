@@ -31,7 +31,7 @@ namespace up::shell {
         zstring_view command;
     };
 
-    enum CommandResult { Success, NotFound, Predicate, Disabled, Argument };
+    enum CommandResult { Okay, NotFound, Predicate, Disabled, Argument };
 
     /// @brief Manages the list of all known commands in the system
     class CommandRegistry {

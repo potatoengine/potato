@@ -143,7 +143,7 @@ auto up::shell::CommandPalette::_execute(CommandRegistry& registry) const -> boo
     }
 
     auto const result = registry.execute(command->command);
-    return result == CommandResult::Success;
+    return result == CommandResult::Okay;
 }
 
 void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
@@ -161,7 +161,7 @@ void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
     for (auto index : sequence(descs.size())) {
         auto const& desc = descs[index];
 
-        if (registry.test(desc.command) != CommandResult::Success) {
+        if (registry.test(desc.command) != CommandResult::Okay) {
             continue;
         }
 

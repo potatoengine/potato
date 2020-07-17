@@ -284,7 +284,7 @@ bool up::shell::ShellApp::_applyHotKey(int keysym, unsigned mods) {
     for (auto const& desc : descs) {
         if (desc.key == keysym && desc.mods == mods) {
             auto const rs = _commands.execute(desc.command);
-            return rs == CommandResult::Success;
+            return rs == CommandResult::Okay;
         }
     }
 

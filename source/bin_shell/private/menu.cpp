@@ -55,7 +55,7 @@ auto up::shell::Menu::_isEnabled(CommandRegistry& commands, MenuDesc const& desc
     }
 
     auto const result = commands.test(desc.command);
-    return result == CommandResult::Success;
+    return result == CommandResult::Okay;
 }
 
 auto up::shell::Menu::_isChecked(CommandRegistry& commands, MenuDesc const& desc) const noexcept -> bool {
@@ -76,5 +76,5 @@ auto up::shell::Menu::_isVisible(CommandRegistry& commands, MenuDesc const& desc
     }
 
     auto const result = commands.test(desc.command);
-    return result == CommandResult::Success || result == CommandResult::Disabled;
+    return result == CommandResult::Okay || result == CommandResult::Disabled;
 }
