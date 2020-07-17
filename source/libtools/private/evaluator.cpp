@@ -323,7 +323,7 @@ auto up::tools::Evaluator::evaluate(EvaluatorId id) noexcept -> bool {
         return false;
     }
 
-    return _evaluate(index);
+    return _evaluate(index) != 0;
 }
 
 auto up::tools::Evaluator::_evaluate(Index index) noexcept -> Value {
@@ -349,19 +349,19 @@ auto up::tools::Evaluator::_evaluate(Index index) noexcept -> Value {
             result = _get(expr.hash);
             break;
         case Op::Complement:
-            result = !_evaluate(expr.arg0);
+            result = _evaluate(expr.arg0) ? 0 : 1;
             break;
         case Op::Conjunction:
-            result = _evaluate(expr.arg0) && _evaluate(expr.arg1);
+            result = _evaluate(expr.arg0) != 0 && _evaluate(expr.arg1) != 0;
             break;
         case Op::Disjunction:
-            result = _evaluate(expr.arg0) || _evaluate(expr.arg1);
+            result = _evaluate(expr.arg0) != 0 || _evaluate(expr.arg1) != 0;
             break;
         case Op::Equality:
-            result = _evaluate(expr.arg0) == _evaluate(expr.arg1);
+            result = (_evaluate(expr.arg0) == _evaluate(expr.arg1)) ? 1 : 0;
             break;
         case Op::Inequality:
-            result = _evaluate(expr.arg0) != _evaluate(expr.arg1);
+            result = (_evaluate(expr.arg0) != _evaluate(expr.arg1)) ? 1 : 0;
             break;
         default:
             break;
