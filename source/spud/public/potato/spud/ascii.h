@@ -6,7 +6,7 @@ namespace up::ascii {
     constexpr auto is_digit(char const ch) noexcept -> bool { return ch >= '0' && ch <= '9'; }
 
     constexpr auto is_alpha(char const ch) noexcept -> bool {
-        return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'A');
+        return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
     }
 
     constexpr auto is_alnum(char const ch) noexcept -> bool { return is_digit(ch) || is_alpha(ch); }

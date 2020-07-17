@@ -15,7 +15,7 @@ namespace up {
     template <typename HashAlgorithm>
     inline void hash_append(HashAlgorithm& hasher, string_view const& string);
 
-    inline string_view operator"" _sv(char const* str, size_t size) noexcept;
+    constexpr string_view operator"" _sv(char const* str, size_t size) noexcept;
 
     template <typename T>
     concept has_c_str = std::is_convertible_v<decltype(std::declval<T>().c_str()), char const*>;
@@ -152,6 +152,6 @@ void up::hash_append(HashAlgorithm& hasher, string_view const& string) {
     hasher.append_bytes(string.data(), string.size());
 }
 
-inline auto up::operator"" _sv(char const* str, size_t size) noexcept -> string_view {
+constexpr auto up::operator"" _sv(char const* str, size_t size) noexcept -> string_view {
     return {str, size};
 }

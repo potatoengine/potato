@@ -16,7 +16,7 @@ __pragma(warning(disable : 4307))
     public:
         using result_type = uint64;
 
-        inline constexpr void append_bytes(char const* data, size_t size) noexcept;
+        constexpr void append_bytes(char const* data, size_t size) noexcept;
         constexpr result_type finalize() const noexcept { return _state; }
 
     private:
