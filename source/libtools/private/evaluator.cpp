@@ -101,23 +101,23 @@ auto up::tools::Evaluator::compile(string_view expr) -> EvaluatorId {
 
     // Operator precedence tables
     //
-    constexpr int precedence_table[] = {
-        0, // Unknown
-        0, // Identifier
-        0, // Number
-        0, // String
-        -1, // LParen
-        9, // RParen
-        2, // Equals
-        2, // NotEquals
-        1, // Not
-        4, // And
-        3, // Or
-        0, // End
-    };
+    auto const precedence = [](Token op) noexcept -> int {
+        constexpr int table[] = {
+            0, // Unknown
+            0, // Identifier
+            0, // Number
+            0, // String
+            -1, // LParen
+            9, // RParen
+            2, // Equals
+            2, // NotEquals
+            1, // Not
+            4, // And
+            3, // Or
+            0, // End
+        };
 
-    auto const precedence = [precedence_table](Token op) noexcept -> int {
-        return precedence_table[static_cast<int>(op)];
+        return table[static_cast<int>(op)];
     };
 
     // Pop a value from the value stack, protecting against empty values (bad input)
@@ -239,10 +239,9 @@ auto up::tools::Evaluator::compile(string_view expr) -> EvaluatorId {
                 in = in.substr(2);
                 return {Token::NotEquals};
             }
-            else {
-                in.pop_front();
-                return {Token::Not};
-            }
+
+            in.pop_front();
+            return {Token::Not};
         }
 
         if (in.starts_with("&&")) {
@@ -349,13 +348,13 @@ auto up::tools::Evaluator::_evaluate(Index index) noexcept -> Value {
             result = _get(expr.hash);
             break;
         case Op::Complement:
-            result = _evaluate(expr.arg0) ? 0 : 1;
+            result = _evaluate(expr.arg0) != 0 ? 0 : 1;
             break;
         case Op::Conjunction:
-            result = _evaluate(expr.arg0) != 0 && _evaluate(expr.arg1) != 0;
+            result = (_evaluate(expr.arg0) != 0 && _evaluate(expr.arg1) != 0) ? 1 : 0;
             break;
         case Op::Disjunction:
-            result = _evaluate(expr.arg0) != 0 || _evaluate(expr.arg1) != 0;
+            result = (_evaluate(expr.arg0) != 0 || _evaluate(expr.arg1) != 0) ? 1 : 0;
             break;
         case Op::Equality:
             result = (_evaluate(expr.arg0) == _evaluate(expr.arg1)) ? 1 : 0;
