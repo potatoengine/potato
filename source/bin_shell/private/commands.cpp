@@ -22,12 +22,12 @@ void up::shell::CommandRegistry::registerCommand(Command command) {
     _commands.push_back(std::move(command));
 }
 
-void up::shell::CommandRegistry::addPalette(CommandPaletteDesc desc) {
-    _paletteDescs.push_back(std::move(desc));
+void up::shell::CommandRegistry::addPalette(CommandPaletteDesc const& desc) {
+    _paletteDescs.push_back(desc);
 }
 
-void up::shell::CommandRegistry::addHotKey(CommandHotKeyDesc desc) {
-    _hotKeyDescs.push_back(std::move(desc));
+void up::shell::CommandRegistry::addHotKey(CommandHotKeyDesc const& desc) {
+    _hotKeyDescs.push_back(desc);
 }
 
 auto up::shell::CommandRegistry::commandAt(int index) const noexcept -> Command const* {

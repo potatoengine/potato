@@ -6,7 +6,7 @@
 #include <imgui.h>
 
 void up::shell::Menu::addMenu(MenuDesc desc) {
-    _menus.push_back(desc);
+    _menus.push_back(std::move(desc));
 }
 
 void up::shell::Menu::drawMenu(CommandRegistry& commands) const {

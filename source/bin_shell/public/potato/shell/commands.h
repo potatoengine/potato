@@ -44,8 +44,8 @@ namespace up::shell {
 
         auto context() noexcept -> tools::Evaluator& { return _context; }
 
-        void addPalette(CommandPaletteDesc desc);
-        void addHotKey(CommandHotKeyDesc desc);
+        void addPalette(CommandPaletteDesc const& desc);
+        void addHotKey(CommandHotKeyDesc const& desc);
 
         [[nodiscard]] auto execute(string_view input) -> CommandResult;
         [[nodiscard]] auto test(string_view input) -> CommandResult;
