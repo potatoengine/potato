@@ -2,10 +2,10 @@
 
 #include "camera.h"
 #include "commands.h"
-#include "hotkey.h"
-#include "menu.h"
 #include "ui/command_palette.h"
 #include "ui/editor_group.h"
+#include "ui/hotkey.h"
+#include "ui/menu.h"
 
 #include "potato/audio/audio_engine.h"
 #include "potato/render/draw_imgui.h"

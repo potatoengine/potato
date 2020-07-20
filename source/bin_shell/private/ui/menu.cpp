@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "menu.h"
+#include "ui/menu.h"
 #include "commands.h"
 
 #include <imgui.h>

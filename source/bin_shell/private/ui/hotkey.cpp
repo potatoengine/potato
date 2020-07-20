@@ -1,7 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "commands.h"
-#include "hotkey.h"
+#include "ui/hotkey.h"
 
 #include <SDL_keycode.h>
 #include <imgui.h>
