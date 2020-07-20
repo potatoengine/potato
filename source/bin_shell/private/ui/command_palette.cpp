@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "command_palette.h"
+#include "ui/command_palette.h"
 #include "commands.h"
 
 #include "potato/spud/sequence.h"
