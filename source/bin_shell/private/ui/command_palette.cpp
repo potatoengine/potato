@@ -20,6 +20,10 @@ void up::shell::CommandPalette::close() {
     _open = false;
 }
 
+void up::shell::CommandPalette::addPalette(CommandPaletteDesc desc) {
+    _descs.push_back(std::move(desc));
+}
+
 void up::shell::CommandPalette::update(CommandRegistry& registry) {
     auto& imguiIO = ImGui::GetIO();
 
@@ -98,7 +102,7 @@ void up::shell::CommandPalette::update(CommandRegistry& registry) {
         //
         for (auto index : _matches) {
             bool const highlight = index == _activeIndex;
-            ImGui::Selectable(registry.paletteDescs()[index].title.c_str(), highlight);
+            ImGui::Selectable(_descs[index].title.c_str(), highlight);
         }
 
         // Close popup if close is requested
@@ -133,16 +137,11 @@ auto up::shell::CommandPalette::_callback(ImGuiInputTextCallbackData* data) -> i
 }
 
 auto up::shell::CommandPalette::_execute(CommandRegistry& registry) const -> bool {
-    if (_activeIndex == -1) {
+    if (_activeIndex == -1 || _activeIndex >= _descs.size()) {
         return false;
     }
 
-    auto const* command = registry.commandAt(_activeIndex);
-    if (command == nullptr) {
-        return false;
-    }
-
-    auto const result = registry.execute(command->command);
+    auto const result = registry.execute(_descs[_activeIndex].command);
     return result == CommandResult::Okay;
 }
 
@@ -157,9 +156,8 @@ void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
     int lastMatchIndex = -1;
 
     auto const input = string_view{_input};
-    auto const descs = registry.paletteDescs();
-    for (auto index : sequence(descs.size())) {
-        auto const& desc = descs[index];
+    for (auto index : sequence(_descs.size())) {
+        auto const& desc = _descs[index];
 
         if (registry.test(desc.command) != CommandResult::Okay) {
             continue;

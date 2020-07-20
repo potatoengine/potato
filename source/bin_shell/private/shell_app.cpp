@@ -113,10 +113,10 @@ int up::shell::ShellApp::initialize() {
              _createScene();
          }});
 
-    _commands.addPalette({.title = "Quit", .command = "potato.quit"});
-    _commands.addPalette({.title = "Close Document", .command = "potato.editors.closeActive"});
-    _commands.addPalette({.title = "Open Project", .command = "potato.project.open"});
-    _commands.addPalette({.title = "Close Project", .command = "potato.project.close"});
+    _palette.addPalette({.title = "Quit", .command = "potato.quit"});
+    _palette.addPalette({.title = "Close Document", .command = "potato.editors.closeActive"});
+    _palette.addPalette({.title = "Open Project", .command = "potato.project.open"});
+    _palette.addPalette({.title = "Close Project", .command = "potato.project.close"});
 
     _hotKeys.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
 
@@ -457,7 +457,7 @@ void up::shell::ShellApp::_displayUI() {
 
     _displayDocuments({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
 
-    _commandPalette.update(_commands);
+    _palette.update(_commands);
 }
 
 void up::shell::ShellApp::_displayMainMenu() {

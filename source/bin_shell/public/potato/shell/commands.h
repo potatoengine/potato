@@ -20,24 +20,17 @@ namespace up::shell {
         CommandDelegate callback;
     };
 
-    struct CommandPaletteDesc {
-        zstring_view title;
-        zstring_view command;
-    };
-
     enum CommandResult { Okay, NotFound, Predicate, Disabled, Argument };
 
     /// @brief Manages the list of all known commands in the system
     class CommandRegistry {
     public:
-        auto commandAt(int index) const noexcept -> Command const*;
-        auto paletteDescs() const noexcept -> view<CommandPaletteDesc> { return _paletteDescs; }
+        CommandRegistry();
+        ~CommandRegistry();
 
         void registerCommand(Command command);
 
         auto context() noexcept -> tools::Evaluator& { return _context; }
-
-        void addPalette(CommandPaletteDesc const& desc);
 
         [[nodiscard]] auto execute(string_view input) -> CommandResult;
         [[nodiscard]] auto test(string_view input) -> CommandResult;
@@ -52,6 +45,5 @@ namespace up::shell {
 
         tools::Evaluator _context;
         vector<Command> _commands;
-        vector<CommandPaletteDesc> _paletteDescs;
     };
 } // namespace up::shell

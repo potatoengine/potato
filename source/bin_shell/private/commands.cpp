@@ -8,6 +8,10 @@
 #include "potato/spud/string_util.h"
 #include "potato/spud/utility.h"
 
+up::shell::CommandRegistry::CommandRegistry() = default;
+
+up::shell::CommandRegistry::~CommandRegistry() = default;
+
 bool up::shell::CommandRegistry::_evaluate(tools::EvaluatorId id) noexcept {
     return id == tools::EvaluatorId{} ? true : _context.evaluate(id);
 }
@@ -20,18 +24,6 @@ void up::shell::CommandRegistry::registerCommand(Command command) {
         command.whenId = _context.compile(command.when);
     }
     _commands.push_back(std::move(command));
-}
-
-void up::shell::CommandRegistry::addPalette(CommandPaletteDesc const& desc) {
-    _paletteDescs.push_back(desc);
-}
-
-auto up::shell::CommandRegistry::commandAt(int index) const noexcept -> Command const* {
-    if (index < 0 || index >= narrow_cast<int>(_commands.size())) {
-        return nullptr;
-    }
-
-    return &_commands[index];
 }
 
 auto up::shell::CommandRegistry::execute(string_view input) -> CommandResult {
