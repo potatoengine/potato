@@ -25,12 +25,6 @@ namespace up::shell {
         zstring_view command;
     };
 
-    struct CommandHotKeyDesc {
-        int key = 0;
-        unsigned mods = 0;
-        zstring_view command;
-    };
-
     enum CommandResult { Okay, NotFound, Predicate, Disabled, Argument };
 
     /// @brief Manages the list of all known commands in the system
@@ -38,14 +32,12 @@ namespace up::shell {
     public:
         auto commandAt(int index) const noexcept -> Command const*;
         auto paletteDescs() const noexcept -> view<CommandPaletteDesc> { return _paletteDescs; }
-        auto hotKeyDescs() const noexcept -> view<CommandHotKeyDesc> { return _hotKeyDescs; }
 
         void registerCommand(Command command);
 
         auto context() noexcept -> tools::Evaluator& { return _context; }
 
         void addPalette(CommandPaletteDesc const& desc);
-        void addHotKey(CommandHotKeyDesc const& desc);
 
         [[nodiscard]] auto execute(string_view input) -> CommandResult;
         [[nodiscard]] auto test(string_view input) -> CommandResult;
@@ -61,6 +53,5 @@ namespace up::shell {
         tools::Evaluator _context;
         vector<Command> _commands;
         vector<CommandPaletteDesc> _paletteDescs;
-        vector<CommandHotKeyDesc> _hotKeyDescs;
     };
 } // namespace up::shell

@@ -118,7 +118,7 @@ int up::shell::ShellApp::initialize() {
     _commands.addPalette({.title = "Open Project", .command = "potato.project.open"});
     _commands.addPalette({.title = "Close Project", .command = "potato.project.close"});
 
-    _commands.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
+    _hotKeys.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
 
     _menu.addMenu({.title = "Potato"});
     _menu.addMenu({.parent = "Potato", .title = "New"});
@@ -254,41 +254,6 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _updateTitle();
 
     return true;
-}
-
-bool up::shell::ShellApp::_applyHotKey(int keysym, unsigned mods) {
-    if (keysym == 0) {
-        return false;
-    }
-
-    // Normalized mods so left-v-right is erased
-    //
-    mods &= KMOD_SHIFT | KMOD_CTRL | KMOD_ALT | KMOD_GUI;
-
-    if (0 != (mods & KMOD_SHIFT)) {
-        mods |= KMOD_SHIFT;
-    }
-    if (0 != (mods & KMOD_CTRL)) {
-        mods |= KMOD_CTRL;
-    }
-    if (0 != (mods & KMOD_ALT)) {
-        mods |= KMOD_ALT;
-    }
-    if (0 != (mods & KMOD_GUI)) {
-        mods |= KMOD_GUI;
-    }
-
-    // Attempt to match the input with registered hot keys
-    //
-    auto const descs = _commands.hotKeyDescs();
-    for (auto const& desc : descs) {
-        if (desc.key == keysym && desc.mods == mods) {
-            auto const rs = _commands.execute(desc.command);
-            return rs == CommandResult::Okay;
-        }
-    }
-
-    return false;
 }
 
 void up::shell::ShellApp::run() {
@@ -442,7 +407,7 @@ void up::shell::ShellApp::_processEvents() {
                 _drawImgui.handleEvent(ev);
                 break;
             case SDL_KEYDOWN:
-                if (!_applyHotKey(ev.key.keysym.sym, ev.key.keysym.mod)) {
+                if (!_hotKeys.evaluateKey(_commands, ev.key.keysym.sym, ev.key.keysym.mod)) {
                     _drawImgui.handleEvent(ev);
                 }
                 break;

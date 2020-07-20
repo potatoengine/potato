@@ -2,6 +2,7 @@
 
 #include "camera.h"
 #include "commands.h"
+#include "hotkey.h"
 #include "menu.h"
 #include "ui/command_palette.h"
 #include "ui/editor_group.h"
@@ -73,8 +74,6 @@ namespace up::shell {
         bool _selectAndLoadProject(zstring_view defaultPath);
         bool _loadProject(zstring_view path);
 
-        bool _applyHotKey(int keysym, unsigned mods);
-
         bool _running = true;
         bool _openProject = false;
         bool _closeProject = false;
@@ -92,6 +91,7 @@ namespace up::shell {
         CommandRegistry _commands;
         CommandPalette _commandPalette;
         Menu _menu;
+        HotKeys _hotKeys;
         EditorGroup _editors;
         int _lastCursor = -1;
         DrawImgui _drawImgui;

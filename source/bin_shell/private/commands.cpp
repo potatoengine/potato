@@ -26,10 +26,6 @@ void up::shell::CommandRegistry::addPalette(CommandPaletteDesc const& desc) {
     _paletteDescs.push_back(desc);
 }
 
-void up::shell::CommandRegistry::addHotKey(CommandHotKeyDesc const& desc) {
-    _hotKeyDescs.push_back(desc);
-}
-
 auto up::shell::CommandRegistry::commandAt(int index) const noexcept -> Command const* {
     if (index < 0 || index >= narrow_cast<int>(_commands.size())) {
         return nullptr;
