@@ -112,13 +112,27 @@ int up::shell::ShellApp::initialize() {
         {.command = "potato.assets.newScene", .enablement = "hasProject", .callback = [this](string_view) {
              _createScene();
          }});
+    _commands.registerCommand(
+        {.command = "potato.editors.play",
+         .when = "editorClass == 'potato.editor.scene'",
+         .callback = [this](string_view) {
+             _editors.sendActive("play");
+         }});
+    _commands.registerCommand(
+        {.command = "potato.editors.options.grid",
+         .when = "editorClass == 'potato.editor.scene'",
+         .callback = [this](string_view) {
+             _editors.sendActive("toggle-grid");
+         }});
 
     _palette.addPalette({.title = "Quit", .command = "potato.quit"});
     _palette.addPalette({.title = "Close Document", .command = "potato.editors.closeActive"});
     _palette.addPalette({.title = "Open Project", .command = "potato.project.open"});
     _palette.addPalette({.title = "Close Project", .command = "potato.project.close"});
+    _palette.addPalette({.title = "Play", .command = "potato.editors.play"});
 
     _hotKeys.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
+    _hotKeys.addHotKey({.key = SDLK_F5, .mods = 0, .command = "potato.editors.play"});
 
     _menu.addMenu({.title = "Potato"});
     _menu.addMenu({.parent = "Potato", .title = "New"});
@@ -131,6 +145,8 @@ int up::shell::ShellApp::initialize() {
     _menu.addMenu({.parent = "Potato", .title = "Close Project", .command = "potato.project.close"});
     _menu.addMenu({.parent = "Potato", .title = "Close Document", .command = "potato.editors.closeActive"});
     _menu.addMenu({.parent = "Potato", .title = "Quit", .command = "potato.quit"});
+    _menu.addMenu({.parent = "Actions", .title = "Play/Pause", .command = "potato.editors.play"});
+    _menu.addMenu({.parent = "Options", .title = "Grid", .command = "potato.editors.options.grid"});
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -444,8 +460,9 @@ void up::shell::ShellApp::_displayUI() {
     auto& imguiIO = ImGui::GetIO();
 
     _commands.context().set("hasProject", _project != nullptr);
-    _commands.context().set("hasEditor", _editors.active() != nullptr);
-    _commands.context().set("isEditorClosable", _editors.active() != nullptr && _editors.active()->isClosable());
+    _commands.context().set("hasEditor", _editors.hasActive());
+    _commands.context().set("isEditorClosable", _editors.isActiveClosable());
+    _commands.context().set("editorClass", _editors.activeEditorClass());
 
     _displayMainMenu();
 

@@ -61,6 +61,26 @@ void up::shell::EditorGroup::closeActive() noexcept {
     }
 }
 
+auto up::shell::EditorGroup::isActiveClosable() const noexcept -> bool {
+    return _active != nullptr && _active->isClosable();
+}
+
+auto up::shell::EditorGroup::activeEditorClass() const noexcept -> zstring_view {
+    return _active != nullptr ? _active->editorClass() : zstring_view{};
+}
+
+void up::shell::EditorGroup::sendAll(string_view command) {
+    for (auto& editor : _editors) {
+        editor->handleCommand(command);
+    }
+}
+
+void up::shell::EditorGroup::sendActive(string_view command) {
+    if (_active != nullptr) {
+        _active->handleCommand(command);
+    }
+}
+
 void up::shell::EditorGroup::open(box<Editor> editor) {
     _editors.push_back(std::move(editor));
 }

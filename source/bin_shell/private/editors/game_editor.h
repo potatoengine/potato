@@ -22,6 +22,8 @@ namespace up::shell {
         }
 
         zstring_view displayName() const override { return "Game"; }
+        zstring_view editorClass() const override { return "potato.editor.game"; }
+        EditorId uniqueId() const override { return hash_value(this); }
 
     protected:
         void configure() override {}

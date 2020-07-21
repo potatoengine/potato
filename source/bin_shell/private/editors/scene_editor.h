@@ -33,6 +33,10 @@ namespace up::shell {
         }
 
         zstring_view displayName() const override { return "Scene"; }
+        zstring_view editorClass() const override { return "potato.editor.scene"; }
+        EditorId uniqueId() const override { return hash_value(this); }
+
+        void handleCommand(string_view command) override;
 
         void tick(float deltaTime) override;
 
@@ -40,7 +44,6 @@ namespace up::shell {
         void configure() override;
         void content() override;
         void render(Renderer& renderer, float deltaTime) override;
-        void menu() override;
 
     private:
         void _drawGrid();

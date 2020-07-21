@@ -19,6 +19,7 @@ namespace up::shell {
     public:
         using PanelUpdate = delegate<void()>;
         using PanelId = ImGuiID;
+        using EditorId = uint64;
 
         struct Panel {
             string title;
@@ -38,6 +39,12 @@ namespace up::shell {
         /// @return display name.
         virtual zstring_view displayName() const = 0;
 
+        /// @brief Return a string that uniquely identifiers the Editor class type.
+        virtual zstring_view editorClass() const = 0;
+
+        /// @brief Return a globally-unique string that identifies the Editor instance.
+        virtual EditorId uniqueId() const = 0;
+
         /// @brief Updates the UI.
         void updateUi();
 
@@ -45,6 +52,8 @@ namespace up::shell {
         virtual void render(Renderer& renderer, float deltaTime) {}
 
         virtual void tick(float deltaTime) {}
+
+        virtual void handleCommand(string_view command) {}
 
         bool isClosed() const noexcept { return _closed; }
         virtual bool isClosable() { return true; }

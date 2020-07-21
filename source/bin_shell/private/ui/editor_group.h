@@ -4,6 +4,7 @@
 
 #include "potato/spud/box.h"
 #include "potato/spud/vector.h"
+#include "potato/spud/zstring_view.h"
 
 #include <imgui.h>
 
@@ -26,7 +27,14 @@ namespace up::shell {
         void closeAll() noexcept;
         void closeActive() noexcept;
 
-        [[nodiscard]] auto active() const noexcept { return _active; }
+        //[[nodiscard]] auto active() const noexcept { return _active; }
+
+        [[nodiscard]] auto hasActive() const noexcept { return _active != nullptr; }
+        [[nodiscard]] auto isActiveClosable() const noexcept -> bool;
+        [[nodiscard]] auto activeEditorClass() const noexcept -> zstring_view;
+
+        void sendAll(string_view command);
+        void sendActive(string_view command);
 
         void open(box<Editor> editor);
 

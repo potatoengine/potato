@@ -30,6 +30,15 @@ auto up::shell::createSceneEditor(
     return new_box<SceneEditor>(std::move(scene), std::move(components), std::move(onPlayClicked));
 }
 
+void up::shell::SceneEditor::handleCommand(string_view command) {
+    if (command == "play"_sv) {
+        _onPlayClicked(_scene);
+    }
+    else if (command == "toggle-grid"_sv) {
+        _enableGrid = !_enableGrid;
+    }
+}
+
 void up::shell::SceneEditor::tick(float deltaTime) {
     _scene->tick(deltaTime);
     _scene->flush();
@@ -94,31 +103,6 @@ void up::shell::SceneEditor::content() {
         _cameraController.apply(_camera, movement, motion, io.DeltaTime);
 
         ImGui::EndChild();
-    }
-}
-
-void up::shell::SceneEditor::menu() {
-    if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("View")) {
-            if (ImGui::BeginMenu("Options")) {
-                if (ImGui::MenuItem("Grid")) {
-                    _enableGrid = !_enableGrid;
-                }
-                ImGui::EndMenu();
-            }
-
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Actions")) {
-            if (_onPlayClicked != nullptr) {
-                if (ImGui::MenuItem("Play")) {
-                    _onPlayClicked(_scene);
-                }
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
     }
 }
 

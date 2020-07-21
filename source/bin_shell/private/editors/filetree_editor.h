@@ -5,6 +5,7 @@
 #include "editor.h"
 
 #include "potato/spud/delegate.h"
+#include "potato/spud/hash.h"
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
 
@@ -21,6 +22,8 @@ namespace up::shell {
             , _path(std::move(path)) {}
 
         zstring_view displayName() const override { return "Files"; }
+        zstring_view editorClass() const override { return "potato.editor.files"; }
+        EditorId uniqueId() const override { return hash_value("/"); }
 
     protected:
         void configure() override {}

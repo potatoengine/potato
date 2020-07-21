@@ -17,6 +17,9 @@ namespace up {
     template <typename HashAlgorithm = default_hash, typename T>
     constexpr auto hash_value(T const& value) -> typename HashAlgorithm::result_type;
 
+    template <typename HashAlgorithm = default_hash, size_t N>
+    constexpr auto hash_value(char const (&value)[N]) -> typename HashAlgorithm::result_type;
+
     template <class Hash>
     constexpr auto hash_combine(Hash left, Hash right) noexcept -> Hash;
 
@@ -67,6 +70,13 @@ constexpr auto up::hash_value(T const& value) -> typename HashAlgorithm::result_
     HashAlgorithm hasher{};
     using up::hash_append;
     hash_append(hasher, value);
+    return hasher.finalize();
+}
+
+template <typename HashAlgorithm, size_t N>
+constexpr auto up::hash_value(char const (&value)[N]) -> typename HashAlgorithm::result_type {
+    HashAlgorithm hasher{};
+    hasher.append_bytes(value, N - 1 /*NUL byte typically present in character literals*/);
     return hasher.finalize();
 }
 
