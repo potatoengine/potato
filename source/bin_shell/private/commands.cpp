@@ -13,15 +13,15 @@ up::shell::CommandRegistry::CommandRegistry() = default;
 up::shell::CommandRegistry::~CommandRegistry() = default;
 
 bool up::shell::CommandRegistry::_evaluate(tools::EvaluatorId id) noexcept {
-    return id == tools::EvaluatorId{} ? true : _context.evaluate(id);
+    return id == tools::EvaluatorId{} ? true : _engine.evaluate(_context, id);
 }
 
 void up::shell::CommandRegistry::registerCommand(Command command) {
     if (!command.enablement.empty()) {
-        command.enablementId = _context.compile(command.enablement);
+        command.enablementId = _engine.compile(command.enablement);
     }
     if (!command.when.empty()) {
-        command.whenId = _context.compile(command.when);
+        command.whenId = _engine.compile(command.when);
     }
     _commands.push_back(std::move(command));
 }

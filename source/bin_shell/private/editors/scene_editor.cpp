@@ -26,9 +26,9 @@
 auto up::shell::createSceneEditor(
     rc<Scene> scene,
     SceneEditor::EnumerateComponents components,
-    tools::Evaluator& evaluator,
+    tools::EvalContext& evalContext,
     SceneEditor::HandlePlayClicked onPlayClicked) -> box<Editor> {
-    return new_box<SceneEditor>(std::move(scene), std::move(components), evaluator, std::move(onPlayClicked));
+    return new_box<SceneEditor>(std::move(scene), std::move(components), evalContext, std::move(onPlayClicked));
 }
 
 void up::shell::SceneEditor::handleCommand(string_view command) {
@@ -56,7 +56,7 @@ void up::shell::SceneEditor::configure() {
 void up::shell::SceneEditor::content() {
     auto& io = ImGui::GetIO();
 
-    _evaluator.set("sceneEditorGrid"_zsv, _enableGrid);
+    _evalContext.set("sceneEditorGrid"_zsv, _enableGrid);
 
     auto const contentSize = ImGui::GetContentRegionAvail();
 

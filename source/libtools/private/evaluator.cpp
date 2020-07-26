@@ -5,22 +5,22 @@
 #include "potato/spud/ascii.h"
 #include "potato/spud/hash.h"
 
-up::tools::Evaluator::Evaluator() {
+up::tools::EvalEngine::EvalEngine() {
     // Nul so that EvaluatorId{} always results in false
     //
     (void)_add({.hash = 0, .op = Op::Literal});
 }
 
-up::tools::Evaluator::~Evaluator() = default;
+up::tools::EvalEngine::~EvalEngine() = default;
 
-void up::tools::Evaluator::set(string_view name, string_view value) {
+void up::tools::EvalContext::set(string_view name, string_view value) {
     auto const nameHash = hash_value(name);
     auto const valueHash = hash_value(value);
 
     _set(nameHash, valueHash);
 }
 
-void up::tools::Evaluator::set(string_view name, bool value) {
+void up::tools::EvalContext::set(string_view name, bool value) {
     auto const nameHash = hash_value(name);
     auto constexpr yesHash = 1;
     auto constexpr noHash = 0;
@@ -28,7 +28,7 @@ void up::tools::Evaluator::set(string_view name, bool value) {
     _set(nameHash, value ? yesHash : noHash);
 }
 
-void up::tools::Evaluator::_set(NameHash name, Value value) {
+void up::tools::EvalContext::_set(NameHash name, Value value) {
     for (auto& var : _variables) {
         if (var.name == name) {
             if (var.value != value) {
@@ -42,16 +42,7 @@ void up::tools::Evaluator::_set(NameHash name, Value value) {
     _variables.push_back(Variable{.name = name, .value = value});
 }
 
-auto up::tools::Evaluator::_get(NameHash name, Value defaultValue) const noexcept -> Value {
-    for (auto& var : _variables) {
-        if (var.name == name) {
-            return var.value;
-        }
-    }
-    return defaultValue;
-}
-
-void up::tools::Evaluator::clear(string_view name) {
+void up::tools::EvalContext::clear(string_view name) {
     auto const hash = hash_value(name);
 
     for (auto& var : _variables) {
@@ -64,8 +55,21 @@ void up::tools::Evaluator::clear(string_view name) {
     }
 }
 
-auto up::tools::Evaluator::_add(Expr expr) -> Index {
-    expr.version = _revision - 1;
+auto up::tools::EvalContext::getHashedValue(NameHash name, Value defaultValue) const noexcept -> Value {
+    for (auto& var : _variables) {
+        if (var.name == name) {
+            return var.value;
+        }
+    }
+    return defaultValue;
+}
+
+auto up::tools::EvalContext::version() const noexcept -> Version {
+    return narrow_cast<Version>(hash_combine(hash_value(this), hash_value(_revision)));
+}
+
+auto up::tools::EvalEngine::_add(Expr expr) -> Index {
+    expr.version = ~Version{0};
     for (auto& e : _exprs) {
         if (e.hash == expr.hash) {
             e = expr;
@@ -77,21 +81,21 @@ auto up::tools::Evaluator::_add(Expr expr) -> Index {
     return index;
 }
 
-auto up::tools::Evaluator::_add(Op op, Index arg1, Index arg0) -> Index {
+auto up::tools::EvalEngine::_add(Op op, Index arg1, Index arg0) -> Index {
     auto const hash = hash_combine(hash_value(op), hash_combine(hash_value(arg0), hash_value(arg1)));
     return _add({.hash = hash, .arg0 = arg0, .arg1 = arg1, .op = op});
 }
 
-auto up::tools::Evaluator::_add(Op op, Index arg) -> Index {
+auto up::tools::EvalEngine::_add(Op op, Index arg) -> Index {
     auto const hash = hash_combine(hash_value(op), hash_value(arg));
     return _add({.hash = hash, .arg0 = arg, .op = op});
 }
 
-auto up::tools::Evaluator::_add(Op op, NameHash var) -> Index {
+auto up::tools::EvalEngine::_add(Op op, NameHash var) -> Index {
     return _add({.hash = var, .op = op});
 }
 
-auto up::tools::Evaluator::compile(string_view expr) -> EvaluatorId {
+auto up::tools::EvalEngine::compile(string_view expr) -> EvaluatorId {
     enum class Token { Unknown, Identifier, Number, String, LParen, RParen, Equals, NotEquals, Not, And, Or, End };
 
     // Shunting Yard state; values are expression indices
@@ -316,16 +320,18 @@ auto up::tools::Evaluator::compile(string_view expr) -> EvaluatorId {
     return EvaluatorId{values.front()};
 }
 
-auto up::tools::Evaluator::evaluate(EvaluatorId id) noexcept -> bool {
+auto up::tools::EvalEngine::evaluate(EvalContext& context, EvaluatorId id) noexcept -> bool {
     auto const index = to_underlying(id);
     if (index < 1 || index >= _exprs.size()) {
         return false;
     }
 
-    return _evaluate(index) != 0;
+    auto const revision = context.version();
+
+    return _evaluate(context, revision, index) != 0;
 }
 
-auto up::tools::Evaluator::_evaluate(Index index) noexcept -> Value {
+auto up::tools::EvalEngine::_evaluate(EvalContext& context, Version revision, Index index) noexcept -> Value {
     auto& expr = _exprs[index];
 
     // There's no point to going through the memoization for literals
@@ -336,7 +342,7 @@ auto up::tools::Evaluator::_evaluate(Index index) noexcept -> Value {
 
     // If the expression is memo'ized, we need do no further calculation
     //
-    if (expr.version == _revision) {
+    if (expr.version == revision) {
         return expr.memo;
     }
 
@@ -345,22 +351,24 @@ auto up::tools::Evaluator::_evaluate(Index index) noexcept -> Value {
     Value result = 0;
     switch (expr.op) {
         case Op::Variable:
-            result = _get(expr.hash);
+            result = context.getHashedValue(expr.hash);
             break;
         case Op::Complement:
-            result = _evaluate(expr.arg0) != 0 ? 0 : 1;
+            result = _evaluate(context, revision, expr.arg0) != 0 ? 0 : 1;
             break;
         case Op::Conjunction:
-            result = (_evaluate(expr.arg0) != 0 && _evaluate(expr.arg1) != 0) ? 1 : 0;
+            result =
+                (_evaluate(context, revision, expr.arg0) != 0 && _evaluate(context, revision, expr.arg1) != 0) ? 1 : 0;
             break;
         case Op::Disjunction:
-            result = (_evaluate(expr.arg0) != 0 || _evaluate(expr.arg1) != 0) ? 1 : 0;
+            result =
+                (_evaluate(context, revision, expr.arg0) != 0 || _evaluate(context, revision, expr.arg1) != 0) ? 1 : 0;
             break;
         case Op::Equality:
-            result = (_evaluate(expr.arg0) == _evaluate(expr.arg1)) ? 1 : 0;
+            result = (_evaluate(context, revision, expr.arg0) == _evaluate(context, revision, expr.arg1)) ? 1 : 0;
             break;
         case Op::Inequality:
-            result = (_evaluate(expr.arg0) != _evaluate(expr.arg1)) ? 1 : 0;
+            result = (_evaluate(context, revision, expr.arg0) != _evaluate(context, revision, expr.arg1)) ? 1 : 0;
             break;
         default:
             break;
@@ -369,7 +377,7 @@ auto up::tools::Evaluator::_evaluate(Index index) noexcept -> Value {
     // Memoize the result to avoid repeated calculation
     //
     expr.memo = result;
-    expr.version = _revision;
+    expr.version = revision;
 
     return result;
 }

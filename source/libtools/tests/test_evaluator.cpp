@@ -9,66 +9,84 @@ DOCTEST_TEST_SUITE("[potato][tools] Evaluator") {
     using namespace up::tools;
 
     DOCTEST_TEST_CASE("empty") {
-        Evaluator eval;
+        EvalEngine eval;
+        EvalContext ctx;
 
-        DOCTEST_CHECK_EQ(false, eval.evaluate({}));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, {}));
     }
 
     DOCTEST_TEST_CASE("boolean values") {
-        Evaluator eval;
+        EvalEngine eval;
+        EvalContext ctx;
 
-        eval.set("t", true);
-        eval.set("f", false);
+        ctx.set("t", true);
+        ctx.set("f", false);
 
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("t")));
-        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("f")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("t")));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, eval.compile("f")));
 
-        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("!t")));
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("!f")));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, eval.compile("!t")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("!f")));
 
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("t || f")));
-        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("t && f")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("t || f")));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, eval.compile("t && f")));
 
-        eval.clear("t");
+        ctx.clear("t");
 
-        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("t")));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, eval.compile("t")));
 
-        eval.set("t", true);
-        eval.set("t", false);
+        ctx.set("t", true);
+        ctx.set("t", false);
 
-        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("t")));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, eval.compile("t")));
     }
 
     DOCTEST_TEST_CASE("string comparison") {
-        Evaluator eval;
+        EvalEngine eval;
+        EvalContext ctx;
 
-        eval.set("color", "red");
-        eval.set("type", "int");
+        ctx.set("color", "red");
+        ctx.set("type", "int");
 
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("color == 'red'")));
-        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("color != 'red'")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("color == 'red'")));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, eval.compile("color != 'red'")));
 
-        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("color == 'blue'")));
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("color != 'blue'")));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, eval.compile("color == 'blue'")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("color != 'blue'")));
 
-        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("color == type")));
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("color != type")));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, eval.compile("color == type")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("color != type")));
 
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("type == type")));
-        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("type != type")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("type == type")));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, eval.compile("type != type")));
     }
 
     DOCTEST_TEST_CASE("parenthesis") {
-        Evaluator eval;
+        EvalEngine eval;
+        EvalContext ctx;
 
-        eval.set("color", "red");
-        eval.set("bool", true);
+        ctx.set("color", "red");
+        ctx.set("bool", true);
 
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("bool && (color == 'red')")));
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("!bool || (color == 'red')")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("bool && (color == 'red')")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("!bool || (color == 'red')")));
 
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("(color == 'green') || (color == 'red')")));
-        DOCTEST_CHECK_EQ(true, eval.evaluate(eval.compile("(!bool || color == 'red') && bool")));
-        DOCTEST_CHECK_EQ(false, eval.evaluate(eval.compile("(!bool || color == 'green') && bool")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("(color == 'green') || (color == 'red')")));
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx, eval.compile("(!bool || color == 'red') && bool")));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx, eval.compile("(!bool || color == 'green') && bool")));
+    }
+
+    DOCTEST_TEST_CASE("multiple contexts, same expression") {
+        EvalEngine eval;
+        EvalContext ctx1;
+        EvalContext ctx2;
+
+        ctx1.set("first", true);
+        ctx2.set("first", false);
+
+        auto const expr = eval.compile("first");
+
+        DOCTEST_CHECK_EQ(true, eval.evaluate(ctx1, expr));
+        DOCTEST_CHECK_EQ(false, eval.evaluate(ctx2, expr));
     }
 }

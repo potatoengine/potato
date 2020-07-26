@@ -30,7 +30,8 @@ namespace up::shell {
 
         void registerCommand(Command command);
 
-        auto context() noexcept -> tools::Evaluator& { return _context; }
+        auto engine() noexcept -> tools::EvalEngine& { return _engine; }
+        auto context() noexcept -> tools::EvalContext& { return _context; }
 
         [[nodiscard]] auto execute(string_view input) -> CommandResult;
         [[nodiscard]] auto test(string_view input) -> CommandResult;
@@ -43,7 +44,8 @@ namespace up::shell {
 
         [[nodiscard]] bool _evaluate(tools::EvaluatorId id) noexcept;
 
-        tools::Evaluator _context;
+        tools::EvalEngine _engine;
+        tools::EvalContext _context;
         vector<Command> _commands;
     };
 } // namespace up::shell

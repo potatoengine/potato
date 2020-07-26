@@ -10,7 +10,7 @@
 auto up::shell::Menu::addMenu(MenuDesc desc) -> MenuId {
     desc.id = MenuId{hash_combine(uint64{desc.parent}, hash_value(desc.title))};
     if (!desc.checked.empty()) {
-        desc.checkedId = _commands.context().compile(desc.checked);
+        desc.checkedId = _commands.engine().compile(desc.checked);
     }
     _menus.push_back(std::move(desc));
     return desc.id;
@@ -67,7 +67,8 @@ auto up::shell::Menu::_isEnabled(MenuDesc const& desc) const noexcept -> bool {
 }
 
 auto up::shell::Menu::_isChecked(MenuDesc const& desc) const noexcept -> bool {
-    return desc.checkedId == tools::EvaluatorId{} ? false : _commands.context().evaluate(desc.checkedId);
+    return desc.checkedId == tools::EvaluatorId{} ? false
+                                                  : _commands.engine().evaluate(_commands.context(), desc.checkedId);
 }
 
 auto up::shell::Menu::_isVisible(MenuDesc const& desc) const noexcept -> bool {
