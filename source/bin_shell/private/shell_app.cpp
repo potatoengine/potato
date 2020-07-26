@@ -55,7 +55,7 @@
 #include <imgui_internal.h>
 #include <nfd.h>
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _menu(_commands), _logger("shell") {}
 
 up::shell::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
@@ -134,19 +134,23 @@ int up::shell::ShellApp::initialize() {
     _hotKeys.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
     _hotKeys.addHotKey({.key = SDLK_F5, .mods = 0, .command = "potato.editors.play"});
 
-    _menu.addMenu({.title = "Potato"});
-    _menu.addMenu({.parent = "Potato", .title = "New"});
-    _menu.addMenu({.title = "View"});
-    _menu.addMenu({.parent = "View", .title = "Options"});
-    _menu.addMenu({.title = "Actions"});
+    auto const menuPotato = _menu.addMenu({.title = "Potato"});
+    auto const menuPotatoNew = _menu.addMenu({.parent = menuPotato, .title = "New"});
+    auto const menuView = _menu.addMenu({.title = "View"});
+    auto const menuViewOptions = _menu.addMenu({.parent = menuView, .title = "Options"});
+    auto const menuActions = _menu.addMenu({.title = "Actions"});
 
-    _menu.addMenu({.parent = "New", .title = "Scene", .command = "potato.assets.newScene"});
-    _menu.addMenu({.parent = "Potato", .title = "Open Project", .command = "potato.project.open"});
-    _menu.addMenu({.parent = "Potato", .title = "Close Project", .command = "potato.project.close"});
-    _menu.addMenu({.parent = "Potato", .title = "Close Document", .command = "potato.editors.closeActive"});
-    _menu.addMenu({.parent = "Potato", .title = "Quit", .command = "potato.quit"});
-    _menu.addMenu({.parent = "Actions", .title = "Play/Pause", .command = "potato.editors.play"});
-    _menu.addMenu({.parent = "Options", .title = "Grid", .command = "potato.editors.options.grid"});
+    _menu.addMenu({.parent = menuPotatoNew, .title = "Scene", .command = "potato.assets.newScene"});
+    _menu.addMenu({.parent = menuPotato, .title = "Open Project", .command = "potato.project.open"});
+    _menu.addMenu({.parent = menuPotato, .title = "Close Project", .command = "potato.project.close"});
+    _menu.addMenu({.parent = menuPotato, .title = "Close Document", .command = "potato.editors.closeActive"});
+    _menu.addMenu({.parent = menuPotato, .title = "Quit", .command = "potato.quit"});
+    _menu.addMenu({.parent = menuActions, .title = "Play/Pause", .command = "potato.editors.play"});
+    _menu.addMenu(
+        {.parent = menuViewOptions,
+         .title = "Grid",
+         .command = "potato.editors.options.grid",
+         .checked = "sceneEditorGrid"});
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -478,7 +482,7 @@ void up::shell::ShellApp::_displayUI() {
 }
 
 void up::shell::ShellApp::_displayMainMenu() {
-    _menu.drawMenu(_commands);
+    _menu.drawMenu();
 
     if (ImGui::BeginMainMenuBar()) {
         {
@@ -563,6 +567,7 @@ void up::shell::ShellApp::_createScene() {
     _editors.open(createSceneEditor(
         scene,
         [this] { return _universe->components(); },
+        _commands.context(),
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
 }
 

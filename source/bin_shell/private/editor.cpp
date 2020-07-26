@@ -101,7 +101,7 @@ void up::shell::Editor::updateUi() {
         _closed = handleClose();
     }
 
-    _active = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
+    _active = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootWindow | ImGuiFocusedFlags_ChildWindows);
 
     ImGui::End();
 }
