@@ -32,10 +32,14 @@ namespace up::shell {
         void drawMenu() const;
 
     private:
+        struct State {
+            bool visible = false;
+            bool enabled = false;
+            bool checked = false;
+        };
+
         void _drawMenu(MenuId parent) const;
-        auto _isVisible(MenuDesc const& desc) const noexcept -> bool;
-        auto _isEnabled(MenuDesc const& desc) const noexcept -> bool;
-        auto _isChecked(MenuDesc const& desc) const noexcept -> bool;
+        auto _state(MenuDesc const& desc) const noexcept -> State;
 
         vector<MenuDesc> _menus;
         CommandRegistry& _commands;

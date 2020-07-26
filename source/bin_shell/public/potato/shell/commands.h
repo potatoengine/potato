@@ -20,7 +20,7 @@ namespace up::shell {
         CommandDelegate callback;
     };
 
-    enum CommandResult { Okay, NotFound, Predicate, Disabled, Argument };
+    enum CommandResult { Okay, NotFound, Excluded, Disabled, Argument };
 
     /// @brief Manages the list of all known commands in the system
     class CommandRegistry {
@@ -37,11 +37,6 @@ namespace up::shell {
         [[nodiscard]] auto test(string_view input) -> CommandResult;
 
     private:
-        struct Context {
-            string name;
-            string value;
-        };
-
         [[nodiscard]] bool _evaluate(tools::EvaluatorId id) noexcept;
 
         tools::EvalEngine _engine;

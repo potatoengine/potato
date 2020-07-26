@@ -30,7 +30,10 @@ auto up::shell::CommandRegistry::execute(string_view input) -> CommandResult {
     for (auto& command : _commands) {
         if (command.command == input) {
             if (!_evaluate(command.whenId)) {
-                return CommandResult::Predicate;
+                return CommandResult::Excluded;
+            }
+            if (!_evaluate(command.enablementId)) {
+                return CommandResult::Disabled;
             }
 
             if (command.callback) {
@@ -47,7 +50,7 @@ auto up::shell::CommandRegistry::test(string_view input) -> CommandResult {
     for (auto& command : _commands) {
         if (command.command == input) {
             if (!_evaluate(command.whenId)) {
-                return CommandResult::Predicate;
+                return CommandResult::Excluded;
             }
             if (!_evaluate(command.enablementId)) {
                 return CommandResult::Disabled;

@@ -29,7 +29,9 @@ void up::shell::Menu::_drawMenu(MenuId parent) const {
             continue;
         }
 
-        if (!_isVisible(menu)) {
+        auto const state = _state(menu);
+
+        if (!state.visible) {
             continue;
         }
 
@@ -40,50 +42,32 @@ void up::shell::Menu::_drawMenu(MenuId parent) const {
             }
         }
         else {
-            bool const enabled = _isEnabled(menu);
-            bool const checked = _isChecked(menu);
-            if (ImGui::MenuItem(menu.title.c_str(), nullptr, checked, enabled)) {
+            if (ImGui::MenuItem(menu.title.c_str(), nullptr, state.checked, state.enabled)) {
                 (void)_commands.execute(menu.command);
             }
         }
     }
 }
 
-auto up::shell::Menu::_isEnabled(MenuDesc const& desc) const noexcept -> bool {
-    if (desc.command.empty()) {
-        for (auto const& menu : _menus) {
-            if (menu.id != desc.id) {
-                continue;
-            }
-            if (_isEnabled(menu)) {
-                return true;
-            }
-        }
-        return false;
+auto up::shell::Menu::_state(MenuDesc const& desc) const noexcept -> State {
+    if (!desc.command.empty()) {
+        auto const result = _commands.test(desc.command);
+        return {
+            .visible = result == CommandResult::Okay || result == CommandResult::Disabled,
+            .enabled = result != CommandResult::Disabled,
+            .checked = _commands.engine().evaluate(_commands.context(), desc.checkedId)};
     }
 
-    auto const result = _commands.test(desc.command);
-    return result == CommandResult::Okay;
-}
-
-auto up::shell::Menu::_isChecked(MenuDesc const& desc) const noexcept -> bool {
-    return desc.checkedId == tools::EvaluatorId{} ? false
-                                                  : _commands.engine().evaluate(_commands.context(), desc.checkedId);
-}
-
-auto up::shell::Menu::_isVisible(MenuDesc const& desc) const noexcept -> bool {
-    if (desc.command.empty()) {
-        for (auto const& menu : _menus) {
-            if (menu.parent != desc.id) {
-                continue;
-            }
-            if (_isVisible(menu)) {
-                return true;
-            }
+    for (auto const& menu : _menus) {
+        if (menu.parent != desc.id) {
+            continue;
         }
-        return false;
+
+        auto const state = _state(menu);
+        if (state.visible) {
+            return {.visible = true};
+        }
     }
 
-    auto const result = _commands.test(desc.command);
-    return result == CommandResult::Okay || result == CommandResult::Disabled;
+    return {.visible = false};
 }
