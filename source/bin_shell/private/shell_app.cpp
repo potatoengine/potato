@@ -96,10 +96,6 @@ int up::shell::ShellApp::initialize() {
     _commands.registerCommand({.command = "potato.quit", .callback = [this](string_view) {
                                    _running = false;
                                }});
-    _commands.registerCommand(
-        {.command = "potato.editors.closeActive", .enablement = "isEditorClosable", .callback = [this](string_view) {
-             _editors.closeActive();
-         }});
     _commands.registerCommand({.command = "potato.project.open", .callback = [this](string_view) {
                                    _openProject = true;
                                    _closeProject = true;
@@ -112,24 +108,12 @@ int up::shell::ShellApp::initialize() {
         {.command = "potato.assets.newScene", .enablement = "hasProject", .callback = [this](string_view) {
              _createScene();
          }});
-    _commands.registerCommand(
-        {.command = "potato.editors.play",
-         .when = "editorClass == 'potato.editor.scene'",
-         .callback = [this](string_view) {
-             _editors.sendActive("play");
-         }});
-    _commands.registerCommand(
-        {.command = "potato.editors.options.grid",
-         .when = "editorClass == 'potato.editor.scene'",
-         .callback = [this](string_view) {
-             _editors.sendActive("toggle-grid");
-         }});
 
     _palette.addPalette({.title = "Quit", .command = "potato.quit"});
     _palette.addPalette({.title = "Close Document", .command = "potato.editors.closeActive"});
     _palette.addPalette({.title = "Open Project", .command = "potato.project.open"});
     _palette.addPalette({.title = "Close Project", .command = "potato.project.close"});
-    _palette.addPalette({.title = "Play", .command = "potato.editors.play"});
+    _palette.addPalette({.title = "Play", .command = "potato.editors.scene.actions.play"});
 
     _hotKeys.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
     _hotKeys.addHotKey({.key = SDLK_F5, .mods = 0, .command = "potato.editors.play"});
@@ -145,11 +129,11 @@ int up::shell::ShellApp::initialize() {
     _menu.addMenu({.parent = menuPotato, .title = "Close Project", .command = "potato.project.close"});
     _menu.addMenu({.parent = menuPotato, .title = "Close Document", .command = "potato.editors.closeActive"});
     _menu.addMenu({.parent = menuPotato, .title = "Quit", .command = "potato.quit"});
-    _menu.addMenu({.parent = menuActions, .title = "Play/Pause", .command = "potato.editors.play"});
+    _menu.addMenu({.parent = menuActions, .title = "Play/Pause", .command = "potato.editors.scene.actions.play"});
     _menu.addMenu(
         {.parent = menuViewOptions,
          .title = "Grid",
-         .command = "potato.editors.options.grid",
+         .command = "potato.editors.scene.options.grid.toggle",
          .checked = "sceneEditorGrid"});
 
     constexpr int default_width = 1024;
@@ -509,7 +493,7 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
 
-    _editors.update(*_renderer, _lastFrameTime);
+    _editors.update(_commands, *_renderer, _lastFrameTime);
 
     ImGui::End();
 }

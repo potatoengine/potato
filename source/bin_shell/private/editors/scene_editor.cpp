@@ -31,15 +31,6 @@ auto up::shell::createSceneEditor(
     return new_box<SceneEditor>(std::move(scene), std::move(components), evalContext, std::move(onPlayClicked));
 }
 
-void up::shell::SceneEditor::handleCommand(string_view command) {
-    if (command == "play"_sv) {
-        _onPlayClicked(_scene);
-    }
-    else if (command == "toggle-grid"_sv) {
-        _enableGrid = !_enableGrid;
-    }
-}
-
 void up::shell::SceneEditor::tick(float deltaTime) {
     _scene->tick(deltaTime);
     _scene->flush();
@@ -51,6 +42,19 @@ void up::shell::SceneEditor::configure() {
 
     dockPanel(inspectorId, ImGuiDir_Right, contentId(), 0.25f);
     dockPanel(hierarchyId, ImGuiDir_Down, inspectorId, 0.65f);
+
+    addCommand(
+        {.command = "potato.editors.scene.actions.play",
+         .when = "editorClass == 'potato.editor.scene'",
+         .callback = [this](string_view) {
+             _onPlayClicked(_scene);
+         }});
+    addCommand(
+        {.command = "potato.editors.scene.options.grid.toggle",
+         .when = "editorClass == 'potato.editor.scene'",
+         .callback = [this](string_view) {
+             _enableGrid = !_enableGrid;
+         }});
 }
 
 void up::shell::SceneEditor::content() {

@@ -42,8 +42,6 @@ namespace up::shell {
         zstring_view editorClass() const override { return "potato.editor.scene"; }
         EditorId uniqueId() const override { return hash_value(this); }
 
-        void handleCommand(string_view command) override;
-
         void tick(float deltaTime) override;
 
     protected:

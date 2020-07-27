@@ -12,13 +12,22 @@ up::shell::EditorGroup::EditorGroup() {
     _documentWindowClass.ClassId = ImHashStr("EditorDocumentClass");
     _documentWindowClass.DockingAllowUnclassed = false;
     _documentWindowClass.DockingAlwaysTabBar = true;
+
+    _commands.registerCommand(
+        {.command = "potato.editors.closeActive", .enablement = "isEditorClosable", .callback = [this](string_view) {
+             closeActive();
+         }});
 }
 
-void up::shell::EditorGroup::update(Renderer& renderer, float deltaTime) {
+up::shell::EditorGroup::~EditorGroup() = default;
+
+void up::shell::EditorGroup::update(CommandRegistry& commands, Renderer& renderer, float deltaTime) {
+    commands.addProvider(&_commands);
+
     for (auto it = _editors.begin(); it != _editors.end();) {
         if (it->get()->isClosed()) {
             if (it->get() == _active) {
-                _active = nullptr;
+                _setActive(commands, nullptr);
             }
             it = _editors.erase(it);
         }
@@ -35,16 +44,18 @@ void up::shell::EditorGroup::update(Renderer& renderer, float deltaTime) {
     ImGui::DockSpace(dockspaceId, {}, ImGuiDockNodeFlags_NoWindowMenuButton, &_documentWindowClass);
 
     for (auto index : sequence(_editors.size())) {
-        if (_editors[index]->isClosed()) {
+        Editor* editor = _editors[index].get();
+
+        if (editor->isClosed()) {
             continue;
         }
 
         ImGui::SetNextWindowDockID(dockspaceId, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowClass(&_documentWindowClass);
-        _editors[index]->render(renderer, deltaTime);
-        _editors[index]->updateUi();
-        if (!_editors[index]->isClosed() && _editors[index]->isActive()) {
-            _active = _editors[index].get();
+        editor->render(renderer, deltaTime);
+        editor->updateUi();
+        if (!editor->isClosed() && editor->isActive()) {
+            _setActive(commands, editor);
         }
     }
 }
@@ -69,18 +80,18 @@ auto up::shell::EditorGroup::activeEditorClass() const noexcept -> zstring_view 
     return _active != nullptr ? _active->editorClass() : zstring_view{};
 }
 
-void up::shell::EditorGroup::sendAll(string_view command) {
-    for (auto& editor : _editors) {
-        editor->handleCommand(command);
-    }
-}
-
-void up::shell::EditorGroup::sendActive(string_view command) {
-    if (_active != nullptr) {
-        _active->handleCommand(command);
-    }
-}
-
 void up::shell::EditorGroup::open(box<Editor> editor) {
     _editors.push_back(std::move(editor));
+}
+
+void up::shell::EditorGroup::_setActive(CommandRegistry& commands, Editor* editor) {
+    if (_active != nullptr) {
+        commands.removeProvider(&_active->commands());
+    }
+
+    _active = editor;
+
+    if (_active != nullptr) {
+        commands.addProvider(&_active->commands());
+    }
 }

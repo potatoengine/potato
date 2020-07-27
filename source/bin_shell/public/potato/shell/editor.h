@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "commands.h"
+
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/string.h"
@@ -61,6 +63,8 @@ namespace up::shell {
 
         bool isActive() const noexcept { return _active; }
 
+        CommandProvider const& commands() const noexcept { return _commands; }
+
     protected:
         explicit Editor(zstring_view className);
 
@@ -69,6 +73,7 @@ namespace up::shell {
         auto addPanel(string title, PanelUpdate update) -> PanelId;
         void dockPanel(PanelId panelId, ImGuiDir dir, PanelId otherId, float size);
         auto contentId() const noexcept { return _dockId; }
+        void addCommand(CommandDesc command) { _commands.registerCommand(std::move(command)); }
 
         /// @brief Renders the ui for the Document.
         virtual void configure() = 0;
@@ -86,6 +91,7 @@ namespace up::shell {
         ImGuiID _dockId = 0;
 
         vector<box<Panel>> _panels;
+        CommandProvider _commands;
         bool _wantClose = false;
         bool _closed = false;
         bool _active = false;
