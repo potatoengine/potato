@@ -111,7 +111,6 @@ void up::shell::CommandRegistry::_recompile() {
 
     _commands.clear();
 
-    _compile(_default);
     for (auto* provider : _providers) {
         _compile(*provider);
     }

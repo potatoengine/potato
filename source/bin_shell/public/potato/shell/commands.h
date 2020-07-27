@@ -48,11 +48,6 @@ namespace up::shell {
         CommandRegistry();
         ~CommandRegistry();
 
-        auto registerCommand(CommandDesc command) -> CommandId {
-            _dirty = true;
-            return _default.registerCommand(std::move(command));
-        }
-
         auto addProvider(CommandProvider const* provider) -> bool;
         auto removeProvider(CommandProvider const* provider) -> bool;
 
@@ -76,7 +71,6 @@ namespace up::shell {
 
         tools::EvalEngine _engine;
         tools::EvalContext _context;
-        CommandProvider _default;
         vector<CompiledCommand> _commands;
         vector<CommandProvider const*> _providers;
         bool _dirty = false;

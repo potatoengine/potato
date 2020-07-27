@@ -88,7 +88,8 @@ namespace up::shell {
         string _editorResourcePath;
         unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
         unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
-        CommandRegistry _commands;
+        CommandProvider _commands;
+        CommandRegistry _commandRegistry;
         CommandPalette _palette;
         Menu _menu;
         HotKeys _hotKeys;

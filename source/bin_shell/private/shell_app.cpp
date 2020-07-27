@@ -55,7 +55,7 @@
 #include <imgui_internal.h>
 #include <nfd.h>
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _menu(_commands), _logger("shell") {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _menu(_commandRegistry), _logger("shell") {}
 
 up::shell::ShellApp::~ShellApp() {
     _drawImgui.releaseResources();
@@ -108,6 +108,7 @@ int up::shell::ShellApp::initialize() {
         {.command = "potato.assets.newScene", .enablement = "hasProject", .callback = [this](string_view) {
              _createScene();
          }});
+    _commandRegistry.addProvider(&_commands);
 
     _palette.addPalette({.title = "Quit", .command = "potato.quit"});
     _palette.addPalette({.title = "Close Document", .command = "potato.editors.closeActive"});
@@ -411,7 +412,7 @@ void up::shell::ShellApp::_processEvents() {
                 _drawImgui.handleEvent(ev);
                 break;
             case SDL_KEYDOWN:
-                if (!_hotKeys.evaluateKey(_commands, ev.key.keysym.sym, ev.key.keysym.mod)) {
+                if (!_hotKeys.evaluateKey(_commandRegistry, ev.key.keysym.sym, ev.key.keysym.mod)) {
                     _drawImgui.handleEvent(ev);
                 }
                 break;
@@ -447,10 +448,10 @@ void up::shell::ShellApp::_render() {
 void up::shell::ShellApp::_displayUI() {
     auto& imguiIO = ImGui::GetIO();
 
-    _commands.context().set("hasProject", _project != nullptr);
-    _commands.context().set("hasEditor", _editors.hasActive());
-    _commands.context().set("isEditorClosable", _editors.isActiveClosable());
-    _commands.context().set("editorClass", _editors.activeEditorClass());
+    _commandRegistry.context().set("hasProject", _project != nullptr);
+    _commandRegistry.context().set("hasEditor", _editors.hasActive());
+    _commandRegistry.context().set("isEditorClosable", _editors.isActiveClosable());
+    _commandRegistry.context().set("editorClass", _editors.activeEditorClass());
 
     _displayMainMenu();
 
@@ -462,7 +463,7 @@ void up::shell::ShellApp::_displayUI() {
 
     _displayDocuments({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
 
-    _palette.update(_commands);
+    _palette.update(_commandRegistry);
 }
 
 void up::shell::ShellApp::_displayMainMenu() {
@@ -493,7 +494,7 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
 
-    _editors.update(_commands, *_renderer, _lastFrameTime);
+    _editors.update(_commandRegistry, *_renderer, _lastFrameTime);
 
     ImGui::End();
 }
@@ -551,7 +552,7 @@ void up::shell::ShellApp::_createScene() {
     _editors.open(createSceneEditor(
         scene,
         [this] { return _universe->components(); },
-        _commands.context(),
+        _commandRegistry.context(),
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
 }
 
