@@ -31,7 +31,7 @@ target_sources(potato_spud_test PRIVATE
     "tests/test_string_view.cpp"
     "tests/test_vector.cpp"
     "tests/test_zstring_view.cpp"
- "public/potato/spud/result.h" "public/potato/spud/erase.h")
+ "public/potato/spud/result.h" "public/potato/spud/erase.h" "public/potato/spud/enumerate.h")
 
 up_set_common_properties(potato_spud_test)
 
