@@ -15,26 +15,21 @@ up::shell::Editor::Editor(zstring_view className) {
     _windowClass.DockingAlwaysTabBar = false;
 }
 
-void up::shell::Editor::updateUi() {
+bool up::shell::Editor::updateUi() {
     if (_title.empty()) {
         string_writer tmp;
         format_append(tmp, "{}##{}", displayName(), this);
         _title = std::move(tmp).to_string();
     }
 
-    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
-    if (hasMenu()) {
-        windowFlags |= ImGuiWindowFlags_MenuBar;
-    }
-
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     if (isClosable()) {
         bool wantOpen = true;
-        ImGui::Begin(_title.c_str(), &wantOpen, windowFlags);
+        ImGui::Begin(_title.c_str(), &wantOpen, ImGuiWindowFlags_NoCollapse);
         _wantClose = _wantClose || !wantOpen;
     }
     else {
-        ImGui::Begin(_title.c_str(), nullptr, windowFlags);
+        ImGui::Begin(_title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
     }
     ImGui::PopStyleVar(1);
 
@@ -101,9 +96,11 @@ void up::shell::Editor::updateUi() {
         _closed = handleClose();
     }
 
-    _active = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootWindow | ImGuiFocusedFlags_ChildWindows);
+    auto const active = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
     ImGui::End();
+
+    return active;
 }
 
 auto up::shell::Editor::addPanel(string title, PanelUpdate update) -> PanelId {
@@ -144,5 +141,22 @@ void up::shell::Editor::dockPanel(PanelId panelId, ImGuiDir dir, PanelId otherId
             }
             break;
         }
+    }
+}
+
+void up::shell::Editor::activate(bool active, CommandRegistry& commands, Menu& menu) {
+    if (active == _active) {
+        return;
+    }
+
+    _active = active;
+
+    if (active) {
+        commands.addProvider(&_commands);
+        menu.addProvider(&_menu);
+    }
+    else {
+        commands.removeProvider(&_commands);
+        menu.removeProvider(&_menu);
     }
 }

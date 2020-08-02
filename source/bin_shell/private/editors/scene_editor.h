@@ -12,7 +12,6 @@
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_resource_view.h"
 #include "potato/render/gpu_texture.h"
-#include "potato/tools/evaluator.h"
 #include "potato/spud/delegate.h"
 
 #include <glm/glm.hpp>
@@ -26,13 +25,11 @@ namespace up::shell {
         explicit SceneEditor(
             rc<Scene> scene,
             EnumerateComponents components,
-            tools::EvalContext& evalContext,
             HandlePlayClicked onPlayClicked)
             : Editor("SceneEditor"_zsv)
             , _scene(std::move(scene))
             , _cameraController(_camera)
             , _components(std::move(components))
-            , _evalContext(evalContext)
             , _onPlayClicked(std::move(onPlayClicked)) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
             _selection.select(_scene->root());
@@ -63,7 +60,6 @@ namespace up::shell {
         ArcBallCameraController _cameraController;
         Selection _selection;
         EnumerateComponents _components;
-        tools::EvalContext& _evalContext;
         HandlePlayClicked _onPlayClicked;
         glm::ivec2 _sceneDimensions = {0, 0};
         bool _enableGrid = true;
@@ -72,6 +68,5 @@ namespace up::shell {
     auto createSceneEditor(
         rc<Scene> scene,
         SceneEditor::EnumerateComponents components,
-        tools::EvalContext& evalContext,
         SceneEditor::HandlePlayClicked onPlayClicked) -> box<Editor>;
 } // namespace up::shell

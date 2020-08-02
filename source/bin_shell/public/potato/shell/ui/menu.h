@@ -6,42 +6,77 @@
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
+#include "potato/spud/delegate.h"
 
 namespace up::shell {
     class CommandRegistry;
 
-    enum class MenuId : uint64 {};
+    using MenuPredicate = delegate<bool()>;
+    using MenuAction = delegate<void()>;
 
-    struct MenuDesc {
-        MenuId id = {};
-        MenuId parent = {};
+    struct MenuItemDesc {
         char8_t const* icon = nullptr;
         string title;
-        string command;
-        string checked;
-        tools::EvaluatorId checkedId;
+        MenuPredicate enabled;
+        MenuPredicate checked;
+        MenuAction action;
         int priority = -1;
     };
 
-    class Menu {
+    struct MenuCommandDesc {
+        char8_t const* icon = nullptr;
+        string title;
+        string command;
+        int priority = -1;
+    };
+
+    /// @brief Contains a set of menu items to be displayed
+    class MenuProvider {
     public:
-        Menu(CommandRegistry& commands) : _commands(commands) {}
-
-        MenuId addMenu(MenuDesc desc);
-
-        void drawMenu() const;
-
-    private:
-        struct State {
-            bool visible = false;
-            bool enabled = false;
-            bool checked = false;
+        struct MenuItem {
+            uint64 hash = 0;
+            uint64 parentHash = 0;
+            char8_t const* icon = nullptr;
+            string title;
+            string command;
+            MenuPredicate enabled;
+            MenuPredicate checked;
+            MenuAction action;
+            int priority = -1;
         };
 
-        void _drawMenu(MenuId parent) const;
-        auto _state(MenuDesc const& desc) const noexcept -> State;
+        void addMenuItem(MenuItemDesc desc);
+        void addMenuCommand(CommandRegistry& commands, MenuCommandDesc desc);
 
-        vector<MenuDesc> _menus;
-        CommandRegistry& _commands;
+        auto menuItems() const noexcept -> view<MenuItem> { return _items; }
+
+    private:
+        vector<MenuItem> _items;
+    };
+
+    /// @brief Contains the active state for rendering and handling a menu
+    class Menu {
+    public:
+        auto addProvider(MenuProvider const* provider) -> bool;
+        auto removeProvider(MenuProvider const* provider) -> bool;
+
+        void drawMenu();
+
+    private:
+        struct MenuItem {
+            size_t providerIndex = 0;
+            size_t itemIndex = 0;
+            size_t childIndex = 0;
+            size_t siblingIndex = 0;
+        };
+
+        void _rebuild();
+        void _drawMenu(size_t index);
+        auto _findIndexByHash(uint64 hash) const noexcept -> size_t;
+        void _insertChild(size_t parentIndex, size_t childIndex) noexcept;
+
+        vector<MenuItem> _items;
+        vector<MenuProvider const*> _providers;
+        bool _dirty = false;
     };
 } // namespace up::shell

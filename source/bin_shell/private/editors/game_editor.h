@@ -26,10 +26,9 @@ namespace up::shell {
         EditorId uniqueId() const override { return hash_value(this); }
 
     protected:
-        void configure() override {}
+        void configure() override;
         void content() override;
         void render(Renderer& renderer, float deltaTime) override;
-        void menu() override;
         bool hasMenu() override { return true; }
 
     private:
@@ -43,6 +42,7 @@ namespace up::shell {
         FlyCameraController _cameraController;
         glm::ivec2 _sceneDimensions = {0, 0};
         bool _isInputBound = false;
+        bool _wantPlaying = true;
     };
 
     auto createGameEditor(rc<Scene> scene) -> box<Editor>;

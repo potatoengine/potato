@@ -3,6 +3,7 @@
 #pragma once
 
 #include "commands.h"
+#include "ui/menu.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/vector.h"
@@ -22,22 +23,15 @@ namespace up::shell {
         EditorGroup();
         ~EditorGroup();
 
-        EditorGroup(EditorGroup const&) = delete;
-        EditorGroup& operator=(EditorGroup const&) = delete;
-
-        void update(CommandRegistry& commands, Renderer& renderer, float deltaTime);
+        void update(CommandRegistry& commands, Menu& menu, Renderer& renderer, float deltaTime);
 
         void closeAll() noexcept;
         void closeActive() noexcept;
 
-        [[nodiscard]] auto hasActive() const noexcept { return _active != nullptr; }
-        [[nodiscard]] auto isActiveClosable() const noexcept -> bool;
-        [[nodiscard]] auto activeEditorClass() const noexcept -> zstring_view;
-
         void open(box<Editor> editor);
 
     private:
-        void _setActive(CommandRegistry& commands, Editor* editor);
+        void _setActive(CommandRegistry& commands, Menu& menu, Editor* editor);
 
         vector<box<Editor>> _editors;
         CommandProvider _commands;

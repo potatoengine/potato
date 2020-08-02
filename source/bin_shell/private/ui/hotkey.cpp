@@ -36,8 +36,7 @@ bool up::shell::HotKeys::evaluateKey(CommandRegistry& commands, int keysym, unsi
     //
     for (auto const& desc : _hotKeys) {
         if (desc.key == keysym && desc.mods == mods) {
-            auto const rs = commands.execute(desc.command);
-            return rs == CommandResult::Okay;
+            return commands.execute(desc.command);
         }
     }
 

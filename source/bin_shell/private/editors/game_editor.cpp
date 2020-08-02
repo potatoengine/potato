@@ -24,13 +24,33 @@ auto up::shell::createGameEditor(rc<Scene> scene) -> box<Editor> {
     return new_box<GameEditor>(std::move(scene));
 }
 
+void up::shell::GameEditor::configure() {
+    addMenuItem({.title = "Actions\\Play/Pause", .action = [this]{ _wantPlaying = !_wantPlaying; }});
+}
+
 void up::shell::GameEditor::content() {
     auto const contentId = ImGui::GetID("GameContentView");
     auto const* const ctx = ImGui::GetCurrentContext();
     auto const& io = ImGui::GetIO();
 
+    if (ImGui::BeginMenuBar()) {
+        auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
+        auto const xPos =
+            ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
+        ImGui::SetCursorPosX(xPos);
+        if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
+            _wantPlaying = !_wantPlaying;
+        }
+        ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "Shift-ESC to release input");
+        ImGui::EndMenuBar();
+    }
+
     if (ImGui::IsKeyPressed(SDL_SCANCODE_F5, false)) {
-        _scene->playing(!_scene->playing());
+        _wantPlaying = !_wantPlaying;
+    }
+
+    if (_wantPlaying != _scene->playing()) {
+        _scene->playing(_wantPlaying);
     }
 
     if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE) && io.KeyShift) {
@@ -86,20 +106,6 @@ void up::shell::GameEditor::content() {
         }
     }
     ImGui::EndChild();
-}
-
-void up::shell::GameEditor::menu() {
-    if (ImGui::BeginMenuBar()) {
-        auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
-        auto const xPos =
-            ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
-        ImGui::SetCursorPosX(xPos);
-        if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
-            _scene->playing(!_scene->playing());
-        }
-        ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "Shift-ESC to release input");
-        ImGui::EndMenuBar();
-    }
 }
 
 void up::shell::GameEditor::render(Renderer& renderer, float deltaTime) {

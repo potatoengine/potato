@@ -26,9 +26,8 @@
 auto up::shell::createSceneEditor(
     rc<Scene> scene,
     SceneEditor::EnumerateComponents components,
-    tools::EvalContext& evalContext,
     SceneEditor::HandlePlayClicked onPlayClicked) -> box<Editor> {
-    return new_box<SceneEditor>(std::move(scene), std::move(components), evalContext, std::move(onPlayClicked));
+    return new_box<SceneEditor>(std::move(scene), std::move(components), std::move(onPlayClicked));
 }
 
 void up::shell::SceneEditor::tick(float deltaTime) {
@@ -44,23 +43,34 @@ void up::shell::SceneEditor::configure() {
     dockPanel(hierarchyId, ImGuiDir_Down, inspectorId, 0.65f);
 
     addCommand(
-        {.command = "potato.editors.scene.actions.play",
-         .when = "editorClass == 'potato.editor.scene'",
-         .callback = [this](string_view) {
-             _onPlayClicked(_scene);
-         }});
+        {.name = "potato.editors.scene.actions.play",
+         .predicate = [this]() { return isActive(); },
+         .execute =
+             [this](auto) {
+                 _onPlayClicked(_scene);
+             }});
     addCommand(
-        {.command = "potato.editors.scene.options.grid.toggle",
-         .when = "editorClass == 'potato.editor.scene'",
-         .callback = [this](string_view) {
-             _enableGrid = !_enableGrid;
-         }});
+        {.name = "potato.editors.scene.options.grid.toggle",
+         .predicate = [this]() { return isActive(); },
+         .execute =
+             [this](auto) {
+                 _enableGrid = !_enableGrid;
+             }});
+
+    addMenuItem(
+        {.title = "View\\Options\\Grid",
+         .checked = [this] { return _enableGrid; },
+         .action =
+             [this] {
+                 _enableGrid = !_enableGrid;
+             }});
+    addMenuItem({.title = "Actions\\Play", .action = [this] {
+                     _onPlayClicked(_scene);
+                 }});
 }
 
 void up::shell::SceneEditor::content() {
     auto& io = ImGui::GetIO();
-
-    _evalContext.set("sceneEditorGrid"_zsv, _enableGrid);
 
     auto const contentSize = ImGui::GetContentRegionAvail();
 

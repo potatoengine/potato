@@ -10,34 +10,56 @@
 #include "potato/spud/string_util.h"
 #include "potato/spud/utility.h"
 
-auto up::shell::CommandProvider::registerCommand(CommandDesc command) -> CommandId {
-    auto const id = CommandId{hash_value(command.command)};
+auto up::shell::CommandProvider::addCommand(CommandDesc command) -> CommandId {
+    auto const id = CommandId{hash_value(command.name)};
     _commands.push_back(Command{
         .id = id,
-        .command = std::move(command.command),
-        .enablement = std::move(command.enablement),
-        .when = std::move(command.when),
-        .callback = std::move(command.callback)});
+        .name = std::move(command.name),
+        .predicate = std::move(command.predicate),
+        .execute = std::move(command.execute)});
     return id;
 }
 
-void up::shell::CommandProvider::execute(CommandId id, string_view input) const {
-    for (auto const& command : _commands) {
+bool up::shell::CommandProvider::execute(CommandId id, string_view input) {
+    for (auto & command : _commands) {
         if (command.id == id) {
-            if (command.callback != nullptr) {
-                // TODO: no const_cast
-                const_cast<CommandDelegate&>(command.callback)(input);
+            if (command.predicate != nullptr) {
+                auto const result = command.predicate();
+                if (!result) {
+                    return false;
+                }
             }
-            return;
+
+            if (command.execute != nullptr) {
+                command.execute(input);
+            }
+
+            return true;
         }
     }
+
+    return false;
+}
+
+auto up::shell::CommandProvider::test(CommandId id) -> bool {
+    for (auto& command : _commands) {
+        if (command.id == id) {
+            if (command.predicate == nullptr) {
+                return true;
+            }
+
+            return command.predicate();
+        }
+    }
+
+    return false;
 }
 
 up::shell::CommandRegistry::CommandRegistry() = default;
 
 up::shell::CommandRegistry::~CommandRegistry() = default;
 
-auto up::shell::CommandRegistry::addProvider(CommandProvider const* provider) -> bool {
+auto up::shell::CommandRegistry::addProvider(CommandProvider* provider) -> bool {
     if (provider == nullptr) {
         return false;
     }
@@ -51,7 +73,7 @@ auto up::shell::CommandRegistry::addProvider(CommandProvider const* provider) ->
     return true;
 }
 
-auto up::shell::CommandRegistry::removeProvider(CommandProvider const* provider) -> bool {
+auto up::shell::CommandRegistry::removeProvider(CommandProvider* provider) -> bool {
     if (provider == nullptr) {
         return false;
     }
@@ -61,49 +83,35 @@ auto up::shell::CommandRegistry::removeProvider(CommandProvider const* provider)
     return true;
 }
 
-auto up::shell::CommandRegistry::execute(string_view input) -> CommandResult {
+auto up::shell::CommandRegistry::execute(string_view input) -> bool {
     auto const id = CommandId{hash_value(input)};
 
-    _recompile();
+    _rebuild();
 
     for (auto& command : _commands) {
         if (command.id == id) {
-            if (!_evaluate(command.whenId)) {
-                return CommandResult::Excluded;
-            }
-            if (!_evaluate(command.enablementId)) {
-                return CommandResult::Disabled;
-            }
-
-            command.provider->execute(command.id, input);
-            return CommandResult::Okay;
+            return command.provider->execute(command.id, input);
         }
     }
 
-    return CommandResult::NotFound;
+    return false;
 }
 
-auto up::shell::CommandRegistry::test(string_view input) -> CommandResult {
+auto up::shell::CommandRegistry::test(string_view input) -> bool {
     auto const id = CommandId{hash_value(input)};
 
-    _recompile();
+    _rebuild();
 
     for (auto& command : _commands) {
         if (command.id == id) {
-            if (!_evaluate(command.whenId)) {
-                return CommandResult::Excluded;
-            }
-            if (!_evaluate(command.enablementId)) {
-                return CommandResult::Disabled;
-            }
-            return CommandResult::Okay;
+            return command.provider->test(command.id);
         }
     }
 
-    return CommandResult::NotFound;
+    return false;
 }
 
-void up::shell::CommandRegistry::_recompile() {
+void up::shell::CommandRegistry::_rebuild() {
     if (!_dirty) {
         return;
     }
@@ -112,20 +120,10 @@ void up::shell::CommandRegistry::_recompile() {
     _commands.clear();
 
     for (auto* provider : _providers) {
-        _compile(*provider);
+        for (auto& command : provider->commands()) {
+            _commands.push_back(CompiledCommand{
+                .id = command.id,
+                .provider = provider });
+        }
     }
-}
-
-void up::shell::CommandRegistry::_compile(CommandProvider const& provider) {
-    for (auto const& command : provider.commands()) {
-        _commands.push_back(CompiledCommand{
-            .id = command.id,
-            .enablementId = _engine.compile(command.enablement),
-            .whenId = _engine.compile(command.when),
-            .provider = &provider});
-    }
-}
-
-bool up::shell::CommandRegistry::_evaluate(tools::EvaluatorId id) noexcept {
-    return id == tools::EvaluatorId{} ? true : _engine.evaluate(_context, id);
 }

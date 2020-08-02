@@ -13,21 +13,24 @@ up::shell::EditorGroup::EditorGroup() {
     _documentWindowClass.DockingAllowUnclassed = false;
     _documentWindowClass.DockingAlwaysTabBar = true;
 
-    _commands.registerCommand(
-        {.command = "potato.editors.closeActive", .enablement = "isEditorClosable", .callback = [this](string_view) {
-             closeActive();
-         }});
+    _commands.addCommand(
+        {.name = "potato.editors.closeActive",
+         .predicate = [this]() { return _active != nullptr && _active->isClosable(); },
+         .execute =
+             [this](auto) {
+                 closeActive();
+             }});
 }
 
 up::shell::EditorGroup::~EditorGroup() = default;
 
-void up::shell::EditorGroup::update(CommandRegistry& commands, Renderer& renderer, float deltaTime) {
+void up::shell::EditorGroup::update(CommandRegistry& commands, Menu& menu, Renderer& renderer, float deltaTime) {
     commands.addProvider(&_commands);
 
     for (auto it = _editors.begin(); it != _editors.end();) {
         if (it->get()->isClosed()) {
             if (it->get() == _active) {
-                _setActive(commands, nullptr);
+                _setActive(commands, menu, nullptr);
             }
             it = _editors.erase(it);
         }
@@ -50,12 +53,17 @@ void up::shell::EditorGroup::update(CommandRegistry& commands, Renderer& rendere
             continue;
         }
 
+        editor->render(renderer, deltaTime);
+
         ImGui::SetNextWindowDockID(dockspaceId, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowClass(&_documentWindowClass);
-        editor->render(renderer, deltaTime);
-        editor->updateUi();
-        if (!editor->isClosed() && editor->isActive()) {
-            _setActive(commands, editor);
+        if (_active == nullptr) {
+            ImGui::SetNextWindowFocus();
+        }
+        auto const active = editor->updateUi();
+
+        if (!editor->isClosed() && active) {
+            _setActive(commands, menu, editor);
         }
     }
 }
@@ -72,26 +80,22 @@ void up::shell::EditorGroup::closeActive() noexcept {
     }
 }
 
-auto up::shell::EditorGroup::isActiveClosable() const noexcept -> bool {
-    return _active != nullptr && _active->isClosable();
-}
-
-auto up::shell::EditorGroup::activeEditorClass() const noexcept -> zstring_view {
-    return _active != nullptr ? _active->editorClass() : zstring_view{};
-}
-
 void up::shell::EditorGroup::open(box<Editor> editor) {
     _editors.push_back(std::move(editor));
 }
 
-void up::shell::EditorGroup::_setActive(CommandRegistry& commands, Editor* editor) {
+void up::shell::EditorGroup::_setActive(CommandRegistry& commands, Menu& menu, Editor* editor) {
+    if (editor == _active) {
+        return;
+    }
+
     if (_active != nullptr) {
-        commands.removeProvider(&_active->commands());
+        _active->activate(false, commands, menu);
     }
 
     _active = editor;
 
     if (_active != nullptr) {
-        commands.addProvider(&_active->commands());
+        _active->activate(true, commands, menu);
     }
 }

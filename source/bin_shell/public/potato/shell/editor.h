@@ -3,6 +3,7 @@
 #pragma once
 
 #include "commands.h"
+#include "ui/menu.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
@@ -48,7 +49,7 @@ namespace up::shell {
         virtual EditorId uniqueId() const = 0;
 
         /// @brief Updates the UI.
-        void updateUi();
+        bool updateUi();
 
         /// @brief Renders the ui for the Document.
         virtual void render(Renderer& renderer, float deltaTime) {}
@@ -62,8 +63,10 @@ namespace up::shell {
         void close() noexcept { _wantClose = isClosable(); }
 
         bool isActive() const noexcept { return _active; }
+        void activate(bool active, CommandRegistry& commands, Menu& menu);
 
         CommandProvider const& commands() const noexcept { return _commands; }
+        MenuProvider const& menu() const noexcept { return _menu; }
 
     protected:
         explicit Editor(zstring_view className);
@@ -73,12 +76,12 @@ namespace up::shell {
         auto addPanel(string title, PanelUpdate update) -> PanelId;
         void dockPanel(PanelId panelId, ImGuiDir dir, PanelId otherId, float size);
         auto contentId() const noexcept { return _dockId; }
-        void addCommand(CommandDesc command) { _commands.registerCommand(std::move(command)); }
+        void addCommand(CommandDesc command) { _commands.addCommand(std::move(command)); }
+        void addMenuItem(MenuItemDesc desc) { _menu.addMenuItem(std::move(desc)); }
 
         /// @brief Renders the ui for the Document.
         virtual void configure() = 0;
         virtual void content() = 0;
-        virtual void menu() {}
         virtual bool hasMenu() { return false; }
         virtual bool handleClose() { return true; }
 
@@ -92,6 +95,7 @@ namespace up::shell {
 
         vector<box<Panel>> _panels;
         CommandProvider _commands;
+        MenuProvider _menu;
         bool _wantClose = false;
         bool _closed = false;
         bool _active = false;
