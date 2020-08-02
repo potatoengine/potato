@@ -4,24 +4,16 @@
 
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
+#include "commands.h"
 
 struct ImGuiInputTextCallbackData;
 
 namespace up::shell {
-    class CommandRegistry;
-
-    struct CommandPaletteDesc {
-        string title;
-        string command;
-    };
-
     /// @brief Handles the command palette UI
     class CommandPalette {
     public:
         void show();
         void close();
-
-        void addPalette(CommandPaletteDesc desc);
 
         void update(CommandRegistry& registry);
 
@@ -31,10 +23,9 @@ namespace up::shell {
         bool _execute(CommandRegistry& registry) const;
         void _updateMatches(CommandRegistry& registry);
 
-        int _activeIndex = -1;
+        size_t _activeIndex = 0;
         char _input[128] = {0};
-        vector<int> _matches;
-        vector<CommandPaletteDesc> _descs;
+        vector<CommandRegistry::Match> _matches;
         bool _open = false;
     };
 } // namespace up::shell

@@ -93,25 +93,30 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _commands.addCommand({.name = "potato.quit", .execute = [this](string_view) {
-                                   _running = false;
-                               }});
-    _commands.addCommand({.name = "potato.project.open", .execute = [this](string_view) {
-                                   _openProject = true;
-                                   _closeProject = true;
-                               }});
-    _commands.addCommand({.name = "potato.project.close", .predicate = [this](){ return _project != nullptr; }, .execute = [this](auto) {
-                                   _closeProject = true;
-                               }});
-    _commands.addCommand({.name = "potato.assets.newScene", .predicate = [this]() { return _project != nullptr; }, .execute = [this](auto) {
-                                   _createScene();
-                               }});
+    _commands.addCommand({.name = "potato.quit", .title = "Quit", .execute = [this](string_view) {
+                              _running = false;
+                          }});
+    _commands.addCommand({.name = "potato.project.open", .title = "Open Project", .execute = [this](string_view) {
+                              _openProject = true;
+                              _closeProject = true;
+                          }});
+    _commands.addCommand(
+        {.name = "potato.project.close",
+         .title = "Close Project",
+         .predicate = [this]() { return _project != nullptr; },
+         .execute =
+             [this](auto) {
+                 _closeProject = true;
+             }});
+    _commands.addCommand(
+        {.name = "potato.assets.newScene",
+         .title = "New Scene",
+         .predicate = [this]() { return _project != nullptr; },
+         .execute =
+             [this](auto) {
+                 _createScene();
+             }});
     _commandRegistry.addProvider(&_commands);
-
-    _palette.addPalette({.title = "Quit", .command = "potato.quit"});
-    _palette.addPalette({.title = "Close Document", .command = "potato.editors.closeActive"});
-    _palette.addPalette({.title = "Open Project", .command = "potato.project.open"});
-    _palette.addPalette({.title = "Close Project", .command = "potato.project.close"});
 
     _hotKeys.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
     _hotKeys.addHotKey({.key = SDLK_F5, .mods = 0, .command = "potato.editors.play"});
@@ -119,7 +124,9 @@ int up::shell::ShellApp::initialize() {
     _mainMenu.addMenuCommand(_commandRegistry, {.title = "File\\New\\Scene", .command = "potato.assets.newScene"});
     _mainMenu.addMenuCommand(_commandRegistry, {.title = "File\\Open Project", .command = "potato.project.open"});
     _mainMenu.addMenuCommand(_commandRegistry, {.title = "File\\Close Project", .command = "potato.project.close"});
-    _mainMenu.addMenuCommand(_commandRegistry, {.title = "File\\Close Document", .command = "potato.editors.closeActive"});
+    _mainMenu.addMenuCommand(
+        _commandRegistry,
+        {.title = "File\\Close Document", .command = "potato.editors.closeActive"});
     _mainMenu.addMenuCommand(_commandRegistry, {.title = "File\\Quit", .command = "potato.quit"});
 
     _menu.addProvider(&_mainMenu);

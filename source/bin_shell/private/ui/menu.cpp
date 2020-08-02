@@ -57,7 +57,7 @@ void up::shell::MenuProvider::addMenuCommand(CommandRegistry& commands, MenuComm
     });
 }
 
-auto up::shell::Menu::addProvider(MenuProvider const* provider) -> bool {
+auto up::shell::Menu::addProvider(MenuProvider* provider) -> bool {
     if (provider == nullptr) {
         return false;
     }
@@ -71,7 +71,7 @@ auto up::shell::Menu::addProvider(MenuProvider const* provider) -> bool {
     return true;
 }
 
-auto up::shell::Menu::removeProvider(MenuProvider const* provider) -> bool {
+auto up::shell::Menu::removeProvider(MenuProvider* provider) -> bool {
     if (provider == nullptr) {
         return false;
     }
@@ -99,7 +99,7 @@ void up::shell::Menu::_rebuild() {
     _items.clear();
     _items.emplace_back();
     for (auto const& [providerIndex, provider] : enumerate(_providers)) {
-        for (auto const& [index, item] : enumerate(provider->menuItems())) {
+        for (auto const& [index, item] : enumerate(provider->_items)) {
             auto const parentIndex = _findIndexByHash(item.parentHash);
 
             _insertChild(parentIndex, _items.size());
@@ -112,8 +112,8 @@ void up::shell::Menu::_drawMenu(size_t index) {
     while (index != 0) {
         auto const& item = _items[index];
 
-        auto const* provider = _providers[item.providerIndex];
-        auto const& itemData = provider->menuItems()[item.itemIndex];
+        auto* provider = _providers[item.providerIndex];
+        auto& itemData = provider->_items[item.itemIndex];
 
         if (itemData.action == nullptr) {
             if (ImGui::BeginMenu(itemData.title.c_str())) {
@@ -122,11 +122,11 @@ void up::shell::Menu::_drawMenu(size_t index) {
             }
         }
         else {
-            auto const checked = itemData.checked == nullptr ? false : const_cast<MenuPredicate&>(itemData.checked)();
-            auto const enabled = itemData.enabled == nullptr ? true : const_cast<MenuPredicate&>(itemData.enabled)();
+            auto const checked = itemData.checked == nullptr ? false : itemData.checked();
+            auto const enabled = itemData.enabled == nullptr ? true : itemData.enabled();
 
             if (ImGui::MenuItem(itemData.title.c_str(), nullptr, checked, enabled)) {
-                const_cast<MenuAction&>(itemData.action)();
+                itemData.action();
             }
         }
 
@@ -145,7 +145,7 @@ auto up::shell::Menu::_findIndexByHash(uint64 hash) const noexcept -> size_t {
         }
 
         auto const* provider = _providers[item.providerIndex];
-        auto const& itemData = provider->menuItems()[item.itemIndex];
+        auto const& itemData = provider->_items[item.itemIndex];
 
         if (itemData.hash == hash) {
             return index;

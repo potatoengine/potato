@@ -44,6 +44,7 @@ void up::shell::SceneEditor::configure() {
 
     addCommand(
         {.name = "potato.editors.scene.actions.play",
+         .title = "Play Scene",
          .predicate = [this]() { return isActive(); },
          .execute =
              [this](auto) {
@@ -51,6 +52,7 @@ void up::shell::SceneEditor::configure() {
              }});
     addCommand(
         {.name = "potato.editors.scene.options.grid.toggle",
+         .title = "Toggle Grid",
          .predicate = [this]() { return isActive(); },
          .execute =
              [this](auto) {

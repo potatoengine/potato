@@ -48,17 +48,17 @@ namespace up::shell {
         void addMenuItem(MenuItemDesc desc);
         void addMenuCommand(CommandRegistry& commands, MenuCommandDesc desc);
 
-        auto menuItems() const noexcept -> view<MenuItem> { return _items; }
-
     private:
         vector<MenuItem> _items;
+
+        friend class Menu;
     };
 
     /// @brief Contains the active state for rendering and handling a menu
     class Menu {
     public:
-        auto addProvider(MenuProvider const* provider) -> bool;
-        auto removeProvider(MenuProvider const* provider) -> bool;
+        auto addProvider(MenuProvider* provider) -> bool;
+        auto removeProvider(MenuProvider* provider) -> bool;
 
         void drawMenu();
 
@@ -76,7 +76,7 @@ namespace up::shell {
         void _insertChild(size_t parentIndex, size_t childIndex) noexcept;
 
         vector<MenuItem> _items;
-        vector<MenuProvider const*> _providers;
+        vector<MenuProvider*> _providers;
         bool _dirty = false;
     };
 } // namespace up::shell

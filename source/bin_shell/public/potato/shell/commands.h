@@ -14,7 +14,8 @@ namespace up::shell {
     using CommandExecuteDelegate = delegate<void(string_view input)>;
 
     struct CommandDesc {
-        string name;
+        string_view name;
+        string title;
         CommandPredicate predicate;
         CommandExecuteDelegate execute;
     };
@@ -24,38 +25,44 @@ namespace up::shell {
     public:
         struct Command {
             CommandId id = {};
-            string name;
+            string title;
             CommandPredicate predicate;
             CommandExecuteDelegate execute;
         };
 
-        auto addCommand(CommandDesc command) -> CommandId;
-
-        [[nodiscard]] auto commands() const noexcept -> view<Command> { return _commands; }
-
-        bool execute(CommandId id, string_view input);
-        auto test(CommandId id) -> bool;
+        auto addCommand(CommandDesc desc) -> CommandId;
 
     private:
         vector<Command> _commands;
+
+        friend class CommandRegistry;
     };
 
     /// @brief Manages the list of all known commands in the system
     class CommandRegistry {
     public:
+        struct Match {
+            CommandId id = {};
+            zstring_view title;
+        };
+
         CommandRegistry();
         ~CommandRegistry();
 
         auto addProvider(CommandProvider* provider) -> bool;
         auto removeProvider(CommandProvider* provider) -> bool;
 
+        [[nodiscard]] auto execute(CommandId id, string_view input) -> bool;
         [[nodiscard]] auto execute(string_view input) -> bool;
         [[nodiscard]] auto test(string_view input) -> bool;
+
+        void match(string_view input, vector<Match>& inout_matches);
 
     private:
         struct CompiledCommand {
             CommandId id = {};
             CommandProvider* provider = nullptr;
+            size_t index = 0;
         };
 
         void _rebuild();

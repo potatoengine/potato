@@ -3,7 +3,7 @@
 #include "ui/command_palette.h"
 #include "commands.h"
 
-#include "potato/spud/sequence.h"
+#include "potato/spud/enumerate.h"
 
 #include <SDL_keycode.h>
 #include <imgui.h>
@@ -18,10 +18,6 @@ void up::shell::CommandPalette::close() {
     _activeIndex = -1;
     _matches.clear();
     _open = false;
-}
-
-void up::shell::CommandPalette::addPalette(CommandPaletteDesc desc) {
-    _descs.push_back(std::move(desc));
 }
 
 void up::shell::CommandPalette::update(CommandRegistry& registry) {
@@ -100,9 +96,9 @@ void up::shell::CommandPalette::update(CommandRegistry& registry) {
 
         // Draw matching commands
         //
-        for (auto index : _matches) {
+        for (auto const& [index, match] : enumerate(_matches)) {
             bool const highlight = index == _activeIndex;
-            ImGui::Selectable(_descs[index].title.c_str(), highlight);
+            ImGui::Selectable(match.title.c_str(), highlight);
         }
 
         // Close popup if close is requested
@@ -137,11 +133,11 @@ auto up::shell::CommandPalette::_callback(ImGuiInputTextCallbackData* data) -> i
 }
 
 auto up::shell::CommandPalette::_execute(CommandRegistry& registry) const -> bool {
-    if (_activeIndex == -1 || _activeIndex >= _descs.size()) {
+    if (_activeIndex == -1 || _activeIndex >= _matches.size()) {
         return false;
     }
 
-    return registry.execute(_descs[_activeIndex].command);
+    return registry.execute(_matches[_activeIndex].id, {});
 }
 
 void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
@@ -152,26 +148,13 @@ void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
         return;
     }
 
-    int lastMatchIndex = -1;
+    registry.match(_input, _matches);
 
-    auto const input = string_view{_input};
-    for (auto index : sequence(_descs.size())) {
-        auto const& desc = _descs[index];
-
-        if (!registry.test(desc.command)) {
-            continue;
-        }
-
-        if (stringIndexOfNoCase(desc.title.data(), desc.title.size(), input.data(), input.size()) != -1) {
-            int const matchIndex = narrow_cast<int>(index);
-
-            if (matchIndex == _activeIndex || lastMatchIndex == -1) {
-                lastMatchIndex = matchIndex;
-            }
-
-            _matches.push_back(matchIndex);
-        }
+    if (_matches.empty()) {
+        _activeIndex = -1;
     }
 
-    _activeIndex = lastMatchIndex;
+    if (_activeIndex >= _matches.size()) {
+        _activeIndex = _matches.size() - 1;
+    }
 }
