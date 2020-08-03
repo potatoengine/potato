@@ -13,24 +13,23 @@ up::shell::EditorGroup::EditorGroup() {
     _documentWindowClass.DockingAllowUnclassed = false;
     _documentWindowClass.DockingAlwaysTabBar = true;
 
-    _commands.addCommand(
+    _actions.addAction(
         {.name = "potato.editors.closeActive",
-         .predicate = [this]() { return _active != nullptr && _active->isClosable(); },
-         .execute =
-             [this](auto) {
-                 closeActive();
-             }});
+         .menu = "File\\Close Document",
+         .hotKey = "Ctrl+W",
+         .enabled = [this]() { return _active != nullptr && _active->isClosable(); },
+         .action = delegate(this, &EditorGroup::closeActive)});
 }
 
 up::shell::EditorGroup::~EditorGroup() = default;
 
-void up::shell::EditorGroup::update(CommandRegistry& commands, Menu& menu, Renderer& renderer, float deltaTime) {
-    commands.addProvider(&_commands);
+void up::shell::EditorGroup::update(Actions& actions, Renderer& renderer, float deltaTime) {
+    actions.addGroup(&_actions);
 
     for (auto it = _editors.begin(); it != _editors.end();) {
         if (it->get()->isClosed()) {
             if (it->get() == _active) {
-                _setActive(commands, menu, nullptr);
+                _setActive(actions, nullptr);
             }
             it = _editors.erase(it);
         }
@@ -63,7 +62,7 @@ void up::shell::EditorGroup::update(CommandRegistry& commands, Menu& menu, Rende
         auto const active = editor->updateUi();
 
         if (!editor->isClosed() && active) {
-            _setActive(commands, menu, editor);
+            _setActive(actions, editor);
         }
     }
 }
@@ -84,18 +83,18 @@ void up::shell::EditorGroup::open(box<Editor> editor) {
     _editors.push_back(std::move(editor));
 }
 
-void up::shell::EditorGroup::_setActive(CommandRegistry& commands, Menu& menu, Editor* editor) {
+void up::shell::EditorGroup::_setActive(Actions& actions, Editor* editor) {
     if (editor == _active) {
         return;
     }
 
     if (_active != nullptr) {
-        _active->activate(false, commands, menu);
+        _active->activate(false, actions);
     }
 
     _active = editor;
 
     if (_active != nullptr) {
-        _active->activate(true, commands, menu);
+        _active->activate(true, actions);
     }
 }

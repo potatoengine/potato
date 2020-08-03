@@ -16,8 +16,22 @@ target_sources(potato_shell PRIVATE
     "private/scene.cpp"
     "private/editors/scene_editor.cpp"
     "private/shell_app.cpp"
-    "private/editors/filetree_editor.cpp"
- "private/editors/filetree_editor.h" "private/editors/game_editor.h" "private/editors/scene_editor.h" "public/potato/shell/commands.h" "private/commands.cpp" "public/potato/shell/ui/command_palette.h" "private/ui/command_palette.cpp" "private/ui/editor_group.h" "private/ui/editor_group.cpp" "public/potato/shell/ui/menu.h" "private/ui/menu.cpp" "public/potato/shell/ui/hotkey.h" "private/ui/hotkey.cpp")
+    "private/editors/filetree_editor.cpp"	
+    "private/editors/filetree_editor.h"	
+    "private/editors/game_editor.h"	
+    "private/editors/scene_editor.h"	
+    "public/potato/shell/ui/action.h"	
+    "private/ui/action.cpp"	
+    "public/potato/shell/ui/command_palette.h"	
+    "private/ui/command_palette.cpp"	
+    "private/ui/editor_group.h"	
+    "private/ui/editor_group.cpp"	
+    "public/potato/shell/ui/menu.h"	
+    "private/ui/menu.cpp"	
+    "public/potato/shell/ui/hotkey.h"	
+    "private/ui/hotkey.cpp"	
+)	
+	
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 

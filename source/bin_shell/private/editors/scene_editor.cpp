@@ -42,33 +42,25 @@ void up::shell::SceneEditor::configure() {
     dockPanel(inspectorId, ImGuiDir_Right, contentId(), 0.25f);
     dockPanel(hierarchyId, ImGuiDir_Down, inspectorId, 0.65f);
 
-    addCommand(
+    addAction(
         {.name = "potato.editors.scene.actions.play",
          .title = "Play Scene",
-         .predicate = [this]() { return isActive(); },
-         .execute =
-             [this](auto) {
+         .menu = "Actions\\Play",
+         .enabled = [this] { return isActive(); },
+         .action =
+             [this]() {
                  _onPlayClicked(_scene);
              }});
-    addCommand(
+    addAction(
         {.name = "potato.editors.scene.options.grid.toggle",
          .title = "Toggle Grid",
-         .predicate = [this]() { return isActive(); },
-         .execute =
-             [this](auto) {
-                 _enableGrid = !_enableGrid;
-             }});
-
-    addMenuItem(
-        {.title = "View\\Options\\Grid",
+         .menu = "View\\Options\\Grid",
+         .enabled = [this] { return isActive(); },
          .checked = [this] { return _enableGrid; },
          .action =
-             [this] {
+             [this]() {
                  _enableGrid = !_enableGrid;
              }});
-    addMenuItem({.title = "Actions\\Play", .action = [this] {
-                     _onPlayClicked(_scene);
-                 }});
 }
 
 void up::shell::SceneEditor::content() {

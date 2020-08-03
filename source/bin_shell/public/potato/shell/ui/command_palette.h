@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include "ui/action.h"
+
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
-#include "commands.h"
 
 struct ImGuiInputTextCallbackData;
 
@@ -12,20 +13,30 @@ namespace up::shell {
     /// @brief Handles the command palette UI
     class CommandPalette {
     public:
+        void bindActions(Actions& actions);
+
         void show();
         void close();
 
-        void update(CommandRegistry& registry);
+        void drawPalette();
 
     private:
+        struct Command {
+            ActionId id = ActionId::None;
+        };
+
         static int _callbackWrapper(ImGuiInputTextCallbackData* data);
+        void _rebuild();
         int _callback(ImGuiInputTextCallbackData* data);
-        bool _execute(CommandRegistry& registry) const;
-        void _updateMatches(CommandRegistry& registry);
+        bool _execute() const;
+        void _updateMatches();
 
         size_t _activeIndex = 0;
         char _input[128] = {0};
-        vector<CommandRegistry::Match> _matches;
+        vector<Command> _commands;
+        vector<size_t> _matches;
+        Actions* _actions = nullptr;
+        uint64 _actionsVersion = 0;
         bool _open = false;
     };
 } // namespace up::shell

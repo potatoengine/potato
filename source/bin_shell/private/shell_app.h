@@ -1,7 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "camera.h"
-#include "commands.h"
+#include "ui/action.h"
 #include "ui/command_palette.h"
 #include "ui/editor_group.h"
 #include "ui/hotkey.h"
@@ -88,9 +88,8 @@ namespace up::shell {
         string _editorResourcePath;
         unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
         unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
-        CommandProvider _commands;
-        MenuProvider _mainMenu;
-        CommandRegistry _commandRegistry;
+        ActionGroup _appActions;
+        Actions _actions;
         CommandPalette _palette;
         Menu _menu;
         HotKeys _hotKeys;

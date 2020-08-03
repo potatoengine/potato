@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "commands.h"
-#include "ui/menu.h"
+#include "ui/action.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/vector.h"
@@ -18,12 +17,14 @@ namespace up {
 namespace up::shell {
     class Editor;
 
+    class Menu;
+
     class EditorGroup {
     public:
         EditorGroup();
         ~EditorGroup();
 
-        void update(CommandRegistry& commands, Menu& menu, Renderer& renderer, float deltaTime);
+        void update(Actions& actions, Renderer& renderer, float deltaTime);
 
         void closeAll() noexcept;
         void closeActive() noexcept;
@@ -31,10 +32,10 @@ namespace up::shell {
         void open(box<Editor> editor);
 
     private:
-        void _setActive(CommandRegistry& commands, Menu& menu, Editor* editor);
+        void _setActive(Actions& actions, Editor* editor);
 
         vector<box<Editor>> _editors;
-        CommandProvider _commands;
+        ActionGroup _actions;
         ImGuiWindowClass _documentWindowClass;
         Editor* _active = nullptr;
     };

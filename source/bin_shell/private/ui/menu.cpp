@@ -1,132 +1,82 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "ui/menu.h"
-#include "commands.h"
+#include "ui/action.h"
 
 #include "potato/spud/enumerate.h"
 #include "potato/spud/erase.h"
 #include "potato/spud/find.h"
 #include "potato/spud/hash.h"
+#include "potato/spud/sequence.h"
 
 #include <imgui.h>
 
-void up::shell::MenuProvider::addMenuItem(MenuItemDesc desc) {
-    auto const hash = hash_value(desc.title);
-
-    // Don't allow duplicates
-    //
-    for (auto const& item : _items) {
-        if (item.hash == hash) {
-            return;
-        }
-    }
-
-    auto title = std::move(desc.title);
-    auto parentHash = uint64{0};
-
-    auto const lastSep = title.find_last_of("\\");
-    if (lastSep != zstring_view::npos) {
-        auto const menuTitle = title.substr(0, lastSep);
-        parentHash = hash_value(menuTitle);
-
-        // add the parent, in case it doesn't exist yet
-        //
-        addMenuItem({.title = string(menuTitle)});
-
-        title = title.substr(lastSep + 1);
-    }
-
-    _items.push_back(MenuItem{
-        .hash = hash,
-        .parentHash = parentHash,
-        .icon = desc.icon,
-        .title = std::move(title),
-        .enabled = std::move(desc.enabled),
-        .checked = std::move(desc.checked),
-        .action = std::move(desc.action),
-        .priority = desc.priority});
-}
-
-void up::shell::MenuProvider::addMenuCommand(CommandRegistry& commands, MenuCommandDesc desc) {
-    addMenuItem({
-        .icon = desc.icon,
-        .title = std::move(desc.title),
-        .enabled = [reg = &commands, cmd = desc.command]{ return reg->test(cmd); },
-        .action = [reg = &commands, cmd = desc.command]{ (void)reg->execute(cmd); },
-        .priority = desc.priority
-    });
-}
-
-auto up::shell::Menu::addProvider(MenuProvider* provider) -> bool {
-    if (provider == nullptr) {
-        return false;
-    }
-
-    if (contains(_providers, provider)) {
-        return false;
-    }
-
-    _providers.push_back(provider);
-    _dirty = true;
-    return true;
-}
-
-auto up::shell::Menu::removeProvider(MenuProvider* provider) -> bool {
-    if (provider == nullptr) {
-        return false;
-    }
-
-    erase(_providers, provider);
-    _dirty = true;
-    return true;
+void up::shell::Menu::bindActions(Actions& actions) {
+    _actions = &actions;
 }
 
 void up::shell::Menu::drawMenu() {
     _rebuild();
 
     if (ImGui::BeginMainMenuBar()) {
-        _drawMenu(_items.front().childIndex);
+        if (!_items.empty()) {
+            _drawMenu(_items.front().childIndex);
+        }
         ImGui::EndMainMenuBar();
     }
 }
 
 void up::shell::Menu::_rebuild() {
-    if (!_dirty) {
+    if (_actions == nullptr || !_actions->refresh(_actionsVersion)) {
         return;
     }
-    _dirty = false;
 
     _items.clear();
     _items.emplace_back();
-    for (auto const& [providerIndex, provider] : enumerate(_providers)) {
-        for (auto const& [index, item] : enumerate(provider->_items)) {
-            auto const parentIndex = _findIndexByHash(item.parentHash);
 
-            _insertChild(parentIndex, _items.size());
-            _items.push_back({.providerIndex = providerIndex, .itemIndex = index});
+    _actions->build([this](auto const id, auto const& action) {
+        if (action.menu.empty()) {
+            return;
         }
-    }
+
+        auto parentIndex = size_t{0};
+
+        auto title = string_view{action.menu};
+        auto const hash = hash_value(action.menu);
+        auto parentHash = uint64{0};
+
+        auto const lastSep = title.find_last_of("\\");
+        if (lastSep != zstring_view::npos) {
+            auto const menuTitle = title.substr(0, lastSep);
+            title = title.substr(lastSep + 1);
+
+            parentIndex = _createMenu(menuTitle);
+        }
+
+        auto const titleIndex = _recordString(title);
+
+        _insertChild(parentIndex, _items.size());
+        _items.push_back({.hash = hash, .id = id, .stringIndex = titleIndex});
+    });
 }
 
 void up::shell::Menu::_drawMenu(size_t index) {
     while (index != 0) {
         auto const& item = _items[index];
 
-        auto* provider = _providers[item.providerIndex];
-        auto& itemData = provider->_items[item.itemIndex];
+        if (item.id != ActionId::None) {
+            auto const checked = _actions->isChecked(item.id);
+            auto const enabled = _actions->isEnabled(item.id);
+            auto const hotKey = _actions->actionAt(item.id).hotKey;
 
-        if (itemData.action == nullptr) {
-            if (ImGui::BeginMenu(itemData.title.c_str())) {
-                _drawMenu(item.childIndex);
-                ImGui::EndMenu();
+            if (ImGui::MenuItem(_strings[item.stringIndex].c_str(), hotKey.c_str(), checked, enabled)) {
+                _actions->invoke(item.id);
             }
         }
         else {
-            auto const checked = itemData.checked == nullptr ? false : itemData.checked();
-            auto const enabled = itemData.enabled == nullptr ? true : itemData.enabled();
-
-            if (ImGui::MenuItem(itemData.title.c_str(), nullptr, checked, enabled)) {
-                itemData.action();
+            if (ImGui::BeginMenu(_strings[item.stringIndex].c_str())) {
+                _drawMenu(item.childIndex);
+                ImGui::EndMenu();
             }
         }
 
@@ -140,14 +90,7 @@ auto up::shell::Menu::_findIndexByHash(uint64 hash) const noexcept -> size_t {
     }
 
     for (auto const& [index, item] : enumerate(_items)) {
-        if (index == 0) {
-            continue;
-        }
-
-        auto const* provider = _providers[item.providerIndex];
-        auto const& itemData = provider->_items[item.itemIndex];
-
-        if (itemData.hash == hash) {
+        if (item.hash == hash) {
             return index;
         }
     }
@@ -169,4 +112,42 @@ void up::shell::Menu::_insertChild(size_t parentIndex, size_t childIndex) noexce
     }
 
     _items[index].siblingIndex = childIndex;
+}
+
+auto up::shell::Menu::_createMenu(string_view title) -> size_t {
+    if (title.empty()) {
+        return 0;
+    }
+
+    auto const hash = hash_value(title);
+    auto const index = _findIndexByHash(hash);
+    if (index != 0) {
+        return index;
+    }
+
+    auto parentIndex = size_t{0};
+
+    auto const lastSep = title.find_last_of("\\");
+    if (lastSep != zstring_view::npos) {
+        parentIndex = _createMenu(title.substr(0, lastSep));
+        title = title.substr(lastSep + 1);
+    }
+
+    auto const titleIndex = _recordString(title);
+    auto const newIndex = _items.size();
+    _insertChild(parentIndex, newIndex);
+    _items.push_back({.hash = hash, .stringIndex = titleIndex});
+    return newIndex;
+}
+
+auto up::shell::Menu::_recordString(string_view string) -> size_t {
+    for (auto const& [index, str] : enumerate(_strings)) {
+        if (string_view{str} == string) {
+            return index;
+        }
+    }
+
+    auto const index = _strings.size();
+    _strings.emplace_back(string);
+    return index;
 }

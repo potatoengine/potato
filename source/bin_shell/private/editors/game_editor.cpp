@@ -25,7 +25,9 @@ auto up::shell::createGameEditor(rc<Scene> scene) -> box<Editor> {
 }
 
 void up::shell::GameEditor::configure() {
-    addMenuItem({.title = "Actions\\Play/Pause", .action = [this]{ _wantPlaying = !_wantPlaying; }});
+    addAction({.title = "Play / Pause", .menu = "Actions\\Play/Pause", .hotKey = "F5", .action = [this] {
+                   _wantPlaying = !_wantPlaying;
+               }});
 }
 
 void up::shell::GameEditor::content() {

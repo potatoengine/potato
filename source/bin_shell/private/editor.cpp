@@ -33,8 +33,6 @@ bool up::shell::Editor::updateUi() {
     }
     ImGui::PopStyleVar(1);
 
-    menu();
-
     if (!_panels.empty() && ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("View")) {
             if (ImGui::BeginMenu("Panels")) {
@@ -144,7 +142,7 @@ void up::shell::Editor::dockPanel(PanelId panelId, ImGuiDir dir, PanelId otherId
     }
 }
 
-void up::shell::Editor::activate(bool active, CommandRegistry& commands, Menu& menu) {
+void up::shell::Editor::activate(bool active, Actions& actions) {
     if (active == _active) {
         return;
     }
@@ -152,11 +150,9 @@ void up::shell::Editor::activate(bool active, CommandRegistry& commands, Menu& m
     _active = active;
 
     if (active) {
-        commands.addProvider(&_commands);
-        menu.addProvider(&_menu);
+        actions.addGroup(&_actions);
     }
     else {
-        commands.removeProvider(&_commands);
-        menu.removeProvider(&_menu);
+        actions.removeGroup(&_actions);
     }
 }

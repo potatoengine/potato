@@ -1,13 +1,18 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "ui/command_palette.h"
-#include "commands.h"
+#include "ui/action.h"
 
 #include "potato/spud/enumerate.h"
+#include "potato/spud/sequence.h"
 
 #include <SDL_keycode.h>
 #include <imgui.h>
 #include <imgui_internal.h>
+
+void up::shell::CommandPalette::bindActions(Actions& actions) {
+    _actions = &actions;
+}
 
 void up::shell::CommandPalette::show() {
     _open = true;
@@ -20,7 +25,7 @@ void up::shell::CommandPalette::close() {
     _open = false;
 }
 
-void up::shell::CommandPalette::update(CommandRegistry& registry) {
+void up::shell::CommandPalette::drawPalette() {
     auto& imguiIO = ImGui::GetIO();
 
     auto const popupName = "##CommandInput";
@@ -57,6 +62,8 @@ void up::shell::CommandPalette::update(CommandRegistry& registry) {
     // Render popup contents only if open
     //
     if (isOpen) {
+        _rebuild();
+
         auto const inputName = "##command";
         auto const inputFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll |
             ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
@@ -72,12 +79,12 @@ void up::shell::CommandPalette::update(CommandRegistry& registry) {
 
         // Update active index based on current input _before_ executing input
         //
-        _updateMatches(registry);
+        _updateMatches();
 
         // Execute input if the input was activated (Enter pressed)
         //
         if (activated) {
-            if (_input[0] == '\0' || _execute(registry)) {
+            if (_input[0] == '\0' || _execute()) {
                 close();
             }
 
@@ -98,7 +105,9 @@ void up::shell::CommandPalette::update(CommandRegistry& registry) {
         //
         for (auto const& [index, match] : enumerate(_matches)) {
             bool const highlight = index == _activeIndex;
-            ImGui::Selectable(match.title.c_str(), highlight);
+            auto const& command = _commands[index];
+            auto const title = _actions->actionAt(command.id).title;
+            ImGui::Selectable(title.c_str(), highlight);
         }
 
         // Close popup if close is requested
@@ -117,6 +126,22 @@ auto up::shell::CommandPalette::_callbackWrapper(ImGuiInputTextCallbackData* dat
     return static_cast<CommandPalette*>(data->UserData)->_callback(data);
 }
 
+void up::shell::CommandPalette::_rebuild() {
+    if (_actions == nullptr || !_actions->refresh(_actionsVersion)) {
+        return;
+    }
+
+    _commands.clear();
+
+    _actions->build([this](auto const id, auto const& action) {
+        if (action.title.empty()) {
+            return;
+        }
+
+        _commands.push_back({.id = id});
+    });
+}
+
 auto up::shell::CommandPalette::_callback(ImGuiInputTextCallbackData* data) -> int {
     switch (data->EventKey) {
         case ImGuiKey_Tab:
@@ -132,23 +157,40 @@ auto up::shell::CommandPalette::_callback(ImGuiInputTextCallbackData* data) -> i
     }
 }
 
-auto up::shell::CommandPalette::_execute(CommandRegistry& registry) const -> bool {
+auto up::shell::CommandPalette::_execute() const -> bool {
     if (_activeIndex == -1 || _activeIndex >= _matches.size()) {
         return false;
     }
 
-    return registry.execute(_matches[_activeIndex].id, {});
+    auto const commandIndex = _matches[_activeIndex];
+    auto const& command = _commands[commandIndex];
+
+    _actions->invoke(command.id);
+    return true;
 }
 
-void up::shell::CommandPalette::_updateMatches(CommandRegistry& registry) {
+void up::shell::CommandPalette::_updateMatches() {
     _matches.clear();
 
     if (_input[0] == '\0') {
         _activeIndex = -1;
         return;
     }
+    auto const input = string_view{_input};
 
-    registry.match(_input, _matches);
+    for (auto const& [index, command] : enumerate(_commands)) {
+        zstring_view title = _actions->actionAt(command.id).title;
+
+        if (stringIndexOfNoCase(title.data(), title.size(), input.data(), input.size()) == -1) {
+            continue;
+        }
+
+        if (!_actions->isEnabled(command.id)) {
+            continue;
+        }
+
+        _matches.push_back(index);
+    }
 
     if (_matches.empty()) {
         _activeIndex = -1;

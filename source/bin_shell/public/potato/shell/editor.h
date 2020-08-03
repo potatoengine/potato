@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "commands.h"
-#include "ui/menu.h"
+#include "ui/action.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
@@ -63,10 +62,7 @@ namespace up::shell {
         void close() noexcept { _wantClose = isClosable(); }
 
         bool isActive() const noexcept { return _active; }
-        void activate(bool active, CommandRegistry& commands, Menu& menu);
-
-        CommandProvider const& commands() const noexcept { return _commands; }
-        MenuProvider const& menu() const noexcept { return _menu; }
+        void activate(bool active, Actions& actions);
 
     protected:
         explicit Editor(zstring_view className);
@@ -76,8 +72,7 @@ namespace up::shell {
         auto addPanel(string title, PanelUpdate update) -> PanelId;
         void dockPanel(PanelId panelId, ImGuiDir dir, PanelId otherId, float size);
         auto contentId() const noexcept { return _dockId; }
-        void addCommand(CommandDesc command) { _commands.addCommand(std::move(command)); }
-        void addMenuItem(MenuItemDesc desc) { _menu.addMenuItem(std::move(desc)); }
+        void addAction(ActionDesc action) { _actions.addAction(std::move(action)); }
 
         /// @brief Renders the ui for the Document.
         virtual void configure() = 0;
@@ -94,8 +89,7 @@ namespace up::shell {
         ImGuiID _dockId = 0;
 
         vector<box<Panel>> _panels;
-        CommandProvider _commands;
-        MenuProvider _menu;
+        ActionGroup _actions;
         bool _wantClose = false;
         bool _closed = false;
         bool _active = false;

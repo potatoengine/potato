@@ -93,43 +93,43 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _commands.addCommand({.name = "potato.quit", .title = "Quit", .execute = [this](string_view) {
-                              _running = false;
-                          }});
-    _commands.addCommand({.name = "potato.project.open", .title = "Open Project", .execute = [this](string_view) {
-                              _openProject = true;
-                              _closeProject = true;
-                          }});
-    _commands.addCommand(
+    _appActions.addAction(
+        {.name = "potato.quit", .title = "Quit", .menu = "File\\Quit", .hotKey = "Alt+F4", .action = [this] {
+             _running = false;
+         }});
+    _appActions.addAction(
+        {.name = "potato.project.open",
+         .title = "Open Project",
+         .menu = "File\\Open Project",
+         .hotKey = "Alt+Shift+O",
+         .action = [this] {
+             _openProject = true;
+             _closeProject = true;
+         }});
+    _appActions.addAction(
         {.name = "potato.project.close",
          .title = "Close Project",
-         .predicate = [this]() { return _project != nullptr; },
-         .execute =
-             [this](auto) {
+         .menu = "File\\Close Project",
+         .enabled = [this] { return _project != nullptr; },
+         .action =
+             [this] {
                  _closeProject = true;
              }});
-    _commands.addCommand(
+    _appActions.addAction(
         {.name = "potato.assets.newScene",
          .title = "New Scene",
-         .predicate = [this]() { return _project != nullptr; },
-         .execute =
-             [this](auto) {
+         .menu = "File\\New\\Scene",
+         .enabled = [this]() { return _project != nullptr; },
+         .action =
+             [this] {
                  _createScene();
              }});
-    _commandRegistry.addProvider(&_commands);
 
-    _hotKeys.addHotKey({.key = SDLK_w, .mods = KMOD_CTRL, .command = "potato.editors.closeActive"});
-    _hotKeys.addHotKey({.key = SDLK_F5, .mods = 0, .command = "potato.editors.play"});
+    _actions.addGroup(&_appActions);
 
-    _mainMenu.addMenuCommand(_commandRegistry, {.title = "File\\New\\Scene", .command = "potato.assets.newScene"});
-    _mainMenu.addMenuCommand(_commandRegistry, {.title = "File\\Open Project", .command = "potato.project.open"});
-    _mainMenu.addMenuCommand(_commandRegistry, {.title = "File\\Close Project", .command = "potato.project.close"});
-    _mainMenu.addMenuCommand(
-        _commandRegistry,
-        {.title = "File\\Close Document", .command = "potato.editors.closeActive"});
-    _mainMenu.addMenuCommand(_commandRegistry, {.title = "File\\Quit", .command = "potato.quit"});
-
-    _menu.addProvider(&_mainMenu);
+    _menu.bindActions(_actions);
+    _hotKeys.bindActions(_actions);
+    _palette.bindActions(_actions);
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -274,7 +274,7 @@ void up::shell::ShellApp::run() {
         if (_openProject && !_closeProject) {
             _openProject = false;
             if (!_selectAndLoadProject(path::join(_editorResourcePath, "..", "resources", "sample.popr"))) {
-                return;
+                continue;
             }
         }
 
@@ -406,7 +406,7 @@ void up::shell::ShellApp::_processEvents() {
                 _drawImgui.handleEvent(ev);
                 break;
             case SDL_KEYDOWN:
-                if (!_hotKeys.evaluateKey(_commandRegistry, ev.key.keysym.sym, ev.key.keysym.mod)) {
+                if (!_hotKeys.evaluateKey(ev.key.keysym.sym, ev.key.keysym.mod)) {
                     _drawImgui.handleEvent(ev);
                 }
                 break;
@@ -452,7 +452,7 @@ void up::shell::ShellApp::_displayUI() {
 
     _displayDocuments({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
 
-    _palette.update(_commandRegistry);
+    _palette.drawPalette();
 }
 
 void up::shell::ShellApp::_displayMainMenu() {
@@ -483,7 +483,7 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
 
-    _editors.update(_commandRegistry, _menu, *_renderer, _lastFrameTime);
+    _editors.update(_actions, *_renderer, _lastFrameTime);
 
     ImGui::End();
 }
