@@ -22,10 +22,7 @@ namespace up::shell {
         using EnumerateComponents = delegate<view<ComponentMeta>()>;
         using HandlePlayClicked = delegate<void(rc<Scene>)>;
 
-        explicit SceneEditor(
-            rc<Scene> scene,
-            EnumerateComponents components,
-            HandlePlayClicked onPlayClicked)
+        explicit SceneEditor(rc<Scene> scene, EnumerateComponents components, HandlePlayClicked onPlayClicked)
             : Editor("SceneEditor"_zsv)
             , _scene(std::move(scene))
             , _cameraController(_camera)
@@ -35,8 +32,8 @@ namespace up::shell {
             _selection.select(_scene->root());
         }
 
-        zstring_view displayName() const override { return "Scene"; }
-        zstring_view editorClass() const override { return "potato.editor.scene"; }
+        zstring_view displayName() const override { return "Scene"_zsv; }
+        zstring_view editorClass() const override { return "potato.editor.scene"_zsv; }
         EditorId uniqueId() const override { return hash_value(this); }
 
         void tick(float deltaTime) override;

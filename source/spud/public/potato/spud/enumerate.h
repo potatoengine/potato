@@ -11,11 +11,11 @@ namespace up {
     class enumerate;
 
     template <typename RangeT>
-    enumerate(RangeT&&)->enumerate<RangeT>;
+    enumerate(RangeT &&) -> enumerate<RangeT>;
     template <typename RangeT>
-    enumerate(RangeT&)->enumerate<RangeT>;
+    enumerate(RangeT&) -> enumerate<RangeT>;
     template <typename RangeT>
-    enumerate(RangeT const&)->enumerate<RangeT const>;
+    enumerate(RangeT const&) -> enumerate<RangeT const>;
 
     namespace _detail::enumerate {
         template <typename SizeT, typename ReferenceT>
@@ -36,7 +36,7 @@ namespace up {
 
             using reference = std::add_lvalue_reference_t<decltype(*std::declval<IteratorT>())>;
 
-            constexpr auto operator*() const noexcept -> entry<SizeT, reference> { return { _index, *_iterator }; }
+            constexpr auto operator*() const noexcept -> entry<SizeT, reference> { return {_index, *_iterator}; }
 
             constexpr auto operator++() noexcept -> iterator& {
                 ++_iterator;
@@ -52,7 +52,9 @@ namespace up {
             }
 
             friend bool operator==(iterator const& lhs, iterator const& rhs) noexcept = default;
-            friend constexpr bool operator==(iterator const& it, sentinel<SentinelT> const& se) noexcept { return it._iterator == se.end; }
+            friend constexpr bool operator==(iterator const& it, sentinel<SentinelT> const& se) noexcept {
+                return it._iterator == se.end;
+            }
 
         private:
             constexpr iterator(IteratorT iterator) noexcept : _iterator(iterator) {}
@@ -63,12 +65,13 @@ namespace up {
             IteratorT _iterator;
             SizeT _index = {};
         };
-    }
+    } // namespace _detail::enumerate
 
     template <typename RangeT>
     class enumerate {
     private:
-        using range_iterator = std::conditional_t<std::is_const_v<RangeT>, typename RangeT::const_iterator, typename RangeT::iterator>;
+        using range_iterator =
+            std::conditional_t<std::is_const_v<RangeT>, typename RangeT::const_iterator, typename RangeT::iterator>;
         using range_sentinel = range_iterator;
 
     public:
@@ -79,8 +82,8 @@ namespace up {
         constexpr explicit enumerate(RangeT& range) noexcept : _range(range) {}
         constexpr explicit enumerate(RangeT&& range) noexcept : _range(range) {}
 
-        constexpr auto begin() const noexcept -> iterator { return iterator{ _range.begin() }; }
-        constexpr auto end() const noexcept -> sentinel { return sentinel{ _range.end() }; }
+        constexpr auto begin() const noexcept -> iterator { return iterator{_range.begin()}; }
+        constexpr auto end() const noexcept -> sentinel { return sentinel{_range.end()}; }
 
     private:
         RangeT& _range;
