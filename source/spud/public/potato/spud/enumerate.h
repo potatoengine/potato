@@ -35,8 +35,9 @@ namespace up {
             iterator() noexcept = default;
 
             using reference = std::add_lvalue_reference_t<decltype(*std::declval<IteratorT>())>;
+            using value_type = entry<SizeT, reference>;
 
-            constexpr auto operator*() const noexcept -> entry<SizeT, reference> { return {_index, *_iterator}; }
+            constexpr auto operator*() const noexcept -> value_type { return {_index, *_iterator}; }
 
             constexpr auto operator++() noexcept -> iterator& {
                 ++_iterator;
@@ -75,9 +76,9 @@ namespace up {
         using range_sentinel = range_iterator;
 
     public:
-        using value_type = _detail::enumerate::entry;
         using iterator = _detail::enumerate::iterator<typename RangeT::size_type, range_iterator, range_sentinel>;
         using sentinel = _detail::enumerate::sentinel<range_sentinel>;
+        using value_type = typename iterator::value_type;
 
         constexpr explicit enumerate(RangeT& range) noexcept : _range(range) {}
         constexpr explicit enumerate(RangeT&& range) noexcept : _range(range) {}

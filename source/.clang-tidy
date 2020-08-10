@@ -15,6 +15,7 @@ FormatStyle: "file"
 # modernize-avoid-c-arrays nope we use C arrays
 # modernize-use-nodiscard [[TODO]] want this, but need to do a consistency pass
 # modernize-use-trailing-return-type [[TODO]] want this, we just need to do huge consistency pass
+# modernize-raw-string-literal style choice, don't like it in some cases
 # readability-qualified-auto is often "wrong" because we use raw pointers as iterators
 # readability-convert-member-functions-to-static has side effects (e.g. calling conventions)
 # readability-magic-numbers is just annoying for math-heavy code, though it is valuable elsewhere
@@ -43,6 +44,7 @@ Checks: >-
     -modernize-avoid-c-arrays,
     -modernize-use-nodiscard,
     -modernize-use-trailing-return-type,
+    -modernize-raw-string-literal,
     -readability-convert-member-functions-to-static,
     -readability-magic-numbers,
     -readability-named-parameter,

@@ -30,6 +30,7 @@ namespace up {
 namespace up {
     template <typename HashAlgorithm, typename T>
     constexpr HashAlgorithm& hash_append(HashAlgorithm& hasher, T const& value) noexcept requires is_contiguous_v<T> {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         hasher.append_bytes(reinterpret_cast<char const*>(&value), sizeof(value));
         return hasher;
     }

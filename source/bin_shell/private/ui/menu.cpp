@@ -146,34 +146,34 @@ void up::shell::Menu::_insertChild(size_t parentIndex, size_t childIndex) noexce
     _items[index].siblingIndex = childIndex;
 }
 
-auto up::shell::Menu::_createMenu(string_view title) -> size_t {
-    if (title.empty()) {
+auto up::shell::Menu::_createMenu(string_view menu) -> size_t {
+    if (menu.empty()) {
         return 0;
     }
 
-    auto const hash = hash_value(title);
+    auto const hash = hash_value(menu);
     auto const index = _findIndexByHash(hash);
     if (index != 0) {
         return index;
     }
 
     size_t groupIndex = 0;
-    for (auto const& menu : _menus) {
-        if (menu.hash == hash) {
-            groupIndex = menu.groupIndex;
+    for (auto const& menuGroup : _menus) {
+        if (menuGroup.hash == hash) {
+            groupIndex = menuGroup.groupIndex;
             break;
         }
     }
 
     auto parentIndex = size_t{0};
 
-    auto const lastSep = title.find_last_of("\\");
+    auto const lastSep = menu.find_last_of("\\");
     if (lastSep != zstring_view::npos) {
-        parentIndex = _createMenu(title.substr(0, lastSep));
-        title = title.substr(lastSep + 1);
+        parentIndex = _createMenu(menu.substr(0, lastSep));
+        menu = menu.substr(lastSep + 1);
     }
 
-    auto const stringIndex = _recordString(title);
+    auto const stringIndex = _recordString(menu);
     auto const newIndex = _items.size();
     _items.push_back({.hash = hash, .stringIndex = stringIndex, .groupIndex = groupIndex});
     _insertChild(parentIndex, newIndex);
