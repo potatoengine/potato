@@ -14,10 +14,10 @@ up::shell::EditorGroup::EditorGroup() {
     _documentWindowClass.DockingAlwaysTabBar = true;
 
     _actions.addAction(
-        {.name = "potato.editors.closeActive",
-         .menu = "File\\Close Document",
-         .group = "7_document",
-         .hotKey = "Ctrl+W",
+        {.name = "potato.editors.closeActive"_s,
+         .menu = "File\\Close Document"_s,
+         .group = "7_document"_s,
+         .hotKey = "Ctrl+W"_s,
          .enabled = [this]() { return _active != nullptr && _active->isClosable(); },
          .action = delegate(this, &EditorGroup::closeActive)});
 }

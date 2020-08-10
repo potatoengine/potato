@@ -33,21 +33,6 @@ bool up::shell::Editor::updateUi() {
     }
     ImGui::PopStyleVar(1);
 
-    if (!_panels.empty() && ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("View")) {
-            if (ImGui::BeginMenu("Panels")) {
-                for (auto const& panel : _panels) {
-                    if (ImGui::MenuItem(panel->title.c_str(), nullptr, panel->open, true)) {
-                        panel->open = !panel->open;
-                    }
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
-    }
-
     if (_documentId.empty()) {
         string_writer tmp;
         format_append(tmp, "Document##{}", this);
@@ -117,7 +102,20 @@ auto up::shell::Editor::addPanel(string title, PanelUpdate update) -> PanelId {
 
     panel->dockId = _dockId;
 
+    tmp.clear();
+    format_append(tmp, "View\\Panels\\{}", panel->title);
+
+    _actions.addAction(
+        {.menu = tmp.to_string(),
+         .group = "5_panels"_s,
+         .checked = [ptr = panel.get()] { return ptr->open; },
+         .action =
+             [ptr = panel.get()] {
+                 ptr->open = !ptr->open;
+             }});
+
     _panels.push_back(std::move(panel));
+
     return id;
 }
 
