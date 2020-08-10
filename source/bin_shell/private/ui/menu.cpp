@@ -54,7 +54,6 @@ void up::shell::Menu::_rebuild() {
 
         auto title = string_view{action.menu};
         auto const hash = hash_value(action.menu);
-        auto parentHash = uint64{0};
 
         auto const groupIndex = _recordString(action.group);
 
