@@ -21,7 +21,7 @@ void up::shell::CommandPalette::show() {
 
 void up::shell::CommandPalette::close() {
     _input[0] = '\0';
-    _activeIndex = -1;
+    _activeIndex = 0;
     _matches.clear();
     _open = false;
 }
@@ -160,7 +160,7 @@ auto up::shell::CommandPalette::_callback(ImGuiInputTextCallbackData* data) -> i
 }
 
 auto up::shell::CommandPalette::_execute() const -> bool {
-    if (_activeIndex == -1 || _activeIndex >= _matches.size()) {
+    if (_activeIndex >= _matches.size()) {
         return false;
     }
 
@@ -175,7 +175,7 @@ void up::shell::CommandPalette::_updateMatches() {
     _matches.clear();
 
     if (_input[0] == '\0') {
-        _activeIndex = -1;
+        _activeIndex = 0;
         return;
     }
     auto const input = string_view{_input};
@@ -183,7 +183,7 @@ void up::shell::CommandPalette::_updateMatches() {
     for (auto const& [index, command] : enumerate(_commands)) {
         zstring_view title = _actions->actionAt(command.id).title;
 
-        if (stringIndexOfNoCase(title.data(), title.size(), input.data(), input.size()) == -1) {
+        if (stringIndexOfNoCase(title.data(), title.size(), input.data(), input.size()) < 0) {
             continue;
         }
 
@@ -195,7 +195,7 @@ void up::shell::CommandPalette::_updateMatches() {
     }
 
     if (_matches.empty()) {
-        _activeIndex = -1;
+        _activeIndex = 0;
     }
 
     if (_activeIndex >= _matches.size()) {
