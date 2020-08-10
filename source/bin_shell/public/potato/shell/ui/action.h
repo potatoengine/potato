@@ -13,6 +13,8 @@ namespace up::shell {
     using ActionPredicate = delegate<bool()>;
     using ActionAction = delegate<void()>;
 
+    class Actions;
+
     struct ActionDesc {
         string name;
         string title;
@@ -26,11 +28,17 @@ namespace up::shell {
     /// @brief Provides a list of actions to the registry
     class ActionGroup {
     public:
+        ActionGroup() = default;
+        ~ActionGroup();
+
+        ActionGroup(ActionGroup const&) = delete;
+        ActionGroup& operator=(ActionGroup const&) = delete;
+
         void addAction(ActionDesc desc);
 
     private:
         vector<ActionDesc> _actions;
-        uint64 _version = 0;
+        Actions* _owner = nullptr;
 
         friend class Actions;
     };
@@ -43,11 +51,12 @@ namespace up::shell {
         auto addGroup(ActionGroup* group) -> bool;
         auto removeGroup(ActionGroup const* group) -> bool;
 
+        void invalidate() noexcept { ++_version; }
         bool refresh(uint64& lastVersion) noexcept;
         void build(BuildCallback callback);
 
         [[nodiscard]] auto actionAt(ActionId id) const noexcept -> ActionDesc const& {
-            return _groups[groupOf(id)].group->_actions[indexOf(id)];
+            return _groups[groupOf(id)]->_actions[indexOf(id)];
         }
 
         [[nodiscard]] auto isEnabled(ActionId id) -> bool;
@@ -66,12 +75,8 @@ namespace up::shell {
             return static_cast<ActionId>((group << 32) | (index & 0xFFFFFFFF));
         }
 
-        struct Record {
-            ActionGroup* group = nullptr;
-            uint64 version = 0;
-        };
-
-        vector<Record> _groups;
+        vector<ActionGroup*> _groups;
         uint64 _version = 0;
+
     }; // namespace up::shell
 } // namespace up::shell
