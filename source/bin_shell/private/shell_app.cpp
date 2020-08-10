@@ -94,13 +94,19 @@ int up::shell::ShellApp::initialize() {
     }
 
     _appActions.addAction(
-        {.name = "potato.quit", .title = "Quit", .menu = "File\\Quit", .hotKey = "Alt+F4", .action = [this] {
+        {.name = "potato.quit",
+         .title = "Quit",
+         .menu = "File\\Quit",
+         .group = "z_quit",
+         .hotKey = "Alt+F4",
+         .action = [this] {
              _running = false;
          }});
     _appActions.addAction(
         {.name = "potato.project.open",
          .title = "Open Project",
          .menu = "File\\Open Project",
+         .group = "3_project",
          .hotKey = "Alt+Shift+O",
          .action = [this] {
              _openProject = true;
@@ -110,6 +116,7 @@ int up::shell::ShellApp::initialize() {
         {.name = "potato.project.close",
          .title = "Close Project",
          .menu = "File\\Close Project",
+         .group = "3_project",
          .enabled = [this] { return _project != nullptr; },
          .action =
              [this] {
@@ -119,6 +126,7 @@ int up::shell::ShellApp::initialize() {
         {.name = "potato.assets.newScene",
          .title = "New Scene",
          .menu = "File\\New\\Scene",
+         .group = "1_new",
          .enabled = [this]() { return _project != nullptr; },
          .action =
              [this] {
@@ -126,6 +134,16 @@ int up::shell::ShellApp::initialize() {
              }});
 
     _actions.addGroup(&_appActions);
+
+    _menu.addMenu({.menu = "File"_sv, .group = "1_file"_sv});
+    _menu.addMenu({.menu = "File\\New"_sv, .group = "2_new"_sv});
+    _menu.addMenu({.menu = "File\\Settings"_sv, .group = "9_settings"_sv});
+    _menu.addMenu({.menu = "Edit"_sv, .group = "3_edit"_sv});
+    _menu.addMenu({.menu = "View"_sv, .group = "5_view"_sv});
+    _menu.addMenu({.menu = "View\\Options"_sv, .group = "5_options"_sv});
+    _menu.addMenu({.menu = "View\\Panels"_sv, .group = "3_panels"_sv});
+    _menu.addMenu({.menu = "Actions"_sv, .group = "7_actions"_sv});
+    _menu.addMenu({.menu = "Help"_sv, .group = "9_help"_sv});
 
     _menu.bindActions(_actions);
     _hotKeys.bindActions(_actions);

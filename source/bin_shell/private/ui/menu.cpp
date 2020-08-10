@@ -11,8 +11,19 @@
 
 #include <imgui.h>
 
+up::shell::Menu::Menu() {
+    _strings.push_back("0_default"_s);
+}
+
 void up::shell::Menu::bindActions(Actions& actions) {
     _actions = &actions;
+}
+
+void up::shell::Menu::addMenu(MenuDesc menu) {
+    auto const hash = hash_value(menu.menu);
+    auto const groupIndex = _recordString(menu.group);
+    _menus.push_back({.hash = hash, .groupIndex = groupIndex});
+    _actionsVersion = 0; // force a rebuild
 }
 
 void up::shell::Menu::drawMenu() {
@@ -20,7 +31,7 @@ void up::shell::Menu::drawMenu() {
 
     if (ImGui::BeginMainMenuBar()) {
         if (!_items.empty()) {
-            _drawMenu(_items.front().childIndex);
+            _drawMenu(_items.front().childIndex, 0);
         }
         ImGui::EndMainMenuBar();
     }
@@ -45,6 +56,8 @@ void up::shell::Menu::_rebuild() {
         auto const hash = hash_value(action.menu);
         auto parentHash = uint64{0};
 
+        auto const groupIndex = _recordString(action.group);
+
         auto const lastSep = title.find_last_of("\\");
         if (lastSep != zstring_view::npos) {
             auto const menuTitle = title.substr(0, lastSep);
@@ -55,14 +68,22 @@ void up::shell::Menu::_rebuild() {
 
         auto const titleIndex = _recordString(title);
 
-        _insertChild(parentIndex, _items.size());
-        _items.push_back({.hash = hash, .id = id, .stringIndex = titleIndex});
+        auto const newIndex = _items.size();
+        _items.push_back({.hash = hash, .id = id, .stringIndex = titleIndex, .groupIndex = groupIndex});
+        _insertChild(parentIndex, newIndex);
     });
 }
 
-void up::shell::Menu::_drawMenu(size_t index) {
+void up::shell::Menu::_drawMenu(size_t index, size_t depth) {
+    size_t lastGroup = index != 0 ? _items[index].groupIndex : 0;
+
     while (index != 0) {
         auto const& item = _items[index];
+
+        if (depth != 0 && item.groupIndex != lastGroup) {
+            ImGui::Separator();
+            lastGroup = item.groupIndex;
+        }
 
         if (item.id != ActionId::None) {
             auto const checked = _actions->isChecked(item.id);
@@ -75,7 +96,7 @@ void up::shell::Menu::_drawMenu(size_t index) {
         }
         else {
             if (ImGui::BeginMenu(_strings[item.stringIndex].c_str())) {
-                _drawMenu(item.childIndex);
+                _drawMenu(item.childIndex, depth + 1);
                 ImGui::EndMenu();
             }
         }
@@ -100,17 +121,28 @@ auto up::shell::Menu::_findIndexByHash(uint64 hash) const noexcept -> size_t {
 
 void up::shell::Menu::_insertChild(size_t parentIndex, size_t childIndex) noexcept {
     auto& parent = _items[parentIndex];
+    auto& child = _items[childIndex];
 
     if (parent.childIndex == 0) {
         parent.childIndex = childIndex;
         return;
     }
 
+    if (_compare(childIndex, parent.childIndex)) {
+        child.siblingIndex = parent.childIndex;
+        parent.childIndex = childIndex;
+        return;
+    }
+
     auto index = parent.childIndex;
     while (_items[index].siblingIndex != 0) {
+        if (_compare(childIndex, _items[index].siblingIndex)) {
+            break;
+        }
         index = _items[index].siblingIndex;
     }
 
+    child.siblingIndex = _items[index].siblingIndex;
     _items[index].siblingIndex = childIndex;
 }
 
@@ -125,6 +157,14 @@ auto up::shell::Menu::_createMenu(string_view title) -> size_t {
         return index;
     }
 
+    size_t groupIndex = 0;
+    for (auto const& menu : _menus) {
+        if (menu.hash == hash) {
+            groupIndex = menu.groupIndex;
+            break;
+        }
+    }
+
     auto parentIndex = size_t{0};
 
     auto const lastSep = title.find_last_of("\\");
@@ -133,10 +173,10 @@ auto up::shell::Menu::_createMenu(string_view title) -> size_t {
         title = title.substr(lastSep + 1);
     }
 
-    auto const titleIndex = _recordString(title);
+    auto const stringIndex = _recordString(title);
     auto const newIndex = _items.size();
+    _items.push_back({.hash = hash, .stringIndex = stringIndex, .groupIndex = groupIndex});
     _insertChild(parentIndex, newIndex);
-    _items.push_back({.hash = hash, .stringIndex = titleIndex});
     return newIndex;
 }
 
@@ -150,4 +190,15 @@ auto up::shell::Menu::_recordString(string_view string) -> size_t {
     auto const index = _strings.size();
     _strings.emplace_back(string);
     return index;
+}
+
+bool up::shell::Menu::_compare(size_t lhsIndex, size_t rhsIndex) const noexcept {
+    auto const& lhsItem = _items[lhsIndex];
+    auto const& rhsItem = _items[rhsIndex];
+
+    if (lhsItem.groupIndex != rhsItem.groupIndex) {
+        return _strings[lhsItem.groupIndex] < _strings[rhsItem.groupIndex];
+    }
+
+    return _strings[lhsItem.stringIndex] < _strings[rhsItem.stringIndex];
 }

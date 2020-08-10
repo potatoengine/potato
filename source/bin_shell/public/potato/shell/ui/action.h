@@ -19,6 +19,7 @@ namespace up::shell {
         string name;
         string title;
         string menu;
+        string group;
         string hotKey;
         ActionPredicate enabled;
         ActionPredicate checked;

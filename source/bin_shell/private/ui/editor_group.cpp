@@ -16,6 +16,7 @@ up::shell::EditorGroup::EditorGroup() {
     _actions.addAction(
         {.name = "potato.editors.closeActive",
          .menu = "File\\Close Document",
+         .group = "7_document",
          .hotKey = "Ctrl+W",
          .enabled = [this]() { return _active != nullptr && _active->isClosable(); },
          .action = delegate(this, &EditorGroup::closeActive)});
