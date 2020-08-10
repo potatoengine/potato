@@ -5,6 +5,7 @@
 
 #include "potato/spud/enumerate.h"
 #include "potato/spud/sequence.h"
+#include "potato/spud/sort.h"
 
 #include <SDL_keycode.h>
 #include <imgui.h>
@@ -105,8 +106,7 @@ void up::shell::CommandPalette::drawPalette() {
         //
         for (auto const& [index, match] : enumerate(_matches)) {
             bool const highlight = index == _activeIndex;
-            auto const& command = _commands[index];
-            auto const title = _actions->actionAt(command.id).title;
+            auto const title = _actions->actionAt(_commands[match].id).title;
             ImGui::Selectable(title.c_str(), highlight);
         }
 
@@ -140,6 +140,8 @@ void up::shell::CommandPalette::_rebuild() {
 
         _commands.push_back({.id = id});
     });
+
+    sort(_commands, {}, [this](Command const& cmd) noexcept { return _actions->actionAt(cmd.id).title; });
 }
 
 auto up::shell::CommandPalette::_callback(ImGuiInputTextCallbackData* data) -> int {
