@@ -196,8 +196,14 @@ bool up::shell::Menu::_compare(size_t lhsIndex, size_t rhsIndex) const noexcept 
     auto const& rhsItem = _items[rhsIndex];
 
     if (lhsItem.groupIndex != rhsItem.groupIndex) {
+        // appears to be a clang-tidy bug?
+        //
+        // NOLINTNEXTLINE(modernize-use-nullptr)
         return _strings[lhsItem.groupIndex] < _strings[rhsItem.groupIndex];
     }
 
+    // appears to be a clang-tidy bug?
+    //
+    // NOLINTNEXTLINE(modernize-use-nullptr)
     return _strings[lhsItem.stringIndex] < _strings[rhsItem.stringIndex];
 }
