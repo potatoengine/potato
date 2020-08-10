@@ -43,7 +43,7 @@ void up::shell::Menu::_rebuild() {
     }
 
     _items.clear();
-    _items.emplace_back();
+    _items.push_back({}); // empty root
 
     _actions->build([this](auto const id, auto const& action) {
         if (action.menu.empty()) {

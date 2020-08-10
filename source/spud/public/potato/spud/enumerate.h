@@ -61,7 +61,7 @@ namespace up {
             constexpr iterator(IteratorT iterator) noexcept : _iterator(iterator) {}
 
             template <typename>
-            friend class enumerate;
+            friend class up::enumerate;
 
             IteratorT _iterator;
             SizeT _index = {};
