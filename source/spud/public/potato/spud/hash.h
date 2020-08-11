@@ -15,7 +15,10 @@ namespace up {
     struct uhash;
 
     template <typename HashAlgorithm = default_hash, typename T>
-    auto hash_value(T const& value) -> typename HashAlgorithm::result_type;
+    constexpr auto hash_value(T const& value) -> typename HashAlgorithm::result_type;
+
+    template <typename HashAlgorithm = default_hash, size_t N>
+    constexpr auto hash_value(char const (&value)[N]) -> typename HashAlgorithm::result_type;
 
     template <class Hash>
     constexpr auto hash_combine(Hash left, Hash right) noexcept -> Hash;
@@ -26,7 +29,8 @@ namespace up {
 
 namespace up {
     template <typename HashAlgorithm, typename T>
-    inline HashAlgorithm& hash_append(HashAlgorithm& hasher, T const& value) noexcept requires is_contiguous_v<T> {
+    constexpr HashAlgorithm& hash_append(HashAlgorithm& hasher, T const& value) noexcept requires is_contiguous_v<T> {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         hasher.append_bytes(reinterpret_cast<char const*>(&value), sizeof(value));
         return hasher;
     }
@@ -57,16 +61,23 @@ struct up::uhash {
     using result_type = typename HashAlgorithm::result_type;
 
     template <typename T>
-    result_type operator()(T&& value) const {
+    constexpr result_type operator()(T&& value) const {
         return hash_value(value);
     }
 };
 
 template <typename HashAlgorithm, typename T>
-auto up::hash_value(T const& value) -> typename HashAlgorithm::result_type {
+constexpr auto up::hash_value(T const& value) -> typename HashAlgorithm::result_type {
     HashAlgorithm hasher{};
     using up::hash_append;
     hash_append(hasher, value);
+    return hasher.finalize();
+}
+
+template <typename HashAlgorithm, size_t N>
+constexpr auto up::hash_value(char const (&value)[N]) -> typename HashAlgorithm::result_type {
+    HashAlgorithm hasher{};
+    hasher.append_bytes(value, N - 1 /*NUL byte typically present in character literals*/);
     return hasher.finalize();
 }
 

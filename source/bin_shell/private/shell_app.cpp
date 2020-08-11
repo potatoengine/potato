@@ -35,6 +35,7 @@
 #include "potato/spud/delegate.h"
 #include "potato/spud/platform.h"
 #include "potato/spud/sequence.h"
+#include "potato/spud/string_util.h"
 #include "potato/spud/string_writer.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
@@ -46,6 +47,7 @@
 #include <glm/vec3.hpp>
 #include <nlohmann/json.hpp>
 #include <SDL.h>
+#include <SDL_keycode.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
 #include <chrono>
@@ -90,6 +92,67 @@ int up::shell::ShellApp::initialize() {
         _errorDialog("Failed to load resource manifest");
         return 1;
     }
+
+    _appActions.addAction(
+        {.name = "potato.quit",
+         .command = "Quit",
+         .menu = "File\\Quit",
+         .group = "z_quit",
+         .hotKey = "Alt+F4",
+         .action = [this] {
+             _running = false;
+         }});
+    _appActions.addAction(
+        {.name = "potato.project.open",
+         .command = "Open Project",
+         .menu = "File\\Open Project",
+         .group = "3_project",
+         .priority = 100,
+         .hotKey = "Alt+Shift+O",
+         .action = [this] {
+             _openProject = true;
+             _closeProject = true;
+         }});
+    _appActions.addAction(
+        {.name = "potato.project.close",
+         .command = "Close Project",
+         .menu = "File\\Close Project",
+         .group = "3_project",
+         .priority = 1100,
+         .enabled = [this] { return _project != nullptr; },
+         .action =
+             [this] {
+                 _closeProject = true;
+             }});
+    _appActions.addAction(
+        {.name = "potato.assets.newScene",
+         .command = "New Scene",
+         .menu = "File\\New\\Scene",
+         .group = "1_new",
+         .enabled = [this]() { return _project != nullptr; },
+         .action =
+             [this] {
+                 _createScene();
+             }});
+    _appActions.addAction({.name = "potato.editor.about", .menu = "Help\\About", .action = [this] {
+                               _aboutDialog = true;
+                           }});
+
+    _actions.addGroup(&_appActions);
+
+    _menu.addMenu({.menu = "File"_sv, .group = "1_file"_sv});
+    _menu.addMenu({.menu = "File\\New"_sv, .group = "2_new"_sv});
+    _menu.addMenu({.menu = "File\\Settings"_sv, .group = "9_settings"_sv});
+    _menu.addMenu({.menu = "Edit"_sv, .group = "3_edit"_sv});
+    _menu.addMenu({.menu = "View"_sv, .group = "5_view"_sv});
+    _menu.addMenu({.menu = "View\\Options"_sv, .group = "5_options"_sv});
+    _menu.addMenu({.menu = "View\\Panels"_sv, .group = "3_panels"_sv});
+    _menu.addMenu({.menu = "Actions"_sv, .group = "7_actions"_sv});
+    _menu.addMenu({.menu = "Help"_sv, .group = "9_help"_sv});
+
+    _menu.bindActions(_actions);
+    _hotKeys.bindActions(_actions);
+    _palette.bindActions(_actions);
 
     constexpr int default_width = 1024;
     constexpr int default_height = 768;
@@ -145,10 +208,6 @@ int up::shell::ShellApp::initialize() {
 
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
-
-    _documentWindowClass.ClassId = ImHashStr("DocumentClass");
-    _documentWindowClass.DockingAllowUnclassed = false;
-    _documentWindowClass.DockingAlwaysTabBar = true;
 
     auto imguiVertShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "vertex"_sv);
     auto imguiPixelShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "pixel"_sv);
@@ -211,8 +270,8 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
 
     _projectName = path::filebasename(path);
 
-    _editors.clear();
-    _editors.push_back(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
+    _editors.closeAll();
+    _editors.open(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
 
     _updateTitle();
 
@@ -238,7 +297,7 @@ void up::shell::ShellApp::run() {
         if (_openProject && !_closeProject) {
             _openProject = false;
             if (!_selectAndLoadProject(path::join(_editorResourcePath, "..", "resources", "sample.popr"))) {
-                return;
+                continue;
             }
         }
 
@@ -249,7 +308,6 @@ void up::shell::ShellApp::run() {
         _drawImgui.beginFrame();
 
         _displayUI();
-        _tick();
 
         _drawImgui.endFrame();
 
@@ -257,18 +315,9 @@ void up::shell::ShellApp::run() {
 
         if (_closeProject) {
             _closeProject = false;
-            _editors.clear();
+            _editors.closeAll();
             _project = nullptr;
             _updateTitle();
-        }
-
-        for (auto it = _editors.begin(); it != _editors.end();) {
-            if (it->get()->isClosed()) {
-                it = _editors.erase(it);
-            }
-            else {
-                ++it;
-            }
         }
 
         auto endFrame = std::chrono::high_resolution_clock::now();
@@ -379,20 +428,18 @@ void up::shell::ShellApp::_processEvents() {
                 }
                 _drawImgui.handleEvent(ev);
                 break;
+            case SDL_KEYDOWN:
+                if (!_hotKeys.evaluateKey(ev.key.keysym.sym, ev.key.keysym.mod)) {
+                    _drawImgui.handleEvent(ev);
+                }
+                break;
             case SDL_MOUSEBUTTONUP:
             case SDL_MOUSEMOTION:
-            case SDL_KEYDOWN:
             case SDL_MOUSEWHEEL:
             default:
                 _drawImgui.handleEvent(ev);
                 break;
         }
-    }
-}
-
-void up::shell::ShellApp::_tick() {
-    for (auto& editor : _editors) {
-        editor->tick(_lastFrameTime);
     }
 }
 
@@ -427,41 +474,21 @@ void up::shell::ShellApp::_displayUI() {
     }
 
     _displayDocuments({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
+
+    if (_aboutDialog) {
+        ImGui::SetNextWindowSizeConstraints({400, 300}, {});
+        ImGui::Begin("About", &_aboutDialog, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("Potato editor");
+        ImGui::End();
+    }
+
+    _palette.drawPalette();
 }
 
 void up::shell::ShellApp::_displayMainMenu() {
+    _menu.drawMenu();
+
     if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("Potato")) {
-            if (ImGui::BeginMenu("New")) {
-                if (ImGui::MenuItem("Scene", nullptr, false, _project != nullptr)) {
-                    _createScene();
-                }
-                ImGui::EndMenu();
-            }
-            if (ImGui::MenuItem(as_char(u8"\uf542 Open Project..."))) {
-                _openProject = true;
-                _closeProject = true;
-            }
-            if (ImGui::MenuItem(as_char(u8"\uf057 Close Project"), nullptr, false, _project != nullptr)) {
-                _closeProject = true;
-            }
-            if (ImGui::MenuItem(as_char(u8"\uf52b Quit"), "ESC")) {
-                _running = false;
-            }
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("View")) {
-            if (ImGui::BeginMenu("Options")) {
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Actions")) {
-            ImGui::EndMenu();
-        }
-
         {
             auto micro = std::chrono::duration_cast<std::chrono::microseconds>(_lastFrameDuration).count();
 
@@ -477,7 +504,6 @@ void up::shell::ShellApp::_displayMainMenu() {
 }
 
 void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
-    auto const mainDockId = ImGui::GetID("DocumentsDockspace");
     auto const windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration |
         ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus;
 
@@ -486,15 +512,10 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
-    ImGui::DockSpace(mainDockId, {}, ImGuiDockNodeFlags_NoWindowMenuButton, &_documentWindowClass);
-    ImGui::End();
 
-    for (auto index : sequence(_editors.size())) {
-        ImGui::SetNextWindowDockID(mainDockId, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowClass(&_documentWindowClass);
-        _editors[index]->render(*_renderer, _lastFrameTime);
-        _editors[index]->updateUi();
-    }
+    _editors.update(_actions, *_renderer, _lastFrameTime);
+
+    ImGui::End();
 }
 
 void up::shell::ShellApp::_errorDialog(zstring_view message) {
@@ -547,12 +568,12 @@ void up::shell::ShellApp::_createScene() {
 
     auto scene = new_shared<Scene>(*_universe, *_audio);
     scene->create(model, ding);
-    _editors.push_back(createSceneEditor(
+    _editors.open(createSceneEditor(
         scene,
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
 }
 
 void up::shell::ShellApp::_createGame(rc<Scene> scene) {
-    _editors.push_back(createGameEditor(std::move(scene)));
+    _editors.open(createGameEditor(std::move(scene)));
 }

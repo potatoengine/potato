@@ -44,6 +44,7 @@ struct up::span {
 public:
     using value_type = T;
     using iterator = T*;
+    using const_iterator = T const*;
     using sentinel = T*;
     using pointer = T*;
     using reference = T&;

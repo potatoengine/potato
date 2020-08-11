@@ -43,6 +43,7 @@ namespace up {
     template <typename R>
     concept range = std::is_array_v<std::remove_cv_t<std::remove_reference_t<R>>> || requires(R rng) {
         typename R::value_type;
+        typename R::size_type;
         rng.begin();
         rng.end();
     };

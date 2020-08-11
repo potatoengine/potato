@@ -41,6 +41,26 @@ void up::shell::SceneEditor::configure() {
 
     dockPanel(inspectorId, ImGuiDir_Right, contentId(), 0.25f);
     dockPanel(hierarchyId, ImGuiDir_Down, inspectorId, 0.65f);
+
+    addAction(
+        {.name = "potato.editors.scene.actions.play",
+         .command = "Play Scene",
+         .menu = "Actions\\Play",
+         .enabled = [this] { return isActive(); },
+         .action =
+             [this]() {
+                 _onPlayClicked(_scene);
+             }});
+    addAction(
+        {.name = "potato.editors.scene.options.grid.toggle",
+         .command = "Toggle Grid",
+         .menu = "View\\Options\\Grid",
+         .enabled = [this] { return isActive(); },
+         .checked = [this] { return _enableGrid; },
+         .action =
+             [this]() {
+                 _enableGrid = !_enableGrid;
+             }});
 }
 
 void up::shell::SceneEditor::content() {
@@ -94,31 +114,6 @@ void up::shell::SceneEditor::content() {
         _cameraController.apply(_camera, movement, motion, io.DeltaTime);
 
         ImGui::EndChild();
-    }
-}
-
-void up::shell::SceneEditor::menu() {
-    if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("View")) {
-            if (ImGui::BeginMenu("Options")) {
-                if (ImGui::MenuItem("Grid")) {
-                    _enableGrid = !_enableGrid;
-                }
-                ImGui::EndMenu();
-            }
-
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Actions")) {
-            if (_onPlayClicked != nullptr) {
-                if (ImGui::MenuItem("Play")) {
-                    _onPlayClicked(_scene);
-                }
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
     }
 }
 

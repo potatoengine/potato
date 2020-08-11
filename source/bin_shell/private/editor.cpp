@@ -3,6 +3,7 @@
 #include "editor.h"
 
 #include "potato/format/format.h"
+#include "potato/spud/sequence.h"
 #include "potato/spud/string_writer.h"
 
 #include <imgui.h>
@@ -14,45 +15,23 @@ up::shell::Editor::Editor(zstring_view className) {
     _windowClass.DockingAlwaysTabBar = false;
 }
 
-void up::shell::Editor::updateUi() {
+bool up::shell::Editor::updateUi() {
     if (_title.empty()) {
         string_writer tmp;
         format_append(tmp, "{}##{}", displayName(), this);
         _title = std::move(tmp).to_string();
     }
 
-    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
-    if (hasMenu()) {
-        windowFlags |= ImGuiWindowFlags_MenuBar;
-    }
-
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     if (isClosable()) {
         bool wantOpen = true;
-        ImGui::Begin(_title.c_str(), &wantOpen, windowFlags);
-        _wantClose = !wantOpen;
+        ImGui::Begin(_title.c_str(), &wantOpen, ImGuiWindowFlags_NoCollapse);
+        _wantClose = _wantClose || !wantOpen;
     }
     else {
-        ImGui::Begin(_title.c_str(), nullptr, windowFlags);
+        ImGui::Begin(_title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
     }
     ImGui::PopStyleVar(1);
-
-    menu();
-
-    if (!_panels.empty() && ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("View")) {
-            if (ImGui::BeginMenu("Panels")) {
-                for (auto const& panel : _panels) {
-                    if (ImGui::MenuItem(panel->title.c_str(), nullptr, panel->open, true)) {
-                        panel->open = !panel->open;
-                    }
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
-    }
 
     if (_documentId.empty()) {
         string_writer tmp;
@@ -100,7 +79,11 @@ void up::shell::Editor::updateUi() {
         _closed = handleClose();
     }
 
+    auto const active = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+
     ImGui::End();
+
+    return active;
 }
 
 auto up::shell::Editor::addPanel(string title, PanelUpdate update) -> PanelId {
@@ -119,7 +102,20 @@ auto up::shell::Editor::addPanel(string title, PanelUpdate update) -> PanelId {
 
     panel->dockId = _dockId;
 
+    tmp.clear();
+    format_append(tmp, "View\\Panels\\{}", panel->title);
+
+    _actions.addAction(
+        {.menu = tmp.to_string(),
+         .group = "5_panels"_s,
+         .checked = [ptr = panel.get()] { return ptr->open; },
+         .action =
+             [ptr = panel.get()] {
+                 ptr->open = !ptr->open;
+             }});
+
     _panels.push_back(std::move(panel));
+
     return id;
 }
 
@@ -141,5 +137,20 @@ void up::shell::Editor::dockPanel(PanelId panelId, ImGuiDir dir, PanelId otherId
             }
             break;
         }
+    }
+}
+
+void up::shell::Editor::activate(bool active, Actions& actions) {
+    if (active == _active) {
+        return;
+    }
+
+    _active = active;
+
+    if (active) {
+        actions.addGroup(&_actions);
+    }
+    else {
+        actions.removeGroup(&_actions);
     }
 }

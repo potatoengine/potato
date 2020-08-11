@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "ui/action.h"
+
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/string.h"
@@ -19,6 +21,7 @@ namespace up::shell {
     public:
         using PanelUpdate = delegate<void()>;
         using PanelId = ImGuiID;
+        using EditorId = uint64;
 
         struct Panel {
             string title;
@@ -38,16 +41,28 @@ namespace up::shell {
         /// @return display name.
         virtual zstring_view displayName() const = 0;
 
+        /// @brief Return a string that uniquely identifiers the Editor class type.
+        virtual zstring_view editorClass() const = 0;
+
+        /// @brief Return a globally-unique string that identifies the Editor instance.
+        virtual EditorId uniqueId() const = 0;
+
         /// @brief Updates the UI.
-        void updateUi();
+        bool updateUi();
 
         /// @brief Renders the ui for the Document.
         virtual void render(Renderer& renderer, float deltaTime) {}
 
         virtual void tick(float deltaTime) {}
 
+        virtual void handleCommand(string_view command) {}
+
         bool isClosed() const noexcept { return _closed; }
-        void close() noexcept { _wantClose = isClosable(); }
+        virtual bool isClosable() { return true; }
+        void close() noexcept { _wantClose = true; }
+
+        bool isActive() const noexcept { return _active; }
+        void activate(bool active, Actions& actions);
 
     protected:
         explicit Editor(zstring_view className);
@@ -57,12 +72,11 @@ namespace up::shell {
         auto addPanel(string title, PanelUpdate update) -> PanelId;
         void dockPanel(PanelId panelId, ImGuiDir dir, PanelId otherId, float size);
         auto contentId() const noexcept { return _dockId; }
+        void addAction(ActionDesc action) { _actions.addAction(std::move(action)); }
 
         /// @brief Renders the ui for the Document.
         virtual void configure() = 0;
         virtual void content() = 0;
-        virtual void menu() {}
-        virtual bool isClosable() { return true; }
         virtual bool hasMenu() { return false; }
         virtual bool handleClose() { return true; }
 
@@ -75,7 +89,9 @@ namespace up::shell {
         ImGuiID _dockId = 0;
 
         vector<box<Panel>> _panels;
+        ActionGroup _actions;
         bool _wantClose = false;
         bool _closed = false;
+        bool _active = false;
     };
 } // namespace up::shell

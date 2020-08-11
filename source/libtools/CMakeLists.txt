@@ -16,7 +16,7 @@ target_sources(potato_libtools PRIVATE
     "private/importers/material_importer.cpp"
     "private/importers/model_importer.cpp"
     "private/meta_file.cpp"
-)
+ "public/potato/tools/evaluator.h" "private/evaluator.cpp")
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libtools)
@@ -41,7 +41,7 @@ add_executable(potato_libtools_test)
 target_sources(potato_libtools_test PRIVATE
     "tests/main.cpp"
     "tests/test_asset_library.cpp"
-)
+ "tests/test_evaluator.cpp")
 
 up_set_common_properties(potato_libtools_test)
 

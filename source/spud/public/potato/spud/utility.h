@@ -46,6 +46,9 @@ namespace up {
         template <typename T, typename U>
         requires less_than_comparable_with<T, U> constexpr bool operator()(T const& lhs, U const& rhs) const
             noexcept(noexcept(lhs < rhs)) {
+            // appears to be a clang-tidy bug?
+            //
+            // NOLINTNEXTLINE(modernize-use-nullptr)
             return lhs < rhs;
         }
     };

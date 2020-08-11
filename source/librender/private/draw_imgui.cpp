@@ -318,10 +318,12 @@ void up::DrawImgui::_setClipboardTextContents(void* self, char const* zstr) {
 }
 
 void up::DrawImgui::_ensureContext() {
-    if (_context) {
-        return;
+    if (!_context) {
+        _initialize();
     }
+}
 
+void up::DrawImgui::_initialize() {
     _context = ImGui::CreateContext();
     ImGui::SetCurrentContext(_context.get());
     auto& io = ImGui::GetIO();
@@ -334,7 +336,9 @@ void up::DrawImgui::_ensureContext() {
     io.UserData = this;
     io.IniFilename = nullptr;
 
-    io.ConfigFlags = ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
+
+    io.ConfigInputTextCursorBlink = true;
 
     io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
