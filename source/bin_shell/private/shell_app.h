@@ -77,6 +77,7 @@ namespace up::shell {
         bool _running = true;
         bool _openProject = false;
         bool _closeProject = false;
+        bool _aboutDialog = false;
         rc<GpuDevice> _device;
         rc<GpuSwapChain> _swapChain;
         box<Loader> _loader;

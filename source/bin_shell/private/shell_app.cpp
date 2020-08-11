@@ -134,6 +134,9 @@ int up::shell::ShellApp::initialize() {
              [this] {
                  _createScene();
              }});
+    _appActions.addAction({.name = "potato.editor.about", .menu = "Help\\About", .action = [this] {
+                               _aboutDialog = true;
+                           }});
 
     _actions.addGroup(&_appActions);
 
@@ -471,6 +474,13 @@ void up::shell::ShellApp::_displayUI() {
     }
 
     _displayDocuments({0, menuSize.y, imguiIO.DisplaySize.x, imguiIO.DisplaySize.y});
+
+    if (_aboutDialog) {
+        ImGui::SetNextWindowSizeConstraints({400, 300}, {});
+        ImGui::Begin("About", &_aboutDialog, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("Potato editor");
+        ImGui::End();
+    }
 
     _palette.drawPalette();
 }
