@@ -208,7 +208,7 @@ bool up::shell::Menu::_compare(size_t lhsIndex, size_t rhsIndex) const noexcept 
     if (lhsItem.priority < rhsItem.priority) {
         return true;
     }
-    else if (lhsItem.priority > rhsItem.priority) {
+    if (lhsItem.priority > rhsItem.priority) {
         return false;
     }
 
