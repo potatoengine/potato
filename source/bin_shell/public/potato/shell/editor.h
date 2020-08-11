@@ -59,7 +59,7 @@ namespace up::shell {
 
         bool isClosed() const noexcept { return _closed; }
         virtual bool isClosable() { return true; }
-        void close() noexcept { _wantClose = isClosable(); }
+        void close() noexcept { _wantClose = true; }
 
         bool isActive() const noexcept { return _active; }
         void activate(bool active, Actions& actions);
