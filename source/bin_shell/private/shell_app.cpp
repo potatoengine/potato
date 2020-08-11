@@ -107,6 +107,7 @@ int up::shell::ShellApp::initialize() {
          .command = "Open Project",
          .menu = "File\\Open Project",
          .group = "3_project",
+         .priority = 100,
          .hotKey = "Alt+Shift+O",
          .action = [this] {
              _openProject = true;
@@ -117,6 +118,7 @@ int up::shell::ShellApp::initialize() {
          .command = "Close Project",
          .menu = "File\\Close Project",
          .group = "3_project",
+         .priority = 1100,
          .enabled = [this] { return _project != nullptr; },
          .action =
              [this] {

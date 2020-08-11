@@ -20,6 +20,7 @@ namespace up::shell {
         string command;
         string menu;
         string group;
+        int priority = 1000;
         string hotKey;
         ActionPredicate enabled;
         ActionPredicate checked;

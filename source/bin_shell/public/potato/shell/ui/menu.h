@@ -13,6 +13,7 @@ namespace up::shell {
     struct MenuDesc {
         string_view menu;
         string_view group = "0_default"_sv;
+        int priority = 1000;
     };
 
     /// @brief Contains the active state for rendering and handling a menu
@@ -32,6 +33,7 @@ namespace up::shell {
         struct MenuCategory {
             uint64 hash = 0;
             size_t groupIndex = 0;
+            int priority = 0;
         };
 
         struct Item {
@@ -41,6 +43,7 @@ namespace up::shell {
             size_t childIndex = 0;
             size_t siblingIndex = 0;
             size_t groupIndex = 0;
+            int priority = 0;
         };
 
         void _rebuild();

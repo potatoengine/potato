@@ -22,7 +22,7 @@ void up::shell::Menu::bindActions(Actions& actions) {
 void up::shell::Menu::addMenu(MenuDesc menu) {
     auto const hash = hash_value(menu.menu);
     auto const groupIndex = _recordString(menu.group);
-    _menus.push_back({.hash = hash, .groupIndex = groupIndex});
+    _menus.push_back({.hash = hash, .groupIndex = groupIndex, .priority = menu.priority});
     _actionsVersion = 0; // force a rebuild
 }
 
@@ -68,7 +68,8 @@ void up::shell::Menu::_rebuild() {
         auto const titleIndex = _recordString(title);
 
         auto const newIndex = _items.size();
-        _items.push_back({.hash = hash, .id = id, .stringIndex = titleIndex, .groupIndex = groupIndex});
+        _items.push_back(
+            {.hash = hash, .id = id, .stringIndex = titleIndex, .groupIndex = groupIndex, .priority = action.priority});
         _insertChild(parentIndex, newIndex);
     });
 }
@@ -157,9 +158,11 @@ auto up::shell::Menu::_createMenu(string_view menu) -> size_t {
     }
 
     size_t groupIndex = 0;
+    int priority = 0;
     for (auto const& menuGroup : _menus) {
         if (menuGroup.hash == hash) {
             groupIndex = menuGroup.groupIndex;
+            priority = menuGroup.priority;
             break;
         }
     }
@@ -174,7 +177,7 @@ auto up::shell::Menu::_createMenu(string_view menu) -> size_t {
 
     auto const stringIndex = _recordString(menu);
     auto const newIndex = _items.size();
-    _items.push_back({.hash = hash, .stringIndex = stringIndex, .groupIndex = groupIndex});
+    _items.push_back({.hash = hash, .stringIndex = stringIndex, .groupIndex = groupIndex, .priority = priority});
     _insertChild(parentIndex, newIndex);
     return newIndex;
 }
@@ -200,6 +203,13 @@ bool up::shell::Menu::_compare(size_t lhsIndex, size_t rhsIndex) const noexcept 
         //
         // NOLINTNEXTLINE(modernize-use-nullptr)
         return _strings[lhsItem.groupIndex] < _strings[rhsItem.groupIndex];
+    }
+
+    if (lhsItem.priority < rhsItem.priority) {
+        return true;
+    }
+    else if (lhsItem.priority > rhsItem.priority) {
+        return false;
     }
 
     // appears to be a clang-tidy bug?
