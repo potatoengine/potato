@@ -44,7 +44,7 @@ void up::shell::SceneEditor::configure() {
 
     addAction(
         {.name = "potato.editors.scene.actions.play",
-         .title = "Play Scene",
+         .command = "Play Scene",
          .menu = "Actions\\Play",
          .enabled = [this] { return isActive(); },
          .action =
@@ -53,7 +53,7 @@ void up::shell::SceneEditor::configure() {
              }});
     addAction(
         {.name = "potato.editors.scene.options.grid.toggle",
-         .title = "Toggle Grid",
+         .command = "Toggle Grid",
          .menu = "View\\Options\\Grid",
          .enabled = [this] { return isActive(); },
          .checked = [this] { return _enableGrid; },

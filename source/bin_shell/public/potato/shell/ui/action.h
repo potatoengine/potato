@@ -17,7 +17,7 @@ namespace up::shell {
 
     struct ActionDesc {
         string name;
-        string title;
+        string command;
         string menu;
         string group;
         string hotKey;

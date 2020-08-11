@@ -95,7 +95,7 @@ int up::shell::ShellApp::initialize() {
 
     _appActions.addAction(
         {.name = "potato.quit",
-         .title = "Quit",
+         .command = "Quit",
          .menu = "File\\Quit",
          .group = "z_quit",
          .hotKey = "Alt+F4",
@@ -104,7 +104,7 @@ int up::shell::ShellApp::initialize() {
          }});
     _appActions.addAction(
         {.name = "potato.project.open",
-         .title = "Open Project",
+         .command = "Open Project",
          .menu = "File\\Open Project",
          .group = "3_project",
          .hotKey = "Alt+Shift+O",
@@ -114,7 +114,7 @@ int up::shell::ShellApp::initialize() {
          }});
     _appActions.addAction(
         {.name = "potato.project.close",
-         .title = "Close Project",
+         .command = "Close Project",
          .menu = "File\\Close Project",
          .group = "3_project",
          .enabled = [this] { return _project != nullptr; },
@@ -124,7 +124,7 @@ int up::shell::ShellApp::initialize() {
              }});
     _appActions.addAction(
         {.name = "potato.assets.newScene",
-         .title = "New Scene",
+         .command = "New Scene",
          .menu = "File\\New\\Scene",
          .group = "1_new",
          .enabled = [this]() { return _project != nullptr; },

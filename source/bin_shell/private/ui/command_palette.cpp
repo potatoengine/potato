@@ -106,8 +106,8 @@ void up::shell::CommandPalette::drawPalette() {
         //
         for (auto const& [index, match] : enumerate(_matches)) {
             bool const highlight = index == _activeIndex;
-            auto const title = _actions->actionAt(_commands[match].id).title;
-            ImGui::Selectable(title.c_str(), highlight);
+            auto const command = _actions->actionAt(_commands[match].id).command;
+            ImGui::Selectable(command.c_str(), highlight);
         }
 
         // Close popup if close is requested
@@ -134,14 +134,14 @@ void up::shell::CommandPalette::_rebuild() {
     _commands.clear();
 
     _actions->build([this](auto const id, auto const& action) {
-        if (action.title.empty()) {
+        if (action.command.empty()) {
             return;
         }
 
         _commands.push_back({.id = id});
     });
 
-    sort(_commands, {}, [this](Command const& cmd) noexcept { return _actions->actionAt(cmd.id).title; });
+    sort(_commands, {}, [this](Command const& cmd) noexcept { return _actions->actionAt(cmd.id).command; });
 }
 
 auto up::shell::CommandPalette::_callback(ImGuiInputTextCallbackData* data) -> int {
@@ -181,9 +181,9 @@ void up::shell::CommandPalette::_updateMatches() {
     auto const input = string_view{_input};
 
     for (auto const& [index, command] : enumerate(_commands)) {
-        zstring_view title = _actions->actionAt(command.id).title;
+        zstring_view cmd = _actions->actionAt(command.id).command;
 
-        if (stringIndexOfNoCase(title.data(), title.size(), input.data(), input.size()) < 0) {
+        if (stringIndexOfNoCase(cmd.data(), cmd.size(), input.data(), input.size()) < 0) {
             continue;
         }
 
