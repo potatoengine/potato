@@ -12,6 +12,13 @@
 #include <imgui_internal.h>
 
 void up::shell::CommandPalette::bindActions(Actions& actions) {
+    _commandActions.addAction(
+        {.name = "potato.editor.command-palette.open"_s,
+         .menu = "Edit\\Commands",
+         .hotKey = "Ctrl+Shift+P"_s,
+         .action = delegate(this, &CommandPalette::show)});
+    actions.addGroup(&_commandActions);
+
     _actions = &actions;
 }
 
@@ -34,10 +41,6 @@ void up::shell::CommandPalette::drawPalette() {
 
     // Handle opening of dialog
     //
-    if (ImGui::IsKeyPressed(SDL_SCANCODE_P, false) && (imguiIO.KeyMods & ImGuiKeyModFlags_Ctrl) != 0) {
-        show();
-    }
-
     if (_open) {
         ImGui::OpenPopup(popupName);
     }

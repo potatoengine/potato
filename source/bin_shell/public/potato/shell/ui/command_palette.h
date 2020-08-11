@@ -35,6 +35,7 @@ namespace up::shell {
         char _input[128] = {0};
         vector<Command> _commands;
         vector<size_t> _matches;
+        ActionGroup _commandActions;
         Actions* _actions = nullptr;
         uint64 _actionsVersion = 0;
         bool _open = false;
