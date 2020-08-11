@@ -107,10 +107,24 @@ void up::shell::CommandPalette::drawPalette() {
 
         // Draw matching commands
         //
-        for (auto const& [index, match] : enumerate(_matches)) {
-            bool const highlight = index == _activeIndex;
-            auto const command = _actions->actionAt(_commands[match].id).command;
-            ImGui::Selectable(command.c_str(), highlight);
+        if (!_matches.empty()) {
+            ImGui::BeginColumns("##commands", 2, ImGuiColumnsFlags_NoResize | ImGuiColumnsFlags_NoBorder);
+            auto const hotKeyColor = ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled);
+            for (auto const& [index, match] : enumerate(_matches)) {
+                bool const highlight = index == _activeIndex;
+                auto const& action = _actions->actionAt(_commands[match].id);
+                if (index != 0) {
+                    ImGui::NextColumn();
+                }
+                ImGui::Selectable(
+                    action.command.c_str(),
+                    highlight,
+                    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_DontClosePopups);
+                ImGui::NextColumn();
+                ImGui::TextColored(hotKeyColor, "%s", action.hotKey.c_str());
+            }
+            ImGui::EndColumns();
+            ImGui::Spacing();
         }
 
         // Close popup if close is requested
@@ -118,9 +132,7 @@ void up::shell::CommandPalette::drawPalette() {
         if (!_open) {
             ImGui::CloseCurrentPopup();
         }
-    }
 
-    if (isOpen) {
         ImGui::EndPopup();
     }
 }
