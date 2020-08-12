@@ -4,7 +4,7 @@
 #include "potato/ecs/universe.h"
 #include "potato/ecs/world.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
 namespace {
     struct Test1 {
@@ -24,66 +24,64 @@ namespace {
     UP_REFLECT_TYPE(Another) {}
 } // namespace
 
-DOCTEST_TEST_SUITE("[potato][ecs] Query") {
+TEST_CASE("Query", "[potato][ecs]") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("") {
-        Universe universe;
+    Universe universe;
 
-        universe.registerComponent<Test1>("Test1");
-        universe.registerComponent<Second>("Second");
-        universe.registerComponent<Another>("Another");
+    universe.registerComponent<Test1>("Test1");
+    universe.registerComponent<Second>("Second");
+    universe.registerComponent<Another>("Another");
 
-        DOCTEST_SUBCASE("Select chunks") {
-            auto world = universe.createWorld();
+    SECTION("selecting chunks") {
+        auto world = universe.createWorld();
 
-            world.createEntity(Test1{'f'}, Second{7.f, 'g'});
-            world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
-            world.createEntity(Second{-2.f, 'h'}, Another{2.f, 1.f});
-            world.createEntity(Test1{'j'}, Another{3.f, 4.f});
+        world.createEntity(Test1{'f'}, Second{7.f, 'g'});
+        world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
+        world.createEntity(Second{-2.f, 'h'}, Another{2.f, 1.f});
+        world.createEntity(Test1{'j'}, Another{3.f, 4.f});
 
-            size_t invokeCount = 0;
-            size_t entityCount = 0;
-            float weight = 0;
+        size_t invokeCount = 0;
+        size_t entityCount = 0;
+        float weight = 0;
 
-            auto query = universe.createQuery<Second>();
-            query.selectChunks(world, [&](size_t count, EntityId const*, Second* second) {
-                ++invokeCount;
-                entityCount += count;
+        auto query = universe.createQuery<Second>();
+        query.selectChunks(world, [&](size_t count, EntityId const*, Second* second) {
+            ++invokeCount;
+            entityCount += count;
 
-                for (size_t index = 0; index != count; ++index) {
-                    weight += second[index].b;
-                }
-            });
+            for (size_t index = 0; index != count; ++index) {
+                weight += second[index].b;
+            }
+        });
 
-            // Only two archetypes should have matches
-            DOCTEST_CHECK_EQ(2, invokeCount);
+        // Only two archetypes should have matches
+        CHECK(invokeCount == 2);
 
-            // Three total entities between the two archetypes should exist that match
-            DOCTEST_CHECK_EQ(3, entityCount);
+        // Three total entities between the two archetypes should exist that match
+        CHECK(entityCount == 3);
 
-            // Ensure we're storing/retrieving correct values
-            DOCTEST_CHECK_EQ(14.f, weight);
-        }
+        // Ensure we're storing/retrieving correct values
+        CHECK(weight == 14.f);
+    }
 
-        DOCTEST_SUBCASE("Select entities") {
-            auto world = universe.createWorld();
+    SECTION("selecting entities") {
+        auto world = universe.createWorld();
 
-            world.createEntity(Second{1.f, 'g'});
-            world.createEntity(Second{2.f, 'g'});
-            world.createEntity(Second{3.f, 'g'});
-            world.createEntity(Second{4.f, 'g'});
+        world.createEntity(Second{1.f, 'g'});
+        world.createEntity(Second{2.f, 'g'});
+        world.createEntity(Second{3.f, 'g'});
+        world.createEntity(Second{4.f, 'g'});
 
-            auto query = universe.createQuery<Second>();
-            float sum = 0;
-            int count = 0;
-            query.select(world, [&](EntityId, Second const& second) {
-                ++count;
-                sum += second.b;
-            });
+        auto query = universe.createQuery<Second>();
+        float sum = 0;
+        int count = 0;
+        query.select(world, [&](EntityId, Second const& second) {
+            ++count;
+            sum += second.b;
+        });
 
-            DOCTEST_CHECK_EQ(4, count);
-            DOCTEST_CHECK_EQ(10.f, sum);
-        }
+        CHECK(count == 4);
+        CHECK(sum == 10.0f);
     }
 }

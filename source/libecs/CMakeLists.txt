@@ -36,6 +36,7 @@ up_set_common_properties(potato_libecs_test)
 target_link_libraries(potato_libecs_test PRIVATE
     potato::libecs
     doctest
+    Catch2::Catch2
 )
 
 add_test(NAME potato_libecs_test COMMAND potato_libecs_test)
