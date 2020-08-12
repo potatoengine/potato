@@ -6,6 +6,8 @@
 
 #include <catch2/catch.hpp>
 
+CATCH_REGISTER_ENUM(up::EntityId);
+
 namespace {
     struct Test1 {
         char a;
