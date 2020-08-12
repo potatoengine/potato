@@ -6,6 +6,7 @@ include(config.cmake)
 #
 set(EXTERNALS
     doctest
+    catch2
     imgui
     glm
     stb
