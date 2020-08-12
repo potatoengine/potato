@@ -25,7 +25,7 @@ up_set_common_properties(potato_libreflex_test)
 
 target_link_libraries(potato_libreflex_test PRIVATE
     potato::libreflex
-    doctest
+    Catch2::Catch2
 )
 
 target_compile_definitions(potato_libreflex_test PRIVATE
