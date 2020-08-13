@@ -27,7 +27,7 @@ up_set_common_properties(potato_@NAME@_test)
 
 target_link_libraries(potato_@NAME@_test PRIVATE
     potato::@NAME@
-    doctest
+    Catch2::Catch2
 )
 
 add_test(NAME potato_@NAME@_test COMMAND potato_@NAME@_test)
