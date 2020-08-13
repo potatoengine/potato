@@ -2,28 +2,27 @@
 
 #include "potato/runtime/semaphore.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[potato][runtime] Semaphore") {
-    using namespace up;
+TEST_CASE("Semaphore", "[potato][runtime]") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("default") {
+    SECTION("default") {
         Semaphore sem(0);
 
         sem.signal();
         sem.wait();
     }
 
-    DOCTEST_TEST_CASE("initial") {
+    SECTION("initial") {
         Semaphore sem(2);
 
-        DOCTEST_CHECK(sem.tryWait());
-        DOCTEST_CHECK(sem.tryWait());
+        CHECK(sem.tryWait());
+        CHECK(sem.tryWait());
     }
 
-    DOCTEST_TEST_CASE("thread") {
+    SECTION("thread") {
         Semaphore in(0);
         Semaphore out(0);
 
@@ -36,7 +35,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] Semaphore") {
         // this might give a false-negative, but I'm okay
         // with that since it'll catch eventually (probably)
         std::this_thread::yield();
-        DOCTEST_CHECK(!out.tryWait());
+        CHECK_FALSE(out.tryWait());
 
         in.signal();
         out.wait();

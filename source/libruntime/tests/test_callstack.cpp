@@ -2,17 +2,17 @@
 
 #include "potato/runtime/callstack.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <array>
 
-DOCTEST_TEST_SUITE("[potato][runtime] up::callstack") {
+TEST_CASE("up::callstack", "[potato][runtime]") {
     using namespace up;
     using namespace up::callstack;
 
-    DOCTEST_TEST_CASE("read callstack") {
+    SECTION("read callstack") {
         std::array<uintptr, 1> addresses = {};
 
         auto stack = readTrace(span{addresses.data(), addresses.size()});
-        DOCTEST_CHECK(!stack.empty());
+        CHECK_FALSE(!stack.empty());
     }
 }

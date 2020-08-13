@@ -2,13 +2,13 @@
 
 #include "potato/runtime/task_worker.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[potato][runtime] TaskWorker") {
+TEST_CASE("TaskWorker", "[potato][runtime]") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("single") {
+    SECTION("single") {
         TaskQueue queue;
         TaskWorker worker1(queue, "Test Worker 1");
         TaskWorker worker2(queue, "Test Worker 2");
@@ -23,7 +23,7 @@ DOCTEST_TEST_SUITE("[potato][runtime] TaskWorker") {
         worker2.join();
 
         for (int i = 0; i != 1024; ++i) {
-            DOCTEST_CHECK_EQ(values[i], i);
+            CHECK(values[i] == i);
         }
     }
 }

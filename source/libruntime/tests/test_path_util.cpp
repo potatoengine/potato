@@ -2,104 +2,104 @@
 
 #include "potato/runtime/path.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <iostream>
 
-DOCTEST_TEST_SUITE("[potato][runtime] up::path") {
+TEST_CASE("up::path", "[potato][runtime]") {
     using namespace up;
     using namespace up::path;
 
-    DOCTEST_TEST_CASE("extension") {
-        DOCTEST_CHECK_EQ(extension(zstring_view("")), "");
-        DOCTEST_CHECK_EQ(extension(zstring_view("/foo/bar.txt")), ".txt");
-        DOCTEST_CHECK_EQ(extension(zstring_view(".txt")), ".txt");
-        DOCTEST_CHECK_EQ(extension(zstring_view("/foo/bar")), "");
+    SECTION("extension") {
+        CHECK(extension(""_zsv) == "");
+        CHECK(extension("/foo/bar.txt"_zsv) == ".txt");
+        CHECK(extension(".txt"_zsv) == ".txt");
+        CHECK(extension("/foo/bar"_zsv) == "");
 
-        DOCTEST_CHECK_EQ(extension(string_view("")), "");
-        DOCTEST_CHECK_EQ(extension(string_view("/foo/bar.txt")), ".txt");
-        DOCTEST_CHECK_EQ(extension(string_view(".txt")), ".txt");
-        DOCTEST_CHECK_EQ(extension(string_view("/foo/bar")), "");
+        CHECK(extension(""_sv) == "");
+        CHECK(extension("/foo/bar.txt"_sv) == ".txt");
+        CHECK(extension(".txt"_sv) == ".txt");
+        CHECK(extension("/foo/bar"_sv) == "");
     }
 
-    DOCTEST_TEST_CASE("changeExtension") {
-        DOCTEST_CHECK_EQ(changeExtension("", ".json"), ".json");
-        DOCTEST_CHECK_EQ(changeExtension("/foo/bar.txt", ".json"), "/foo/bar.json");
-        DOCTEST_CHECK_EQ(changeExtension(".txt", ".json"), ".json");
-        DOCTEST_CHECK_EQ(changeExtension("/foo/bar", ".json"), "/foo/bar.json");
+    SECTION("changeExtension") {
+        CHECK(changeExtension("", ".json") == ".json");
+        CHECK(changeExtension("/foo/bar.txt", ".json") == "/foo/bar.json");
+        CHECK(changeExtension(".txt", ".json") == ".json");
+        CHECK(changeExtension("/foo/bar", ".json") == "/foo/bar.json");
     }
 
-    DOCTEST_TEST_CASE("filename") {
-        DOCTEST_CHECK_EQ(filename(""), "");
-        DOCTEST_CHECK_EQ(filename("/foo/bar.txt"), "bar.txt");
-        DOCTEST_CHECK_EQ(filename(".txt"), ".txt");
-        DOCTEST_CHECK_EQ(filename("/foo/bar"), "bar");
+    SECTION("filename") {
+        CHECK(filename("") == "");
+        CHECK(filename("/foo/bar.txt") == "bar.txt");
+        CHECK(filename(".txt") == ".txt");
+        CHECK(filename("/foo/bar") == "bar");
     }
 
-    DOCTEST_TEST_CASE("filebasename") {
-        DOCTEST_CHECK_EQ(filebasename(""), "");
-        DOCTEST_CHECK_EQ(filebasename("/foo/bar.txt"), "bar");
-        DOCTEST_CHECK_EQ(filebasename(".txt"), "");
-        DOCTEST_CHECK_EQ(filebasename("/foo/bar"), "bar");
+    SECTION("filebasename") {
+        CHECK(filebasename("") == "");
+        CHECK(filebasename("/foo/bar.txt") == "bar");
+        CHECK(filebasename(".txt") == "");
+        CHECK(filebasename("/foo/bar") == "bar");
     }
 
-    DOCTEST_TEST_CASE("parent") {
-        DOCTEST_CHECK_EQ(parent(""), "");
-        DOCTEST_CHECK_EQ(parent("/foo/bar.txt"), "/foo");
-        DOCTEST_CHECK_EQ(parent("bar.txt"), "/");
-        DOCTEST_CHECK_EQ(parent("/foo/bar"), "/foo");
+    SECTION("parent") {
+        CHECK(parent("") == "");
+        CHECK(parent("/foo/bar.txt") == "/foo");
+        CHECK(parent("bar.txt") == "/");
+        CHECK(parent("/foo/bar") == "/foo");
     }
 
-    DOCTEST_TEST_CASE("isNormalized") {
-        DOCTEST_CHECK_EQ(isNormalized("/foo/bar.txt"), true);
-        DOCTEST_CHECK_EQ(isNormalized("/foo"), true);
-        DOCTEST_CHECK_EQ(isNormalized("/bar.txt"), true);
+    SECTION("isNormalized") {
+        CHECK(isNormalized("/foo/bar.txt"));
+        CHECK(isNormalized("/foo"));
+        CHECK(isNormalized("/bar.txt"));
 
-        DOCTEST_CHECK_EQ(isNormalized(""), true);
-        DOCTEST_CHECK_EQ(isNormalized("/foo\\bar.txt"), true);
-        DOCTEST_CHECK_EQ(isNormalized("//foo/bar.txt"), false);
-        DOCTEST_CHECK_EQ(isNormalized("/foo/.bar.txt"), true);
-        DOCTEST_CHECK_EQ(isNormalized("/foo/../bar.txt"), false);
-        DOCTEST_CHECK_EQ(isNormalized("bar.txt"), true);
-        DOCTEST_CHECK_EQ(isNormalized("/foo/bar/"), false);
-        DOCTEST_CHECK_EQ(isNormalized("/foo/bar."), true);
-        DOCTEST_CHECK_EQ(isNormalized("/foo./bar.txt"), true);
+        CHECK(isNormalized(""));
+        CHECK(isNormalized("/foo\\bar.txt"));
+        CHECK_FALSE(isNormalized("//foo/bar.txt"));
+        CHECK(isNormalized("/foo/.bar.txt"));
+        CHECK_FALSE(isNormalized("/foo/../bar.txt"));
+        CHECK(isNormalized("bar.txt"));
+        CHECK_FALSE(isNormalized("/foo/bar/"));
+        CHECK(isNormalized("/foo/bar."));
+        CHECK(isNormalized("/foo./bar.txt"));
     }
 
-    DOCTEST_TEST_CASE("normalize") {
-        DOCTEST_CHECK_EQ(normalize("/foo/bar.txt"), "/foo/bar.txt");
-        DOCTEST_CHECK_EQ(normalize("/foo"), "/foo");
-        DOCTEST_CHECK_EQ(normalize("/bar.txt"), "/bar.txt");
+    SECTION("normalize") {
+        CHECK(normalize("/foo/bar.txt") == "/foo/bar.txt");
+        CHECK(normalize("/foo") == "/foo");
+        CHECK(normalize("/bar.txt") == "/bar.txt");
 
-        DOCTEST_CHECK_EQ(normalize(""), "");
-        DOCTEST_CHECK_EQ(normalize("/foo\\bar.txt"), "/foo/bar.txt");
-        DOCTEST_CHECK_EQ(normalize("//foo/bar.txt"), "/foo/bar.txt");
-        DOCTEST_CHECK_EQ(normalize("/foo/bar.txt"), "/foo/bar.txt");
-        DOCTEST_CHECK_EQ(normalize("bar.txt"), "bar.txt");
-        DOCTEST_CHECK_EQ(normalize("/foo/bar/"), "/foo/bar");
+        CHECK(normalize("") == "");
+        CHECK(normalize("/foo\\bar.txt") == "/foo/bar.txt");
+        CHECK(normalize("//foo/bar.txt") == "/foo/bar.txt");
+        CHECK(normalize("/foo/bar.txt") == "/foo/bar.txt");
+        CHECK(normalize("bar.txt") == "bar.txt");
+        CHECK(normalize("/foo/bar/") == "/foo/bar");
 
-        DOCTEST_CHECK_EQ(normalize("/foo/../bar/"), "/bar");
-        DOCTEST_CHECK_EQ(normalize("/foo/bar/.."), "/foo");
-        DOCTEST_CHECK_EQ(normalize("/foo/.."), "/");
+        CHECK(normalize("/foo/../bar/") == "/bar");
+        CHECK(normalize("/foo/bar/..") == "/foo");
+        CHECK(normalize("/foo/..") == "/");
 
-        DOCTEST_CHECK_EQ(normalize("/foo/./bar/"), "/foo/bar");
-        DOCTEST_CHECK_EQ(normalize("/foo/bar/."), "/foo/bar");
-        DOCTEST_CHECK_EQ(normalize("/foo/."), "/foo");
-        DOCTEST_CHECK_EQ(normalize("./foo"), "/foo");
-        DOCTEST_CHECK_EQ(normalize("./foo/../bar/./../baz/."), "/baz");
-        DOCTEST_CHECK_EQ(normalize("/foo/../.."), "/");
-        DOCTEST_CHECK_EQ(normalize("/foo/../../bar"), "/bar");
-        DOCTEST_CHECK_EQ(normalize("."), "/");
-        DOCTEST_CHECK_EQ(normalize(".."), "/");
+        CHECK(normalize("/foo/./bar/") == "/foo/bar");
+        CHECK(normalize("/foo/bar/.") == "/foo/bar");
+        CHECK(normalize("/foo/.") == "/foo");
+        CHECK(normalize("./foo") == "/foo");
+        CHECK(normalize("./foo/../bar/./../baz/.") == "/baz");
+        CHECK(normalize("/foo/../..") == "/");
+        CHECK(normalize("/foo/../../bar") == "/bar");
+        CHECK(normalize(".") == "/");
+        CHECK(normalize("..") == "/");
     }
 
-    DOCTEST_TEST_CASE("join") {
-        DOCTEST_CHECK_EQ(join("/foo", "bar.txt"), "/foo/bar.txt");
-        DOCTEST_CHECK_EQ(join("/foo", "/bar", "baz.txt"), "/foo//bar/baz.txt");
-        DOCTEST_CHECK_EQ(join("/foo", "", "/bar.txt"), "/foo//bar.txt");
-        DOCTEST_CHECK_EQ(join("", "foo", "/bar.txt"), "foo//bar.txt");
-        DOCTEST_CHECK_EQ(join("foo", "bar", ""), "foo/bar");
-        DOCTEST_CHECK_EQ(join(), "");
+    SECTION("join") {
+        CHECK(join("/foo", "bar.txt") == "/foo/bar.txt");
+        CHECK(join("/foo", "/bar", "baz.txt") == "/foo//bar/baz.txt");
+        CHECK(join("/foo", "", "/bar.txt") == "/foo//bar.txt");
+        CHECK(join("", "foo", "/bar.txt") == "foo//bar.txt");
+        CHECK(join("foo", "bar", "") == "foo/bar");
+        CHECK(join() == "");
 
-        DOCTEST_CHECK_EQ(join("/foo", "/bar"_sv, "baz.txt"_s), "/foo//bar/baz.txt");
+        CHECK(join("/foo", "/bar"_sv, "baz.txt"_s) == "/foo//bar/baz.txt");
     }
 }

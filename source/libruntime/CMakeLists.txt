@@ -113,7 +113,7 @@ up_set_common_properties(potato_libruntime_test)
 
 target_link_libraries(potato_libruntime_test PRIVATE
     potato::libruntime
-    doctest
+    Catch2::Catch2
 )
 
 add_test(	

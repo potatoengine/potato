@@ -2,15 +2,15 @@
 
 #include "potato/runtime/concurrent_queue.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[potato][runtime] ConcurrentQueue") {
+TEST_CASE("ConcurrentQueue", "[potato][runtime]") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("default") { ConcurrentQueue<int> queue; }
+    SECTION("default") { ConcurrentQueue<int> queue; }
 
-    DOCTEST_TEST_CASE("thread") {
+    SECTION("thread") {
         ConcurrentQueue<int> queue;
 
         int last = 0;
@@ -31,8 +31,8 @@ DOCTEST_TEST_SUITE("[potato][runtime] ConcurrentQueue") {
 
         consumer.join();
 
-        DOCTEST_REQUIRE(queue.isClosed());
+        CHECK(queue.isClosed());
 
-        DOCTEST_CHECK_EQ(last, 1023);
+        CHECK(last == 1023);
     }
 }
