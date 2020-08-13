@@ -1,9 +1,5 @@
 include(FetchContent)
 
-FetchContent_Declare(doctest
-    GIT_REPOSITORY https://github.com/onqtam/doctest.git
-    GIT_TAG 2.4.0
-)
 FetchContent_Declare(catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
     GIT_TAG v2.13.0

@@ -5,7 +5,6 @@ include(config.cmake)
 # List of dependencies to include
 #
 set(EXTERNALS
-    doctest
     catch2
     imgui
     glm
