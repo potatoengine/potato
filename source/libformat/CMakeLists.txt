@@ -14,16 +14,15 @@ target_link_libraries(potato_libformat
 
 add_executable(potato_libformat_test)
 target_sources(potato_libformat_test PRIVATE
-    "tests/main.cc"
-    "tests/test_format.cc"
-    "tests/test_writer.cc"
- "public/potato/format/_detail/erased_writer.h")
+    "tests/main.cpp"
+    "tests/test_format.cpp"
+    "tests/test_writer.cpp")
 
 up_set_common_properties(potato_libformat_test)
 
 target_link_libraries(potato_libformat_test PRIVATE
     potato::libformat
-    doctest
+    Catch2::Catch2
 )
 
 add_test(	
