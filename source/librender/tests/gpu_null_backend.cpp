@@ -5,43 +5,42 @@
 #include "potato/render/gpu_pipeline_state.h"
 #include "potato/render/gpu_swap_chain.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
-DOCTEST_TEST_SUITE("[potato][gpu] DeviceNull") {
-    using namespace up;
+TEST_CASE("DeviceNull", "[potato][gpu]") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("factory enumerates") {
+    SECTION("factory enumerates") {
         auto factory = CreateFactoryNull();
 
-        DOCTEST_CHECK(factory->isEnabled());
+        CHECK(factory->isEnabled());
 
         bool enumerated = false;
         factory->enumerateDevices([&](auto const& deviceInfo) {
-            DOCTEST_CHECK_EQ(deviceInfo.index, 0);
+            CHECK(deviceInfo.index == 0);
 
             // ensure we only get one
-            DOCTEST_CHECK_FALSE(enumerated);
+            CHECK_FALSE(enumerated);
             enumerated = true;
         });
     }
 
-    DOCTEST_TEST_CASE("factory abides") {
+    SECTION("factory abides") {
         auto factory = CreateFactoryNull();
 
         auto device = factory->createDevice(0);
-        DOCTEST_CHECK_NE(device, nullptr);
+        CHECK(device.get() != nullptr);
     }
 
-    DOCTEST_TEST_CASE("device abides") {
+    SECTION("device abides") {
         auto factory = CreateFactoryNull();
         auto device = factory->createDevice(0);
 
         auto swapChain = device->createSwapChain(nullptr);
-        DOCTEST_CHECK_NE(swapChain, nullptr);
+        CHECK(swapChain.get() != nullptr);
 
         GpuPipelineStateDesc desc;
         auto pipelineState = device->createPipelineState(desc);
-        DOCTEST_CHECK_NE(pipelineState, nullptr);
+        CHECK(pipelineState.get() != nullptr);
     }
 }

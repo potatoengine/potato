@@ -87,7 +87,7 @@ up_set_common_properties(potato_librender_test)
 
 target_link_libraries(potato_librender_test PRIVATE
     potato::librender
-    doctest
+    Catch2::Catch2
 )
 
 add_test(NAME potato_librender_test COMMAND potato_librender_test)
