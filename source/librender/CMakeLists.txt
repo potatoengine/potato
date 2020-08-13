@@ -44,7 +44,6 @@ target_link_libraries(potato_librender
         stb
         imgui
         SDL2
-        doctest
 )
 
 set(UP_GPU_D3D11_SOURCES

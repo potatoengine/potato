@@ -21,7 +21,6 @@ target_link_libraries(potato_libaudio
     PRIVATE
         soloud
         SDL2
-        doctest
 )
 
 add_executable(potato_libaudio_test)
