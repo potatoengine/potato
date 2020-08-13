@@ -1,6 +1,6 @@
 #include "potato/spud/delegate.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
 namespace {
     struct Test {
@@ -11,52 +11,52 @@ namespace {
     };
 } // namespace
 
-DOCTEST_TEST_SUITE("[potato][spud] up::delegate") {
+TEST_CASE("[potato][spud] up::delegate") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("empty delegate") {
+    SECTION("empty delegate") {
         delegate<int()> d;
 
-        DOCTEST_CHECK(d.empty());
+        CHECK(d.empty());
 
         d.reset();
     }
 
-    DOCTEST_TEST_CASE("lambda delegate") {
+    SECTION("lambda delegate") {
         delegate d = +[](int i) {
             return i * 2;
         };
 
-        DOCTEST_CHECK(!d.empty());
-        DOCTEST_CHECK_EQ(d(0), 0);
-        DOCTEST_CHECK_EQ(d(-1), -2);
-        DOCTEST_CHECK_EQ(d(10), 20);
+        CHECK_FALSE(d.empty());
+        CHECK(d(0) == 0);
+        CHECK(d(-1) == -2);
+        CHECK(d(10) == 20);
 
         d.reset();
 
-        DOCTEST_CHECK(d.empty());
+        CHECK(d.empty());
     }
 
-    DOCTEST_TEST_CASE("object delegate") {
+    SECTION("object delegate") {
         int i = 1;
         Test test{i};
 
-        DOCTEST_CHECK_EQ(delegate(test, &Test::next)(), 2);
-        DOCTEST_CHECK_EQ(delegate(test, &Test::next)(), 3);
-        DOCTEST_CHECK_EQ(delegate(test, &Test::add)(4), 7);
+        CHECK(delegate(test, &Test::next)() == 2);
+        CHECK(delegate(test, &Test::next)() == 3);
+        CHECK(delegate(test, &Test::add)(4) == 7);
     }
 
-    DOCTEST_TEST_CASE("void delegate") {
+    SECTION("void delegate") {
         int i = 0;
         delegate<void()> d = [&i] {
             i = 1;
         };
 
         d();
-        DOCTEST_CHECK_EQ(i, 1);
+        CHECK(i == 1);
     }
 
-    DOCTEST_TEST_CASE("delegate reassignment") {
+    SECTION("delegate reassignment") {
         int i1 = 1;
         Test t1{i1};
 
@@ -65,13 +65,13 @@ DOCTEST_TEST_SUITE("[potato][spud] up::delegate") {
 
         delegate<int()> d;
         d = delegate(&t1, &Test::next);
-        DOCTEST_CHECK(!d.empty());
+        CHECK_FALSE(d.empty());
         d();
-        DOCTEST_CHECK_EQ(i1, 2);
+        CHECK(i1 == 2);
 
         d = delegate(&t2, &Test::next);
-        DOCTEST_CHECK(!d.empty());
+        CHECK_FALSE(d.empty());
         d();
-        DOCTEST_CHECK_EQ(i2, 2);
+        CHECK(i2 == 2);
     }
 }

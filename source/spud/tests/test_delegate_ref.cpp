@@ -1,22 +1,22 @@
 #include "potato/spud/delegate_ref.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
-DOCTEST_TEST_SUITE("[potato][spud] up::delegate_ref") {
+TEST_CASE("[potato][spud] up::delegate_ref") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("lambda delegate_ref") {
+    SECTION("lambda delegate_ref") {
         int (*f)(int) = [](int i) {
             return i * 2;
         };
         delegate_ref d = f;
 
-        DOCTEST_CHECK_EQ(d(0), 0);
-        DOCTEST_CHECK_EQ(d(-1), -2);
-        DOCTEST_CHECK_EQ(d(10), 20);
+        CHECK(d(0) == 0);
+        CHECK(d(-1) == -2);
+        CHECK(d(10) == 20);
     }
 
-    DOCTEST_TEST_CASE("delegate_ref reassignment") {
+    SECTION("delegate_ref reassignment") {
         int i1 = 2;
         auto f1 = [&i1](int i) {
             return i1 += i;
@@ -30,10 +30,10 @@ DOCTEST_TEST_SUITE("[potato][spud] up::delegate_ref") {
 
         delegate_ref<int(int)> d(f1);
         d(2);
-        DOCTEST_CHECK_EQ(i1, 4);
+        CHECK(i1 == 4);
 
         d = f2;
         d(4);
-        DOCTEST_CHECK_EQ(i2, 8);
+        CHECK(i2 == 8);
     }
 }

@@ -1,47 +1,47 @@
 #include "potato/spud/bit_set.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
-DOCTEST_TEST_SUITE("[potato][spud] up::bit_set") {
+TEST_CASE("[potato][spud] up::bit_set") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("empty") {
+    SECTION("empty") {
         bit_set bs;
 
-        DOCTEST_CHECK(!bs.test(0));
+        CHECK_FALSE(bs.test(0));
     }
 
-    DOCTEST_TEST_CASE("set") {
+    SECTION("set") {
         bit_set bs;
 
         bs.set(0);
-        DOCTEST_CHECK(bs.test(0));
-        DOCTEST_CHECK(!bs.test(1));
-        DOCTEST_CHECK_EQ(bs.capacity(), 64);
+        CHECK(bs.test(0));
+        CHECK_FALSE(bs.test(1));
+        CHECK(bs.capacity() == 64);
 
         bs.set(1000);
-        DOCTEST_CHECK(bs.test(1000));
-        DOCTEST_CHECK(!bs.test(999));
-        DOCTEST_CHECK(!bs.test(1001));
-        DOCTEST_CHECK_EQ(bs.capacity(), 1024);
+        CHECK(bs.test(1000));
+        CHECK_FALSE(bs.test(999));
+        CHECK_FALSE(bs.test(1001));
+        CHECK(bs.capacity() == 1024);
     }
 
-    DOCTEST_TEST_CASE("reset") {
+    SECTION("reset") {
         bit_set bs;
 
         bs.set(0);
         bs.reset(0);
-        DOCTEST_CHECK(!bs.test(0));
-        DOCTEST_CHECK(!bs.test(1));
+        CHECK_FALSE(bs.test(0));
+        CHECK_FALSE(bs.test(1));
 
         bs.set(1000);
         bs.reset(1000);
-        DOCTEST_CHECK(!bs.test(1000));
-        DOCTEST_CHECK(!bs.test(999));
-        DOCTEST_CHECK(!bs.test(1001));
+        CHECK_FALSE(bs.test(1000));
+        CHECK_FALSE(bs.test(999));
+        CHECK_FALSE(bs.test(1001));
     }
 
-    DOCTEST_TEST_CASE("equality") {
+    SECTION("equality") {
         bit_set bs1;
         bit_set bs2;
 
@@ -53,19 +53,19 @@ DOCTEST_TEST_SUITE("[potato][spud] up::bit_set") {
         bs2.set(0);
         bs2.set(7);
 
-        DOCTEST_CHECK_FALSE(bs1 == bs2);
+        CHECK_FALSE(bs1 == bs2);
 
         bs2.set(109);
         bs2.set(555);
 
-        DOCTEST_CHECK(bs1 == bs2);
+        CHECK(bs1 == bs2);
 
         bs2.set(909);
 
-        DOCTEST_CHECK_FALSE(bs1 == bs2);
+        CHECK_FALSE(bs1 == bs2);
     }
 
-    DOCTEST_TEST_CASE("has_all") {
+    SECTION("has_all") {
         bit_set bs1;
         bit_set bs2;
 
@@ -77,15 +77,15 @@ DOCTEST_TEST_SUITE("[potato][spud] up::bit_set") {
         bs2.set(0);
         bs2.set(7);
 
-        DOCTEST_CHECK(bs1.has_all(bs2));
+        CHECK(bs1.has_all(bs2));
 
         bs2.set(109);
         bs2.set(555);
 
-        DOCTEST_CHECK(bs1.has_all(bs2));
+        CHECK(bs1.has_all(bs2));
 
         bs2.set(909);
 
-        DOCTEST_CHECK_FALSE(bs1.has_all(bs2));
+        CHECK_FALSE(bs1.has_all(bs2));
     }
 }

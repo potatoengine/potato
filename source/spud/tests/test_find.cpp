@@ -3,7 +3,7 @@
 #include "potato/spud/find.h"
 #include "potato/spud/vector.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <iostream>
 
 namespace {
@@ -11,46 +11,46 @@ namespace {
     constexpr bool is_negative(int val) noexcept { return val < 0; }
 } // namespace
 
-DOCTEST_TEST_SUITE("[potato][spud] find algorithms") {
+TEST_CASE("[potato][spud] find algorithms") {
     using namespace up;
 
     int array[] = {4, 7, 9, 2, 1, 0, 900};
     vector vec{-88, 4, 0, 7};
 
-    DOCTEST_TEST_CASE("find") {
-        DOCTEST_CHECK_EQ(find(array, 4), std::begin(array));
-        DOCTEST_CHECK_EQ(find(vec, -88), std::begin(vec));
+    SECTION("find") {
+        CHECK(find(array, 4) == std::begin(array));
+        CHECK(find(vec, -88) == std::begin(vec));
 
-        DOCTEST_CHECK_EQ(find(array, 900), std::end(array) - 1);
-        DOCTEST_CHECK_EQ(find(vec, 7), std::end(vec) - 1);
+        CHECK(find(array, 900) == std::end(array) - 1);
+        CHECK(find(vec, 7) == std::end(vec) - 1);
 
-        DOCTEST_CHECK_EQ(find(array, 12948734), std::end(array));
-        DOCTEST_CHECK_EQ(find(vec, 12948734), std::end(vec));
+        CHECK(find(array, 12948734) == std::end(array));
+        CHECK(find(vec, 12948734) == std::end(vec));
     }
 
-    DOCTEST_TEST_CASE("find_if") {
-        DOCTEST_CHECK_EQ(find_if(array, is_even), std::begin(array));
-        DOCTEST_CHECK_EQ(find_if(vec, is_negative), std::begin(vec));
+    SECTION("find_if") {
+        CHECK(find_if(array, is_even) == std::begin(array));
+        CHECK(find_if(vec, is_negative) == std::begin(vec));
 
-        DOCTEST_CHECK_EQ(find_if(array, [](int i) { return i > 100; }), std::end(array) - 1);
-        DOCTEST_CHECK_EQ(find_if(vec, [](int i) { return !is_even(i); }), std::end(vec) - 1);
+        CHECK(find_if(array, [](int i) { return i > 100; }) == std::end(array) - 1);
+        CHECK(find_if(vec, [](int i) { return !is_even(i); }) == std::end(vec) - 1);
 
-        DOCTEST_CHECK_EQ(find_if(array, [](int) { return false; }), std::end(array));
-        DOCTEST_CHECK_EQ(find_if(vec, [](int) { return false; }), std::end(vec));
+        CHECK(find_if(array, [](int) { return false; }) == std::end(array));
+        CHECK(find_if(vec, [](int) { return false; }) == std::end(vec));
     }
 
-    DOCTEST_TEST_CASE("any") {
-        DOCTEST_CHECK_EQ(any(array, is_negative), false);
-        DOCTEST_CHECK_EQ(any(vec, is_negative), true);
+    SECTION("any") {
+        CHECK_FALSE(any(array, is_negative));
+        CHECK(any(vec, is_negative));
     }
 
-    DOCTEST_TEST_CASE("all") {
-        DOCTEST_CHECK_EQ(all(array, [](int i) { return !is_negative(i); }), true);
-        DOCTEST_CHECK_EQ(all(vec, is_negative), false);
+    SECTION("all") {
+        CHECK(all(array, [](int i) { return !is_negative(i); }));
+        CHECK_FALSE(all(vec, is_negative));
     }
 
-    DOCTEST_TEST_CASE("contains") {
-        DOCTEST_CHECK_EQ(contains(array, 2), true);
-        DOCTEST_CHECK_EQ(contains(array, 100), false);
+    SECTION("contains") {
+        CHECK(contains(array, 2));
+        CHECK_FALSE(contains(array, 100));
     }
 }

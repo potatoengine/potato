@@ -2,68 +2,68 @@
 
 #include "potato/spud/zstring_view.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <cstring>
 #include <ostream>
 
-DOCTEST_TEST_SUITE("[potato][spud] up::zstring_view") {
+TEST_CASE("[potato][spud] up::zstring_view") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("default initialization") {
+    SECTION("default initialization") {
         zstring_view sv;
 
-        DOCTEST_CHECK(sv.empty());
-        DOCTEST_CHECK_EQ(sv.size(), 0);
+        CHECK(sv.empty());
+        CHECK(sv.size() == 0);
     }
 
-    DOCTEST_TEST_CASE("std::string initialization") {
+    SECTION("std::string initialization") {
         std::string s = "this is a test";
         zstring_view sv(s.c_str());
 
-        DOCTEST_CHECK(!sv.empty());
-        DOCTEST_CHECK_EQ(sv.size(), s.size());
-        DOCTEST_CHECK_EQ(sv, s.c_str());
+        CHECK_FALSE(sv.empty());
+        CHECK(sv.size() == s.size());
+        CHECK(sv == s.c_str());
     }
 
-    DOCTEST_TEST_CASE("literal initialization") {
+    SECTION("literal initialization") {
         zstring_view sv = "this is a test";
 
-        DOCTEST_CHECK(!sv.empty());
-        DOCTEST_CHECK_EQ(sv.size(), 14);
-        DOCTEST_CHECK_EQ(sv, "this is a test");
+        CHECK_FALSE(sv.empty());
+        CHECK(sv.size() == 14);
+        CHECK(sv == "this is a test");
     }
 
-    DOCTEST_TEST_CASE("C string initialization") {
+    SECTION("C string initialization") {
         char const* cs = "this is a test";
         zstring_view sv = cs;
 
-        DOCTEST_CHECK(!sv.empty());
-        DOCTEST_CHECK_EQ(sv.size(), std::strlen(cs));
-        DOCTEST_CHECK_EQ(sv, cs);
+        CHECK_FALSE(sv.empty());
+        CHECK(sv.size() == std::strlen(cs));
+        CHECK(sv == cs);
     }
 
-    DOCTEST_TEST_CASE("slicing") {
+    SECTION("slicing") {
         zstring_view sv = "this is a test";
 
-        DOCTEST_CHECK_EQ(sv.first(7), "this is");
-        DOCTEST_CHECK_EQ(sv.substr(8), "a test");
-        DOCTEST_CHECK_EQ(sv.substr(8, 1), "a");
+        CHECK(sv.first(7) == "this is");
+        CHECK(sv.substr(8) == "a test");
+        CHECK(sv.substr(8, 1) == "a");
 
-        DOCTEST_CHECK_EQ(sv.front(), 't');
+        CHECK(sv.front() == 't');
     }
 
-    DOCTEST_TEST_CASE("searching") {
+    SECTION("searching") {
         zstring_view sv = "this is a test";
 
-        DOCTEST_CHECK_EQ(sv.find('a'), 8);
-        DOCTEST_CHECK_EQ(sv.find('z'), zstring_view::npos);
+        CHECK(sv.find('a') == 8);
+        CHECK(sv.find('z') == zstring_view::npos);
 
-        DOCTEST_CHECK_EQ(sv.find_first_of("ea"), 8);
-        DOCTEST_CHECK_EQ(sv.find_first_of("ez"), 11);
-        DOCTEST_CHECK_EQ(sv.find_first_of("fz"), zstring_view::npos);
+        CHECK(sv.find_first_of("ea") == 8);
+        CHECK(sv.find_first_of("ez") == 11);
+        CHECK(sv.find_first_of("fz") == zstring_view::npos);
 
-        DOCTEST_CHECK_EQ(sv.find_last_of("ih"), 5);
-        DOCTEST_CHECK_EQ(sv.find_last_of("zh"), 1);
-        DOCTEST_CHECK_EQ(sv.find_last_of("fz"), zstring_view::npos);
+        CHECK(sv.find_last_of("ih") == 5);
+        CHECK(sv.find_last_of("zh") == 1);
+        CHECK(sv.find_last_of("fz") == zstring_view::npos);
     }
 }
