@@ -21,7 +21,7 @@ TEST_CASE("[potato][spud] up::string") {
 
         CHECK_FALSE(s.empty());
         CHECK(s.size() == s.size());
-        CHECK(s.c_str() == ss.c_str());
+        CHECK(s.c_str() == ss);
     }
 
     SECTION("initialize from string_view") {
@@ -32,24 +32,24 @@ TEST_CASE("[potato][spud] up::string") {
     }
 
     SECTION("move constructor") {
-        string s("wrong");
-        string s2("correct");
+        string s("wrong"_sv);
+        string s2("correct"_sv);
 
         s = std::move(s2);
 
         CHECK_FALSE(s.empty());
         CHECK(s.size() == s.size());
-        CHECK(s.c_str() == "correct");
+        CHECK(s.c_str() == "correct"_sv);
 
         CHECK(s2.empty());
     }
 
     SECTION("literal initialization") {
-        string s("this is a test");
+        string s("this is a test"_sv);
 
         CHECK_FALSE(s.empty());
         CHECK(s.size() == 14);
-        CHECK(s.c_str() == "this is a test");
+        CHECK(s.c_str() == "this is a test"_sv);
     }
 
     SECTION("C string initialization") {
@@ -58,15 +58,15 @@ TEST_CASE("[potato][spud] up::string") {
 
         CHECK_FALSE(s.empty());
         CHECK(s.size() == std::strlen(cs));
-        CHECK(s.c_str() == cs);
+        CHECK(s == cs);
     }
 
     SECTION("slicing") {
-        string s("this is a test");
+        string s("this is a test"_sv);
 
-        CHECK(s.first(7) == "this is");
-        CHECK(s.last(6) == "a test");
-        CHECK(s.substr(8) == "a test");
+        CHECK(s.first(7) == "this is"_sv);
+        CHECK(s.last(6) == "a test"_sv);
+        CHECK(s.substr(8) == "a test"_sv);
         CHECK(s.substr(8, 1) == "a"_sv);
 
         CHECK(s.front() == 't');
@@ -74,7 +74,7 @@ TEST_CASE("[potato][spud] up::string") {
     }
 
     SECTION("searching") {
-        string s("this is a test");
+        string s("this is a test"_sv);
 
         CHECK(s.find('a') == 8);
         CHECK(s.find('z') == string::npos);
@@ -93,7 +93,7 @@ TEST_CASE("[potato][spud] up::string") {
         std::memcpy(cs, "hello world", 12);
 
         string s = string::take_ownership(cs, 11);
-        CHECK(s.c_str() == "hello world");
+        CHECK(s.c_str() == "hello world"_sv);
 
         s.reset();
     }

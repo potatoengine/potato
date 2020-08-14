@@ -15,7 +15,7 @@ TEST_CASE("[potato][spud] up::fixed_string_writer") {
         CHECK(sw.empty());
         CHECK(sw.size() == 0);
         CHECK(sw.capacity() == 31);
-        CHECK(sw.c_str() == "");
+        CHECK(sw.c_str() == ""_sv);
     }
 
     SECTION("write") {
@@ -39,7 +39,7 @@ TEST_CASE("[potato][spud] up::fixed_string_writer") {
 
         CHECK(sw.empty());
         CHECK(sw.size() == 0);
-        CHECK(sw.c_str() == "");
+        CHECK(sw.c_str() == ""_sv);
     }
 
     SECTION("overflow write") {
@@ -51,6 +51,6 @@ TEST_CASE("[potato][spud] up::fixed_string_writer") {
         sw.append("and some more text");
 
         CHECK(sw.size() == sw.capacity());
-        CHECK(sw.c_str() == "initial textmore textyet more t");
+        CHECK(sw.c_str() == "initial textmore textyet more t"_sv);
     }
 }

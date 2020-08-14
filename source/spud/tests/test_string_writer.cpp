@@ -13,7 +13,7 @@ TEST_CASE("[potato][spud] up::string_writer") {
 
         CHECK(sw.empty());
         CHECK(sw.size() == 0);
-        CHECK(sw.c_str() == "");
+        CHECK(sw.c_str() == ""_s);
     }
 
     SECTION("reserve initialization") {
@@ -21,16 +21,16 @@ TEST_CASE("[potato][spud] up::string_writer") {
 
         CHECK(sw.empty());
         CHECK(sw.size() == 0);
-        CHECK(sw.c_str() == "");
+        CHECK(sw.c_str() == ""_s);
     }
 
     SECTION("write") {
         string_writer sw;
 
-        sw.append("hello");
+        sw.append("hello"_s);
         sw.append(',');
         sw.append(' ');
-        sw.append("world");
+        sw.append("world"_s);
 
         CHECK_FALSE(sw.empty());
         CHECK(sw.size() == 12);
@@ -40,18 +40,18 @@ TEST_CASE("[potato][spud] up::string_writer") {
     SECTION("clear") {
         string_writer sw;
 
-        sw.append("test");
+        sw.append("test"_s);
         sw.clear();
 
         CHECK(sw.empty());
         CHECK(sw.size() == 0);
-        CHECK(sw.c_str() == "");
+        CHECK(sw.c_str() == ""_s);
     }
 
     SECTION("request and commit") {
         string_writer sw;
 
-        sw.append("initial text");
+        sw.append("initial text"_s);
 
         auto mem = sw.acquire(32);
 
@@ -62,42 +62,42 @@ TEST_CASE("[potato][spud] up::string_writer") {
 
         sw.commit(mem.first(4));
 
-        sw.append("footer");
+        sw.append("footer"_s);
 
-        CHECK(sw.c_str() == "initial textdatafooter");
+        CHECK(sw.c_str() == "initial textdatafooter"_s);
     }
 
     SECTION("resize") {
         string_writer sw;
 
-        sw.append("initial text");
+        sw.append("initial text"_s);
 
         sw.resize(4);
-        CHECK(sw.c_str() == "init");
+        CHECK(sw.c_str() == "init"_s);
 
         sw.resize(6);
-        CHECK(sw.c_str() == "init  ");
+        CHECK(sw.c_str() == "init  "_s);
 
         sw.resize(8, 'x');
-        CHECK(sw.c_str() == "init  xx");
+        CHECK(sw.c_str() == "init  xx"_s);
 
-        sw.append("yy");
-        CHECK(sw.c_str() == "init  xxyy");
+        sw.append("yy"_s);
+        CHECK(sw.c_str() == "init  xxyy"_s);
     }
 
     SECTION("to_string") {
         string_writer sw;
 
-        sw.append("some text here");
+        sw.append("some text here"_s);
 
         string s = sw.to_string();
 
-        CHECK(sw.c_str() == "some text here");
-        CHECK(s.c_str() == "some text here");
+        CHECK(sw.c_str() == "some text here"_s);
+        CHECK(s.c_str() == "some text here"_s);
 
         s = std::move(sw).to_string();
 
         CHECK(sw.empty());
-        CHECK(s.c_str() == "some text here");
+        CHECK(s.c_str() == "some text here"_s);
     }
 }
