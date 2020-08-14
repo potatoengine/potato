@@ -13,6 +13,6 @@ TEST_CASE("up::callstack", "[potato][runtime]") {
         std::array<uintptr, 1> addresses = {};
 
         auto stack = readTrace(span{addresses.data(), addresses.size()});
-        CHECK_FALSE(!stack.empty());
+        CHECK_FALSE(stack.empty());
     }
 }

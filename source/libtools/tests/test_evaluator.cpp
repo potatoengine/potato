@@ -12,7 +12,7 @@ TEST_CASE("Evaluator", "[potato][tools]") {
         EvalEngine eval;
         EvalContext ctx;
 
-        CHECK(eval.evaluate(ctx, {}));
+        CHECK_FALSE(eval.evaluate(ctx, {}));
     }
 
     SECTION("boolean values") {

@@ -26,7 +26,7 @@ TEST_CASE("thread_util", "[potato][runtime]") {
         struct Task {
             SmallThreadId& id;
             Task(SmallThreadId& i) : id(i) {}
-            void operator()() const { CHECK((id = currentSmallThreadId()) == 0); }
+            void operator()() const { CHECK((id = currentSmallThreadId()) != 0); }
         };
 
         // ensure it doesn't change
