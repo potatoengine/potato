@@ -133,16 +133,6 @@ function(up_set_common_properties TARGET)
         )
     endif()
 
-    # Doctest settings to make things work well.
-    #
-    if(IS_TEST)
-        target_compile_definitions(${TARGET} PRIVATE
-            DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
-            DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-            DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
-        )
-    endif()
-
     # Folder category for IDE solution builds.
     #
     if(NOT IS_INTERFACE)
