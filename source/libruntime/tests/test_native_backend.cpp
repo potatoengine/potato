@@ -5,43 +5,43 @@
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <algorithm>
 #include <iostream>
 #include <string>
 
-DOCTEST_TEST_SUITE("[potato][runtime] up::fs") {
+TEST_CASE("up::fs", "[potato][runtime]") {
     using namespace up;
     using namespace up::fs;
 
-    DOCTEST_TEST_CASE("fileExists") {
-        DOCTEST_CHECK(fileExists("test.txt"));
-        DOCTEST_CHECK(!fileExists("foobar.txt"));
+    SECTION("fileExists") {
+        CHECK(fileExists("test.txt"));
+        CHECK_FALSE(fileExists("foobar.txt"));
 
-        DOCTEST_CHECK(!fileExists("parent"));
+        CHECK_FALSE(fileExists("parent"));
     }
 
-    DOCTEST_TEST_CASE("directoryExists") {
-        DOCTEST_CHECK(directoryExists("parent"));
-        DOCTEST_CHECK(directoryExists("parent/child"));
+    SECTION("directoryExists") {
+        CHECK(directoryExists("parent"));
+        CHECK(directoryExists("parent/child"));
 
-        DOCTEST_CHECK(!directoryExists("parent/child/grandchild"));
-        DOCTEST_CHECK(!directoryExists("test.txt"));
+        CHECK_FALSE(directoryExists("parent/child/grandchild"));
+        CHECK_FALSE(directoryExists("test.txt"));
     }
 
-    DOCTEST_TEST_CASE("openRead") {
+    SECTION("openRead") {
         auto inFile = openRead("test.txt", OpenMode::Text);
-        DOCTEST_CHECK(inFile.isOpen());
+        CHECK(inFile.isOpen());
 
         byte buffer[1024];
         span<byte> bspan(buffer);
         inFile.read(bspan);
         string_view text(bspan.as_chars().data(), bspan.size());
 
-        DOCTEST_CHECK_EQ(text.first(15), "This is a test.");
+        CHECK(text.first(15) == "This is a test."_sv);
     }
 
-    DOCTEST_TEST_CASE("enumerate") {
+    SECTION("enumerate") {
         vector<string> const expected{"parent"_sv, "parent/child"_sv, "parent/child/hello.txt"_sv, "test.txt"_sv};
 
         vector<string> entries;
@@ -50,22 +50,22 @@ DOCTEST_TEST_SUITE("[potato][runtime] up::fs") {
             entries.push_back(item.path);
             return recurse;
         };
-        DOCTEST_CHECK_EQ(enumerate(".", cb), next);
+        CHECK(enumerate(".", cb) == next);
 
-        DOCTEST_REQUIRE_EQ(entries.size(), expected.size());
+        REQUIRE(entries.size() == expected.size());
 
         // platforms aren't necessarily going to return entries in the same order
         std::sort(entries.begin(), entries.end());
 
         for (typename decltype(entries)::size_type i = 0, e = entries.size(); i != e; ++i) {
-            DOCTEST_CHECK_EQ(entries[i], expected[i]);
+            CHECK(entries[i] == expected[i]);
         }
     }
 
-    DOCTEST_TEST_CASE("stat") {
+    SECTION("stat") {
         auto const [rs, stat] = fileStat("test.txt");
-        DOCTEST_CHECK_EQ(rs, IOResult::Success);
-        DOCTEST_CHECK_EQ(stat.type, FileType::Regular);
+        CHECK(rs == IOResult::Success);
+        CHECK(stat.type == FileType::Regular);
 
         // note: can't test size (Windows/UNIX line endings!) or mtime (git)
     }

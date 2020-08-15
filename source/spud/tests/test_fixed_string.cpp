@@ -2,39 +2,39 @@
 
 #include "potato/spud/fixed_string.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <iostream>
 
-DOCTEST_TEST_SUITE("[potato][spud] up::fixed_string") {
+TEST_CASE("[potato][spud] up::fixed_string") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("empty fixed_string") {
+    SECTION("empty fixed_string") {
         fixed_string<32> fs;
 
-        DOCTEST_CHECK(fs.empty());
+        CHECK(fs.empty());
 
-        DOCTEST_CHECK_EQ(fs.size(), 0);
-        DOCTEST_CHECK_EQ(fs.capacity(), 31);
-        DOCTEST_CHECK_EQ(*fs.data(), '\0');
+        CHECK(fs.size() == 0);
+        CHECK(fs.capacity() == 31);
+        CHECK(*fs.data() == '\0');
     }
 
-    DOCTEST_TEST_CASE("fixed_string from string_view") {
+    SECTION("fixed_string from string_view") {
         fixed_string<32> fs = string_view("hello world");
 
-        DOCTEST_CHECK(!fs.empty());
+        CHECK_FALSE(fs.empty());
 
-        DOCTEST_CHECK_EQ(fs.size(), 11);
-        DOCTEST_CHECK_EQ(fs.capacity(), 31);
-        DOCTEST_CHECK(std::strcmp(fs.c_str(), "hello world") == 0);
+        CHECK(fs.size() == 11);
+        CHECK(fs.capacity() == 31);
+        CHECK(std::strcmp(fs.c_str(), "hello world") == 0);
     }
 
-    DOCTEST_TEST_CASE("fixed_string from overlong string_view") {
+    SECTION("fixed_string from overlong string_view") {
         fixed_string<5> ss = string_view("hello world");
 
-        DOCTEST_CHECK(!ss.empty());
+        CHECK_FALSE(ss.empty());
 
-        DOCTEST_CHECK_EQ(ss.size(), 4);
-        DOCTEST_CHECK_EQ(ss.capacity(), 4);
-        DOCTEST_CHECK(std::strcmp(ss.c_str(), "hell") == 0);
+        CHECK(ss.size() == 4);
+        CHECK(ss.capacity() == 4);
+        CHECK(std::strcmp(ss.c_str(), "hell") == 0);
     }
 }

@@ -2,72 +2,72 @@
 
 #include "potato/spud/span.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
-DOCTEST_TEST_SUITE("[potato][spud] up::span") {
+TEST_CASE("[potato][spud] up::span") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("span default initialization") {
+    SECTION("span default initialization") {
         span<int> av{};
 
-        DOCTEST_CHECK(av.empty());
-        DOCTEST_CHECK_EQ(av.size(), 0);
-        DOCTEST_CHECK_EQ(av.begin(), av.end());
+        CHECK(av.empty());
+        CHECK(av.size() == 0);
+        CHECK(av.begin() == av.end());
     }
 
-    DOCTEST_TEST_CASE("span array") {
+    SECTION("span array") {
         int a[] = {1, 3, 2, 5, 4};
         span av(a);
 
-        DOCTEST_CHECK(!av.empty());
-        DOCTEST_CHECK_EQ(av.size(), 5);
-        DOCTEST_CHECK_EQ(av.data(), a);
-        DOCTEST_CHECK_EQ(av.front(), 1);
-        DOCTEST_CHECK_EQ(av.back(), 4);
+        CHECK_FALSE(av.empty());
+        CHECK(av.size() == 5);
+        CHECK(av.data() == a);
+        CHECK(av.front() == 1);
+        CHECK(av.back() == 4);
 
         av.pop_front();
 
-        DOCTEST_CHECK_EQ(av.size(), 4);
-        DOCTEST_CHECK_EQ(av.front(), 3);
+        CHECK(av.size() == 4);
+        CHECK(av.front() == 3);
 
         av.pop_back();
 
-        DOCTEST_CHECK_EQ(av.size(), 3);
-        DOCTEST_CHECK_EQ(av.back(), 5);
+        CHECK(av.size() == 3);
+        CHECK(av.back() == 5);
     }
 
-    DOCTEST_TEST_CASE("span subspan") {
+    SECTION("span subspan") {
         int a[] = {1, 3, 2, 5, 4};
         span av(a);
 
         span fv = av.first(3);
 
-        DOCTEST_CHECK_EQ(fv.size(), 3);
-        DOCTEST_CHECK_EQ(fv.front(), 1);
+        CHECK(fv.size() == 3);
+        CHECK(fv.front() == 1);
 
         span lv = av.last(3);
 
-        DOCTEST_CHECK_EQ(lv.size(), 3);
-        DOCTEST_CHECK_EQ(lv.front(), 2);
+        CHECK(lv.size() == 3);
+        CHECK(lv.front() == 2);
 
         span sv = av.subspan(2, 2);
 
-        DOCTEST_CHECK_EQ(sv.size(), 2);
-        DOCTEST_CHECK_EQ(sv.front(), 2);
+        CHECK(sv.size() == 2);
+        CHECK(sv.front() == 2);
 
         span tv = av.subspan(3);
 
-        DOCTEST_CHECK_EQ(tv.size(), 2);
-        DOCTEST_CHECK_EQ(tv.front(), 5);
+        CHECK(tv.size() == 2);
+        CHECK(tv.front() == 5);
     }
 
-    DOCTEST_TEST_CASE("span as_bytes") {
+    SECTION("span as_bytes") {
         int a[] = {1, 3, 2, 5, 4};
         span av(a);
 
         span bv = av.as_bytes();
 
-        DOCTEST_CHECK_EQ(bv.data(), (void*)a);
-        DOCTEST_CHECK_EQ(bv.size(), sizeof(a));
+        CHECK(bv.data() == (void*)a);
+        CHECK(bv.size() == sizeof(a));
     }
 }

@@ -2,12 +2,12 @@
 
 #include "potato/runtime/resource_manifest.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
-DOCTEST_TEST_SUITE("[potato][runtime] ResourceManifest") {
+TEST_CASE("ResourceManifest", "[potato][runtime]") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("parse") {
+    SECTION("parse") {
         string_view input =
             "# Comment\n"
             "\n" // blank
@@ -19,16 +19,16 @@ DOCTEST_TEST_SUITE("[potato][runtime] ResourceManifest") {
             ""_sv;
         ResourceManifest manifest;
         auto parseResult = ResourceManifest::parseManifest(input, manifest);
-        DOCTEST_CHECK(parseResult);
+        CHECK(parseResult);
 
-        DOCTEST_CHECK_EQ(2, manifest.size());
+        CHECK(manifest.size() == 2);
 
-        DOCTEST_CHECK_EQ(0, manifest.records().front().rootId);
-        DOCTEST_CHECK_EQ(0xDEAD, manifest.records().front().hash);
-        DOCTEST_CHECK_EQ("zero"_sv, string_view{manifest.records().front().filename});
+        CHECK(manifest.records().front().rootId == 0);
+        CHECK(manifest.records().front().hash == 0xDEAD);
+        CHECK(string_view{manifest.records().front().filename} == "zero"_sv);
 
-        DOCTEST_CHECK_EQ(1, manifest.records().back().rootId);
-        DOCTEST_CHECK_EQ(0xC0DE, manifest.records().back().hash);
-        DOCTEST_CHECK_EQ("one"_sv, string_view{manifest.records().back().filename});
+        CHECK(manifest.records().back().rootId == 1);
+        CHECK(manifest.records().back().hash == 0xC0DE);
+        CHECK(string_view{manifest.records().back().filename} == "one"_sv);
     }
 }

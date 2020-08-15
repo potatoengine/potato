@@ -2,44 +2,44 @@
 
 #include "potato/runtime/lock_free_queue.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[potato][runtime] LockFreeQueue") {
+TEST_CASE("LockFreeQueue", "[potato][runtime]") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("default") { LockFreeQueue<int> queue; }
+    SECTION("default") { LockFreeQueue<int> queue; }
 
-    DOCTEST_TEST_CASE("fill") {
+    SECTION("fill") {
         LockFreeQueue<std::size_t> queue;
 
         for (std::size_t i = 0; i < queue.capacity(); ++i) {
-            DOCTEST_CHECK(queue.tryEnque(i));
+            CHECK(queue.tryEnque(i));
         }
 
-        DOCTEST_CHECK(!queue.tryEnque(0));
+        CHECK(!queue.tryEnque(0));
     }
 
-    DOCTEST_TEST_CASE("sequential") {
+    SECTION("sequential") {
         LockFreeQueue<std::size_t> queue;
 
         for (std::size_t i = 0; i < queue.capacity(); ++i) {
-            DOCTEST_CHECK(queue.tryEnque(i));
+            CHECK(queue.tryEnque(i));
         }
 
-        DOCTEST_CHECK(!queue.tryEnque(0));
+        CHECK(!queue.tryEnque(0));
 
         for (std::size_t i = 0; i < queue.capacity(); ++i) {
             std::size_t result = 0;
-            DOCTEST_CHECK(queue.tryDeque(result));
-            DOCTEST_CHECK_EQ(i, result);
+            REQUIRE(queue.tryDeque(result));
+            CHECK(i == result);
         }
 
         std::size_t empty;
-        DOCTEST_CHECK(!queue.tryDeque(empty));
+        CHECK(!queue.tryDeque(empty));
     }
 
-    DOCTEST_TEST_CASE("thread") {
+    SECTION("thread") {
         LockFreeQueue<std::size_t> queue;
 
         std::size_t total1 = 0;
@@ -70,17 +70,17 @@ DOCTEST_TEST_SUITE("[potato][runtime] LockFreeQueue") {
 
         std::size_t expected = 0;
         for (std::size_t i = 2; i < queue.capacity(); ++i) {
-            DOCTEST_CHECK(queue.tryEnque(i));
+            REQUIRE(queue.tryEnque(i));
             expected += i;
         }
 
         // signals end to threads
-        DOCTEST_CHECK(queue.tryEnque(0));
-        DOCTEST_CHECK(queue.tryEnque(0));
+        CHECK(queue.tryEnque(0));
+        CHECK(queue.tryEnque(0));
 
         thread1.join();
         thread2.join();
 
-        DOCTEST_CHECK_EQ(total1 + total2, expected);
+        CHECK(total1 + total2 == expected);
     }
 }

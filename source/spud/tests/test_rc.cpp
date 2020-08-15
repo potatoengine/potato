@@ -2,7 +2,7 @@
 
 #include "potato/spud/rc.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
 namespace {
     struct TestCounted {
@@ -19,64 +19,64 @@ namespace {
     };
 } // namespace
 
-DOCTEST_TEST_SUITE("[potato][spud] up::rc") {
+TEST_CASE("[potato][spud] up::rc") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("empty rc") {
+    SECTION("empty rc") {
         rc<TestCounted> r;
 
-        DOCTEST_CHECK(r.empty());
-        DOCTEST_CHECK(!r);
+        CHECK(r.empty());
+        CHECK_FALSE(r);
     }
 
-    DOCTEST_TEST_CASE("custom rc") {
+    SECTION("custom rc") {
         TestCounted test;
 
         rc r(&test);
 
-        DOCTEST_CHECK(!r.empty());
-        DOCTEST_CHECK_EQ(test.refs, 1);
+        CHECK_FALSE(r.empty());
+        CHECK(test.refs == 1);
 
         rc r2 = r;
 
-        DOCTEST_CHECK(!r.empty());
-        DOCTEST_CHECK(!r2.empty());
-        DOCTEST_CHECK_EQ(test.refs, 2);
+        CHECK_FALSE(r.empty());
+        CHECK_FALSE(r2.empty());
+        CHECK(test.refs == 2);
 
         r2.reset();
 
-        DOCTEST_CHECK(!r.empty());
-        DOCTEST_CHECK(r2.empty());
-        DOCTEST_CHECK_EQ(test.refs, 1);
+        CHECK_FALSE(r.empty());
+        CHECK(r2.empty());
+        CHECK(test.refs == 1);
 
         r.reset();
 
-        DOCTEST_CHECK(r.empty());
-        DOCTEST_CHECK_EQ(test.refs, 0);
+        CHECK(r.empty());
+        CHECK(test.refs == 0);
     }
 
-    DOCTEST_TEST_CASE("custom rc") {
+    SECTION("custom rc") {
         bool active;
         rc r = new_shared<TestShared>(active);
 
-        DOCTEST_CHECK(!r.empty());
-        DOCTEST_CHECK(active);
+        CHECK_FALSE(r.empty());
+        CHECK(active);
 
         rc r2 = r;
 
-        DOCTEST_CHECK(!r.empty());
-        DOCTEST_CHECK(!r2.empty());
-        DOCTEST_CHECK(active);
+        CHECK_FALSE(r.empty());
+        CHECK_FALSE(r2.empty());
+        CHECK(active);
 
         r2.reset();
 
-        DOCTEST_CHECK(!r.empty());
-        DOCTEST_CHECK(r2.empty());
-        DOCTEST_CHECK(active);
+        CHECK_FALSE(r.empty());
+        CHECK(r2.empty());
+        CHECK(active);
 
         r.reset();
 
-        DOCTEST_CHECK(r.empty());
-        DOCTEST_CHECK(!active);
+        CHECK(r.empty());
+        CHECK_FALSE(active);
     }
 }

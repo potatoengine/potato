@@ -3,101 +3,101 @@
 #include "potato/spud/string.h"
 #include "potato/spud/string_writer.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
-DOCTEST_TEST_SUITE("[potato][spud] up::string_writer") {
+TEST_CASE("[potato][spud] up::string_writer") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("default initialization") {
+    SECTION("default initialization") {
         string_writer sw;
 
-        DOCTEST_CHECK(sw.empty());
-        DOCTEST_CHECK_EQ(sw.size(), 0);
-        DOCTEST_CHECK_EQ(sw.c_str(), "");
+        CHECK(sw.empty());
+        CHECK(sw.size() == 0);
+        CHECK(sw.c_str() == ""_s);
     }
 
-    DOCTEST_TEST_CASE("reserve initialization") {
+    SECTION("reserve initialization") {
         string_writer sw(64);
 
-        DOCTEST_CHECK(sw.empty());
-        DOCTEST_CHECK_EQ(sw.size(), 0);
-        DOCTEST_CHECK_EQ(sw.c_str(), "");
+        CHECK(sw.empty());
+        CHECK(sw.size() == 0);
+        CHECK(sw.c_str() == ""_s);
     }
 
-    DOCTEST_TEST_CASE("write") {
+    SECTION("write") {
         string_writer sw;
 
-        sw.append("hello");
+        sw.append("hello"_s);
         sw.append(',');
         sw.append(' ');
-        sw.append("world");
+        sw.append("world"_s);
 
-        DOCTEST_CHECK(!sw.empty());
-        DOCTEST_CHECK_EQ(sw.size(), 12);
-        DOCTEST_CHECK_EQ(sw.c_str(), "hello, world");
+        CHECK_FALSE(sw.empty());
+        CHECK(sw.size() == 12);
+        CHECK(sw.c_str() == "hello, world"_sv);
     }
 
-    DOCTEST_TEST_CASE("clear") {
+    SECTION("clear") {
         string_writer sw;
 
-        sw.append("test");
+        sw.append("test"_s);
         sw.clear();
 
-        DOCTEST_CHECK(sw.empty());
-        DOCTEST_CHECK_EQ(sw.size(), 0);
-        DOCTEST_CHECK_EQ(sw.c_str(), "");
+        CHECK(sw.empty());
+        CHECK(sw.size() == 0);
+        CHECK(sw.c_str() == ""_s);
     }
 
-    DOCTEST_TEST_CASE("request and commit") {
+    SECTION("request and commit") {
         string_writer sw;
 
-        sw.append("initial text");
+        sw.append("initial text"_s);
 
         auto mem = sw.acquire(32);
 
-        DOCTEST_CHECK_GE(mem.size(), 32);
-        DOCTEST_CHECK_EQ((void*)mem.data(), (void*)(sw.data() + sw.size()));
+        CHECK(mem.size() >= 32);
+        CHECK((void*)mem.data() == (void*)(sw.data() + sw.size()));
 
         std::memcpy(mem.data(), "data", 4);
 
         sw.commit(mem.first(4));
 
-        sw.append("footer");
+        sw.append("footer"_s);
 
-        DOCTEST_CHECK_EQ(sw.c_str(), "initial textdatafooter");
+        CHECK(sw.c_str() == "initial textdatafooter"_s);
     }
 
-    DOCTEST_TEST_CASE("resize") {
+    SECTION("resize") {
         string_writer sw;
 
-        sw.append("initial text");
+        sw.append("initial text"_s);
 
         sw.resize(4);
-        DOCTEST_CHECK_EQ(sw.c_str(), "init");
+        CHECK(sw.c_str() == "init"_s);
 
         sw.resize(6);
-        DOCTEST_CHECK_EQ(sw.c_str(), "init  ");
+        CHECK(sw.c_str() == "init  "_s);
 
         sw.resize(8, 'x');
-        DOCTEST_CHECK_EQ(sw.c_str(), "init  xx");
+        CHECK(sw.c_str() == "init  xx"_s);
 
-        sw.append("yy");
-        DOCTEST_CHECK_EQ(sw.c_str(), "init  xxyy");
+        sw.append("yy"_s);
+        CHECK(sw.c_str() == "init  xxyy"_s);
     }
 
-    DOCTEST_TEST_CASE("to_string") {
+    SECTION("to_string") {
         string_writer sw;
 
-        sw.append("some text here");
+        sw.append("some text here"_s);
 
         string s = sw.to_string();
 
-        DOCTEST_CHECK_EQ(sw.c_str(), "some text here");
-        DOCTEST_CHECK_EQ(s.c_str(), "some text here");
+        CHECK(sw.c_str() == "some text here"_s);
+        CHECK(s.c_str() == "some text here"_s);
 
         s = std::move(sw).to_string();
 
-        DOCTEST_CHECK(sw.empty());
-        DOCTEST_CHECK_EQ(s.c_str(), "some text here");
+        CHECK(sw.empty());
+        CHECK(s.c_str() == "some text here"_s);
     }
 }

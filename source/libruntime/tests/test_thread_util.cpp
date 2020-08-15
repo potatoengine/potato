@@ -2,21 +2,21 @@
 
 #include "potato/runtime/thread_util.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <thread>
 
-DOCTEST_TEST_SUITE("[potato][runtime] thread_util") {
+TEST_CASE("thread_util", "[potato][runtime]") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("setCurrentThreadName") {
+    SECTION("setCurrentThreadName") {
         // basically just making sure we're not crashing
         auto thread = std::thread([] { setCurrentThreadName("test thread"); });
 
         thread.join();
     }
 
-    DOCTEST_TEST_CASE("currentThreadSmallId") {
-        DOCTEST_CHECK_EQ(currentSmallThreadId(), 0);
+    SECTION("currentThreadSmallId") {
+        CHECK(currentSmallThreadId() == 0);
 
         // Yes, this could be a lambda, but I'm seeing a bad miscompilation bug in MSVC 16.6 Preview 5
         // when using lambdas here. These threads end up invoking the lambdas in test_concurrent_queue,
@@ -26,11 +26,11 @@ DOCTEST_TEST_SUITE("[potato][runtime] thread_util") {
         struct Task {
             SmallThreadId& id;
             Task(SmallThreadId& i) : id(i) {}
-            void operator()() const { DOCTEST_CHECK_NE(id = currentSmallThreadId(), 0); }
+            void operator()() const { CHECK((id = currentSmallThreadId()) != 0); }
         };
 
         // ensure it doesn't change
-        DOCTEST_CHECK_EQ(currentSmallThreadId(), 0);
+        REQUIRE(currentSmallThreadId() == 0);
 
         SmallThreadId id1;
         Task t1(id1);
@@ -42,9 +42,9 @@ DOCTEST_TEST_SUITE("[potato][runtime] thread_util") {
         thread = std::thread(t2);
         thread.join();
 
-        DOCTEST_CHECK_NE(id1, id2);
+        CHECK(id1 != id2);
 
         // other threads shouldn't have changed
-        DOCTEST_CHECK_EQ(currentSmallThreadId(), 0);
+        CHECK(currentSmallThreadId() == 0);
     }
 }

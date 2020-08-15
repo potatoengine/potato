@@ -5,31 +5,31 @@
 #include "potato/runtime/logger.h"
 #include "potato/spud/string_view.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
-DOCTEST_TEST_SUITE("[potato][recon] ReconConfig") {
+TEST_CASE("ReconConfig", "[potato][recon]") {
     using namespace up;
     using namespace recon;
 
-    DOCTEST_TEST_CASE("args") {
+    SECTION("args") {
         ReconConfig config;
         char const* args[] = {"/bin/test/", "-source", "ABC"};
         Logger logger("test");
 
         bool ok = parseArguments(config, args, logger);
-        DOCTEST_CHECK(ok);
+        CHECK(ok);
 
-        DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");
+        CHECK(config.sourceFolderPath == "ABC"_s);
     }
 
-    DOCTEST_TEST_CASE("json") {
+    SECTION("json") {
         string_view json = R"--({"sourceDir":"ABC"})--";
         ReconConfig config;
         Logger logger("test");
 
         bool ok = parseConfigString(config, json, "test.json", logger);
-        DOCTEST_CHECK(ok);
+        CHECK(ok);
 
-        DOCTEST_CHECK_EQ(config.sourceFolderPath.c_str(), "ABC");
+        CHECK(config.sourceFolderPath == "ABC"_s);
     }
 }

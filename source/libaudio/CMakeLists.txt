@@ -21,7 +21,6 @@ target_link_libraries(potato_libaudio
     PRIVATE
         soloud
         SDL2
-        doctest
 )
 
 add_executable(potato_libaudio_test)
@@ -33,7 +32,7 @@ up_set_common_properties(potato_libaudio_test)
 
 target_link_libraries(potato_libaudio_test PRIVATE
     potato::libaudio
-    doctest
+    Catch2::Catch2
 )
 
 add_test(NAME potato_libaudio_test COMMAND potato_libaudio_test)

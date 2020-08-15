@@ -5,24 +5,24 @@
 #include "potato/spud/string_view.h"
 #include "potato/spud/zstring_view.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
-DOCTEST_TEST_SUITE("[potato][spud] up::hash") {
+TEST_CASE("[potato][spud] up::hash") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("default hash_value") {
-        DOCTEST_CHECK_EQ(hash_value<fnv1a>('x'), 0xaf63f54c86021707);
-        DOCTEST_CHECK_EQ(hash_value<fnv1a>(string_view("hello world")), 0x779a65e7023cd2e7);
-        DOCTEST_CHECK_EQ(hash_value<fnv1a>(zstring_view("hello world")), 0x779a65e7023cd2e7);
-        DOCTEST_CHECK_EQ(hash_value<fnv1a>(span<int const>{{1, 2, 3, 4, 5}}), 0x1916ceffaf539564);
+    SECTION("default hash_value") {
+        CHECK(hash_value<fnv1a>('x') == 0xaf63f54c86021707);
+        CHECK(hash_value<fnv1a>(string_view("hello world")) == 0x779a65e7023cd2e7);
+        CHECK(hash_value<fnv1a>(zstring_view("hello world")) == 0x779a65e7023cd2e7);
+        CHECK(hash_value<fnv1a>(span<int const>{{1, 2, 3, 4, 5}}) == 0x1916ceffaf539564);
     }
 
-    DOCTEST_TEST_CASE("hash_combine") {
+    SECTION("hash_combine") {
         uint64 hash1 = hash_value(7);
         uint64 hash2 = hash_value(-99);
 
-        DOCTEST_CHECK_NE(hash1, hash_combine(hash1, hash2));
-        DOCTEST_CHECK_NE(hash2, hash_combine(hash1, hash2));
-        DOCTEST_CHECK_NE(hash_combine(hash1, hash2), hash_combine(hash2, hash1));
+        CHECK(hash1 != hash_combine(hash1, hash2));
+        CHECK(hash2 != hash_combine(hash1, hash2));
+        CHECK(hash_combine(hash1, hash2) != hash_combine(hash2, hash1));
     }
 }

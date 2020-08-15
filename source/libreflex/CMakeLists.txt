@@ -15,21 +15,21 @@ target_link_libraries(potato_libreflex
 
 target_include_directories(potato_libreflex INTERFACE public/)
 
-add_executable(potato_libreflex_tests)
-target_sources(potato_libreflex_tests PRIVATE
+add_executable(potato_libreflex_test)
+target_sources(potato_libreflex_test PRIVATE
     "tests/main.cpp"
     "tests/test_serialize.cpp"
 )
 
-up_set_common_properties(potato_libreflex_tests)
+up_set_common_properties(potato_libreflex_test)
 
-target_link_libraries(potato_libreflex_tests PRIVATE
+target_link_libraries(potato_libreflex_test PRIVATE
     potato::libreflex
-    doctest
+    Catch2::Catch2
 )
 
-target_compile_definitions(potato_libreflex_tests PRIVATE
+target_compile_definitions(potato_libreflex_test PRIVATE
     DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING=1
 )
 
-add_test(NAME potato_libreflex_tests COMMAND potato_libreflex_tests)
+add_test(NAME potato_libreflex_test COMMAND potato_libreflex_test)

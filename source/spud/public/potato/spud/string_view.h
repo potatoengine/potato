@@ -142,6 +142,11 @@ public:
         return rs <=> 0;
     }
 
+    template <typename Output>
+    friend auto operator<<(Output& output, string_view str) -> Output& {
+        return output.write(str.data(), str.size());
+    }
+
 private:
     pointer _data = nullptr;
     size_type _size = 0;

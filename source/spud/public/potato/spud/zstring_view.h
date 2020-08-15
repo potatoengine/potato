@@ -111,6 +111,11 @@ namespace up {
             return lhsSize == rhsSize && stringCompare(lhs._str, rhs, lhsSize) == 0;
         }
 
+        template <typename Output>
+        friend auto operator<<(Output& output, zstring_view str) -> Output& {
+            return output << str.c_str();
+        }
+
     private:
         pointer _str = nullptr;
     };

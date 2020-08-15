@@ -6,8 +6,8 @@ function(up_set_common_properties TARGET)
     if(NOT ${TARGET} MATCHES "^potato_")
         message(FATAL_ERROR "Target '${TARGET}' must start with potato_ prefix")
     endif()
-    string(REGEX REPLACE "^(potato_)" "" SHORT_NAME ${TARGET})
-    string(REGEX REPLACE "^lib|_test$" "" SIMPLE_NAME ${SHORT_NAME})
+    string(REGEX REPLACE "^potato_" "" SHORT_NAME ${TARGET})
+    set(OUTPUT_NAME ${SHORT_NAME})
 
     # Detect type of target
     #
@@ -17,20 +17,6 @@ function(up_set_common_properties TARGET)
     if (${TARGET_TYPE} STREQUAL INTERFACE_LIBRARY)
         set(PUBLIC_INTERFACE INTERFACE)
         set(IS_INTERFACE TRUE)
-    endif()
-
-    # Potato requires C++20
-    #
-    target_compile_features(${TARGET} ${PUBLIC_INTERFACE}
-        cxx_std_20
-    )
-    if (NOT IS_INTERFACE)
-        set_target_properties(${TARGET} PROPERTIES
-            LINKER_LANGUAGE CXX
-            CXX_STANDARD 20
-            CXX_EXTENSIONS OFF
-            CXX_STANDARD_REQUIRED ON
-        )
     endif()
 
     # Enforce some naming rules for hygiene.
@@ -46,6 +32,9 @@ function(up_set_common_properties TARGET)
         if(NOT TARGET ${TEST_TARGET})
             message(FATAL_ERROR "Test executable target '${TARGET}' expects there to be a target '${TEST_TARGET}'")
         endif()
+
+        string(REGEX REPLACE "_test$" "" SHORT_NAME ${SHORT_NAME})
+        set(OUTPUT_NAME "test_${SHORT_NAME}")
     elseif (${TARGET_TYPE} STREQUAL "EXECUTABLE")
         set(TYPE "executable")
         set(IS_BINARY TRUE)
@@ -56,6 +45,8 @@ function(up_set_common_properties TARGET)
         if(NOT ARG_NO_NAME_TEST AND NOT ${SHORT_NAME} MATCHES "^lib")
             message(FATAL_ERROR "Library target '${TARGET}' should be named 'potato_lib${SHORT_NAME}'")
         endif()
+
+        string(REGEX REPLACE "^lib" "" SHORT_NAME ${SHORT_NAME})
     else()
         message(FATAL_ERROR "Target '${TARGET}' has unknown type '${TARGET_TYPE}'")
     endif()
@@ -64,9 +55,23 @@ function(up_set_common_properties TARGET)
     #
     if (NOT IS_INTERFACE)
         set_target_properties(${TARGET} PROPERTIES
-            ARCHIVE_OUTPUT_NAME "${SHORT_NAME}"
-            LIBRARY_OUTPUT_NAME "${SHORT_NAME}"
-            RUNTIME_OUTPUT_NAME "${SHORT_NAME}"
+            ARCHIVE_OUTPUT_NAME "${OUTPUT_NAME}"
+            LIBRARY_OUTPUT_NAME "${OUTPUT_NAME}"
+            RUNTIME_OUTPUT_NAME "${OUTPUT_NAME}"
+        )
+    endif()
+    
+    # Potato requires C++20
+    #
+    target_compile_features(${TARGET} ${PUBLIC_INTERFACE}
+        cxx_std_20
+    )
+    if (NOT IS_INTERFACE)
+        set_target_properties(${TARGET} PROPERTIES
+            LINKER_LANGUAGE CXX
+            CXX_STANDARD 20
+            CXX_EXTENSIONS OFF
+            CXX_STANDARD_REQUIRED ON
         )
     endif()
 
@@ -120,21 +125,11 @@ function(up_set_common_properties TARGET)
     # the linking stage.
     #
     if(NOT IS_INTERFACE)
-        string(TOUPPER ${SIMPLE_NAME} EXPORT_NAME)
+        string(TOUPPER ${SHORT_NAME} EXPORT_NAME)
         set_target_properties(${TARGET} PROPERTIES
             DEFINE_SYMBOL "UP_${EXPORT_NAME}_EXPORTS"
             CXX_VISIBILITY_PRESET hidden
             VISIBILITY_INLINES_HIDDEN ON
-        )
-    endif()
-
-    # Doctest settings to make things work well.
-    #
-    if(IS_TEST)
-        target_compile_definitions(${TARGET} PRIVATE
-            DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
-            DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-            DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
         )
     endif()
 
@@ -160,7 +155,7 @@ function(up_set_common_properties TARGET)
     #
     if(NOT IS_INTERFACE AND NOT IS_TEST)
         target_include_directories(${TARGET} PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/public/potato/${SIMPLE_NAME}
+            ${CMAKE_CURRENT_SOURCE_DIR}/public/potato/${SHORT_NAME}
         )
     endif()
 

@@ -5,7 +5,7 @@
 #include "potato/reflex/serializer.h"
 #include "potato/spud/vector.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 #include <sstream>
 
 namespace {
@@ -47,11 +47,11 @@ namespace {
     }
 } // namespace
 
-DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
+TEST_CASE("serialize", "[potato][reflect]") {
     using namespace up;
     using namespace up::reflex;
 
-    DOCTEST_TEST_CASE("serialize struct to json") {
+    SECTION("serialize struct to json") {
         auto root = nlohmann::json::object();
         auto serializer = JsonStreamSerializer{root};
 
@@ -62,10 +62,10 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         std::ostringstream ostr;
         ostr << root;
 
-        DOCTEST_CHECK_EQ(ostr.str(), R"--({"custom":42.0,"name":"bob","vec":[4,5,6],"xyz":{"x":1,"y":2,"z":3}})--");
+        CHECK(ostr.str() == R"--({"custom":42.0,"name":"bob","vec":[4,5,6],"xyz":{"x":1,"y":2,"z":3}})--");
     }
 
-    DOCTEST_TEST_CASE("deserialize struct from json") {
+    SECTION("deserialize struct from json") {
         auto root = nlohmann::json::parse(
             R"--({"name":"bob","custom":42.0,"ignore":{"num":7},"xyz":{"x":1,"y":2,"z":3},"vec":[4,6]})--");
         auto serializer = JsonStreamDeserializer{root};
@@ -73,30 +73,30 @@ DOCTEST_TEST_SUITE("[potato][reflect] serialize") {
         Complex big;
         serialize(big, serializer);
 
-        DOCTEST_CHECK_EQ(1, big.xyz.x);
-        DOCTEST_CHECK_EQ(2, big.xyz.y);
-        DOCTEST_CHECK_EQ(3, big.xyz.z);
+        CHECK(big.xyz.x == 1);
+        CHECK(big.xyz.y == 2);
+        CHECK(big.xyz.z == 3);
 
-        DOCTEST_CHECK_EQ(big.num, 42.f); // NOLINT
+        CHECK(big.num == 42.f); // NOLINT
 
-        DOCTEST_CHECK_EQ(big.name, "bob");
+        CHECK(big.name == "bob");
 
-        DOCTEST_CHECK_EQ(big.vec.size(), 2); // NOLINT
-        DOCTEST_CHECK_EQ(big.vec.front(), 4); // NOLINT
-        DOCTEST_CHECK_EQ(big.vec.back(), 6); // NOLINT
+        REQUIRE(big.vec.size() == 2); // NOLINT
+        CHECK(big.vec.front() == 4); // NOLINT
+        CHECK(big.vec.back() == 6); // NOLINT
     }
 }
 
-DOCTEST_TEST_SUITE("[potato][reflect] reflect") {
+TEST_CASE("reflect", "[potato][reflect]") {
     using namespace up;
     using namespace up::reflex;
 
-    DOCTEST_TEST_CASE("reflect int") {
+    SECTION("reflect int") {
         RecordingReflector ref{};
         reflect<int>(ref);
     }
 
-    DOCTEST_TEST_CASE("reflect struct") {
+    SECTION("reflect struct") {
         RecordingReflector ref{};
 
         reflect<Fields>(ref);

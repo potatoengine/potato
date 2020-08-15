@@ -1,4 +1,4 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>

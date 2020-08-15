@@ -49,7 +49,7 @@ up_set_common_properties(potato_recon_test)
 
 target_link_libraries(potato_recon_test PRIVATE
     potato_librecon
-    doctest
+    Catch2::Catch2
 )
 
 add_test(NAME potato_recon_test COMMAND potato_recon_test)

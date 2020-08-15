@@ -2,23 +2,23 @@
 
 #include "potato/spud/fixed_string_writer.h"
 
-#include <doctest/doctest.h>
+#include <catch2/catch.hpp>
 
-DOCTEST_TEST_SUITE("[potato][spud] up::fixed_string_writer") {
+TEST_CASE("[potato][spud] up::fixed_string_writer") {
     using namespace up;
 
-    DOCTEST_TEST_CASE("default initialization") {
+    SECTION("default initialization") {
         fixed_string_writer<32> sw;
 
         static_assert(sizeof(sw) <= 40 /* buffer + 8-byte size */);
 
-        DOCTEST_CHECK(sw.empty());
-        DOCTEST_CHECK_EQ(sw.size(), 0);
-        DOCTEST_CHECK_EQ(sw.capacity(), 31);
-        DOCTEST_CHECK_EQ(sw.c_str(), "");
+        CHECK(sw.empty());
+        CHECK(sw.size() == 0);
+        CHECK(sw.capacity() == 31);
+        CHECK(sw.c_str() == ""_sv);
     }
 
-    DOCTEST_TEST_CASE("write") {
+    SECTION("write") {
         fixed_string_writer<32> sw;
 
         sw.append("hello");
@@ -26,23 +26,23 @@ DOCTEST_TEST_SUITE("[potato][spud] up::fixed_string_writer") {
         sw.append(' ');
         sw.append("world");
 
-        DOCTEST_CHECK(!sw.empty());
-        DOCTEST_CHECK_EQ(sw.size(), 12);
-        DOCTEST_CHECK_EQ(sw.c_str(), "hello, world");
+        CHECK_FALSE(sw.empty());
+        CHECK(sw.size() == 12);
+        CHECK(sw.c_str() == "hello, world"_sv);
     }
 
-    DOCTEST_TEST_CASE("clear") {
+    SECTION("clear") {
         fixed_string_writer<32> sw;
 
         sw.append("test");
         sw.clear();
 
-        DOCTEST_CHECK(sw.empty());
-        DOCTEST_CHECK_EQ(sw.size(), 0);
-        DOCTEST_CHECK_EQ(sw.c_str(), "");
+        CHECK(sw.empty());
+        CHECK(sw.size() == 0);
+        CHECK(sw.c_str() == ""_sv);
     }
 
-    DOCTEST_TEST_CASE("overflow write") {
+    SECTION("overflow write") {
         fixed_string_writer<32> sw;
 
         sw.append("initial text");
@@ -50,7 +50,7 @@ DOCTEST_TEST_SUITE("[potato][spud] up::fixed_string_writer") {
         sw.append("yet more text");
         sw.append("and some more text");
 
-        DOCTEST_CHECK_EQ(sw.size(), sw.capacity());
-        DOCTEST_CHECK_EQ(sw.c_str(), "initial textmore textyet more t");
+        CHECK(sw.size() == sw.capacity());
+        CHECK(sw.c_str() == "initial textmore textyet more t"_sv);
     }
 }
