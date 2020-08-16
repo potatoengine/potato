@@ -52,9 +52,9 @@ namespace up::tools {
         UP_TOOLS_API EvalEngine();
         UP_TOOLS_API ~EvalEngine();
 
-        UP_TOOLS_API [[nodiscard]] EvaluatorId compile(string_view expr);
+        UP_TOOLS_API EvaluatorId compile(string_view expr);
 
-        UP_TOOLS_API [[nodiscard]] bool evaluate(EvalContext& context, EvaluatorId id) noexcept;
+        UP_TOOLS_API bool evaluate(EvalContext& context, EvaluatorId id) noexcept;
 
     private:
         using NameHash = _detail::evaluator::NameHash;
