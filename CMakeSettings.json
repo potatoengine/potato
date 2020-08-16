@@ -5,30 +5,35 @@
       "CXXFLAGS": "-Wno-pragma-pack -Wno-deprecated-volatile",
       "UP_CXXFLAGS": "/W3 /WX /FC",
       "UP_OUTPUT_DIR": "${projectDir}/out"
+    },
+    {
+      "environment": "up_msvc",
+      "UP_CXXFLAGS": "/W3 /WX /FC",
+      "UP_OUTPUT_DIR": "${projectDir}/out"
+    },
+    {
+      "environment": "up_ubuntu",
+      "CXXFLAGS": "-Wno-volatile",
+      "UP_CXXFLAGS": "-Wall -Werror",
+      "UP_OUTPUT_DIR": "${projectDir}/out",
+      "CXX": "g++-10",
+      "CC": "gcc-10"
     }
   ],
   "configurations": [
     {
-      "name": "Windows (Debug)",
+      "name": "msvc-debug-shared",
+      "description": "MSVC (Debug)",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}/out/msvc-debug/build",
-      "installRoot": "${projectDir}/out/msvc-debug-shared/root",
-      "ctestCommandArgs": "--verbose",
-      "environments": [ { "CXXFLAGS": "/W3 /WX /FC" } ],
+      "inheritEnvironments": [ "msvc_x64_x64", "up_msvc" ],
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "UP_OUTPUT_DIR",
-          "value": "${projectDir}/out",
-          "type": "STRING"
+          "value": "YES",
+          "type": "BOOL"
         },
         {
           "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
@@ -38,31 +43,14 @@
       ]
     },
     {
-      "name": "Windows (Debug Static)",
+      "name": "msvc-debug-static",
+      "description": "MSVC (Debug Static)",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}/out/msvc-debug-static/build",
-      "installRoot": "${projectDir}/out/msvc-debug-static/root",
-      "ctestCommandArgs": "--verbose",
+      "inheritEnvironments": [ "msvc_x64_x64", "up_msvc" ],
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
-        {
-          "name": "UP_CXXFLAGS",
-          "value": "/W3 /WX /FC",
-          "type": "STRING"
-        },
-        {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "OFF",
-          "type": "STRING"
-        },
-        {
-          "name": "UP_OUTPUT_DIR",
-          "value": "${projectDir}/out",
-          "type": "STRING"
-        },
         {
           "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
           "value": "ON",
@@ -71,31 +59,14 @@
       ]
     },
     {
-      "name": "Windows (Release)",
+      "name": "msvc-release-static",
+      "description": "MSVC (Release)",
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}/out/msvc-release/build",
-      "installRoot": "${projectDir}/out/msvc-release-shared/root",
-      "ctestCommandArgs": "--verbose",
+      "inheritEnvironments": [ "msvc_x64_x64", "up_msvc" ],
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
-        {
-          "name": "UP_CXXFLAGS",
-          "value": "/W3 /WX /FC",
-          "type": "STRING"
-        },
-        {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "UP_OUTPUT_DIR",
-          "value": "${projectDir}/out",
-          "type": "STRING"
-        },
         {
           "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
           "value": "ON",
@@ -104,73 +75,20 @@
       ]
     },
     {
-      "name": "Windows (Release Static)",
-      "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}/out/msvc-release-static/build",
-      "installRoot": "${projectDir}/out/msvc-release-static/root",
-      "ctestCommandArgs": "--verbose",
-      "enableMicrosoftCodeAnalysis": false,
-      "enableClangTidyCodeAnalysis": false,
-      "variables": [
-        {
-          "name": "UP_CXXFLAGS",
-          "value": "/W3 /WX /FC",
-          "type": "STRING"
-        },
-        {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "OFF",
-          "type": "STRING"
-        },
-        {
-          "name": "UP_OUTPUT_DIR",
-          "value": "${projectDir}/out",
-          "type": "STRING"
-        },
-        {
-          "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
-          "value": "ON",
-          "type": "BOOL"
-        }
-      ]
-    },
-    {
-      "name": "Linux via WSL (Debug Static)",
+      "name": "gcc-debug-static",
+      "description": "GCC Ubuntu (Debug Static)",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "buildRoot": "${projectDir}/out/wsl-debug-static/build",
-      "installRoot": "${projectDir}/out/wsl-debug-static/install",
       "cmakeExecutable": "/usr/bin/cmake",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": "--verbose",
-      "inheritEnvironments": [ "linux_x64" ],
+      "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
+      "inheritEnvironments": [ "linux_x64", "up_ubuntu" ],
+      "intelliSenseMode": "linux-gcc-x64",
       "wslPath": "${defaultWSLPath}",
       "addressSanitizerRuntimeFlags": "detect_leaks=0",
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
-          "name": "UP_CXXFLAGS",
-          "value": "-Wall",
-          "type": "STRING"
-        },
-        {
-          "name": "CMAKE_CXX_COMPILER",
-          "value": "g++-10"
-        },
-        {
-          "name": "CMAKE_C_COMPILER",
-          "value": "gcc-10"
-        },
-        {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "NO",
-          "type": "BOOL"
-        },
-        {
           "name": "FETCHCONTENT_BASE_DIR",
           "value": "${projectDir}/deps/wsl",
           "type": "PATH"
@@ -178,81 +96,45 @@
         {
           "name": "UP_OUTPUT_DIR",
           "value": "${projectDir}/out",
-          "type": "STRING"
+          "type": "PATH"
         }
       ]
-    },
-    {
-      "name": "Linux via WSL (Debug Shared)",
-      "generator": "Ninja",
-      "configurationType": "Debug",
-      "buildRoot": "${projectDir}/out/wsl-debug-shared/build",
-      "installRoot": "${projectDir}/out/wsl-debug-shared/install",
-      "cmakeExecutable": "/usr/bin/cmake",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": "--verbose",
-      "inheritEnvironments": [ "linux_x64" ],
-      "enableMicrosoftCodeAnalysis": false,
-      "enableClangTidyCodeAnalysis": false,
-      "variables": [
-        {
-          "name": "UP_CXXFLAGS",
-          "value": "-Wall",
-          "type": "STRING"
-        },
-        {
-          "name": "CMAKE_CXX_COMPILER",
-          "value": "g++-10"
-        },
-        {
-          "name": "CMAKE_C_COMPILER",
-          "value": "gcc-10"
-        },
-        {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "YES",
-          "type": "BOOL"
-        },
-        {
-          "name": "FETCHCONTENT_BASE_DIR",
-          "value": "${projectDir}/deps/wsl",
-          "type": "PATH"
-        },
-        {
-          "name": "UP_OUTPUT_DIR",
-          "value": "${projectDir}/out",
-          "type": "STRING"
-        }
-      ],
-      "wslPath": "${defaultWSLPath}",
-      "addressSanitizerRuntimeFlags": "detect_leaks=0"
     },
     {
       "name": "clang-debug-static",
       "description": "Clang (Debug Static)",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "buildRoot": "${env.UP_OUTPUT_DIR}/${name}/build",
-      "installRoot": "${env.UP_OUTPUT_DIR}/${name}/install",
       "inheritEnvironments": [ "clang_cl_x64_x64", "up_clang" ],
+      "intelliSenseMode": "windows-clang-x64",
       "enableMicrosoftCodeAnalysis": false,
-      "enableClangTidyCodeAnalysis": false
+      "enableClangTidyCodeAnalysis": false,
+      "variables": [
+        {
+          "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
+          "value": "ON",
+          "type": "BOOL"
+        }
+      ]
     },
     {
       "name": "clang-debug-shared",
       "description": "Clang (Debug Shared)",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "buildRoot": "${env.UP_OUTPUT_DIR}/${name}/build",
-      "installRoot": "${env.UP_OUTPUT_DIR}/${name}/install",
       "inheritEnvironments": [ "clang_cl_x64_x64", "up_clang" ],
+      "intelliSenseMode": "windows-clang-x64",
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
           "name": "BUILD_SHARED_LIBS",
           "value": "YES",
+          "type": "BOOL"
+        },
+        {
+          "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
+          "value": "ON",
           "type": "BOOL"
         }
       ]
