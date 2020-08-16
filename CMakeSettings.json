@@ -1,4 +1,12 @@
 {
+  "environments": [
+    {
+      "environment": "up_clang",
+      "CXXFLAGS": "-Wno-pragma-pack -Wno-deprecated-volatile",
+      "UP_CXXFLAGS": "/W3 /WX /FC",
+      "UP_OUTPUT_DIR": "${projectDir}/out"
+    }
+  ],
   "configurations": [
     {
       "name": "Windows (Debug)",
@@ -221,27 +229,31 @@
       "addressSanitizerRuntimeFlags": "detect_leaks=0"
     },
     {
-      "name": "Clang (Debug Static)",
+      "name": "clang-debug-static",
+      "description": "Clang (Debug Static)",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "buildRoot": "${projectDir}/out/clang-debug-static/build",
-      "installRoot": "${projectDir}/out/clang-debug-static/install",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": "--verbose",
-      "inheritEnvironments": [ "clang_cl_x64" ],
+      "buildRoot": "${env.UP_OUTPUT_DIR}/${name}/build",
+      "installRoot": "${env.UP_OUTPUT_DIR}/${name}/install",
+      "inheritEnvironments": [ "clang_cl_x64_x64", "up_clang" ],
+      "enableMicrosoftCodeAnalysis": false,
+      "enableClangTidyCodeAnalysis": false
+    },
+    {
+      "name": "clang-debug-shared",
+      "description": "Clang (Debug Shared)",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${env.UP_OUTPUT_DIR}/${name}/build",
+      "installRoot": "${env.UP_OUTPUT_DIR}/${name}/install",
+      "inheritEnvironments": [ "clang_cl_x64_x64", "up_clang" ],
       "enableMicrosoftCodeAnalysis": false,
       "enableClangTidyCodeAnalysis": false,
       "variables": [
         {
-          "name": "UP_CXXFLAGS",
-          "value": "-Wall",
-          "type": "STRING"
-        },
-        {
-          "name": "UP_OUTPUT_DIR",
-          "value": "${projectDir}/out",
-          "type": "PATH"
+          "name": "BUILD_SHARED_LIBS",
+          "value": "YES",
+          "type": "BOOL"
         }
       ]
     }
