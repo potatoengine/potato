@@ -13,6 +13,7 @@ target_include_directories(flatbuffers_flatlib
 )
 target_compile_definitions(flatbuffers_flatlib PRIVATE
     -DFLATBUFFERS_LOCALE_INDEPENDENT=1
+    -D_CRT_SECURE_NO_WARNINGS=1
 )
 target_compile_features(flatbuffers_flatlib PUBLIC
     cxx_std_17

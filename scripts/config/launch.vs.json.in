@@ -8,6 +8,19 @@
       "projectTarget": "libruntime_test.exe (bin\\libruntime_test.exe)",
       "name": "libruntime_test.exe (bin\\libruntime_test.exe)",
       "currentDir": "@UP_ROOT_DIR@/source/libruntime/tests/fixtures"
+    },
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "recon.exe (bin\\recon.exe)",
+      "name": "recon.exe (bin\\recon.exe)",
+      "currentDir": "@CMAKE_BINARY_DIR@",
+      "args": [
+        "--build",
+        "@CMAKE_BINARY_DIR@",
+        "--target",
+        "potato_convert_all"
+      ]
     }
   ]
 }

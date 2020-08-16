@@ -61,7 +61,7 @@ void up::shell::FileTreeEditor::content() {
             ImGui::Text("-");
         }
         else {
-            ImGui::Text("%lu", cached.size);
+            ImGui::Text("%lu", narrow_cast<unsigned long>(cached.size));
         }
         ImGui::NextColumn();
         auto ext = path::extension(cached.name);

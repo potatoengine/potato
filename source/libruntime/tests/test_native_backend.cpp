@@ -31,7 +31,7 @@ TEST_CASE("up::fs", "[potato][runtime]") {
 
     SECTION("openRead") {
         auto inFile = openRead("test.txt", OpenMode::Text);
-        CHECK(inFile.isOpen());
+        REQUIRE(inFile.isOpen());
 
         byte buffer[1024];
         span<byte> bspan(buffer);
@@ -64,7 +64,7 @@ TEST_CASE("up::fs", "[potato][runtime]") {
 
     SECTION("stat") {
         auto const [rs, stat] = fileStat("test.txt");
-        CHECK(rs == IOResult::Success);
+        REQUIRE(rs == IOResult::Success);
         CHECK(stat.type == FileType::Regular);
 
         // note: can't test size (Windows/UNIX line endings!) or mtime (git)

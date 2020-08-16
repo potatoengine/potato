@@ -1,11 +1,21 @@
 cmake_minimum_required(VERSION 3.16)
 project(potato VERSION 0.1 LANGUAGES CXX C)
 
-if(NOT UP_ROOT_DIR)
-    set(UP_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Root source directory")
-    file(TO_CMAKE_PATH "${UP_ROOT_DIR}" UP_ROOT_DIR)
+set(UP_DEFAULT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+if(DEFINED ENV{UP_ROOT_DIR})
+    set(UP_DEFAULT_ROOT_DIR "$ENV{UP_ROOT_DIR}")
 endif()
-set(UP_OUTPUT_DIR "${CMAKE_BINARY_DIR}" CACHE PATH "Output directory")
+
+set(UP_DEFAULT_OUTPUT_DIR "${CMAKE_BINARY_DIR}")
+if(DEFINED ENV{UP_OUTPUT_DIR})
+    set(UP_DEFAULT_OUTPUT_DIR "$ENV{UP_OUTPUT_DIR}")
+endif()
+
+set(UP_ROOT_DIR "${UP_DEFAULT_ROOT_DIR}" CACHE PATH "Root source directory")
+set(UP_OUTPUT_DIR "${UP_DEFAULT_OUTPUT_DIR}" CACHE PATH "Output directory")
+set(UP_CXXFLAGS "$ENV{UP_CXXFLAGS}" CACHE PATH "CXXFLAGS for Potato libraries and applications (not dependencies)")
+
+file(TO_CMAKE_PATH "${UP_ROOT_DIR}" UP_ROOT_DIR)
 file(TO_CMAKE_PATH "${UP_OUTPUT_DIR}" UP_OUTPUT_DIR)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

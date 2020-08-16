@@ -26,7 +26,7 @@ namespace {
             LPCSTR pFileName,
             LPCVOID pParentData,
             LPCVOID* ppData,
-            UINT* pBytes) override {
+            UINT* pBytes) noexcept override {
             up::string absolutePath = up::path::join(_folder, pFileName);
 
             _ctx.logger().info("Including `{}'", absolutePath);
@@ -47,7 +47,7 @@ namespace {
             return S_OK;
         }
 
-        HRESULT __stdcall Close(LPCVOID pData) override { return S_OK; }
+        HRESULT __stdcall Close(LPCVOID pData) noexcept override { return S_OK; }
 
         up::ImporterContext& _ctx;
         up::string_view _folder;
