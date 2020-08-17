@@ -21,6 +21,8 @@ jobs:
           lfs: true
       - name: Set Environment
         run: echo "::set-env name=DEPS::$Env:HOME\deps"
+      - name: Install Problem Matchers
+        uses: Trass3r/setup-cpp@v1
       - name: Install SDL2 SDK
         run: |
           curl -s -S -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip
@@ -79,6 +81,8 @@ jobs:
       - uses: actions/checkout@master
         with:
           lfs: true
+      - name: Install Problem Matchers
+        uses: Trass3r/setup-cpp@v1
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
