@@ -17,8 +17,6 @@ namespace {
         CallstackHelper();
         ~CallstackHelper();
 
-        invalid();
-
         CallstackHelper(CallstackHelper const&) = delete;
         CallstackHelper& operator=(CallstackHelper const&) = delete;
 

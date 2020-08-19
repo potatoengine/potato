@@ -14,8 +14,6 @@
 auto up::callstack::readTrace(span<uintptr> addresses, uint skip) -> span<uintptr> {
     void* buffer = nullptr;
 
-    invalid();
-
     uint max = addresses.size() - min<uint>(addresses.size(), skip);
     uint count = backtrace(&buffer, max);
     skip = min(skip, count);
