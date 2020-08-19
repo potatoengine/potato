@@ -40,6 +40,7 @@ jobs:
         env:
           CXX: cl.exe
           CC: cl.exe
+          CXXFLAGS: /FC
         run: |
           mkdir build
           cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="$Env:DEPS/assimp-4.1.0"
@@ -64,7 +65,7 @@ jobs:
             packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
-            cxxflags: -stdlib=libc++
+            cxxflags: -stdlib=libc++ -fdiagnostics-absolute-paths
             warnings: -Wall -Werror -Wno-deprecated-volatile # GLM triggers deprecated-volatile
             packages: clang-10 libc++-10-dev libc++abi-10-dev
     
@@ -133,12 +134,12 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@v2
       - name: Configure
         env:
-          CXXFLAGS: -stdlib=libc++
+          CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths
           CXX: clang++-10
           CC: clang-10
         run: |
           mkdir -p build
-          cmake -S . -B build -G Ninja -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-10" "-DCMAKE_BUILD_TYPE:STRING=Debug"
+          cmake -S . -B build -G Ninja "-DUP_CXXFLAGS:STRING=-Wno-deprecated-volatile" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-10" "-DCMAKE_BUILD_TYPE:STRING=Debug"
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
 
