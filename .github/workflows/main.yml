@@ -31,9 +31,9 @@ jobs:
           curl -s -S -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
           unzip assimp-4.1.0.zip -d "$Env:DEPS"
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
+        uses: seanmiddleditch/gha-setup-ninja@v2
       - name: Setup VS Environment
-        uses: seanmiddleditch/gha-setup-vsdevenv@master
+        uses: seanmiddleditch/gha-setup-vsdevenv@v2
       - name: Configure
         env:
           CXX: cl.exe
@@ -80,7 +80,7 @@ jobs:
         with:
           lfs: true
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
+        uses: seanmiddleditch/gha-setup-ninja@v2
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
@@ -126,7 +126,7 @@ jobs:
         with:
           lfs: true
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
+        uses: seanmiddleditch/gha-setup-ninja@v2
       - name: Configure
         env:
           CXXFLAGS: -stdlib=libc++
@@ -155,7 +155,7 @@ jobs:
         with:
           lfs: true
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
+        uses: seanmiddleditch/gha-setup-ninja@v2
       - name: Configure
         env:
           CXX: 'g++-10'
@@ -188,7 +188,7 @@ jobs:
           path: html
         if: success() && github.event == 'push'
       - name: Publish to potatoengine.github.io
-        uses: seanmiddleditch/gha-publish-to-git@master
+        uses: seanmiddleditch/gha-publish-to-git@v2
         with:
           repository: potatoengine/potatoengine.github.io
           branch: master
