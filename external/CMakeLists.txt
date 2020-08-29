@@ -14,6 +14,7 @@ set(EXTERNALS
     sdl2_vc
     soloud
     nfd
+    sapc
 )
 
 # ---------------------------- #

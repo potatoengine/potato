@@ -36,3 +36,7 @@ FetchContent_Declare(nfd
     GIT_REPOSITORY https://github.com/mlabbe/nativefiledialog.git
     GIT_TAG release_116
 )
+FetchContent_Declare(sapc
+    GIT_REPOSITORY https://github.com/potatoengine/sapc.git
+    GIT_TAG v0.6-alpha
+)
