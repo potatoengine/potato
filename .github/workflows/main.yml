@@ -32,8 +32,8 @@ jobs:
           echo "::set-env name=SDL2DIR::$Env:DEPS\SDL2-2.0.12"
       - name: Install Assimp SDK
         run: |
-          curl -s -S -o assimp-4.1.0.zip -L https://grimmdeps.blob.core.windows.net/deps/assimp-4.1.0.zip
-          unzip assimp-4.1.0.zip -d "$Env:DEPS"
+          curl -s -S -o assimp-5.0.1.7z -L https://github.com/potatoengine/win-sdks/releases/download/assimp-5.0.1-x64/assimp-5.0.1-win-x64.7z
+          unzip assimp-5.0.1.7z -d "$Env:DEPS"
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@v2
       - name: Setup VS Environment
@@ -45,7 +45,7 @@ jobs:
           CXXFLAGS: /FC
         run: |
           mkdir build
-          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="$Env:DEPS/assimp-4.1.0"
+          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="$Env:DEPS/assimp-5.0.1"
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
       - name: Test
