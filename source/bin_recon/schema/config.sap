@@ -1,0 +1,5 @@
+module config;
+
+struct Config {
+    string source_path;
+}

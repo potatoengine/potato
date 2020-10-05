@@ -4,6 +4,7 @@ project(recon VERSION 0.1 LANGUAGES CXX)
 find_package(Assimp REQUIRED)
 
 include(up_copy_library_import)
+include(up_compile_sap)
 
 add_library(potato_librecon STATIC)
 up_set_common_properties(potato_librecon)
@@ -11,6 +12,12 @@ up_set_common_properties(potato_librecon)
 target_sources(potato_librecon PRIVATE
     "private/recon_app.cpp"
     "private/recon_config.cpp"
+)
+
+up_compile_sap(potato_librecon
+    NAME recon
+    SCHEMAS
+        schema/config.sap
 )
 
 target_link_libraries(potato_librecon

@@ -3,7 +3,7 @@ include(up_utility)
 function(up_compile_flat_schema TARGET)
     cmake_parse_arguments(ARG "" "NAME" "SCHEMAS" ${ARGN})
 
-    set(GEN_TGT "generate_schemas_${TARGET}")
+    set(GEN_TGT "generate_flat_schemas_${TARGET}")
     set(OUT_FILES)
 
     set(OUT_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
@@ -19,8 +19,6 @@ function(up_compile_flat_schema TARGET)
         set(OUT_FILE "${OUT_HEADER_DIR}/${GEN_HEADER_NAME}")
 
         list(APPEND OUT_FILES ${OUT_FILE})
-
-        message(STATUS "Compiling schema ${FILE} to ${OUT_FILE}")
 
         add_custom_command(
             OUTPUT "${OUT_FILE}"
