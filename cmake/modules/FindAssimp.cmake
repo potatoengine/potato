@@ -5,7 +5,7 @@ INCLUDE(FindPackageHandleStandardArgs)
 
 function(FindAssimp)
     if(WIN32)
-        set(ASSIMP_MSVC_VERSION vc140)
+        set(ASSIMP_MSVC_VERSION vc142)
         set(ASSIMP_ARCHITECTURE x64)
 
         set(ASSIMP_ROOT_DIR CACHE PATH "ASSIMP root directory")

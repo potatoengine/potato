@@ -21,7 +21,7 @@ jobs:
         with:
           lfs: true
       - name: Set Environment
-        run: echo "::set-env name=DEPS::$Env:HOME\deps"
+        run: echo "DEPS=$Env:HOME\deps" | Out-File -FilePath "$Env:GITHUB_ENV" -Append
       - name: Install Problem Matchers
         uses: Trass3r/setup-cpp@v1
         if: matrix.config == 'Debug'
@@ -29,11 +29,13 @@ jobs:
         run: |
           curl -s -S -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip
           unzip SDL2-devel-2.0.9-VC.zip -d "$Env:DEPS"
-          echo "::set-env name=SDL2DIR::$Env:DEPS\SDL2-2.0.12"
+          echo "SDL2DIR=$Env:DEPS\SDL2-2.0.12" | Out-File -FilePath "$Env:GITHUB_ENV" -Append
       - name: Install Assimp SDK
         run: |
-          curl -s -S -o assimp-5.0.1.7z -L https://github.com/potatoengine/win-sdks/releases/download/assimp-5.0.1-x64/assimp-5.0.1-win-x64.7z
-          unzip assimp-5.0.1.7z -d "$Env:DEPS"
+          curl -s -S -o assimp-5.0.1-win-x64.7z -L https://github.com/potatoengine/win-sdks/releases/download/assimp-5.0.1-x64/assimp-5.0.1-win-x64.7z
+          7z x -o"$Env:DEPS" assimp-5.0.1-win-x64.7z
+          echo "ASSIMPDIR=$Env:DEPS\assimp-5.0.1-win-x64" | Out-File -FilePath "$Env:GITHUB_ENV" -Append
+          ls -R $Env:DEPS
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@v2
       - name: Setup VS Environment
@@ -45,7 +47,7 @@ jobs:
           CXXFLAGS: /FC
         run: |
           mkdir build
-          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES -DASSIMP_ROOT_DIR:PATH="$Env:DEPS/assimp-5.0.1"
+          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
       - name: Test
