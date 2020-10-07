@@ -27,7 +27,10 @@ public:
         return &_ptr;
     }
 
+    // clang-format in VC is behaving differently than clang-format-10 on CI
+    // clang-format off
     operator void* *() noexcept { return reinterpret_cast<void**>(operator P*()); }
+    // clang-format on
 
 private:
     P _ptr = nullptr;
