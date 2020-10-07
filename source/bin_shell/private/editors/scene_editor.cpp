@@ -93,7 +93,8 @@ void up::shell::SceneEditor::content() {
             id,
             nullptr,
             nullptr,
-            ImGuiButtonFlags_PressedOnClick | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle);
+            (int)ImGuiButtonFlags_PressedOnClick | (int)ImGuiButtonFlags_MouseButtonRight |
+                (int)ImGuiButtonFlags_MouseButtonMiddle);
         if (ImGui::IsItemActive()) {
             ImGui::CaptureMouseFromApp();
 

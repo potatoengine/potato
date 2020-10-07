@@ -6,7 +6,7 @@ FetchContent_Declare(catch2
 )
 FetchContent_Declare(imgui
     GIT_REPOSITORY https://github.com/potatoengine/imgui.git
-    GIT_TAG up20200701
+    GIT_TAG up20201004
 )
 FetchContent_Declare(glm
     GIT_REPOSITORY https://github.com/g-truc/glm.git
