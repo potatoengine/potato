@@ -128,10 +128,12 @@ jobs:
     steps:
       - name: Apt update
         run: sudo apt-get -yq update
+      - name: Install toolchain
+        run: |
+          sudo apt-get remove libllvm10
+          sudo apt-get -yq install cmake clang++-10 clang-tidy-10 libc++-10-dev libc++abi-10-dev
       - name: Install libraries
         run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
-      - name: Install toolchain
-        run: sudo apt-get -yq install cmake clang-tidy-10 libc++-10-dev libc++abi-10-dev
       - uses: actions/checkout@master
         with:
           lfs: true
