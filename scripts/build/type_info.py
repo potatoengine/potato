@@ -48,6 +48,7 @@ class TypeDatabase:
 
     def load_from_json(self, doc):
         AnnotationsBase.load_from_json(self, doc)
+        print(doc)
 
         self.__exports = [name for name in doc['exports']]
         for key,type_json in doc['types'].items():
@@ -164,6 +165,7 @@ class TypeField(AnnotationsBase):
         self.__type = None
         self.__default = None
         self.__has_default = False
+        self.__is_array = False
 
     @property
     def name(self):
@@ -174,8 +176,17 @@ class TypeField(AnnotationsBase):
         return self.get_annotation_field_or('cxxname', 'id', self.__name)
 
     @property
+    def cxxtype(self):
+        cxxname = self.__type.cxxname
+        return f"vector<{cxxname}>" if self.__is_array else cxxname
+
+    @property
     def type(self):
         return self.__type
+
+    @property
+    def is_array(self):
+        return self.__is_array
 
     @property
     def default_or(self, otherwise):
@@ -186,7 +197,12 @@ class TypeField(AnnotationsBase):
 
     def load_from_json(self, json):
         AnnotationsBase.load_from_json(self, json)
-        self.__type_name = json['type']
+        type = json['type']
+        if isinstance(type, str):
+            self.__type_name = json['type']
+        elif type['kind'] == 'array':
+            self.__type_name = type['of']
+            self.__is_array = True
         if 'default' in json:
             self.__default = json['default']
             self.__has_default = True

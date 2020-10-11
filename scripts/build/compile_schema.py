@@ -42,6 +42,7 @@ def generate_header(ctx: Context):
 // - Generated from {path.basename(ctx.input_name)}
 #pragma once
 #include "potato/spud/string.h"
+#include "potato/spud/vector.h"
 #include "potato/reflex/reflect.h"
 namespace up {{
     inline namespace schema {{
@@ -50,14 +51,12 @@ namespace up {{
     for name, type in ctx.db.exports.items():
         ctx.print(f"        struct {type.cxxname} {{\n")
         for field in type.fields_ordered:
-            ctx.print(f"            {field.type.cxxname} {field.cxxname};\n")
+            ctx.print(f"            {field.cxxtype} {field.cxxname};\n")
         ctx.print("        };\n")
-        ctx.print(f"""
-        UP_REFLECT_TYPE({type.cxxname}) {{
-            reflect("{field.name}", &Type::{field.cxxname});
-        }}
-
-""")
+        ctx.print(f"      UP_REFLECT_TYPE({type.cxxname}) {{\n")
+        for field in type.fields_ordered:
+            ctx.print(f"""            reflect("{field.name}", &Type::{field.cxxname});\n""")
+        ctx.print("     }\n")
 
     ctx.print(f"""
     }} // namespace up::schema
