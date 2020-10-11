@@ -2,7 +2,10 @@ module config;
 
 attribute required { bool required = true; }
 attribute cxxname { string id; }
+attribute json { string name; }
+attribute serialize {}
 
+[serialize]
 struct ImportMapping {
     [required]
     string pattern;
@@ -10,8 +13,9 @@ struct ImportMapping {
     string importer;
 }
 
+[serialize]
 struct Config {
-    [required, cxxname("sourceFolderPath")]
-    string source_folder_path;
+    [required, cxxname("sourceFolderPath"), json("sourceDir")]
+    string source_dir;
     ImportMapping[] mapping;
 }
