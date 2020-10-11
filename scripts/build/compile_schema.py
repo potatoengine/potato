@@ -32,6 +32,57 @@ class Context:
         self.__output.write(''.join(*args))
         print(*args, end='')
 
+def generate_header_types(ctx: Context):
+    """Generates the type definitions for types"""
+    for name, type in ctx.db.exports.items():
+        ctx.print(f"struct {type.cxxname} {{\n")
+        for field in type.fields_ordered:
+            ctx.print(f"    {field.cxxtype} {field.cxxname};\n")
+        ctx.print("};\n")
+
+def generate_header_reflex(ctx: Context):
+    """Generates the reflex definitions for types"""
+    for name, type in ctx.db.exports.items():
+        ctx.print(f"UP_REFLECT_TYPE({type.cxxname}) {{\n")
+        for field in type.fields_ordered:
+            ctx.print(f'    reflect("{field.name}", &Type::{field.cxxname});\n')
+        ctx.print("}\n")
+
+def generate_header_json_parse(ctx: Context):
+    """Generates json parsing functions for types"""
+    for name, type in ctx.db.exports.items():
+        if not type.has_annotation("serialize"):
+            continue
+
+        ctx.print(f"inline void from_json(nlohmann::json const& root, {type.cxxname}& value) {{\n")
+        ctx.print("""
+    if (!root.is_object()) {
+        return;
+    }
+""")
+        for field in type.fields_ordered:
+            json_name = field.get_annotation_field_or("json", "name", field.name)
+
+            if field.is_array:
+                ctx.print(f'''
+    if (auto it = root.find("{json_name}"); it != root.end() && it->is_array()) {{
+        for (auto const& child : *it) {{
+            child.get_to(value.{field.cxxname}.emplace_back());
+        }}
+    }}
+''')
+            else:
+                ctx.print(f'''
+    if (auto it = root.find("{json_name}"); it != root.end()) {{
+         it->get_to(value.{field.cxxname});
+    }}
+''')
+
+            if field.has_default:
+                ctx.print("    else {\n        value.{field.cxxname} = {field.default_or(None)};\n    }\n")
+
+        ctx.print("}\n")
+
 def generate_header(ctx: Context):
     """Executor for the brunt of code generation"""
 
@@ -44,19 +95,15 @@ def generate_header(ctx: Context):
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
 #include "potato/reflex/reflect.h"
+#include "potato/runtime/json.h"
+#include <nlohmann/json.hpp>
 namespace up {{
     inline namespace schema {{
 """)
 
-    for name, type in ctx.db.exports.items():
-        ctx.print(f"        struct {type.cxxname} {{\n")
-        for field in type.fields_ordered:
-            ctx.print(f"            {field.cxxtype} {field.cxxname};\n")
-        ctx.print("        };\n")
-        ctx.print(f"      UP_REFLECT_TYPE({type.cxxname}) {{\n")
-        for field in type.fields_ordered:
-            ctx.print(f"""            reflect("{field.name}", &Type::{field.cxxname});\n""")
-        ctx.print("     }\n")
+    generate_header_types(ctx)
+    generate_header_reflex(ctx)
+    generate_header_json_parse(ctx)
 
     ctx.print(f"""
     }} // namespace up::schema

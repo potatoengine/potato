@@ -195,6 +195,10 @@ class TypeField(AnnotationsBase):
         else:
             return self.__default
 
+    @property
+    def has_default(self):
+        return self.__has_default
+
     def load_from_json(self, json):
         AnnotationsBase.load_from_json(self, json)
         type = json['type']
