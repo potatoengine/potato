@@ -71,7 +71,7 @@ configure_file(
 )
 
 add_custom_target(potato_convert_all
-    COMMAND potato_recon -source "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+    COMMAND potato_recon -source "${CMAKE_CURRENT_SOURCE_DIR}/resources" -config "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/recon.config.json"
     DEPENDS potato_recon
     COMMAND echo "Conversion complete!"
     WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"

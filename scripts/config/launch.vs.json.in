@@ -16,10 +16,10 @@
       "name": "recon.exe (bin\\recon.exe)",
       "currentDir": "@CMAKE_BINARY_DIR@",
       "args": [
-        "--build",
-        "@CMAKE_BINARY_DIR@",
-        "--target",
-        "potato_convert_all"
+        "-source",
+        "@UP_ROOT_DIR@/resources",
+        "-config",
+        "@CMAKE_BINARY_DIR@/recon.config.json"
       ]
     }
   ]
