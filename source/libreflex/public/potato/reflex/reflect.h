@@ -77,5 +77,5 @@ namespace up::reflex {
         return (#T); \
     } \
     /* NOLINTNEXTLINE(bugprone-macro-parentheses) */ \
-    template <typename _up_ReflectObject> \
+    template <typename _up_ReflectObject, typename Type = T> \
     inline void serialize_value(::up::tag<T>, _up_ReflectObject& reflect)
