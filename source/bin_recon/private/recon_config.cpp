@@ -112,7 +112,7 @@ bool up::recon::parseConfigString(ReconConfig& config, string_view json, zstring
                 continue;
             }
 
-            ReconConfig::ImportMapping mapping;
+            ReconConfigImportMapping mapping;
             if (auto jsonMappingPattern = jsonMapping["pattern"]; jsonMappingPattern.is_string()) {
                 mapping.pattern = jsonMappingPattern.get<string>();
             }

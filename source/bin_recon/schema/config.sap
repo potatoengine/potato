@@ -3,7 +3,15 @@ module config;
 attribute required { bool required = true; }
 attribute cxxname { string id; }
 
+struct ImportMapping {
+    [required]
+    string pattern;
+    [required]
+    string importer;
+}
+
 struct Config {
-    [required, cxxname("sourcePath")]
-    string source_path;
+    [required, cxxname("sourceFolderPath")]
+    string source_folder_path;
+    ImportMapping[] mapping;
 }
