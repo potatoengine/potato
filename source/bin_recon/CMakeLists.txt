@@ -24,6 +24,7 @@ target_link_libraries(potato_librecon
     PUBLIC
         potato::libruntime
         potato::libtools
+        potato::libreflex
     PRIVATE
         assimp
 )

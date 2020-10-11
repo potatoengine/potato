@@ -2,6 +2,7 @@
 
 #include "recon_config.h"
 
+#include "potato/recon/config_schema.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/logger.h"

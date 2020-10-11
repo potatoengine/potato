@@ -1,5 +1,9 @@
 module config;
 
+attribute required { bool required = true; }
+attribute cxxname { string id; }
+
 struct Config {
+    [required, cxxname("sourcePath")]
     string source_path;
 }
