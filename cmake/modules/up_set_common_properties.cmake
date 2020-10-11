@@ -51,6 +51,15 @@ function(up_set_common_properties TARGET)
         message(FATAL_ERROR "Target '${TARGET}' has unknown type '${TARGET_TYPE}'")
     endif()
 
+    # Save potato properties on target
+    #
+    if (NOT IS_INTERFACE)
+        set_target_properties(${TARGET} PROPERTIES
+            POTATO_SHORT_NAME "${SHORT_NAME}"
+            POTATO_TARGET_TYPE "${TYPE}"
+        )
+    endif()
+
     # Set output name
     #
     if (NOT IS_INTERFACE)
