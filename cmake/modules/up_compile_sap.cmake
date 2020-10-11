@@ -49,7 +49,7 @@ function(up_compile_sap TARGET)
         #target_sources(${TARGET} PRIVATE "${JSON_FILE}" "${GENERATED_SOURCE_FILE}")
 
         add_custom_command(
-            OUTPUT "${JSON_FILE}" "${GENERATED_SOURCE_FILE}"
+            OUTPUT "${JSON_FILE}" "${GENERATED_HEADER_FILE}"
             COMMAND sapc -o "${JSON_FILE}"
                     "-I${CMAKE_CURRENT_SOURCE_DIR}"
                     -- "${SOURCE_FILE}"
