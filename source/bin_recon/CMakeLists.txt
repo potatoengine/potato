@@ -15,7 +15,6 @@ target_sources(potato_librecon PRIVATE
 )
 
 up_compile_sap(potato_librecon
-    NAME recon
     SCHEMAS
         schema/config.sap
 )

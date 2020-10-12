@@ -5,7 +5,7 @@ from enum import Enum
 class TypeKind(Enum):
     """Type kinds differentiate declarations such as structs and enums"""
 
-    ANNOTATION = "attribute"
+    ATTRIBUTE = "attribute"
     OPAQUE = "opaque"
     STRUCT = "struct"
     ENUM = "enum"
@@ -48,15 +48,15 @@ class TypeDatabase:
 
     def load_from_json(self, doc):
         AnnotationsBase.load_from_json(self, doc)
-        print(doc)
 
+        self.__module = doc['module']
         self.__exports = [name for name in doc['exports']]
         for key,type_json in doc['types'].items():
             kind = type_json['kind']
             if kind == TypeKind.STRUCT.value:
                 type = TypeStruct(self, name=key)
-            elif kind == TypeKind.ANNOTATION.value:
-                type = TypeAnnotation(self, name=key)
+            elif kind == TypeKind.ATTRIBUTE.value:
+                type = TypeAttribute(self, name=key)
             elif kind == TypeKind.OPAQUE.value:
                 type = TypeOpaque(self, name=key)
             else:
@@ -150,7 +150,7 @@ class TypeStruct(TypeBase):
         for field in self.__fields.values():
             field.resolve(db)
 
-class TypeAnnotation(TypeStruct):
+class TypeAttribute(TypeStruct):
     """User-friendly wrapper for an annotation struct"""
     @property
     def kind(self):
