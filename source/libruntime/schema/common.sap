@@ -1,0 +1,6 @@
+module common;
+
+attribute required { bool required = true; }
+attribute cxxname { string id; }
+attribute json { string name; }
+attribute serialize {}
