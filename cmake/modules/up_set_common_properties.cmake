@@ -154,9 +154,11 @@ function(up_set_common_properties TARGET)
     if(NOT IS_TEST)
         target_include_directories(${TARGET} ${PUBLIC_INTERFACE}
             $<INSTALL_INTERFACE:public>
+            $<INSTALL_INTERFACE:schema>
         )
         target_include_directories(${TARGET} INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/schema>
         )
     endif()
 

@@ -18,7 +18,6 @@ function(up_compile_sap TARGET)
     set(OUT_FILES)
 
     get_target_property(SHORT_NAME ${TARGET} POTATO_SHORT_NAME)
-    get_target_property(TARGET_TYPE ${TARGET} TYPE)
 
     set(OUT_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/gen")
     set(OUT_JSON_DIR "${OUT_ROOT_DIR}/json")
@@ -26,12 +25,8 @@ function(up_compile_sap TARGET)
     set(OUT_HEADER_DIR "${OUT_ROOT_DIR}/inc")
     set(OUT_HEADER_FULL_DIR "${OUT_HEADER_DIR}/potato/${SHORT_NAME}")
 
-    if(${TARGET_TYPE} STREQUAL INTERFACE_LIBRARY)
-        target_include_directories(${TARGET} INTERFACE ${OUT_HEADER_DIR})
-    else()
-        target_include_directories(${TARGET} PUBLIC ${OUT_HEADER_DIR})
-        target_include_directories(${TARGET} PRIVATE ${OUT_HEADER_FULL_DIR})
-    endif()
+    target_include_directories(${TARGET} PUBLIC ${OUT_HEADER_DIR})
+    target_include_directories(${TARGET} PRIVATE ${OUT_HEADER_FULL_DIR})
 
     file(MAKE_DIRECTORY ${OUT_JSON_DIR})
     file(MAKE_DIRECTORY ${OUT_SOURCE_DIR})
@@ -53,6 +48,7 @@ function(up_compile_sap TARGET)
             OUTPUT "${JSON_FILE}" "${GENERATED_SOURCE_FILE}" "${GENERATED_HEADER_FILE}"
             COMMAND sapc -o "${JSON_FILE}"
                     "-I${CMAKE_CURRENT_SOURCE_DIR}"
+                    "-I$<JOIN:$<TARGET_PROPERTY:${TARGET},INTERFACE_INCLUDE_DIRECTORIES>,;-I>"
                     -- "${INPUT_SAP_FILE}"
             COMMAND Python3::Interpreter
                     -B "${SAP_SCHEMA_COMPILE_ENTRY}"
@@ -66,6 +62,7 @@ function(up_compile_sap TARGET)
                     -o "${GENERATED_SOURCE_FILE}"
             MAIN_DEPENDENCY "${INPUT_SAP_FILE}"
             DEPENDS sapc "${SAP_SCHEMA_COMPILE_FILES}"
+            COMMAND_EXPAND_LISTS
         )
     endforeach()
 
