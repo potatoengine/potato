@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "potato/recon/config_schema.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/span.h"
 #include "potato/spud/std_iostream.h"
@@ -11,15 +12,8 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up::recon {
-    struct ReconConfig {
-        string sourceFolderPath;
-
-        struct ImportMapping {
-            string pattern;
-            string importer;
-        };
-        vector<ImportMapping> mapping;
-    };
+    using ReconConfig = schema::Config;
+    using ReconConfigImportMapping = schema::ImportMapping;
 
     bool parseArguments(ReconConfig& config, span<char const*> args, Logger& logger);
     bool parseConfigFile(ReconConfig& config, zstring_view path, Logger& logger);

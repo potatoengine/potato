@@ -1,15 +1,15 @@
 # Build output directory
-out/
-build/
+/out/
+/build/
 
 # Cache directories
-deps/
+/deps/
 
 # Application directories
-.vs/
-.vscode/
+/.vs/
+/.vscode/
 
 # Generated files
-tasks.vs.json
-launch.vs.json
-resources/.library
+/tasks.vs.json
+/launch.vs.json
+/resources/.library

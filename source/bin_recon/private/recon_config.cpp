@@ -2,6 +2,7 @@
 
 #include "recon_config.h"
 
+#include "potato/recon/config_schema.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/logger.h"
@@ -101,29 +102,6 @@ bool up::recon::parseConfigString(ReconConfig& config, string_view json, zstring
         return false;
     }
 
-    if (auto jsonSourceDir = jsonRoot["sourceDir"]; jsonSourceDir.is_string()) {
-        config.sourceFolderPath = jsonSourceDir.get<string>();
-    }
-
-    if (auto jsonMappings = jsonRoot["mapping"]; jsonMappings.is_array()) {
-        for (auto jsonMapping : jsonMappings) {
-            if (!jsonMapping.is_object()) {
-                continue;
-            }
-
-            ReconConfig::ImportMapping mapping;
-            if (auto jsonMappingPattern = jsonMapping["pattern"]; jsonMappingPattern.is_string()) {
-                mapping.pattern = jsonMappingPattern.get<string>();
-            }
-            if (auto jsonMappingImporter = jsonMapping["importer"]; jsonMappingImporter.is_string()) {
-                mapping.importer = jsonMappingImporter.get<string>();
-            }
-
-            if (!mapping.pattern.empty()) {
-                config.mapping.push_back(std::move(mapping));
-            }
-        }
-    }
-
+    jsonRoot.get_to(config);
     return true;
 }

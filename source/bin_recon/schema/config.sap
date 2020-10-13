@@ -1,0 +1,18 @@
+module config;
+
+import common;
+
+[serialize]
+struct ImportMapping {
+    [required]
+    string pattern;
+    [required]
+    string importer;
+}
+
+[serialize]
+struct Config {
+    [required, cxxname("sourceFolderPath"), json("sourceDir")]
+    string source_dir;
+    ImportMapping[] mapping;
+}

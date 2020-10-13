@@ -51,6 +51,15 @@ function(up_set_common_properties TARGET)
         message(FATAL_ERROR "Target '${TARGET}' has unknown type '${TARGET_TYPE}'")
     endif()
 
+    # Save potato properties on target
+    #
+    if (NOT IS_INTERFACE)
+        set_target_properties(${TARGET} PROPERTIES
+            POTATO_SHORT_NAME "${SHORT_NAME}"
+            POTATO_TARGET_TYPE "${TYPE}"
+        )
+    endif()
+
     # Set output name
     #
     if (NOT IS_INTERFACE)
@@ -145,9 +154,11 @@ function(up_set_common_properties TARGET)
     if(NOT IS_TEST)
         target_include_directories(${TARGET} ${PUBLIC_INTERFACE}
             $<INSTALL_INTERFACE:public>
+            $<INSTALL_INTERFACE:schema>
         )
         target_include_directories(${TARGET} INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/schema>
         )
     endif()
 

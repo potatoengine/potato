@@ -34,16 +34,16 @@ namespace {
     };
 
     UP_REFLECT_TYPE(Fields) {
-        reflect("x", &Fields::x);
-        reflect("y", &Fields::y);
-        reflect("z", &Fields::z);
+        reflect("x", &Type::x);
+        reflect("y", &Type::y);
+        reflect("z", &Type::z);
     }
 
     UP_REFLECT_TYPE(Complex) {
-        reflect("xyz", &Complex::xyz);
-        reflect("num", &Complex::num, up::reflex::JsonName("custom"));
-        reflect("name", &Complex::name);
-        reflect("vec", &Complex::vec);
+        reflect("xyz", &Type::xyz);
+        reflect("num", &Type::num, up::reflex::JsonName("custom"));
+        reflect("name", &Type::name);
+        reflect("vec", &Type::vec);
     }
 } // namespace
 
