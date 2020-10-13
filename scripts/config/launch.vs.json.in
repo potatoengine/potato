@@ -19,7 +19,7 @@
         "-source",
         "@UP_ROOT_DIR@/resources",
         "-config",
-        "@CMAKE_BINARY_DIR@/recon.config.json"
+        "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@/recon.config.json"
       ]
     }
   ]
