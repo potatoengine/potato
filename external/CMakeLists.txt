@@ -5,6 +5,7 @@ include(config.cmake)
 # List of dependencies to include
 #
 set(EXTERNALS
+    assimp_win64
     catch2
     imgui
     glm

@@ -24,6 +24,10 @@ FetchContent_Declare(sdl2_vc_sdk
     URL https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip
     URL_HASH SHA1=6839B6EC345EF754A6585AB24F04E125E88C3392
 )
+FetchContent_Declare(assimp_win64_sdk
+    URL https://github.com/potatoengine/win-sdks/releases/download/assimp-5.0.1-x64/assimp-5.0.1-win-x64.7z
+    URL_HASH SHA1=8D96964E9E6946D39E187D6740BC5D2B21408BE2
+)
 FetchContent_Declare(flatbuffers
     GIT_REPOSITORY https://github.com/google/flatbuffers.git
     GIT_TAG v1.12.0
