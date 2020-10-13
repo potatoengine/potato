@@ -37,6 +37,7 @@ function(up_compile_sap TARGET)
 
         up_path_combine(${CMAKE_CURRENT_SOURCE_DIR} ${FILE} INPUT_SAP_FILE)
         up_path_combine(${OUT_JSON_DIR} ${FILE_NAME}.json JSON_FILE)
+        up_path_combine(${OUT_JSON_DIR} ${FILE_NAME}.json.d JSON_DEP_FILE)
         up_path_combine(${OUT_SOURCE_DIR} ${FILE_NAME}_gen.cpp GENERATED_SOURCE_FILE)
         up_path_combine(${OUT_HEADER_FULL_DIR} ${FILE_NAME}_schema.h GENERATED_HEADER_FILE)
         
@@ -45,11 +46,20 @@ function(up_compile_sap TARGET)
         target_sources(${TARGET} PRIVATE "${JSON_FILE}" "${GENERATED_SOURCE_FILE}")
 
         add_custom_command(
-            OUTPUT "${JSON_FILE}" "${GENERATED_SOURCE_FILE}" "${GENERATED_HEADER_FILE}"
+            OUTPUT "${JSON_FILE}"
             COMMAND sapc -o "${JSON_FILE}"
+                    -d "${JSON_DEP_FILE}"
                     "-I${CMAKE_CURRENT_SOURCE_DIR}"
                     "-I$<JOIN:$<TARGET_PROPERTY:${TARGET},INTERFACE_INCLUDE_DIRECTORIES>,;-I>"
                     -- "${INPUT_SAP_FILE}"
+            MAIN_DEPENDENCY "${INPUT_SAP_FILE}"
+            DEPENDS sapc
+            DEPFILE "${JSON_DEP_FILE}"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMAND_EXPAND_LISTS
+        )
+        add_custom_command(
+            OUTPUT "${GENERATED_SOURCE_FILE}" "${GENERATED_HEADER_FILE}"
             COMMAND Python3::Interpreter
                     -B "${SAP_SCHEMA_COMPILE_ENTRY}"
                     -G header
@@ -60,9 +70,8 @@ function(up_compile_sap TARGET)
                     -G source
                     -i "${JSON_FILE}"
                     -o "${GENERATED_SOURCE_FILE}"
-            MAIN_DEPENDENCY "${INPUT_SAP_FILE}"
-            DEPENDS sapc "${SAP_SCHEMA_COMPILE_FILES}"
-            COMMAND_EXPAND_LISTS
+            MAIN_DEPENDENCY "${JSON_FILE}"
+            DEPENDS "${SAP_SCHEMA_COMPILE_FILES}"
         )
     endforeach()
 
