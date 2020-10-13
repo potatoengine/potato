@@ -38,5 +38,5 @@ FetchContent_Declare(nfd
 )
 FetchContent_Declare(sapc
     GIT_REPOSITORY https://github.com/potatoengine/sapc.git
-    GIT_TAG v0.9-beta
+    GIT_TAG v0.10-beta
 )
