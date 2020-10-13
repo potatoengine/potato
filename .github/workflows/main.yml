@@ -27,9 +27,9 @@ jobs:
         if: matrix.config == 'Debug'
       - name: Install SDL2 SDK
         run: |
-          curl -s -S -o SDL2-devel-2.0.9-VC.zip -L https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip
-          unzip SDL2-devel-2.0.9-VC.zip -d "$Env:DEPS"
-          echo "SDL2DIR=$Env:DEPS\SDL2-2.0.12" | Out-File -FilePath "$Env:GITHUB_ENV" -Append
+          curl -s -S -o SDL2-2.0.12-win-x64.7z -L https://github.com/potatoengine/win-sdks/releases/download/sdl2-2.0.12-x64/SDL2-2.0.12-win-x64.7z
+          7z x -o"$Env:DEPS" SDL2-2.0.12-win-x64.7z 
+          echo "SDL2DIR=$Env:DEPS\SDL2-2.0.12-win-x64" | Out-File -FilePath "$Env:GITHUB_ENV" -Append
       - name: Install Assimp SDK
         run: |
           curl -s -S -o assimp-5.0.1-win-x64.7z -L https://github.com/potatoengine/win-sdks/releases/download/assimp-5.0.1-x64/assimp-5.0.1-win-x64.7z
