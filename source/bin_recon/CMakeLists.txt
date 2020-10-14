@@ -26,6 +26,7 @@ target_link_libraries(potato_librecon
         potato::libreflex
     PRIVATE
         assimp
+        sqlite3
 )
 
 add_executable(potato_recon)
