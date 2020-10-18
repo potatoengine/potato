@@ -62,7 +62,7 @@ namespace up {
         static char const* _getClipboardTextContents(void* self);
         static void _setClipboardTextContents(void* self, char const* zstr);
 
-        unique_resource<ImGuiContext*, &_freeContext, nullptr> _context;
+        unique_resource<ImGuiContext*, &_freeContext> _context;
         box<GpuBuffer> _indexBuffer;
         box<GpuBuffer> _vertexBuffer;
         box<GpuBuffer> _constantBuffer;

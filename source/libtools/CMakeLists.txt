@@ -16,7 +16,9 @@ target_sources(potato_libtools PRIVATE
     "private/importers/material_importer.cpp"
     "private/importers/model_importer.cpp"
     "private/meta_file.cpp"
- "public/potato/tools/evaluator.h" "private/evaluator.cpp")
+    "public/potato/tools/evaluator.h"
+    "private/evaluator.cpp"
+)
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libtools)
@@ -29,6 +31,7 @@ target_link_libraries(potato_libtools
         flatbuffers::flatlib
         nlohmann_json::nlohmann_json
         assimp
+        sqlite3
 )
 
 find_library(D3DCOMPILER_PATH d3dcompiler)

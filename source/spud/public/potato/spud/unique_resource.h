@@ -2,73 +2,64 @@
 
 #pragma once
 
+#include "concepts.h"
+
 #include <type_traits>
 #include <utility>
 
 namespace up {
-    template <typename T, auto D, auto Default = T{}>
+    template <typename T, auto D>
     class unique_resource;
 }
 
-template <typename T, auto D, auto Default>
-class up::unique_resource {
+template <typename T, auto D>
+class up::unique_resource<T*, D> {
 public:
-    using value_type = T;
-    using reference = T&;
-    using const_reference = T const&;
-    using rvalue_reference = T&&;
+    using pointer = T*;
+    using const_pointer = T const*;
 
     unique_resource() = default;
     ~unique_resource() { reset(); }
 
-    explicit unique_resource(rvalue_reference obj) noexcept(std::is_nothrow_move_constructible_v<T>) : _object(obj) {}
+    explicit unique_resource(pointer ptr) noexcept : _ptr(ptr) {}
 
-    unique_resource(unique_resource&& src) noexcept(std::is_nothrow_move_constructible_v<T>)
-        : _object(std::move(src.get())) {}
+    unique_resource(unique_resource&& src) noexcept : _ptr(src._ptr) { src._ptr = nullptr; }
 
-    inline unique_resource& operator=(unique_resource&& src) noexcept(std::is_nothrow_move_assignable_v<T>);
-    inline unique_resource& operator=(rvalue_reference obj) noexcept(std::is_nothrow_move_assignable_v<T>);
-
-    bool empty() const { return _object == Default; }
-    explicit operator bool() const { return _object != Default; }
-
-    friend bool operator==(unique_resource const& lhs, T const& rhs) noexcept(noexcept(lhs._object == rhs)) {
-        return lhs._object == rhs;
+    unique_resource& operator=(unique_resource&& src) {
+        D(_ptr);
+        _ptr = src._ptr;
+        src._ptr = nullptr;
+        return *this;
     }
 
-    const_reference get() const { return _object; }
-    reference get() { return _object; }
+    unique_resource& operator=(pointer src) {
+        if (_ptr != src) {
+            D(_ptr);
+            _ptr = src;
+        }
+        return *this;
+    }
 
-    inline void reset(rvalue_reference obj);
-    inline void reset();
+    bool empty() const { return _ptr == nullptr; }
+    explicit operator bool() const { return _ptr != nullptr; }
+
+    friend bool operator==(unique_resource const& lhs, const_pointer rhs) noexcept { return lhs._ptr == rhs; }
+
+    const_pointer get() const noexcept { return _ptr; }
+    pointer get() noexcept { return _ptr; }
+
+    void reset(pointer ptr) {
+        if (ptr != _ptr) {
+            D(_ptr);
+            _ptr = ptr;
+        }
+    }
+
+    void reset(std::nullptr_t = {}) {
+        D(_ptr);
+        _ptr = nullptr;
+    }
 
 private:
-    T _object = Default;
+    pointer _ptr = nullptr;
 };
-
-template <typename T, auto D, auto Default>
-auto up::unique_resource<T, D, Default>::operator=(unique_resource&& src) noexcept(std::is_nothrow_move_assignable_v<T>)
-    -> up::unique_resource<T, D, Default>& {
-    reset(std::move(src.get()));
-    return *this;
-}
-
-template <typename T, auto D, auto Default>
-auto up::unique_resource<T, D, Default>::operator=(rvalue_reference obj) noexcept(std::is_nothrow_move_assignable_v<T>)
-    -> up::unique_resource<T, D, Default>& {
-    D(_object);
-    _object = std::move(obj);
-    return *this;
-}
-
-template <typename T, auto D, auto Default>
-void up::unique_resource<T, D, Default>::reset(rvalue_reference obj) {
-    D(_object);
-    _object = std::move(obj);
-}
-
-template <typename T, auto D, auto Default>
-void up::unique_resource<T, D, Default>::reset() {
-    D(_object);
-    _object = Default;
-}

@@ -54,17 +54,11 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.info("Loaded asset library `{}'", libraryPath);
     }
 
-    auto hashCachePath = path::join(_libraryPath, "hashes.json");
-    if (fs::fileExists(hashCachePath.c_str())) {
-        auto hashesReadStream = fs::openRead(hashCachePath.c_str(), fs::OpenMode::Text);
-        if (!hashesReadStream) {
-            _logger.error("Failed to open hash cache `{}'", hashCachePath);
-        }
-        if (!_hashes.deserialize(hashesReadStream)) {
-            _logger.error("Failed to load hash cache `{}'", hashCachePath);
-        }
-        _logger.info("Loaded hash cache `{}'", hashCachePath);
+    auto hashCachePath = path::join(_libraryPath, "hash_cache.db");
+    if (!_hashes.loadCache(hashCachePath)) {
+        _logger.error("Failed to load hash cache `{}'", hashCachePath);
     }
+    _logger.info("Loaded hash cache `{}'", hashCachePath);
 
     // collect all files in the source directory for conversion
     auto sources = _collectSourceFiles();
@@ -86,12 +80,10 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.error("Import failed");
     }
 
-    auto hashesWriteStream = fs::openWrite(hashCachePath.c_str(), fs::OpenMode::Text);
-    if (!_hashes.serialize(hashesWriteStream)) {
+    if (!_hashes.saveCache()) {
         _logger.error("Failed to write hash cache `{}'", hashCachePath);
         return false;
     }
-    hashesWriteStream.close();
 
     auto libraryWriteStream = fs::openWrite(libraryPath.c_str(), fs::OpenMode::Text);
     if (!_library.serialize(libraryWriteStream)) {
