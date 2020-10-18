@@ -55,18 +55,12 @@ up::Query up::Statement::query() noexcept {
     return Query(_stmt);
 }
 
-up::SqlResult up::Statement::bind(int index, int64 value) noexcept {
-    auto const rs = sqlite3_bind_int64(_stmt, index + 1, value);
-    if (rs != SQLITE_OK)
-        return SqlResult::Error;
-    return SqlResult::Ok;
+void up::Statement::_bind(int index, int64 value) noexcept {
+    sqlite3_bind_int64(_stmt, index + 1, value);
 }
 
-up::SqlResult up::Statement::bind(int index, zstring_view value) noexcept {
-    auto const rs = sqlite3_bind_text(_stmt, index + 1, value.c_str(), -1, nullptr);
-    if (rs != SQLITE_OK)
-        return SqlResult::Error;
-    return SqlResult::Ok;
+void up::Statement::_bind(int index, zstring_view value) noexcept {
+    sqlite3_bind_text(_stmt, index + 1, value.c_str(), -1, nullptr);
 }
 
 bool up::Query::iterator::operator==(Query::sentinel) noexcept {

@@ -53,26 +53,23 @@ bool up::AssetLibrary::saveDatabase() {
     auto dependencies_stmt = _db.prepare("INSERT INTO dependencies (asset_id, db_path, hash) VALUES(?, ?, ?)");
 
     for (auto const& record : _records) {
-        assets_stmt.bind(0, to_underlying(record.assetId));
-        assets_stmt.bind(1, record.sourcePath.c_str());
-        assets_stmt.bind(2, record.sourceContentHash);
-        assets_stmt.bind(3, record.importerName.c_str());
-        assets_stmt.bind(4, record.importerRevision);
-        (void)assets_stmt.execute();
+        (void)assets_stmt.execute(
+            to_underlying(record.assetId),
+            record.sourcePath.c_str(),
+            record.sourceContentHash,
+            record.importerName.c_str(),
+            record.importerRevision);
 
         for (auto const& output : record.outputs) {
-            outputs_stmt.bind(0, to_underlying(record.assetId));
-            outputs_stmt.bind(1, to_underlying(output.logicalAssetId));
-            outputs_stmt.bind(2, output.name.c_str());
-            outputs_stmt.bind(3, output.contentHash);
-            (void)outputs_stmt.execute();
+            (void)outputs_stmt.execute(
+                to_underlying(record.assetId),
+                to_underlying(output.logicalAssetId),
+                output.name.c_str(),
+                output.contentHash);
         }
 
         for (auto const& dep : record.dependencies) {
-            outputs_stmt.bind(0, to_underlying(record.assetId));
-            outputs_stmt.bind(1, dep.path.c_str());
-            outputs_stmt.bind(2, dep.contentHash);
-            (void)outputs_stmt.execute();
+            (void)outputs_stmt.execute(to_underlying(record.assetId), dep.path.c_str(), dep.contentHash);
         }
     }
 
@@ -117,16 +114,14 @@ bool up::AssetLibrary::loadDatabase(zstring_view filename) {
         record.importerName = row.get_string(3);
         record.importerRevision = row.get_int64(4);
 
-        outputs_stmt.bind(0, static_cast<int64>(record.assetId));
-        for (auto output_row : outputs_stmt.query()) {
+        for (auto output_row : outputs_stmt.query(to_underlying(record.assetId))) {
             auto& output = record.outputs.emplace_back();
             output.logicalAssetId = static_cast<AssetId>(output_row.get_int64(0));
             output.name = output_row.get_string(1);
             output.contentHash = output_row.get_int64(2);
         }
 
-        dependencies_stmt.bind(0, static_cast<int64>(record.assetId));
-        for (auto dep_row : dependencies_stmt.query()) {
+        for (auto dep_row : dependencies_stmt.query(to_underlying(record.assetId))) {
             auto& dependency = record.dependencies.emplace_back();
             dependency.path = dep_row.get_string(0);
             dependency.contentHash = dep_row.get_int64(1);

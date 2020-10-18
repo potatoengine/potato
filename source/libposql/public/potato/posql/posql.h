@@ -54,10 +54,26 @@ namespace up {
             UP_POSQL_API [[nodiscard]] SqlResult execute() noexcept;
             UP_POSQL_API [[nodiscard]] Query query() noexcept;
 
-            UP_POSQL_API SqlResult bind(int index, int64 value) noexcept;
-            UP_POSQL_API SqlResult bind(int index, zstring_view value) noexcept;
+            template <typename... T>
+            [[nodiscard]] SqlResult execute(T const&... args) noexcept {
+                _bind(std::make_integer_sequence<int, sizeof...(args)>{}, args...);
+                return execute();
+            }
+            template <typename... T>
+            [[nodiscard]] Query query(T const&... args) noexcept {
+                _bind(std::make_integer_sequence<int, sizeof...(args)>{}, args...);
+                return query();
+            }
 
         private:
+            template <int... I, typename... T>
+            void _bind(std::integer_sequence<int, I...>, T const&... args) noexcept {
+                (void)(_bind(I, args), ...);
+            }
+
+            UP_POSQL_API void _bind(int index, int64 value) noexcept;
+            UP_POSQL_API void _bind(int index, zstring_view value) noexcept;
+
             sqlite3_stmt* _stmt = nullptr;
         };
 
