@@ -17,6 +17,7 @@ target_link_libraries(potato_libposql
     PUBLIC
         potato::libruntime
         potato::spud
+    PRIVATE
         sqlite3
 )
 
