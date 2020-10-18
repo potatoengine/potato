@@ -12,6 +12,8 @@ up_set_common_properties(potato_librecon)
 target_sources(potato_librecon PRIVATE
     "private/recon_app.cpp"
     "private/recon_config.cpp"
+    "private/file_hash_cache.cpp"
+    "public/potato/recon/file_hash_cache.h"
 )
 
 up_compile_sap(potato_librecon
