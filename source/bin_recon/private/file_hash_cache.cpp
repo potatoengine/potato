@@ -106,11 +106,13 @@ bool up::FileHashCache::loadCache(zstring_view cache_path) {
     }
 
     while (sqlite3_step(stmt.get()) == SQLITE_ROW) {
-        auto rec = new_box<HashRecord>();
-        rec->osPath = reinterpret_cast<char const*>(sqlite3_column_text(stmt.get(), 1));
-        rec->hash = sqlite3_column_int64(stmt.get(), 2);
-        rec->mtime = sqlite3_column_int64(stmt.get(), 3);
-        rec->size = sqlite3_column_int64(stmt.get(), 4);
+        auto rec_ptr = new_box<HashRecord>();
+        auto& rec = *rec_ptr;
+        rec.osPath = reinterpret_cast<char const*>(sqlite3_column_text(stmt.get(), 0));
+        rec.hash = sqlite3_column_int64(stmt.get(), 1);
+        rec.mtime = sqlite3_column_int64(stmt.get(), 2);
+        rec.size = sqlite3_column_int64(stmt.get(), 3);
+        _hashes.emplace(rec.osPath, std::move(rec_ptr));
     }
 
     return true;
