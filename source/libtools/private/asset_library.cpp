@@ -10,8 +10,6 @@
 #include "potato/spud/out_ptr.h"
 #include "potato/spud/string_writer.h"
 
-#include <sqlite3.h>
-
 up::AssetLibrary::~AssetLibrary() = default;
 
 auto up::AssetLibrary::pathToAssetId(string_view path) const -> AssetId {
@@ -46,62 +44,35 @@ bool up::AssetLibrary::insertRecord(Imported record) {
 }
 
 bool up::AssetLibrary::saveDatabase() {
-    if (_db == nullptr)
-        return false;
-
     // create our prepared statemtnt to save values
-    unique_resource<sqlite3_stmt*, sqlite3_finalize> assets_stmt;
-    unique_resource<sqlite3_stmt*, sqlite3_finalize> outputs_stmt;
-    unique_resource<sqlite3_stmt*, sqlite3_finalize> dependencies_stmt;
-
-    sqlite3_prepare_v3(
-        _db.get(),
+    auto assets_stmt = _db.prepare(
         "INSERT INTO assets "
         "(asset_id, source_db_path, source_hash, importer_name, importer_revision) "
-        "VALUES(?, ?, ?, ?, ?)",
-        -1,
-        0,
-        out_ptr(assets_stmt),
-        nullptr);
-    sqlite3_prepare_v3(
-        _db.get(),
-        "INSERT INTO outputs (asset_id, output_id, name, hash) VALUES(?, ?, ?, ?)",
-        -1,
-        0,
-        out_ptr(outputs_stmt),
-        nullptr);
-    sqlite3_prepare_v3(
-        _db.get(),
-        "INSERT INTO dependencies (asset_id, db_path, hash) VALUES(?, ?, ?)",
-        -1,
-        0,
-        out_ptr(dependencies_stmt),
-        nullptr);
+        "VALUES(?, ?, ?, ?, ?)");
+    auto outputs_stmt = _db.prepare("INSERT INTO outputs (asset_id, output_id, name, hash) VALUES(?, ?, ?, ?)");
+    auto dependencies_stmt = _db.prepare("INSERT INTO dependencies (asset_id, db_path, hash) VALUES(?, ?, ?)");
 
     for (auto const& record : _records) {
-        sqlite3_reset(assets_stmt.get());
-        sqlite3_bind_int64(assets_stmt.get(), 1, to_underlying(record.assetId));
-        sqlite3_bind_text(assets_stmt.get(), 2, record.sourcePath.c_str(), -1, nullptr);
-        sqlite3_bind_int64(assets_stmt.get(), 3, record.sourceContentHash);
-        sqlite3_bind_text(assets_stmt.get(), 4, record.importerName.c_str(), -1, nullptr);
-        sqlite3_bind_int64(assets_stmt.get(), 5, record.importerRevision);
-        sqlite3_step(assets_stmt.get());
+        assets_stmt.bind(0, to_underlying(record.assetId));
+        assets_stmt.bind(1, record.sourcePath.c_str());
+        assets_stmt.bind(2, record.sourceContentHash);
+        assets_stmt.bind(3, record.importerName.c_str());
+        assets_stmt.bind(4, record.importerRevision);
+        (void)assets_stmt.execute();
 
         for (auto const& output : record.outputs) {
-            sqlite3_reset(outputs_stmt.get());
-            sqlite3_bind_int64(outputs_stmt.get(), 1, to_underlying(record.assetId));
-            sqlite3_bind_int64(outputs_stmt.get(), 2, to_underlying(output.logicalAssetId));
-            sqlite3_bind_text(outputs_stmt.get(), 3, output.name.c_str(), -1, nullptr);
-            sqlite3_bind_int64(outputs_stmt.get(), 4, output.contentHash);
-            sqlite3_step(outputs_stmt.get());
+            outputs_stmt.bind(0, to_underlying(record.assetId));
+            outputs_stmt.bind(1, to_underlying(output.logicalAssetId));
+            outputs_stmt.bind(2, output.name.c_str());
+            outputs_stmt.bind(3, output.contentHash);
+            (void)outputs_stmt.execute();
         }
 
         for (auto const& dep : record.dependencies) {
-            sqlite3_reset(dependencies_stmt.get());
-            sqlite3_bind_int64(dependencies_stmt.get(), 1, to_underlying(record.assetId));
-            sqlite3_bind_text(dependencies_stmt.get(), 2, dep.path.c_str(), -1, nullptr);
-            sqlite3_bind_int64(dependencies_stmt.get(), 3, dep.contentHash);
-            sqlite3_step(dependencies_stmt.get());
+            outputs_stmt.bind(0, to_underlying(record.assetId));
+            outputs_stmt.bind(1, dep.path.c_str());
+            outputs_stmt.bind(2, dep.contentHash);
+            (void)outputs_stmt.execute();
         }
     }
 
@@ -110,91 +81,55 @@ bool up::AssetLibrary::saveDatabase() {
 
 bool up::AssetLibrary::loadDatabase(zstring_view filename) {
     // open the database
-    {
-        _db.reset();
-        auto const rs = sqlite3_open(filename.c_str(), out_ptr(_db));
-        if (rs != SQLITE_OK)
-            return false;
-    }
+    if (_db.open(filename.c_str()) != SqlResult::Ok)
+        return false;
 
     // ensure the table is created
-    {
-        auto const rs = sqlite3_exec(
-            _db.get(),
-            "CREATE TABLE IF NOT EXISTS assets "
-            "(asset_id INTEGER PRIMARY KEY, "
-            "source_db_path TEXT, source_hash INTEGER, "
-            "importer_name TEXT, importer_revision INTEGER);\n"
+    if (_db.execute("CREATE TABLE IF NOT EXISTS assets "
+                    "(asset_id INTEGER PRIMARY KEY, "
+                    "source_db_path TEXT, source_hash INTEGER, "
+                    "importer_name TEXT, importer_revision INTEGER);\n"
 
-            "CREATE TABLE IF NOT EXISTS outputs "
-            "(asset_id INTEGER, output_id INTEGER, name TEXT, hash TEXT, "
-            "FOREIGN KEY(asset_id) REFERENCES assets(asset_id));\n"
+                    "CREATE TABLE IF NOT EXISTS outputs "
+                    "(asset_id INTEGER, output_id INTEGER, name TEXT, hash TEXT, "
+                    "FOREIGN KEY(asset_id) REFERENCES assets(asset_id));\n"
 
-            "CREATE TABLE IF NOT EXISTS dependencies "
-            "(asset_id INTEGER, db_path TEXT, hash TEXT, "
-            "FOREIGN KEY(asset_id) REFERENCES assets(asset_id));\n",
-            nullptr,
-            nullptr,
-            nullptr);
-        if (rs != SQLITE_OK) {
-            _db.reset();
-            return false;
-        }
+                    "CREATE TABLE IF NOT EXISTS dependencies "
+                    "(asset_id INTEGER, db_path TEXT, hash TEXT, "
+                    "FOREIGN KEY(asset_id) REFERENCES assets(asset_id));\n") != SqlResult::Ok) {
+        return false;
     }
 
     // create our prepared statemtnt to load values
-    unique_resource<sqlite3_stmt*, sqlite3_finalize> assets_stmt;
-    unique_resource<sqlite3_stmt*, sqlite3_finalize> outputs_stmt;
-    unique_resource<sqlite3_stmt*, sqlite3_finalize> dependencies_stmt;
-
-    sqlite3_prepare_v3(
-        _db.get(),
-        "SELECT asset_id, source_db_path, source_hash, importer_name, importer_revision FROM assets",
-        -1,
-        0,
-        out_ptr(assets_stmt),
-        nullptr);
-    sqlite3_prepare_v3(
-        _db.get(),
-        "SELECT output_id, name, hash FROM outputs WHERE asset_id=?",
-        -1,
-        0,
-        out_ptr(outputs_stmt),
-        nullptr);
-    sqlite3_prepare_v3(
-        _db.get(),
-        "SELECT db_path, hash FROM dependencies WHERE asset_id=?",
-        -1,
-        0,
-        out_ptr(dependencies_stmt),
-        nullptr);
+    auto assets_stmt =
+        _db.prepare("SELECT asset_id, source_db_path, source_hash, importer_name, importer_revision FROM assets");
+    auto outputs_stmt = _db.prepare("SELECT output_id, name, hash FROM outputs WHERE asset_id=?");
+    auto dependencies_stmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE asset_id=?");
 
     // read in all the asset records
-    while (sqlite3_step(assets_stmt.get()) == SQLITE_ROW) {
+    for (auto row : assets_stmt.query()) {
         auto& record = _records.push_back({});
-        record.assetId = static_cast<AssetId>(sqlite3_column_int64(assets_stmt.get(), 0));
+        record.assetId = static_cast<AssetId>(row.get_int64(0));
 
-        record.sourcePath = reinterpret_cast<char const*>(sqlite3_column_text(assets_stmt.get(), 1));
-        record.sourceContentHash = sqlite3_column_int64(assets_stmt.get(), 2);
+        record.sourcePath = row.get_string(1);
+        record.sourceContentHash = row.get_int64(2);
 
-        record.importerName = reinterpret_cast<char const*>(sqlite3_column_text(assets_stmt.get(), 3));
-        record.importerRevision = sqlite3_column_int64(assets_stmt.get(), 4);
+        record.importerName = row.get_string(3);
+        record.importerRevision = row.get_int64(4);
 
-        sqlite3_reset(outputs_stmt.get());
-        sqlite3_bind_int64(outputs_stmt.get(), 1, static_cast<int64>(record.assetId));
-        while (sqlite3_step(outputs_stmt.get()) == SQLITE_ROW) {
+        outputs_stmt.bind(0, static_cast<int64>(record.assetId));
+        for (auto output_row : outputs_stmt.query()) {
             auto& output = record.outputs.emplace_back();
-            output.logicalAssetId = static_cast<AssetId>(sqlite3_column_int64(outputs_stmt.get(), 0));
-            output.name = reinterpret_cast<char const*>(sqlite3_column_text(outputs_stmt.get(), 1));
-            output.contentHash = sqlite3_column_int64(outputs_stmt.get(), 2);
+            output.logicalAssetId = static_cast<AssetId>(output_row.get_int64(0));
+            output.name = output_row.get_string(1);
+            output.contentHash = output_row.get_int64(2);
         }
 
-        sqlite3_reset(dependencies_stmt.get());
-        sqlite3_bind_int64(dependencies_stmt.get(), 1, static_cast<int64>(record.assetId));
-        while (sqlite3_step(dependencies_stmt.get()) == SQLITE_ROW) {
+        dependencies_stmt.bind(0, static_cast<int64>(record.assetId));
+        for (auto dep_row : dependencies_stmt.query()) {
             auto& dependency = record.dependencies.emplace_back();
-            dependency.path = reinterpret_cast<char const*>(sqlite3_column_text(dependencies_stmt.get(), 0));
-            dependency.contentHash = sqlite3_column_int64(dependencies_stmt.get(), 1);
+            dependency.path = dep_row.get_string(0);
+            dependency.contentHash = dep_row.get_int64(1);
         }
     }
 

@@ -26,11 +26,11 @@ target_link_libraries(potato_libtools
     PUBLIC
         potato::libruntime
         potato::librender
+        potato::libposql
         potato::spud
         flatbuffers::flatlib
         nlohmann_json::nlohmann_json
         assimp
-        sqlite3
 )
 
 find_library(D3DCOMPILER_PATH d3dcompiler)
@@ -43,7 +43,8 @@ add_executable(potato_libtools_test)
 target_sources(potato_libtools_test PRIVATE
     "tests/main.cpp"
     "tests/test_asset_library.cpp"
- "tests/test_evaluator.cpp")
+     "tests/test_evaluator.cpp"
+)
 
 up_set_common_properties(potato_libtools_test)
 

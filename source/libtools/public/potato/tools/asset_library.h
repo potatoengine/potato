@@ -6,15 +6,11 @@
 #include "common.h"
 
 #include "potato/format/erased.h"
+#include "potato/posql/posql.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
-
-extern "C" {
-struct sqlite3;
-int sqlite3_close_v2(sqlite3*);
-}
 
 namespace up {
     class Stream;
@@ -71,6 +67,6 @@ namespace up {
         };
 
         vector<Imported> _records;
-        unique_resource<sqlite3*, sqlite3_close_v2> _db;
+        Database _db;
     };
 } // namespace up
