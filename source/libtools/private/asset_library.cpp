@@ -7,9 +7,10 @@
 #include "potato/runtime/stream.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/hash_fnv1a.h"
+#include "potato/spud/out_ptr.h"
 #include "potato/spud/string_writer.h"
 
-#include <nlohmann/json.hpp>
+#include <sqlite3.h>
 
 up::AssetLibrary::~AssetLibrary() = default;
 
@@ -44,101 +45,156 @@ bool up::AssetLibrary::insertRecord(Imported record) {
     return true;
 }
 
-bool up::AssetLibrary::serialize(Stream& stream) const {
-    nlohmann::json jsonRoot;
+bool up::AssetLibrary::saveDatabase() {
+    if (_db == nullptr)
+        return false;
 
-    jsonRoot["$type"] = typeName;
-    jsonRoot["$version"] = version;
+    // create our prepared statemtnt to save values
+    unique_resource<sqlite3_stmt*, sqlite3_finalize> assets_stmt;
+    unique_resource<sqlite3_stmt*, sqlite3_finalize> outputs_stmt;
+    unique_resource<sqlite3_stmt*, sqlite3_finalize> dependencies_stmt;
 
-    nlohmann::json jsonRecords;
+    sqlite3_prepare_v3(
+        _db.get(),
+        "INSERT INTO assets "
+        "(asset_id, source_db_path, source_hash, importer_name, importer_revision) "
+        "VALUES(?, ?, ?, ?, ?)",
+        -1,
+        0,
+        out_ptr(assets_stmt),
+        nullptr);
+    sqlite3_prepare_v3(
+        _db.get(),
+        "INSERT INTO outputs (asset_id, output_id, name, hash) VALUES(?, ?, ?, ?)",
+        -1,
+        0,
+        out_ptr(outputs_stmt),
+        nullptr);
+    sqlite3_prepare_v3(
+        _db.get(),
+        "INSERT INTO dependencies (asset_id, db_path, hash) VALUES(?, ?, ?)",
+        -1,
+        0,
+        out_ptr(dependencies_stmt),
+        nullptr);
+
     for (auto const& record : _records) {
-        nlohmann::json jsonRecord;
+        sqlite3_reset(assets_stmt.get());
+        sqlite3_bind_int64(assets_stmt.get(), 1, to_underlying(record.assetId));
+        sqlite3_bind_text(assets_stmt.get(), 2, record.sourcePath.c_str(), -1, nullptr);
+        sqlite3_bind_int64(assets_stmt.get(), 3, record.sourceContentHash);
+        sqlite3_bind_text(assets_stmt.get(), 4, record.importerName.c_str(), -1, nullptr);
+        sqlite3_bind_int64(assets_stmt.get(), 5, record.importerRevision);
+        sqlite3_step(assets_stmt.get());
 
-        jsonRecord["id"] = to_underlying(record.assetId);
-
-        nlohmann::json jsonSource;
-        jsonSource["path"] = std::string(record.sourcePath.data(), record.sourcePath.size());
-        jsonSource["hash"] = record.sourceContentHash;
-        jsonRecord["source"] = jsonSource;
-
-        nlohmann::json jsonImporter;
-        jsonImporter["name"] = std::string(record.importerName.data(), record.importerName.size());
-        jsonImporter["revision"] = record.importerRevision;
-        jsonRecord["importer"] = jsonImporter;
-
-        nlohmann::json jsonOutputs;
         for (auto const& output : record.outputs) {
-            nlohmann::json jsonOutput;
-            jsonOutput["id"] = to_underlying(output.logicalAssetId);
-            jsonOutput["hash"] = output.contentHash;
-            jsonOutput["name"] = output.name;
-            jsonOutputs.push_back(std::move(jsonOutput));
+            sqlite3_reset(outputs_stmt.get());
+            sqlite3_bind_int64(outputs_stmt.get(), 1, to_underlying(record.assetId));
+            sqlite3_bind_int64(outputs_stmt.get(), 2, to_underlying(output.logicalAssetId));
+            sqlite3_bind_text(outputs_stmt.get(), 3, output.name.c_str(), -1, nullptr);
+            sqlite3_bind_int64(outputs_stmt.get(), 4, output.contentHash);
+            sqlite3_step(outputs_stmt.get());
         }
-        jsonRecord["outputs"] = std::move(jsonOutputs);
 
-        nlohmann::json jsonDependencies;
         for (auto const& dep : record.dependencies) {
-            nlohmann::json jsonDep;
-            jsonDep["path"] = std::string(dep.path.data(), dep.path.size());
-            jsonDep["hash"] = dep.contentHash;
-            jsonDependencies.push_back(std::move(jsonDep));
+            sqlite3_reset(dependencies_stmt.get());
+            sqlite3_bind_int64(dependencies_stmt.get(), 1, to_underlying(record.assetId));
+            sqlite3_bind_text(dependencies_stmt.get(), 2, dep.path.c_str(), -1, nullptr);
+            sqlite3_bind_int64(dependencies_stmt.get(), 3, dep.contentHash);
+            sqlite3_step(dependencies_stmt.get());
         }
-        jsonRecord["dependencies"] = std::move(jsonDependencies);
-
-        jsonRecords.push_back(std::move(jsonRecord));
     }
-    jsonRoot["records"] = std::move(jsonRecords);
 
-    auto json = jsonRoot.dump(2);
-    return writeAllText(stream, {json.data(), json.size()}) == IOResult::Success;
+    return true;
 }
 
-bool up::AssetLibrary::deserialize(Stream& stream) {
-    string jsonText;
-    if (readText(stream, jsonText) != IOResult::Success) {
-        return false;
+bool up::AssetLibrary::loadDatabase(zstring_view filename) {
+    // open the database
+    {
+        _db.reset();
+        auto const rs = sqlite3_open(filename.c_str(), out_ptr(_db));
+        if (rs != SQLITE_OK)
+            return false;
     }
 
-    auto jsonRoot = nlohmann::json::parse(jsonText, nullptr, false);
+    // ensure the table is created
+    {
+        auto const rs = sqlite3_exec(
+            _db.get(),
+            "CREATE TABLE IF NOT EXISTS assets "
+            "(asset_id INTEGER PRIMARY KEY, "
+            "source_db_path TEXT, source_hash INTEGER, "
+            "importer_name TEXT, importer_revision INTEGER);\n"
 
-    if (jsonRoot.is_discarded()) {
-        return false;
+            "CREATE TABLE IF NOT EXISTS outputs "
+            "(asset_id INTEGER, output_id INTEGER, name TEXT, hash TEXT, "
+            "FOREIGN KEY(asset_id) REFERENCES assets(asset_id));\n"
+
+            "CREATE TABLE IF NOT EXISTS dependencies "
+            "(asset_id INTEGER, db_path TEXT, hash TEXT, "
+            "FOREIGN KEY(asset_id) REFERENCES assets(asset_id));\n",
+            nullptr,
+            nullptr,
+            nullptr);
+        if (rs != SQLITE_OK) {
+            _db.reset();
+            return false;
+        }
     }
 
-    if (auto type = jsonRoot["$type"]; !type.is_string() || type != typeName) {
-        return false;
-    }
+    // create our prepared statemtnt to load values
+    unique_resource<sqlite3_stmt*, sqlite3_finalize> assets_stmt;
+    unique_resource<sqlite3_stmt*, sqlite3_finalize> outputs_stmt;
+    unique_resource<sqlite3_stmt*, sqlite3_finalize> dependencies_stmt;
 
-    if (auto revision = jsonRoot["$version"]; !revision.is_number_integer() || revision != version) {
-        return false;
-    }
+    sqlite3_prepare_v3(
+        _db.get(),
+        "SELECT asset_id, source_db_path, source_hash, importer_name, importer_revision FROM assets",
+        -1,
+        0,
+        out_ptr(assets_stmt),
+        nullptr);
+    sqlite3_prepare_v3(
+        _db.get(),
+        "SELECT output_id, name, hash FROM outputs WHERE asset_id=?",
+        -1,
+        0,
+        out_ptr(outputs_stmt),
+        nullptr);
+    sqlite3_prepare_v3(
+        _db.get(),
+        "SELECT db_path, hash FROM dependencies WHERE asset_id=?",
+        -1,
+        0,
+        out_ptr(dependencies_stmt),
+        nullptr);
 
-    auto records = jsonRoot["records"];
-    if (!records.is_array()) {
-        return false;
-    }
+    // read in all the asset records
+    while (sqlite3_step(assets_stmt.get()) == SQLITE_ROW) {
+        auto& record = _records.push_back({});
+        record.assetId = static_cast<AssetId>(sqlite3_column_int64(assets_stmt.get(), 0));
 
-    for (auto const& record : records) {
-        auto& newRecord = _records.push_back({});
+        record.sourcePath = reinterpret_cast<char const*>(sqlite3_column_text(assets_stmt.get(), 1));
+        record.sourceContentHash = sqlite3_column_int64(assets_stmt.get(), 2);
 
-        newRecord.assetId = record["id"];
+        record.importerName = reinterpret_cast<char const*>(sqlite3_column_text(assets_stmt.get(), 3));
+        record.importerRevision = sqlite3_column_int64(assets_stmt.get(), 4);
 
-        if (auto const jsonSource = record["source"]; jsonSource.is_object()) {
-            newRecord.sourcePath = jsonSource["path"].get<string>();
-            newRecord.sourceContentHash = jsonSource["hash"];
+        sqlite3_reset(outputs_stmt.get());
+        sqlite3_bind_int64(outputs_stmt.get(), 1, static_cast<int64>(record.assetId));
+        while (sqlite3_step(outputs_stmt.get()) == SQLITE_ROW) {
+            auto& output = record.outputs.emplace_back();
+            output.logicalAssetId = static_cast<AssetId>(sqlite3_column_int64(outputs_stmt.get(), 0));
+            output.name = reinterpret_cast<char const*>(sqlite3_column_text(outputs_stmt.get(), 1));
+            output.contentHash = sqlite3_column_int64(outputs_stmt.get(), 2);
         }
 
-        if (auto const jsonImporter = record["importer"]; jsonImporter.is_object()) {
-            newRecord.importerName = jsonImporter["name"].get<string>();
-            newRecord.importerRevision = jsonImporter["revision"];
-        }
-
-        for (auto const& output : record["outputs"]) {
-            newRecord.outputs.push_back({output["name"], output["id"], output["hash"]});
-        }
-
-        for (auto const& output : record["dependencies"]) {
-            newRecord.dependencies.push_back({output["path"], output["hash"]});
+        sqlite3_reset(dependencies_stmt.get());
+        sqlite3_bind_int64(dependencies_stmt.get(), 1, static_cast<int64>(record.assetId));
+        while (sqlite3_step(dependencies_stmt.get()) == SQLITE_ROW) {
+            auto& dependency = record.dependencies.emplace_back();
+            dependency.path = reinterpret_cast<char const*>(sqlite3_column_text(dependencies_stmt.get(), 0));
+            dependency.contentHash = sqlite3_column_int64(dependencies_stmt.get(), 1);
         }
     }
 

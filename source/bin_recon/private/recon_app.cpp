@@ -42,23 +42,17 @@ bool up::recon::ReconApp::run(span<char const*> args) {
 
     _registerImporters();
 
-    auto libraryPath = path::join(_libraryPath, "assets.json");
-    if (fs::fileExists(libraryPath.c_str())) {
-        auto libraryReadStream = fs::openRead(libraryPath.c_str(), fs::OpenMode::Text);
-        if (!libraryReadStream) {
-            _logger.error("Failed to open asset library `{}'", libraryPath);
-        }
-        if (!_library.deserialize(libraryReadStream)) {
-            _logger.error("Failed to load asset library `{}'", libraryPath);
-        }
-        _logger.info("Loaded asset library `{}'", libraryPath);
+    auto libraryPath = path::join(_libraryPath, "assets.db");
+    if (!_library.loadDatabase(libraryPath)) {
+        _logger.error("Failed to load asset library `{}'", libraryPath);
     }
+    _logger.info("Opened asset library `{}'", libraryPath);
 
     auto hashCachePath = path::join(_libraryPath, "hash_cache.db");
     if (!_hashes.loadCache(hashCachePath)) {
         _logger.error("Failed to load hash cache `{}'", hashCachePath);
     }
-    _logger.info("Loaded hash cache `{}'", hashCachePath);
+    _logger.info("Opened hash cache `{}'", hashCachePath);
 
     // collect all files in the source directory for conversion
     auto sources = _collectSourceFiles();
@@ -85,12 +79,10 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         return false;
     }
 
-    auto libraryWriteStream = fs::openWrite(libraryPath.c_str(), fs::OpenMode::Text);
-    if (!_library.serialize(libraryWriteStream)) {
+    if (!_library.saveDatabase()) {
         _logger.error("Failed to write asset library `{}'", libraryPath);
         return false;
     }
-    libraryWriteStream.close();
 
     auto manifestPath = path::join(_libraryPath, "manifest.txt");
     auto manifestFile = fs::openWrite(manifestPath.c_str(), fs::OpenMode::Text);

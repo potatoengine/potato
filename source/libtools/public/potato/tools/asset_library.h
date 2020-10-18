@@ -8,7 +8,13 @@
 #include "potato/format/erased.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
+#include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
+
+extern "C" {
+struct sqlite3;
+int sqlite3_close_v2(sqlite3*);
+}
 
 namespace up {
     class Stream;
@@ -54,8 +60,8 @@ namespace up {
 
         UP_TOOLS_API bool insertRecord(Imported record);
 
-        UP_TOOLS_API bool serialize(Stream& stream) const;
-        UP_TOOLS_API bool deserialize(Stream& stream);
+        UP_TOOLS_API bool loadDatabase(zstring_view filename);
+        UP_TOOLS_API bool saveDatabase();
 
         UP_TOOLS_API void generateManifest(erased_writer writer) const;
 
@@ -65,5 +71,6 @@ namespace up {
         };
 
         vector<Imported> _records;
+        unique_resource<sqlite3*, sqlite3_close_v2> _db;
     };
 } // namespace up
