@@ -89,13 +89,11 @@ void up::Statement::_next() noexcept {
         if (rs == SQLITE_ROW || rs == SQLITE_DONE) {
             break;
         }
-        else if (rs == SQLITE_BUSY) {
+        if (rs == SQLITE_BUSY) {
             continue;
         }
-        else {
-            sqlite3_reset(_stmt);
-            break;
-        }
+        sqlite3_reset(_stmt);
+        break;
     }
 }
 
