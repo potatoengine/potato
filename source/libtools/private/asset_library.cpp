@@ -69,7 +69,7 @@ bool up::AssetLibrary::saveDatabase() {
         }
 
         for (auto const& dep : record.dependencies) {
-            (void)outputs_stmt.execute(to_underlying(record.assetId), dep.path.c_str(), dep.contentHash);
+            (void)dependencies_stmt.execute(to_underlying(record.assetId), dep.path.c_str(), dep.contentHash);
         }
     }
 
@@ -104,27 +104,24 @@ bool up::AssetLibrary::loadDatabase(zstring_view filename) {
     auto dependencies_stmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE asset_id=?");
 
     // read in all the asset records
-    for (auto row : assets_stmt.query()) {
+    for (auto const& row : assets_stmt.query<AssetId, zstring_view, uint64, zstring_view, uint64>()) {
         auto& record = _records.push_back({});
-        record.assetId = static_cast<AssetId>(row.get_int64(0));
+        std::tie(
+            record.assetId,
+            record.sourcePath,
+            record.sourceContentHash,
+            record.importerName,
+            record.importerRevision) = row;
 
-        record.sourcePath = row.get_string(1);
-        record.sourceContentHash = row.get_int64(2);
-
-        record.importerName = row.get_string(3);
-        record.importerRevision = row.get_int64(4);
-
-        for (auto output_row : outputs_stmt.query(to_underlying(record.assetId))) {
+        for (auto const& output_row :
+             outputs_stmt.query<AssetId, zstring_view, uint64>(to_underlying(record.assetId))) {
             auto& output = record.outputs.emplace_back();
-            output.logicalAssetId = static_cast<AssetId>(output_row.get_int64(0));
-            output.name = output_row.get_string(1);
-            output.contentHash = output_row.get_int64(2);
+            std::tie(output.logicalAssetId, output.name, output.contentHash) = output_row;
         }
 
-        for (auto dep_row : dependencies_stmt.query(to_underlying(record.assetId))) {
+        for (auto const& dep_row : dependencies_stmt.query<zstring_view, uint64>(to_underlying(record.assetId))) {
             auto& dependency = record.dependencies.emplace_back();
-            dependency.path = dep_row.get_string(0);
-            dependency.contentHash = dep_row.get_int64(1);
+            std::tie(dependency.path, dependency.contentHash) = dep_row;
         }
     }
 
