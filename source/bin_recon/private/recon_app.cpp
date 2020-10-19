@@ -49,8 +49,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     _logger.info("Opened asset library `{}'", libraryPath);
 
     auto hashCachePath = path::join(_libraryPath, "hash_cache.db");
-    if (!_hashes.loadCache(hashCachePath)) {
-        _logger.error("Failed to load hash cache `{}'", hashCachePath);
+    if (!_hashes.open(hashCachePath)) {
+        _logger.error("Failed to open hash cache `{}'", hashCachePath);
     }
     _logger.info("Opened hash cache `{}'", hashCachePath);
 
@@ -74,8 +74,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.error("Import failed");
     }
 
-    if (!_hashes.saveCache()) {
-        _logger.error("Failed to write hash cache `{}'", hashCachePath);
+    if (!_hashes.close()) {
+        _logger.error("Failed to close hash cache `{}'", hashCachePath);
         return false;
     }
 

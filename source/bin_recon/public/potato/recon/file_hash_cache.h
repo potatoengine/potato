@@ -28,8 +28,8 @@ namespace up {
 
         uint64 hashAssetAtPath(zstring_view path);
 
-        bool loadCache(zstring_view cache_path);
-        bool saveCache();
+        bool open(zstring_view cache_path);
+        bool close();
 
     private:
         struct HashRecord {
@@ -39,7 +39,8 @@ namespace up {
             uint64 size = 0;
         };
 
-        std::unordered_map<zstring_view, box<HashRecord>, uhash<>> _hashes;
+        std::unordered_map<zstring_view, HashRecord, uhash<>> _hashes;
         Database _conn;
+        Statement _addEntryStmt;
     };
 } // namespace up
