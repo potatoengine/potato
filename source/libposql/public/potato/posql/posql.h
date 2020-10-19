@@ -117,7 +117,7 @@ namespace up {
 
             template <int... I, typename... T>
             void _bind(std::integer_sequence<int, I...>, T const&... args) noexcept {
-                (void)(_bind(I, args), ...);
+                (((void)_bind(I, args)), ...);
             }
 
             UP_POSQL_API void _bind(int index, int64 value) noexcept;
@@ -149,9 +149,9 @@ namespace up {
             UP_POSQL_API [[nodiscard]] int64 _column_int64(int index) noexcept;
             UP_POSQL_API [[nodiscard]] zstring_view _column_string(int index) noexcept;
 
-            template <typename... T>
+            template <typename...>
             friend class QueryResult;
-            template <typename... T>
+            template <typename...>
             friend class QueryResultIterator;
 
             sqlite3_stmt* _stmt = nullptr;
@@ -165,14 +165,14 @@ namespace up {
                 _stmt._next();
                 return *this;
             }
-            inline [[nodiscard]] std::tuple<T...> operator*() { return _stmt._columns<T...>(); }
+            [[nodiscard]] inline std::tuple<T...> operator*() { return _stmt._columns<T...>(); }
 
         private:
             explicit QueryResultIterator(Statement& stmt) : _stmt(stmt) {}
 
             Statement& _stmt;
 
-            template <typename... T>
+            template <typename...>
             friend class QueryResult;
         };
 

@@ -105,7 +105,7 @@ bool up::AssetLibrary::loadDatabase(zstring_view filename) {
 
     // read in all the asset records
     for (auto const& row : assets_stmt.query<AssetId, zstring_view, uint64, zstring_view, uint64>()) {
-        auto& record = _records.push_back({});
+        auto& record = _records.emplace_back();
         std::tie(
             record.assetId,
             record.sourcePath,

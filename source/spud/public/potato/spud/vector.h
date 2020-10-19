@@ -102,6 +102,7 @@ namespace up {
         template <typename... ParamsT>
         auto emplace(const_iterator pos, ParamsT&&... params) -> reference
             requires std::is_constructible_v<T, ParamsT...>;
+        auto emplace_back() -> reference requires std::is_default_constructible_v<T>;
         template <typename... ParamsT>
         auto emplace_back(ParamsT&&... params) -> reference requires std::is_constructible_v<T, ParamsT...>;
 
@@ -364,6 +365,37 @@ namespace up {
         // move over old elements
         unitialized_move_n(_first, index, tmp);
         unitialized_move_n(_first + index, size - index, tmp + index + 1);
+
+        // free up old space
+        destruct_n(_first, size);
+        _deallocate(_first, _sentinel - _first);
+
+        // commit new space
+        _first = tmp;
+        _last = _first + size + 1;
+        _sentinel = _first + newCapacity;
+
+        return _first[size];
+    }
+
+    template <typename T>
+    auto vector<T>::emplace_back() -> reference requires std::is_default_constructible_v<T> {
+        if (_last != _sentinel) {
+            T* value = new (_last++) value_type;
+            return *value;
+        }
+
+        auto const size = _last - _first;
+
+        // grow
+        auto const newCapacity = _grow(size + 1);
+        T* tmp = _allocate(newCapacity);
+
+        // insert new element
+        new (tmp + size) value_type;
+
+        // move over old elements
+        unitialized_move_n(_first, size, tmp);
 
         // free up old space
         destruct_n(_first, size);
