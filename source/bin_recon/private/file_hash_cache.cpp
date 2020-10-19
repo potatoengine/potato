@@ -8,8 +8,6 @@
 #include "potato/spud/hash_fnv1a.h"
 #include "potato/spud/out_ptr.h"
 
-#include <sqlite3.h>
-
 up::FileHashCache::FileHashCache() = default;
 
 up::FileHashCache::~FileHashCache() = default;
@@ -61,89 +59,40 @@ auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
 }
 
 bool up::FileHashCache::saveCache() {
-    if (!_openCache())
+    if (!_conn)
         return false;
 
-    unique_resource<sqlite3_stmt*, sqlite3_finalize> stmt;
-    {
-        auto const rs = sqlite3_prepare_v3(
-            _cacheDb.get(),
-            "INSERT INTO hash_cache (os_path, hash, mtime, size) VALUES(?, ?, ?, ?)",
-            -1,
-            0,
-            out_ptr(stmt),
-            nullptr);
-    }
+    auto stmt = _conn.prepare("INSERT INTO hash_cache (os_path, hash, mtime, size) VALUES(?, ?, ?, ?)");
 
     for (auto const& [key, value] : _hashes) {
-        sqlite3_reset(stmt.get());
-        sqlite3_bind_text(stmt.get(), 1, key.data(), key.size(), nullptr);
-        sqlite3_bind_int64(stmt.get(), 2, value->hash);
-        sqlite3_bind_int64(stmt.get(), 3, value->mtime);
-        sqlite3_bind_int64(stmt.get(), 4, value->size);
-        sqlite3_step(stmt.get());
+        (void)stmt.execute(key.c_str(), value->hash, value->mtime, value->size);
     }
 
     return true;
 }
 
 bool up::FileHashCache::loadCache(zstring_view cache_path) {
-    _cachePath = cache_path;
-    _cacheDb.reset();
+    _conn.close();
 
-    if (!_openCache())
+    auto const rs = _conn.open(cache_path);
+    if (rs != SqlResult::Ok)
         return false;
 
-    unique_resource<sqlite3_stmt*, sqlite3_finalize> stmt;
-    {
-        auto const rs = sqlite3_prepare_v3(
-            _cacheDb.get(),
-            "SELECT os_path, hash, mtime, size FROM hash_cache",
-            -1,
-            0,
-            out_ptr(stmt),
-            nullptr);
+    // ensure cache table exists
+    if (_conn.execute(
+            "CREATE TABLE IF NOT EXISTS hash_cache (os_path STRING, hash INTEGER, mtime INTEGER, size INTEGER)") !=
+        SqlResult::Ok) {
+        _conn.close();
+        return false;
     }
 
-    while (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+    // load cache entries
+    auto stmt = _conn.prepare("SELECT os_path, hash, mtime, size FROM hash_cache");
+
+    for (auto const& row : stmt.query<zstring_view, uint64, uint64, uint64>()) {
         auto rec_ptr = new_box<HashRecord>();
         auto& rec = *rec_ptr;
-        rec.osPath = reinterpret_cast<char const*>(sqlite3_column_text(stmt.get(), 0));
-        rec.hash = sqlite3_column_int64(stmt.get(), 1);
-        rec.mtime = sqlite3_column_int64(stmt.get(), 2);
-        rec.size = sqlite3_column_int64(stmt.get(), 3);
-        _hashes.emplace(rec.osPath, std::move(rec_ptr));
-    }
-
-    return true;
-}
-
-bool up::FileHashCache::_openCache() {
-    if (_cacheDb != nullptr)
-        return true;
-
-    // open database
-    {
-        sqlite3* db = nullptr;
-        auto const rs = sqlite3_open(_cachePath.c_str(), &db);
-        if (rs != SQLITE_OK)
-            return false;
-
-        _cacheDb.reset(db);
-    }
-
-    // ensure cache table exists
-    {
-        auto const rs = sqlite3_exec(
-            _cacheDb.get(),
-            "CREATE TABLE IF NOT EXISTS hash_cache (os_path STRING, hash INTEGER, mtime INTEGER, size INTEGER)",
-            nullptr,
-            nullptr,
-            nullptr);
-        if (rs != SQLITE_OK) {
-            _cacheDb.reset();
-            return false;
-        }
+        std::tie(rec.osPath, rec.hash, rec.mtime, rec.size) = row;
     }
 
     return true;

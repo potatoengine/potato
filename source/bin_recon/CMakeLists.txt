@@ -26,6 +26,7 @@ target_link_libraries(potato_librecon
         potato::libruntime
         potato::libtools
         potato::libreflex
+        potato::libposql
     PRIVATE
         assimp
         sqlite3

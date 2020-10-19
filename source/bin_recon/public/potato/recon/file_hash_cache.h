@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "potato/posql/posql.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/box.h"
 #include "potato/spud/hash.h"
@@ -12,11 +13,6 @@
 #include "potato/spud/zstring_view.h"
 
 #include <unordered_map>
-
-extern "C" {
-struct sqlite3;
-int sqlite3_close_v2(sqlite3*);
-}
 
 namespace up {
     class FileHashCache {
@@ -44,9 +40,6 @@ namespace up {
         };
 
         std::unordered_map<zstring_view, box<HashRecord>, uhash<>> _hashes;
-        unique_resource<sqlite3*, sqlite3_close_v2> _cacheDb;
-        string _cachePath;
-
-        bool _openCache();
+        Database _conn;
     };
 } // namespace up
