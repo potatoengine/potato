@@ -74,8 +74,8 @@ namespace up {
             explicit Statement(sqlite3_stmt* stmt) noexcept : _stmt(stmt) {}
             UP_POSQL_API ~Statement() noexcept;
 
-            Statement(Statement const&) = delete;
-            Statement& operator=(Statement const&) = delete;
+            Statement(Statement&& rhs) noexcept : _stmt(rhs._stmt) { rhs._stmt = nullptr; }
+            UP_POSQL_API Statement& operator=(Statement&& rhs) noexcept;
 
             [[nodiscard]] bool empty() const noexcept { return _stmt == nullptr; }
             [[nodiscard]] explicit operator bool() const noexcept { return _stmt != nullptr; }

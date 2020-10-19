@@ -22,17 +22,17 @@ void up::Database::close() noexcept {
 }
 
 up::Statement up::Database::prepare(zstring_view sql) noexcept {
+    UP_ASSERT(_conn != nullptr);
     sqlite3_stmt* stmt = nullptr;
     auto const rs = sqlite3_prepare_v3(_conn, sql.c_str(), -1, 0, &stmt, nullptr);
-    if (rs != SQLITE_OK)
-        return {};
+    UP_ASSERT(rs == SQLITE_OK);
     return Statement(stmt);
 }
 
 up::SqlResult up::Database::execute(zstring_view sql) noexcept {
+    UP_ASSERT(_conn != nullptr);
     auto const rs = sqlite3_exec(_conn, sql.c_str(), nullptr, nullptr, nullptr);
-    if (rs != SQLITE_OK)
-        return SqlResult::Error;
+    UP_ASSERT(rs == SQLITE_OK);
     return SqlResult::Ok;
 }
 
@@ -40,12 +40,23 @@ up::Statement::~Statement() noexcept {
     sqlite3_finalize(_stmt);
 }
 
+up::Statement& up::Statement::operator=(Statement&& rhs) noexcept {
+    if (_stmt != rhs._stmt) {
+        sqlite3_finalize(_stmt);
+        _stmt = rhs._stmt;
+        rhs._stmt = nullptr;
+    }
+    return *this;
+}
+
 void up::Statement::_begin() noexcept {
+    UP_ASSERT(_stmt != nullptr);
     UP_ASSERT(!sqlite3_stmt_busy(_stmt));
     sqlite3_reset(_stmt);
 }
 
 void up::Statement::_finalize() noexcept {
+    UP_ASSERT(_stmt != nullptr);
     sqlite3_reset(_stmt);
 }
 
@@ -64,10 +75,12 @@ void up::Statement::_query() noexcept {
 }
 
 bool up::Statement::_done() noexcept {
+    UP_ASSERT(_stmt != nullptr);
     return sqlite3_stmt_busy(_stmt) == 0;
 }
 
 void up::Statement::_next() noexcept {
+    UP_ASSERT(_stmt != nullptr);
     for (;;) {
         auto const rs = sqlite3_step(_stmt);
         if (rs == SQLITE_ROW || rs == SQLITE_DONE) {
