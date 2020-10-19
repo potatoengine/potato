@@ -10,8 +10,9 @@ up::SqlResult up::Database::open(zstring_view file_name) noexcept {
     close();
 
     auto const rs = sqlite3_open(file_name.c_str(), &_conn);
-    if (rs != SQLITE_OK)
+    if (rs != SQLITE_OK) {
         return SqlResult::Error;
+    }
 
     return SqlResult::Ok;
 }
@@ -62,10 +63,12 @@ void up::Statement::_finalize() noexcept {
 
 up::SqlResult up::Statement::_execute() noexcept {
     UP_ASSERT(!sqlite3_stmt_busy(_stmt));
-    if (sqlite3_step(_stmt) != SQLITE_DONE)
+    if (sqlite3_step(_stmt) != SQLITE_DONE) {
         return SqlResult::Error;
-    if (sqlite3_reset(_stmt) != SQLITE_OK)
+    }
+    if (sqlite3_reset(_stmt) != SQLITE_OK) {
         return SqlResult::Error;
+    }
     return SqlResult::Ok;
 }
 

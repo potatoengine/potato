@@ -25,7 +25,7 @@ public:
 
     unique_resource(unique_resource&& src) noexcept : _ptr(src._ptr) { src._ptr = nullptr; }
 
-    unique_resource& operator=(unique_resource&& src) {
+    unique_resource& operator=(unique_resource&& src) noexcept {
         D(_ptr);
         _ptr = src._ptr;
         src._ptr = nullptr;
