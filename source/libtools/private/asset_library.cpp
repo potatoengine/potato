@@ -78,8 +78,9 @@ bool up::AssetLibrary::saveDatabase() {
 
 bool up::AssetLibrary::loadDatabase(zstring_view filename) {
     // open the database
-    if (_db.open(filename.c_str()) != SqlResult::Ok)
+    if (_db.open(filename.c_str()) != SqlResult::Ok) {
         return false;
+    }
 
     // ensure the table is created
     if (_db.execute("CREATE TABLE IF NOT EXISTS assets "
@@ -104,24 +105,21 @@ bool up::AssetLibrary::loadDatabase(zstring_view filename) {
     auto dependencies_stmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE asset_id=?");
 
     // read in all the asset records
-    for (auto const& row : assets_stmt.query<AssetId, zstring_view, uint64, zstring_view, uint64>()) {
-        auto& record = _records.push_back({}); // gcc-10 can't handle any variation of emplace_back here
-        std::tie(
-            record.assetId,
-            record.sourcePath,
-            record.sourceContentHash,
-            record.importerName,
-            record.importerRevision) = row;
+    for (auto const& [assetId, southPath, sourceHash, importName, importVer] :
+         assets_stmt.query<AssetId, zstring_view, uint64, zstring_view, uint64>()) {
+        auto& record = _records.push_back(Imported{
+            .assetId = assetId,
+            .sourcePath = southPath,
+            .importerName = importName,
+            .importerRevision = importVer,
+            .sourceContentHash = sourceHash});
 
-        for (auto const& output_row :
-             outputs_stmt.query<AssetId, zstring_view, uint64>(to_underlying(record.assetId))) {
-            auto& output = record.outputs.emplace_back();
-            std::tie(output.logicalAssetId, output.name, output.contentHash) = output_row;
+        for (auto const& [id, name, hash] : outputs_stmt.query<AssetId, zstring_view, uint64>(assetId)) {
+            auto& output = record.outputs.push_back(Output{.name = name, .logicalAssetId = id, .contentHash = hash});
         }
 
-        for (auto const& dep_row : dependencies_stmt.query<zstring_view, uint64>(to_underlying(record.assetId))) {
-            auto& dependency = record.dependencies.emplace_back();
-            std::tie(dependency.path, dependency.contentHash) = dep_row;
+        for (auto const& [path, hash] : dependencies_stmt.query<zstring_view, uint64>(assetId)) {
+            auto& dependency = record.dependencies.push_back(Dependency{.path = path, .contentHash = hash});
         }
     }
 

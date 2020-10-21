@@ -4,6 +4,7 @@
 
 #include "_export.h"
 
+#include "potato/spud/concepts.h"
 #include "potato/spud/typelist.h"
 #include "potato/spud/zstring_view.h"
 
@@ -122,6 +123,10 @@ namespace up {
 
             UP_POSQL_API void _bind(int index, int64 value) noexcept;
             UP_POSQL_API void _bind(int index, zstring_view value) noexcept;
+            template <enumeration E>
+            void _bind(int index, E value) noexcept {
+                _bind(index, to_underlying(value));
+            }
 
             template <typename... T>
             std::tuple<T...> _columns() {
