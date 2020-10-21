@@ -52,8 +52,9 @@ auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
     HashRecord rec{.osPath = string(path), .hash = hash, .mtime = stat.mtime, .size = stat.size};
 
     // update database
-    if (_addEntryStmt)
+    if (_addEntryStmt) {
         (void)_addEntryStmt.execute(rec.osPath.c_str(), rec.hash, rec.mtime, rec.size);
+    }
 
     _hashes[rec.osPath] = std::move(rec);
 
@@ -69,8 +70,9 @@ bool up::FileHashCache::open(zstring_view cache_path) {
     _conn.close();
 
     auto const rs = _conn.open(cache_path);
-    if (rs != SqlResult::Ok)
+    if (rs != SqlResult::Ok) {
         return false;
+    }
 
     // ensure cache table exists
     if (_conn.execute("CREATE TABLE IF NOT EXISTS hash_cache (os_path STRING PRIMARY KEY, hash INTEGER, mtime INTEGER, "
