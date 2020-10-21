@@ -115,11 +115,11 @@ bool up::AssetLibrary::loadDatabase(zstring_view filename) {
             .sourceContentHash = sourceHash});
 
         for (auto const& [id, name, hash] : outputs_stmt.query<AssetId, zstring_view, uint64>(assetId)) {
-            auto& output = record.outputs.push_back(Output{.name = name, .logicalAssetId = id, .contentHash = hash});
+            record.outputs.push_back(Output{.name = name, .logicalAssetId = id, .contentHash = hash});
         }
 
         for (auto const& [path, hash] : dependencies_stmt.query<zstring_view, uint64>(assetId)) {
-            auto& dependency = record.dependencies.push_back(Dependency{.path = path, .contentHash = hash});
+            record.dependencies.push_back(Dependency{.path = path, .contentHash = hash});
         }
     }
 
