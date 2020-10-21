@@ -25,14 +25,14 @@ void up::Database::close() noexcept {
 up::Statement up::Database::prepare(zstring_view sql) noexcept {
     UP_ASSERT(_conn != nullptr);
     sqlite3_stmt* stmt = nullptr;
-    auto const rs = sqlite3_prepare_v3(_conn, sql.c_str(), -1, 0, &stmt, nullptr);
+    [[maybe_unused]] auto const rs = sqlite3_prepare_v3(_conn, sql.c_str(), -1, 0, &stmt, nullptr);
     UP_ASSERT(rs == SQLITE_OK);
     return Statement(stmt);
 }
 
 up::SqlResult up::Database::execute(zstring_view sql) noexcept {
     UP_ASSERT(_conn != nullptr);
-    auto const rs = sqlite3_exec(_conn, sql.c_str(), nullptr, nullptr, nullptr);
+    [[maybe_unused]] auto const rs = sqlite3_exec(_conn, sql.c_str(), nullptr, nullptr, nullptr);
     UP_ASSERT(rs == SQLITE_OK);
     return SqlResult::Ok;
 }
