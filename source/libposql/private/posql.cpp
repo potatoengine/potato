@@ -38,8 +38,9 @@ up::SqlResult up::Database::execute(zstring_view sql) noexcept {
 
 up::Transaction up::Database::begin() noexcept {
     UP_ASSERT(_conn != nullptr);
-    if (execute("BEGIN") != SqlResult::Ok)
+    if (execute("BEGIN") != SqlResult::Ok) {
         return Transaction(nullptr);
+    }
     return Transaction(_conn);
 }
 
