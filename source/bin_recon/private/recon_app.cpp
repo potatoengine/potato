@@ -43,8 +43,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     _registerImporters();
 
     auto libraryPath = path::join(_libraryPath, "assets.db");
-    if (!_library.loadDatabase(libraryPath)) {
-        _logger.error("Failed to load asset library `{}'", libraryPath);
+    if (!_library.open(libraryPath)) {
+        _logger.error("Failed to open asset library `{}'", libraryPath);
     }
     _logger.info("Opened asset library `{}'", libraryPath);
 
@@ -79,8 +79,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         return false;
     }
 
-    if (!_library.saveDatabase()) {
-        _logger.error("Failed to write asset library `{}'", libraryPath);
+    if (!_library.close()) {
+        _logger.error("Failed to close library `{}'", libraryPath);
         return false;
     }
 

@@ -32,51 +32,52 @@ auto up::AssetLibrary::findRecord(AssetId assetId) const -> Imported const* {
 }
 
 bool up::AssetLibrary::insertRecord(Imported record) {
-    for (auto& current : _records) {
-        if (current.assetId == record.assetId) {
-            current = std::move(record);
-            return true;
-        }
-    }
-
-    _records.push_back(std::move(record));
-    return true;
-}
-
-bool up::AssetLibrary::saveDatabase() {
-    // create our prepared statemtnt to save values
-    auto assets_stmt = _db.prepare(
-        "INSERT INTO assets "
-        "(asset_id, source_db_path, source_hash, importer_name, importer_revision) "
-        "VALUES(?, ?, ?, ?, ?)");
-    auto outputs_stmt = _db.prepare("INSERT INTO outputs (asset_id, output_id, name, hash) VALUES(?, ?, ?, ?)");
-    auto dependencies_stmt = _db.prepare("INSERT INTO dependencies (asset_id, db_path, hash) VALUES(?, ?, ?)");
-
-    for (auto const& record : _records) {
-        (void)assets_stmt.execute(
-            to_underlying(record.assetId),
+    // update database
+    if (_insertAssetStmt) {
+        auto tx = _db.begin();
+        (void)_insertAssetStmt.execute(
+            record.assetId,
             record.sourcePath.c_str(),
             record.sourceContentHash,
             record.importerName.c_str(),
             record.importerRevision);
+        
 
+        (void)_clearOutputsStmt.execute(record.assetId);
         for (auto const& output : record.outputs) {
-            (void)outputs_stmt.execute(
-                to_underlying(record.assetId),
-                to_underlying(output.logicalAssetId),
+            (void)_insertOutputStmt.execute(
+                record.assetId,
+                output.logicalAssetId,
                 output.name.c_str(),
                 output.contentHash);
         }
 
+        (void)_clearDependenciesStmt.execute(record.assetId);
         for (auto const& dep : record.dependencies) {
-            (void)dependencies_stmt.execute(to_underlying(record.assetId), dep.path.c_str(), dep.contentHash);
+            (void)_insertDependencyStmt.execute(record.assetId, dep.path.c_str(), dep.contentHash);
         }
+
+        tx.commit();
+    }
+
+    // update in-memory data
+    bool updated = false;
+    for (auto& current : _records) {
+        if (current.assetId == record.assetId) {
+            current = std::move(record);
+            updated = true;
+            break;
+        }
+    }
+
+    if (!updated) {
+        _records.push_back(std::move(record));
     }
 
     return true;
 }
 
-bool up::AssetLibrary::loadDatabase(zstring_view filename) {
+bool up::AssetLibrary::open(zstring_view filename) {
     // open the database
     if (_db.open(filename.c_str()) != SqlResult::Ok) {
         return false;
@@ -97,6 +98,17 @@ bool up::AssetLibrary::loadDatabase(zstring_view filename) {
                     "FOREIGN KEY(asset_id) REFERENCES assets(asset_id));\n") != SqlResult::Ok) {
         return false;
     }
+
+    // create our prepared statements for later use
+    _insertAssetStmt = _db.prepare(
+        "INSERT INTO assets "
+        "(asset_id, source_db_path, source_hash, importer_name, importer_revision) "
+        "VALUES(?, ?, ?, ?, ?)"
+        "ON CONFLICT (asset_id) DO UPDATE SET source_hash=excluded.source_hash, importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
+    _insertOutputStmt = _db.prepare("INSERT INTO outputs (asset_id, output_id, name, hash) VALUES(?, ?, ?, ?)");
+    _insertDependencyStmt = _db.prepare("INSERT INTO dependencies (asset_id, db_path, hash) VALUES(?, ?, ?)");
+    _clearOutputsStmt  = _db.prepare("DELETE FROM outputs WHERE asset_id=?");
+    _clearDependenciesStmt = _db.prepare("DELETE FROM dependencies WHERE asset_id=?");
 
     // create our prepared statemtnt to load values
     auto assets_stmt =
@@ -123,6 +135,11 @@ bool up::AssetLibrary::loadDatabase(zstring_view filename) {
         }
     }
 
+    return true;
+}
+
+bool up::AssetLibrary::close() {
+    _db.close();
     return true;
 }
 

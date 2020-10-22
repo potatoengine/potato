@@ -56,8 +56,8 @@ namespace up {
 
         UP_TOOLS_API bool insertRecord(Imported record);
 
-        UP_TOOLS_API bool loadDatabase(zstring_view filename);
-        UP_TOOLS_API bool saveDatabase();
+        UP_TOOLS_API bool open(zstring_view filename);
+        UP_TOOLS_API bool close();
 
         UP_TOOLS_API void generateManifest(erased_writer writer) const;
 
@@ -68,5 +68,10 @@ namespace up {
 
         vector<Imported> _records;
         Database _db;
+        Statement _insertAssetStmt;
+        Statement _insertOutputStmt;
+        Statement _insertDependencyStmt;
+        Statement _clearOutputsStmt;
+        Statement _clearDependenciesStmt;
     };
 } // namespace up
