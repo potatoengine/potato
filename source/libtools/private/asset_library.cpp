@@ -41,15 +41,11 @@ bool up::AssetLibrary::insertRecord(Imported record) {
             record.sourceContentHash,
             record.importerName.c_str(),
             record.importerRevision);
-        
 
         (void)_clearOutputsStmt.execute(record.assetId);
         for (auto const& output : record.outputs) {
-            (void)_insertOutputStmt.execute(
-                record.assetId,
-                output.logicalAssetId,
-                output.name.c_str(),
-                output.contentHash);
+            (void)_insertOutputStmt
+                .execute(record.assetId, output.logicalAssetId, output.name.c_str(), output.contentHash);
         }
 
         (void)_clearDependenciesStmt.execute(record.assetId);
@@ -104,10 +100,11 @@ bool up::AssetLibrary::open(zstring_view filename) {
         "INSERT INTO assets "
         "(asset_id, source_db_path, source_hash, importer_name, importer_revision) "
         "VALUES(?, ?, ?, ?, ?)"
-        "ON CONFLICT (asset_id) DO UPDATE SET source_hash=excluded.source_hash, importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
+        "ON CONFLICT (asset_id) DO UPDATE SET source_hash=excluded.source_hash, "
+        " importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
     _insertOutputStmt = _db.prepare("INSERT INTO outputs (asset_id, output_id, name, hash) VALUES(?, ?, ?, ?)");
     _insertDependencyStmt = _db.prepare("INSERT INTO dependencies (asset_id, db_path, hash) VALUES(?, ?, ?)");
-    _clearOutputsStmt  = _db.prepare("DELETE FROM outputs WHERE asset_id=?");
+    _clearOutputsStmt = _db.prepare("DELETE FROM outputs WHERE asset_id=?");
     _clearDependenciesStmt = _db.prepare("DELETE FROM dependencies WHERE asset_id=?");
 
     // create our prepared statemtnt to load values

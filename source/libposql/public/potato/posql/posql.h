@@ -56,7 +56,7 @@ namespace up {
         public:
             ~Transaction() { rollback(); }
 
-            Transaction(Transaction&& rhs) noexcept: _conn(rhs._conn) { rhs._conn = nullptr; }
+            Transaction(Transaction&& rhs) noexcept : _conn(rhs._conn) { rhs._conn = nullptr; }
             Transaction& operator=(Transaction&& rhs) noexcept {
                 commit();
                 _conn = rhs._conn;
