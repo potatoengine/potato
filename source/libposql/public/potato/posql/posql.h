@@ -21,6 +21,7 @@ namespace up {
 
         class Database;
         class Statement;
+        class Transaction;
 
         template <typename...>
         class QueryResult;
@@ -45,7 +46,32 @@ namespace up {
             UP_POSQL_API [[nodiscard]] Statement prepare(zstring_view sql) noexcept;
             UP_POSQL_API [[nodiscard]] SqlResult execute(zstring_view sql) noexcept;
 
+            UP_POSQL_API [[nodiscard]] Transaction begin() noexcept;
+
         private:
+            sqlite3* _conn = nullptr;
+        };
+
+        class Transaction {
+        public:
+            ~Transaction() { rollback(); }
+
+            Transaction(Transaction&& rhs) noexcept: _conn(rhs._conn) { rhs._conn = nullptr; }
+            Transaction& operator=(Transaction&& rhs) noexcept {
+                commit();
+                _conn = rhs._conn;
+                rhs._conn = nullptr;
+                return *this;
+            }
+
+            UP_POSQL_API void commit();
+            UP_POSQL_API void rollback();
+
+        private:
+            explicit Transaction(sqlite3* conn) noexcept : _conn(conn) {}
+
+            friend Database;
+
             sqlite3* _conn = nullptr;
         };
 

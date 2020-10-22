@@ -32,9 +32,29 @@ up::Statement up::Database::prepare(zstring_view sql) noexcept {
 
 up::SqlResult up::Database::execute(zstring_view sql) noexcept {
     UP_ASSERT(_conn != nullptr);
-    [[maybe_unused]] auto const rs = sqlite3_exec(_conn, sql.c_str(), nullptr, nullptr, nullptr);
-    UP_ASSERT(rs == SQLITE_OK);
-    return SqlResult::Ok;
+    auto const rs = sqlite3_exec(_conn, sql.c_str(), nullptr, nullptr, nullptr);
+    return rs == SQLITE_OK ? SqlResult::Ok : SqlResult::Error;
+}
+
+up::Transaction up::Database::begin() noexcept {
+    UP_ASSERT(_conn != nullptr);
+    if (execute("BEGIN") != SqlResult::Ok)
+        return Transaction(nullptr);
+    return Transaction(_conn);
+}
+
+void up::Transaction::commit() {
+    if (_conn != nullptr) {
+        sqlite3_exec(_conn, "COMMIT", nullptr, nullptr, nullptr);
+        _conn = nullptr;
+    }
+}
+
+void up::Transaction::rollback() {
+    if (_conn != nullptr) {
+        sqlite3_exec(_conn, "ROLLBACK", nullptr, nullptr, nullptr);
+        _conn = nullptr;
+    }
 }
 
 up::Statement::~Statement() noexcept {
