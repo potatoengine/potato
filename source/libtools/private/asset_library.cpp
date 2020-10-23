@@ -57,19 +57,14 @@ bool up::AssetLibrary::insertRecord(Imported record) {
     }
 
     // update in-memory data
-    bool updated = false;
     for (auto& current : _records) {
         if (current.assetId == record.assetId) {
             current = std::move(record);
-            updated = true;
-            break;
+            return true;
         }
     }
 
-    if (!updated) {
-        _records.push_back(std::move(record));
-    }
-
+    _records.push_back(std::move(record));
     return true;
 }
 
