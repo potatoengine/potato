@@ -17,12 +17,13 @@ Documentation
 Status
 ------
 
-[![Build Status](https://seanmiddleditch.visualstudio.com/potato/_apis/build/status/Potato?branchName=master)](https://seanmiddleditch.visualstudio.com/potato/_build/latest?definitionId=10&branchName=master)
+![Build](https://github.com/potatoengine/potato/workflows/Build/badge.svg)
 
 Authors
 -------
 
-Sean Middleditch (sean.middleditch+grimm@gmail.com)
+- Sean Middleditch
+- Marcin Wieczorek
 
 License
 -------
