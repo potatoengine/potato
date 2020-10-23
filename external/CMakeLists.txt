@@ -16,6 +16,7 @@ set(EXTERNALS
     soloud
     nfd
     sapc
+    sqlite
 )
 
 # ---------------------------- #
