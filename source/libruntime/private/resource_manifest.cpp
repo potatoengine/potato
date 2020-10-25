@@ -136,7 +136,7 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                         mask |= ColumnContentHashMask;
                     }
                     else if (column == debugNameColumn) {
-                        record.filename = data;
+                        record.filename = string{data};
                         mask |= ColumnDebugNameMask;
                     }
 

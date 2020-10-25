@@ -85,7 +85,7 @@ void up::shell::FileTreeEditor::_enumerateFiles() {
             return fs::recurse;
         }
 
-        _cache.push_back({path::filename(item.path), item.size, depth, item.type == fs::FileType::Directory});
+        _cache.push_back({string{path::filename(item.path)}, item.size, depth, item.type == fs::FileType::Directory});
         return item.type == fs::FileType::Directory ? fs::recurse : fs::next;
     });
 }

@@ -268,7 +268,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
         return false;
     }
 
-    _projectName = path::filebasename(path);
+    _projectName = string{path::filebasename(path)};
 
     _editors.closeAll();
     _editors.open(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
