@@ -48,6 +48,14 @@ def generate_header_types(ctx: Context):
             ctx.print(f"    {field.cxxtype} {field.cxxname};\n")
         ctx.print("};\n")
 
+def generate_header_schemas(ctx: Context):
+    """Generates the Schema declarations for types"""
+    for name, type in ctx.db.exports.items():
+        ctx.print("template <>\n")
+        ctx.print(f"struct SchemaHolder<{type.cxxname}> {{\n")
+        ctx.print("    static Schema const& get() noexcept;\n")
+        ctx.print("};\n")
+
 def generate_header_reflex(ctx: Context):
     """Generates the reflex definitions for types"""
     for name, type in ctx.db.exports.items():
@@ -64,7 +72,7 @@ def generate_header_json_parse_decl(ctx: Context):
 
         ctx.print(f"void from_json(nlohmann::json const& root, {type.cxxname}& value);\n")
 
-def generate_header_json_parse_impl(ctx: Context):
+def generate_impl_json_parse(ctx: Context):
     """Generates json parsing function definition for types"""
     for name, type in ctx.db.exports.items():
         if not type.has_annotation("serialize"):
@@ -99,6 +107,18 @@ def generate_header_json_parse_impl(ctx: Context):
 
         ctx.print("}\n")
 
+def generate_impl_schemas(ctx: Context):
+    """Generates the Schema definitions for types"""
+    for name, type in ctx.db.exports.items():
+        ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<up::schema::{type.cxxname}>::get() noexcept {{\n")
+        ctx.print('    static const SchemaField fields[] = {\n')
+        for field in type.fields_ordered:
+            ctx.print(f'        SchemaField{{.name = "{field.name}", .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({type.cxxname}, {field.cxxname})}},\n')
+        ctx.print('    };\n')
+        ctx.print(f'    static const Schema schema = {{.name = "{type.name}", .fields = fields}};\n')
+        ctx.print('    return schema;\n')
+        ctx.print("}\n")
+
 def generate_header(ctx: Context):
     """Generate contents of header file"""
 
@@ -109,6 +129,7 @@ def generate_header(ctx: Context):
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
 #include "potato/reflex/reflect.h"
+#include "potato/reflex/schema.h"
 #include "potato/runtime/json.h"
 namespace up {{
     inline namespace schema {{
@@ -123,6 +144,10 @@ namespace up {{
 }} // namespace up
 """)
 
+    ctx.print("namespace up::reflex {\n")
+    generate_header_schemas(ctx)
+    ctx.print("} // namespace up::reflex\n")
+
 def generate_source(ctx: Context):
     """Generate contents of a source file"""
 
@@ -134,12 +159,14 @@ namespace up {{
     inline namespace schema {{
 """)
 
-    generate_header_json_parse_impl(ctx)
+    generate_impl_json_parse(ctx)
 
     ctx.print(f"""
     }} // namespace up::schema
 }} // namespace up
 """)
+
+    generate_impl_schemas(ctx)
 
 generators = {
     'header': generate_header,

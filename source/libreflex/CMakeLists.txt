@@ -19,6 +19,7 @@ add_executable(potato_libreflex_test)
 target_sources(potato_libreflex_test PRIVATE
     "tests/main.cpp"
     "tests/test_serialize.cpp"
+    "public/potato/reflex/schema.h"
 )
 
 up_set_common_properties(potato_libreflex_test)
