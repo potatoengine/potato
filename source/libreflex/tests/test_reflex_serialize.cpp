@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/reflex/json_serializer.h"
+#include "potato/reflex/json_reflex_serializer.h"
 #include "potato/reflex/reflect.h"
 #include "potato/reflex/serializer.h"
 #include "potato/spud/vector.h"

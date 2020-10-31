@@ -32,6 +32,7 @@ struct up::_detail::box_traits {
 template <typename T>
 class up::box : private up::_detail::box_traits<T> {
 public:
+    using value_type = T;
     using pointer = typename up::_detail::box_traits<T>::pointer;
     using reference = typename up::_detail::box_traits<T>::reference;
 

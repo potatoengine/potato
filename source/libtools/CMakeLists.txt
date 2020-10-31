@@ -9,6 +9,14 @@ target_sources(potato_libtools PRIVATE
     "private/project.cpp"
     "private/importer_context.cpp"
     "private/importer_factory.cpp"
+    "private/meta_file.cpp"
+    "private/project.cpp"
+    "public/potato/tools/crust.h"
+    "public/potato/tools/evaluator.h"
+    "public/potato/tools/json_serializer.h"
+ "private/json_serializer.cpp")
+
+target_sources(potato_libtools PRIVATE
     "private/importers/copy_importer.cpp"
     "private/importers/hlsl_importer.cpp"
     "private/importers/json_importer.cpp"
@@ -26,6 +34,7 @@ target_link_libraries(potato_libtools
     PUBLIC
         potato::libruntime
         potato::librender
+        potato::libreflex
         potato::libposql
         potato::spud
         flatbuffers::flatlib

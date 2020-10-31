@@ -18,7 +18,8 @@ target_include_directories(potato_libreflex INTERFACE public/)
 add_executable(potato_libreflex_test)
 target_sources(potato_libreflex_test PRIVATE
     "tests/main.cpp"
-    "tests/test_serialize.cpp"
+    "tests/test_reflex_serialize.cpp"
+    "public/potato/reflex/json_reflex_serializer.h"
     "public/potato/reflex/schema.h"
 )
 

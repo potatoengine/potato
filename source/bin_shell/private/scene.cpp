@@ -6,7 +6,7 @@
 #include "potato/audio/audio_engine.h"
 #include "potato/ecs/query.h"
 #include "potato/ecs/world.h"
-#include "potato/reflex/json_serializer.h"
+#include "potato/reflex/json_reflex_serializer.h"
 #include "potato/reflex/reflect.h"
 #include "potato/render/model.h"
 #include "potato/runtime/json.h"
