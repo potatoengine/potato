@@ -1,6 +1,19 @@
 module common;
 
+attribute ignore;
 attribute required { bool required = true; }
 attribute cxxname { string id; }
 attribute json { string name; }
 attribute serialize {}
+
+[ignore, cxxname("char")]
+type char;
+[ignore, cxxname("double")]
+type double;
+
+[ignore, cxxname("glm::vec3")]
+struct vec3 {
+    float x;
+    float y;
+    float z;
+}

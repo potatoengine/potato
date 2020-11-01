@@ -67,7 +67,7 @@ namespace up::reflex {
     template <has_schema T>
     constexpr Schema const& getSchema() noexcept {
         using Type = std::remove_cv_t<std::decay_t<T>>;
-        if constexpr (std::is_same_v<Type, int8>) {
+        if constexpr (std::is_same_v<Type, int8> || (std::is_same_v<Type, char> && std::is_signed_v<char>)) {
             static constexpr Schema schema{.name = "int8"_zsv, .primitive = SchemaPrimitive::Int8};
             return schema;
         }
@@ -83,8 +83,28 @@ namespace up::reflex {
             static constexpr Schema schema{.name = "int64"_zsv, .primitive = SchemaPrimitive::Int64};
             return schema;
         }
+        else if constexpr (std::is_same_v<Type, int8> || (std::is_same_v<Type, char> && std::is_unsigned_v<char>)) {
+            static constexpr Schema schema{ .name = "uint8"_zsv, .primitive = SchemaPrimitive::UInt8 };
+            return schema;
+        }
+        else if constexpr (std::is_same_v<Type, int16>) {
+            static constexpr Schema schema{ .name = "uint16"_zsv, .primitive = SchemaPrimitive::UInt16 };
+            return schema;
+        }
+        else if constexpr (std::is_same_v<Type, int32>) {
+            static constexpr Schema schema{ .name = "uint32"_zsv, .primitive = SchemaPrimitive::UInt32 };
+            return schema;
+        }
+        else if constexpr (std::is_same_v<Type, int64>) {
+            static constexpr Schema schema{ .name = "uint64"_zsv, .primitive = SchemaPrimitive::UInt64 };
+            return schema;
+        }
         else if constexpr (std::is_same_v<Type, float>) {
             static constexpr Schema schema{.name = "float"_zsv, .primitive = SchemaPrimitive::Float};
+            return schema;
+        }
+        else if constexpr (std::is_same_v<Type, double>) {
+            static constexpr Schema schema{ .name = "double"_zsv, .primitive = SchemaPrimitive::Double };
             return schema;
         }
         else if constexpr (std::is_same_v<Type, glm::vec3>) {

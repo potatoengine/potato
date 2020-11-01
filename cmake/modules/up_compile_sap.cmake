@@ -17,13 +17,18 @@ function(up_compile_sap TARGET)
     set(GEN_TGT "generate_flat_schemas_${TARGET}")
     set(OUT_FILES)
 
-    get_target_property(SHORT_NAME ${TARGET} POTATO_SHORT_NAME)
-
     set(OUT_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/gen")
     set(OUT_JSON_DIR "${OUT_ROOT_DIR}/json")
     set(OUT_SOURCE_DIR "${OUT_ROOT_DIR}/src")
     set(OUT_HEADER_DIR "${OUT_ROOT_DIR}/inc")
-    set(OUT_HEADER_FULL_DIR "${OUT_HEADER_DIR}/potato/${SHORT_NAME}")
+
+    get_target_property(SHORT_NAME ${TARGET} POTATO_SHORT_NAME)
+    if(SHORT_NAME)
+        set(OUT_HEADER_FULL_DIR "${OUT_HEADER_DIR}/potato/${SHORT_NAME}")
+    else()
+        set(OUT_HEADER_FULL_DIR "${OUT_HEADER_DIR}/sap")
+    endif()
+
 
     target_include_directories(${TARGET} PUBLIC ${OUT_HEADER_DIR})
     target_include_directories(${TARGET} PRIVATE ${OUT_HEADER_FULL_DIR})
@@ -49,8 +54,7 @@ function(up_compile_sap TARGET)
             OUTPUT "${JSON_FILE}"
             COMMAND sapc -o "${JSON_FILE}"
                     -d "${JSON_DEP_FILE}"
-                    "-I${CMAKE_CURRENT_SOURCE_DIR}"
-                    "-I$<JOIN:$<TARGET_PROPERTY:${TARGET},INTERFACE_INCLUDE_DIRECTORIES>,;-I>"
+                    "-I$<JOIN:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>,;-I>"
                     -- "${INPUT_SAP_FILE}"
             MAIN_DEPENDENCY "${INPUT_SAP_FILE}"
             DEPENDS sapc
@@ -75,14 +79,18 @@ function(up_compile_sap TARGET)
         )
     endforeach()
 
-    add_custom_target("${GEN_TGT}"
-        DEPENDS ${JSON_FILES}
-    )
+    if(NOT TARGET "${GEN_TGT}")
+        add_custom_target("${GEN_TGT}"
+            DEPENDS ${JSON_FILES}
+        )
+    else()
+        add_dependencies(${GEN_TGT} ${JSON_FILES})
+    endif()
 
     cmake_policy(SET CMP0079 NEW)
     target_include_directories(${TARGET}
-        PUBLIC "${OUT_ROOT_DIR}"
-        PRIVATE "${OUT_HEADER_DIR}"
+        PUBLIC "${OUT_HEADER_DIR}"
+        PRIVATE "${OUT_HEADER_FULL_DIR}"
     )
     add_dependencies(${TARGET} ${GEN_TGT})
 endfunction()

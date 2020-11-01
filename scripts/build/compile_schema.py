@@ -43,6 +43,8 @@ def generate_file_prefix(ctx: Context):
 def generate_header_types(ctx: Context):
     """Generates the type definitions for types"""
     for name, type in ctx.db.exports.items():
+        if type.has_annotation('ignore'):
+            continue
         ctx.print(f"struct {type.cxxname} {{\n")
         for field in type.fields_ordered:
             ctx.print(f"    {field.cxxtype} {field.cxxname};\n")
@@ -51,6 +53,8 @@ def generate_header_types(ctx: Context):
 def generate_header_schemas(ctx: Context):
     """Generates the Schema declarations for types"""
     for name, type in ctx.db.exports.items():
+        if type.has_annotation('ignore'):
+            continue
         ctx.print("template <>\n")
         ctx.print(f"struct SchemaHolder<{type.cxxname}> {{\n")
         ctx.print("    static Schema const& get() noexcept;\n")
@@ -59,6 +63,8 @@ def generate_header_schemas(ctx: Context):
 def generate_header_reflex(ctx: Context):
     """Generates the reflex definitions for types"""
     for name, type in ctx.db.exports.items():
+        if type.has_annotation('ignore'):
+            continue
         ctx.print(f"UP_REFLECT_TYPE({type.cxxname}) {{\n")
         for field in type.fields_ordered:
             ctx.print(f'    reflect("{field.name}", &Type::{field.cxxname});\n')
@@ -75,10 +81,12 @@ def generate_header_json_parse_decl(ctx: Context):
 def generate_impl_json_parse(ctx: Context):
     """Generates json parsing function definition for types"""
     for name, type in ctx.db.exports.items():
+        if type.has_annotation('ignore'):
+            continue
         if not type.has_annotation("serialize"):
             continue
 
-        ctx.print(f"void from_json(nlohmann::json const& root, {type.cxxname}& value) {{\n")
+        ctx.print(f"void up::schema::from_json(nlohmann::json const& root, {type.cxxname}& value) {{\n")
         ctx.print("""
     if (!root.is_object()) {
         return;
@@ -110,11 +118,16 @@ def generate_impl_json_parse(ctx: Context):
 def generate_impl_schemas(ctx: Context):
     """Generates the Schema definitions for types"""
     for name, type in ctx.db.exports.items():
+        if type.has_annotation('ignore'):
+            continue
         ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<up::schema::{type.cxxname}>::get() noexcept {{\n")
-        ctx.print('    static const SchemaField fields[] = {\n')
-        for field in type.fields_ordered:
-            ctx.print(f'        SchemaField{{.name = "{field.name}", .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({type.cxxname}, {field.cxxname})}},\n')
-        ctx.print('    };\n')
+        if len(type.fields_ordered) != 0:
+            ctx.print('    static const SchemaField fields[] = {\n')
+            for field in type.fields_ordered:
+                ctx.print(f'        SchemaField{{.name = "{field.name}", .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({type.cxxname}, {field.cxxname})}},\n')
+            ctx.print('    };\n')
+        else:
+            ctx.print('    static constexpr view<SchemaField> fields;\n')
         ctx.print(f'    static const Schema schema = {{.name = "{type.name}", .fields = fields}};\n')
         ctx.print('    return schema;\n')
         ctx.print("}\n")
@@ -155,17 +168,9 @@ def generate_source(ctx: Context):
     ctx.print(f"""
 #include "{ctx.db.module}_schema.h"
 #include <nlohmann/json.hpp>
-namespace up {{
-    inline namespace schema {{
 """)
 
     generate_impl_json_parse(ctx)
-
-    ctx.print(f"""
-    }} // namespace up::schema
-}} // namespace up
-""")
-
     generate_impl_schemas(ctx)
 
 generators = {
