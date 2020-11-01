@@ -56,6 +56,10 @@ def generate_header_schemas(ctx: Context):
         if type.has_annotation('ignore'):
             continue
         ctx.print("template <>\n")
+        ctx.print(f"struct TypeHolder<{type.cxxname}> {{\n")
+        ctx.print("    static TypeInfo const& get() noexcept;\n")
+        ctx.print("};\n")
+        ctx.print("template <>\n")
         ctx.print(f"struct SchemaHolder<{type.cxxname}> {{\n")
         ctx.print("    static Schema const& get() noexcept;\n")
         ctx.print("};\n")
@@ -120,6 +124,10 @@ def generate_impl_schemas(ctx: Context):
     for name, type in ctx.db.exports.items():
         if type.has_annotation('ignore'):
             continue
+        ctx.print(f"up::reflex::TypeInfo const& up::reflex::TypeHolder<up::schema::{type.cxxname}>::get() noexcept {{\n")
+        ctx.print(f'    static constexpr TypeInfo info = makeTypeInfo<{type.cxxname}>("{type.name}");\n')
+        ctx.print('    return info;\n')
+        ctx.print("}\n")
         ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<up::schema::{type.cxxname}>::get() noexcept {{\n")
         if len(type.fields_ordered) != 0:
             ctx.print('    static const SchemaField fields[] = {\n')
@@ -143,6 +151,7 @@ def generate_header(ctx: Context):
 #include "potato/spud/vector.h"
 #include "potato/reflex/reflect.h"
 #include "potato/reflex/schema.h"
+#include "potato/reflex/type.h"
 #include "potato/runtime/json.h"
 namespace up {{
     inline namespace schema {{

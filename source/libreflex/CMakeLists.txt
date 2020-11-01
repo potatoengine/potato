@@ -21,7 +21,7 @@ target_sources(potato_libreflex_test PRIVATE
     "tests/test_reflex_serialize.cpp"
     "public/potato/reflex/json_reflex_serializer.h"
     "public/potato/reflex/schema.h"
-)
+ "public/potato/reflex/type.h")
 
 up_set_common_properties(potato_libreflex_test)
 
