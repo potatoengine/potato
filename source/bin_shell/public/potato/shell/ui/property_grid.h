@@ -10,12 +10,12 @@
 namespace up::shell {
     class PropertyGrid {
     public:
-        void drawGridRaw(reflex::Schema const& schema, void* object);
+        void drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object);
 
         template <typename T>
-        void drawGrid(T const& value)
+        void drawGrid(zstring_view name, T const& value)
         {
-            drawGridRaw(getSchema<T>(), &value);
+            drawGridRaw(name, getSchema<T>(), &value);
         }
 
         void drawPropertyRaw(reflex::SchemaField const& field, void* object);

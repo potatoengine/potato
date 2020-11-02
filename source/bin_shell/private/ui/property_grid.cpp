@@ -7,37 +7,42 @@
 #include <glm/vec3.hpp>
 #include <imgui.h>
 
-void up::shell::PropertyGrid::drawGridRaw(reflex::Schema const& schema, void* object) {
+void up::shell::PropertyGrid::drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object) {
     switch (schema.primitive) {
         case reflex::SchemaPrimitive::Int16:
-            return drawIntEditor(schema.name, *static_cast<int16*>(object));
+            return drawIntEditor(name, *static_cast<int16*>(object));
         case reflex::SchemaPrimitive::Float:
-            return drawFloatEditor(schema.name, *static_cast<float*>(object));
+            return drawFloatEditor(name, *static_cast<float*>(object));
         case reflex::SchemaPrimitive::Vec3:
-            return drawVec3Editor(schema.name, *static_cast<glm::vec3*>(object));
+            return drawVec3Editor(name, *static_cast<glm::vec3*>(object));
         case reflex::SchemaPrimitive::Mat4x4:
-            return drawMat4x4Editor(schema.name, *static_cast<glm::mat4x4*>(object));
+            return drawMat4x4Editor(name, *static_cast<glm::mat4x4*>(object));
         case reflex::SchemaPrimitive::Quat:
-            return drawQuatEditor(schema.name, *static_cast<glm::quat*>(object));
+            return drawQuatEditor(name, *static_cast<glm::quat*>(object));
         case reflex::SchemaPrimitive::Pointer:
             if (void* pointee = *static_cast<void**>(object); pointee != nullptr) {
-                drawGridRaw(*schema.elementType, pointee);
+                drawGridRaw(name , *schema.elementType, pointee);
             }
             return;
         case reflex::SchemaPrimitive::Object:
-            for (reflex::SchemaField const& field : schema.fields) {
-                drawPropertyRaw(field, object);
+            if (name.empty() || ImGui::TreeNodeEx(name.c_str())) {
+                for (reflex::SchemaField const& field : schema.fields) {
+                    drawPropertyRaw(field, object);
+                }
+                if (!name.empty()) {
+                    ImGui::TreePop();
+                }
             }
             return;
         default:
-            ImGui::Text("Unsupported primitive type for `%s`", schema.name.c_str());
+            ImGui::Text("Unsupported primitive type for `%s` [schema: %s]", name.c_str(), schema.name.c_str());
             return;
     }
 }
 
 void up::shell::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, void* object) {
     void* member = static_cast<char*>(object) + field.offset;
-    return drawGridRaw(*field.schema, object);
+    return drawGridRaw(field.name, *field.schema, object);
 }
 
 void up::shell::PropertyGrid::drawIntEditor(zstring_view name, int& value) noexcept {
@@ -53,11 +58,13 @@ void up::shell::PropertyGrid::drawVec3Editor(zstring_view name, glm::vec3& value
 }
 
 void up::shell::PropertyGrid::drawMat4x4Editor(zstring_view name, glm::mat4x4& value) noexcept {
-    ImGui::Text("%s", name.c_str());
-    ImGui::InputFloat4("##a", &value[0].x);
-    ImGui::InputFloat4("##b", &value[1].x);
-    ImGui::InputFloat4("##c", &value[2].x);
-    ImGui::InputFloat4("##d", &value[3].x);
+    if (ImGui::TreeNodeEx(name.c_str())) {
+        ImGui::InputFloat4("##a", &value[0].x);
+        ImGui::InputFloat4("##b", &value[1].x);
+        ImGui::InputFloat4("##c", &value[2].x);
+        ImGui::InputFloat4("##d", &value[3].x);
+        ImGui::TreePop();
+    }
 }
 
 void up::shell::PropertyGrid::drawQuatEditor(zstring_view name, glm::quat& value) noexcept {

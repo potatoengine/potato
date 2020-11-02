@@ -205,7 +205,7 @@ void up::shell::SceneEditor::_inspector() {
                     }
 
                     if (typeInfo->schema != nullptr) {
-                        _propertyGrid.drawGridRaw(*typeInfo->schema, data);
+                        _propertyGrid.drawGridRaw("", *typeInfo->schema, data);
                     }
                     ImGui::TreePop();
                 }
