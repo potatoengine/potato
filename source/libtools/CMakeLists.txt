@@ -11,10 +11,10 @@ target_sources(potato_libtools PRIVATE
     "private/importer_factory.cpp"
     "private/meta_file.cpp"
     "private/project.cpp"
-    "public/potato/tools/crust.h"
     "public/potato/tools/evaluator.h"
     "public/potato/tools/json_serializer.h"
- "private/json_serializer.cpp")
+    "private/json_serializer.cpp"
+)
 
 target_sources(potato_libtools PRIVATE
     "private/importers/copy_importer.cpp"
