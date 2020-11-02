@@ -97,7 +97,7 @@ class TypeBase(AnnotationsBase):
 
     @property
     def cxxname(self):
-        return self.get_annotation_field_or('cxxname', 'id', self.__name)
+        return self.get_annotation_field_or('cxxname', 'id', self.get_annotation_field_or('cxximport', 'id', self.__name))
 
     @property
     def base(self):
@@ -151,10 +151,10 @@ class TypeStruct(TypeBase):
             field.resolve(db)
 
 class TypeAttribute(TypeStruct):
-    """User-friendly wrapper for an annotation struct"""
+    """User-friendly wrapper for an attribute struct"""
     @property
     def kind(self):
-        return TypeKind.ANNOTATION
+        return TypeKind.ATTRIBUTE
 
 class TypeField(AnnotationsBase):
     """User-friendly wrapper for a field definition of a type"""

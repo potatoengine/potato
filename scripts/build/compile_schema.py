@@ -40,11 +40,21 @@ def generate_file_prefix(ctx: Context):
 // - Generated from {path.basename(ctx.input_name)}
 """)
 
+def qualified_cxxname(type: type_info.TypeBase, namespace: str = 'up::schema'):
+    """Calculates the qualified name for types"""
+    cxxname = type.cxxname
+    return cxxname if '::' in cxxname else f'up::schema::{cxxname}'
+
 def generate_header_types(ctx: Context):
     """Generates the type definitions for types"""
     for name, type in ctx.db.exports.items():
         if type.has_annotation('ignore'):
             continue
+        if type.kind == type_info.TypeKind.OPAQUE:
+            continue
+        if type.has_annotation('cxximport'):
+            continue
+
         ctx.print(f"struct {type.cxxname} {{\n")
         for field in type.fields_ordered:
             ctx.print(f"    {field.cxxtype} {field.cxxname};\n")
@@ -55,12 +65,15 @@ def generate_header_schemas(ctx: Context):
     for name, type in ctx.db.exports.items():
         if type.has_annotation('ignore'):
             continue
+
+        qual_name = qualified_cxxname(type=type)
+
         ctx.print("template <>\n")
-        ctx.print(f"struct TypeHolder<{type.cxxname}> {{\n")
+        ctx.print(f"struct TypeHolder<{qual_name}> {{\n")
         ctx.print("    static TypeInfo const& get() noexcept;\n")
         ctx.print("};\n")
         ctx.print("template <>\n")
-        ctx.print(f"struct SchemaHolder<{type.cxxname}> {{\n")
+        ctx.print(f"struct SchemaHolder<{qual_name}> {{\n")
         ctx.print("    static Schema const& get() noexcept;\n")
         ctx.print("};\n")
 
@@ -69,6 +82,9 @@ def generate_header_reflex(ctx: Context):
     for name, type in ctx.db.exports.items():
         if type.has_annotation('ignore'):
             continue
+        if type.kind == type_info.TypeKind.OPAQUE:
+            continue
+
         ctx.print(f"UP_REFLECT_TYPE({type.cxxname}) {{\n")
         for field in type.fields_ordered:
             ctx.print(f'    reflect("{field.name}", &Type::{field.cxxname});\n')
@@ -79,6 +95,8 @@ def generate_header_json_parse_decl(ctx: Context):
     for name, type in ctx.db.exports.items():
         if not type.has_annotation("serialize"):
             continue
+        if type.kind == type_info.TypeKind.OPAQUE:
+            continue
 
         ctx.print(f"void from_json(nlohmann::json const& root, {type.cxxname}& value);\n")
 
@@ -88,6 +106,8 @@ def generate_impl_json_parse(ctx: Context):
         if type.has_annotation('ignore'):
             continue
         if not type.has_annotation("serialize"):
+            continue
+        if type.kind == type_info.TypeKind.OPAQUE:
             continue
 
         ctx.print(f"void up::schema::from_json(nlohmann::json const& root, {type.cxxname}& value) {{\n")
@@ -124,15 +144,23 @@ def generate_impl_schemas(ctx: Context):
     for name, type in ctx.db.exports.items():
         if type.has_annotation('ignore'):
             continue
-        ctx.print(f"up::reflex::TypeInfo const& up::reflex::TypeHolder<up::schema::{type.cxxname}>::get() noexcept {{\n")
-        ctx.print(f'    static constexpr TypeInfo info = makeTypeInfo<{type.cxxname}>("{type.name}");\n')
+
+        qual_name = qualified_cxxname(type=type)
+
+        ctx.print(f"up::reflex::TypeInfo const& up::reflex::TypeHolder<{qual_name}>::get() noexcept {{\n")
+        ctx.print('    using namespace up::schema;\n')
+        ctx.print(f'    static const TypeInfo info = makeTypeInfo<{qual_name}>("{type.name}");\n')
         ctx.print('    return info;\n')
         ctx.print("}\n")
-        ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<up::schema::{type.cxxname}>::get() noexcept {{\n")
+
+        if type.kind == type_info.TypeKind.OPAQUE:
+            continue
+        ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<{qual_name}>::get() noexcept {{\n")
+        ctx.print('    using namespace up::schema;\n')
         if len(type.fields_ordered) != 0:
             ctx.print('    static const SchemaField fields[] = {\n')
             for field in type.fields_ordered:
-                ctx.print(f'        SchemaField{{.name = "{field.name}", .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({type.cxxname}, {field.cxxname})}},\n')
+                ctx.print(f'        SchemaField{{.name = "{field.name}", .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname})}},\n')
             ctx.print('    };\n')
         else:
             ctx.print('    static constexpr view<SchemaField> fields;\n')
@@ -153,18 +181,22 @@ def generate_header(ctx: Context):
 #include "potato/reflex/schema.h"
 #include "potato/reflex/type.h"
 #include "potato/runtime/json.h"
-namespace up {{
-    inline namespace schema {{
+#include <glm/gtc/quaternion.hpp>
+#include <glm/vec3.hpp>
 """)
+
+    for type in ctx.db.types.values():
+        header = type.get_annotation_field_or('cxximport', 'header', None)
+        if header is not None:
+            ctx.print(f'#include "{header}"\n')
+
+    ctx.print('namespace up::schema {\n')
 
     generate_header_types(ctx)
     generate_header_reflex(ctx)
     generate_header_json_parse_decl(ctx)
 
-    ctx.print(f"""
-    }} // namespace up::schema
-}} // namespace up
-""")
+    ctx.print('} // namespace up::schema\n')
 
     ctx.print("namespace up::reflex {\n")
     generate_header_schemas(ctx)

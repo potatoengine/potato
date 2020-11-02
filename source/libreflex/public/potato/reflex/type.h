@@ -2,12 +2,15 @@
 
 #pragma once
 
+#include "potato/spud/hash.h"
 #include "potato/spud/zstring_view.h"
 
 namespace up::reflex {
     using FnTypeDefaultConstructor = void(*)(void* memory);
     using FnTypeMoveConstructor = void(*)(void* memory, void* source);
     using FnTypeCopyConstructor = void(*)(void* memory, void const* source);
+    using FnTypeMoveAssignment = void(*)(void* target, void* source);
+    using FnTypeCopyAssignment = void(*)(void* target, void const* source);
     using FnTypeDestructor = void(*)(void* object);
     using FnTypeRelocater = void(*)(void* memory, void* source);
 
@@ -15,12 +18,15 @@ namespace up::reflex {
         FnTypeDefaultConstructor defaultConstructor = nullptr;
         FnTypeMoveConstructor moveConstructor = nullptr;
         FnTypeCopyConstructor copyConstructor = nullptr;
+        FnTypeMoveAssignment moveAssignment = nullptr;
+        FnTypeCopyAssignment copyAssignment = nullptr;
         FnTypeDestructor destructor = nullptr;
         FnTypeRelocater relocator = nullptr;
     };
 
     struct TypeInfo {
         zstring_view name;
+        uint64 hash = 0;
         size_t size = 0;
         size_t alignment = 0;
         TypeOps ops;
@@ -46,6 +52,12 @@ namespace up::reflex {
         if constexpr (std::is_copy_constructible_v<T>) {
             ops.copyConstructor = [](void* memory, void const* source) { new(memory) T{ *static_cast<T const*>(source) }; };
         }
+        if constexpr (std::is_move_assignable_v<T>) {
+            ops.moveAssignment = [](void* target, void* source) { *static_cast<T*>(target) = static_cast<T&&>(*static_cast<T*>(source)); };
+        }
+        if constexpr (std::is_copy_assignable_v<T>) {
+            ops.copyAssignment = [](void* target, void const* source) { *static_cast<T*>(target) = *static_cast<T const*>(source); };
+        }
         ops.destructor = [](void* object) { static_cast<T*>(object)->~T(); };
         if constexpr (std::is_move_constructible_v<T>) {
             ops.relocator = [](void* memory, void* source) {
@@ -60,6 +72,7 @@ namespace up::reflex {
     constexpr TypeInfo makeTypeInfo(zstring_view name) noexcept {
         TypeInfo info;
         info.name = name;
+        info.hash = hash_value(name);
         info.size = sizeof(T);
         info.alignment = alignof(T);
         info.ops = makeTypeOps<T>();

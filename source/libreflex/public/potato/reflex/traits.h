@@ -10,6 +10,8 @@ namespace up {
     class vector;
     template <typename T>
     class box;
+    template <typename T>
+    class rc;
 } // namespace up
 
 namespace up::reflex {
@@ -53,4 +55,18 @@ namespace up::reflex {
     } // namespace _detail
     template <typename T>
     constexpr bool is_box_v = _detail::is_box<T>::value;
+
+    /// True if the provided type is an rc specialization
+    namespace _detail {
+        template <typename T>
+        struct is_rc {
+            constexpr static bool value = false;
+        };
+        template <typename T>
+        struct is_rc<rc<T>> {
+            constexpr static bool value = true;
+        };
+    } // namespace _detail
+    template <typename T>
+    constexpr bool is_rc_v = _detail::is_rc<T>::value;
 } // namespace up::reflex

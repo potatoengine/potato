@@ -6,6 +6,8 @@
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
+#include "potato/spud/rc.h"
+#include "potato/spud/box.h"
 
 #include <glm/fwd.hpp>
 
@@ -28,6 +30,8 @@ namespace up::reflex {
         UInt32,
         UInt64,
         Vec3,
+        Mat4x4,
+        Quat,
         Float,
         Double,
         Pointer,
@@ -53,7 +57,9 @@ namespace up::reflex {
     struct SchemaHolder;
 
     template <typename T>
-    concept schema_primitive = std::is_scalar_v<T> || std::is_same_v<T, string> || std::is_same_v<T, glm::vec3>;
+    concept schema_glm_type = std::is_same_v<T, glm::vec3> || std::is_same_v<T, glm::mat4x4> || std::is_same_v<T, glm::quat>;
+    template <typename T>
+    concept schema_primitive = std::is_scalar_v<T> || std::is_same_v<T, string> || schema_glm_type<T>;
     template <typename T>
     concept has_schema = requires(T t) {
         {SchemaHolder<T>::get()};
@@ -111,6 +117,14 @@ namespace up::reflex {
             static constexpr Schema schema{.name = "vec3"_zsv, .primitive = SchemaPrimitive::Vec3};
             return schema;
         }
+        else if constexpr (std::is_same_v<Type, glm::mat4x4>) {
+            static constexpr Schema schema{ .name = "mat4x4"_zsv, .primitive = SchemaPrimitive::Mat4x4 };
+            return schema;
+        }
+        else if constexpr (std::is_same_v<Type, glm::quat>) {
+            static constexpr Schema schema{ .name = "quat"_zsv, .primitive = SchemaPrimitive::Quat };
+            return schema;
+        }
         else if constexpr (std::is_same_v<Type, string>) {
             static constexpr Schema schema{.name = "string"_zsv, .primitive = SchemaPrimitive::String};
             return schema;
@@ -133,6 +147,14 @@ namespace up::reflex {
                 .name = "box"_zsv,
                 .primitive = SchemaPrimitive::Pointer,
                 .elementType = &elementSchema};
+            return schema;
+        }
+        else if constexpr (is_rc_v<Type>) {
+            static Schema const& elementSchema = getSchema<typename Type::value_type>();
+            static Schema const schema{
+                .name = "box"_zsv,
+                .primitive = SchemaPrimitive::Pointer,
+                .elementType = &elementSchema };
             return schema;
         }
         else {
