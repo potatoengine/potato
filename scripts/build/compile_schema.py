@@ -149,7 +149,7 @@ def generate_impl_schemas(ctx: Context):
 
         ctx.print(f"up::reflex::TypeInfo const& up::reflex::TypeHolder<{qual_name}>::get() noexcept {{\n")
         ctx.print('    using namespace up::schema;\n')
-        ctx.print(f'    static const TypeInfo info = makeTypeInfo<{qual_name}>("{type.name}");\n')
+        ctx.print(f'    static const TypeInfo info = makeTypeInfo<{qual_name}>("{type.name}", &getSchema<{qual_name}>());\n')
         ctx.print('    return info;\n')
         ctx.print("}\n")
 
@@ -164,7 +164,7 @@ def generate_impl_schemas(ctx: Context):
             ctx.print('    };\n')
         else:
             ctx.print('    static constexpr view<SchemaField> fields;\n')
-        ctx.print(f'    static const Schema schema = {{.name = "{type.name}", .fields = fields}};\n')
+        ctx.print(f'    static const Schema schema = {{.name = "{type.name}", .primitive = up::reflex::SchemaPrimitive::Object, .fields = fields}};\n')
         ctx.print('    return schema;\n')
         ctx.print("}\n")
 

@@ -10,6 +10,7 @@
 #include "potato/spud/hash.h"
 #include "potato/spud/zstring_view.h"
 #include "potato/reflex/type.h"
+#include "potato/reflex/schema.h"
 
 namespace up {
 
@@ -44,7 +45,7 @@ namespace up {
 
     template <typename Component>
     void Universe::registerComponent(zstring_view name) {
-        static const reflex::TypeInfo typeInfo = reflex::makeTypeInfo<Component>(name);
+        static const reflex::TypeInfo typeInfo = reflex::makeTypeInfo<Component>(name, &reflex::getSchema<Component>());
         _registerComponent(typeInfo);
     }
 } // namespace up

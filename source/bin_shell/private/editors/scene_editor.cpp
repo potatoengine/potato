@@ -204,8 +204,9 @@ void up::shell::SceneEditor::_inspector() {
                         ImGui::EndPopup();
                     }
 
-                    ImGuiComponentReflector ref;
-                    //meta->ops.serialize(data, ref);
+                    if (typeInfo->schema != nullptr) {
+                        _propertyGrid.drawGridRaw(*typeInfo->schema, data);
+                    }
                     ImGui::TreePop();
                 }
             });

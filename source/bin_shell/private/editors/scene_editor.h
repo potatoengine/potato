@@ -7,6 +7,7 @@
 #include "editor.h"
 #include "scene.h"
 #include "selection.h"
+#include "ui/property_grid.h"
 
 #include "potato/render/camera.h"
 #include "potato/render/gpu_device.h"
@@ -57,6 +58,7 @@ namespace up::shell {
         ArcBallCameraController _cameraController;
         Selection _selection;
         EnumerateComponents _components;
+        PropertyGrid _propertyGrid;
         HandlePlayClicked _onPlayClicked;
         glm::ivec2 _sceneDimensions = {0, 0};
         bool _enableGrid = true;

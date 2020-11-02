@@ -6,6 +6,8 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up::reflex {
+    class Schema;
+
     using FnTypeDefaultConstructor = void(*)(void* memory);
     using FnTypeMoveConstructor = void(*)(void* memory, void* source);
     using FnTypeCopyConstructor = void(*)(void* memory, void const* source);
@@ -26,6 +28,7 @@ namespace up::reflex {
 
     struct TypeInfo {
         zstring_view name;
+        Schema const* schema = nullptr;
         uint64 hash = 0;
         size_t size = 0;
         size_t alignment = 0;
@@ -69,9 +72,10 @@ namespace up::reflex {
     }
 
     template <typename T>
-    constexpr TypeInfo makeTypeInfo(zstring_view name) noexcept {
+    constexpr TypeInfo makeTypeInfo(zstring_view name, Schema const* schema) noexcept {
         TypeInfo info;
         info.name = name;
+        info.schema = schema;
         info.hash = hash_value(name);
         info.size = sizeof(T);
         info.alignment = alignof(T);
