@@ -36,7 +36,12 @@ target_sources(potato_shell PRIVATE
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 
 include(up_set_common_properties)
+include(up_compile_sap)
 up_set_common_properties(potato_shell)
+
+up_compile_sap(potato_shell SCHEMAS
+    schema/components.sap
+)
 
 target_link_libraries(potato_shell PRIVATE
     potato::libruntime

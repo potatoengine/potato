@@ -3,12 +3,12 @@
 #include "shell_app.h"
 #include "camera.h"
 #include "camera_controller.h"
-#include "components.h"
 #include "scene.h"
 #include "editors/filetree_editor.h"
 #include "editors/game_editor.h"
 #include "editors/scene_editor.h"
 
+#include "potato/audio/sound_resource.h"
 #include "potato/ecs/query.h"
 #include "potato/ecs/world.h"
 #include "potato/render/camera.h"
@@ -39,6 +39,8 @@
 #include "potato/spud/string_writer.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
+
+#include "components_schema.h"
 
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -238,13 +240,13 @@ int up::shell::ShellApp::initialize() {
 
     _universe = new_box<Universe>();
 
-    _universe->registerComponent<components::Position>("Position");
-    _universe->registerComponent<components::Rotation>("Rotation");
-    _universe->registerComponent<components::Transform>("Transform");
-    _universe->registerComponent<components::Mesh>("Mesh");
-    _universe->registerComponent<components::Wave>("Wave");
-    _universe->registerComponent<components::Spin>("Spin");
-    _universe->registerComponent<components::Ding>("Ding");
+    _universe->registerComponent<schema::Position>("Position");
+    _universe->registerComponent<schema::Rotation>("Rotation");
+    _universe->registerComponent<schema::Transform>("Transform");
+    _universe->registerComponent<schema::Mesh>("Mesh");
+    _universe->registerComponent<schema::Wave>("Wave");
+    _universe->registerComponent<schema::Spin>("Spin");
+    _universe->registerComponent<schema::Ding>("Ding");
 
     return 0;
 }

@@ -1,7 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "scene.h"
-#include "components.h"
 
 #include "potato/audio/audio_engine.h"
 #include "potato/ecs/query.h"
@@ -10,6 +9,7 @@
 #include "potato/reflex/reflect.h"
 #include "potato/render/model.h"
 #include "potato/runtime/json.h"
+#include "components_schema.h"
 
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -17,6 +17,10 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/vec3.hpp>
 #include <nlohmann/json.hpp>
+
+namespace up {
+    namespace components = up::schema;
+}
 
 up::Scene::Scene(Universe& universe, AudioEngine& audioEngine)
     : _audioEngine(audioEngine)

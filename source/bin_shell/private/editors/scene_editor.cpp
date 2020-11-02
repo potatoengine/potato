@@ -191,21 +191,21 @@ void up::shell::SceneEditor::_inspector() {
     if (_scene != nullptr) {
         _scene->world().interrogateEntityUnsafe(
             _selection.selected(),
-            [&](EntityId entity, ArchetypeId archetype, ComponentMeta const* meta, auto* data) {
-                if (ImGui::TreeNodeEx(meta->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+            [&](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
+                if (ImGui::TreeNodeEx(typeInfo->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
                     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
                         ImGui::OpenPopup("##component_context_menu");
                     }
 
                     if (ImGui::BeginPopupContextItem("##component_context_menu")) {
                         if (ImGui::MenuItem(as_char(u8"\uf1f8 Remove"))) {
-                            deletedComponent = meta->id;
+                            deletedComponent = static_cast<ComponentId>(typeInfo->hash);
                         }
                         ImGui::EndPopup();
                     }
 
                     ImGuiComponentReflector ref;
-                    meta->ops.serialize(data, ref);
+                    //meta->ops.serialize(data, ref);
                     ImGui::TreePop();
                 }
             });
@@ -219,10 +219,10 @@ void up::shell::SceneEditor::_inspector() {
                 ImGui::OpenPopup("##add_component_list");
             }
             if (ImGui::BeginPopup("##add_component_list")) {
-                for (auto const& meta : _components()) {
-                    if (_scene->world().getComponentSlowUnsafe(_selection.selected(), meta.id) == nullptr) {
-                        if (ImGui::MenuItem(meta.name.c_str())) {
-                            _scene->world().addComponentDefault(_selection.selected(), meta);
+                for (reflex::TypeInfo const* typeInfo : _components()) {
+                    if (_scene->world().getComponentSlowUnsafe(_selection.selected(), static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
+                        if (ImGui::MenuItem(typeInfo->name.c_str())) {
+                            _scene->world().addComponentDefault(_selection.selected(), *typeInfo);
                         }
                     }
                 }

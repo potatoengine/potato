@@ -19,7 +19,7 @@
 namespace up::shell {
     class SceneEditor : public Editor {
     public:
-        using EnumerateComponents = delegate<view<ComponentMeta>()>;
+        using EnumerateComponents = delegate<view<reflex::TypeInfo const*>()>;
         using HandlePlayClicked = delegate<void(rc<Scene>)>;
 
         explicit SceneEditor(rc<Scene> scene, EnumerateComponents components, HandlePlayClicked onPlayClicked)
