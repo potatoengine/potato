@@ -4,7 +4,6 @@
 
 #include "_export.h"
 #include "chunk.h"
-#include "component.h"
 #include "shared_context.h"
 
 #include "potato/spud/bit_set.h"
@@ -58,7 +57,7 @@ namespace up {
         /// @brief Add a default-constructed component to an existing entity.
         /// @param entity The entity to add the componet to.
         /// @param meta Metadata for the to-be-added component.
-        UP_ECS_API void addComponentDefault(EntityId entity, ComponentMeta const& meta);
+        UP_ECS_API void addComponentDefault(EntityId entity, reflex::TypeInfo const& typeInfo);
 
         /// Removes a Component from an existing Entity.
         ///
@@ -71,8 +70,8 @@ namespace up {
         /// @param entityId Entity to modify.
         template <typename Component>
         void removeComponent(EntityId entityId) noexcept {
-            ComponentMeta const* const meta = _context->findComponentByType<Component>();
-            return removeComponent(entityId, meta->id);
+            reflex::TypeInfo const* const typeInfo = _context->findComponentByType<Component>();
+            return removeComponent(entityId, static_cast<ComponentId>(typeInfo->hash));
         }
 
         /// Retrieves a pointer to a Component on the specified Entity.
@@ -92,7 +91,7 @@ namespace up {
 
         /// Interrogate an entity and enumerate all of its components.
         ///
-        template <callable<EntityId, ArchetypeId, ComponentMeta const*, void*> Callback>
+        template <callable<EntityId, ArchetypeId, reflex::TypeInfo const*, void*> Callback>
         auto interrogateEntityUnsafe(EntityId entity, Callback&& callback) const -> bool {
             if (auto [success, archetype, chunkIndex, index] = _parseEntityId(entity); success) {
                 auto const layout = _context->layoutOf(archetype);
@@ -101,7 +100,7 @@ namespace up {
                     callback(
                         entity,
                         archetype,
-                        row.meta,
+                        row.typeInfo,
                         static_cast<void*>(chunk->payload + row.offset + row.width * index));
                 }
                 return true;
@@ -130,10 +129,10 @@ namespace up {
 
         static constexpr uint64 freeEntityIndex = ~0ULL;
 
-        UP_ECS_API EntityId _createEntityRaw(view<ComponentMeta const*> components, view<void const*> data);
+        UP_ECS_API EntityId _createEntityRaw(view<reflex::TypeInfo const*> components, view<void const*> data);
         UP_ECS_API void _addComponentRaw(
             EntityId entityId,
-            ComponentMeta const& componentMeta,
+            reflex::TypeInfo const& typeInfo,
             void const* componentData) noexcept;
         void _deleteEntityData(ArchetypeId archetypeId, uint16 chunkIndex, uint16 index) noexcept;
 
@@ -174,24 +173,24 @@ namespace up {
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        ComponentMeta const* const componentMetas[] = {_context->findComponentByType<Components>()...};
+        reflex::TypeInfo const* const typeInfos[] = {_context->findComponentByType<Components>()...};
         void const* const componentData[] = {&components...};
 
-        return _createEntityRaw(componentMetas, componentData);
+        return _createEntityRaw(typeInfos, componentData);
     }
 
     template <typename Component>
     Component* World::getComponentSlow(EntityId entity) noexcept {
-        auto meta = _context->findComponentByType<Component>();
-        if (meta == nullptr) {
+        reflex::TypeInfo const* const typeInfo = _context->findComponentByType<Component>();
+        if (typeInfo == nullptr) {
             return nullptr;
         }
-        return static_cast<Component*>(getComponentSlowUnsafe(entity, meta->id));
+        return static_cast<Component*>(getComponentSlowUnsafe(entity, static_cast<ComponentId>(typeInfo->hash)));
     }
 
     template <typename Component>
     void World::addComponent(EntityId entityId, Component const& component) noexcept {
-        ComponentMeta const* const meta = _context->findComponentByType<Component>();
-        _addComponentRaw(entityId, *meta, &component);
+        reflex::TypeInfo const* const typeInfo = _context->findComponentByType<Component>();
+        _addComponentRaw(entityId, *typeInfo, &component);
     }
 } // namespace up

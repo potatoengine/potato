@@ -1,0 +1,3 @@
+module ecs;
+
+attribute Component;

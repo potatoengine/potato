@@ -4,6 +4,10 @@ project(ecs VERSION 0.1 LANGUAGES CXX)
 add_library(potato_libecs)
 add_library(potato::libecs ALIAS potato_libecs)
 
+include(up_compile_sap)
+include(up_set_common_properties)
+up_set_common_properties(potato_libecs)
+
 target_sources(potato_libecs PRIVATE
     "private/entity_id.h"
     "private/shared_context.cpp"
@@ -11,8 +15,10 @@ target_sources(potato_libecs PRIVATE
     "private/world.cpp"
 )
 
-include(up_set_common_properties)
-up_set_common_properties(potato_libecs)
+up_compile_sap(potato_libecs
+    SCHEMAS
+        schema/ecs.sap
+)
 
 target_link_libraries(potato_libecs
     PUBLIC
@@ -27,6 +33,11 @@ target_sources(potato_libecs_test PRIVATE
     "tests/main.cpp"
     "tests/test_query.cpp"
     "tests/test_world.cpp"
+)
+
+up_compile_sap(potato_libecs_test
+    SCHEMAS
+        tests/components.sap
 )
 
 up_set_common_properties(potato_libecs_test)
