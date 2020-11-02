@@ -16,18 +16,10 @@ type ModelHandle;
 type SoundHandle;
 
 [Component]
-struct Position {
-    vec3 xyz;
-}
-
-[Component]
-struct Rotation {
-    quat rot;
-}
-
-[Component]
 struct Transform {
-    mat4x4 trans;
+    vec3 position;
+    quat rotation;
+    mat4x4 transform;
 }
 
 [Component]

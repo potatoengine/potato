@@ -3,6 +3,7 @@
 #include "shell_app.h"
 #include "camera.h"
 #include "camera_controller.h"
+#include "components_schema.h"
 #include "scene.h"
 #include "editors/filetree_editor.h"
 #include "editors/game_editor.h"
@@ -39,8 +40,6 @@
 #include "potato/spud/string_writer.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
-
-#include "components_schema.h"
 
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -240,8 +239,6 @@ int up::shell::ShellApp::initialize() {
 
     _universe = new_box<Universe>();
 
-    _universe->registerComponent<schema::Position>("Position");
-    _universe->registerComponent<schema::Rotation>("Rotation");
     _universe->registerComponent<schema::Transform>("Transform");
     _universe->registerComponent<schema::Mesh>("Mesh");
     _universe->registerComponent<schema::Wave>("Wave");
