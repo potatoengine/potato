@@ -30,7 +30,7 @@ target_sources(potato_shell PRIVATE
     "private/ui/menu.cpp"	
     "public/potato/shell/ui/hotkey.h"	
     "private/ui/hotkey.cpp"	
- "public/potato/shell/ui/property_grid.h" "private/ui/property_grid.cpp")	
+ "public/potato/shell/ui/property_grid.h" "private/ui/property_grid.cpp" "public/potato/shell/_export.h")	
 	
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
