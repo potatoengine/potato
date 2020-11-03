@@ -7,6 +7,8 @@
 #include <tuple>
 
 namespace up::reflex {
+    struct Attribute {};
+
     template <typename... AnnotationTypes>
     using Annotations = std::tuple<AnnotationTypes...>;
 

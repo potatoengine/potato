@@ -11,10 +11,11 @@ import type_info
 
 class Context:
     """Complete context used by a generator"""
-    def __init__(self, db, output, input_name):
+    def __init__(self, db, output, input_name, library):
         self.__db = db
         self.__output = output
         self.__input_name = input_name
+        self.__library = library
 
     @property
     def db(self):
@@ -23,6 +24,10 @@ class Context:
     @property
     def input_name(self):
         return self.__input_name
+
+    @property
+    def library(self):
+        return self.__library
 
     @property
     def output(self):
@@ -40,7 +45,7 @@ def generate_file_prefix(ctx: Context):
 // - Generated from {path.basename(ctx.input_name)}
 """)
 
-def qualified_cxxname(type: type_info.TypeBase, namespace: str = 'up::schema'):
+def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     """Calculates the qualified name for types"""
     cxxname = type.cxxname
     return cxxname if '::' in cxxname else f'up::schema::{cxxname}'
@@ -55,7 +60,10 @@ def generate_header_types(ctx: Context):
         if type.has_annotation('cxximport'):
             continue
 
-        ctx.print(f"struct {type.cxxname} {{\n")
+        ctx.print(f'struct {type.cxxname} ')
+        if type.kind == type_info.TypeKind.ATTRIBUTE:
+            ctx.print(': reflex::Attribute ')
+        ctx.print('{\n')
         for field in type.fields_ordered:
             ctx.print(f"    {field.cxxtype} {field.cxxname};\n")
         ctx.print("};\n")
@@ -70,11 +78,11 @@ def generate_header_schemas(ctx: Context):
 
         ctx.print("template <>\n")
         ctx.print(f"struct TypeHolder<{qual_name}> {{\n")
-        ctx.print("    static TypeInfo const& get() noexcept;\n")
+        ctx.print(f"    UP_{ctx.library.upper()}_API static TypeInfo const& get() noexcept;\n")
         ctx.print("};\n")
         ctx.print("template <>\n")
         ctx.print(f"struct SchemaHolder<{qual_name}> {{\n")
-        ctx.print("    static Schema const& get() noexcept;\n")
+        ctx.print(f"    UP_{ctx.library.upper()}_API static Schema const& get() noexcept;\n")
         ctx.print("};\n")
 
 def generate_header_reflex(ctx: Context):
@@ -98,7 +106,7 @@ def generate_header_json_parse_decl(ctx: Context):
         if type.kind == type_info.TypeKind.OPAQUE:
             continue
 
-        ctx.print(f"void from_json(nlohmann::json const& root, {type.cxxname}& value);\n")
+        ctx.print(f"UP_{ctx.library.upper()}_API void from_json(nlohmann::json const& root, {type.cxxname}& value);\n")
 
 def generate_impl_json_parse(ctx: Context):
     """Generates json parsing function definition for types"""
@@ -139,6 +147,29 @@ def generate_impl_json_parse(ctx: Context):
 
         ctx.print("}\n")
 
+def generate_impl_annotations(ctx: Context, type: type_info.TypeBase):
+    """Generates metadata for an annotation"""
+    locals = []
+    for annotation in type.annotations:
+        attr = annotation.type
+        local_name = f'attr_{attr.name}'
+        locals.append(local_name)
+
+        ctx.print(f'    static const {attr.cxxname} {local_name}{{')
+        for field in attr.fields_ordered:
+            ctx.print(f'.{field.cxxname} = {{}}, ')
+        ctx.print('};\n')
+
+    if len(locals) != 0:
+        ctx.print('    static const SchemaAnnotation annotations[] = {\n')
+        for local in locals:
+            ctx.print(f'        {{ .type = &getTypeInfo<{attr.cxxname}>(), .attr = &{local} }},\n')
+        ctx.print('    };\n')
+    else:
+        ctx.print('    static const view<SchemaAnnotation> annotations;\n')
+
+
+
 def generate_impl_schemas(ctx: Context):
     """Generates the Schema definitions for types"""
     for name, type in ctx.db.exports.items():
@@ -157,6 +188,9 @@ def generate_impl_schemas(ctx: Context):
             continue
         ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<{qual_name}>::get() noexcept {{\n")
         ctx.print('    using namespace up::schema;\n')
+
+        generate_impl_annotations(ctx, type)
+
         if len(type.fields_ordered) != 0:
             ctx.print('    static const SchemaField fields[] = {\n')
             for field in type.fields_ordered:
@@ -164,7 +198,7 @@ def generate_impl_schemas(ctx: Context):
             ctx.print('    };\n')
         else:
             ctx.print('    static constexpr view<SchemaField> fields;\n')
-        ctx.print(f'    static const Schema schema = {{.name = "{type.name}", .primitive = up::reflex::SchemaPrimitive::Object, .fields = fields}};\n')
+        ctx.print(f'    static const Schema schema = {{.name = "{type.name}", .primitive = up::reflex::SchemaPrimitive::Object, .fields = fields, .annotations = annotations}};\n')
         ctx.print('    return schema;\n')
         ctx.print("}\n")
 
@@ -177,13 +211,16 @@ def generate_header(ctx: Context):
 #pragma once
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
+#include "potato/reflex/annotation.h"
 #include "potato/reflex/reflect.h"
 #include "potato/reflex/schema.h"
 #include "potato/reflex/type.h"
 #include "potato/runtime/json.h"
-#include <glm/gtc/quaternion.hpp>
-#include <glm/vec3.hpp>
+#include "potato/{ctx.library}/_export.h"
 """)
+
+    for imported in ctx.db.imports:
+        ctx.print(f'#include "{imported}_schema.h"\n')
 
     for type in ctx.db.types.values():
         header = type.get_annotation_field_or('cxximport', 'header', None)
@@ -225,6 +262,7 @@ def main(argv):
     parser.add_argument('-i', '--input', type=argparse.FileType(mode='r', encoding='utf-8'), required=True, help="Input schema json")
     parser.add_argument('-o', '--output', type=str, help="Target output file")
     parser.add_argument('-G', '--generator', type=str, help="Generation mode", choices=["header", "source"])
+    parser.add_argument('-L', '--library', type=str, required=True, help="Name of C++ library")
     args = parser.parse_args(argv[1:])
 
     doc = json.load(args.input)
@@ -241,7 +279,7 @@ def main(argv):
         os.makedirs(name=parent_path, exist_ok=True)
         output = open(args.output, 'wt', encoding='utf-8')
 
-    ctx = Context(db=db, output=output, input_name=args.input.name)
+    ctx = Context(db=db, output=output, input_name=args.input.name, library=args.library)
 
     rs = generator(ctx)
     if rs is None or rs == 0:
