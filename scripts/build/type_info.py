@@ -263,3 +263,4 @@ class TypeField(AnnotationsBase):
 
     def resolve(self, db):
         self.__type = db.type(self.__type_name)
+        AnnotationsBase.resolve(self, db)

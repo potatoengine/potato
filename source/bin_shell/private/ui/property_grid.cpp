@@ -44,8 +44,11 @@ void up::shell::PropertyGrid::drawGridRaw(zstring_view name, reflex::Schema cons
 
 void up::shell::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, void* object) {
     void* member = static_cast<char*>(object) + field.offset;
-    auto const* displayName = field.schema->queryAnnotation<schema::DisplayName>();
-    return drawGridRaw(displayName != nullptr ? displayName->name : field.name, *field.schema, object);
+    auto const* displayName = field.queryAnnotation<schema::DisplayName>();
+    return drawGridRaw(
+        displayName != nullptr && !displayName->name.empty() ? displayName->name : field.name,
+        *field.schema,
+        object);
 }
 
 void up::shell::PropertyGrid::drawIntEditor(zstring_view name, int& value) noexcept {

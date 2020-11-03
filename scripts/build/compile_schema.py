@@ -172,12 +172,12 @@ def generate_impl_json_parse(ctx: Context):
 
         ctx.print('}\n')
 
-def generate_impl_annotations(ctx: Context, type: type_info.TypeBase):
+def generate_impl_annotations(ctx: Context, name: str, entity: type_info.AnnotationsBase):
     """Generates metadata for an annotation"""
     locals = []
-    for annotation in type.annotations:
+    for annotation in entity.annotations:
         attr = annotation.type
-        local_name = f'attr_{attr.name}'
+        local_name = f'attr_{name}_{attr.name}'
         locals.append(local_name)
 
         ctx.print(f'    static const {attr.cxxname} {local_name}{{')
@@ -186,14 +186,12 @@ def generate_impl_annotations(ctx: Context, type: type_info.TypeBase):
         ctx.print('};\n')
 
     if len(locals) != 0:
-        ctx.print('    static const SchemaAnnotation annotations[] = {\n')
+        ctx.print(f'    static const SchemaAnnotation {name}_annotations[] = {{\n')
         for local in locals:
             ctx.print(f'        {{ .type = &getTypeInfo<{attr.cxxname}>(), .attr = &{local} }},\n')
         ctx.print('    };\n')
     else:
-        ctx.print('    static const view<SchemaAnnotation> annotations;\n')
-
-
+        ctx.print(f'    static const view<SchemaAnnotation> {name}_annotations;\n')
 
 def generate_impl_schemas(ctx: Context):
     """Generates the Schema definitions for types"""
@@ -214,16 +212,18 @@ def generate_impl_schemas(ctx: Context):
         ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<{qual_name}>::get() noexcept {{\n")
         ctx.print('    using namespace up::schema;\n')
 
-        generate_impl_annotations(ctx, type)
+        generate_impl_annotations(ctx, type.name, type)
+        for field in type.fields_ordered:
+            generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
 
         if len(type.fields_ordered) != 0:
             ctx.print('    static const SchemaField fields[] = {\n')
             for field in type.fields_ordered:
-                ctx.print(f'        SchemaField{{.name = "{field.name}", .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname})}},\n')
+                ctx.print(f'        SchemaField{{.name = "{field.name}", .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {type.name}_{field.name}_annotations}},\n')
             ctx.print('    };\n')
         else:
             ctx.print('    static constexpr view<SchemaField> fields;\n')
-        ctx.print(f'    static const Schema schema = {{.name = "{type.name}", .primitive = up::reflex::SchemaPrimitive::Object, .fields = fields, .annotations = annotations}};\n')
+        ctx.print(f'    static const Schema schema = {{.name = "{type.name}", .primitive = up::reflex::SchemaPrimitive::Object, .fields = fields, .annotations = {type.name}_annotations}};\n')
         ctx.print('    return schema;\n')
         ctx.print("}\n")
 
