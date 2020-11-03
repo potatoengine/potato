@@ -34,7 +34,7 @@ class Context:
         return self.__output
 
     def print(self, *args):
-        self.__output.write(''.join(*args))
+        self.__output.write(''.join(args))
 
 def generate_file_prefix(ctx: Context):
     """Writes the header at the top of a generated C++ file"""
@@ -45,14 +45,19 @@ def generate_file_prefix(ctx: Context):
 // - Generated from {path.basename(ctx.input_name)}
 """)
 
+def cxxnamespace(type: type_info.TypeBase, namespace: str='up::schema'):
+    """Returns the desired namespace for a type"""
+    return type.get_annotation_field_or('cxxnamespace', 'ns', namespace)
+
 def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     """Calculates the qualified name for types"""
     cxxname = type.cxxname
-    return cxxname if '::' in cxxname else f'up::schema::{cxxname}'
+    cxxns = cxxnamespace(type, namespace)
+    return cxxname if '::' in cxxname else f'{cxxns}::{cxxname}'
 
 def generate_header_types(ctx: Context):
     """Generates the type definitions for types"""
-    for name, type in ctx.db.exports.items():
+    for _, type in ctx.db.exports.items():
         if type.has_annotation('ignore'):
             continue
         if type.kind == type_info.TypeKind.OPAQUE:
@@ -60,57 +65,77 @@ def generate_header_types(ctx: Context):
         if type.has_annotation('cxximport'):
             continue
 
-        ctx.print(f'struct {type.cxxname} ')
+        cxxns = cxxnamespace(type)
+
+        ctx.print(f'namespace {cxxns} {{\n')
+
+        ctx.print(f'    struct {type.cxxname} ')
         if type.kind == type_info.TypeKind.ATTRIBUTE:
             ctx.print(': reflex::Attribute ')
         ctx.print('{\n')
         for field in type.fields_ordered:
-            ctx.print(f"    {field.cxxtype} {field.cxxname};\n")
-        ctx.print("};\n")
+            ctx.print(f"        {field.cxxtype} {field.cxxname};\n")
+        ctx.print("    };\n")
+
+        ctx.print('}\n')
 
 def generate_header_schemas(ctx: Context):
     """Generates the Schema declarations for types"""
-    for name, type in ctx.db.exports.items():
+    ctx.print("namespace up::reflex {\n")
+
+    for type in ctx.db.exports.values():
         if type.has_annotation('ignore'):
             continue
 
         qual_name = qualified_cxxname(type=type)
 
-        ctx.print("template <>\n")
-        ctx.print(f"struct TypeHolder<{qual_name}> {{\n")
-        ctx.print(f"    UP_{ctx.library.upper()}_API static TypeInfo const& get() noexcept;\n")
-        ctx.print("};\n")
-        ctx.print("template <>\n")
-        ctx.print(f"struct SchemaHolder<{qual_name}> {{\n")
-        ctx.print(f"    UP_{ctx.library.upper()}_API static Schema const& get() noexcept;\n")
-        ctx.print("};\n")
+        ctx.print("    template <>\n")
+        ctx.print(f"    struct TypeHolder<{qual_name}> {{\n")
+        ctx.print(f"        UP_{ctx.library.upper()}_API static TypeInfo const& get() noexcept;\n")
+        ctx.print("    };\n")
+        ctx.print("    template <>\n")
+        ctx.print(f"    struct SchemaHolder<{qual_name}> {{\n")
+        ctx.print(f"        UP_{ctx.library.upper()}_API static Schema const& get() noexcept;\n")
+        ctx.print("    };\n")
+    
+    ctx.print('}\n')
 
 def generate_header_reflex(ctx: Context):
     """Generates the reflex definitions for types"""
-    for name, type in ctx.db.exports.items():
+    for type in ctx.db.exports.values():
         if type.has_annotation('ignore'):
             continue
         if type.kind == type_info.TypeKind.OPAQUE:
             continue
 
-        ctx.print(f"UP_REFLECT_TYPE({type.cxxname}) {{\n")
+        cxxns = cxxnamespace(type)
+        ctx.print(f'namespace {cxxns} {{\n')
+
+        ctx.print(f"    UP_REFLECT_TYPE({type.cxxname}) {{\n")
         for field in type.fields_ordered:
-            ctx.print(f'    reflect("{field.name}", &Type::{field.cxxname});\n')
-        ctx.print("}\n")
+            ctx.print(f'        reflect("{field.name}", &Type::{field.cxxname});\n')
+        ctx.print("    }\n")
+
+        ctx.print('}\n')
 
 def generate_header_json_parse_decl(ctx: Context):
     """Generates json parsing function declarations for types"""
-    for name, type in ctx.db.exports.items():
+    for type in ctx.db.exports.values():
         if not type.has_annotation("serialize"):
             continue
         if type.kind == type_info.TypeKind.OPAQUE:
             continue
 
-        ctx.print(f"UP_{ctx.library.upper()}_API void from_json(nlohmann::json const& root, {type.cxxname}& value);\n")
+        cxxns = cxxnamespace(type)
+        ctx.print(f'namespace {cxxns} {{\n')
+
+        ctx.print(f"    UP_{ctx.library.upper()}_API void from_json(nlohmann::json const& root, {type.cxxname}& value);\n")
+
+        ctx.print('}\n')
 
 def generate_impl_json_parse(ctx: Context):
     """Generates json parsing function definition for types"""
-    for name, type in ctx.db.exports.items():
+    for type in ctx.db.exports.values():
         if type.has_annotation('ignore'):
             continue
         if not type.has_annotation("serialize"):
@@ -145,7 +170,7 @@ def generate_impl_json_parse(ctx: Context):
             if field.has_default:
                 ctx.print("    else {\n        value.{field.cxxname} = {field.default_or(None)};\n    }\n")
 
-        ctx.print("}\n")
+        ctx.print('}\n')
 
 def generate_impl_annotations(ctx: Context, type: type_info.TypeBase):
     """Generates metadata for an annotation"""
@@ -172,7 +197,7 @@ def generate_impl_annotations(ctx: Context, type: type_info.TypeBase):
 
 def generate_impl_schemas(ctx: Context):
     """Generates the Schema definitions for types"""
-    for name, type in ctx.db.exports.items():
+    for type in ctx.db.exports.values():
         if type.has_annotation('ignore'):
             continue
 
@@ -227,17 +252,10 @@ def generate_header(ctx: Context):
         if header is not None:
             ctx.print(f'#include "{header}"\n')
 
-    ctx.print('namespace up::schema {\n')
-
     generate_header_types(ctx)
     generate_header_reflex(ctx)
     generate_header_json_parse_decl(ctx)
-
-    ctx.print('} // namespace up::schema\n')
-
-    ctx.print("namespace up::reflex {\n")
     generate_header_schemas(ctx)
-    ctx.print("} // namespace up::reflex\n")
 
 def generate_source(ctx: Context):
     """Generate contents of a source file"""
