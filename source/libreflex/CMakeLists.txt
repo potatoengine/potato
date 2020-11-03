@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.16)
 project(potato_libreflex VERSION 0.1 LANGUAGES CXX)
 
-add_library(potato_libreflex INTERFACE)
+add_library(potato_libreflex STATIC)
 add_library(potato::libreflex ALIAS potato_libreflex)
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libreflex)
 
-target_link_libraries(potato_libreflex
-    INTERFACE
-        potato::libruntime
-        nlohmann_json::nlohmann_json
+include(up_compile_sap)
+up_compile_sap(potato_libreflex SCHEMAS
+    schema/common.sap
 )
 
-target_include_directories(potato_libreflex INTERFACE public/)
+target_link_libraries(potato_libreflex
+    PUBLIC
+        potato::spud
+        potato::libruntime
+        glm::glm
+    PRIVATE
+        nlohmann_json::nlohmann_json
+)
 
 add_executable(potato_libreflex_test)
 target_sources(potato_libreflex_test PRIVATE
@@ -21,7 +27,8 @@ target_sources(potato_libreflex_test PRIVATE
     "tests/test_reflex_serialize.cpp"
     "public/potato/reflex/json_reflex_serializer.h"
     "public/potato/reflex/schema.h"
- "public/potato/reflex/type.h")
+    "public/potato/reflex/type.h"
+)
 
 up_set_common_properties(potato_libreflex_test)
 
