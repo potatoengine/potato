@@ -8,13 +8,13 @@
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 
-namespace up::schema {
+namespace up::components {
     struct Transform;
     struct Mesh;
     struct Wave;
     struct Spin;
     struct Ding;
-} // namespace up::schema
+} // namespace up::components
 
 namespace up {
     class Model;
@@ -52,11 +52,11 @@ namespace up {
         EntityId _root = EntityId::None;
         bool _playing = false;
 
-        Query<schema::Transform, schema::Wave> _waveQuery;
-        Query<schema::Transform> _orbitQuery;
-        Query<schema::Transform, schema::Spin> _spinQuery;
-        Query<schema::Ding> _dingQuery;
-        Query<schema::Transform> _transformQuery;
-        Query<schema::Mesh, schema::Transform> _renderableMeshQuery;
+        Query<components::Transform, components::Wave> _waveQuery;
+        Query<components::Transform> _orbitQuery;
+        Query<components::Transform, components::Spin> _spinQuery;
+        Query<components::Ding> _dingQuery;
+        Query<components::Transform> _transformQuery;
+        Query<components::Mesh, components::Transform> _renderableMeshQuery;
     };
 } // namespace up

@@ -1,9 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#include "components_schema.h"
+
 #include "potato/ecs/query.h"
 #include "potato/ecs/universe.h"
 #include "potato/ecs/world.h"
-#include "components_schema.h"
 
 #include <catch2/catch.hpp>
 
@@ -11,7 +12,7 @@ CATCH_REGISTER_ENUM(up::EntityId);
 
 TEST_CASE("World", "[potato][ecs]") {
     using namespace up;
-    using namespace up::schema;
+    using namespace up::components;
 
     Universe universe;
 

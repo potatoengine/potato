@@ -18,10 +18,6 @@
 #include <glm/vec3.hpp>
 #include <nlohmann/json.hpp>
 
-namespace up {
-    namespace components = up::schema;
-}
-
 up::Scene::Scene(Universe& universe, AudioEngine& audioEngine)
     : _audioEngine(audioEngine)
     , _world{universe.createWorld()}

@@ -239,11 +239,11 @@ int up::shell::ShellApp::initialize() {
 
     _universe = new_box<Universe>();
 
-    _universe->registerComponent<schema::Transform>("Transform");
-    _universe->registerComponent<schema::Mesh>("Mesh");
-    _universe->registerComponent<schema::Wave>("Wave");
-    _universe->registerComponent<schema::Spin>("Spin");
-    _universe->registerComponent<schema::Ding>("Ding");
+    _universe->registerComponent<components::Transform>("Transform");
+    _universe->registerComponent<components::Mesh>("Mesh");
+    _universe->registerComponent<components::Wave>("Wave");
+    _universe->registerComponent<components::Spin>("Spin");
+    _universe->registerComponent<components::Ding>("Ding");
 
     return 0;
 }

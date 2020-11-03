@@ -47,7 +47,7 @@ def generate_file_prefix(ctx: Context):
 
 def cxxnamespace(type: type_info.TypeBase, namespace: str='up::schema'):
     """Returns the desired namespace for a type"""
-    return type.get_annotation_field_or('cxxnamespace', 'ns', namespace)
+    return type.get_annotation_field_or('cxxnamespace', 'ns', namespace if not type.has_annotation('Component') else 'up::components')
 
 def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     """Calculates the qualified name for types"""
