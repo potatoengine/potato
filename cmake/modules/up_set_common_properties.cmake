@@ -1,3 +1,5 @@
+include(up_target_shortname)
+
 function(up_set_common_properties TARGET)
     cmake_parse_arguments(ARG NO_NAME_TEST "" "" ${ARGN})
 
@@ -6,8 +8,8 @@ function(up_set_common_properties TARGET)
     if(NOT ${TARGET} MATCHES "^potato_")
         message(FATAL_ERROR "Target '${TARGET}' must start with potato_ prefix")
     endif()
-    string(REGEX REPLACE "^potato_" "" SHORT_NAME ${TARGET})
-    set(OUTPUT_NAME ${SHORT_NAME})
+
+    up_get_target_shortname(${TARGET} SHORT_NAME)
 
     # Detect type of target
     #
@@ -32,8 +34,6 @@ function(up_set_common_properties TARGET)
         if(NOT TARGET ${TEST_TARGET})
             message(FATAL_ERROR "Test executable target '${TARGET}' expects there to be a target '${TEST_TARGET}'")
         endif()
-
-        string(REGEX REPLACE "_test$" "" SHORT_NAME ${SHORT_NAME})
         set(OUTPUT_NAME "test_${SHORT_NAME}")
     elseif (${TARGET_TYPE} STREQUAL "EXECUTABLE")
         set(TYPE "executable")
@@ -42,11 +42,9 @@ function(up_set_common_properties TARGET)
         set(TYPE "library")
         set(IS_LIBRARY TRUE)
 
-        if(NOT ARG_NO_NAME_TEST AND NOT ${SHORT_NAME} MATCHES "^lib")
+        if(NOT ARG_NO_NAME_TEST AND NOT ${TARGET} MATCHES "^potato_lib")
             message(FATAL_ERROR "Library target '${TARGET}' should be named 'potato_lib${SHORT_NAME}'")
         endif()
-
-        string(REGEX REPLACE "^lib" "" SHORT_NAME ${SHORT_NAME})
     else()
         message(FATAL_ERROR "Target '${TARGET}' has unknown type '${TARGET_TYPE}'")
     endif()
@@ -156,7 +154,7 @@ function(up_set_common_properties TARGET)
             $<INSTALL_INTERFACE:public>
             $<INSTALL_INTERFACE:schema>
         )
-        target_include_directories(${TARGET} INTERFACE
+        target_include_directories(${TARGET} ${PUBLIC_INTERFACE}
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/schema>
         )

@@ -1,4 +1,5 @@
 include(up_utility)
+include(up_target_shortname)
 
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
@@ -17,25 +18,23 @@ function(up_compile_sap TARGET)
     set(GEN_TGT "generate_flat_schemas_${TARGET}")
     set(OUT_FILES)
 
+    up_get_target_shortname(${TARGET} SHORT_NAME)
+
     set(OUT_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/gen")
     set(OUT_JSON_DIR "${OUT_ROOT_DIR}/json")
     set(OUT_SOURCE_DIR "${OUT_ROOT_DIR}/src")
     set(OUT_HEADER_DIR "${OUT_ROOT_DIR}/inc")
 
-    get_target_property(SHORT_NAME ${TARGET} POTATO_SHORT_NAME)
-    if(SHORT_NAME)
-        set(OUT_HEADER_FULL_DIR "${OUT_HEADER_DIR}/potato/${SHORT_NAME}")
+    get_target_property(TARGET_TYPE ${TARGET} TYPE)
+    if (${TARGET_TYPE} STREQUAL INTERFACE_LIBRARY)
+        target_include_directories(${TARGET} INTERFACE "${OUT_HEADER_DIR}")
     else()
-        set(OUT_HEADER_FULL_DIR "${OUT_HEADER_DIR}/sap")
+        target_include_directories(${TARGET} PUBLIC "${OUT_HEADER_DIR}")
     endif()
-
-
-    target_include_directories(${TARGET} PUBLIC ${OUT_HEADER_DIR})
-    target_include_directories(${TARGET} PRIVATE ${OUT_HEADER_FULL_DIR})
 
     file(MAKE_DIRECTORY ${OUT_JSON_DIR})
     file(MAKE_DIRECTORY ${OUT_SOURCE_DIR})
-    file(MAKE_DIRECTORY ${OUT_HEADER_FULL_DIR})
+    file(MAKE_DIRECTORY ${OUT_HEADER_DIR})
 
     foreach(FILE ${ARG_SCHEMAS})
         get_filename_component(FILE_NAME ${FILE} NAME_WE)
@@ -44,7 +43,7 @@ function(up_compile_sap TARGET)
         up_path_combine(${OUT_JSON_DIR} ${FILE_NAME}.json JSON_FILE)
         up_path_combine(${OUT_JSON_DIR} ${FILE_NAME}.json.d JSON_DEP_FILE)
         up_path_combine(${OUT_SOURCE_DIR} ${FILE_NAME}_gen.cpp GENERATED_SOURCE_FILE)
-        up_path_combine(${OUT_HEADER_FULL_DIR} ${FILE_NAME}_schema.h GENERATED_HEADER_FILE)
+        up_path_combine(${OUT_HEADER_DIR} ${FILE_NAME}_schema.h GENERATED_HEADER_FILE)
         
         list(APPEND JSON_FILES ${JSON_FILE})
 
@@ -67,11 +66,13 @@ function(up_compile_sap TARGET)
             COMMAND Python3::Interpreter
                     -B "${SAP_SCHEMA_COMPILE_ENTRY}"
                     -G header
+                    -L "${SHORT_NAME}"
                     -i "${JSON_FILE}"
                     -o "${GENERATED_HEADER_FILE}"
             COMMAND Python3::Interpreter
                     -B "${SAP_SCHEMA_COMPILE_ENTRY}"
                     -G source
+                    -L "${SHORT_NAME}"
                     -i "${JSON_FILE}"
                     -o "${GENERATED_SOURCE_FILE}"
             MAIN_DEPENDENCY "${JSON_FILE}"
@@ -88,10 +89,6 @@ function(up_compile_sap TARGET)
     endif()
 
     cmake_policy(SET CMP0079 NEW)
-    target_include_directories(${TARGET}
-        PUBLIC "${OUT_HEADER_DIR}"
-        PRIVATE "${OUT_HEADER_FULL_DIR}"
-    )
     add_dependencies(${TARGET} ${GEN_TGT})
 endfunction()
 
