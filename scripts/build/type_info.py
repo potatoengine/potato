@@ -53,6 +53,9 @@ class AnnotationsBase:
     def has_annotation(self, key):
         return key in self.__annotations
 
+    def get_annotation(self, key, sub):
+        return self.__annotations[key] if key in self.__annotations else None
+
     def get_annotation_field_or(self, key, sub, otherwise):
         return self.__annotations[key].value_or(sub, otherwise) if key in self.__annotations else otherwise
 

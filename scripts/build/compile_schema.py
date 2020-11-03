@@ -55,6 +55,15 @@ def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     cxxns = cxxnamespace(type, namespace)
     return cxxname if '::' in cxxname else f'{cxxns}::{cxxname}'
 
+def cxxvalue(value):
+    if value is True:
+        return 'true'
+    if value is False:
+        return 'false'
+    if isinstance(value, str):
+        return f'"{value}"' # FIXME: escapes
+    return str(value)
+
 def generate_header_types(ctx: Context):
     """Generates the type definitions for types"""
     for _, type in ctx.db.exports.items():
@@ -181,8 +190,8 @@ def generate_impl_annotations(ctx: Context, name: str, entity: type_info.Annotat
         locals.append(local_name)
 
         ctx.print(f'    static const {attr.cxxname} {local_name}{{')
-        for field in attr.fields_ordered:
-            ctx.print(f'.{field.cxxname} = {{}}, ')
+        for field, value in zip(attr.fields_ordered, annotation.values):
+            ctx.print(f'.{field.cxxname} = {cxxvalue(value)}, ')
         ctx.print('};\n')
 
     if len(locals) != 0:
