@@ -2,6 +2,7 @@ module components;
 
 import common;
 import ecs;
+import tools;
 
 [cxximport("up::Model", "potato/render/model.h")]
 struct Model {}
@@ -17,7 +18,9 @@ type SoundHandle;
 
 [Component]
 struct Transform {
+    [DisplayName("Pos")]
     vec3 position;
+    [DisplayName("Rot")]
     quat rotation;
     mat4x4 transform;
 }

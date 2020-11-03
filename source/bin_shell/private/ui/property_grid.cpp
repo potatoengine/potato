@@ -1,6 +1,8 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "ui/property_grid.h"
+#include "common_schema.h"
+#include "tools_schema.h"
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
@@ -21,7 +23,7 @@ void up::shell::PropertyGrid::drawGridRaw(zstring_view name, reflex::Schema cons
             return drawQuatEditor(name, *static_cast<glm::quat*>(object));
         case reflex::SchemaPrimitive::Pointer:
             if (void* pointee = *static_cast<void**>(object); pointee != nullptr) {
-                drawGridRaw(name , *schema.elementType, pointee);
+                drawGridRaw(name, *schema.elementType, pointee);
             }
             return;
         case reflex::SchemaPrimitive::Object:
@@ -42,7 +44,8 @@ void up::shell::PropertyGrid::drawGridRaw(zstring_view name, reflex::Schema cons
 
 void up::shell::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, void* object) {
     void* member = static_cast<char*>(object) + field.offset;
-    return drawGridRaw(field.name, *field.schema, object);
+    auto const* displayName = field.schema->queryAnnotation<schema::DisplayName>();
+    return drawGridRaw(displayName != nullptr ? displayName->name : field.name, *field.schema, object);
 }
 
 void up::shell::PropertyGrid::drawIntEditor(zstring_view name, int& value) noexcept {

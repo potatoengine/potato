@@ -10,6 +10,7 @@ up_set_common_properties(potato_libreflex)
 include(up_compile_sap)
 up_compile_sap(potato_libreflex SCHEMAS
     schema/common.sap
+    schema/tools.sap
 )
 
 target_link_libraries(potato_libreflex

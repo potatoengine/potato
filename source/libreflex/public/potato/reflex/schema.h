@@ -61,6 +61,17 @@ namespace up::reflex {
         Schema const* elementType = nullptr;
         view<SchemaField> fields;
         view<SchemaAnnotation> annotations;
+
+        template <typename AttributeT>
+        AttributeT const* queryAnnotation() const noexcept {
+            TypeInfo const& type = getTypeInfo<AttributeT>();
+            for (SchemaAnnotation const& anno : annotations) {
+                if (anno.type == &type) {
+                    return static_cast<AttributeT const*>(anno.attr);
+                }
+            }
+            return nullptr;
+        }
     };
 
     template <typename T>
