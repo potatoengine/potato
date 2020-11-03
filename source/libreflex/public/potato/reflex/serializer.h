@@ -48,7 +48,7 @@ namespace up::reflex {
                     for (auto&& item : value) {
                         if (static_cast<DerivedType*>(this)->enterItem(tag<decltype(item)>{}, index++) ==
                             Action::Enter) {
-                            serialize(item, *static_cast<DerivedType*>(this));
+                            serialize_value(item, *static_cast<DerivedType*>(this));
                         }
                     }
                     static_cast<DerivedType*>(this)->end();
@@ -59,7 +59,7 @@ namespace up::reflex {
             }
             else if constexpr (std::is_class_v<Type>) {
                 if (static_cast<DerivedType*>(this)->beginObject(tag<Type>{}) == Action::Enter) {
-                    serialize(value, *static_cast<DerivedType*>(this));
+                    serialize_value(value, *static_cast<DerivedType*>(this));
                     static_cast<DerivedType*>(this)->end();
                 }
             }

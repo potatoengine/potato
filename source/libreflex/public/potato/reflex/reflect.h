@@ -48,7 +48,7 @@ namespace up::reflex {
 
     /// Public entry for serialization
     template <typename Type, typename Serializer>
-    inline void serialize(Type&& value, Serializer&& serializer) {
+    inline void serialize_value(Type&& value, Serializer&& serializer) {
         using BaseType = up::remove_cvref_t<Type>;
 
         auto wrapper = _detail::
@@ -60,7 +60,7 @@ namespace up::reflex {
 
     /// Public entry for reflection
     template <typename Type, typename Reflector>
-    inline void reflect(Reflector&& reflector) {
+    inline void reflect_type(Reflector&& reflector) {
         using BaseType = up::remove_cvref_t<Type>;
 
         auto wrapper = _detail::

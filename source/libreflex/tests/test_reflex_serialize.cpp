@@ -57,7 +57,7 @@ TEST_CASE("serialize", "[potato][reflect]") {
 
         auto const big = Complex{{1, 2, 3}, 42.f, "bob", {4, 5, 6}}; // NOLINT
 
-        serialize(big, serializer);
+        serialize_value(big, serializer);
 
         std::ostringstream ostr;
         ostr << root;
@@ -71,7 +71,7 @@ TEST_CASE("serialize", "[potato][reflect]") {
         auto serializer = JsonStreamDeserializer{root};
 
         Complex big;
-        serialize(big, serializer);
+        serialize_value(big, serializer);
 
         CHECK(big.xyz.x == 1);
         CHECK(big.xyz.y == 2);
@@ -93,12 +93,12 @@ TEST_CASE("reflect", "[potato][reflect]") {
 
     SECTION("reflect int") {
         RecordingReflector ref{};
-        reflect<int>(ref);
+        reflect_type<int>(ref);
     }
 
     SECTION("reflect struct") {
         RecordingReflector ref{};
 
-        reflect<Fields>(ref);
+        reflect_type<Fields>(ref);
     }
 }
