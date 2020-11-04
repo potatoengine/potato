@@ -10,11 +10,7 @@
 #include <imgui.h>
 
 void up::shell::PropertyGrid::drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object) {
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
-
     drawObjectEditor(schema, object);
-
-    ImGui::PopStyleVar();
 }
 
 void up::shell::PropertyGrid::drawEditor(reflex::Schema const& schema, void* object) {
@@ -66,16 +62,26 @@ void up::shell::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, 
         ? displayNameAnnotation->name
         : field.name;
 
-    ImGui::PushID(object);
-    ImGui::AlignTextToFramePadding();
-    bool const open = ImGui::TreeNode(displayName.c_str());
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+    bool const expandable =
+        (field.schema->primitive == reflex::SchemaPrimitive::Object ||
+         field.schema->primitive == reflex::SchemaPrimitive::Mat4x4);
+    if (!expandable)
+        flags |= ImGuiTreeNodeFlags_Leaf;
 
-    ImGui::NextColumn();
+    ImGui::PushID(object);
+
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::AlignTextToFramePadding();
+    bool const open = ImGui::TreeNodeEx(displayName.c_str(), flags);
+
+    ImGui::TableSetColumnIndex(1);
+    ImGui::AlignTextToFramePadding();
     if (open) {
         drawEditor(*field.schema, object);
         ImGui::TreePop();
     }
-    ImGui::NextColumn();
 
     ImGui::PopID();
 }

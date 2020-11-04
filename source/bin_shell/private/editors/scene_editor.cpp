@@ -174,7 +174,6 @@ void up::shell::SceneEditor::_drawGrid() {
 }
 
 void up::shell::SceneEditor::_resize(GpuDevice& device, glm::ivec2 size) {
-    using namespace up;
     GpuTextureDesc desc;
     desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
     desc.type = GpuTextureType::Texture2D;
@@ -188,58 +187,74 @@ void up::shell::SceneEditor::_resize(GpuDevice& device, glm::ivec2 size) {
 void up::shell::SceneEditor::_inspector() {
     ComponentId deletedComponent = ComponentId::Unknown;
 
-    if (_scene != nullptr) {
-        ImGui::BeginColumns("##grid", 2, ImGuiColumnsFlags_NoBorder);
+    if (_scene == nullptr)
+        return;
 
-        _scene->world().interrogateEntityUnsafe(
-            _selection.selected(),
-            [&](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
-                if (ImGui::TreeNodeEx(
-                        typeInfo->name.c_str(),
-                        ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth)) {
-                    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
-                        ImGui::OpenPopup("##component_context_menu");
-                    }
+    if (!ImGui::BeginTable(
+            "##inspector_table",
+            2,
+            ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBodyUntilResize))
+        return;
 
-                    ImGui::NextColumn();
-                    ImGui::NextColumn();
+    _scene->world().interrogateEntityUnsafe(
+        _selection.selected(),
+        [&](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
+            ImGui::PushID(data);
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
 
-                    if (ImGui::BeginPopupContextItem("##component_context_menu")) {
-                        if (ImGui::MenuItem(as_char(u8"\uf1f8 Remove"))) {
-                            deletedComponent = static_cast<ComponentId>(typeInfo->hash);
-                        }
-                        ImGui::EndPopup();
-                    }
+            ImGuiStorage* const storage = ImGui::GetStateStorage();
+            bool open = storage->GetBool(ImGui::GetID("open"), true);
 
-                    if (typeInfo->schema != nullptr) {
-                        _propertyGrid.drawGridRaw("", *typeInfo->schema, data);
-                    }
-                    ImGui::TreePop();
-                }
-            });
+            ImGuiSelectableFlags const flags = ImGuiSelectableFlags_SpanAllColumns;
 
-        ImGui::EndColumns();
-
-        if (deletedComponent != ComponentId::Unknown) {
-            _scene->world().removeComponent(_selection.selected(), deletedComponent);
-        }
-
-        if (_selection.hasSelection()) {
-            if (ImGui::Button(as_char(u8"\uf067 Add Component"))) {
-                ImGui::OpenPopup("##add_component_list");
+            if (ImGui::Selectable(typeInfo->name.c_str(), open, flags)) {
+                open = !open;
+                storage->SetBool(ImGui::GetID("open"), open);
             }
-            if (ImGui::BeginPopup("##add_component_list")) {
-                for (reflex::TypeInfo const* typeInfo : _components()) {
-                    if (_scene->world().getComponentSlowUnsafe(
-                            _selection.selected(),
-                            static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
-                        if (ImGui::MenuItem(typeInfo->name.c_str())) {
-                            _scene->world().addComponentDefault(_selection.selected(), *typeInfo);
-                        }
-                    }
+
+            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+                ImGui::OpenPopup("##component_context_menu");
+            }
+
+            if (ImGui::BeginPopupContextItem("##component_context_menu")) {
+                if (ImGui::MenuItem(as_char(u8"\uf1f8 Remove"))) {
+                    deletedComponent = static_cast<ComponentId>(typeInfo->hash);
+                }
+                if (ImGui::MenuItem(as_char(u8"\uf1f8 Remove"))) {
+                    deletedComponent = static_cast<ComponentId>(typeInfo->hash);
                 }
                 ImGui::EndPopup();
             }
+
+            if (open && typeInfo->schema != nullptr) {
+                _propertyGrid.drawGridRaw("", *typeInfo->schema, data);
+            }
+
+            ImGui::PopID();
+        });
+
+    ImGui::EndTable();
+
+    if (deletedComponent != ComponentId::Unknown) {
+        _scene->world().removeComponent(_selection.selected(), deletedComponent);
+    }
+
+    if (_selection.hasSelection()) {
+        if (ImGui::Button(as_char(u8"\uf067 Add Component"))) {
+            ImGui::OpenPopup("##add_component_list");
+        }
+        if (ImGui::BeginPopup("##add_component_list")) {
+            for (reflex::TypeInfo const* typeInfo : _components()) {
+                if (_scene->world().getComponentSlowUnsafe(
+                        _selection.selected(),
+                        static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
+                    if (ImGui::MenuItem(typeInfo->name.c_str())) {
+                        _scene->world().addComponentDefault(_selection.selected(), *typeInfo);
+                    }
+                }
+            }
+            ImGui::EndPopup();
         }
     }
 }
