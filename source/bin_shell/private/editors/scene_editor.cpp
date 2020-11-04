@@ -189,13 +189,20 @@ void up::shell::SceneEditor::_inspector() {
     ComponentId deletedComponent = ComponentId::Unknown;
 
     if (_scene != nullptr) {
+        ImGui::BeginColumns("##grid", 2, ImGuiColumnsFlags_NoBorder);
+
         _scene->world().interrogateEntityUnsafe(
             _selection.selected(),
             [&](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
-                if (ImGui::TreeNodeEx(typeInfo->name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::TreeNodeEx(
+                        typeInfo->name.c_str(),
+                        ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth)) {
                     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
                         ImGui::OpenPopup("##component_context_menu");
                     }
+
+                    ImGui::NextColumn();
+                    ImGui::NextColumn();
 
                     if (ImGui::BeginPopupContextItem("##component_context_menu")) {
                         if (ImGui::MenuItem(as_char(u8"\uf1f8 Remove"))) {
@@ -211,6 +218,8 @@ void up::shell::SceneEditor::_inspector() {
                 }
             });
 
+        ImGui::EndColumns();
+
         if (deletedComponent != ComponentId::Unknown) {
             _scene->world().removeComponent(_selection.selected(), deletedComponent);
         }
@@ -221,7 +230,9 @@ void up::shell::SceneEditor::_inspector() {
             }
             if (ImGui::BeginPopup("##add_component_list")) {
                 for (reflex::TypeInfo const* typeInfo : _components()) {
-                    if (_scene->world().getComponentSlowUnsafe(_selection.selected(), static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
+                    if (_scene->world().getComponentSlowUnsafe(
+                            _selection.selected(),
+                            static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
                         if (ImGui::MenuItem(typeInfo->name.c_str())) {
                             _scene->world().addComponentDefault(_selection.selected(), *typeInfo);
                         }

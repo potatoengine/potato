@@ -13,18 +13,25 @@ namespace up::shell {
         void drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object);
 
         template <typename T>
-        void drawGrid(zstring_view name, T const& value)
-        {
+        void drawGrid(zstring_view name, T const& value) {
             drawGridRaw(name, getSchema<T>(), &value);
         }
 
         void drawPropertyRaw(reflex::SchemaField const& field, void* object);
 
-        void drawIntEditor(zstring_view name, int& value) noexcept;
-        void drawFloatEditor(zstring_view name, float& value) noexcept;
-        void drawVec3Editor(zstring_view name, glm::vec3& value) noexcept;
-        void drawMat4x4Editor(zstring_view name, glm::mat4x4& value) noexcept;
-        void drawQuatEditor(zstring_view name, glm::quat& value) noexcept;
+        void drawEditor(reflex::Schema const& schema, void* object);
+        void drawObjectEditor(reflex::Schema const& schema, void* object);
+        void drawIntEditor(int& value) noexcept;
+        template <integral T>
+        void drawIntEditor(T& value) noexcept {
+            int tmp = static_cast<int>(value);
+            drawIntEditor(tmp);
+            value = static_cast<T>(tmp);
+        }
+        void drawFloatEditor(float& value) noexcept;
+        void drawVec3Editor(glm::vec3& value) noexcept;
+        void drawMat4x4Editor(glm::mat4x4& value) noexcept;
+        void drawQuatEditor(glm::quat& value) noexcept;
 
         template <integral T>
         void drawIntEditor(zstring_view name, T& value) noexcept {
@@ -33,4 +40,4 @@ namespace up::shell {
             value = tmp;
         }
     };
-}
+} // namespace up::shell
