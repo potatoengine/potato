@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "ui/property_grid.h"
+#include "property_grid.h"
 #include "common_schema.h"
 #include "tools_schema.h"
 
@@ -11,11 +11,11 @@
 #include <glm/vec3.hpp>
 #include <imgui.h>
 
-void up::shell::PropertyGrid::drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object) {
+void up::editor::PropertyGrid::drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object) {
     drawObjectEditor(schema, object);
 }
 
-void up::shell::PropertyGrid::drawEditor(reflex::Schema const& schema, void* object) {
+void up::editor::PropertyGrid::drawEditor(reflex::Schema const& schema, void* object) {
     ImGui::PushID(object);
 
     switch (schema.primitive) {
@@ -50,14 +50,18 @@ void up::shell::PropertyGrid::drawEditor(reflex::Schema const& schema, void* obj
     ImGui::PopID();
 }
 
-void up::shell::PropertyGrid::drawObjectEditor(reflex::Schema const& schema, void* object) {
+void up::editor::PropertyGrid::drawObjectEditor(reflex::Schema const& schema, void* object) {
     UP_ASSERT(schema.primitive == reflex::SchemaPrimitive::Object);
     for (reflex::SchemaField const& field : schema.fields) {
         drawPropertyRaw(field, object);
     }
 }
 
-void up::shell::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, void* object) {
+void up::editor::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, void* object) {
+    if (field.queryAnnotation<schema::Hidden>()) {
+        return;
+    }
+
     void* const member = static_cast<char*>(object) + field.offset;
     auto const* const displayNameAnnotation = field.queryAnnotation<schema::DisplayName>();
     zstring_view const displayName = displayNameAnnotation != nullptr && !displayNameAnnotation->name.empty()
@@ -88,22 +92,22 @@ void up::shell::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, 
     ImGui::PopID();
 }
 
-void up::shell::PropertyGrid::drawIntEditor(int& value) noexcept {
+void up::editor::PropertyGrid::drawIntEditor(int& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
     ImGui::InputInt("##int", &value);
 }
 
-void up::shell::PropertyGrid::drawFloatEditor(float& value) noexcept {
+void up::editor::PropertyGrid::drawFloatEditor(float& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
     ImGui::InputFloat("##float", &value);
 }
 
-void up::shell::PropertyGrid::drawVec3Editor(glm::vec3& value) noexcept {
+void up::editor::PropertyGrid::drawVec3Editor(glm::vec3& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
     ImGui::InputVec3("##vec3", value);
 }
 
-void up::shell::PropertyGrid::drawMat4x4Editor(glm::mat4x4& value) noexcept {
+void up::editor::PropertyGrid::drawMat4x4Editor(glm::mat4x4& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
     ImGui::InputFloat4("##a", &value[0].x);
     ImGui::SetNextItemWidth(-1.f);
@@ -114,7 +118,7 @@ void up::shell::PropertyGrid::drawMat4x4Editor(glm::mat4x4& value) noexcept {
     ImGui::InputFloat4("##d", &value[3].x);
 }
 
-void up::shell::PropertyGrid::drawQuatEditor(glm::quat& value) noexcept {
+void up::editor::PropertyGrid::drawQuatEditor(glm::quat& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
     ImGui::InputQuat("##quat", value);
 }

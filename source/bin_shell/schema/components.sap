@@ -20,8 +20,11 @@ type SoundHandle;
 struct Transform {
     [DisplayName("Pos")]
     vec3 position;
+
     [DisplayName("Rot")]
     quat rotation;
+
+    [Hidden]
     mat4x4 transform;
 }
 

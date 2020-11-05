@@ -8,10 +8,12 @@ target_sources(potato_libeditor PRIVATE
     "private/hotkeys.cpp"
     "private/imgui_backend.cpp"
     "private/imgui_ext.cpp"
+    "private/property_grid.cpp"
     "public/potato/editor/hotkeys.h"
     "public/potato/editor/icons.h"
     "public/potato/editor/imgui_backend.h"
     "public/potato/editor/imgui_ext.h"
+    "public/potato/editor/property_grid.h"
 )
 
 include(up_set_common_properties)
@@ -21,6 +23,7 @@ target_link_libraries(potato_libeditor
     PUBLIC
         potato::libruntime
         potato::librender
+        potato::libreflex
         potato::spud
         SDL2::SDL2
         glm::glm

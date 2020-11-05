@@ -7,7 +7,7 @@
 
 #include <glm/fwd.hpp>
 
-namespace up::shell {
+namespace up::inline editor {
     class PropertyGrid {
     public:
         void drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object);
@@ -40,4 +40,4 @@ namespace up::shell {
             value = tmp;
         }
     };
-} // namespace up::shell
+} // namespace up::inline editor

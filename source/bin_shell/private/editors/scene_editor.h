@@ -7,8 +7,8 @@
 #include "editor.h"
 #include "scene.h"
 #include "selection.h"
-#include "ui/property_grid.h"
 
+#include "potato/editor/property_grid.h"
 #include "potato/render/camera.h"
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_resource_view.h"

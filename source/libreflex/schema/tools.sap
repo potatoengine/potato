@@ -3,3 +3,4 @@ module tools;
 import common;
 
 attribute DisplayName { string name; }
+attribute Hidden;
