@@ -5,8 +5,10 @@ add_library(potato_libeditor STATIC)
 add_library(potato::libeditor ALIAS potato_libeditor)
 
 target_sources(potato_libeditor PRIVATE
+    "private/hotkeys.cpp"
     "private/imgui_backend.cpp"
     "private/imgui_ext.cpp"
+    "public/potato/editor/hotkeys.h"
     "public/potato/editor/icons.h"
     "public/potato/editor/imgui_backend.h"
     "public/potato/editor/imgui_ext.h"

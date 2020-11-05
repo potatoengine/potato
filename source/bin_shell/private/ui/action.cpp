@@ -11,13 +11,13 @@
 #include "potato/spud/string_util.h"
 #include "potato/spud/utility.h"
 
-up::shell::ActionGroup::~ActionGroup() {
+up::ActionGroup::~ActionGroup() {
     if (_owner != nullptr) {
         _owner->removeGroup(this);
     }
 }
 
-void up::shell::ActionGroup::addAction(ActionDesc desc) {
+void up::ActionGroup::addAction(ActionDesc desc) {
     _actions.push_back(std::move(desc));
 
     if (_owner != nullptr) {
@@ -25,7 +25,7 @@ void up::shell::ActionGroup::addAction(ActionDesc desc) {
     }
 }
 
-auto up::shell::Actions::addGroup(ActionGroup* group) -> bool {
+auto up::Actions::addGroup(ActionGroup* group) -> bool {
     if (group == nullptr) {
         return false;
     }
@@ -40,7 +40,7 @@ auto up::shell::Actions::addGroup(ActionGroup* group) -> bool {
     return true;
 }
 
-auto up::shell::Actions::removeGroup(ActionGroup const* group) -> bool {
+auto up::Actions::removeGroup(ActionGroup const* group) -> bool {
     if (group == nullptr) {
         return false;
     }
@@ -60,7 +60,7 @@ auto up::shell::Actions::removeGroup(ActionGroup const* group) -> bool {
     return false;
 }
 
-bool up::shell::Actions::refresh(uint64& lastVersion) noexcept {
+bool up::Actions::refresh(uint64& lastVersion) noexcept {
     erase(_groups, nullptr);
 
     auto const changed = lastVersion != _version;
@@ -68,7 +68,7 @@ bool up::shell::Actions::refresh(uint64& lastVersion) noexcept {
     return changed;
 }
 
-void up::shell::Actions::build(BuildCallback callback) {
+void up::Actions::build(BuildCallback callback) {
     for (auto const& [groupIndex, group] : enumerate(_groups)) {
         for (auto const& [index, action] : enumerate(group->_actions)) {
             callback(idOf(groupIndex, index), action);
@@ -76,21 +76,33 @@ void up::shell::Actions::build(BuildCallback callback) {
     }
 }
 
-auto up::shell::Actions::isEnabled(ActionId id) -> bool {
+auto up::Actions::isEnabled(ActionId id) -> bool {
     auto* group = _groups[groupOf(id)];
     auto& action = group->_actions[indexOf(id)];
 
     return action.enabled == nullptr || action.enabled();
 }
 
-auto up::shell::Actions::isChecked(ActionId id) -> bool {
+auto up::Actions::isChecked(ActionId id) -> bool {
     auto* group = _groups[groupOf(id)];
     auto& action = group->_actions[indexOf(id)];
 
     return action.checked != nullptr && action.checked();
 }
 
-void up::shell::Actions::invoke(ActionId id) {
+bool up::Actions::tryInvoke(ActionId id) {
+    auto* group = _groups[groupOf(id)];
+    auto& action = group->_actions[indexOf(id)];
+
+    if (action.enabled == nullptr || action.enabled()) {
+        action.action();
+        return true;
+    }
+
+    return false;
+}
+
+void up::Actions::invoke(ActionId id) {
     auto* group = _groups[groupOf(id)];
     auto& action = group->_actions[indexOf(id)];
 

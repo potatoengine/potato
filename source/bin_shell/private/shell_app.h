@@ -4,10 +4,10 @@
 #include "ui/action.h"
 #include "ui/command_palette.h"
 #include "ui/editor_group.h"
-#include "ui/hotkey.h"
 #include "ui/menu.h"
 
 #include "potato/audio/audio_engine.h"
+#include "potato/editor/hotkeys.h"
 #include "potato/editor/imgui_backend.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/resource_loader.h"

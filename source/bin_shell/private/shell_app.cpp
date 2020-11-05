@@ -153,7 +153,6 @@ int up::shell::ShellApp::initialize() {
     _menu.addMenu({.menu = "Help"_sv, .group = "9_help"_sv});
 
     _menu.bindActions(_actions);
-    _hotKeys.bindActions(_actions);
     _palette.bindActions(_actions);
 
     constexpr int default_width = 1024;
@@ -289,8 +288,19 @@ void up::shell::ShellApp::run() {
 
     constexpr double nano_to_seconds = 1.0 / 1000000000.0;
 
+    uint64 hotKeyRevision = 0;
+
     while (isRunning()) {
         imguiIO.DeltaTime = _lastFrameTime;
+
+        if (!_actions.refresh(hotKeyRevision)) {
+            _hotKeys.clear();
+            _actions.build([this](ActionId id, ActionDesc const& action) {
+                if (!action.hotKey.empty()) {
+                    _hotKeys.addHotKey(action.hotKey, id);
+                }
+            });
+        }
 
         _processEvents();
 
@@ -429,7 +439,9 @@ void up::shell::ShellApp::_processEvents() {
                 _imguiBackend.handleEvent(ev);
                 break;
             case SDL_KEYDOWN:
-                if (!_hotKeys.evaluateKey(ev.key.keysym.sym, ev.key.keysym.mod)) {
+                if (!_hotKeys.evaluateKey(ev.key.keysym.sym, ev.key.keysym.mod, [this](auto id) {
+                        return _actions.tryInvoke(id);
+                    })) {
                     _imguiBackend.handleEvent(ev);
                 }
                 break;
