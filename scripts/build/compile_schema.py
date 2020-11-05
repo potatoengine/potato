@@ -80,7 +80,7 @@ def generate_header_types(ctx: Context):
 
         ctx.print(f'    struct {type.cxxname} ')
         if type.kind == type_info.TypeKind.ATTRIBUTE:
-            ctx.print(': reflex::Attribute ')
+            ctx.print(': reflex::SchemaAttribute ')
         ctx.print('{\n')
         for field in type.fields_ordered:
             ctx.print(f"        {field.cxxtype} {field.cxxname};\n")
@@ -245,7 +245,6 @@ def generate_header(ctx: Context):
 #pragma once
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
-#include "potato/reflex/annotation.h"
 #include "potato/reflex/reflect.h"
 #include "potato/reflex/schema.h"
 #include "potato/reflex/type.h"

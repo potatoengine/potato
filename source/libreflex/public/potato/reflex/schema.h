@@ -17,9 +17,10 @@ namespace up {
 
 namespace up::reflex {
     struct TypeInfo;
-    struct Attribute;
     struct SchemaType;
     struct Schema;
+
+    struct SchemaAttribute {};
 
     enum class SchemaPrimitive {
         Null,
@@ -45,7 +46,7 @@ namespace up::reflex {
 
     struct SchemaAnnotation {
         TypeInfo const* type = nullptr;
-        Attribute const* attr = nullptr;
+        SchemaAttribute const* attr = nullptr;
     };
 
     struct SchemaField {
@@ -55,7 +56,7 @@ namespace up::reflex {
         view<SchemaAnnotation> annotations;
 
         template <typename AttributeT>
-        AttributeT const* queryAnnotation() const noexcept {
+        AttributeT const* queryAnnotation() const noexcept requires(std::is_base_of_v<SchemaAttribute, AttributeT>) {
             TypeInfo const& type = getTypeInfo<AttributeT>();
             for (SchemaAnnotation const& anno : annotations) {
                 if (anno.type == &type) {
@@ -74,7 +75,7 @@ namespace up::reflex {
         view<SchemaAnnotation> annotations;
 
         template <typename AttributeT>
-        AttributeT const* queryAnnotation() const noexcept {
+        AttributeT const* queryAnnotation() const noexcept requires(std::is_base_of_v<SchemaAttribute, AttributeT>) {
             TypeInfo const& type = getTypeInfo<AttributeT>();
             for (SchemaAnnotation const& anno : annotations) {
                 if (anno.type == &type) {
