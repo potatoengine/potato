@@ -2,10 +2,13 @@
 
 #pragma once
 
+#include "traits.h"
+
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/span.h"
 #include "potato/spud/string.h"
+#include "potato/spud/traits.h"
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 

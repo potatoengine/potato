@@ -16,7 +16,7 @@ up_compile_sap(potato_libreflex SCHEMAS
 target_sources(potato_libreflex PRIVATE
     "public/potato/reflex/_export.h"
     
-    "public/potato/reflex/reflect.h"
+    
     "public/potato/reflex/schema.h"
     "public/potato/reflex/traits.h"
     "public/potato/reflex/type.h"

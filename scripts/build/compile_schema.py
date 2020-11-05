@@ -109,24 +109,6 @@ def generate_header_schemas(ctx: Context):
     
     ctx.print('}\n')
 
-def generate_header_reflex(ctx: Context):
-    """Generates the reflex definitions for types"""
-    for type in ctx.db.exports.values():
-        if type.has_annotation('ignore'):
-            continue
-        if type.kind == type_info.TypeKind.OPAQUE:
-            continue
-
-        cxxns = cxxnamespace(type)
-        ctx.print(f'namespace {cxxns} {{\n')
-
-        ctx.print(f"    UP_REFLECT_TYPE({type.cxxname}) {{\n")
-        for field in type.fields_ordered:
-            ctx.print(f'        reflect("{field.name}", &Type::{field.cxxname});\n')
-        ctx.print("    }\n")
-
-        ctx.print('}\n')
-
 def generate_header_json_parse_decl(ctx: Context):
     """Generates json parsing function declarations for types"""
     for type in ctx.db.exports.values():
@@ -245,7 +227,6 @@ def generate_header(ctx: Context):
 #pragma once
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
-#include "potato/reflex/reflect.h"
 #include "potato/reflex/schema.h"
 #include "potato/reflex/type.h"
 #include "potato/runtime/json.h"
@@ -261,7 +242,6 @@ def generate_header(ctx: Context):
             ctx.print(f'#include "{header}"\n')
 
     generate_header_types(ctx)
-    generate_header_reflex(ctx)
     generate_header_json_parse_decl(ctx)
     generate_header_schemas(ctx)
 
