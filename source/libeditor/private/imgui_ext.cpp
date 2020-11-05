@@ -59,7 +59,7 @@ bool ImGui::Potato::MenuItemEx(
     else {
         ImVec2 const pos = window->DC.CursorPos;
 
-        float const shortcutWidth = shortcut ? CalcTextSize(shortcut, nullptr).x : 0.0f;
+        float const shortcutWidth = shortcut != nullptr ? CalcTextSize(shortcut, nullptr).x : 0.0f;
 
         float const minWidth = window->DC.MenuColumns.DeclColumns(
             labelSize.x + iconWidth,
