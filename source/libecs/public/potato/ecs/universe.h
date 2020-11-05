@@ -6,11 +6,11 @@
 #include "shared_context.h"
 #include "world.h"
 
+#include "potato/reflex/schema.h"
+#include "potato/reflex/type.h"
 #include "potato/spud/box.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/zstring_view.h"
-#include "potato/reflex/type.h"
-#include "potato/reflex/schema.h"
 
 namespace up {
 

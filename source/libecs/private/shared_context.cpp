@@ -73,8 +73,9 @@ auto up::EcsSharedContext::acquireArchetype(
         auto const originalLayout = layoutOf(original);
         for (size_t index = 0; index != archetypes.size(); ++index) {
             auto const layout = layoutOf(ArchetypeId(index));
-            if (any(exclude,
-                    [&layout](reflex::TypeInfo const* typeInfo) noexcept { return contains(layout, typeInfo, {}, &LayoutRow::typeInfo); })) {
+            if (any(exclude, [&layout](reflex::TypeInfo const* typeInfo) noexcept {
+                    return contains(layout, typeInfo, {}, &LayoutRow::typeInfo);
+                })) {
                 continue;
             }
             if (!all(include, [&layout](reflex::TypeInfo const* typeInfo) noexcept {
@@ -112,7 +113,7 @@ auto up::EcsSharedContext::acquireArchetype(
     // append all the new components
     //
     for (reflex::TypeInfo const* typeInfo : include) {
-        chunkRows.push_back({ static_cast<ComponentId>(typeInfo->hash), typeInfo });
+        chunkRows.push_back({static_cast<ComponentId>(typeInfo->hash), typeInfo});
     }
 
     // now that all components are added, we can calculate the total number of them

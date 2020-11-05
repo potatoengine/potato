@@ -81,7 +81,8 @@ namespace up {
             return;
         }
 
-        ComponentId const components[sizeof...(Components)] = {static_cast<ComponentId>(_context->findComponentByType<Components>()->hash)...};
+        ComponentId const components[sizeof...(Components)] = {
+            static_cast<ComponentId>(_context->findComponentByType<Components>()->hash)...};
 
         for (; _matchIndex < _context->archetypes.size(); ++_matchIndex) {
             auto& match = _matches.push_back({ArchetypeId(_matchIndex)});

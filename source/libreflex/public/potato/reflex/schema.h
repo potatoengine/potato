@@ -25,6 +25,9 @@ namespace up::reflex {
 
     struct SchemaAttribute {};
 
+    template <typename T>
+    struct TypeHolder;
+
     enum class SchemaPrimitive {
         Null,
         Bool,
@@ -60,7 +63,7 @@ namespace up::reflex {
 
         template <typename AttributeT>
         AttributeT const* queryAnnotation() const noexcept requires(std::is_base_of_v<SchemaAttribute, AttributeT>) {
-            TypeInfo const& type = getTypeInfo<AttributeT>();
+            TypeInfo const& type = TypeHolder<AttributeT>::get();
             for (SchemaAnnotation const& anno : annotations) {
                 if (anno.type == &type) {
                     return static_cast<AttributeT const*>(anno.attr);
@@ -79,7 +82,7 @@ namespace up::reflex {
 
         template <typename AttributeT>
         AttributeT const* queryAnnotation() const noexcept requires(std::is_base_of_v<SchemaAttribute, AttributeT>) {
-            TypeInfo const& type = getTypeInfo<AttributeT>();
+            TypeInfo const& type = TypeHolder<AttributeT>::get();
             for (SchemaAnnotation const& anno : annotations) {
                 if (anno.type == &type) {
                     return static_cast<AttributeT const*>(anno.attr);
@@ -108,7 +111,7 @@ namespace up::reflex {
     || schema_primitive<T>;
 
     template <has_schema T>
-    constexpr Schema const& getSchema() noexcept {
+    Schema const& getSchema() noexcept {
         using Type = std::remove_cv_t<std::decay_t<T>>;
         if constexpr (std::is_same_v<Type, bool>) {
             static constexpr Schema schema{.name = "bool"_zsv, .primitive = SchemaPrimitive::Bool};

@@ -58,7 +58,7 @@ void up::editor::PropertyGrid::drawObjectEditor(reflex::Schema const& schema, vo
 }
 
 void up::editor::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, void* object) {
-    if (field.queryAnnotation<schema::Hidden>()) {
+    if (field.queryAnnotation<schema::Hidden>() != nullptr) {
         return;
     }
 
@@ -72,8 +72,9 @@ void up::editor::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field,
     bool const expandable =
         (field.schema->primitive == reflex::SchemaPrimitive::Object ||
          field.schema->primitive == reflex::SchemaPrimitive::Mat4x4);
-    if (!expandable)
+    if (!expandable) {
         flags |= ImGuiTreeNodeFlags_Leaf;
+    }
 
     ImGui::PushID(member);
 

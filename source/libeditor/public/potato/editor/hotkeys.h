@@ -30,6 +30,5 @@ namespace up::inline editor {
         [[nodiscard]] auto _stringify(int keycode, unsigned mods) const -> string;
 
         vector<HotKey> _hotKeys;
-        uint64 _actionsVersion = 0;
     };
 } // namespace up::inline editor

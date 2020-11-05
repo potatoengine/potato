@@ -3,6 +3,7 @@
 #pragma once
 
 #include "common.h"
+
 #include "potato/reflex/type.h"
 
 namespace up {

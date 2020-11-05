@@ -6,15 +6,15 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up::reflex {
-    class Schema;
+    struct Schema;
 
-    using FnTypeDefaultConstructor = void(*)(void* memory);
-    using FnTypeMoveConstructor = void(*)(void* memory, void* source);
-    using FnTypeCopyConstructor = void(*)(void* memory, void const* source);
-    using FnTypeMoveAssignment = void(*)(void* target, void* source);
-    using FnTypeCopyAssignment = void(*)(void* target, void const* source);
-    using FnTypeDestructor = void(*)(void* object);
-    using FnTypeRelocater = void(*)(void* memory, void* source);
+    using FnTypeDefaultConstructor = void (*)(void* memory);
+    using FnTypeMoveConstructor = void (*)(void* memory, void* source);
+    using FnTypeCopyConstructor = void (*)(void* memory, void const* source);
+    using FnTypeMoveAssignment = void (*)(void* target, void* source);
+    using FnTypeCopyAssignment = void (*)(void* target, void const* source);
+    using FnTypeDestructor = void (*)(void* object);
+    using FnTypeRelocater = void (*)(void* memory, void* source);
 
     struct TypeOps {
         FnTypeDefaultConstructor defaultConstructor = nullptr;
@@ -47,24 +47,36 @@ namespace up::reflex {
     constexpr TypeOps makeTypeOps() noexcept {
         TypeOps ops;
         if constexpr (std::is_default_constructible_v<T>) {
-            ops.defaultConstructor = [](void* memory) { new(memory) T{}; };
+            ops.defaultConstructor = [](void* memory) {
+                new (memory) T{};
+            };
         }
         if constexpr (std::is_move_constructible_v<T>) {
-            ops.moveConstructor = [](void* memory, void* source) { new(memory) T{ static_cast<T&&>(*static_cast<T*>(source)) }; };
+            ops.moveConstructor = [](void* memory, void* source) {
+                new (memory) T{static_cast<T&&>(*static_cast<T*>(source))};
+            };
         }
         if constexpr (std::is_copy_constructible_v<T>) {
-            ops.copyConstructor = [](void* memory, void const* source) { new(memory) T{ *static_cast<T const*>(source) }; };
+            ops.copyConstructor = [](void* memory, void const* source) {
+                new (memory) T{*static_cast<T const*>(source)};
+            };
         }
         if constexpr (std::is_move_assignable_v<T>) {
-            ops.moveAssignment = [](void* target, void* source) { *static_cast<T*>(target) = static_cast<T&&>(*static_cast<T*>(source)); };
+            ops.moveAssignment = [](void* target, void* source) {
+                *static_cast<T*>(target) = static_cast<T&&>(*static_cast<T*>(source));
+            };
         }
         if constexpr (std::is_copy_assignable_v<T>) {
-            ops.copyAssignment = [](void* target, void const* source) { *static_cast<T*>(target) = *static_cast<T const*>(source); };
+            ops.copyAssignment = [](void* target, void const* source) {
+                *static_cast<T*>(target) = *static_cast<T const*>(source);
+            };
         }
-        ops.destructor = [](void* object) { static_cast<T*>(object)->~T(); };
+        ops.destructor = [](void* object) {
+            static_cast<T*>(object)->~T();
+        };
         if constexpr (std::is_move_constructible_v<T>) {
             ops.relocator = [](void* memory, void* source) {
-                new(memory) T{ static_cast<T&&>(*static_cast<T*>(source)) };
+                new (memory) T{static_cast<T&&>(*static_cast<T*>(source))};
                 static_cast<T*>(source)->~T();
             };
         }
@@ -82,4 +94,4 @@ namespace up::reflex {
         info.ops = makeTypeOps<T>();
         return info;
     }
-}
+} // namespace up::reflex
