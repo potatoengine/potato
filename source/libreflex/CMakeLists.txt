@@ -13,6 +13,16 @@ up_compile_sap(potato_libreflex SCHEMAS
     schema/tools.sap
 )
 
+target_sources(potato_libreflex PRIVATE
+    "public/potato/reflex/_export.h"
+    "public/potato/reflex/annotation.h"
+    "public/potato/reflex/reflect.h"
+    "public/potato/reflex/schema.h"
+    "public/potato/reflex/serializer.h"
+    "public/potato/reflex/traits.h"
+    "public/potato/reflex/type.h"
+)
+
 target_link_libraries(potato_libreflex
     PUBLIC
         potato::spud
@@ -25,10 +35,6 @@ target_link_libraries(potato_libreflex
 add_executable(potato_libreflex_test)
 target_sources(potato_libreflex_test PRIVATE
     "tests/main.cpp"
-    "tests/test_reflex_serialize.cpp"
-    "public/potato/reflex/json_reflex_serializer.h"
-    "public/potato/reflex/schema.h"
-    "public/potato/reflex/type.h"
 )
 
 up_set_common_properties(potato_libreflex_test)
