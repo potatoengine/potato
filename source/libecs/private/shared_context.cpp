@@ -149,7 +149,7 @@ auto up::EcsSharedContext::acquireArchetype(
 
         row.component = static_cast<ComponentId>(row.typeInfo->hash);
         row.offset = static_cast<uint32>(offset);
-        row.width = row.typeInfo->size;
+        row.width = static_cast<uint16>(row.typeInfo->size);
 
         offset += row.width * archData.maxEntitiesPerChunk;
         UP_ASSERT(offset <= sizeof(Chunk::payload));

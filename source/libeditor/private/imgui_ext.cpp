@@ -15,19 +15,20 @@ bool ImGui::Potato::MenuItemEx(
     bool selected,
     bool enabled) {
     ImGuiWindow* window = GetCurrentWindow();
-    if (window->SkipItems)
+    if (window->SkipItems) {
         return false;
+    }
 
     ImGuiContext& g = *GImGui;
     ImGuiStyle const& style = g.Style;
     ImFont const* font = ImGui::GetFont();
 
     float const iconWidth = font->FontSize;
-    ImVec2 const labelSize = CalcTextSize(label, NULL, true);
+    ImVec2 const labelSize = CalcTextSize(label, nullptr, true);
 
     ImGuiSelectableFlags const flags = ImGuiSelectableFlags_SelectOnRelease | ImGuiSelectableFlags_SetNavIdOnHover |
         (enabled ? 0 : ImGuiSelectableFlags_Disabled);
-    bool pressed;
+
     if (window->DC.LayoutType == ImGuiLayoutType_Horizontal) {
         float const width = labelSize.x + iconWidth;
         float const offset = IM_FLOOR(style.ItemSpacing.x * 0.5f);
@@ -36,7 +37,7 @@ bool ImGui::Potato::MenuItemEx(
         ImVec2 const iconPos = window->DC.CursorPos;
 
         PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(style.ItemSpacing.x * 2.0f, style.ItemSpacing.y));
-        pressed = Selectable(label, false, flags, ImVec2(width, 0.0f));
+        bool const pressed = Selectable(label, false, flags, ImVec2(width, 0.0f));
         PopStyleVar();
 
         if (icon != nullptr && *icon != u8'\0') {
@@ -52,11 +53,13 @@ bool ImGui::Potato::MenuItemEx(
             style.ItemSpacing.x *
             (-1.0f + 0.5f)); // -1 spacing to compensate the spacing added when Selectable() did a SameLine(). It would
                              // also work to call SameLine() ourselves after the PopStyleVar().
+
+        return pressed;
     }
     else {
         ImVec2 const pos = window->DC.CursorPos;
 
-        float const shortcutWidth = shortcut ? CalcTextSize(shortcut, NULL).x : 0.0f;
+        float const shortcutWidth = shortcut ? CalcTextSize(shortcut, nullptr).x : 0.0f;
 
         float const minWidth = window->DC.MenuColumns.DeclColumns(
             labelSize.x + iconWidth,
@@ -65,7 +68,8 @@ bool ImGui::Potato::MenuItemEx(
 
         float const extraWidth = ImMax(0.0f, GetContentRegionAvail().x - minWidth);
 
-        pressed = Selectable(label, false, flags | ImGuiSelectableFlags_SpanAvailWidth, ImVec2(minWidth, 0.0f));
+        bool const pressed =
+            Selectable(label, false, flags | ImGuiSelectableFlags_SpanAvailWidth, ImVec2(minWidth, 0.0f));
         if (icon != nullptr && *icon != u8'\0') {
             window->DrawList->AddText(
                 font,
@@ -77,7 +81,7 @@ bool ImGui::Potato::MenuItemEx(
 
         if (shortcutWidth > 0.0f) {
             PushStyleColor(ImGuiCol_Text, g.Style.Colors[ImGuiCol_TextDisabled]);
-            RenderText(pos + ImVec2(window->DC.MenuColumns.Pos[1] + extraWidth, 0.0f), shortcut, NULL, false);
+            RenderText(pos + ImVec2(window->DC.MenuColumns.Pos[1] + extraWidth, 0.0f), shortcut, nullptr, false);
             PopStyleColor();
         }
 
@@ -89,9 +93,9 @@ bool ImGui::Potato::MenuItemEx(
                 GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled),
                 g.FontSize * 0.866f);
         }
-    }
 
-    return pressed;
+        return pressed;
+    }
 }
 
 void ImGui::Potato::SetCaptureRelativeMouseMode(bool captured) {

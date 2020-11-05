@@ -14,7 +14,7 @@ namespace up::inline editor {
 
         template <typename T>
         void drawGrid(zstring_view name, T const& value) {
-            drawGridRaw(name, getSchema<T>(), &value);
+            drawGridRaw(name, reflex::getSchema<T>(), &value);
         }
 
         void drawPropertyRaw(reflex::SchemaField const& field, void* object);
