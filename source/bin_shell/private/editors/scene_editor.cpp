@@ -8,10 +8,10 @@
 #include "scene.h"
 #include "selection.h"
 
+#include "potato/editor/imgui_ext.h"
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
 #include "potato/render/debug_draw.h"
-#include "potato/render/draw_imgui.h"
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_resource_view.h"
 #include "potato/render/gpu_texture.h"
@@ -218,10 +218,7 @@ void up::shell::SceneEditor::_inspector() {
             }
 
             if (ImGui::BeginPopupContextItem("##component_context_menu")) {
-                if (ImGui::MenuItem(as_char(u8"\uf1f8 Remove"))) {
-                    deletedComponent = static_cast<ComponentId>(typeInfo->hash);
-                }
-                if (ImGui::MenuItem(as_char(u8"\uf1f8 Remove"))) {
+                if (ImGui::MenuItemEx("Remove", ICON_FA_TRASH)) {
                     deletedComponent = static_cast<ComponentId>(typeInfo->hash);
                 }
                 ImGui::EndPopup();
@@ -249,7 +246,7 @@ void up::shell::SceneEditor::_inspector() {
                 if (_scene->world().getComponentSlowUnsafe(
                         _selection.selected(),
                         static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
-                    if (ImGui::MenuItem(typeInfo->name.c_str())) {
+                    if (ImGui::MenuItemEx(typeInfo->name.c_str())) {
                         _scene->world().addComponentDefault(_selection.selected(), *typeInfo);
                     }
                 }

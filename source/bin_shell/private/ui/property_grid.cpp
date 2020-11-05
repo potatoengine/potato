@@ -4,6 +4,8 @@
 #include "common_schema.h"
 #include "tools_schema.h"
 
+#include "potato/editor/imgui_ext.h"
+
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -69,7 +71,7 @@ void up::shell::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, 
     if (!expandable)
         flags |= ImGuiTreeNodeFlags_Leaf;
 
-    ImGui::PushID(object);
+    ImGui::PushID(member);
 
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
@@ -79,7 +81,7 @@ void up::shell::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, 
     ImGui::TableSetColumnIndex(1);
     ImGui::AlignTextToFramePadding();
     if (open) {
-        drawEditor(*field.schema, object);
+        drawEditor(*field.schema, member);
         ImGui::TreePop();
     }
 
@@ -98,7 +100,7 @@ void up::shell::PropertyGrid::drawFloatEditor(float& value) noexcept {
 
 void up::shell::PropertyGrid::drawVec3Editor(glm::vec3& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
-    ImGui::InputFloat3("##vec3", &value.x);
+    ImGui::InputVec3("##vec3", value);
 }
 
 void up::shell::PropertyGrid::drawMat4x4Editor(glm::mat4x4& value) noexcept {
@@ -113,11 +115,6 @@ void up::shell::PropertyGrid::drawMat4x4Editor(glm::mat4x4& value) noexcept {
 }
 
 void up::shell::PropertyGrid::drawQuatEditor(glm::quat& value) noexcept {
-    auto euler = glm::eulerAngles(value);
-    auto eulerDegrees = glm::vec3(glm::degrees(euler.x), glm::degrees(euler.y), glm::degrees(euler.z));
-
     ImGui::SetNextItemWidth(-1.f);
-    if (ImGui::SliderFloat3("##quat", &eulerDegrees.x, 0, +359.f)) {
-        value = glm::vec3(glm::radians(eulerDegrees.x), glm::radians(eulerDegrees.y), glm::radians(eulerDegrees.z));
-    }
+    ImGui::InputQuat("##quat", value);
 }

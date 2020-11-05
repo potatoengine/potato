@@ -3,6 +3,7 @@
 #include "ui/menu.h"
 #include "ui/action.h"
 
+#include "potato/editor/imgui_ext.h"
 #include "potato/spud/enumerate.h"
 #include "potato/spud/erase.h"
 #include "potato/spud/find.h"
@@ -90,7 +91,7 @@ void up::shell::Menu::_drawMenu(size_t index, size_t depth) {
             auto const enabled = _actions->isEnabled(item.id);
             auto const hotKey = _actions->actionAt(item.id).hotKey;
 
-            if (ImGui::MenuItem(_strings[item.stringIndex].c_str(), hotKey.c_str(), checked, enabled)) {
+            if (ImGui::MenuItemEx(_strings[item.stringIndex].c_str(), nullptr, hotKey.c_str(), checked, enabled)) {
                 _actions->invoke(item.id);
             }
         }

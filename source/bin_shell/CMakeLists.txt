@@ -52,6 +52,7 @@ target_link_libraries(potato_shell PRIVATE
     potato::libreflex
     potato::libaudio
     potato::libtools
+    potato::libeditor
     glm
     SDL2
     SDL2main

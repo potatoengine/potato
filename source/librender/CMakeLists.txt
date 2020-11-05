@@ -10,7 +10,6 @@ add_library(potato::librender ALIAS potato_librender)
 target_sources(potato_librender PRIVATE
     "private/camera.cpp"
     "private/debug_draw.cpp"
-    "private/draw_imgui.cpp"
     "private/image.cpp"
     "private/material.cpp"
     "private/mesh.cpp"
