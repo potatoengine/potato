@@ -11,7 +11,6 @@ target_sources(potato_shell PRIVATE
     "private/camera_controller.cpp"
     "private/editor.cpp"
     "private/editors/game_editor.cpp"
-    "private/imgui_reflector.cpp"
     "private/main.cpp"
     "private/scene.cpp"
     "private/editors/scene_editor.cpp"

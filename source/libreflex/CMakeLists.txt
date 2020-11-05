@@ -18,7 +18,6 @@ target_sources(potato_libreflex PRIVATE
     "public/potato/reflex/annotation.h"
     "public/potato/reflex/reflect.h"
     "public/potato/reflex/schema.h"
-    "public/potato/reflex/serializer.h"
     "public/potato/reflex/traits.h"
     "public/potato/reflex/type.h"
 )
