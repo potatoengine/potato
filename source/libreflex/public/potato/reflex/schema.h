@@ -16,8 +16,8 @@ namespace up {
 }
 
 namespace up::reflex {
-    class TypeInfo;
-    class Attribute;
+    struct TypeInfo;
+    struct Attribute;
     struct SchemaType;
     struct Schema;
 
