@@ -56,7 +56,7 @@ namespace up {
 
         /// @brief Add a default-constructed component to an existing entity.
         /// @param entity The entity to add the componet to.
-        /// @param meta Metadata for the to-be-added component.
+        /// @param typeInfo Metadata for the to-be-added component.
         UP_ECS_API void addComponentDefault(EntityId entity, reflex::TypeInfo const& typeInfo);
 
         /// Removes a Component from an existing Entity.

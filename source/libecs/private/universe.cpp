@@ -11,5 +11,5 @@ up::Universe::~Universe() = default;
 
 void up::Universe::_registerComponent(reflex::TypeInfo const& typeInfo) {
     UP_ASSERT(_context->_findComponentByTypeHash(typeInfo.hash) == nullptr);
-    auto& newMeta = _context->components.push_back(&typeInfo);
+    _context->components.push_back(&typeInfo);
 }
