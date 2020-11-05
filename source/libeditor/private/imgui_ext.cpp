@@ -56,46 +56,40 @@ bool ImGui::Potato::MenuItemEx(
 
         return pressed;
     }
-    else {
-        ImVec2 const pos = window->DC.CursorPos;
 
-        float const shortcutWidth = shortcut != nullptr ? CalcTextSize(shortcut, nullptr).x : 0.0f;
+    ImVec2 const pos = window->DC.CursorPos;
+    float const shortcutWidth = shortcut != nullptr ? CalcTextSize(shortcut, nullptr).x : 0.0f;
+    float const minWidth = window->DC.MenuColumns.DeclColumns(
+        labelSize.x + iconWidth,
+        shortcutWidth,
+        IM_FLOOR(g.FontSize * 1.20f)); // Feedback for next frame
+    float const extraWidth = ImMax(0.0f, GetContentRegionAvail().x - minWidth);
 
-        float const minWidth = window->DC.MenuColumns.DeclColumns(
-            labelSize.x + iconWidth,
-            shortcutWidth,
-            IM_FLOOR(g.FontSize * 1.20f)); // Feedback for next frame
-
-        float const extraWidth = ImMax(0.0f, GetContentRegionAvail().x - minWidth);
-
-        bool const pressed =
-            Selectable(label, false, flags | ImGuiSelectableFlags_SpanAvailWidth, ImVec2(minWidth, 0.0f));
-        if (icon != nullptr && *icon != u8'\0') {
-            window->DrawList->AddText(
-                font,
-                font->FontSize,
-                pos,
-                ImGui::GetColorU32(ImGuiCol_Header),
-                reinterpret_cast<char const*>(icon));
-        }
-
-        if (shortcutWidth > 0.0f) {
-            PushStyleColor(ImGuiCol_Text, g.Style.Colors[ImGuiCol_TextDisabled]);
-            RenderText(pos + ImVec2(window->DC.MenuColumns.Pos[1] + extraWidth, 0.0f), shortcut, nullptr, false);
-            PopStyleColor();
-        }
-
-        if (selected) {
-            RenderCheckMark(
-                window->DrawList,
-                pos +
-                    ImVec2(window->DC.MenuColumns.Pos[2] + extraWidth + g.FontSize * 0.40f, g.FontSize * 0.134f * 0.5f),
-                GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled),
-                g.FontSize * 0.866f);
-        }
-
-        return pressed;
+    bool const pressed = Selectable(label, false, flags | ImGuiSelectableFlags_SpanAvailWidth, ImVec2(minWidth, 0.0f));
+    if (icon != nullptr && *icon != u8'\0') {
+        window->DrawList->AddText(
+            font,
+            font->FontSize,
+            pos,
+            ImGui::GetColorU32(ImGuiCol_Header),
+            reinterpret_cast<char const*>(icon));
     }
+
+    if (shortcutWidth > 0.0f) {
+        PushStyleColor(ImGuiCol_Text, g.Style.Colors[ImGuiCol_TextDisabled]);
+        RenderText(pos + ImVec2(window->DC.MenuColumns.Pos[1] + extraWidth, 0.0f), shortcut, nullptr, false);
+        PopStyleColor();
+    }
+
+    if (selected) {
+        RenderCheckMark(
+            window->DrawList,
+            pos + ImVec2(window->DC.MenuColumns.Pos[2] + extraWidth + g.FontSize * 0.40f, g.FontSize * 0.134f * 0.5f),
+            GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled),
+            g.FontSize * 0.866f);
+    }
+
+    return pressed;
 }
 
 void ImGui::Potato::SetCaptureRelativeMouseMode(bool captured) {
