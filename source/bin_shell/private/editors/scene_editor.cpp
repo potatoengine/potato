@@ -192,8 +192,9 @@ void up::shell::SceneEditor::_inspector() {
     if (!ImGui::BeginTable(
             "##inspector_table",
             2,
-            ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBodyUntilResize))
+            ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBodyUntilResize)) {
         return;
+    }
 
     _scene->world().interrogateEntityUnsafe(
         _selection.selected(),
