@@ -1,0 +1,6 @@
+FormatStyle: "file"
+# Disables clang-tidy for all source files; a separate configuration
+# file is used for the Potato source directory that enables desired
+# checks. This applies to sources in external folders.
+Checks: -*
+WarningsAsErrors: "*"
