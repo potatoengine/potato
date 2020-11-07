@@ -8,6 +8,17 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+static void DrawIcon(const char8_t* icon, ImVec2 minPos, ImVec2 maxPos) {
+    ImGui::RenderTextClipped(
+        minPos,
+        maxPos,
+        reinterpret_cast<char const*>(icon),
+        nullptr,
+        nullptr,
+        {0.5f, 0.5f},
+        nullptr);
+}
+
 bool ImGui::Potato::MenuItemEx(
     const char* label,
     const char8_t* icon,
@@ -77,7 +88,11 @@ bool ImGui::Potato::MenuItemEx(
 
     if (shortcutWidth > 0.0f) {
         PushStyleColor(ImGuiCol_Text, g.Style.Colors[ImGuiCol_TextDisabled]);
-        RenderText(pos + ImVec2(window->DC.MenuColumns.Pos[1] + extraWidth, 0.0f), shortcut, nullptr, false);
+        RenderText(
+            pos + ImVec2(window->DC.MenuColumns.Pos[1] + extraWidth + iconWidth, 0.0f),
+            shortcut,
+            nullptr,
+            false);
         PopStyleColor();
     }
 
@@ -88,6 +103,73 @@ bool ImGui::Potato::MenuItemEx(
             GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled),
             g.FontSize * 0.866f);
     }
+
+    return pressed;
+}
+
+bool ImGui::Potato::IconButton(char const* label, char8_t const* icon, ImVec2 size, ImGuiButtonFlags flags) {
+    ImGuiWindow* window = GetCurrentWindow();
+    if (window->SkipItems) {
+        return false;
+    }
+
+    ImGuiContext& g = *GImGui;
+    ImGuiStyle const& style = g.Style;
+    ImFont const* font = ImGui::GetFont();
+
+    float const iconWidth = font->FontSize;
+    ImVec2 const iconSize{iconWidth, iconWidth};
+
+    bool const hasLabel = FindRenderedTextEnd(label) != label;
+    ImVec2 const labelSize = hasLabel ? CalcTextSize(label, nullptr, true) : ImVec2{};
+
+    ImVec2 const cursor = window->DC.CursorPos;
+    ImVec2 pos = cursor;
+
+    bool const alignText = (flags & ImGuiButtonFlags_AlignTextBaseLine) != 0;
+    if (window != nullptr && style.FramePadding.y < window->DC.CurrLineTextBaseOffset) {
+        pos.y += window->DC.CurrLineTextBaseOffset - style.FramePadding.y;
+    }
+    ImVec2 buttonSize = CalcItemSize(
+        size,
+        labelSize.x + iconWidth + style.FramePadding.x * 2.0f + (hasLabel ? style.ItemInnerSpacing.x : 0.f),
+        std::max(labelSize.y, iconSize.y) + style.FramePadding.y * 2.0f);
+
+    ImRect const bb(pos, pos + buttonSize);
+    ItemSize(size, style.FramePadding.y);
+
+    ImGuiID const id = window->GetID(label);
+    if (!ItemAdd(bb, id)) {
+        return false;
+    }
+
+    if ((window->DC.ItemFlags & ImGuiItemFlags_ButtonRepeat) != 0) {
+        flags |= ImGuiButtonFlags_Repeat;
+    }
+
+    bool hovered = false;
+    bool held = false;
+    bool const pressed = ButtonBehavior(bb, id, &hovered, &held, flags);
+
+    // Render
+    ImU32 const col =
+        GetColorU32((held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+    RenderNavHighlight(bb, id);
+    RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
+    if (icon != nullptr && *icon != u8'\0') {
+        DrawIcon(icon, bb.Min + style.FramePadding, bb.Min + style.FramePadding + iconSize);
+    }
+    RenderTextClipped(
+        bb.Min + ImVec2{iconWidth + style.ItemInnerSpacing.x, 0} + style.FramePadding,
+        bb.Max - style.FramePadding,
+        label,
+        nullptr,
+        &labelSize,
+        style.ButtonTextAlign,
+        &bb);
+
+    window->DC.CursorPos.x = bb.Max.x;
+    window->DC.CursorPos.y = cursor.y;
 
     return pressed;
 }

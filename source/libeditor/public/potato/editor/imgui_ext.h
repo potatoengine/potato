@@ -16,6 +16,12 @@ namespace ImGui::inline Potato {
         bool selected = false,
         bool enabled = true);
 
+    UP_EDITOR_API bool IconButton(
+        char const* label,
+        char8_t const* icon,
+        ImVec2 size = {},
+        ImGuiButtonFlags flags = ImGuiButtonFlags_None);
+
     UP_EDITOR_API void SetCaptureRelativeMouseMode(bool captured);
     UP_EDITOR_API auto IsCaptureRelativeMouseMode() -> bool;
 
