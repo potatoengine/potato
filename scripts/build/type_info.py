@@ -124,6 +124,8 @@ class TypeDatabase:
 
 class TypeBase(AnnotationsBase):
     """User-friendly wrapper of a type-definition in the type database"""
+    __builtin_types = ['char', 'float', 'double']
+
     def __init__(self, db, name):
         self.__db = db
         self.__module = db.module
@@ -134,6 +136,10 @@ class TypeBase(AnnotationsBase):
     @property
     def name(self):
         return self.__name
+
+    @property
+    def module(self):
+        return self.__module
 
     @property
     def kind(self):
@@ -150,6 +156,21 @@ class TypeBase(AnnotationsBase):
     @property
     def cxxname(self):
         return self.get_annotation_field_or('cxxname', 'id', self.get_annotation_field_or('cxximport', 'id', self.__name))
+
+    @property
+    def qualified_cxxname(self):
+        if self.module == '$core': return self.cxxname
+
+        cxximport = self.get_annotation_field_or('cxximport', 'id', None)
+        if cxximport is not None: return cxximport
+
+        if self.__name in TypeBase.__builtin_types:
+            return self.__name
+
+        cxxname = self.get_annotation_field_or('cxxname', 'id', self.__name)
+        ns = self.get_annotation_field_or('cxxnamespace', 'ns', 'up::schema')
+
+        return f'{ns}::{cxxname}'
 
     @property
     def base(self):
@@ -230,7 +251,7 @@ class TypeField(AnnotationsBase):
 
     @property
     def cxxtype(self):
-        cxxname = self.__type.cxxname
+        cxxname = self.__type.qualified_cxxname
         return f"vector<{cxxname}>" if self.__is_array else cxxname
 
     @property

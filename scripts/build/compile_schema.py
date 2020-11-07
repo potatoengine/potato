@@ -53,7 +53,7 @@ def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     """Calculates the qualified name for types"""
     cxxname = type.cxxname
     cxxns = cxxnamespace(type, namespace)
-    return cxxname if '::' in cxxname else f'{cxxns}::{cxxname}'
+    return cxxname if '::' in cxxname or type.module == '$core' else f'{cxxns}::{cxxname}'
 
 def cxxvalue(value):
     if value is True:
@@ -83,7 +83,7 @@ def generate_header_types(ctx: Context):
             ctx.print(': reflex::SchemaAttribute ')
         ctx.print('{\n')
         for field in type.fields_ordered:
-            ctx.print(f"        {field.cxxtype} {field.cxxname};\n")
+            ctx.print(f"        {field.cxxtype}/*{field.type.qualified_cxxname}*/ {field.cxxname};\n")
         ctx.print("    };\n")
 
         ctx.print('}\n')
