@@ -50,3 +50,16 @@ struct Ding {
     float time = 0;
     SoundHandle sound;
 }
+
+struct Data {
+    int x;
+    string s;
+}
+
+[Component]
+struct Test {
+    [DisplayName("Data")]
+    Data d1;
+    [Flatten]
+    Data d2;
+}

@@ -244,6 +244,7 @@ int up::shell::ShellApp::initialize() {
     _universe->registerComponent<components::Wave>("Wave");
     _universe->registerComponent<components::Spin>("Spin");
     _universe->registerComponent<components::Ding>("Ding");
+    _universe->registerComponent<components::Test>("Test");
 
     return 0;
 }
