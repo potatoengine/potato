@@ -99,7 +99,7 @@ namespace up::reflex {
     concept schema_glm_type =
         std::is_same_v<T, glm::vec3> || std::is_same_v<T, glm::mat4x4> || std::is_same_v<T, glm::quat>;
     template <typename T>
-    concept schema_primitive = std::is_scalar_v<T> || std::is_same_v<T, string> || schema_glm_type<T>;
+    concept schema_primitive = std::is_scalar_v<T> || std::is_same_v<T, string> || schema_glm_type<T> || is_vector_v<T>;
     template <typename T>
     concept has_schema = requires(T t) {
         {SchemaHolder<T>::get()};
