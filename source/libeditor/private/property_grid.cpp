@@ -101,11 +101,32 @@ void up::editor::PropertyGrid::drawArrayEditor(reflex::Schema const& schema, voi
     for (size_t index = 0; index != size; ++index) {
         void* element = schema.operations->elementAt(object, index);
 
-        ImGui::PushID(element);
+        ImGui::PushID(index);
         ImGui::TableNextRow();
 
         ImGui::TableSetColumnIndex(0);
+        ImGui::AlignTextToFramePadding();
+        ImVec2 const pos = ImGui::GetCursorPos();
 
+        bool selected = false;
+        ImGui::Selectable("##row", &selected, ImGuiSelectableFlags_AllowItemOverlap);
+        if (ImGui::BeginDragDropTarget()) {
+            if (ImGuiPayload const* payload = ImGui::AcceptDragDropPayload("reorder"); payload != nullptr) {
+                swapFirst = *static_cast<size_t const*>(payload->Data);
+                swapSecond = index;
+            }
+            ImGui::EndDragDropTarget();
+        }
+        if (schema.operations->swapIndices != nullptr) {
+            if (ImGui::BeginDragDropSource(
+                    ImGuiDragDropFlags_SourceAutoExpirePayload | ImGuiDragDropFlags_SourceNoPreviewTooltip |
+                    ImGuiDragDropFlags_SourceNoDisableHover)) {
+                ImGui::SetDragDropPayload("reorder", &index, sizeof(index));
+                ImGui::EndDragDropSource();
+            }
+        }
+
+        ImGui::SetCursorPos(pos);
         float const width = ImGui::GetContentRegionAvailWidth();
         float x = ImGui::GetCursorPosX() + width;
 
@@ -114,21 +135,6 @@ void up::editor::PropertyGrid::drawArrayEditor(reflex::Schema const& schema, voi
             ImGui::SetCursorPosX(x);
             if (ImGui::IconButton("##remove", ICON_FA_TRASH)) {
                 eraseIndex = index;
-            }
-        }
-        if (schema.operations->swapIndices != nullptr) {
-            x -= ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.x * 2.f;
-            ImGui::SetCursorPosX(x);
-            if (index < size - 1 && ImGui::IconButton("##move_down", ICON_FA_ARROW_DOWN)) {
-                swapFirst = index;
-                swapSecond = index + 1;
-            }
-
-            x -= ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.x * 2.f;
-            ImGui::SetCursorPosX(x);
-            if (index > 0 && ImGui::IconButton("##move_up", ICON_FA_ARROW_UP)) {
-                swapFirst = index - 1;
-                swapSecond = index;
             }
         }
 
