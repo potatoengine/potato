@@ -11,7 +11,7 @@ TEST_CASE("[potato][runtime] up::UUID") {
     SECTION("basic uuid") {
         UUID zero = UUID();
         CHECK(zero == UUID{});
-        CHECK(zero.toString() == "00000000-0000-0000-0000-000000000000"_s);
+        CHECK(zero.toString() == "00000000-0000-0000-0000-000000000000");
 
         UUID a = UUID::generate();
         CHECK(a.isValid());

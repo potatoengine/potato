@@ -1,0 +1,26 @@
+module common;
+
+attribute ignore;
+attribute required { bool required = true; }
+attribute cxxname { string id; }
+attribute cxximport { string id; string header; }
+attribute json { string name; }
+attribute serialize {}
+
+[ignore, cxxname("char")]
+type char;
+[ignore, cxxname("double")]
+type double;
+
+[ignore, cxximport("glm::vec3", "glm/vec3.hpp")]
+struct vec3 {
+    float x;
+    float y;
+    float z;
+}
+
+[ignore, cxximport("glm::mat4x4", "glm/mat4x4.hpp")]
+type mat4x4;
+
+[ignore, cxximport("glm::quat", "glm/gtx/quaternion.hpp")]
+type quat;

@@ -89,10 +89,13 @@ bool up::FileHashCache::open(zstring_view cache_path) {
     // load cache entries
     auto stmt = _conn.prepare("SELECT os_path, hash, mtime, size FROM hash_cache");
 
-    for (auto const& row : stmt.query<zstring_view, uint64, uint64, uint64>()) {
+    for (auto const& [path, hash, mtime, size] : stmt.query<zstring_view, uint64, uint64, uint64>()) {
         auto rec_ptr = new_box<HashRecord>();
         auto& rec = *rec_ptr;
-        std::tie(rec.osPath, rec.hash, rec.mtime, rec.size) = row;
+        rec.osPath = string{path};
+        rec.hash = hash;
+        rec.mtime = mtime;
+        rec.size = size;
     }
 
     return true;

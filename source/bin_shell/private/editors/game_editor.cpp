@@ -6,10 +6,10 @@
 #include "editor.h"
 #include "scene.h"
 
+#include "potato/editor/imgui_ext.h"
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
 #include "potato/render/debug_draw.h"
-#include "potato/render/draw_imgui.h"
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_resource_view.h"
 #include "potato/render/gpu_texture.h"
@@ -36,11 +36,12 @@ void up::shell::GameEditor::content() {
     auto const& io = ImGui::GetIO();
 
     if (ImGui::BeginMenuBar()) {
-        auto const text = as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play");
+        auto const icon = _scene->playing() ? ICON_FA_STOP : ICON_FA_PLAY;
+        auto const text = _scene->playing() ? "Pause" : "Play";
         auto const xPos =
             ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
         ImGui::SetCursorPosX(xPos);
-        if (ImGui::MenuItem(as_char(_scene->playing() ? u8"\uf04c Pause" : u8"\uf04b Play"), "F5")) {
+        if (ImGui::MenuItemEx(text, icon, "F5")) {
             _wantPlaying = !_wantPlaying;
         }
         ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "Shift-ESC to release input");

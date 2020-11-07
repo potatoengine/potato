@@ -44,6 +44,7 @@ namespace up {
     template <typename T>
     class rc {
     public:
+        using value_type = T;
         using pointer = T*;
         using reference = T&;
 

@@ -4,11 +4,11 @@
 #include "ui/action.h"
 #include "ui/command_palette.h"
 #include "ui/editor_group.h"
-#include "ui/hotkey.h"
 #include "ui/menu.h"
 
 #include "potato/audio/audio_engine.h"
-#include "potato/render/draw_imgui.h"
+#include "potato/editor/hotkeys.h"
+#include "potato/editor/imgui_backend.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/resource_loader.h"
 #include "potato/spud/box.h"
@@ -96,7 +96,7 @@ namespace up::shell {
         HotKeys _hotKeys;
         EditorGroup _editors;
         int _lastCursor = -1;
-        DrawImgui _drawImgui;
+        ImguiBackend _imguiBackend;
         Logger _logger;
         float _lastFrameTime = 0.f;
         std::chrono::nanoseconds _lastFrameDuration = {};

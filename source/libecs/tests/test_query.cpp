@@ -1,31 +1,16 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#include "components_schema.h"
+
 #include "potato/ecs/query.h"
 #include "potato/ecs/universe.h"
 #include "potato/ecs/world.h"
 
 #include <catch2/catch.hpp>
 
-namespace {
-    struct Test1 {
-        char a;
-    };
-    struct Second {
-        float b;
-        char a;
-    };
-    struct Another {
-        double a;
-        float b;
-    };
-
-    UP_REFLECT_TYPE(Test1) {}
-    UP_REFLECT_TYPE(Second) {}
-    UP_REFLECT_TYPE(Another) {}
-} // namespace
-
 TEST_CASE("Query", "[potato][ecs]") {
     using namespace up;
+    using namespace up::components;
 
     Universe universe;
 

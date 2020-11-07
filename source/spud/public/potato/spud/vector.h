@@ -28,10 +28,6 @@ namespace up {
 
     template <typename T>
     class vector {
-        static_assert(std::is_nothrow_move_constructible_v<T>);
-        static_assert(std::is_nothrow_move_assignable_v<T>);
-        static_assert(std::is_nothrow_destructible_v<T>);
-
     public:
         using value_type = T;
         using iterator = T*;
@@ -454,8 +450,14 @@ namespace up {
 
         if (_sentinel - _last >= count) {
             iterator mpos = _to_iterator(pos);
-            _rshift(mpos, count);
-            copy_n(begin, count, mpos);
+            if (mpos == _last) {
+                unitialized_copy_n(begin, count, mpos);
+            }
+            else {
+                _rshift(mpos, count);
+                copy_n(begin, count, mpos);
+            }
+            _last += count;
             return mpos;
         }
 

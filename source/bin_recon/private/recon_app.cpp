@@ -188,7 +188,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
                 outputHash);
 
             auto casOsPath = path::join(_libraryPath, "cache", casPath);
-            string casOsFolder = path::parent(casOsPath);
+            auto casOsFolder = string{path::parent(casOsPath)};
 
             if (auto const rs = fs::createDirectories(casOsFolder); rs != IOResult::Success) {
                 _logger.error("Failed to create directory `{}`", casOsFolder);
@@ -273,14 +273,14 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
     Importer* importer = _findConverter(filename);
     if (importer != nullptr) {
         if (importer->name() != string_view{metaFile.importerName}) {
-            metaFile.importerName = importer->name();
+            metaFile.importerName = string{importer->name()};
             dirty = true;
         }
 
         ImporterContext context(filename, _config.sourceFolderPath, _temporaryOutputPath, _logger);
-        string settings = importer->generateSettings(context);
+        string_view settings = importer->generateSettings(context);
         if (settings != metaFile.importerSettings) {
-            metaFile.importerSettings = std::move(settings);
+            metaFile.importerSettings = string{settings};
             dirty = true;
         }
     }

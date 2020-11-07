@@ -113,17 +113,17 @@ bool up::AssetLibrary::open(zstring_view filename) {
          assets_stmt.query<AssetId, zstring_view, uint64, zstring_view, uint64>()) {
         auto& record = _records.push_back(Imported{
             .assetId = assetId,
-            .sourcePath = southPath,
-            .importerName = importName,
+            .sourcePath = string{southPath},
+            .importerName = string{importName},
             .importerRevision = importVer,
             .sourceContentHash = sourceHash});
 
         for (auto const& [id, name, hash] : outputs_stmt.query<AssetId, zstring_view, uint64>(assetId)) {
-            record.outputs.push_back(Output{.name = name, .logicalAssetId = id, .contentHash = hash});
+            record.outputs.push_back(Output{.name = string{name}, .logicalAssetId = id, .contentHash = hash});
         }
 
         for (auto const& [path, hash] : dependencies_stmt.query<zstring_view, uint64>(assetId)) {
-            record.dependencies.push_back(Dependency{.path = path, .contentHash = hash});
+            record.dependencies.push_back(Dependency{.path = string{path}, .contentHash = hash});
         }
     }
 

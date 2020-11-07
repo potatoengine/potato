@@ -2,12 +2,18 @@
 
 #pragma once
 
+#include <type_traits>
+
 namespace up {
     class string_view;
     class zstring_view;
     class string;
     template <typename T>
     class vector;
+    template <typename T>
+    class box;
+    template <typename T>
+    class rc;
 } // namespace up
 
 namespace up::reflex {
@@ -37,4 +43,32 @@ namespace up::reflex {
     } // namespace _detail
     template <typename T>
     constexpr bool is_vector_v = _detail::is_vector<T>::value;
+
+    /// True if the provided type is a box specialization
+    namespace _detail {
+        template <typename T>
+        struct is_box {
+            constexpr static bool value = false;
+        };
+        template <typename T>
+        struct is_box<box<T>> {
+            constexpr static bool value = true;
+        };
+    } // namespace _detail
+    template <typename T>
+    constexpr bool is_box_v = _detail::is_box<T>::value;
+
+    /// True if the provided type is an rc specialization
+    namespace _detail {
+        template <typename T>
+        struct is_rc {
+            constexpr static bool value = false;
+        };
+        template <typename T>
+        struct is_rc<rc<T>> {
+            constexpr static bool value = true;
+        };
+    } // namespace _detail
+    template <typename T>
+    constexpr bool is_rc_v = _detail::is_rc<T>::value;
 } // namespace up::reflex

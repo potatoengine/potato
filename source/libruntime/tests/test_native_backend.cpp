@@ -42,7 +42,7 @@ TEST_CASE("up::fs", "[potato][runtime]") {
     }
 
     SECTION("enumerate") {
-        vector<string> const expected{"parent"_sv, "parent/child"_sv, "parent/child/hello.txt"_sv, "test.txt"_sv};
+        vector<string> const expected{"parent"_s, "parent/child"_s, "parent/child/hello.txt"_s, "test.txt"_s};
 
         vector<string> entries;
 

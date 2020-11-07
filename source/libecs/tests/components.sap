@@ -1,0 +1,26 @@
+module components;
+
+import common;
+import ecs;
+
+[Component]
+struct Test1 {
+    char a;
+}
+
+[Component]
+struct Second {
+    float b;
+    char a;
+}
+
+[Component]
+struct Another {
+    double a;
+    float b;
+}
+
+[Component]
+struct Counter {
+    int value;
+}

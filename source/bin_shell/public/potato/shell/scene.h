@@ -9,8 +9,6 @@
 #include "potato/spud/rc.h"
 
 namespace up::components {
-    struct Position;
-    struct Rotation;
     struct Transform;
     struct Mesh;
     struct Wave;
@@ -54,11 +52,11 @@ namespace up {
         EntityId _root = EntityId::None;
         bool _playing = false;
 
-        Query<components::Position, components::Wave> _waveQuery;
-        Query<components::Position> _orbitQuery;
-        Query<components::Rotation, components::Spin> _spinQuery;
+        Query<components::Transform, components::Wave> _waveQuery;
+        Query<components::Transform> _orbitQuery;
+        Query<components::Transform, components::Spin> _spinQuery;
         Query<components::Ding> _dingQuery;
-        Query<components::Rotation, components::Position, components::Transform> _transformQuery;
+        Query<components::Transform> _transformQuery;
         Query<components::Mesh, components::Transform> _renderableMeshQuery;
     };
 } // namespace up

@@ -1,7 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "ui/hotkey.h"
-#include "ui/action.h"
+#include "hotkeys.h"
 
 #include "potato/spud/erase.h"
 #include "potato/spud/find.h"
@@ -68,16 +67,10 @@ static constexpr KeyMapNames keyMap[] = {
 };
 static constexpr size_t keyMapSize = sizeof(keyMap) / sizeof(keyMap[0]);
 
-void up::shell::HotKeys::bindActions(Actions& actions) {
-    _actions = &actions;
-}
-
-bool up::shell::HotKeys::evaluateKey(int keysym, unsigned mods) {
+bool up::editor::HotKeys::evaluateKey(int keysym, unsigned mods, delegate_ref<bool(ActionId)> callback) {
     if (keysym == 0) {
         return false;
     }
-
-    _rebuild();
 
     // Normalized mods so left-v-right is erased
     //
@@ -100,8 +93,7 @@ bool up::shell::HotKeys::evaluateKey(int keysym, unsigned mods) {
     //
     for (auto& key : _hotKeys) {
         if (key.keycode == keysym && key.mods == mods) {
-            if (_actions->isEnabled(key.id)) {
-                _actions->invoke(key.id);
+            if (callback(key.id)) {
                 return true;
             }
         }
@@ -110,27 +102,26 @@ bool up::shell::HotKeys::evaluateKey(int keysym, unsigned mods) {
     return false;
 }
 
-void up::shell::HotKeys::_rebuild() {
-    if (_actions == nullptr || !_actions->refresh(_actionsVersion)) {
-        return;
-    }
-
+void up::editor::HotKeys::clear() {
     _hotKeys.clear();
-
-    _actions->build([this](auto const id, auto const& action) {
-        if (action.hotKey.empty()) {
-            return;
-        }
-        int keycode = 0;
-        unsigned mods = 0;
-        if (!_compile(action.hotKey, keycode, mods)) {
-            return;
-        }
-        _hotKeys.push_back(HotKey{.id = id, .keycode = keycode, .mods = mods});
-    });
 }
 
-bool up::shell::HotKeys::_compile(string_view input, int& out_key, unsigned& out_mods) const noexcept {
+bool up::editor::HotKeys::addHotKey(string_view hotKey, ActionId id) {
+    if (hotKey.empty()) {
+        return false;
+    }
+
+    int keycode = 0;
+    unsigned mods = 0;
+    if (!_compile(hotKey, keycode, mods)) {
+        return false;
+    }
+
+    _hotKeys.push_back(HotKey{.id = id, .keycode = keycode, .mods = mods});
+    return true;
+}
+
+bool up::editor::HotKeys::_compile(string_view input, int& out_key, unsigned& out_mods) const noexcept {
     out_key = 0;
     out_mods = 0;
 
@@ -166,7 +157,7 @@ bool up::shell::HotKeys::_compile(string_view input, int& out_key, unsigned& out
     return false;
 }
 
-auto up::shell::HotKeys::_stringify(int keycode, unsigned mods) const -> string {
+auto up::editor::HotKeys::_stringify(int keycode, unsigned mods) const -> string {
     string_writer output;
 
     if (0 != (mods & KMOD_GUI)) {

@@ -7,7 +7,7 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
-namespace up::shell {
+namespace up {
     enum class ActionId : uint64 { None = ~uint64{0} };
 
     using ActionPredicate = delegate<bool()>;
@@ -64,6 +64,7 @@ namespace up::shell {
         [[nodiscard]] auto isEnabled(ActionId id) -> bool;
         [[nodiscard]] auto isChecked(ActionId id) -> bool;
 
+        bool tryInvoke(ActionId id);
         void invoke(ActionId id);
 
     private:
@@ -81,4 +82,4 @@ namespace up::shell {
         uint64 _version = 0;
 
     }; // namespace up::shell
-} // namespace up::shell
+} // namespace up

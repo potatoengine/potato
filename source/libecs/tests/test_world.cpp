@@ -1,5 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#include "components_schema.h"
+
 #include "potato/ecs/query.h"
 #include "potato/ecs/universe.h"
 #include "potato/ecs/world.h"
@@ -8,31 +10,9 @@
 
 CATCH_REGISTER_ENUM(up::EntityId);
 
-namespace {
-    struct Test1 {
-        char a;
-    };
-    struct Second {
-        float b;
-        char a;
-    };
-    struct Another {
-        double a;
-        float b;
-    };
-    struct Counter {
-        int value;
-        char padding[128];
-    };
-
-    UP_REFLECT_TYPE(Test1) {}
-    UP_REFLECT_TYPE(Second) {}
-    UP_REFLECT_TYPE(Another) {}
-    UP_REFLECT_TYPE(Counter) {}
-} // namespace
-
 TEST_CASE("World", "[potato][ecs]") {
     using namespace up;
+    using namespace up::components;
 
     Universe universe;
 
@@ -156,7 +136,7 @@ TEST_CASE("World", "[potato][ecs]") {
         CHECK(found);
 
         found = false;
-        world.interrogateEntityUnsafe(id, [&found](EntityId, ArchetypeId, ComponentMeta const* meta, void*) {
+        world.interrogateEntityUnsafe(id, [&found](EntityId, ArchetypeId, reflex::TypeInfo const*, void*) {
             found = true;
         });
         CHECK(found);
@@ -190,13 +170,13 @@ TEST_CASE("World", "[potato][ecs]") {
         auto id = world.createEntity(Test1{'f'}, Another{1.0, 2.f}, Second{7.f, 'g'});
 
         auto success = world.interrogateEntityUnsafe(id, [&](auto entity, auto archetype, auto component, auto data) {
-            if (component->typeHash == typeid(Test1).hash_code()) {
+            if (component->hash == reflex::TypeHolder<Test1>::get().hash) {
                 CHECK(static_cast<Test1 const*>(data)->a == 'f');
             }
-            else if (component->typeHash == typeid(Another).hash_code()) {
+            else if (component->hash == reflex::TypeHolder<Another>::get().hash) {
                 CHECK(static_cast<Another const*>(data)->a == 1.0);
             }
-            else if (component->typeHash == typeid(Second).hash_code()) {
+            else if (component->hash == reflex::TypeHolder<Second>::get().hash) {
                 CHECK(static_cast<Second const*>(data)->b == 7.f);
             }
             else {

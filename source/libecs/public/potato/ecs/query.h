@@ -3,7 +3,6 @@
 #pragma once
 
 #include "_export.h"
-#include "component.h"
 #include "shared_context.h"
 #include "world.h"
 
@@ -82,7 +81,8 @@ namespace up {
             return;
         }
 
-        ComponentId const components[sizeof...(Components)] = {_context->findComponentByType<Components>()->id...};
+        ComponentId const components[sizeof...(Components)] = {
+            static_cast<ComponentId>(_context->findComponentByType<Components>()->hash)...};
 
         for (; _matchIndex < _context->archetypes.size(); ++_matchIndex) {
             auto& match = _matches.push_back({ArchetypeId(_matchIndex)});

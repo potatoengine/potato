@@ -47,8 +47,8 @@ public:
         _data = _copy(zstr, _size);
     }
     /*implicit*/ string(const_pointer data, size_type size) : _data(_copy(data, size)), _size(size) {}
-    /*implicit*/ string(zstring_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
-    /*implicit*/ string(string_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
+    explicit string(zstring_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
+    explicit string(string_view view) : _data(_copy(view.data(), view.size())), _size(view.size()) {}
 
     static string take_ownership(pointer str, size_type length) noexcept {
         string s;
@@ -57,7 +57,12 @@ public:
         return s;
     }
 
-    string& operator=(string const&) = delete;
+    string& operator=(string const& rhs) {
+        _free(_data, _size);
+        _data = _copy(rhs._data, rhs._size);
+        _size = rhs._size;
+        return *this;
+    }
 
     string& operator=(string&& rhs) noexcept {
         if (this != &rhs) {

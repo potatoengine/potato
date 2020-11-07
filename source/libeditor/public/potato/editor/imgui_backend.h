@@ -30,25 +30,25 @@ using SDL_Event = union SDL_Event;
 namespace up {
     class Shader;
 
-    class DrawImgui {
+    class ImguiBackend {
     public:
-        UP_RENDER_API DrawImgui();
-        UP_RENDER_API ~DrawImgui();
+        UP_EDITOR_API ImguiBackend();
+        UP_EDITOR_API ~ImguiBackend();
 
-        UP_RENDER_API void bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader);
+        UP_EDITOR_API void bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader);
 
-        UP_RENDER_API bool createResources(GpuDevice& device);
-        UP_RENDER_API void releaseResources();
+        UP_EDITOR_API bool createResources(GpuDevice& device);
+        UP_EDITOR_API void releaseResources();
 
-        UP_RENDER_API bool loadFontAwesome5(Stream fontFile);
-        UP_RENDER_API bool loadFont(Stream fontFile);
+        UP_EDITOR_API bool loadFontAwesome5(Stream fontFile);
+        UP_EDITOR_API bool loadFont(Stream fontFile);
 
-        UP_RENDER_API bool handleEvent(SDL_Event const& ev);
+        UP_EDITOR_API bool handleEvent(SDL_Event const& ev);
 
-        UP_RENDER_API void beginFrame();
-        UP_RENDER_API void endFrame();
+        UP_EDITOR_API void beginFrame();
+        UP_EDITOR_API void endFrame();
 
-        UP_RENDER_API void render(RenderContext& ctx);
+        UP_EDITOR_API void render(RenderContext& ctx);
 
         void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
         auto isCaptureRelativeMouseMode() const noexcept -> bool { return _captureRelativeMouseMode; }
@@ -75,8 +75,3 @@ namespace up {
         bool _captureRelativeMouseMode = false;
     };
 } // namespace up
-
-namespace ImGui {
-    UP_RENDER_API void SetCaptureRelativeMouseMode(bool captured);
-    UP_RENDER_API auto IsCaptureRelativeMouseMode() -> bool;
-} // namespace ImGui

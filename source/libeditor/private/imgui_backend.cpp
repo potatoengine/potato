@@ -1,16 +1,16 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "context.h"
-#include "draw_imgui.h"
-#include "gpu_buffer.h"
-#include "gpu_command_list.h"
-#include "gpu_device.h"
-#include "gpu_pipeline_state.h"
-#include "gpu_resource_view.h"
-#include "gpu_sampler.h"
-#include "gpu_texture.h"
-#include "shader.h"
+#include "imgui_backend.h"
 
+#include "potato/render/context.h"
+#include "potato/render/gpu_buffer.h"
+#include "potato/render/gpu_command_list.h"
+#include "potato/render/gpu_device.h"
+#include "potato/render/gpu_pipeline_state.h"
+#include "potato/render/gpu_resource_view.h"
+#include "potato/render/gpu_sampler.h"
+#include "potato/render/gpu_texture.h"
+#include "potato/render/shader.h"
 #include "potato/runtime/assertion.h"
 
 #include <SDL_clipboard.h>
@@ -19,10 +19,10 @@
 
 static constexpr up::uint32 bufferSize = 1024 * 1024;
 
-up::DrawImgui::DrawImgui() = default;
-up::DrawImgui::~DrawImgui() = default;
+up::ImguiBackend::ImguiBackend() = default;
+up::ImguiBackend::~ImguiBackend() = default;
 
-void up::DrawImgui::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
+void up::ImguiBackend::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
     _vertShader = std::move(vertShader);
     _pixelShader = std::move(pixelShader);
 
@@ -30,7 +30,7 @@ void up::DrawImgui::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
     releaseResources();
 }
 
-bool up::DrawImgui::createResources(GpuDevice& device) {
+bool up::ImguiBackend::createResources(GpuDevice& device) {
     _ensureContext();
 
     GpuInputLayoutElement layout[] = {
@@ -71,7 +71,7 @@ bool up::DrawImgui::createResources(GpuDevice& device) {
     return true;
 }
 
-auto up::DrawImgui::loadFontAwesome5(Stream fontFile) -> bool {
+auto up::ImguiBackend::loadFontAwesome5(Stream fontFile) -> bool {
     static constexpr auto s_minGlyph = 0xf000;
     static constexpr auto s_maxGlyph = 0xf897;
     static constexpr ImWchar s_ranges[] = {s_minGlyph, s_maxGlyph, 0};
@@ -96,7 +96,7 @@ auto up::DrawImgui::loadFontAwesome5(Stream fontFile) -> bool {
     return font != nullptr;
 }
 
-auto up::DrawImgui::loadFont(Stream fontFile) -> bool {
+auto up::ImguiBackend::loadFont(Stream fontFile) -> bool {
     _ensureContext();
 
     ImGui::SetCurrentContext(_context.get());
@@ -116,7 +116,7 @@ auto up::DrawImgui::loadFont(Stream fontFile) -> bool {
     return font != nullptr;
 }
 
-void up::DrawImgui::releaseResources() {
+void up::ImguiBackend::releaseResources() {
     _indexBuffer.reset();
     _vertexBuffer.reset();
     _constantBuffer.reset();
@@ -125,7 +125,7 @@ void up::DrawImgui::releaseResources() {
     _sampler.reset();
 }
 
-void up::DrawImgui::beginFrame() {
+void up::ImguiBackend::beginFrame() {
     _ensureContext();
 
     ImGui::SetCurrentContext(_context.get());
@@ -133,12 +133,12 @@ void up::DrawImgui::beginFrame() {
     _captureRelativeMouseMode = false;
 }
 
-void up::DrawImgui::endFrame() {
+void up::ImguiBackend::endFrame() {
     ImGui::SetCurrentContext(_context.get());
     ImGui::EndFrame();
 }
 
-bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
+bool up::ImguiBackend::handleEvent(SDL_Event const& ev) {
     UP_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());
@@ -202,7 +202,7 @@ bool up::DrawImgui::handleEvent(SDL_Event const& ev) {
     return false;
 }
 
-void up::DrawImgui::render(RenderContext& ctx) {
+void up::ImguiBackend::render(RenderContext& ctx) {
     UP_ASSERT(!_context.empty());
 
     ImGui::SetCurrentContext(_context.get());
@@ -214,7 +214,7 @@ void up::DrawImgui::render(RenderContext& ctx) {
 
     ImDrawData& data = *ImGui::GetDrawData();
 
-    UP_ASSERT(data.Valid, "DrawImgui::draw() can only be called after Render() but before beginFrame()");
+    UP_ASSERT(data.Valid, "ImguiBackend::draw() can only be called after Render() but before beginFrame()");
 
     UP_ASSERT(data.TotalIdxCount * sizeof(ImDrawIdx) <= bufferSize, "Too many ImGui indices");
     UP_ASSERT(data.TotalVtxCount * sizeof(ImDrawVert) <= bufferSize, "Too many ImGui verticies");
@@ -305,25 +305,25 @@ void up::DrawImgui::render(RenderContext& ctx) {
     }
 }
 
-char const* up::DrawImgui::_getClipboardTextContents(void* self) {
-    auto imgui = static_cast<DrawImgui*>(self);
+char const* up::ImguiBackend::_getClipboardTextContents(void* self) {
+    auto imgui = static_cast<ImguiBackend*>(self);
     imgui->_clipboardTextData = up::string(SDL_GetClipboardText());
     return imgui->_clipboardTextData.c_str();
 }
 
-void up::DrawImgui::_setClipboardTextContents(void* self, char const* zstr) {
-    auto imgui = static_cast<DrawImgui*>(self);
+void up::ImguiBackend::_setClipboardTextContents(void* self, char const* zstr) {
+    auto imgui = static_cast<ImguiBackend*>(self);
     imgui->_clipboardTextData.reset();
     SDL_SetClipboardText(zstr);
 }
 
-void up::DrawImgui::_ensureContext() {
+void up::ImguiBackend::_ensureContext() {
     if (!_context) {
         _initialize();
     }
 }
 
-void up::DrawImgui::_initialize() {
+void up::ImguiBackend::_initialize() {
     _context = ImGui::CreateContext();
     ImGui::SetCurrentContext(_context.get());
     auto& io = ImGui::GetIO();
@@ -367,7 +367,7 @@ void up::DrawImgui::_initialize() {
     io.ClipboardUserData = this;
 }
 
-void up::DrawImgui::_applyStyle() {
+void up::ImguiBackend::_applyStyle() {
     // From: https://github.com/ocornut/imgui/issues/707#issuecomment-512669512
 
     auto& style = ImGui::GetStyle();
@@ -437,21 +437,8 @@ void up::DrawImgui::_applyStyle() {
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
 
-void up::DrawImgui::_freeContext(ImGuiContext* ctx) {
+void up::ImguiBackend::_freeContext(ImGuiContext* ctx) {
     if (ctx != nullptr) {
         ImGui::DestroyContext(ctx);
     }
-}
-
-void ImGui::SetCaptureRelativeMouseMode(bool captured) {
-    auto& io = ImGui::GetIO();
-    auto* const state = static_cast<up::DrawImgui*>(io.UserData);
-    if (state != nullptr) {
-        state->setCaptureRelativeMouseMode(captured);
-    }
-}
-auto ImGui::IsCaptureRelativeMouseMode() -> bool {
-    auto& io = ImGui::GetIO();
-    auto* const state = static_cast<up::DrawImgui*>(io.UserData);
-    return state != nullptr ? state->isCaptureRelativeMouseMode() : false;
 }

@@ -4,7 +4,6 @@
 
 #include "_export.h"
 #include "chunk.h"
-#include "component.h"
 #include "layout.h"
 
 #include "potato/spud/box.h"
@@ -26,10 +25,10 @@ namespace up {
             ArchetypeId archetype = ArchetypeId::Empty;
         };
 
-        auto findComponentById(ComponentId id) const noexcept -> ComponentMeta const*;
+        auto findComponentById(ComponentId id) const noexcept -> reflex::TypeInfo const*;
 
         template <typename Component>
-        auto findComponentByType() const noexcept -> ComponentMeta const*;
+        auto findComponentByType() const noexcept -> reflex::TypeInfo const*;
 
         auto acquireChunk() -> Chunk*;
         void recycleChunk(Chunk* chunk) noexcept;
@@ -38,14 +37,14 @@ namespace up {
 
         auto acquireArchetype(
             ArchetypeId original,
-            view<ComponentMeta const*> include,
-            view<ComponentMeta const*> exclude) -> ArchetypeId;
+            view<reflex::TypeInfo const*> include,
+            view<reflex::TypeInfo const*> exclude) -> ArchetypeId;
 
-        UP_ECS_API auto _findComponentByTypeHash(uint64 typeHash) const noexcept -> ComponentMeta const*;
+        UP_ECS_API auto _findComponentByTypeHash(uint64 typeHash) const noexcept -> reflex::TypeInfo const*;
         UP_ECS_API auto _bindArchetypeOffets(ArchetypeId archetype, view<ComponentId> componentIds, span<int> offsets)
             const noexcept -> bool;
 
-        vector<ComponentMeta> components;
+        vector<reflex::TypeInfo const*> components;
         vector<ArchetypeLayout> archetypes = {ArchetypeLayout{0, 0, 0}};
         vector<LayoutRow> chunkRows;
         vector<box<Chunk>> allocatedChunks;
@@ -53,8 +52,9 @@ namespace up {
     };
 
     template <typename Component>
-    auto EcsSharedContext::findComponentByType() const noexcept -> ComponentMeta const* {
-        return _findComponentByTypeHash(typeid(Component).hash_code());
+    auto EcsSharedContext::findComponentByType() const noexcept -> reflex::TypeInfo const* {
+        static const uint64 hash = reflex::TypeHolder<Component>::get().hash;
+        return _findComponentByTypeHash(hash);
     }
 
     auto EcsSharedContext::layoutOf(ArchetypeId archetype) const noexcept -> view<LayoutRow> {

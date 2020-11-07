@@ -2,32 +2,33 @@
 
 #pragma once
 
-#include "ui/action.h"
-
+#include "potato/spud/delegate_ref.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/vector.h"
 
-namespace up::shell {
+namespace up {
+    enum class ActionId : uint64;
+}
+
+namespace up::inline editor {
     class HotKeys {
     public:
-        void bindActions(Actions& actions);
+        [[nodiscard]] bool evaluateKey(int keysym, unsigned mods, delegate_ref<bool(ActionId)> callback);
 
-        [[nodiscard]] bool evaluateKey(int keysym, unsigned mods);
+        void clear();
+        bool addHotKey(string_view hotKey, ActionId id);
 
     private:
         struct HotKey {
-            ActionId id = ActionId::None;
+            ActionId id{};
             int keycode = 0;
             unsigned mods = 0;
         };
 
-        void _rebuild();
         [[nodiscard]] bool _compile(string_view input, int& out_key, unsigned& out_mods) const noexcept;
         [[nodiscard]] auto _stringify(int keycode, unsigned mods) const -> string;
 
         vector<HotKey> _hotKeys;
-        Actions* _actions = nullptr;
-        uint64 _actionsVersion = 0;
     };
-} // namespace up::shell
+} // namespace up::inline editor

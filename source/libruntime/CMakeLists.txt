@@ -82,7 +82,6 @@ target_link_libraries(potato_libruntime
         potato::libformat
         ${UP_UUID_LIBRARY}
         Threads::Threads
-    PRIVATE
         nlohmann_json::nlohmann_json
 )
 

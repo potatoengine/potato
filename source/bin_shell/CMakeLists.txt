@@ -11,7 +11,6 @@ target_sources(potato_shell PRIVATE
     "private/camera_controller.cpp"
     "private/editor.cpp"
     "private/editors/game_editor.cpp"
-    "private/imgui_reflector.cpp"
     "private/main.cpp"
     "private/scene.cpp"
     "private/editors/scene_editor.cpp"
@@ -28,15 +27,19 @@ target_sources(potato_shell PRIVATE
     "private/ui/editor_group.cpp"	
     "public/potato/shell/ui/menu.h"	
     "private/ui/menu.cpp"	
-    "public/potato/shell/ui/hotkey.h"	
-    "private/ui/hotkey.cpp"	
-)	
-	
+    "public/potato/shell/_export.h"
+)
+
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 
 include(up_set_common_properties)
+include(up_compile_sap)
 up_set_common_properties(potato_shell)
+
+up_compile_sap(potato_shell SCHEMAS
+    schema/components.sap
+)
 
 target_link_libraries(potato_shell PRIVATE
     potato::libruntime
@@ -47,6 +50,7 @@ target_link_libraries(potato_shell PRIVATE
     potato::libreflex
     potato::libaudio
     potato::libtools
+    potato::libeditor
     glm
     SDL2
     SDL2main

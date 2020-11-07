@@ -6,17 +6,23 @@ add_library(potato::libtools ALIAS potato_libtools)
 
 target_sources(potato_libtools PRIVATE
     "private/asset_library.cpp"
-    "private/project.cpp"
+    "private/evaluator.cpp"
     "private/importer_context.cpp"
     "private/importer_factory.cpp"
+    "private/json_serializer.cpp"
+    "private/meta_file.cpp"
+    "private/project.cpp"
+    "public/potato/tools/evaluator.h"
+    "public/potato/tools/json_serializer.h"
+    "public/potato/tools/evaluator.h"
+)
+
+target_sources(potato_libtools PRIVATE
     "private/importers/copy_importer.cpp"
     "private/importers/hlsl_importer.cpp"
     "private/importers/json_importer.cpp"
     "private/importers/material_importer.cpp"
     "private/importers/model_importer.cpp"
-    "private/meta_file.cpp"
-    "public/potato/tools/evaluator.h"
-    "private/evaluator.cpp"
 )
 
 include(up_set_common_properties)
@@ -26,6 +32,7 @@ target_link_libraries(potato_libtools
     PUBLIC
         potato::libruntime
         potato::librender
+        potato::libreflex
         potato::libposql
         potato::spud
         flatbuffers::flatlib

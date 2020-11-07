@@ -8,6 +8,7 @@
 #include "scene.h"
 #include "selection.h"
 
+#include "potato/editor/property_grid.h"
 #include "potato/render/camera.h"
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_resource_view.h"
@@ -19,7 +20,7 @@
 namespace up::shell {
     class SceneEditor : public Editor {
     public:
-        using EnumerateComponents = delegate<view<ComponentMeta>()>;
+        using EnumerateComponents = delegate<view<reflex::TypeInfo const*>()>;
         using HandlePlayClicked = delegate<void(rc<Scene>)>;
 
         explicit SceneEditor(rc<Scene> scene, EnumerateComponents components, HandlePlayClicked onPlayClicked)
@@ -57,6 +58,7 @@ namespace up::shell {
         ArcBallCameraController _cameraController;
         Selection _selection;
         EnumerateComponents _components;
+        PropertyGrid _propertyGrid;
         HandlePlayClicked _onPlayClicked;
         glm::ivec2 _sceneDimensions = {0, 0};
         bool _enableGrid = true;

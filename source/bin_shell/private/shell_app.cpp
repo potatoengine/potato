@@ -3,18 +3,20 @@
 #include "shell_app.h"
 #include "camera.h"
 #include "camera_controller.h"
-#include "components.h"
+#include "components_schema.h"
 #include "scene.h"
 #include "editors/filetree_editor.h"
 #include "editors/game_editor.h"
 #include "editors/scene_editor.h"
 
+#include "potato/audio/sound_resource.h"
 #include "potato/ecs/query.h"
 #include "potato/ecs/world.h"
+#include "potato/editor/imgui_backend.h"
+#include "potato/editor/imgui_ext.h"
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
 #include "potato/render/debug_draw.h"
-#include "potato/render/draw_imgui.h"
 #include "potato/render/gpu_command_list.h"
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_factory.h"
@@ -58,7 +60,7 @@
 up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 
 up::shell::ShellApp::~ShellApp() {
-    _drawImgui.releaseResources();
+    _imguiBackend.releaseResources();
 
     _renderer.reset();
     _uiRenderCamera.reset();
@@ -151,7 +153,6 @@ int up::shell::ShellApp::initialize() {
     _menu.addMenu({.menu = "Help"_sv, .group = "9_help"_sv});
 
     _menu.bindActions(_actions);
-    _hotKeys.bindActions(_actions);
     _palette.bindActions(_actions);
 
     constexpr int default_width = 1024;
@@ -216,30 +217,28 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _drawImgui.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
+    _imguiBackend.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
     auto fontStream = _resourceLoader.openAsset("fonts/roboto/Roboto-Regular.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open Roboto-Regular font");
         return 1;
     }
-    _drawImgui.loadFont(std::move(fontStream));
+    _imguiBackend.loadFont(std::move(fontStream));
 
     fontStream = _resourceLoader.openAsset("fonts/fontawesome5/fa-solid-900.ttf");
     if (!fontStream) {
         _errorDialog("Failed to open FontAwesome font");
         return 1;
     }
-    if (!_drawImgui.loadFontAwesome5(std::move(fontStream))) {
+    if (!_imguiBackend.loadFontAwesome5(std::move(fontStream))) {
         _errorDialog("Failed to load FontAwesome font");
         return 1;
     }
 
-    _drawImgui.createResources(*_device);
+    _imguiBackend.createResources(*_device);
 
     _universe = new_box<Universe>();
 
-    _universe->registerComponent<components::Position>("Position");
-    _universe->registerComponent<components::Rotation>("Rotation");
     _universe->registerComponent<components::Transform>("Transform");
     _universe->registerComponent<components::Mesh>("Mesh");
     _universe->registerComponent<components::Wave>("Wave");
@@ -268,7 +267,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
         return false;
     }
 
-    _projectName = path::filebasename(path);
+    _projectName = string{path::filebasename(path)};
 
     _editors.closeAll();
     _editors.open(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
@@ -289,8 +288,19 @@ void up::shell::ShellApp::run() {
 
     constexpr double nano_to_seconds = 1.0 / 1000000000.0;
 
+    uint64 hotKeyRevision = 0;
+
     while (isRunning()) {
         imguiIO.DeltaTime = _lastFrameTime;
+
+        if (!_actions.refresh(hotKeyRevision)) {
+            _hotKeys.clear();
+            _actions.build([this](ActionId id, ActionDesc const& action) {
+                if (!action.hotKey.empty()) {
+                    _hotKeys.addHotKey(action.hotKey, id);
+                }
+            });
+        }
 
         _processEvents();
 
@@ -305,11 +315,11 @@ void up::shell::ShellApp::run() {
         imguiIO.DisplaySize.x = static_cast<float>(width);
         imguiIO.DisplaySize.y = static_cast<float>(height);
 
-        _drawImgui.beginFrame();
+        _imguiBackend.beginFrame();
 
         _displayUI();
 
-        _drawImgui.endFrame();
+        _imguiBackend.endFrame();
 
         _render();
 
@@ -426,18 +436,20 @@ void up::shell::ShellApp::_processEvents() {
                     case SDL_WINDOWEVENT_EXPOSED:
                         break;
                 }
-                _drawImgui.handleEvent(ev);
+                _imguiBackend.handleEvent(ev);
                 break;
             case SDL_KEYDOWN:
-                if (!_hotKeys.evaluateKey(ev.key.keysym.sym, ev.key.keysym.mod)) {
-                    _drawImgui.handleEvent(ev);
+                if (!_hotKeys.evaluateKey(ev.key.keysym.sym, ev.key.keysym.mod, [this](auto id) {
+                        return _actions.tryInvoke(id);
+                    })) {
+                    _imguiBackend.handleEvent(ev);
                 }
                 break;
             case SDL_MOUSEBUTTONUP:
             case SDL_MOUSEMOTION:
             case SDL_MOUSEWHEEL:
             default:
-                _drawImgui.handleEvent(ev);
+                _imguiBackend.handleEvent(ev);
                 break;
         }
     }
@@ -456,7 +468,7 @@ void up::shell::ShellApp::_render() {
 
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
     _uiRenderCamera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
-    _drawImgui.render(ctx);
+    _imguiBackend.render(ctx);
     _renderer->endFrame(_lastFrameTime);
 
     _swapChain->present();

@@ -1,0 +1,52 @@
+module components;
+
+import common;
+import ecs;
+import tools;
+
+[cxximport("up::Model", "potato/render/model.h")]
+struct Model {}
+
+[cxximport("up::SoundResource", "potato/audio/sound_resource.h")]
+struct SourceResource {}
+
+[cxximport("up::rc<up::Model>", "potato/render/model.h")]
+type ModelHandle;
+
+[cxximport("up::rc<up::SoundResource>", "potato/audio/sound_resource.h")]
+type SoundHandle;
+
+[Component]
+struct Transform {
+    [DisplayName("Pos")]
+    vec3 position;
+
+    [DisplayName("Rot")]
+    quat rotation;
+
+    [Hidden]
+    mat4x4 transform;
+}
+
+[Component]
+struct Mesh {
+    ModelHandle model;
+}
+
+[Component]
+struct Wave {
+    float time;
+    float offset;
+}
+
+[Component]
+struct Spin {
+    float radians;
+}
+
+[Component]
+struct Ding {
+    float period = 1;
+    float time = 0;
+    SoundHandle sound;
+}

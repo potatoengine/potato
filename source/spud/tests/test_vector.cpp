@@ -90,5 +90,5 @@ TEST_CASE("[potato][spud] vector") {
         CHECK(vec.front() == 2);
     }
 
-    SECTION("vector<string>") { vector<string> vec1{"first"_sv, "second"_sv, "third"_sv, "fourth"_sv}; }
+    SECTION("vector<string>") { vector<string> vec1{"first"_s, "second"_s, "third"_s, "fourth"_s}; }
 }

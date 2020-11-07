@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "potato/recon/config_schema.h"
+#include "config_schema.h"
+
 #include "potato/runtime/logger.h"
 #include "potato/spud/span.h"
 #include "potato/spud/std_iostream.h"

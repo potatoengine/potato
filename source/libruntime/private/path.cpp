@@ -136,7 +136,7 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
     char seps[] = {to_underlying(sep), '\0'};
 
     if (path.empty()) {
-        return path;
+        return string{path};
     }
 
     string_writer result;

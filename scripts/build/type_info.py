@@ -10,19 +10,65 @@ class TypeKind(Enum):
     STRUCT = "struct"
     ENUM = "enum"
 
+class Annotation:
+    """A single annotation"""
+    def __init__(self, type_name):
+        self.__name = ''
+        self.__type = None
+        self.__type_name = type_name
+        self.__values_ordered = []
+        self.__values = {}
+
+    @property
+    def type(self):
+        return self.__type
+
+    @property
+    def values(self):
+        return self.__values_ordered
+
+    def value_or(self, key, default):
+        return self.__values[key] if key in self.__values else default
+
+    def load_from_json(self, json):
+        self.__values = {key:value for key,value in json.items()}
+
+    def resolve(self, db):
+        self.__type = db.types[self.__type_name]
+        for field in self.__type.fields_ordered:
+            self.__values_ordered.append(self.__values[field.name])
+
 class AnnotationsBase:
     """Holder for annotations"""
     def __init__(self):
         self.__annotations = {}
 
+    @property
+    def annotations(self):
+        return self.__annotations.values()
+
+    def __contains__(self, key):
+        return key in self.__annotations
+
     def has_annotation(self, key):
         return key in self.__annotations
 
+    def get_annotation(self, key, sub):
+        return self.__annotations[key] if key in self.__annotations else None
+
     def get_annotation_field_or(self, key, sub, otherwise):
-        return self.__annotations[key][sub] if key in self.__annotations and sub in self.__annotations[key] else otherwise
+        return self.__annotations[key].value_or(sub, otherwise) if key in self.__annotations else otherwise
 
     def load_from_json(self, json):
-        self.__annotations = {key:field for key,field in json['annotations'].items()}
+        def annotate(name, json):
+            anno = Annotation(name)
+            anno.load_from_json(json)
+            return anno
+        self.__annotations = {key:annotate(key, value) for key,value in json['annotations'].items()}
+
+    def resolve(self, db):
+        for key,anno in self.__annotations.items():
+            anno.resolve(db)
 
 class TypeDatabase:
     """Collection of all known types"""
@@ -30,6 +76,7 @@ class TypeDatabase:
         self.__types = {}
         self.__module = ''
         self.__exports = []
+        self.__imports = []
 
     @property
     def module(self):
@@ -38,6 +85,10 @@ class TypeDatabase:
     @property
     def types(self):
         return self.__types
+
+    @property
+    def imports(self):
+        return self.__imports
 
     @property
     def exports(self):
@@ -50,6 +101,7 @@ class TypeDatabase:
         AnnotationsBase.load_from_json(self, doc)
 
         self.__module = doc['module']
+        self.__imports = [name for name in doc['imports']]
         self.__exports = [name for name in doc['exports']]
         for key,type_json in doc['types'].items():
             kind = type_json['kind']
@@ -97,7 +149,7 @@ class TypeBase(AnnotationsBase):
 
     @property
     def cxxname(self):
-        return self.get_annotation_field_or('cxxname', 'id', self.__name)
+        return self.get_annotation_field_or('cxxname', 'id', self.get_annotation_field_or('cxximport', 'id', self.__name))
 
     @property
     def base(self):
@@ -111,6 +163,7 @@ class TypeBase(AnnotationsBase):
     def resolve(self, db):
         if self.__base_type_name != '':
             self.__base_type = db.type(self.__base_type_name)
+        AnnotationsBase.resolve(self, db)
 
 class TypeOpaque(TypeBase):
     """User-friendly wrapper of an opaque definition"""
@@ -151,10 +204,10 @@ class TypeStruct(TypeBase):
             field.resolve(db)
 
 class TypeAttribute(TypeStruct):
-    """User-friendly wrapper for an annotation struct"""
+    """User-friendly wrapper for an attribute struct"""
     @property
     def kind(self):
-        return TypeKind.ANNOTATION
+        return TypeKind.ATTRIBUTE
 
 class TypeField(AnnotationsBase):
     """User-friendly wrapper for a field definition of a type"""
@@ -213,3 +266,4 @@ class TypeField(AnnotationsBase):
 
     def resolve(self, db):
         self.__type = db.type(self.__type_name)
+        AnnotationsBase.resolve(self, db)
