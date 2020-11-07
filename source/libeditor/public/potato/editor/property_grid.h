@@ -4,6 +4,7 @@
 
 #include "potato/reflex/schema.h"
 #include "potato/spud/concepts.h"
+#include "potato/spud/string.h"
 
 #include <glm/fwd.hpp>
 
@@ -29,9 +30,12 @@ namespace up::inline editor {
             value = static_cast<T>(tmp);
         }
         void drawFloatEditor(float& value) noexcept;
+        void drawFloatEditor(double& value) noexcept;
         void drawVec3Editor(glm::vec3& value) noexcept;
         void drawMat4x4Editor(glm::mat4x4& value) noexcept;
         void drawQuatEditor(glm::quat& value) noexcept;
+
+        void drawStringEditor(string& value) noexcept;
 
         template <integral T>
         void drawIntEditor(zstring_view name, T& value) noexcept {
