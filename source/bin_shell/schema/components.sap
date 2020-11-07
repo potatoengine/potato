@@ -52,7 +52,9 @@ struct Ding {
 }
 
 struct Data {
+    [DisplayName("Value")]
     int x;
+    [DisplayName("Description")]
     string s;
 }
 
@@ -62,4 +64,5 @@ struct Test {
     Data d1;
     [Flatten]
     Data d2;
+    int[] numbers;
 }
