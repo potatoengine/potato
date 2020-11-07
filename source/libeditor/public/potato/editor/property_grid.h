@@ -11,6 +11,9 @@
 namespace up::inline editor {
     class PropertyGrid {
     public:
+        bool beginItem(char const* label);
+        void endItem();
+
         void drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object);
 
         template <typename T>

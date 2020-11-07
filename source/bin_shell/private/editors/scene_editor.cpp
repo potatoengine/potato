@@ -201,24 +201,17 @@ void up::shell::SceneEditor::_inspector() {
         _selection.selected(),
         [&](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
             ImGui::PushID(data);
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
 
-            ImGuiStorage* const storage = ImGui::GetStateStorage();
-            bool open = storage->GetBool(ImGui::GetID("open"), true);
-
-            ImGuiSelectableFlags const flags = ImGuiSelectableFlags_SpanAllColumns;
-
-            if (ImGui::Selectable(typeInfo->name.c_str(), open, flags)) {
-                open = !open;
-                storage->SetBool(ImGui::GetID("open"), open);
-            }
+            const bool open = _propertyGrid.beginItem(typeInfo->name.c_str());
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
                 ImGui::OpenPopup("##component_context_menu");
             }
 
             if (ImGui::BeginPopupContextItem("##component_context_menu")) {
+                if (ImGui::MenuItemEx("Add", ICON_FA_PLUS_CIRCLE)) {
+                    ImGui::OpenPopup("##add_component_list");
+                }
                 if (ImGui::MenuItemEx("Remove", ICON_FA_TRASH)) {
                     deletedComponent = static_cast<ComponentId>(typeInfo->hash);
                 }
@@ -227,6 +220,7 @@ void up::shell::SceneEditor::_inspector() {
 
             if (open && typeInfo->schema != nullptr) {
                 _propertyGrid.drawGridRaw("", *typeInfo->schema, data);
+                _propertyGrid.endItem();
             }
 
             ImGui::PopID();
@@ -239,7 +233,7 @@ void up::shell::SceneEditor::_inspector() {
     }
 
     if (_selection.hasSelection()) {
-        if (ImGui::Button(as_char(u8"\uf067 Add Component"))) {
+        if (ImGui::IconButton("Add Component", ICON_FA_PLUS_CIRCLE)) {
             ImGui::OpenPopup("##add_component_list");
         }
         if (ImGui::BeginPopup("##add_component_list")) {

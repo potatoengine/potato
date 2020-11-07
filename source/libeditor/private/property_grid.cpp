@@ -12,6 +12,27 @@
 #include <glm/vec3.hpp>
 #include <imgui.h>
 
+bool up::editor::PropertyGrid::beginItem(char const* label) {
+    ImGuiID const openId = ImGui::GetID("open");
+
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+
+    ImGuiStorage* const storage = ImGui::GetStateStorage();
+    bool open = storage->GetBool(openId, true);
+
+    ImGuiSelectableFlags const flags = ImGuiSelectableFlags_SpanAllColumns;
+
+    if (ImGui::Selectable(label, open, flags)) {
+        open = !open;
+        storage->SetBool(openId, open);
+    }
+
+    return open;
+}
+
+void up::editor::PropertyGrid::endItem() {}
+
 void up::editor::PropertyGrid::drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object) {
     drawObjectEditor(schema, object);
 }
@@ -106,18 +127,23 @@ void up::editor::PropertyGrid::drawArrayEditor(reflex::Schema const& schema, voi
 
         ImGui::TableSetColumnIndex(0);
         ImGui::AlignTextToFramePadding();
-        ImVec2 const pos = ImGui::GetCursorPos();
+        ImGui::BeginGroup();
 
-        bool selected = false;
-        ImGui::Selectable("##row", &selected, ImGuiSelectableFlags_AllowItemOverlap);
-        if (ImGui::BeginDragDropTarget()) {
-            if (ImGuiPayload const* payload = ImGui::AcceptDragDropPayload("reorder"); payload != nullptr) {
-                swapFirst = *static_cast<size_t const*>(payload->Data);
-                swapSecond = index;
-            }
-            ImGui::EndDragDropTarget();
-        }
+        float const rowY = ImGui::GetCursorPosY();
+
+        // Row for handling drag-n-drop reordering of items
         if (schema.operations->swapIndices != nullptr) {
+            bool selected = false;
+            ImGui::Selectable("##row", &selected, ImGuiSelectableFlags_AllowItemOverlap);
+
+            if (ImGui::BeginDragDropTarget()) {
+                if (ImGuiPayload const* payload = ImGui::AcceptDragDropPayload("reorder"); payload != nullptr) {
+                    swapFirst = *static_cast<size_t const*>(payload->Data);
+                    swapSecond = index;
+                }
+                ImGui::EndDragDropTarget();
+            }
+
             if (ImGui::BeginDragDropSource(
                     ImGuiDragDropFlags_SourceAutoExpirePayload | ImGuiDragDropFlags_SourceNoPreviewTooltip |
                     ImGuiDragDropFlags_SourceNoDisableHover)) {
@@ -126,17 +152,18 @@ void up::editor::PropertyGrid::drawArrayEditor(reflex::Schema const& schema, voi
             }
         }
 
-        ImGui::SetCursorPos(pos);
-        float const width = ImGui::GetContentRegionAvailWidth();
-        float x = ImGui::GetCursorPosX() + width;
-
+        // Icon for deleting a row
         if (schema.operations->eraseAt != nullptr) {
-            x -= ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.x * 2.f;
-            ImGui::SetCursorPosX(x);
+            float const availWidth = ImGui::GetContentRegionAvailWidth();
+            float const buttonWidth = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.x * 2.f;
+            float const adjustWidth = availWidth - buttonWidth;
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + adjustWidth, rowY});
             if (ImGui::IconButton("##remove", ICON_FA_TRASH)) {
                 eraseIndex = index;
             }
         }
+
+        ImGui::EndGroup();
 
         ImGui::TableSetColumnIndex(1);
         ImGui::AlignTextToFramePadding();
