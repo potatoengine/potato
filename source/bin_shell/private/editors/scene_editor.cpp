@@ -186,8 +186,9 @@ void up::shell::SceneEditor::_resize(GpuDevice& device, glm::ivec2 size) {
 void up::shell::SceneEditor::_inspector() {
     ComponentId deletedComponent = ComponentId::Unknown;
 
-    if (_scene == nullptr)
+    if (_scene == nullptr) {
         return;
+    }
 
     if (!ImGui::BeginTable(
             "##inspector_table",
