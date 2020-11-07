@@ -63,6 +63,14 @@ void up::editor::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field,
     }
 
     void* const member = static_cast<char*>(object) + field.offset;
+
+    if (field.queryAnnotation<schema::Flatten>() != nullptr) {
+        ImGui::PushID(member);
+        drawEditor(*field.schema, member);
+        ImGui::PopID();
+        return;
+    }
+
     auto const* const displayNameAnnotation = field.queryAnnotation<schema::DisplayName>();
     zstring_view const displayName = displayNameAnnotation != nullptr && !displayNameAnnotation->name.empty()
         ? displayNameAnnotation->name
