@@ -102,7 +102,7 @@ namespace up {
         template <typename... ParamsT>
         auto emplace_back(ParamsT&&... params) -> reference requires std::is_constructible_v<T, ParamsT...>;
 
-        template <typename InsertT>
+        template <typename InsertT = value_type>
         auto insert(const_iterator pos, InsertT&& value) -> reference
             requires std::is_constructible_v<T, decltype(value)> {
             return emplace(pos, std::forward<InsertT>(value));
@@ -117,7 +117,7 @@ namespace up {
         reference push_back(rvalue_reference value) requires std::is_move_constructible_v<T> {
             return emplace_back(std::move(value));
         }
-        template <typename InsertT>
+        template <typename InsertT = value_type>
         reference push_back(InsertT&& value) requires std::is_constructible_v<T, decltype(value)> {
             return emplace_back(std::forward<InsertT>(value));
         }

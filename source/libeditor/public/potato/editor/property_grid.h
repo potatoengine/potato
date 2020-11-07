@@ -22,6 +22,8 @@ namespace up::inline editor {
 
         void drawEditor(reflex::Schema const& schema, void* object);
         void drawObjectEditor(reflex::Schema const& schema, void* object);
+        void drawArrayEditor(reflex::Schema const& schema, void* object);
+
         void drawIntEditor(int& value) noexcept;
         template <integral T>
         void drawIntEditor(T& value) noexcept {

@@ -4,6 +4,7 @@
 #include "common_schema.h"
 #include "tools_schema.h"
 
+#include "potato/editor/icons.h"
 #include "potato/editor/imgui_ext.h"
 
 #include <glm/gtx/quaternion.hpp>
@@ -51,6 +52,9 @@ void up::editor::PropertyGrid::drawEditor(reflex::Schema const& schema, void* ob
                 drawEditor(*schema.elementType, pointee);
             }
             break;
+        case reflex::SchemaPrimitive::Array:
+            drawArrayEditor(schema, object);
+            break;
         case reflex::SchemaPrimitive::Object:
             drawObjectEditor(schema, object);
             break;
@@ -66,6 +70,79 @@ void up::editor::PropertyGrid::drawObjectEditor(reflex::Schema const& schema, vo
     UP_ASSERT(schema.primitive == reflex::SchemaPrimitive::Object);
     for (reflex::SchemaField const& field : schema.fields) {
         drawPropertyRaw(field, object);
+    }
+}
+
+void up::editor::PropertyGrid::drawArrayEditor(reflex::Schema const& schema, void* object) {
+    if (schema.operations == nullptr) {
+        ImGui::TextDisabled("Unsupported type");
+        return;
+    }
+
+    if (schema.operations->getSize == nullptr || schema.operations->elementAt == nullptr) {
+        ImGui::TextDisabled("Unsupported type");
+        return;
+    }
+
+    size_t const size = schema.operations->getSize(object);
+
+    ImGui::Text("%d items", static_cast<int>(size));
+    if (schema.operations->insertAt != nullptr) {
+        ImGui::SameLine();
+        if (ImGui::IconButton("##add", ICON_FA_PLUS)) {
+            schema.operations->insertAt(object, size);
+        }
+    }
+
+    size_t eraseIndex = size;
+    size_t swapFirst = size;
+    size_t swapSecond = size;
+
+    for (size_t index = 0; index != size; ++index) {
+        void* element = schema.operations->elementAt(object, index);
+
+        ImGui::PushID(element);
+        ImGui::TableNextRow();
+
+        ImGui::TableSetColumnIndex(0);
+
+        float const width = ImGui::GetContentRegionAvailWidth();
+        float x = ImGui::GetCursorPosX() + width;
+
+        if (schema.operations->eraseAt != nullptr) {
+            x -= ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.x * 2.f;
+            ImGui::SetCursorPosX(x);
+            if (ImGui::IconButton("##remove", ICON_FA_TRASH)) {
+                eraseIndex = index;
+            }
+        }
+        if (schema.operations->swapIndices != nullptr) {
+            x -= ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.x * 2.f;
+            ImGui::SetCursorPosX(x);
+            if (index < size - 1 && ImGui::IconButton("##move_down", ICON_FA_ARROW_DOWN)) {
+                swapFirst = index;
+                swapSecond = index + 1;
+            }
+
+            x -= ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.x * 2.f;
+            ImGui::SetCursorPosX(x);
+            if (index > 0 && ImGui::IconButton("##move_up", ICON_FA_ARROW_UP)) {
+                swapFirst = index - 1;
+                swapSecond = index;
+            }
+        }
+
+        ImGui::TableSetColumnIndex(1);
+        ImGui::AlignTextToFramePadding();
+        drawEditor(*schema.elementType, element);
+        ImGui::PopID();
+    }
+
+    if (eraseIndex < size) {
+        schema.operations->eraseAt(object, eraseIndex);
+    }
+    else if (swapFirst < size) {
+        schema.operations->swapIndices(object, swapFirst, swapSecond);
     }
 }
 
