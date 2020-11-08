@@ -157,7 +157,6 @@ bool ImGui::Potato::IconButton(char const* label, char8_t const* icon, ImVec2 si
 
     ImVec2 pos = window->DC.CursorPos;
 
-    bool const alignText = (flags & ImGuiButtonFlags_AlignTextBaseLine) != 0;
     if (window != nullptr && style.FramePadding.y < window->DC.CurrLineTextBaseOffset) {
         pos.y += window->DC.CurrLineTextBaseOffset - style.FramePadding.y;
     }

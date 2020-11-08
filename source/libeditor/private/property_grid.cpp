@@ -133,7 +133,7 @@ void up::editor::PropertyGrid::_editArrayField(
     for (size_t index = 0; index != size; ++index) {
         void* element = schema.operations->elementAt(object, index);
 
-        ImGui::PushID(index);
+        ImGui::PushID(static_cast<int>(index));
         ImGui::TableNextRow();
 
         ImGui::TableSetColumnIndex(0);
