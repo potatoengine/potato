@@ -104,12 +104,6 @@ void up::editor::PropertyGrid::_drawArrayEditor(reflex::Schema const& schema, vo
     size_t const size = schema.operations->getSize(object);
 
     ImGui::Text("%d items :: %s", static_cast<int>(size), schema.name.c_str());
-    if (schema.operations->insertAt != nullptr) {
-        ImGui::SameLine();
-        if (ImGui::IconButton("##add", ICON_FA_PLUS)) {
-            schema.operations->insertAt(object, size);
-        }
-    }
 
     size_t eraseIndex = size;
     size_t swapFirst = size;
@@ -165,6 +159,23 @@ void up::editor::PropertyGrid::_drawArrayEditor(reflex::Schema const& schema, vo
         ImGui::AlignTextToFramePadding();
         _drawEditor(*schema.elementType, element);
         ImGui::PopID();
+    }
+
+    if (schema.operations->insertAt != nullptr) {
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::AlignTextToFramePadding();
+        float const availWidth = ImGui::GetContentRegionAvailWidth();
+        float const buttonWidth = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.x * 2.f;
+        float const adjustWidth = availWidth - buttonWidth;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + adjustWidth);
+        if (ImGui::IconButton("##add", ICON_FA_PLUS)) {
+            schema.operations->insertAt(object, size);
+        }
+
+        ImGui::TableSetColumnIndex(1);
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextDisabled("Add new row");
     }
 
     if (eraseIndex < size) {
