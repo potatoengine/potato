@@ -14,20 +14,6 @@
 #include <imgui.h>
 #include <numeric>
 
-static bool getIntRange(up::reflex::SchemaField const& field, int& out_min, int& out_max) {
-    out_min = std::numeric_limits<int>::min();
-    out_max = std::numeric_limits<int>::max();
-
-    auto const* const intRangeAnnotation = field.queryAnnotation<up::schema::IntRange>();
-    if (intRangeAnnotation == nullptr) {
-        return false;
-    }
-
-    out_min = intRangeAnnotation->min;
-    out_max = intRangeAnnotation->max;
-    return true;
-}
-
 bool up::editor::PropertyGrid::beginItem(char const* label) {
     ImGuiID const openId = ImGui::GetID("open");
 
@@ -349,8 +335,7 @@ void up::editor::PropertyGrid::_editStringField(
     // edited, make a temporary copy into a cheaply-resizable buffer, then post-
     // edit copy that back into a new up::string. For now... just this.
     char buffer[512];
-    char* const end = std::strncpy(buffer, value.data(), std::min(sizeof(buffer) - 1, value.size()));
-    *end = '\0';
+    format_to(buffer, "{}", value);
 
     if (ImGui::InputText("##string", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
         value = string(buffer);
