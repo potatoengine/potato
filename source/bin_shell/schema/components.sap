@@ -68,5 +68,6 @@ struct Test {
     Data d2;
 
     [Tooltip("Test array")]
+    [IntRange(-10, 10)]
     int[] numbers;
 }

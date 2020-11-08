@@ -1,0 +1,5 @@
+module constraint;
+
+import common;
+
+attribute IntRange { int min; int max; }

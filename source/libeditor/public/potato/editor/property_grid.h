@@ -9,6 +9,14 @@
 #include <glm/fwd.hpp>
 
 namespace up::inline editor {
+    class PropertyEditor {
+    public:
+        virtual ~PropertyEditor() = default;
+
+        virtual void drawLabel(reflex::SchemaField const& field, void* member) = 0;
+        virtual void drawInput(reflex::SchemaField const& field, void* member) = 0;
+    };
+
     class PropertyGrid {
     public:
         bool beginItem(char const* label);
@@ -28,15 +36,15 @@ namespace up::inline editor {
         void _editProperties(reflex::Schema const& schema, void* object);
         void _editProperty(reflex::SchemaField const& field, void* object);
 
-        void _drawEditor(reflex::Schema const& schema, void* object);
+        void _editField(reflex::SchemaField const& field, reflex::Schema const& schema, void* object);
         void _drawObjectEditor(reflex::Schema const& schema, void* object);
-        void _drawArrayEditor(reflex::Schema const& schema, void* object);
+        void _editArrayField(reflex::SchemaField const& field, reflex::Schema const& schema, void* object);
 
-        void drawIntEditor(int& value) noexcept;
+        void _editInteger(reflex::SchemaField const& field, int& value) noexcept;
         template <integral T>
-        void drawIntEditor(T& value) noexcept {
+        void _editInteger(reflex::SchemaField const& field, T& value) noexcept {
             int tmp = static_cast<int>(value);
-            drawIntEditor(tmp);
+            _editInteger(field, tmp);
             value = static_cast<T>(tmp);
         }
         void drawFloatEditor(float& value) noexcept;

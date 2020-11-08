@@ -2,6 +2,7 @@
 
 #include "property_grid.h"
 #include "common_schema.h"
+#include "constraint_schema.h"
 #include "tools_schema.h"
 
 #include "potato/editor/icons.h"
@@ -11,6 +12,21 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <imgui.h>
+#include <numeric>
+
+static bool getIntRange(up::reflex::SchemaField const& field, int& out_min, int& out_max) {
+    out_min = std::numeric_limits<int>::min();
+    out_max = std::numeric_limits<int>::max();
+
+    auto const* const intRangeAnnotation = field.queryAnnotation<up::schema::IntRange>();
+    if (intRangeAnnotation == nullptr) {
+        return false;
+    }
+
+    out_min = intRangeAnnotation->min;
+    out_max = intRangeAnnotation->max;
+    return true;
+}
 
 bool up::editor::PropertyGrid::beginItem(char const* label) {
     ImGuiID const openId = ImGui::GetID("open");
@@ -33,18 +49,21 @@ bool up::editor::PropertyGrid::beginItem(char const* label) {
 
 void up::editor::PropertyGrid::endItem() {}
 
-void up::editor::PropertyGrid::_drawEditor(reflex::Schema const& schema, void* object) {
+void up::editor::PropertyGrid::_editField(
+    reflex::SchemaField const& field,
+    reflex::Schema const& schema,
+    void* object) {
     ImGui::PushID(object);
 
     switch (schema.primitive) {
         case reflex::SchemaPrimitive::Int16:
-            drawIntEditor(*static_cast<int16*>(object));
+            _editInteger(field, *static_cast<int16*>(object));
             break;
         case reflex::SchemaPrimitive::Int32:
-            drawIntEditor(*static_cast<int32*>(object));
+            _editInteger(field, *static_cast<int32*>(object));
             break;
         case reflex::SchemaPrimitive::Int64:
-            drawIntEditor(*static_cast<int64*>(object));
+            _editInteger(field, *static_cast<int64*>(object));
             break;
         case reflex::SchemaPrimitive::Float:
             drawFloatEditor(*static_cast<float*>(object));
@@ -67,11 +86,11 @@ void up::editor::PropertyGrid::_drawEditor(reflex::Schema const& schema, void* o
             break;
         case reflex::SchemaPrimitive::Pointer:
             if (void* pointee = *static_cast<void**>(object); pointee != nullptr) {
-                _drawEditor(*schema.elementType, pointee);
+                _editField(field, *schema.elementType, pointee);
             }
             break;
         case reflex::SchemaPrimitive::Array:
-            _drawArrayEditor(schema, object);
+            _editArrayField(field, schema, object);
             break;
         case reflex::SchemaPrimitive::Object:
             _drawObjectEditor(schema, object);
@@ -90,7 +109,10 @@ void up::editor::PropertyGrid::_drawObjectEditor(reflex::Schema const& schema, v
     _editProperties(schema, object);
 }
 
-void up::editor::PropertyGrid::_drawArrayEditor(reflex::Schema const& schema, void* object) {
+void up::editor::PropertyGrid::_editArrayField(
+    reflex::SchemaField const& field,
+    reflex::Schema const& schema,
+    void* object) {
     if (schema.operations == nullptr) {
         ImGui::TextDisabled("Unsupported type");
         return;
@@ -157,7 +179,7 @@ void up::editor::PropertyGrid::_drawArrayEditor(reflex::Schema const& schema, vo
 
         ImGui::TableSetColumnIndex(1);
         ImGui::AlignTextToFramePadding();
-        _drawEditor(*schema.elementType, element);
+        _editField(field, *schema.elementType, element);
         ImGui::PopID();
     }
 
@@ -255,12 +277,19 @@ void up::editor::PropertyGrid::_editProperty(reflex::SchemaField const& field, v
     ImGui::TableSetColumnIndex(1);
     ImGui::AlignTextToFramePadding();
 
-    _drawEditor(*field.schema, member);
+    _editField(field, *field.schema, member);
 }
 
-void up::editor::PropertyGrid::drawIntEditor(int& value) noexcept {
+void up::editor::PropertyGrid::_editInteger(reflex::SchemaField const& field, int& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
-    ImGui::InputInt("##int", &value);
+
+    auto const* const intRangeAnnotation = field.queryAnnotation<up::schema::IntRange>();
+    if (intRangeAnnotation != nullptr) {
+        ImGui::SliderInt("##int", &value, intRangeAnnotation->min, intRangeAnnotation->max);
+    }
+    else {
+        ImGui::InputInt("##int", &value);
+    }
 }
 
 void up::editor::PropertyGrid::drawFloatEditor(float& value) noexcept {
@@ -306,7 +335,7 @@ void up::editor::PropertyGrid::drawStringEditor(string& value) noexcept {
     char* const end = std::strncpy(buffer, value.data(), std::min(sizeof(buffer) - 1, value.size()));
     *end = '\0';
 
-    if (ImGui::InputText("##string", buffer, sizeof(buffer))) {
+    if (ImGui::InputText("##string", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
         value = string(buffer);
     }
 }
