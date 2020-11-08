@@ -83,7 +83,10 @@ def generate_header_types(ctx: Context):
             ctx.print(': reflex::SchemaAttribute ')
         ctx.print('{\n')
         for field in type.fields_ordered:
-            ctx.print(f"        {field.cxxtype}/*{field.type.qualified_cxxname}*/ {field.cxxname};\n")
+            ctx.print(f"        {field.cxxtype} {field.cxxname}")
+            if field.has_default:
+                ctx.print(f' = {cxxvalue(field.default_or(None))}')
+            ctx.print(";\n")
         ctx.print("    };\n")
 
         ctx.print('}\n')
@@ -159,7 +162,7 @@ def generate_impl_json_parse(ctx: Context):
 ''')
 
             if field.has_default:
-                ctx.print("    else {\n        value.{field.cxxname} = {field.default_or(None)};\n    }\n")
+                ctx.print(f'    else {{\n        value.{field.cxxname} = {cxxvalue(field.default_or(None))};\n    }}\n')
 
         ctx.print('}\n')
 

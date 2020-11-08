@@ -262,12 +262,11 @@ class TypeField(AnnotationsBase):
     def is_array(self):
         return self.__is_array
 
-    @property
     def default_or(self, otherwise):
-        if not self.__has_default:
-            return otherwise
-        else:
+        if self.__has_default:
             return self.__default
+        else:
+            return otherwise
 
     @property
     def has_default(self):

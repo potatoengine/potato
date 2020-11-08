@@ -1,7 +1,7 @@
 module common;
 
 attribute ignore;
-attribute required { bool required = true; }
+attribute required { bool require = true; }
 attribute cxxname { string id; }
 attribute cxximport { string id; string header; }
 attribute json { string name; }
