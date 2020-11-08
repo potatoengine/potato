@@ -57,19 +57,19 @@ void up::editor::PropertyGrid::_editField(
 
     switch (schema.primitive) {
         case reflex::SchemaPrimitive::Int16:
-            _editInteger(field, *static_cast<int16*>(object));
+            _editIntegerField(field, *static_cast<int16*>(object));
             break;
         case reflex::SchemaPrimitive::Int32:
-            _editInteger(field, *static_cast<int32*>(object));
+            _editIntegerField(field, *static_cast<int32*>(object));
             break;
         case reflex::SchemaPrimitive::Int64:
-            _editInteger(field, *static_cast<int64*>(object));
+            _editIntegerField(field, *static_cast<int64*>(object));
             break;
         case reflex::SchemaPrimitive::Float:
-            drawFloatEditor(*static_cast<float*>(object));
+            _editFloatField(field, *static_cast<float*>(object));
             break;
         case reflex::SchemaPrimitive::Double:
-            drawFloatEditor(*static_cast<double*>(object));
+            _editFloatField(field, *static_cast<double*>(object));
             break;
         case reflex::SchemaPrimitive::Vec3:
             drawVec3Editor(*static_cast<glm::vec3*>(object));
@@ -280,25 +280,35 @@ void up::editor::PropertyGrid::_editProperty(reflex::SchemaField const& field, v
     _editField(field, *field.schema, member);
 }
 
-void up::editor::PropertyGrid::_editInteger(reflex::SchemaField const& field, int& value) noexcept {
+void up::editor::PropertyGrid::_editIntegerField(reflex::SchemaField const& field, int& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
 
-    auto const* const intRangeAnnotation = field.queryAnnotation<up::schema::IntRange>();
-    if (intRangeAnnotation != nullptr) {
-        ImGui::SliderInt("##int", &value, intRangeAnnotation->min, intRangeAnnotation->max);
+    auto const* const rangeAnnotation = field.queryAnnotation<up::schema::IntRange>();
+    if (rangeAnnotation != nullptr) {
+        ImGui::SliderInt("##int", &value, rangeAnnotation->min, rangeAnnotation->max);
     }
     else {
         ImGui::InputInt("##int", &value);
     }
 }
 
-void up::editor::PropertyGrid::drawFloatEditor(float& value) noexcept {
+void up::editor::PropertyGrid::_editFloatField(reflex::SchemaField const& field, float& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
-    ImGui::InputFloat("##float", &value);
+
+    auto const* const rangeAnnotation = field.queryAnnotation<up::schema::FloatRange>();
+    if (rangeAnnotation != nullptr) {
+        ImGui::SliderFloat("##float", &value, rangeAnnotation->min, rangeAnnotation->max);
+    }
+    else {
+        ImGui::InputFloat("##float", &value);
+    }
 }
 
-void up::editor::PropertyGrid::drawFloatEditor(double& value) noexcept {
+void up::editor::PropertyGrid::_editFloatField(
+    [[maybe_unused]] reflex::SchemaField const& field,
+    double& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
+
     ImGui::InputDouble("##double", &value);
 }
 

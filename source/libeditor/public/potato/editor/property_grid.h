@@ -40,15 +40,15 @@ namespace up::inline editor {
         void _drawObjectEditor(reflex::Schema const& schema, void* object);
         void _editArrayField(reflex::SchemaField const& field, reflex::Schema const& schema, void* object);
 
-        void _editInteger(reflex::SchemaField const& field, int& value) noexcept;
+        void _editIntegerField(reflex::SchemaField const& field, int& value) noexcept;
         template <integral T>
-        void _editInteger(reflex::SchemaField const& field, T& value) noexcept {
+        void _editIntegerField(reflex::SchemaField const& field, T& value) noexcept {
             int tmp = static_cast<int>(value);
-            _editInteger(field, tmp);
+            _editIntegerField(field, tmp);
             value = static_cast<T>(tmp);
         }
-        void drawFloatEditor(float& value) noexcept;
-        void drawFloatEditor(double& value) noexcept;
+        void _editFloatField(reflex::SchemaField const& field, float& value) noexcept;
+        void _editFloatField(reflex::SchemaField const& field, double& value) noexcept;
         void drawVec3Editor(glm::vec3& value) noexcept;
         void drawMat4x4Editor(glm::mat4x4& value) noexcept;
         void drawQuatEditor(glm::quat& value) noexcept;

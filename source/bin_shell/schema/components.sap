@@ -48,6 +48,7 @@ struct Spin {
 [Component]
 struct Ding {
     float period = 1;
+    [FloatRange(0, 3600)]
     float time = 0;
     SoundHandle sound;
 }
