@@ -62,7 +62,10 @@ struct Data {
 struct Test {
     [DisplayName("Data")]
     Data d1;
+
     [Flatten]
     Data d2;
+
+    [Tooltip("Test array")]
     int[] numbers;
 }

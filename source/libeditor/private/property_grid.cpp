@@ -213,6 +213,13 @@ void up::editor::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field,
     ImGui::AlignTextToFramePadding();
     bool const open = ImGui::TreeNodeEx(displayName.c_str(), flags);
 
+    auto const* const tooltipAnnotation = field.queryAnnotation<schema::Tooltip>();
+    if (tooltipAnnotation != nullptr && ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::Text("%s", tooltipAnnotation->text.c_str());
+        ImGui::EndTooltip();
+    }
+
     ImGui::TableSetColumnIndex(1);
     ImGui::AlignTextToFramePadding();
     if (open) {
