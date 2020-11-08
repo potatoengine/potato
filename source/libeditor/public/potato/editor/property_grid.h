@@ -49,10 +49,9 @@ namespace up::inline editor {
         }
         void _editFloatField(reflex::SchemaField const& field, float& value) noexcept;
         void _editFloatField(reflex::SchemaField const& field, double& value) noexcept;
-        void drawVec3Editor(glm::vec3& value) noexcept;
-        void drawMat4x4Editor(glm::mat4x4& value) noexcept;
-        void drawQuatEditor(glm::quat& value) noexcept;
-
-        void drawStringEditor(string& value) noexcept;
+        void _editVec3Field(reflex::SchemaField const& field, glm::vec3& value) noexcept;
+        void _editMat4x4Field(reflex::SchemaField const& field, glm::mat4x4& value) noexcept;
+        void _editQuatField(reflex::SchemaField const& field, glm::quat& value) noexcept;
+        void _editStringField(reflex::SchemaField const& field, string& value) noexcept;
     };
 } // namespace up::inline editor

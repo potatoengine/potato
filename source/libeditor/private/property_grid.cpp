@@ -72,17 +72,16 @@ void up::editor::PropertyGrid::_editField(
             _editFloatField(field, *static_cast<double*>(object));
             break;
         case reflex::SchemaPrimitive::Vec3:
-            drawVec3Editor(*static_cast<glm::vec3*>(object));
+            _editVec3Field(field, *static_cast<glm::vec3*>(object));
             break;
         case reflex::SchemaPrimitive::Mat4x4:
-            drawMat4x4Editor(*static_cast<glm::mat4x4*>(object));
+            _editMat4x4Field(field, *static_cast<glm::mat4x4*>(object));
             break;
         case reflex::SchemaPrimitive::Quat:
-            drawQuatEditor(*static_cast<glm::quat*>(object));
+            _editQuatField(field, *static_cast<glm::quat*>(object));
             break;
         case reflex::SchemaPrimitive::String:
-            break;
-            drawStringEditor(*static_cast<string*>(object));
+            _editStringField(field, *static_cast<string*>(object));
             break;
         case reflex::SchemaPrimitive::Pointer:
             if (void* pointee = *static_cast<void**>(object); pointee != nullptr) {
@@ -312,12 +311,16 @@ void up::editor::PropertyGrid::_editFloatField(
     ImGui::InputDouble("##double", &value);
 }
 
-void up::editor::PropertyGrid::drawVec3Editor(glm::vec3& value) noexcept {
+void up::editor::PropertyGrid::_editVec3Field(
+    [[maybe_unused]] reflex::SchemaField const& field,
+    glm::vec3& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
     ImGui::InputVec3("##vec3", value);
 }
 
-void up::editor::PropertyGrid::drawMat4x4Editor(glm::mat4x4& value) noexcept {
+void up::editor::PropertyGrid::_editMat4x4Field(
+    [[maybe_unused]] reflex::SchemaField const& field,
+    glm::mat4x4& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
     ImGui::InputFloat4("##a", &value[0].x);
     ImGui::SetNextItemWidth(-1.f);
@@ -328,12 +331,16 @@ void up::editor::PropertyGrid::drawMat4x4Editor(glm::mat4x4& value) noexcept {
     ImGui::InputFloat4("##d", &value[3].x);
 }
 
-void up::editor::PropertyGrid::drawQuatEditor(glm::quat& value) noexcept {
+void up::editor::PropertyGrid::_editQuatField(
+    [[maybe_unused]] reflex::SchemaField const& field,
+    glm::quat& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
     ImGui::InputQuat("##quat", value);
 }
 
-void up::editor::PropertyGrid::drawStringEditor(string& value) noexcept {
+void up::editor::PropertyGrid::_editStringField(
+    [[maybe_unused]] reflex::SchemaField const& field,
+    string& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
 
     // FIXME:
