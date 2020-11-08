@@ -33,11 +33,7 @@ bool up::editor::PropertyGrid::beginItem(char const* label) {
 
 void up::editor::PropertyGrid::endItem() {}
 
-void up::editor::PropertyGrid::drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object) {
-    drawObjectEditor(schema, object);
-}
-
-void up::editor::PropertyGrid::drawEditor(reflex::Schema const& schema, void* object) {
+void up::editor::PropertyGrid::_drawEditor(reflex::Schema const& schema, void* object) {
     ImGui::PushID(object);
 
     switch (schema.primitive) {
@@ -66,18 +62,19 @@ void up::editor::PropertyGrid::drawEditor(reflex::Schema const& schema, void* ob
             drawQuatEditor(*static_cast<glm::quat*>(object));
             break;
         case reflex::SchemaPrimitive::String:
+            break;
             drawStringEditor(*static_cast<string*>(object));
             break;
         case reflex::SchemaPrimitive::Pointer:
             if (void* pointee = *static_cast<void**>(object); pointee != nullptr) {
-                drawEditor(*schema.elementType, pointee);
+                _drawEditor(*schema.elementType, pointee);
             }
             break;
         case reflex::SchemaPrimitive::Array:
-            drawArrayEditor(schema, object);
+            _drawArrayEditor(schema, object);
             break;
         case reflex::SchemaPrimitive::Object:
-            drawObjectEditor(schema, object);
+            _drawObjectEditor(schema, object);
             break;
         default:
             ImGui::Text("Unsupported primitive type for schema `%s`", schema.name.c_str());
@@ -87,14 +84,13 @@ void up::editor::PropertyGrid::drawEditor(reflex::Schema const& schema, void* ob
     ImGui::PopID();
 }
 
-void up::editor::PropertyGrid::drawObjectEditor(reflex::Schema const& schema, void* object) {
-    UP_ASSERT(schema.primitive == reflex::SchemaPrimitive::Object);
-    for (reflex::SchemaField const& field : schema.fields) {
-        drawPropertyRaw(field, object);
-    }
+void up::editor::PropertyGrid::_drawObjectEditor(reflex::Schema const& schema, void* object) {
+    ImGui::TextDisabled("%s", schema.name.c_str());
+
+    _editProperties(schema, object);
 }
 
-void up::editor::PropertyGrid::drawArrayEditor(reflex::Schema const& schema, void* object) {
+void up::editor::PropertyGrid::_drawArrayEditor(reflex::Schema const& schema, void* object) {
     if (schema.operations == nullptr) {
         ImGui::TextDisabled("Unsupported type");
         return;
@@ -107,7 +103,7 @@ void up::editor::PropertyGrid::drawArrayEditor(reflex::Schema const& schema, voi
 
     size_t const size = schema.operations->getSize(object);
 
-    ImGui::Text("%d items", static_cast<int>(size));
+    ImGui::Text("%d items :: %s", static_cast<int>(size), schema.name.c_str());
     if (schema.operations->insertAt != nullptr) {
         ImGui::SameLine();
         if (ImGui::IconButton("##add", ICON_FA_PLUS)) {
@@ -167,7 +163,7 @@ void up::editor::PropertyGrid::drawArrayEditor(reflex::Schema const& schema, voi
 
         ImGui::TableSetColumnIndex(1);
         ImGui::AlignTextToFramePadding();
-        drawEditor(*schema.elementType, element);
+        _drawEditor(*schema.elementType, element);
         ImGui::PopID();
     }
 
@@ -179,18 +175,9 @@ void up::editor::PropertyGrid::drawArrayEditor(reflex::Schema const& schema, voi
     }
 }
 
-void up::editor::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field, void* object) {
+bool up::editor::PropertyGrid::_beginProperty(reflex::SchemaField const& field, void* object) {
     if (field.queryAnnotation<schema::Hidden>() != nullptr) {
-        return;
-    }
-
-    void* const member = static_cast<char*>(object) + field.offset;
-
-    if (field.queryAnnotation<schema::Flatten>() != nullptr) {
-        ImGui::PushID(member);
-        drawEditor(*field.schema, member);
-        ImGui::PopID();
-        return;
+        return false;
     }
 
     auto const* const displayNameAnnotation = field.queryAnnotation<schema::DisplayName>();
@@ -198,7 +185,7 @@ void up::editor::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field,
         ? displayNameAnnotation->name
         : field.name;
 
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_NoTreePushOnOpen;
     bool const expandable =
         (field.schema->primitive == reflex::SchemaPrimitive::Object ||
          field.schema->primitive == reflex::SchemaPrimitive::Mat4x4);
@@ -206,12 +193,15 @@ void up::editor::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field,
         flags |= ImGuiTreeNodeFlags_Leaf;
     }
 
-    ImGui::PushID(member);
-
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
     ImGui::AlignTextToFramePadding();
+
+    void* const member = static_cast<char*>(object) + field.offset;
+
+    ImGui::PushID(member);
     bool const open = ImGui::TreeNodeEx(displayName.c_str(), flags);
+    ImGui::PopID();
 
     auto const* const tooltipAnnotation = field.queryAnnotation<schema::Tooltip>();
     if (tooltipAnnotation != nullptr && ImGui::IsItemHovered()) {
@@ -220,14 +210,41 @@ void up::editor::PropertyGrid::drawPropertyRaw(reflex::SchemaField const& field,
         ImGui::EndTooltip();
     }
 
+    if (open) {
+        ImGui::TreePush(member);
+    }
+    return open;
+}
+
+void up::editor::PropertyGrid::_endProperty() {
+    ImGui::TreePop();
+}
+
+void up::editor::PropertyGrid::_editProperties(reflex::Schema const& schema, void* object) {
+    UP_ASSERT(schema.primitive == reflex::SchemaPrimitive::Object);
+
+    for (reflex::SchemaField const& field : schema.fields) {
+        if (field.schema->primitive == reflex::SchemaPrimitive::Object &&
+            field.queryAnnotation<schema::Flatten>() != nullptr) {
+            void* const member = static_cast<char*>(object) + field.offset;
+            _editProperties(*field.schema, member);
+            continue;
+        }
+
+        if (_beginProperty(field, object)) {
+            _editProperty(field, object);
+            _endProperty();
+        }
+    }
+}
+
+void up::editor::PropertyGrid::_editProperty(reflex::SchemaField const& field, void* object) {
+    void* const member = static_cast<char*>(object) + field.offset;
+
     ImGui::TableSetColumnIndex(1);
     ImGui::AlignTextToFramePadding();
-    if (open) {
-        drawEditor(*field.schema, member);
-        ImGui::TreePop();
-    }
 
-    ImGui::PopID();
+    _drawEditor(*field.schema, member);
 }
 
 void up::editor::PropertyGrid::drawIntEditor(int& value) noexcept {

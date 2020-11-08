@@ -220,8 +220,10 @@ void up::shell::SceneEditor::_inspector() {
                 ImGui::EndPopup();
             }
 
-            if (open && typeInfo->schema != nullptr) {
-                _propertyGrid.drawGridRaw("", *typeInfo->schema, data);
+            if (open) {
+                if (typeInfo->schema != nullptr) {
+                    _propertyGrid.editObjectRaw(*typeInfo->schema, data);
+                }
                 _propertyGrid.endItem();
             }
 

@@ -14,18 +14,23 @@ namespace up::inline editor {
         bool beginItem(char const* label);
         void endItem();
 
-        void drawGridRaw(zstring_view name, reflex::Schema const& schema, void* object);
+        void editObjectRaw(reflex::Schema const& schema, void* object) { _editProperties(schema, object); }
 
         template <typename T>
-        void drawGrid(zstring_view name, T const& value) {
-            drawGridRaw(name, reflex::getSchema<T>(), &value);
+        void editObject(T const& value) {
+            editObjectRaw(reflex::getSchema<T>(), &value);
         }
 
-        void drawPropertyRaw(reflex::SchemaField const& field, void* object);
+    private:
+        bool _beginProperty(reflex::SchemaField const& field, void* object);
+        void _endProperty();
 
-        void drawEditor(reflex::Schema const& schema, void* object);
-        void drawObjectEditor(reflex::Schema const& schema, void* object);
-        void drawArrayEditor(reflex::Schema const& schema, void* object);
+        void _editProperties(reflex::Schema const& schema, void* object);
+        void _editProperty(reflex::SchemaField const& field, void* object);
+
+        void _drawEditor(reflex::Schema const& schema, void* object);
+        void _drawObjectEditor(reflex::Schema const& schema, void* object);
+        void _drawArrayEditor(reflex::Schema const& schema, void* object);
 
         void drawIntEditor(int& value) noexcept;
         template <integral T>
@@ -41,12 +46,5 @@ namespace up::inline editor {
         void drawQuatEditor(glm::quat& value) noexcept;
 
         void drawStringEditor(string& value) noexcept;
-
-        template <integral T>
-        void drawIntEditor(zstring_view name, T& value) noexcept {
-            int tmp = value;
-            drawIntEditor(name, tmp);
-            value = tmp;
-        }
     };
 } // namespace up::inline editor

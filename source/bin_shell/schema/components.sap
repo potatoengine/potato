@@ -3,6 +3,7 @@ module components;
 import common;
 import ecs;
 import tools;
+import constraint;
 
 [cxximport("up::Model", "potato/render/model.h")]
 struct Model {}
