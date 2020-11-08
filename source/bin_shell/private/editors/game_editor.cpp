@@ -41,7 +41,7 @@ void up::shell::GameEditor::content() {
         auto const xPos =
             ImGui::GetWindowSize().x * 0.5f - ImGui::CalcTextSize(text).x * 0.5f - ImGui::GetStyle().ItemInnerSpacing.x;
         ImGui::SetCursorPosX(xPos);
-        if (ImGui::MenuItemEx(text, icon, "F5")) {
+        if (ImGui::IconMenuItem(text, icon, "F5")) {
             _wantPlaying = !_wantPlaying;
         }
         ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "Shift-ESC to release input");

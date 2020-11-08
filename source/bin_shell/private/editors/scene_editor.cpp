@@ -211,10 +211,10 @@ void up::shell::SceneEditor::_inspector() {
             }
 
             if (ImGui::BeginPopupContextItem("##component_context_menu")) {
-                if (ImGui::MenuItemEx("Add", ICON_FA_PLUS_CIRCLE)) {
+                if (ImGui::IconMenuItem("Add", ICON_FA_PLUS_CIRCLE)) {
                     ImGui::OpenPopupEx(addComponentId);
                 }
-                if (ImGui::MenuItemEx("Remove", ICON_FA_TRASH)) {
+                if (ImGui::IconMenuItem("Remove", ICON_FA_TRASH)) {
                     deletedComponent = static_cast<ComponentId>(typeInfo->hash);
                 }
                 ImGui::EndPopup();
@@ -247,7 +247,7 @@ void up::shell::SceneEditor::_inspector() {
                 if (_scene->world().getComponentSlowUnsafe(
                         _selection.selected(),
                         static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
-                    if (ImGui::MenuItemEx(typeInfo->name.c_str())) {
+                    if (ImGui::IconMenuItem(typeInfo->name.c_str())) {
                         _scene->world().addComponentDefault(_selection.selected(), *typeInfo);
                     }
                 }

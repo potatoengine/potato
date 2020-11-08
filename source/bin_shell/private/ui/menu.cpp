@@ -89,9 +89,9 @@ void up::shell::Menu::_drawMenu(size_t index, size_t depth) {
         if (item.id != ActionId::None) {
             auto const checked = _actions->isChecked(item.id);
             auto const enabled = _actions->isEnabled(item.id);
-            auto const hotKey = _actions->actionAt(item.id).hotKey;
+            auto const& hotKey = _actions->actionAt(item.id).hotKey;
 
-            if (ImGui::MenuItemEx(_strings[item.stringIndex].c_str(), nullptr, hotKey.c_str(), checked, enabled)) {
+            if (ImGui::IconMenuItem(_strings[item.stringIndex].c_str(), nullptr, hotKey.c_str(), checked, enabled)) {
                 _actions->invoke(item.id);
             }
         }

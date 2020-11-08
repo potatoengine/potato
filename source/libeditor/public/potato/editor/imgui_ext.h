@@ -9,7 +9,7 @@
 #include <imgui.h>
 
 namespace ImGui::inline Potato {
-    UP_EDITOR_API bool MenuItemEx(
+    UP_EDITOR_API bool IconMenuItem(
         const char* label,
         const char8_t* icon = nullptr,
         const char* shortcut = nullptr,
