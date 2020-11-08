@@ -55,6 +55,20 @@ namespace up::reflex {
         SchemaAttribute const* attr = nullptr;
     };
 
+    struct SchemaOperations {
+        using GetSize = size_t (*)(void const* object);
+        using ElementAt = void* (*)(void* object, size_t index);
+        using SwapIndices = void (*)(void* object, size_t first, size_t second);
+        using EraseAt = void (*)(void* object, size_t index);
+        using InsertAt = void (*)(void* object, size_t index);
+
+        GetSize getSize = nullptr;
+        ElementAt elementAt = nullptr;
+        SwapIndices swapIndices = nullptr;
+        EraseAt eraseAt = nullptr;
+        InsertAt insertAt = nullptr;
+    };
+
     struct SchemaField {
         zstring_view name;
         Schema const* schema = nullptr;
@@ -77,6 +91,7 @@ namespace up::reflex {
         zstring_view name;
         SchemaPrimitive primitive = SchemaPrimitive::Null;
         Schema const* elementType = nullptr;
+        SchemaOperations const* operations = nullptr;
         view<SchemaField> fields;
         view<SchemaAnnotation> annotations;
 
@@ -99,7 +114,7 @@ namespace up::reflex {
     concept schema_glm_type =
         std::is_same_v<T, glm::vec3> || std::is_same_v<T, glm::mat4x4> || std::is_same_v<T, glm::quat>;
     template <typename T>
-    concept schema_primitive = std::is_scalar_v<T> || std::is_same_v<T, string> || schema_glm_type<T>;
+    concept schema_primitive = std::is_scalar_v<T> || std::is_same_v<T, string> || schema_glm_type<T> || is_vector_v<T>;
     template <typename T>
     concept has_schema = requires(T t) {
         {SchemaHolder<T>::get()};
@@ -179,10 +194,37 @@ namespace up::reflex {
         }
         else if constexpr (is_vector_v<Type>) {
             static Schema const& elementSchema = getSchema<typename Type::value_type>();
+            static SchemaOperations const operations = {
+                .getSize =
+                    [](void const* array) noexcept {
+                        auto const& arr = *static_cast<Type const*>(array);
+                        return arr.size();
+                    },
+                .elementAt = [](void* array, size_t index) noexcept -> void* {
+                    auto& arr = *static_cast<Type*>(array);
+                    return arr.data() + index;
+                },
+                .swapIndices =
+                    [](void* array, size_t first, size_t second) noexcept {
+                        auto& arr = *static_cast<Type*>(array);
+                        using std::swap;
+                        swap(arr[first], arr[second]);
+                    },
+                .eraseAt =
+                    [](void* array, size_t index) {
+                        auto& arr = *static_cast<Type*>(array);
+                        arr.erase(arr.begin() + index);
+                    },
+                .insertAt =
+                    [](void* array, size_t index) {
+                        auto& arr = *static_cast<Type*>(array);
+                        arr.insert(arr.begin() + index, {});
+                    }};
             static Schema const schema{
                 .name = "vector"_zsv,
                 .primitive = SchemaPrimitive::Array,
-                .elementType = &elementSchema};
+                .elementType = &elementSchema,
+                .operations = &operations};
             return schema;
         }
         else if constexpr (is_box_v<Type>) {

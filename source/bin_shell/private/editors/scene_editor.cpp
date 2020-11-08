@@ -197,36 +197,34 @@ void up::shell::SceneEditor::_inspector() {
         return;
     }
 
+    ImGuiID const addComponentId = ImGui::GetID("##add_component_list");
+
     _scene->world().interrogateEntityUnsafe(
         _selection.selected(),
         [&](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
             ImGui::PushID(data);
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
 
-            ImGuiStorage* const storage = ImGui::GetStateStorage();
-            bool open = storage->GetBool(ImGui::GetID("open"), true);
-
-            ImGuiSelectableFlags const flags = ImGuiSelectableFlags_SpanAllColumns;
-
-            if (ImGui::Selectable(typeInfo->name.c_str(), open, flags)) {
-                open = !open;
-                storage->SetBool(ImGui::GetID("open"), open);
-            }
+            const bool open = _propertyGrid.beginItem(typeInfo->name.c_str());
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
                 ImGui::OpenPopup("##component_context_menu");
             }
 
             if (ImGui::BeginPopupContextItem("##component_context_menu")) {
-                if (ImGui::MenuItemEx("Remove", ICON_FA_TRASH)) {
+                if (ImGui::IconMenuItem("Add", ICON_FA_PLUS_CIRCLE)) {
+                    ImGui::OpenPopupEx(addComponentId);
+                }
+                if (ImGui::IconMenuItem("Remove", ICON_FA_TRASH)) {
                     deletedComponent = static_cast<ComponentId>(typeInfo->hash);
                 }
                 ImGui::EndPopup();
             }
 
-            if (open && typeInfo->schema != nullptr) {
-                _propertyGrid.drawGridRaw("", *typeInfo->schema, data);
+            if (open) {
+                if (typeInfo->schema != nullptr) {
+                    _propertyGrid.editObjectRaw(*typeInfo->schema, data);
+                }
+                _propertyGrid.endItem();
             }
 
             ImGui::PopID();
@@ -239,15 +237,19 @@ void up::shell::SceneEditor::_inspector() {
     }
 
     if (_selection.hasSelection()) {
-        if (ImGui::Button(as_char(u8"\uf067 Add Component"))) {
-            ImGui::OpenPopup("##add_component_list");
+        if (ImGui::IconButton("Add Component", ICON_FA_PLUS_CIRCLE)) {
+            ImGui::OpenPopupEx(addComponentId);
         }
-        if (ImGui::BeginPopup("##add_component_list")) {
+
+        if (ImGui::BeginPopupEx(
+                addComponentId,
+                ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings |
+                    ImGuiWindowFlags_NoMove)) {
             for (reflex::TypeInfo const* typeInfo : _components()) {
                 if (_scene->world().getComponentSlowUnsafe(
                         _selection.selected(),
                         static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
-                    if (ImGui::MenuItemEx(typeInfo->name.c_str())) {
+                    if (ImGui::IconMenuItem(typeInfo->name.c_str())) {
                         _scene->world().addComponentDefault(_selection.selected(), *typeInfo);
                     }
                 }

@@ -1,0 +1,6 @@
+module constraint;
+
+import common;
+
+attribute IntRange { int min; int max; }
+attribute FloatRange { float min; float max; }

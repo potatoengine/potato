@@ -40,7 +40,7 @@ namespace up::reflex {
 
     template <typename T>
     constexpr TypeInfo const& getTypeInfo() noexcept {
-        return TypeHolder<T>::get();
+        return TypeHolder<std::remove_cvref_t<T>>::get();
     }
 
     template <typename T>

@@ -11,6 +11,7 @@
 #include "_detail/format_traits.h"
 
 #include "potato/spud/string_view.h"
+#include "potato/spud/zstring_view.h"
 
 #include <type_traits>
 
@@ -35,6 +36,18 @@ namespace up {
             writer,
             format_str,
             {_detail::make_format_arg<Writer, _detail::formattable_t<Args>>(args)...});
+    }
+
+    /// Write the string format using the given parameters into a fixed-size.
+    /// @param writer The write buffer that will receive the formatted text.
+    /// @param format_str The primary text and formatting controls to be written.
+    /// @param args The arguments used by the formatting string.
+    /// @returns a result code indicating any errors.
+    template <size_t N, formattable... Args>
+    constexpr auto format_to(char (&buffer)[N], string_view format_str, Args const&... args) -> zstring_view {
+        fixed_writer writer(buffer);
+        format_to(writer, format_str, args...);
+        return buffer;
     }
 
     /// Write the string format using the given parameters and return a string with the result.
