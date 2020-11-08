@@ -203,7 +203,8 @@ bool up::editor::PropertyGrid::_beginProperty(reflex::SchemaField const& field, 
         ? displayNameAnnotation->name
         : field.name;
 
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    ImGuiTreeNodeFlags flags =
+        ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanAvailWidth;
     bool const expandable =
         (field.schema->primitive == reflex::SchemaPrimitive::Object ||
          field.schema->primitive == reflex::SchemaPrimitive::Mat4x4);
