@@ -179,7 +179,7 @@ def generate_impl_annotations(ctx: Context, name: str, entity: type_info.Annotat
     if len(locals) != 0:
         ctx.print(f'    static const SchemaAnnotation {name}_annotations[] = {{\n')
         for local in locals:
-            ctx.print(f'        {{ .type = &getTypeInfo<{attr.cxxname}>(), .attr = &{local} }},\n')
+            ctx.print(f'        {{ .type = &getTypeInfo<decltype({local})>(), .attr = &{local} }},\n')
         ctx.print('    };\n')
     else:
         ctx.print(f'    static const view<SchemaAnnotation> {name}_annotations;\n')
