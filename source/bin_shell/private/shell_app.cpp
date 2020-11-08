@@ -155,20 +155,37 @@ int up::shell::ShellApp::initialize() {
     _menu.bindActions(_actions);
     _palette.bindActions(_actions);
 
-    constexpr int default_width = 1024;
-    constexpr int default_height = 768;
-
     _window = SDL_CreateWindow(
         "loading",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        default_width,
-        default_height,
-        SDL_WINDOW_RESIZABLE);
+        800,
+        600,
+        SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
     if (_window == nullptr) {
         _errorDialog("Could not create window");
     }
     _updateTitle();
+
+    SDL_DisplayMode desktopMode;
+    int const displayIndex = SDL_GetWindowDisplayIndex(_window.get());
+    int const displayResult = SDL_GetCurrentDisplayMode(displayIndex, &desktopMode);
+    if (displayResult == 0) {
+        int currentWidth = 0;
+        int currentHeight = 0;
+        SDL_GetWindowSize(_window.get(), &currentWidth, &currentHeight);
+
+        int const newWidth = std::max(static_cast<int>(desktopMode.w * 0.75), currentWidth);
+        int const newHeight = std::max(static_cast<int>(desktopMode.h * 0.75), currentHeight);
+
+        int const newPosX = static_cast<int>((desktopMode.w - newWidth) * 0.5);
+        int const newPosY = static_cast<int>((desktopMode.h - newHeight) * 0.5);
+
+        SDL_SetWindowSize(_window.get(), newWidth, newHeight);
+        SDL_SetWindowPosition(_window.get(), newPosX, newPosY);
+    }
+
+    SDL_ShowWindow(_window.get());
 
     SDL_SysWMinfo wmInfo;
     SDL_VERSION(&wmInfo.version);
