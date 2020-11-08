@@ -17,6 +17,7 @@ set(EXTERNALS
     nfd
     sapc
     sqlite
+    dmon
     reproc
 )
 
