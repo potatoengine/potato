@@ -16,28 +16,9 @@ target_sources(potato_libeditor PRIVATE
     "public/potato/editor/property_grid.h"
 )
 
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/gen/inc")
-add_custom_command(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/gen/inc/roboto_font.h"
-    COMMAND potato::bin_headerify "${UP_ROOT_DIR}/embed/fonts/roboto/Roboto-Regular.ttf" "${CMAKE_CURRENT_BINARY_DIR}/gen/inc/roboto_font.h" "roboto"
-    MAIN_DEPENDENCY "${UP_ROOT_DIR}/embed/fonts/roboto/Roboto-Regular.ttf"
-    DEPENDS potato::bin_headerify
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND_EXPAND_LISTS
-)
-add_custom_command(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/gen/inc/fontawesome_font.h"
-    COMMAND potato::bin_headerify "${UP_ROOT_DIR}/embed/fonts/fontawesome5/fa-regular-400.ttf" "${CMAKE_CURRENT_BINARY_DIR}/gen/inc/fontawesome_font.h" "fontawesome"
-    MAIN_DEPENDENCY "${UP_ROOT_DIR}/embed/fonts/fontawesome5/fa-regular-400.ttf"
-    DEPENDS potato::bin_headerify
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND_EXPAND_LISTS
-)
-target_sources(potato_libeditor PRIVATE
-    "${CMAKE_CURRENT_BINARY_DIR}/gen/inc/roboto_font.h"
-    "${CMAKE_CURRENT_BINARY_DIR}/gen/inc/fontawesome_font.h"
-)
-target_include_directories(potato_libeditor PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/gen/inc")
+include(up_headerify)
+up_headerify(potato_libeditor "roboto_font" "${UP_ROOT_DIR}/embed/fonts/roboto/Roboto-Regular.ttf")
+up_headerify(potato_libeditor "fontawesome_font" "${UP_ROOT_DIR}/embed/fonts/fontawesome5/fa-regular-400.ttf")
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libeditor)
