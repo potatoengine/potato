@@ -40,6 +40,9 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, Logg
             else if (name == "config") {
                 argMode = ArgConfig;
             }
+            else if (name == "server") {
+                config.server = true;
+            }
             else {
                 logger.error("Unknown option: {}", arg.c_str());
                 return false;
