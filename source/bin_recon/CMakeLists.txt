@@ -14,7 +14,7 @@ target_sources(potato_librecon PRIVATE
     "private/recon_config.cpp"
     "private/file_hash_cache.cpp"
     "public/potato/recon/file_hash_cache.h"
- "public/potato/recon/_export.h")
+ "public/potato/recon/_export.h" "public/potato/recon/recon_protocol.h" "private/recon_protocol.cpp")
 
 up_compile_sap(potato_librecon
     SCHEMAS

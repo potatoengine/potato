@@ -278,21 +278,20 @@ auto up::fs::writeAllText(zstring_view path, string_view text) -> IOResult {
 up::fs::WatchHandle::WatchHandle() = default;
 
 namespace {
-    struct DmonInit {
-        DmonInit() {
+    struct DmonInitializer {
+        DmonInitializer() {
             if (!initialized) {
                 initialized = true;
                 dmon_init();
             }
         }
-        ~DmonInit() {
+        ~DmonInitializer() {
             if (initialized) {
                 dmon_deinit();
             }
         }
         bool initialized = false;
-    };
-    static DmonInit init_dmon;
+    } dmon_initializer;
 
     class WatchHandleImpl final : public up::fs::WatchHandle {
     public:
