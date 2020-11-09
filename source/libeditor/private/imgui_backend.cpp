@@ -1,6 +1,8 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "imgui_backend.h"
+#include "fontawesome_font.h"
+#include "roboto_font.h"
 
 #include "potato/render/context.h"
 #include "potato/render/gpu_buffer.h"
@@ -69,51 +71,6 @@ bool up::ImguiBackend::createResources(GpuDevice& device) {
     _sampler = device.createSampler();
 
     return true;
-}
-
-auto up::ImguiBackend::loadFontAwesome5(Stream fontFile) -> bool {
-    static constexpr auto s_minGlyph = 0xf000;
-    static constexpr auto s_maxGlyph = 0xf897;
-    static constexpr ImWchar s_ranges[] = {s_minGlyph, s_maxGlyph, 0};
-
-    _ensureContext();
-
-    ImGui::SetCurrentContext(_context.get());
-    auto& io = ImGui::GetIO();
-
-    vector<byte> fontData;
-    if (readBinary(fontFile, fontData) != IOResult::Success) {
-        return false;
-    }
-
-    ImFontConfig config;
-    config.MergeMode = true;
-    config.PixelSnapH = true;
-    config.FontDataOwnedByAtlas = false;
-
-    auto font =
-        io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 11.0f, &config, s_ranges);
-    return font != nullptr;
-}
-
-auto up::ImguiBackend::loadFont(Stream fontFile) -> bool {
-    _ensureContext();
-
-    ImGui::SetCurrentContext(_context.get());
-    auto& io = ImGui::GetIO();
-
-    vector<byte> fontData;
-    if (readBinary(fontFile, fontData) != IOResult::Success) {
-        return false;
-    }
-
-    ImFontConfig config;
-    config.MergeMode = false;
-    config.PixelSnapH = false;
-    config.FontDataOwnedByAtlas = false;
-
-    auto font = io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 16.0f, &config);
-    return font != nullptr;
 }
 
 void up::ImguiBackend::releaseResources() {
@@ -328,7 +285,7 @@ void up::ImguiBackend::_initialize() {
     ImGui::SetCurrentContext(_context.get());
     auto& io = ImGui::GetIO();
 
-    // io.Fonts->AddFontDefault();
+    _loadFonts();
 
     _applyStyle();
 
@@ -365,6 +322,29 @@ void up::ImguiBackend::_initialize() {
     io.SetClipboardTextFn = _setClipboardTextContents;
     io.GetClipboardTextFn = _getClipboardTextContents;
     io.ClipboardUserData = this;
+}
+
+void up::ImguiBackend::_loadFonts() {
+    auto& io = ImGui::GetIO();
+
+    ImFontConfig config;
+    config.MergeMode = false;
+    config.PixelSnapH = false;
+    config.FontDataOwnedByAtlas = false;
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    io.Fonts->AddFontFromMemoryTTF(const_cast<char*>(roboto_data), roboto_size, 16.0f, &config);
+
+    config.MergeMode = true;
+    config.PixelSnapH = true;
+    config.FontDataOwnedByAtlas = false;
+
+    static constexpr auto s_minGlyph = 0xf000;
+    static constexpr auto s_maxGlyph = 0xf897;
+    static constexpr ImWchar s_ranges[] = {s_minGlyph, s_maxGlyph, 0};
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    io.Fonts->AddFontFromMemoryTTF(const_cast<char*>(fontawesome_data), fontawesome_size, 11.0f, &config, s_ranges);
 }
 
 void up::ImguiBackend::_applyStyle() {

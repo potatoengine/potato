@@ -235,23 +235,6 @@ int up::shell::ShellApp::initialize() {
     }
 
     _imguiBackend.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
-    auto fontStream = _resourceLoader.openAsset("fonts/roboto/Roboto-Regular.ttf");
-    if (!fontStream) {
-        _errorDialog("Failed to open Roboto-Regular font");
-        return 1;
-    }
-    _imguiBackend.loadFont(std::move(fontStream));
-
-    fontStream = _resourceLoader.openAsset("fonts/fontawesome5/fa-solid-900.ttf");
-    if (!fontStream) {
-        _errorDialog("Failed to open FontAwesome font");
-        return 1;
-    }
-    if (!_imguiBackend.loadFontAwesome5(std::move(fontStream))) {
-        _errorDialog("Failed to load FontAwesome font");
-        return 1;
-    }
-
     _imguiBackend.createResources(*_device);
 
     _universe = new_box<Universe>();
