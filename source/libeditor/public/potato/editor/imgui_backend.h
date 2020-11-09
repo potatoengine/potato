@@ -35,8 +35,6 @@ namespace up {
         UP_EDITOR_API ImguiBackend();
         UP_EDITOR_API ~ImguiBackend();
 
-        UP_EDITOR_API void bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader);
-
         UP_EDITOR_API bool createResources(GpuDevice& device);
         UP_EDITOR_API void releaseResources();
 

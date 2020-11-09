@@ -4,6 +4,11 @@
 #include "fontawesome_font.h"
 #include "roboto_font.h"
 
+#define BYTE unsigned char
+#include "imgui_pixel_shader.h"
+#include "imgui_vertex_shader.h"
+#undef BYTE
+
 #include "potato/render/context.h"
 #include "potato/render/gpu_buffer.h"
 #include "potato/render/gpu_command_list.h"
@@ -24,14 +29,6 @@ static constexpr up::uint32 bufferSize = 1024 * 1024;
 up::ImguiBackend::ImguiBackend() = default;
 up::ImguiBackend::~ImguiBackend() = default;
 
-void up::ImguiBackend::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
-    _vertShader = std::move(vertShader);
-    _pixelShader = std::move(pixelShader);
-
-    // we'll need to recreate pipeline state at the least
-    releaseResources();
-}
-
 bool up::ImguiBackend::createResources(GpuDevice& device) {
     _ensureContext();
 
@@ -43,8 +40,8 @@ bool up::ImguiBackend::createResources(GpuDevice& device) {
 
     GpuPipelineStateDesc desc;
     desc.enableScissor = true;
-    desc.vertShader = _vertShader->content();
-    desc.pixelShader = _pixelShader->content();
+    desc.vertShader = span{g_vertex_main}.as_bytes();
+    desc.pixelShader = span{g_pixel_main}.as_bytes();
     desc.inputLayout = layout;
 
     _indexBuffer = device.createBuffer(GpuBufferType::Index, bufferSize);

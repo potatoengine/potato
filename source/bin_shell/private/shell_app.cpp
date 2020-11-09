@@ -227,14 +227,6 @@ int up::shell::ShellApp::initialize() {
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
-    auto imguiVertShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "vertex"_sv);
-    auto imguiPixelShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "pixel"_sv);
-    if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
-        _errorDialog("Failed to load imgui shaders");
-        return 1;
-    }
-
-    _imguiBackend.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
     _imguiBackend.createResources(*_device);
 
     _universe = new_box<Universe>();
