@@ -78,6 +78,8 @@ target_link_libraries(potato_libruntime
         ${UP_UUID_LIBRARY}
         Threads::Threads
         nlohmann_json::nlohmann_json
+    PRIVATE
+        dmon
 )
 
 target_compile_definitions(potato_libruntime

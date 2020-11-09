@@ -18,7 +18,8 @@ namespace up {
     public:
         static constexpr int default_capacity = 1024;
 
-        explicit ConcurrentQueue(uint32 capacity = default_capacity);
+        ConcurrentQueue() : ConcurrentQueue(default_capacity) {}
+        explicit ConcurrentQueue(uint32 capacity);
         ~ConcurrentQueue();
 
         ConcurrentQueue(ConcurrentQueue const&) = delete;
