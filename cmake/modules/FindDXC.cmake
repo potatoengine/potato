@@ -34,6 +34,20 @@ find_library(DXCOMPILER_DLL_PATH
 	PATHS ${DXC_SEARCH_PATHS}
 )
 
+find_program(DXC_BIN_PATH
+    NAMES dxc.exe
+	HINTS $ENV{DXCDIR}
+	PATH_SUFFIXES bin
+	PATHS ${DXC_SEARCH_PATHS}
+)
+
+find_program(FXC_BIN_PATH
+    NAMES fxc.exe
+	HINTS $ENV{DXCDIR}
+	PATH_SUFFIXES bin
+	PATHS ${DXC_SEARCH_PATHS}
+)
+
 if(NOT DXCOMPILER_DLL_PATH)
     string(REPLACE ".lib" ".dll" DXCOMPILER_DLL_PATH ${DXCOMPILER_IMPLIB_PATH})
     string(REPLACE "/lib/" "/bin/" DXCOMPILER_DLL_PATH ${DXCOMPILER_DLL_PATH})
@@ -43,6 +57,14 @@ add_library(dxcompiler IMPORTED SHARED GLOBAL)
 add_library(dxc::dxcompiler ALIAS dxcompiler)
 set_target_properties(dxcompiler PROPERTIES IMPORTED_LOCATION ${DXCOMPILER_DLL_PATH} IMPORTED_IMPLIB ${DXCOMPILER_IMPLIB_PATH})
 set_target_properties(dxcompiler PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${DXC_INCLUDE_DIR})
+
+add_executable(dxc IMPORTED GLOBAL)
+add_executable(dxc::dxc ALIAS dxc)
+set_target_properties(dxc PROPERTIES IMPORTED_LOCATION ${DXC_BIN_PATH})
+
+add_executable(fxc IMPORTED GLOBAL)
+add_executable(dxc::fxc ALIAS fxc)
+set_target_properties(fxc PROPERTIES IMPORTED_LOCATION ${FXC_BIN_PATH})
 
 if(DXIL_PATH)
     add_library(dxil IMPORTED SHARED GLOBAL)
