@@ -23,6 +23,10 @@ target_sources(potato_librender PRIVATE
 include(up_set_common_properties)
 up_set_common_properties(potato_librender)
 
+include(up_compile_shader)
+up_compile_shader(potato_librender STAGE vertex HLSL data/shaders/debug_line.hlsl)
+up_compile_shader(potato_librender STAGE pixel HLSL data/shaders/debug_line.hlsl)
+
 include(up_copy_library_import)
 up_copy_library_import(assimp potato_librender)
 
