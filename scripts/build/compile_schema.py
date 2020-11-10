@@ -124,6 +124,7 @@ def generate_header_json_parse_decl(ctx: Context):
         ctx.print(f'namespace {cxxns} {{\n')
 
         ctx.print(f"    UP_{ctx.library.upper()}_API void from_json(nlohmann::json const& root, {type.cxxname}& value);\n")
+        ctx.print(f"    UP_{ctx.library.upper()}_API void to_json(nlohmann::json& root, {type.cxxname} const& value);\n")
 
         ctx.print('}\n')
 
@@ -137,6 +138,7 @@ def generate_impl_json_parse(ctx: Context):
         if type.kind == type_info.TypeKind.OPAQUE:
             continue
 
+        # --- from_json ---
         ctx.print(f"void up::schema::from_json(nlohmann::json const& root, {type.cxxname}& value) {{\n")
         ctx.print("""
     if (!root.is_object()) {
@@ -163,6 +165,31 @@ def generate_impl_json_parse(ctx: Context):
 
             if field.has_default:
                 ctx.print(f'    else {{\n        value.{field.cxxname} = {cxxvalue(field.default_or(None))};\n    }}\n')
+
+        ctx.print('}\n')
+
+        # --- to_json ---
+        ctx.print(f"void up::schema::to_json(nlohmann::json& root, {type.cxxname} const& value) {{\n")
+        ctx.print("""
+    if (!root.is_object()) {
+        return;
+    }
+""")
+        for field in type.fields_ordered:
+            json_name = field.get_annotation_field_or("json", "name", field.name)
+
+            if field.is_array:
+                ctx.print(f'''
+    {{
+        nlohmann::json array;
+        for (auto const& item : value.{field.cxxname}) {{
+            array.push_back(item);
+        }}
+        root["{json_name}"] = std::move(array);
+    }}
+''')
+            else:
+                ctx.print(f'    root["{json_name}"] = value.{field.cxxname};')
 
         ctx.print('}\n')
 
