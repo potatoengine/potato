@@ -57,6 +57,12 @@
 #include <imgui_internal.h>
 #include <nfd.h>
 
+// SDL includes X.h on Linux, which pollutes this name we care about
+// FIXME: clean up this file for better abstractions to avoid header pollution problems
+#if defined(Success)
+#    undef Success
+#endif
+
 up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 
 up::shell::ShellApp::~ShellApp() {
@@ -82,6 +88,25 @@ int up::shell::ShellApp::initialize() {
     }
 
     _resourceLoader.setCasPath(path::join(_editorResourcePath, ".library", "cache"));
+
+    {
+        char* prefPathSdl = SDL_GetPrefPath("potato", "shell");
+        if (auto const rs = fs::createDirectories(prefPathSdl); rs != IOResult::Success) {
+            _logger.error("Failed to create preferences folder `{}`", prefPathSdl);
+        }
+        _shellSettingsPath = path::join(prefPathSdl, "settings.json");
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
+        SDL_free(prefPathSdl);
+    }
+
+    {
+        schema::EditorSettings settings;
+        if (loadShellSettings(_shellSettingsPath, settings)) {
+            if (!settings.project.empty()) {
+                _loadProject(settings.project);
+            }
+        }
+    }
 
     string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
     if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
@@ -248,6 +273,14 @@ bool up::shell::ShellApp::_selectAndLoadProject(zstring_view defaultPath) {
     }
     bool success = _loadProject(selectedPath);
     free(selectedPath); // NOLINT(cppcoreguidelines-no-malloc)
+
+    if (success) {
+        schema::EditorSettings settings;
+        settings.project = string{_project->projectFilePath()};
+        if (!saveShellSettings(_shellSettingsPath, settings)) {
+            _logger.error("Failed to save shell settings to `{}`", _shellSettingsPath);
+        }
+    }
     return success;
 }
 

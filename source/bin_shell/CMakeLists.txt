@@ -28,6 +28,8 @@ target_sources(potato_shell PRIVATE
     "public/potato/shell/ui/menu.h"	
     "private/ui/menu.cpp"	
     "public/potato/shell/_export.h"
+    "private/settings.h"
+    "private/settings.cpp"
 )
 
 
@@ -39,6 +41,7 @@ up_set_common_properties(potato_shell)
 
 up_compile_sap(potato_shell SCHEMAS
     schema/components.sap
+    schema/settings.sap
 )
 
 target_link_libraries(potato_shell PRIVATE
