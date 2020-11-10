@@ -10,6 +10,11 @@
 #include "d3d11_swap_chain.h"
 #include "d3d11_texture.h"
 
+#define BYTE unsigned char
+#include "debug_pixel_shader.h"
+#include "debug_vertex_shader.h"
+#undef BYTE
+
 #include "potato/runtime/assertion.h"
 #include "potato/runtime/com_ptr.h"
 #include "potato/spud/out_ptr.h"
@@ -265,4 +270,15 @@ void up::d3d11::DeviceD3D11::execute(GpuCommandList* commandList) {
     UP_ASSERT(deferred->commandList(), "Command list is still open");
 
     _context->ExecuteCommandList(deferred->commandList().get(), FALSE);
+}
+
+auto up::d3d11::DeviceD3D11::getDebugShader(GpuShaderStage stage) -> view<unsigned char> {
+    switch (stage) {
+        case GpuShaderStage::Vertex:
+            return g_vertex_main;
+        case GpuShaderStage::Pixel:
+            return g_pixel_main;
+        default:
+            return {};
+    }
 }

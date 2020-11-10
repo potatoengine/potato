@@ -36,6 +36,8 @@ namespace up::null {
         box<GpuResourceView> createShaderResourceView(GpuBuffer* buffer) override;
         box<GpuResourceView> createShaderResourceView(GpuTexture* texture) override;
 
+        view<unsigned char> getDebugShader(GpuShaderStage stage) override;
+
         void execute(GpuCommandList* commands) override {}
     };
 

@@ -13,6 +13,7 @@
 namespace up {
     class GpuBuffer;
     class GpuCommandList;
+    class GpuPipelineState;
     class GpuDevice;
     class RenderContext;
     class Material;
@@ -42,8 +43,8 @@ namespace up {
         rc<GpuDevice> _device;
         box<GpuCommandList> _commandList;
         box<GpuBuffer> _frameDataBuffer;
-        rc<Material> _debugLineMaterial;
-        box<GpuBuffer> _debugLineBuffer;
+        box<GpuPipelineState> _debugState;
+        box<GpuBuffer> _debugBuffer;
         Loader& _loader;
         uint32 _frameCounter = 0;
         uint64 _startTimestamp = 0;
