@@ -17,12 +17,12 @@ target_sources(potato_libeditor PRIVATE
 )
 
 include(up_headerify)
-up_headerify(potato_libeditor "roboto_font" "${UP_ROOT_DIR}/embed/fonts/roboto/Roboto-Regular.ttf")
-up_headerify(potato_libeditor "fontawesome_font" "${UP_ROOT_DIR}/embed/fonts/fontawesome5/fa-regular-400.ttf")
+up_headerify(potato_libeditor "roboto_font" "data/fonts/roboto/Roboto-Regular.ttf")
+up_headerify(potato_libeditor "fontawesome_font" "data/fonts/fontawesome5/fa-regular-400.ttf")
 
 include(up_compile_shader)
-up_compile_shader(TARGET NAME imgui_vertex PROFILE vs_5_0 ENTRY vertex_main SHADER "${UP_ROOT_DIR}/embed/shaders/imgui.hlsl")
-up_compile_shader(TARGET NAME imgui_pixel PROFILE ps_5_0 ENTRY pixel_main SHADER "${UP_ROOT_DIR}/embed/shaders/imgui.hlsl")
+up_compile_shader(TARGET STAGE vertex HLSL "data/shaders/imgui.hlsl")
+up_compile_shader(TARGET STAGE pixel HLSL "data/shaders/imgui.hlsl")
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libeditor)
