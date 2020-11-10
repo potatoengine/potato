@@ -86,13 +86,11 @@ int up::shell::ShellApp::initialize() {
     string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
     if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
         if (!ResourceManifest::parseManifest(manifestText, _resourceLoader.manifest())) {
-            _errorDialog("Failed to parse resource manifest");
-            return 1;
+            _logger.error("Failed to parse resource manifest");
         }
     }
     else {
-        _errorDialog("Failed to load resource manifest");
-        return 1;
+        _logger.error("Failed to load resource manifest");
     }
 
     _appActions.addAction(
