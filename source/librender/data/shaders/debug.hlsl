@@ -1,5 +1,13 @@
-#include "common.hlsli"
-#include "depth.hlsli"
+// Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
+
+cbuffer cameraData : register(b1) {
+    float4x4 worldViewProjection;
+    float4x4 worldView;
+    float4x4 viewProjection;
+    float3 cameraPosition;
+    float nearZ;
+    float farZ;
+};
 
 struct VS_Input {
     float3 position : POSITION;

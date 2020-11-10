@@ -6,6 +6,7 @@
 #include "gpu_buffer.h"
 #include "gpu_command_list.h"
 #include "gpu_device.h"
+#include "gpu_pipeline_state.h"
 #include "gpu_swap_chain.h"
 #include "gpu_texture.h"
 #include "material.h"
@@ -25,21 +26,39 @@ namespace {
         float lastFrameTimeDelta = 0.f;
         double timeStamp = 0.0;
     };
-
-    constexpr int debug_vbo_size = 64 * 1024;
-    constexpr double nano_to_seconds = 1.0 / 1000000000.0;
 } // namespace
 
-up::Renderer::Renderer(Loader& loader, rc<GpuDevice> device) : _device(std::move(device)), _loader(loader) {
+up::Renderer::Renderer(rc<GpuDevice> device) : _device(std::move(device)) {
     _commandList = _device->createCommandList();
 
-    _debugLineMaterial = _loader.loadMaterialSync("materials/debug_line.mat");
-    _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, debug_vbo_size);
+    // Create the debug pipeline
+    GpuPipelineStateDesc pipelineDesc;
+
+    GpuInputLayoutElement const layout[] = {
+        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Position, 0, 0},
+        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Color, 0, 0},
+        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Normal, 0, 0},
+        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Tangent, 0, 0},
+        {GpuFormat::R32G32Float, GpuShaderSemantic::TexCoord, 0, 0},
+    };
+
+    pipelineDesc.enableDepthTest = true;
+    pipelineDesc.enableDepthWrite = true;
+    pipelineDesc.vertShader = _device->getDebugShader(GpuShaderStage::Vertex).as_bytes();
+    pipelineDesc.pixelShader = _device->getDebugShader(GpuShaderStage::Pixel).as_bytes();
+    pipelineDesc.inputLayout = layout;
+
+    // Check to support null renderer; should this be explicit?
+    if (!pipelineDesc.vertShader.empty() && !pipelineDesc.pixelShader.empty()) {
+        _debugState = _device->createPipelineState(pipelineDesc);
+    }
 }
 
 up::Renderer::~Renderer() = default;
 
 void up::Renderer::beginFrame() {
+    constexpr double nanoToSeconds = 1.0 / 1000000000.0;
+
     if (_frameDataBuffer == nullptr) {
         _frameDataBuffer = _device->createBuffer(GpuBufferType::Constant, sizeof(FrameData));
     }
@@ -49,7 +68,7 @@ void up::Renderer::beginFrame() {
         _startTimestamp = nowNanoseconds;
     }
 
-    double const now = static_cast<double>(nowNanoseconds - _startTimestamp) * nano_to_seconds;
+    double const now = static_cast<double>(nowNanoseconds - _startTimestamp) * nanoToSeconds;
     FrameData frame = {_frameCounter++, static_cast<float>(now - _frameTimestamp), now};
     _frameTimestamp = now;
 
@@ -67,13 +86,17 @@ void up::Renderer::flushDebugDraw(float frameTime) {
     static constexpr uint32 bufferSize = 64 * 1024;
     static constexpr uint32 maxVertsPerChunk = bufferSize / sizeof(DebugDrawVertex);
 
-    if (_debugLineBuffer == nullptr) {
-        _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, bufferSize);
+    if (_debugState.empty()) {
+        up::flushDebugDraw(frameTime);
+        return;
     }
 
-    auto ctx = context();
-    _debugLineMaterial->bindMaterialToRender(ctx);
-    _commandList->bindVertexBuffer(0, _debugLineBuffer.get(), sizeof(DebugDrawVertex));
+    if (_debugBuffer == nullptr) {
+        _debugBuffer = _device->createBuffer(GpuBufferType::Vertex, bufferSize);
+    }
+
+    _commandList->setPipelineState(_debugState.get());
+    _commandList->bindVertexBuffer(0, _debugBuffer.get(), sizeof(DebugDrawVertex));
     _commandList->setPrimitiveTopology(GpuPrimitiveTopology::Lines);
 
     dumpDebugDraw([this](auto debugVertices) {
@@ -84,7 +107,7 @@ void up::Renderer::flushDebugDraw(float frameTime) {
         uint32 vertCount = min(static_cast<uint32>(debugVertices.size()), maxVertsPerChunk);
         uint32 offset = 0;
         while (offset < debugVertices.size()) {
-            _commandList->update(_debugLineBuffer.get(), debugVertices.subspan(offset, vertCount).as_bytes());
+            _commandList->update(_debugBuffer.get(), debugVertices.subspan(offset, vertCount).as_bytes());
             _commandList->draw(vertCount);
 
             offset += vertCount;

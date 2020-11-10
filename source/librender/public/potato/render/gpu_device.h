@@ -41,5 +41,7 @@ namespace up {
         virtual box<GpuResourceView> createDepthStencilView(GpuTexture* depthStencilBuffer) = 0;
         virtual box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
         virtual box<GpuResourceView> createShaderResourceView(GpuTexture* texture) = 0;
+
+        virtual view<unsigned char> getDebugShader(GpuShaderStage stage) = 0;
     };
 } // namespace up

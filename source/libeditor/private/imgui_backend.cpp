@@ -1,6 +1,17 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "imgui_backend.h"
+#include "fontawesome_font.h"
+#include "roboto_font.h"
+
+// This will result in silent fails on unsupported platforms; figure out a better solution
+#if __has_include("imgui_pixel_shader.h")
+#    define BYTE unsigned char
+#    include "imgui_pixel_shader.h"
+#    include "imgui_vertex_shader.h"
+#    undef BYTE
+#    define UP_HAS_IMGUI_SHADERS 1
+#endif
 
 #include "potato/render/context.h"
 #include "potato/render/gpu_buffer.h"
@@ -22,14 +33,6 @@ static constexpr up::uint32 bufferSize = 1024 * 1024;
 up::ImguiBackend::ImguiBackend() = default;
 up::ImguiBackend::~ImguiBackend() = default;
 
-void up::ImguiBackend::bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader) {
-    _vertShader = std::move(vertShader);
-    _pixelShader = std::move(pixelShader);
-
-    // we'll need to recreate pipeline state at the least
-    releaseResources();
-}
-
 bool up::ImguiBackend::createResources(GpuDevice& device) {
     _ensureContext();
 
@@ -41,8 +44,10 @@ bool up::ImguiBackend::createResources(GpuDevice& device) {
 
     GpuPipelineStateDesc desc;
     desc.enableScissor = true;
-    desc.vertShader = _vertShader->content();
-    desc.pixelShader = _pixelShader->content();
+#if defined(UP_HAS_IMGUI_SHADERS)
+    desc.vertShader = span{g_vertex_main}.as_bytes();
+    desc.pixelShader = span{g_pixel_main}.as_bytes();
+#endif
     desc.inputLayout = layout;
 
     _indexBuffer = device.createBuffer(GpuBufferType::Index, bufferSize);
@@ -69,51 +74,6 @@ bool up::ImguiBackend::createResources(GpuDevice& device) {
     _sampler = device.createSampler();
 
     return true;
-}
-
-auto up::ImguiBackend::loadFontAwesome5(Stream fontFile) -> bool {
-    static constexpr auto s_minGlyph = 0xf000;
-    static constexpr auto s_maxGlyph = 0xf897;
-    static constexpr ImWchar s_ranges[] = {s_minGlyph, s_maxGlyph, 0};
-
-    _ensureContext();
-
-    ImGui::SetCurrentContext(_context.get());
-    auto& io = ImGui::GetIO();
-
-    vector<byte> fontData;
-    if (readBinary(fontFile, fontData) != IOResult::Success) {
-        return false;
-    }
-
-    ImFontConfig config;
-    config.MergeMode = true;
-    config.PixelSnapH = true;
-    config.FontDataOwnedByAtlas = false;
-
-    auto font =
-        io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 11.0f, &config, s_ranges);
-    return font != nullptr;
-}
-
-auto up::ImguiBackend::loadFont(Stream fontFile) -> bool {
-    _ensureContext();
-
-    ImGui::SetCurrentContext(_context.get());
-    auto& io = ImGui::GetIO();
-
-    vector<byte> fontData;
-    if (readBinary(fontFile, fontData) != IOResult::Success) {
-        return false;
-    }
-
-    ImFontConfig config;
-    config.MergeMode = false;
-    config.PixelSnapH = false;
-    config.FontDataOwnedByAtlas = false;
-
-    auto font = io.Fonts->AddFontFromMemoryTTF(fontData.data(), static_cast<int>(fontData.size()), 16.0f, &config);
-    return font != nullptr;
 }
 
 void up::ImguiBackend::releaseResources() {
@@ -328,7 +288,7 @@ void up::ImguiBackend::_initialize() {
     ImGui::SetCurrentContext(_context.get());
     auto& io = ImGui::GetIO();
 
-    // io.Fonts->AddFontDefault();
+    _loadFonts();
 
     _applyStyle();
 
@@ -365,6 +325,34 @@ void up::ImguiBackend::_initialize() {
     io.SetClipboardTextFn = _setClipboardTextContents;
     io.GetClipboardTextFn = _getClipboardTextContents;
     io.ClipboardUserData = this;
+}
+
+void up::ImguiBackend::_loadFonts() {
+    auto& io = ImGui::GetIO();
+
+    ImFontConfig config;
+    config.MergeMode = false;
+    config.PixelSnapH = false;
+    config.FontDataOwnedByAtlas = false;
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(roboto_font_data), roboto_font_size, 16.0f, &config);
+
+    config.MergeMode = true;
+    config.PixelSnapH = true;
+    config.FontDataOwnedByAtlas = false;
+
+    static constexpr auto s_minGlyph = 0xf000;
+    static constexpr auto s_maxGlyph = 0xf897;
+    static constexpr ImWchar s_ranges[] = {s_minGlyph, s_maxGlyph, 0};
+
+    io.Fonts->AddFontFromMemoryTTF(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        const_cast<unsigned char*>(fontawesome_font_data),
+        fontawesome_font_size,
+        11.0f,
+        &config,
+        s_ranges);
 }
 
 void up::ImguiBackend::_applyStyle() {

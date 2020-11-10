@@ -13,6 +13,7 @@
 namespace up {
     class GpuBuffer;
     class GpuCommandList;
+    class GpuPipelineState;
     class GpuDevice;
     class RenderContext;
     class Material;
@@ -23,7 +24,7 @@ namespace up {
 
     class Renderer {
     public:
-        UP_RENDER_API Renderer(Loader& loader, rc<GpuDevice> device);
+        UP_RENDER_API Renderer(rc<GpuDevice> device);
         virtual ~Renderer();
 
         Renderer(Renderer const&) = delete;
@@ -42,9 +43,8 @@ namespace up {
         rc<GpuDevice> _device;
         box<GpuCommandList> _commandList;
         box<GpuBuffer> _frameDataBuffer;
-        rc<Material> _debugLineMaterial;
-        box<GpuBuffer> _debugLineBuffer;
-        Loader& _loader;
+        box<GpuPipelineState> _debugState;
+        box<GpuBuffer> _debugBuffer;
         uint32 _frameCounter = 0;
         uint64 _startTimestamp = 0;
         double _frameTimestamp = 0;

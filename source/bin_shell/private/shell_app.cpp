@@ -86,13 +86,11 @@ int up::shell::ShellApp::initialize() {
     string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
     if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
         if (!ResourceManifest::parseManifest(manifestText, _resourceLoader.manifest())) {
-            _errorDialog("Failed to parse resource manifest");
-            return 1;
+            _logger.error("Failed to parse resource manifest");
         }
     }
     else {
-        _errorDialog("Failed to load resource manifest");
-        return 1;
+        _logger.error("Failed to load resource manifest");
     }
 
     _appActions.addAction(
@@ -214,7 +212,7 @@ int up::shell::ShellApp::initialize() {
     }
 
     _loader = new_box<DefaultLoader>(_resourceLoader, _device);
-    _renderer = new_box<Renderer>(*_loader, _device);
+    _renderer = new_box<Renderer>(_device);
 
 #if UP_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
@@ -226,31 +224,6 @@ int up::shell::ShellApp::initialize() {
 
     _uiRenderCamera = new_box<RenderCamera>();
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
-
-    auto imguiVertShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "vertex"_sv);
-    auto imguiPixelShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "pixel"_sv);
-    if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
-        _errorDialog("Failed to load imgui shaders");
-        return 1;
-    }
-
-    _imguiBackend.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
-    auto fontStream = _resourceLoader.openAsset("fonts/roboto/Roboto-Regular.ttf");
-    if (!fontStream) {
-        _errorDialog("Failed to open Roboto-Regular font");
-        return 1;
-    }
-    _imguiBackend.loadFont(std::move(fontStream));
-
-    fontStream = _resourceLoader.openAsset("fonts/fontawesome5/fa-solid-900.ttf");
-    if (!fontStream) {
-        _errorDialog("Failed to open FontAwesome font");
-        return 1;
-    }
-    if (!_imguiBackend.loadFontAwesome5(std::move(fontStream))) {
-        _errorDialog("Failed to load FontAwesome font");
-        return 1;
-    }
 
     _imguiBackend.createResources(*_device);
 

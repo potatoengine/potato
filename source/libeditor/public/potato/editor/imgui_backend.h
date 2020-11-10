@@ -35,13 +35,8 @@ namespace up {
         UP_EDITOR_API ImguiBackend();
         UP_EDITOR_API ~ImguiBackend();
 
-        UP_EDITOR_API void bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader);
-
         UP_EDITOR_API bool createResources(GpuDevice& device);
         UP_EDITOR_API void releaseResources();
-
-        UP_EDITOR_API bool loadFontAwesome5(Stream fontFile);
-        UP_EDITOR_API bool loadFont(Stream fontFile);
 
         UP_EDITOR_API bool handleEvent(SDL_Event const& ev);
 
@@ -56,6 +51,7 @@ namespace up {
     private:
         void _initialize();
         void _ensureContext();
+        void _loadFonts();
         void _applyStyle();
 
         static void _freeContext(ImGuiContext* ctx);

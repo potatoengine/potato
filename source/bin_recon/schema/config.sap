@@ -15,4 +15,5 @@ struct Config {
     [required, cxxname("sourceFolderPath"), json("sourceDir")]
     string source_dir;
     ImportMapping[] mapping;
+    bool server = false;
 }

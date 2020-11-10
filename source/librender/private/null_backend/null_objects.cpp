@@ -56,6 +56,10 @@ auto up::null::DeviceNull::createSampler() -> box<GpuSampler> {
     return new_box<SamplerNull>();
 }
 
+auto up::null::DeviceNull::getDebugShader(GpuShaderStage) -> up::view<unsigned char> {
+    return {};
+}
+
 auto up::null::SwapChainNull::getBuffer(int index) -> rc<GpuTexture> {
     return new_shared<TextureNull>();
 }

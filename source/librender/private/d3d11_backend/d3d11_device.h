@@ -37,6 +37,8 @@ namespace up::d3d11 {
         box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) override;
         box<GpuResourceView> createShaderResourceView(GpuTexture* texture) override;
 
+        view<unsigned char> getDebugShader(GpuShaderStage stage) override;
+
     private:
         com_ptr<IDXGIFactory2> _factory;
         com_ptr<IDXGIAdapter1> _adaptor;
