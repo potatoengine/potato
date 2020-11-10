@@ -1,7 +1,0 @@
-{
-  "shaders": {
-    "vertex": "shaders/debug_line.hlsl",
-    "pixel": "shaders/debug_line.hlsl"
-  },
-  "textures": []
-}
