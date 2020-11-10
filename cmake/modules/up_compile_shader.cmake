@@ -33,10 +33,9 @@ function(up_compile_shader TARGET)
         file(MAKE_DIRECTORY "${OUT_HEADER_DIR}")
         add_custom_command(
             OUTPUT "${OUT_HEADER}"
-            COMMAND dxc::fxc /nologo /O3 /Zi /WX /T "${ARG_PROFILE}" /E "${ARG_ENTRY}" /Fh "${OUT_HEADER}" "${ARG_HLSL}"
+            COMMAND dxc::fxc /nologo /O3 /Zi /T "${ARG_PROFILE}" /E "${ARG_ENTRY}" /Fh "${OUT_HEADER}" "${ARG_HLSL}"
             MAIN_DEPENDENCY "${ARG_HLSL}"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMAND_EXPAND_LISTS
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         )
         target_sources(${TARGET} PRIVATE "${OUT_HEADER}")
         target_include_directories(${TARGET} PRIVATE "${OUT_HEADER_DIR}")

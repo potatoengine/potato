@@ -9,7 +9,7 @@ function(up_headerify TARGET NAME SOURCE_FILE)
         COMMAND potato::bin_headerify "${SOURCE_FILE}" "${OUT_HEADER}" "${NAME}"
         MAIN_DEPENDENCY "${SOURCE_FILE}"
         DEPENDS potato::bin_headerify
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         COMMAND_EXPAND_LISTS
     )
     target_sources(${TARGET} PRIVATE
