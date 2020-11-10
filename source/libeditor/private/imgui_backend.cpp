@@ -4,10 +4,14 @@
 #include "fontawesome_font.h"
 #include "roboto_font.h"
 
-#define BYTE unsigned char
-#include "imgui_pixel_shader.h"
-#include "imgui_vertex_shader.h"
-#undef BYTE
+// This will result in silent fails on unsupported platforms; figure out a better solution
+#if __has_include("imgui_pixel_shader.h")
+#    define BYTE unsigned char
+#    include "imgui_pixel_shader.h"
+#    include "imgui_vertex_shader.h"
+#    undef BYTE
+#    define UP_HAS_IMGUI_SHADERS 1
+#endif
 
 #include "potato/render/context.h"
 #include "potato/render/gpu_buffer.h"
@@ -40,8 +44,10 @@ bool up::ImguiBackend::createResources(GpuDevice& device) {
 
     GpuPipelineStateDesc desc;
     desc.enableScissor = true;
+#if defined(UP_HAS_IMGUI_SHADERS)
     desc.vertShader = span{g_vertex_main}.as_bytes();
     desc.pixelShader = span{g_pixel_main}.as_bytes();
+#endif
     desc.inputLayout = layout;
 
     _indexBuffer = device.createBuffer(GpuBufferType::Index, bufferSize);
