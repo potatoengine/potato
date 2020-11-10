@@ -172,7 +172,7 @@ def generate_impl_json_parse(ctx: Context):
         ctx.print(f"void up::schema::to_json(nlohmann::json& root, {type.cxxname} const& value) {{\n")
         ctx.print("""
     if (!root.is_object()) {
-        return;
+        root = nlohmann::json::object();
     }
 """)
         for field in type.fields_ordered:
