@@ -78,7 +78,7 @@ int main(int argc, char const* argv[]) {
 
         return 0;
     }
-    catch (std::exception ex) {
+    catch (std::exception& ex) {
         std::cerr << "Exception: " << ex.what() << '\n';
         return 6;
     }
