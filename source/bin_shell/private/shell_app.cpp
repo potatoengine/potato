@@ -57,6 +57,12 @@
 #include <imgui_internal.h>
 #include <nfd.h>
 
+// SDL includes X.h on Linux, which pollutes this name we care about
+// FIXME: clean up this file for better abstractions to avoid header pollution problems
+#if defined(Success)
+#    undef Success
+#endif
+
 up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 
 up::shell::ShellApp::~ShellApp() {
