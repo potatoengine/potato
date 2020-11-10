@@ -330,7 +330,7 @@ void up::ImguiBackend::_loadFonts() {
     config.FontDataOwnedByAtlas = false;
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    io.Fonts->AddFontFromMemoryTTF(const_cast<char*>(roboto_font_data), roboto_font_size, 16.0f, &config);
+    io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(roboto_font_data), roboto_font_size, 16.0f, &config);
 
     config.MergeMode = true;
     config.PixelSnapH = true;
@@ -342,7 +342,7 @@ void up::ImguiBackend::_loadFonts() {
 
     io.Fonts->AddFontFromMemoryTTF(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-        const_cast<char*>(fontawesome_font_data),
+        const_cast<unsigned char*>(fontawesome_font_data),
         fontawesome_font_size,
         11.0f,
         &config,
