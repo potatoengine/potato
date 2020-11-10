@@ -38,7 +38,7 @@ function(up_compile_shader TARGET)
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             COMMAND_EXPAND_LISTS
         )
-        target_sources(potato_libeditor PRIVATE "${OUT_HEADER}")
-        target_include_directories(potato_libeditor PRIVATE "${OUT_HEADER_DIR}")
+        target_sources(${TARGET} PRIVATE "${OUT_HEADER}")
+        target_include_directories(${TARGET} PRIVATE "${OUT_HEADER_DIR}")
     endif()
 endfunction()
