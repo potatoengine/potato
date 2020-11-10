@@ -15,6 +15,7 @@ bool up::shell::loadShellSettings(zstring_view filename, schema::EditorSettings&
 
     return false;
 }
+
 bool up::shell::saveShellSettings(zstring_view filename, schema::EditorSettings const& settings) {
     nlohmann::json doc;
     to_json(doc, settings);
