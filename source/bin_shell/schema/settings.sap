@@ -1,0 +1,8 @@
+module settings;
+
+import common;
+
+[serialize]
+struct EditorSettings {
+    string project;
+}
