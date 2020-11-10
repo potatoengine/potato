@@ -42,13 +42,6 @@ function(FindDXC)
 	    PATHS ${DXC_SEARCH_PATHS}
     )
 
-    find_program(FXC_BIN_PATH
-        NAMES fxc.exe
-	    HINTS $ENV{DXCDIR}
-	    PATH_SUFFIXES bin
-	    PATHS ${DXC_SEARCH_PATHS}
-    )
-
     if(NOT DXCOMPILER_DLL_PATH)
         string(REPLACE ".lib" ".dll" DXCOMPILER_DLL_PATH ${DXCOMPILER_IMPLIB_PATH})
         string(REPLACE "/lib/" "/bin/" DXCOMPILER_DLL_PATH ${DXCOMPILER_DLL_PATH})
@@ -62,10 +55,6 @@ function(FindDXC)
     add_executable(dxc IMPORTED GLOBAL)
     set_target_properties(dxc PROPERTIES IMPORTED_LOCATION ${DXC_BIN_PATH})
     add_executable(dxc::dxc ALIAS dxc)
-
-    add_executable(fxc IMPORTED GLOBAL)
-    add_executable(dxc::fxc ALIAS fxc)
-    set_target_properties(fxc PROPERTIES IMPORTED_LOCATION ${FXC_BIN_PATH})
 
     if(DXIL_PATH)
         add_library(dxil IMPORTED SHARED GLOBAL)

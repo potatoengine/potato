@@ -26,14 +26,19 @@ function(up_compile_shader TARGET)
     endif()
 
     if(WIN32)
-        find_package(DXC REQUIRED)
+        find_program(FXC_PATH
+            NAMES fxc.exe
+	        HINTS $ENV{DXCDIR}
+	        PATH_SUFFIXES bin
+        )
+
         set(OUT_HEADER_DIR "${CMAKE_CURRENT_BINARY_DIR}/gen/inc")
         set(OUT_HEADER "${OUT_HEADER_DIR}/${ARG_NAME}_shader.h")
 
         file(MAKE_DIRECTORY "${OUT_HEADER_DIR}")
         add_custom_command(
             OUTPUT "${OUT_HEADER}"
-            COMMAND dxc::fxc /nologo /O3 /Zi /T "${ARG_PROFILE}" /E "${ARG_ENTRY}" /Fh "${OUT_HEADER}" "${ARG_HLSL}"
+            COMMAND ${FXC_PATH} /nologo /O3 /Zi /T "${ARG_PROFILE}" /E "${ARG_ENTRY}" /Fh "${OUT_HEADER}" "${ARG_HLSL}"
             MAIN_DEPENDENCY "${ARG_HLSL}"
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         )
