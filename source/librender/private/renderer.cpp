@@ -31,7 +31,7 @@ namespace {
     constexpr double nano_to_seconds = 1.0 / 1000000000.0;
 } // namespace
 
-up::Renderer::Renderer(Loader& loader, rc<GpuDevice> device) : _device(std::move(device)), _loader(loader) {
+up::Renderer::Renderer(rc<GpuDevice> device) : _device(std::move(device)) {
     _commandList = _device->createCommandList();
 
     // Create the debug pipeline
@@ -96,7 +96,6 @@ void up::Renderer::flushDebugDraw(float frameTime) {
         _debugBuffer = _device->createBuffer(GpuBufferType::Vertex, bufferSize);
     }
 
-    auto ctx = context();
     _commandList->setPipelineState(_debugState.get());
     _commandList->bindVertexBuffer(0, _debugBuffer.get(), sizeof(DebugDrawVertex));
     _commandList->setPrimitiveTopology(GpuPrimitiveTopology::Lines);

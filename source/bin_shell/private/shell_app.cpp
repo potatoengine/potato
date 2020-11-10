@@ -214,7 +214,7 @@ int up::shell::ShellApp::initialize() {
     }
 
     _loader = new_box<DefaultLoader>(_resourceLoader, _device);
-    _renderer = new_box<Renderer>(*_loader, _device);
+    _renderer = new_box<Renderer>(_device);
 
 #if UP_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
