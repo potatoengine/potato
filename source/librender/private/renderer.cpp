@@ -26,9 +26,6 @@ namespace {
         float lastFrameTimeDelta = 0.f;
         double timeStamp = 0.0;
     };
-
-    constexpr int debug_vbo_size = 64 * 1024;
-    constexpr double nano_to_seconds = 1.0 / 1000000000.0;
 } // namespace
 
 up::Renderer::Renderer(rc<GpuDevice> device) : _device(std::move(device)) {
@@ -60,6 +57,8 @@ up::Renderer::Renderer(rc<GpuDevice> device) : _device(std::move(device)) {
 up::Renderer::~Renderer() = default;
 
 void up::Renderer::beginFrame() {
+    constexpr double nanoToSeconds = 1.0 / 1000000000.0;
+
     if (_frameDataBuffer == nullptr) {
         _frameDataBuffer = _device->createBuffer(GpuBufferType::Constant, sizeof(FrameData));
     }
@@ -69,7 +68,7 @@ void up::Renderer::beginFrame() {
         _startTimestamp = nowNanoseconds;
     }
 
-    double const now = static_cast<double>(nowNanoseconds - _startTimestamp) * nano_to_seconds;
+    double const now = static_cast<double>(nowNanoseconds - _startTimestamp) * nanoToSeconds;
     FrameData frame = {_frameCounter++, static_cast<float>(now - _frameTimestamp), now};
     _frameTimestamp = now;
 
