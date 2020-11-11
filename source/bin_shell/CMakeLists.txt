@@ -60,6 +60,7 @@ target_link_libraries(potato_shell PRIVATE
     imgui
     nfd
     nlohmann_json::nlohmann_json
+    reproc++
 )
 
 include(up_copy_library_import)
