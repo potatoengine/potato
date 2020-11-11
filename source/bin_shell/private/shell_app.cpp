@@ -48,6 +48,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/vec3.hpp>
 #include <nlohmann/json.hpp>
+#include <reproc++/run.hpp>
 #include <SDL.h>
 #include <SDL_keycode.h>
 #include <SDL_messagebox.h>
@@ -137,6 +138,15 @@ int up::shell::ShellApp::initialize() {
          .action = [this] {
              _openProject = true;
              _closeProject = true;
+         }});
+    _appActions.addAction(
+        {.name = "potato.project.import",
+         .command = "Import Resources",
+         .menu = "File\\Import Resources",
+         .group = "3_project",
+         .priority = 120,
+         .action = [this] {
+             _executeRecon();
          }});
     _appActions.addAction(
         {.name = "potato.project.close",
@@ -612,4 +622,23 @@ void up::shell::ShellApp::_createScene() {
 
 void up::shell::ShellApp::_createGame(rc<Scene> scene) {
     _editors.open(createGameEditor(std::move(scene)));
+}
+
+void up::shell::ShellApp::_executeRecon() {
+    reproc::options options;
+    options.redirect.parent = true;
+
+    char const* args[] =
+        {"recon.exe", "-config", "recon.config.json", "-source", _project->resourceRootPath().c_str(), nullptr};
+
+    auto const [status, ec] = reproc::run(args, options);
+
+    if (ec) {
+        _logger.error("Failed to start recon.exe: {}", ec.message());
+        return;
+    }
+
+    if (status != 0) {
+        _logger.error("recon.exe exit code {}", status);
+    }
 }

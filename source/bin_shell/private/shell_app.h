@@ -72,6 +72,8 @@ namespace up::shell {
         void _createScene();
         void _createGame(rc<Scene> scene);
 
+        void _executeRecon();
+
         bool _selectAndLoadProject(zstring_view defaultPath);
         bool _loadProject(zstring_view path);
 
