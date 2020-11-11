@@ -12,12 +12,12 @@ namespace up {
         [[nodiscard]] UP_TOOLS_API static box<Project> loadFromFile(zstring_view filename);
 
         auto projectFilePath() noexcept -> zstring_view { return _projectFilePath; }
-        auto targetPath() noexcept -> zstring_view { return _targetPath; }
+        auto resourceRootPath() noexcept -> zstring_view { return _resourceRootPath; }
+        auto libraryPath() noexcept -> zstring_view { return _libraryPath; }
 
     private:
         string _projectFilePath;
-        string _assetRootPath;
-        string _targetPath;
-        string _cachePath;
+        string _resourceRootPath;
+        string _libraryPath;
     };
 } // namespace up
