@@ -83,13 +83,6 @@ int up::shell::ShellApp::initialize() {
         _loadConfig(configPath);
     }
 
-    if (_editorResourcePath.empty()) {
-        _errorDialog("No editor resource path specified");
-        return 1;
-    }
-
-    _resourceLoader.setCasPath(path::join(_editorResourcePath, ".library", "cache"));
-
     {
         char* prefPathSdl = SDL_GetPrefPath("potato", "shell");
         if (auto const rs = fs::createDirectories(prefPathSdl); rs != IOResult::Success) {
@@ -107,16 +100,6 @@ int up::shell::ShellApp::initialize() {
                 _loadProject(settings.project);
             }
         }
-    }
-
-    string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
-    if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
-        if (!ResourceManifest::parseManifest(manifestText, _resourceLoader.manifest())) {
-            _logger.error("Failed to parse resource manifest");
-        }
-    }
-    else {
-        _logger.error("Failed to load resource manifest");
     }
 
     _appActions.addAction(
@@ -274,11 +257,14 @@ int up::shell::ShellApp::initialize() {
     return 0;
 }
 
-bool up::shell::ShellApp::_selectAndLoadProject(zstring_view defaultPath) {
+bool up::shell::ShellApp::_selectAndLoadProject(zstring_view folder) {
     nfdchar_t* selectedPath = nullptr;
-    string folder = path::normalize(path::parent(defaultPath), path::Separator::Native);
-    auto const result = NFD_OpenDialog("popr", folder.c_str(), &selectedPath);
-    if (result != NFD_OKAY) {
+    auto result = NFD_OpenDialog("popr", path::normalize(folder).c_str(), &selectedPath);
+    if (result == NFD_ERROR) {
+        result = NFD_OpenDialog("popr", nullptr, &selectedPath);
+    }
+    if (result == NFD_ERROR) {
+        _logger.error("NDF_OpenDialog error: {}", NFD_GetError());
         return false;
     }
     bool success = _loadProject(selectedPath);
@@ -303,8 +289,11 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
 
     _projectName = string{path::filebasename(path)};
 
+    _loadManifest();
+
     _editors.closeAll();
-    _editors.open(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
+    _editors.open(
+        createFileTreeEditor(string{_project->resourceRootPath()}, [this](zstring_view name) { _onFileOpened(name); }));
 
     _updateTitle();
 
@@ -340,7 +329,8 @@ void up::shell::ShellApp::run() {
 
         if (_openProject && !_closeProject) {
             _openProject = false;
-            if (!_selectAndLoadProject(path::join(_editorResourcePath, "..", "resources", "sample.popr"))) {
+            if (!_selectAndLoadProject(
+                    path::join(fs::currentWorkingDirectory(), "..", "..", "..", "..", "resources"))) {
                 continue;
             }
         }
@@ -576,12 +566,6 @@ bool up::shell::ShellApp::_loadConfig(zstring_view path) {
         return false;
     }
 
-    auto const editorResourcePath = jsonRoot["editorResourcePath"];
-
-    if (editorResourcePath.is_string()) {
-        _editorResourcePath = editorResourcePath.get<string>();
-    }
-
     return true;
 }
 
@@ -640,5 +624,21 @@ void up::shell::ShellApp::_executeRecon() {
 
     if (status != 0) {
         _logger.error("recon.exe exit code {}", status);
+    }
+
+    _loadManifest();
+}
+
+void up::shell::ShellApp::_loadManifest() {
+    _resourceLoader.setCasPath(path::join(_project->libraryPath(), "cache"));
+    string manifestPath = path::join(_project->libraryPath(), "manifest.txt");
+    if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
+        _resourceLoader.manifest().clear();
+        if (!ResourceManifest::parseManifest(manifestText, _resourceLoader.manifest())) {
+            _logger.error("Failed to parse resource manifest");
+        }
+    }
+    else {
+        _logger.error("Failed to load resource manifest");
     }
 }
