@@ -75,7 +75,7 @@ namespace up::shell {
         void _executeRecon();
         void _loadManifest();
 
-        bool _selectAndLoadProject(zstring_view defaultPath);
+        bool _selectAndLoadProject(zstring_view folder);
         bool _loadProject(zstring_view path);
 
         bool _running = true;
