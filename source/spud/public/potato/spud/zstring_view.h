@@ -33,7 +33,7 @@ namespace up {
         constexpr size_type size() const noexcept { return _str != nullptr ? stringLength(_str) : 0; }
 
         constexpr pointer data() const noexcept { return _str; }
-        constexpr pointer c_str() const noexcept { return _str != nullptr ? _str  : ""; }
+        constexpr pointer c_str() const noexcept { return _str != nullptr ? _str : ""; }
 
         constexpr /*implicit*/ operator string_view() const noexcept { return string_view{_str}; }
 
