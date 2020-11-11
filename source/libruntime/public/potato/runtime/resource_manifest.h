@@ -28,6 +28,7 @@ namespace up {
         static constexpr zstring_view columnDebugName = "DEBUG_NAME"_zsv;
         static constexpr int version = 1;
 
+        void clear() { _records.clear(); }
         auto size() const noexcept { return _records.size(); }
 
         view<Record> records() const noexcept { return _records; }

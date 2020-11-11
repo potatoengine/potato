@@ -72,7 +72,10 @@ namespace up::shell {
         void _createScene();
         void _createGame(rc<Scene> scene);
 
-        bool _selectAndLoadProject(zstring_view defaultPath);
+        void _executeRecon();
+        void _loadManifest();
+
+        bool _selectAndLoadProject(zstring_view folder);
         bool _loadProject(zstring_view path);
 
         bool _running = true;
@@ -88,7 +91,6 @@ namespace up::shell {
         box<AudioEngine> _audio;
         box<Project> _project;
         string _shellSettingsPath;
-        string _editorResourcePath;
         unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
         unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
         ActionGroup _appActions;
