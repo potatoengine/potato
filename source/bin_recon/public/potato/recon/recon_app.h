@@ -8,6 +8,7 @@
 #include "potato/tools/asset_library.h"
 #include "potato/tools/importer.h"
 #include "potato/tools/importer_factory.h"
+#include "potato/tools/project.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
@@ -47,8 +48,8 @@ namespace up::recon {
             Importer* conveter = nullptr;
         };
 
+        box<Project> _project;
         string_view _programName;
-        string _libraryPath;
         string _temporaryOutputPath;
         vector<Mapping> _importers;
         vector<string> _outputs;

@@ -12,8 +12,8 @@ struct ImportMapping {
 
 [serialize]
 struct Config {
-    [required, cxxname("sourceFolderPath"), json("sourceDir")]
-    string source_dir;
+    [required]
+    string project;
     ImportMapping[] mapping;
     bool server = false;
 }

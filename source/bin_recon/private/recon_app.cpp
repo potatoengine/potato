@@ -32,23 +32,28 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         return false;
     }
 
-    _libraryPath = path::join(_config.sourceFolderPath, ".library");
-    if (auto const rs = fs::createDirectories(_libraryPath); rs != IOResult::Success) {
-        _logger.error("Failed to create library folder `{}`: {}", _libraryPath, rs);
+    _project = Project::loadFromFile(_config.project);
+    if (_project == nullptr) {
+        _logger.error("Failed to load project file `{}`", _config.project);
         return false;
     }
 
-    _temporaryOutputPath = path::join(_libraryPath, "temp");
+    if (auto const rs = fs::createDirectories(_project->libraryPath()); rs != IOResult::Success) {
+        _logger.error("Failed to create library folder `{}`: {}", _project->libraryPath(), rs);
+        return false;
+    }
+
+    _temporaryOutputPath = path::join(_project->libraryPath(), "temp");
 
     _registerImporters();
 
-    auto libraryPath = path::join(_libraryPath, "assets.db");
+    auto libraryPath = path::join(_project->libraryPath(), "assets.db");
     if (!_library.open(libraryPath)) {
         _logger.error("Failed to open asset library `{}'", libraryPath);
     }
     _logger.info("Opened asset library `{}'", libraryPath);
 
-    auto hashCachePath = path::join(_libraryPath, "hash_cache.db");
+    auto hashCachePath = path::join(_project->libraryPath(), "hash_cache.db");
     if (!_hashes.open(hashCachePath)) {
         _logger.error("Failed to open hash cache `{}'", hashCachePath);
     }
@@ -61,13 +66,6 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.error("No source files found");
         return false;
     }
-
-    if (_config.sourceFolderPath.empty()) {
-        _logger.error("Source directory must be specified.");
-        return false;
-    }
-
-    _logger.info("Source at `{}'", _config.sourceFolderPath);
 
     bool success = _importFiles(sources);
     if (!success) {
@@ -84,7 +82,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         return false;
     }
 
-    auto manifestPath = path::join(_libraryPath, "manifest.txt");
+    auto manifestPath = path::join(_project->libraryPath(), "manifest.txt");
     auto manifestFile = fs::openWrite(manifestPath.c_str(), fs::OpenMode::Text);
     if (!manifestFile) {
         _logger.error("Failed to open manifest `{}'", manifestPath);
@@ -118,7 +116,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         auto assetId = _library.pathToAssetId(string_view(path));
         auto record = _library.findRecord(assetId);
 
-        auto osPath = path::join(_config.sourceFolderPath.c_str(), path.c_str());
+        auto osPath = path::join(_project->resourceRootPath(), path.c_str());
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
 
         Importer* importer = _findConverter(string_view(path));
@@ -142,7 +140,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
             string_view(name.data(), name.size()),
             importer->revision());
 
-        ImporterContext context(path, _config.sourceFolderPath, _temporaryOutputPath, _logger);
+        ImporterContext context(path, _project->resourceRootPath(), _temporaryOutputPath, _logger);
         if (!_checkMetafile(context, path)) {
             continue;
         }
@@ -187,7 +185,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
                 (outputHash >> 40) & 0XFFFF,
                 outputHash);
 
-            auto casOsPath = path::join(_libraryPath, "cache", casPath);
+            auto casOsPath = path::join(_project->libraryPath(), "cache", casPath);
             auto casOsFolder = string{path::parent(casOsPath)};
 
             if (auto const rs = fs::createDirectories(casOsFolder); rs != IOResult::Success) {
@@ -202,7 +200,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
         }
 
         for (auto const& sourceDepPath : context.sourceDependencies()) {
-            auto osPath = path::join(_config.sourceFolderPath.c_str(), sourceDepPath.c_str());
+            auto osPath = path::join(_project->resourceRootPath(), sourceDepPath.c_str());
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
             newRecord.dependencies.push_back({string(sourceDepPath), contentHash});
         }
@@ -223,7 +221,7 @@ bool up::recon::ReconApp::_isUpToDate(
 
 bool up::recon::ReconApp::_isUpToDate(span<AssetLibrary::Dependency const> records) {
     for (auto const& rec : records) {
-        auto osPath = path::join(_config.sourceFolderPath.c_str(), rec.path.c_str());
+        auto osPath = path::join(_project->resourceRootPath(), rec.path.c_str());
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
         if (contentHash != rec.contentHash) {
             return false;
@@ -247,7 +245,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
     metaFilePath.append(filename);
     metaFilePath.append(".meta");
 
-    string metaFileOsPath = path::join(_config.sourceFolderPath, metaFilePath);
+    string metaFileOsPath = path::join(_project->resourceRootPath(), metaFilePath);
 
     MetaFile metaFile;
     bool dirty = false;
@@ -277,7 +275,7 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
             dirty = true;
         }
 
-        ImporterContext context(filename, _config.sourceFolderPath, _temporaryOutputPath, _logger);
+        ImporterContext context(filename, _project->resourceRootPath(), _temporaryOutputPath, _logger);
         string_view settings = importer->generateSettings(context);
         if (settings != metaFile.importerSettings) {
             metaFile.importerSettings = string{settings};
@@ -304,8 +302,8 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
 }
 
 auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
-    if (!fs::directoryExists(_config.sourceFolderPath.c_str())) {
-        _logger.error("`{}' does not exist or is not a directory", _config.sourceFolderPath);
+    if (!fs::directoryExists(_project->resourceRootPath())) {
+        _logger.error("`{}' does not exist or is not a directory", _project->resourceRootPath());
         return {};
     }
 
@@ -330,6 +328,6 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
         return fs::recurse;
     };
 
-    (void)fs::enumerate(_config.sourceFolderPath.c_str(), cb);
+    (void)fs::enumerate(_project->resourceRootPath(), cb);
     return files;
 };

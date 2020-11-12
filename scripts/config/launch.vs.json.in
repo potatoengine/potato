@@ -16,8 +16,8 @@
       "name": "recon.exe (bin\\recon.exe)",
       "currentDir": "@CMAKE_BINARY_DIR@",
       "args": [
-        "-source",
-        "@UP_ROOT_DIR@/resources",
+        "-project",
+        "@UP_ROOT_DIR@/resources/sample.popr",
         "-config",
         "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@/recon.config.json"
       ]
