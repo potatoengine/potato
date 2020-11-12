@@ -203,7 +203,7 @@ int up::shell::ShellApp::initialize() {
 
     SDL_ShowWindow(_window.get());
 
-    SDL_SysWMinfo wmInfo;
+    SDL_SysWMinfo wmInfo{};
     SDL_VERSION(&wmInfo.version);
 
     if (SDL_GetWindowWMInfo(_window.get(), &wmInfo) != SDL_TRUE) {

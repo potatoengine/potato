@@ -71,7 +71,7 @@ void up::d3d11::CommandListD3D11::bindIndexBuffer(GpuBuffer* buffer, GpuIndexFor
     UP_ASSERT(buffer->type() == GpuBufferType::Index);
 
     auto d3dBuffer = static_cast<BufferD3D11*>(buffer);
-    ID3D11Buffer* d3d11Buffer = static_cast<ID3D11Buffer*>(d3dBuffer->buffer().get());
+    auto* d3d11Buffer = static_cast<ID3D11Buffer*>(d3dBuffer->buffer().get());
 
     UINT d3dOffset = static_cast<UINT>(offset);
     _context->IASetIndexBuffer(d3d11Buffer, toNative(indexType), d3dOffset);
@@ -86,7 +86,7 @@ void up::d3d11::CommandListD3D11::bindVertexBuffer(
     UP_ASSERT(buffer->type() == GpuBufferType::Vertex);
 
     auto d3dBuffer = static_cast<BufferD3D11*>(buffer);
-    ID3D11Buffer* d3d11Buffer = static_cast<ID3D11Buffer*>(d3dBuffer->buffer().get());
+    auto* d3d11Buffer = static_cast<ID3D11Buffer*>(d3dBuffer->buffer().get());
 
     UINT d3dStride = static_cast<UINT>(stride);
     UINT d3dOffset = static_cast<UINT>(offset);
@@ -98,7 +98,7 @@ void up::d3d11::CommandListD3D11::bindConstantBuffer(up::uint32 slot, GpuBuffer*
     UP_ASSERT(buffer->type() == GpuBufferType::Constant);
 
     auto d3dBuffer = static_cast<BufferD3D11*>(buffer);
-    ID3D11Buffer* d3d11Buffer = static_cast<ID3D11Buffer*>(d3dBuffer->buffer().get());
+    auto* d3d11Buffer = static_cast<ID3D11Buffer*>(d3dBuffer->buffer().get());
 
     if ((uint32(stage) & uint32(GpuShaderStage::Vertex)) != 0) {
         _context->VSSetConstantBuffers(slot, 1, &d3d11Buffer);
@@ -112,7 +112,7 @@ void up::d3d11::CommandListD3D11::bindShaderResource(up::uint32 slot, GpuResourc
     UP_ASSERT(view != nullptr);
 
     auto buffer = static_cast<ResourceViewD3D11*>(view);
-    ID3D11ShaderResourceView* srv = static_cast<ID3D11ShaderResourceView*>(buffer->getView().get());
+    auto* srv = static_cast<ID3D11ShaderResourceView*>(buffer->getView().get());
 
     if ((uint32(stage) & uint32(GpuShaderStage::Vertex)) != 0) {
         _context->VSSetShaderResources(slot, 1, &srv);
@@ -126,7 +126,7 @@ void up::d3d11::CommandListD3D11::bindSampler(up::uint32 slot, GpuSampler* sampl
     UP_ASSERT(sampler != nullptr);
 
     auto d3dSampler = static_cast<SamplerD3D11*>(sampler);
-    ID3D11SamplerState* nativeSampler = static_cast<ID3D11SamplerState*>(d3dSampler->get().get());
+    auto* nativeSampler = static_cast<ID3D11SamplerState*>(d3dSampler->get().get());
 
     if ((uint32(stage) & uint32(GpuShaderStage::Vertex)) != 0) {
         _context->VSSetSamplers(slot, 1, &nativeSampler);
@@ -137,7 +137,7 @@ void up::d3d11::CommandListD3D11::bindSampler(up::uint32 slot, GpuSampler* sampl
 }
 
 void up::d3d11::CommandListD3D11::setPrimitiveTopology(GpuPrimitiveTopology topology) {
-    D3D11_PRIMITIVE_TOPOLOGY primitive;
+    D3D11_PRIMITIVE_TOPOLOGY primitive = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
     switch (topology) {
         case GpuPrimitiveTopology::Triangles:
             primitive = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -150,7 +150,7 @@ void up::d3d11::CommandListD3D11::setPrimitiveTopology(GpuPrimitiveTopology topo
 }
 
 void up::d3d11::CommandListD3D11::setViewport(GpuViewportDesc const& viewport) {
-    D3D11_VIEWPORT d3d11Viewport;
+    D3D11_VIEWPORT d3d11Viewport{};
     d3d11Viewport.TopLeftX = viewport.leftX;
     d3d11Viewport.TopLeftY = viewport.topY;
     d3d11Viewport.Width = viewport.width;
@@ -161,7 +161,7 @@ void up::d3d11::CommandListD3D11::setViewport(GpuViewportDesc const& viewport) {
 }
 
 void up::d3d11::CommandListD3D11::setClipRect(GpuClipRect rect) {
-    D3D11_RECT clipRect;
+    D3D11_RECT clipRect{};
     clipRect.left = static_cast<LONG>(rect.left);
     clipRect.top = static_cast<LONG>(rect.top);
     clipRect.right = static_cast<LONG>(rect.right);

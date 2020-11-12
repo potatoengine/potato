@@ -87,6 +87,16 @@ if(MSVC AND NOT CLANG_FORMAT)
         message(STATUS "Found clang-format at ${CLANG_FORMAT}")
     endif()
 endif()
+if(MSVC AND NOT CLANG_TIDY)
+    string(REGEX REPLACE "Tools[/\\].*" "Tools" VC_TOOLS_PATH ${CMAKE_CXX_COMPILER})
+    find_program(CLANG_TIDY clang-tidy
+        HINTS ${VC_TOOLS_PATH}
+        PATH_SUFFIXES llvm/x64/bin
+    )
+    if(CLANG_TIDY)
+        message(STATUS "Found clang-tidy at ${CLANG_TIDY}")
+    endif()
+endif()
 
 if(CLANG_FORMAT)
     add_custom_target(potato_format_all
@@ -94,4 +104,11 @@ if(CLANG_FORMAT)
         COMMAND echo "Format complete!"
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         COMMENT "Formatting code...")
+endif()
+
+if(CLANG_TIDY)
+    add_custom_target(potato_tidy_fix
+        COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/scripts/tools/run-clang-tidy.py" -clang-tidy-binary "${CLANG_TIDY}" -p "${CMAKE_CURRENT_BINARY_DIR}" -quiet -fix "${CMAKE_CURRENT_SOURCE_DIR}/source" -exclude "[.]rc$$"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        COMMENT "Tidying code...")
 endif()

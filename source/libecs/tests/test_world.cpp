@@ -28,7 +28,7 @@ TEST_CASE("World", "[potato][ecs]") {
         world.createEntity(Another{1.f, 2.f}, Second{9.f, 'g'});
         auto id = world.createEntity(Second{-2.f, 'h'}, Another{2.f, 1.f});
 
-        Second* test = world.getComponentSlow<Second>(id);
+        auto* test = world.getComponentSlow<Second>(id);
         REQUIRE(test != nullptr);
         CHECK(test->a == 'h');
         CHECK(test->b == -2.f);
@@ -87,7 +87,7 @@ TEST_CASE("World", "[potato][ecs]") {
         world.createEntity(Test1{'d'});
         EntityId last = world.createEntity(Test1{'e'});
 
-        Test1* fooTest = world.getComponentSlow<Test1>(foo);
+        auto* fooTest = world.getComponentSlow<Test1>(foo);
         REQUIRE(fooTest != nullptr);
 
         // delete some entities (not the last one!)

@@ -54,6 +54,7 @@ namespace {
                 SetWindowLongPtrW(hwnd, GWLP_USERDATA, lparam);
 
                 // style overrides that we can't set in the dialog template in the .rc file
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                 HICON icon = LoadIconW(nullptr, IDI_ERROR);
                 SendMessageW(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
                 DestroyIcon(icon);
@@ -120,7 +121,7 @@ namespace up::_detail {
             &module);
         INT_PTR rs = DialogBoxParamW(
             module,
-            MAKEINTRESOURCEW(IDD_ASSERT),
+            MAKEINTRESOURCEW(IDD_ASSERT), // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             GetActiveWindow(),
             static_cast<DLGPROC>(AssertDialogProc),
             reinterpret_cast<LPARAM>(&data));

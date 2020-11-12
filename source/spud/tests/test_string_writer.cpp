@@ -12,7 +12,7 @@ TEST_CASE("[potato][spud] up::string_writer") {
         string_writer sw;
 
         CHECK(sw.empty());
-        CHECK(sw.size() == 0);
+        CHECK(sw.empty());
         CHECK(sw.c_str() == ""_s);
     }
 
@@ -20,7 +20,7 @@ TEST_CASE("[potato][spud] up::string_writer") {
         string_writer sw(64);
 
         CHECK(sw.empty());
-        CHECK(sw.size() == 0);
+        CHECK(sw.empty());
         CHECK(sw.c_str() == ""_s);
     }
 
@@ -44,7 +44,7 @@ TEST_CASE("[potato][spud] up::string_writer") {
         sw.clear();
 
         CHECK(sw.empty());
-        CHECK(sw.size() == 0);
+        CHECK(sw.empty());
         CHECK(sw.c_str() == ""_s);
     }
 
@@ -97,6 +97,7 @@ TEST_CASE("[potato][spud] up::string_writer") {
 
         s = std::move(sw).to_string();
 
+        // NOLINTNEXTLINE(bugprone-use-after-move)
         CHECK(sw.empty());
         CHECK(s.c_str() == "some text here"_s);
     }

@@ -30,7 +30,7 @@ TEST_CASE("[potato][spud] up::sequence") {
         CHECK(sequence(5, 10).size() == 5);
         CHECK_FALSE(sequence(5, 10).empty());
 
-        CHECK(sequence(10, 10).size() == 0);
+        CHECK(sequence(10, 10).empty());
         CHECK(sequence(10, 10).empty());
 
         if (auto seq = sequence(5, 10); !seq.empty()) {

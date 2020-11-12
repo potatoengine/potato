@@ -59,7 +59,7 @@ namespace up::fs {
     [[nodiscard]] UP_RUNTIME_API IOResult remove(zstring_view path);
     [[nodiscard]] UP_RUNTIME_API IOResult removeRecursive(zstring_view path);
 
-    [[nodiscard]] UP_RUNTIME_API string currentWorkingDirectory() noexcept;
+    [[nodiscard]] UP_RUNTIME_API string currentWorkingDirectory();
     [[nodiscard]] UP_RUNTIME_API bool currentWorkingDirectory(zstring_view path);
 
     [[nodiscard]] UP_RUNTIME_API IOResult copyFileTo(zstring_view fromPath, zstring_view toPath);
