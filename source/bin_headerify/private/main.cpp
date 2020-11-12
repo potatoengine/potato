@@ -8,6 +8,7 @@
 
 namespace fs = std::filesystem;
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char const* argv[]) {
     if (argc != 4) {
         std::cerr << "Usage: headerify <input> <output> <name>\n";
