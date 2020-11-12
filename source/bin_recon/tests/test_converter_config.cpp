@@ -13,23 +13,23 @@ TEST_CASE("ReconConfig", "[potato][recon]") {
 
     SECTION("args") {
         ReconConfig config;
-        char const* args[] = {"/bin/test/", "-source", "ABC"};
+        char const* args[] = {"/bin/test/", "-project", "ABC"};
         Logger logger("test");
 
         bool ok = parseArguments(config, args, logger);
         CHECK(ok);
 
-        CHECK(config.sourceFolderPath == "ABC"_s);
+        CHECK(config.project == "ABC"_s);
     }
 
     SECTION("json") {
-        string_view json = R"--({"sourceDir":"ABC"})--";
+        string_view json = R"--({"project":"ABC"})--";
         ReconConfig config;
         Logger logger("test");
 
         bool ok = parseConfigString(config, json, "test.json", logger);
         CHECK(ok);
 
-        CHECK(config.sourceFolderPath == "ABC"_s);
+        CHECK(config.project == "ABC"_s);
     }
 }

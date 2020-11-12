@@ -22,7 +22,7 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, Logg
 
     enum {
         ArgNone,
-        ArgSourceFolder,
+        ArgProject,
         ArgConfig,
     } argMode = ArgNone;
 
@@ -34,8 +34,8 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, Logg
             }
 
             auto name = arg.substr(1);
-            if (name == "source") {
-                argMode = ArgSourceFolder;
+            if (name == "project") {
+                argMode = ArgProject;
             }
             else if (name == "config") {
                 argMode = ArgConfig;
@@ -54,8 +54,8 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, Logg
             case ArgNone:
                 logger.error("Unexpected value: {}", arg.c_str());
                 return false;
-            case ArgSourceFolder:
-                config.sourceFolderPath = string(arg);
+            case ArgProject:
+                config.project = string(arg);
                 argMode = ArgNone;
                 break;
             case ArgConfig:
@@ -70,8 +70,8 @@ bool up::recon::parseArguments(ReconConfig& config, span<char const*> args, Logg
     switch (argMode) {
         case ArgNone:
             return true;
-        case ArgSourceFolder:
-            logger.error("No value provided after `-source' argument");
+        case ArgProject:
+            logger.error("No value provided after `-project' argument");
             return false;
         case ArgConfig:
             logger.error("No value provided after `-config' argument");

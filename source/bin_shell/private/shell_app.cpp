@@ -613,7 +613,7 @@ void up::shell::ShellApp::_executeRecon() {
     options.redirect.parent = true;
 
     char const* args[] =
-        {"recon.exe", "-config", "recon.config.json", "-source", _project->resourceRootPath().c_str(), nullptr};
+        {"recon.exe", "-config", "recon.config.json", "-project", _project->projectFilePath().c_str(), nullptr};
 
     auto const [status, ec] = reproc::run(args, options);
 
