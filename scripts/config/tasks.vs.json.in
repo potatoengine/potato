@@ -15,7 +15,7 @@
     },
     {
       "taskName": "[Potato] Format Source",
-      "appliesTo": "/source",
+      "appliesTo": "/",
       "types": "default",
       "command": "cmake",
       "args": [
@@ -27,14 +27,14 @@
     },
     {
       "taskName": "[Potato] Tidy Source",
-      "appliesTo": "/source",
+      "appliesTo": "/",
       "types": "default",
       "command": "cmake",
       "args": [
         "--build",
         "@CMAKE_BINARY_DIR@",
         "--target",
-        "potato_tidy_all"
+        "potato_tidy_fix"
       ]
     }
   ]
