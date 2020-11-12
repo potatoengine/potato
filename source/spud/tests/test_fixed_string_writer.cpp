@@ -13,7 +13,7 @@ TEST_CASE("[potato][spud] up::fixed_string_writer") {
         static_assert(sizeof(sw) <= 40 /* buffer + 8-byte size */);
 
         CHECK(sw.empty());
-        CHECK(sw.size() == 0);
+        CHECK(sw.empty());
         CHECK(sw.capacity() == 31);
         CHECK(sw.c_str() == ""_sv);
     }
@@ -38,7 +38,7 @@ TEST_CASE("[potato][spud] up::fixed_string_writer") {
         sw.clear();
 
         CHECK(sw.empty());
-        CHECK(sw.size() == 0);
+        CHECK(sw.empty());
         CHECK(sw.c_str() == ""_sv);
     }
 

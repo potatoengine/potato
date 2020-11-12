@@ -13,7 +13,7 @@ TEST_CASE("[potato][spud] up::zstring_view") {
         zstring_view sv;
 
         CHECK(sv.empty());
-        CHECK(sv.size() == 0);
+        CHECK(sv.empty());
     }
 
     SECTION("std::string initialization") {

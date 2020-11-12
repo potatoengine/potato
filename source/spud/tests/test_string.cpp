@@ -12,7 +12,7 @@ TEST_CASE("[potato][spud] up::string") {
         string s;
 
         CHECK(s.empty());
-        CHECK(s.size() == 0);
+        CHECK(s.empty());
     }
 
     SECTION("std::string initialization") {
@@ -41,6 +41,7 @@ TEST_CASE("[potato][spud] up::string") {
         CHECK(s.size() == s.size());
         CHECK(s.c_str() == "correct"_sv);
 
+        // NOLINTNEXTLINE(bugprone-use-after-move)
         CHECK(s2.empty());
     }
 

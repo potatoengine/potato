@@ -20,8 +20,8 @@ namespace up {
         bool _compile(
             ImporterContext& ctx,
             zstring_view absoluteSourcePath,
-            string_view logicalName,
             string_view source,
+            string_view logicalName,
             zstring_view entryName,
             zstring_view targetProfileName);
     };

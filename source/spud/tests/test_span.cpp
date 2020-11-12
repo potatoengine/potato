@@ -11,7 +11,7 @@ TEST_CASE("[potato][spud] up::span") {
         span<int> av{};
 
         CHECK(av.empty());
-        CHECK(av.size() == 0);
+        CHECK(av.empty());
         CHECK(av.begin() == av.end());
     }
 

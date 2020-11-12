@@ -25,6 +25,6 @@ void up::StandardStreamReceiver::log(
     os << '[' << toString(severity) << "] " << loggerName << " :: " << message << '\n';
 
     if (severity != LogSeverity::Info) {
-        os << std::flush;
+        os.flush();
     }
 }

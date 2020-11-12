@@ -67,7 +67,8 @@ namespace up {
     /// @param options The format control options.
     /// @returns a result code indicating any errors.
     template <format_writable Writer, formattable T>
-    constexpr auto format_value_to(Writer& writer, T const& value, string_view spec_string) -> format_result {
+    constexpr auto format_value_to(Writer& writer, T const& value, string_view spec_string) noexcept(
+        noexcept(writer.write({}))) -> format_result {
         return _detail::make_format_arg<Writer>(value).format_into(writer, spec_string);
     }
 
@@ -76,7 +77,8 @@ namespace up {
     /// @param value The value to format.
     /// @returns a result code indicating any errors.
     template <format_writable Writer, formattable T>
-    constexpr auto format_value_to(Writer& writer, T const& value) -> format_result {
+    constexpr auto format_value_to(Writer& writer, T const& value) noexcept(noexcept(writer.write({})))
+        -> format_result {
         return _detail::make_format_arg<Writer>(value).format_into(writer);
     }
 

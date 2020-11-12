@@ -32,12 +32,12 @@ TEST_CASE("thread_util", "[potato][runtime]") {
         // ensure it doesn't change
         REQUIRE(currentSmallThreadId() == 0);
 
-        SmallThreadId id1;
+        SmallThreadId id1 = 0;
         Task t1(id1);
         auto thread = std::thread(t1);
         thread.join();
 
-        SmallThreadId id2;
+        SmallThreadId id2 = 0;
         Task t2(id2);
         thread = std::thread(t2);
         thread.join();

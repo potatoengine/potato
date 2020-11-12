@@ -197,7 +197,7 @@ auto up::fs::removeRecursive(zstring_view path) -> IOResult {
     return errorCodeToResult(ec);
 }
 
-auto up::fs::currentWorkingDirectory() noexcept -> string {
+auto up::fs::currentWorkingDirectory() -> string {
     std::error_code ec;
     if (auto path = std::filesystem::current_path(ec).generic_string(); !ec) {
         return {path.data(), path.size()};

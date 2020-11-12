@@ -35,7 +35,7 @@ TEST_CASE("LockFreeQueue", "[potato][runtime]") {
             CHECK(i == result);
         }
 
-        std::size_t empty;
+        std::size_t empty = 0;
         CHECK(!queue.tryDeque(empty));
     }
 
@@ -45,7 +45,7 @@ TEST_CASE("LockFreeQueue", "[potato][runtime]") {
         std::size_t total1 = 0;
         auto thread1 = std::thread([&] {
             for (;;) {
-                std::size_t count;
+                std::size_t count = 0;
                 if (queue.tryDeque(count)) {
                     if (count == 0) {
                         break;
@@ -58,7 +58,7 @@ TEST_CASE("LockFreeQueue", "[potato][runtime]") {
         std::size_t total2 = 0;
         auto thread2 = std::thread([&] {
             for (;;) {
-                std::size_t count;
+                std::size_t count = 0;
                 if (queue.tryDeque(count)) {
                     if (count == 0) {
                         break;
