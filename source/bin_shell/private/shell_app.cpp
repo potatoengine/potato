@@ -116,6 +116,7 @@ int up::shell::ShellApp::initialize() {
         {.name = "potato.project.open",
          .command = "Open Project",
          .menu = "File\\Open Project",
+         .icon = ICON_FA_FOLDER_OPEN,
          .group = "3_project",
          .priority = 100,
          .hotKey = "Alt+Shift+O",
@@ -127,6 +128,7 @@ int up::shell::ShellApp::initialize() {
         {.name = "potato.project.import",
          .command = "Import Resources",
          .menu = "File\\Import Resources",
+         .icon = ICON_FA_FILE_IMPORT,
          .group = "3_project",
          .priority = 120,
          .action = [this] {
@@ -147,15 +149,17 @@ int up::shell::ShellApp::initialize() {
         {.name = "potato.assets.newScene",
          .command = "New Scene",
          .menu = "File\\New\\Scene",
+         .icon = ICON_FA_IMAGE,
          .group = "1_new",
          .enabled = [this]() { return _project != nullptr; },
          .action =
              [this] {
                  _createScene();
              }});
-    _appActions.addAction({.name = "potato.editor.about", .menu = "Help\\About", .action = [this] {
-                               _aboutDialog = true;
-                           }});
+    _appActions.addAction(
+        {.name = "potato.editor.about", .menu = "Help\\About", .icon = ICON_FA_QUESTION_CIRCLE, .action = [this] {
+             _aboutDialog = true;
+         }});
 
     _actions.addGroup(&_appActions);
 
