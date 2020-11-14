@@ -330,27 +330,31 @@ void up::ImguiBackend::_initialize() {
 void up::ImguiBackend::_loadFonts() {
     auto& io = ImGui::GetIO();
 
+    float const fontSize = 16.f;
+    float const iconSize = 12.f;
+
     ImFontConfig config;
     config.MergeMode = false;
     config.PixelSnapH = false;
     config.FontDataOwnedByAtlas = false;
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(roboto_font_data), roboto_font_size, 16.0f, &config);
+    io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(roboto_font_data), roboto_font_size, fontSize, &config);
 
     config.MergeMode = true;
+    config.GlyphMinAdvanceX = iconSize * 1.2f;
     config.PixelSnapH = true;
     config.FontDataOwnedByAtlas = false;
 
-    static constexpr auto s_minGlyph = 0xf000;
-    static constexpr auto s_maxGlyph = 0xf897;
-    static constexpr ImWchar s_ranges[] = {s_minGlyph, s_maxGlyph, 0};
+    static constexpr auto fontawesomeMinGlyph = 0xf000;
+    static constexpr auto fontawesomeMaxGlyph = 0xf897;
+    static constexpr ImWchar s_ranges[] = {fontawesomeMinGlyph, fontawesomeMaxGlyph, 0};
 
     io.Fonts->AddFontFromMemoryTTF(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         const_cast<unsigned char*>(fontawesome_font_data),
         fontawesome_font_size,
-        11.0f,
+        iconSize,
         &config,
         s_ranges);
 }
@@ -369,6 +373,7 @@ void up::ImguiBackend::_applyStyle() {
     style.WindowPadding = ImVec2(4.0f, 4.0f);
     style.FramePadding = ImVec2(4.0f, 4.0f);
 
+    style.WindowBorderSize = 1.0f;
     style.ChildBorderSize = 1.0f;
     style.PopupBorderSize = 1.0f;
     style.FrameBorderSize = 1.0f;
@@ -380,7 +385,7 @@ void up::ImguiBackend::_applyStyle() {
     colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
     colors[ImGuiCol_ChildBg] = ImVec4(0.15f, 0.18f, 0.22f, 1.00f);
     colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
-    colors[ImGuiCol_Border] = ImVec4(0.08f, 0.10f, 0.12f, 1.00f);
+    colors[ImGuiCol_Border] = ImVec4(0.15f, 0.18f, 0.22f, 1.00f); // ImVec4(0.08f, 0.10f, 0.12f, 1.00f);
     colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
     colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
     colors[ImGuiCol_FrameBgHovered] = ImVec4(0.12f, 0.20f, 0.28f, 1.00f);
