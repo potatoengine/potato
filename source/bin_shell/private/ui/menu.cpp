@@ -82,7 +82,7 @@ void up::shell::Menu::_drawMenu(size_t index, size_t depth) {
         auto const& item = _items[index];
 
         if (depth != 0 && item.groupIndex != lastGroup) {
-            ImGui::Separator();
+            ImGui::IconMenuSeparator();
             lastGroup = item.groupIndex;
         }
 
@@ -101,7 +101,7 @@ void up::shell::Menu::_drawMenu(size_t index, size_t depth) {
             }
         }
         else {
-            if (ImGui::BeginMenu(_strings[item.stringIndex].c_str())) {
+            if (ImGui::BeginIconMenu(_strings[item.stringIndex].c_str())) {
                 _drawMenu(item.childIndex, depth + 1);
                 ImGui::EndMenu();
             }

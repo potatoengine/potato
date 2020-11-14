@@ -28,6 +28,8 @@
 #include "imgui_ext.h"
 #include "imgui_backend.h"
 
+#include "potato/spud/string_format.h"
+
 #include <glm/gtx/quaternion.hpp>
 #include <glm/vec3.hpp>
 #include <imgui.h>
@@ -42,101 +44,6 @@ static void DrawIcon(const char8_t* icon, ImVec2 minPos, ImVec2 maxPos) {
         nullptr,
         {0.5f, 0.5f},
         nullptr);
-}
-
-bool ImGui::Potato::IconMenuItem(
-    const char* label,
-    const char8_t* icon,
-    const char* shortcut,
-    bool selected,
-    bool enabled) {
-    ImGuiWindow* window = GetCurrentWindow();
-    if (window->SkipItems) {
-        return false;
-    }
-
-    ImGuiContext& g = *GImGui;
-    ImGuiStyle const& style = g.Style;
-    ImFont const* font = ImGui::GetFont();
-
-    ImVec2 const iconSize{font->FontSize, font->FontSize};
-    ImVec2 const labelOffset{iconSize.x + style.ItemInnerSpacing.x, 0};
-    ImVec2 const labelSize = CalcTextSize(label, nullptr, true);
-
-    ImGuiSelectableFlags const flags = ImGuiSelectableFlags_SelectOnRelease | ImGuiSelectableFlags_SetNavIdOnHover |
-        (enabled ? 0 : ImGuiSelectableFlags_Disabled);
-
-    if (window->DC.LayoutType == ImGuiLayoutType_Horizontal) {
-        float const width = labelSize.x + labelOffset.x;
-        float const offset = IM_FLOOR(style.ItemSpacing.x * 0.5f);
-
-        window->DC.CursorPos.x += offset;
-        ImVec2 const pos = window->DC.CursorPos;
-
-        PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(style.ItemSpacing.x * 2.0f, style.ItemSpacing.y));
-        ImGui::PushID(label);
-        bool const pressed = Selectable("##item", false, flags, ImVec2(width, 0.0f));
-        ImGui::PopID();
-        PopStyleVar();
-
-        if (!enabled) {
-            PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]);
-        }
-        RenderTextClipped(pos + labelOffset, pos + labelSize + labelOffset, label, nullptr, &labelSize);
-        if (icon != nullptr && *icon != u8'\0') {
-            DrawIcon(icon, pos, pos + iconSize);
-        }
-        if (!enabled) {
-            PopStyleColor();
-        }
-
-        window->DC.CursorPos.x += IM_FLOOR(
-            style.ItemSpacing.x *
-            (-1.0f + 0.5f)); // -1 spacing to compensate the spacing added when Selectable() did a SameLine(). It would
-                             // also work to call SameLine() ourselves after the PopStyleVar().
-
-        return pressed;
-    }
-
-    ImVec2 const pos = window->DC.CursorPos;
-    float const shortcutWidth = shortcut != nullptr ? CalcTextSize(shortcut, nullptr).x : 0.0f;
-    float const minWidth = window->DC.MenuColumns.DeclColumns(
-        labelSize.x + labelOffset.x,
-        shortcutWidth,
-        IM_FLOOR(g.FontSize * 1.20f)); // Feedback for next frame
-    float const extraWidth = ImMax(0.0f, GetContentRegionAvail().x - minWidth);
-
-    ImGui::PushID(label);
-    bool const pressed =
-        Selectable("##item", false, flags | ImGuiSelectableFlags_SpanAvailWidth, ImVec2(minWidth, 0.0f));
-    ImGui::PopID();
-
-    if (!enabled) {
-        PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]);
-    }
-    RenderTextClipped(pos + labelOffset, pos + labelSize + labelOffset, label, nullptr, &labelSize);
-    if (icon != nullptr && *icon != u8'\0') {
-        DrawIcon(icon, pos, pos + iconSize);
-    }
-    if (!enabled) {
-        PopStyleColor();
-    }
-
-    if (shortcutWidth > 0.0f) {
-        PushStyleColor(ImGuiCol_Text, g.Style.Colors[ImGuiCol_TextDisabled]);
-        RenderText(pos + ImVec2(window->DC.MenuColumns.Pos[1] + extraWidth, 0.0f), shortcut, nullptr, false);
-        PopStyleColor();
-    }
-
-    if (selected) {
-        RenderCheckMark(
-            window->DrawList,
-            pos + ImVec2(window->DC.MenuColumns.Pos[2] + extraWidth + g.FontSize * 0.40f, g.FontSize * 0.134f * 0.5f),
-            GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled),
-            g.FontSize * 0.866f);
-    }
-
-    return pressed;
 }
 
 bool ImGui::Potato::IconButton(char const* label, char8_t const* icon, ImVec2 size, ImGuiButtonFlags flags) {
@@ -230,4 +137,124 @@ bool ImGui::Potato::InputQuat(char const* label, glm::quat& value, char const* f
     }
 
     return false;
+}
+
+bool ImGui::BeginIconMenu(const char* label, bool enabled) {
+    ImGuiWindow* window = GetCurrentWindow();
+    if (window->SkipItems) {
+        return false;
+    }
+
+    if (window->DC.LayoutType == ImGuiLayoutType_Horizontal) {
+        return BeginMenu(label, enabled);
+    }
+
+    char const* labelEnd = FindRenderedTextEnd(label);
+
+    ImVec2 const pos = window->DC.CursorPos;
+    ImVec2 const iconSize = ImGui::CalcTextSize(reinterpret_cast<char const*>(ICON_FA_INFO));
+    ImVec2 const labelSize = ImGui::CalcTextSize(label, labelEnd);
+    ImVec2 const spacing = GetStyle().ItemInnerSpacing;
+
+    float const labelOffsetX = iconSize.x + spacing.x * 2.f;
+
+    ImColor const color = GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled);
+
+    window->DC.MenuColumns.DeclColumns(labelSize.x + labelOffsetX, 0, 0);
+
+    char menuId[32] = {
+        0,
+    };
+    up::format_to(menuId, "##menu_{}", GetID(label));
+
+    bool const open = BeginMenu(menuId, enabled);
+
+    // we need to draw into our original window, so temporarily close the new sub-menu,
+    // draw, and then we'll reopen it if appropriate.
+    //
+    ImGuiWindow* menuWindow = nullptr;
+    if (open) {
+        menuWindow = GetCurrentWindow();
+        EndPopup();
+        UP_ASSERT(window == GetCurrentWindow());
+    }
+
+    window->DrawList->AddText(ImVec2(pos.x + labelOffsetX, pos.y), color, label, labelEnd);
+
+    if (open) {
+        BeginPopup(menuId, menuWindow->Flags);
+    }
+
+    return open;
+}
+
+void ImGui::Potato::IconMenuSeparator() {
+    ImGuiWindow* window = GetCurrentWindow();
+    if (window->SkipItems) {
+        return;
+    }
+
+    if (window->DC.LayoutType == ImGuiLayoutType_Vertical) {
+        ImVec2 const iconSize = ImGui::CalcTextSize(reinterpret_cast<char const*>(ICON_FA_INFO));
+        ImVec2 const spacing = GetStyle().ItemInnerSpacing;
+
+        if (!window->DC.GroupStack.empty()) {
+            window->DC.CursorPos.x += window->DC.Indent.x;
+        }
+
+        window->DC.CursorPos.x += iconSize.x + spacing.x * 2.f;
+
+        ImRect const bounds(window->DC.CursorPos, ImVec2(window->Size.x - spacing.x, window->DC.CursorPos.y + 1.f));
+
+        ItemSize(ImVec2(0.0f, 1.f));
+        if (!ItemAdd(bounds, 0)) {
+            return;
+        }
+
+        window->DrawList->AddLine(bounds.Min, ImVec2(bounds.Max.x, bounds.Min.y), GetColorU32(ImGuiCol_Separator));
+    }
+    else {
+        Separator();
+    }
+}
+
+bool ImGui::Potato::IconMenuItem(
+    const char* label,
+    const char8_t* icon,
+    const char* shortcut,
+    bool selected,
+    bool enabled) {
+    ImGuiWindow* window = GetCurrentWindow();
+    if (window->SkipItems && TableGetColumnCount() == 0) {
+        return false;
+    }
+
+    if (window->DC.LayoutType == ImGuiLayoutType_Horizontal) {
+        return MenuItem(label, shortcut, selected, enabled);
+    }
+
+    char const* labelEnd = FindRenderedTextEnd(label);
+
+    ImVec2 const pos = window->DC.CursorPos;
+    ImVec2 const iconSize = ImGui::CalcTextSize(reinterpret_cast<char const*>(ICON_FA_INFO));
+    ImVec2 const labelSize = ImGui::CalcTextSize(label, labelEnd);
+    ImVec2 const spacing = GetStyle().ItemInnerSpacing;
+
+    float const labelOffsetX = iconSize.x + spacing.x * 2.f;
+
+    ImColor const color = GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled);
+
+    window->DC.MenuColumns.DeclColumns(labelSize.x + labelOffsetX, 0, 0);
+
+    PushID(label);
+    bool const clicked = MenuItem("##item", shortcut, &selected, enabled);
+    PopID();
+
+    if (icon != nullptr) {
+        window->DrawList->AddText(ImVec2(pos.x + spacing.x, pos.y), color, reinterpret_cast<char const*>(icon));
+    }
+
+    window->DrawList->AddText(ImVec2(pos.x + labelOffsetX, pos.y), color, label, labelEnd);
+
+    return clicked;
 }
