@@ -106,6 +106,7 @@ int up::shell::ShellApp::initialize() {
         {.name = "potato.quit",
          .command = "Quit",
          .menu = "File\\Quit",
+         .icon = ICON_FA_DOOR_OPEN,
          .group = "z_quit",
          .hotKey = "Alt+F4",
          .action = [this] {
