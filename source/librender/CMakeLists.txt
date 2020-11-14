@@ -46,34 +46,35 @@ target_link_libraries(potato_librender
 )
 
 set(UP_GPU_D3D11_SOURCES
-    "private/d3d11_backend/d3d11_buffer.cpp"
-    "private/d3d11_backend/d3d11_command_list.cpp"
-    "private/d3d11_backend/d3d11_device.cpp"
-    "private/d3d11_backend/d3d11_factory.cpp"
-    "private/d3d11_backend/d3d11_resource_view.cpp"
-    "private/d3d11_backend/d3d11_sampler.cpp"
-    "private/d3d11_backend/d3d11_swap_chain.cpp"
-    "private/d3d11_backend/d3d11_platform.cpp"
-    "private/d3d11_backend/d3d11_pipeline_state.cpp"
-    "private/d3d11_backend/d3d11_texture.cpp"
+    "private/d3d12_backend/d3d12_command_list.cpp"
+    "private/d3d12_backend/d3d12_buffer.cpp"
+    "private/d3d12_backend/d3d12_device.cpp"
+    "private/d3d12_backend/d3d12_factory.cpp"
+    "private/d3d12_backend/d3d12_resource_view.cpp"
+    "private/d3d12_backend/d3d12_sampler.cpp"
+    "private/d3d12_backend/d3d12_swap_chain.cpp"
+    "private/d3d12_backend/d3d12_platform.cpp"
+    "private/d3d12_backend/d3d12_pipeline_state.cpp"
+    "private/d3d12_backend/d3d12_texture.cpp"
 )
 
 find_library(DXGI_PATH dxgi)
-find_library(D3D11_PATH d3d11)
-if(D3D11_PATH AND DXGI_PATH)
-    target_link_libraries(potato_librender PRIVATE ${D3D11_PATH} ${DXGI_PATH})
-    target_sources(potato_librender PRIVATE ${UP_GPU_D3D11_SOURCES})
-    target_compile_definitions(potato_librender PUBLIC UP_GPU_ENABLE_D3D11=1)
-    set_target_properties(potato_librender PROPERTIES UP_GPU_ENABLE_D3D11 ON)
+find_library(D3D12_PATH d3d12)
+
+if(D3D12_PATH AND DXGI_PATH)
+    target_link_libraries(potato_librender PRIVATE ${D3D12_PATH} ${DXGI_PATH})
+    target_sources(potato_librender PRIVATE ${UP_GPU_D3D12_SOURCES})
+    target_compile_definitions(potato_librender PUBLIC UP_GPU_ENABLE_D3D12=1)
+    set_target_properties(potato_librender PROPERTIES UP_GPU_ENABLE_D3D12 ON)
 else()
     # HEADER_FILE_ONLY is not consistently working for me,
     # so I'm adding a fake target to get the .cpp files registered
     # but unbuilt
     #
 
-    add_library(potato_librender_d3d11 INTERFACE)
-    target_sources(potato_librender_d3d11 INTERFACE ${UP_GPU_D3D11_SOURCES})
-endif(D3D11_PATH AND DXGI_PATH)
+    add_library(potato_librender_d3d12 INTERFACE)
+    target_sources(potato_librender_d3d12 INTERFACE ${UP_GPU_D3D12_SOURCES})
+endif(D3D12_PATH AND DXGI_PATH)
 
 add_executable(potato_librender_test)
 target_sources(potato_librender_test PRIVATE
