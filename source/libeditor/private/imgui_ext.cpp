@@ -122,6 +122,11 @@ auto ImGui::Potato::IsCaptureRelativeMouseMode() -> bool {
     return state != nullptr ? state->isCaptureRelativeMouseMode() : false;
 }
 
+bool ImGui::Potato::IsModifierDown(ImGuiKeyModFlags modifiers) noexcept {
+    auto& io = ImGui::GetIO();
+    return (io.KeyMods & modifiers) == modifiers;
+}
+
 bool ImGui::Potato::InputVec3(char const* label, glm::vec3& value, char const* format, ImGuiInputTextFlags flags) {
     return ImGui::InputFloat3(label, &value.x, format, flags);
 }

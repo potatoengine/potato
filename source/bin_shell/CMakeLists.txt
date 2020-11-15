@@ -30,8 +30,9 @@ target_sources(potato_shell PRIVATE
     "public/potato/shell/_export.h"
     "private/settings.h"
     "private/settings.cpp"
+    "private/log_window.h"
+    "private/log_window.cpp"
 )
-
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 

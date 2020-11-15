@@ -9,6 +9,16 @@
 namespace up {
     constexpr size_t stringLength(char const* str) noexcept { return __builtin_strlen(str); }
 
+    template <size_t N>
+    constexpr size_t stringLength(char const (&str)[N]) noexcept {
+        for (size_t i = 0; i != N; ++i) {
+            if (str[i] == '\0') {
+                return i;
+            }
+        }
+        return N;
+    }
+
     constexpr int stringCompare(char const* left, char const* right, size_t length) noexcept {
         return __builtin_memcmp(left, right, length);
     }

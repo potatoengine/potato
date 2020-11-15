@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "camera.h"
+#include "log_window.h"
 #include "settings.h"
 #include "ui/action.h"
 #include "ui/command_palette.h"
@@ -106,5 +107,6 @@ namespace up::shell {
         std::chrono::nanoseconds _lastFrameDuration = {};
         string _projectName;
         ResourceLoader _resourceLoader;
+        LogWindow _logWindow;
     }; // namespace up::shell
 } // namespace up::shell
