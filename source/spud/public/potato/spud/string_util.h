@@ -6,23 +6,17 @@
 #include "int_types.h"
 #include "platform.h"
 
-#include <cstring>
-
 namespace up {
     constexpr size_t stringLength(char const* str) noexcept { return __builtin_strlen(str); }
 
     template <size_t N>
     constexpr size_t stringLength(char const (&str)[N]) noexcept {
-        if (std::is_constant_evaluated()) {
-            for (size_t i = 0; i != N; ++i) {
-                if (str[i] == '\0') {
-                    return i;
-                }
+        for (size_t i = 0; i != N; ++i) {
+            if (str[i] == '\0') {
+                return i;
             }
-            return N;
         }
-
-        return strnlen_s(str, N);
+        return N;
     }
 
     constexpr int stringCompare(char const* left, char const* right, size_t length) noexcept {
