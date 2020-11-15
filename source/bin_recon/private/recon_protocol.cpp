@@ -7,7 +7,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 
-up::LogResult up::recon::ReconProtocolLogReceiver::log(
+void up::recon::ReconProtocolLogSink::log(
     string_view loggerName,
     LogSeverity severity,
     string_view message,
@@ -21,6 +21,4 @@ up::LogResult up::recon::ReconProtocolLogReceiver::log(
         {"location", {{"file", location.file}, {"function", location.function}, {"line", location.line}}}};
 
     std::cout << doc.dump() << std::endl;
-
-    return LogResult::Break;
 }

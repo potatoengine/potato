@@ -2,17 +2,14 @@
 
 #pragma once
 
-#include "potato/runtime/log_receiver.h"
+#include "potato/runtime/logger.h"
 
 namespace up::recon {
-    class ReconProtocolLogReceiver : public LogReceiver {
+    class ReconProtocolLogSink : public LogSink {
     public:
-        ~ReconProtocolLogReceiver() override = default;
+        ~ReconProtocolLogSink() override = default;
 
-        LogResult log(
-            string_view loggerName,
-            LogSeverity severity,
-            string_view message,
-            LogLocation location = {}) noexcept override;
+        void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept
+            override;
     };
 } // namespace up::recon
