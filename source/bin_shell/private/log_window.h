@@ -35,7 +35,9 @@ namespace up::shell {
         LogSeverityMask _mask = LogSeverityMask::Everything;
         bool _open = true;
         bool _stickyBottom = true;
-        char _filter[128] = {0,};
+        char _filter[128] = {
+            0,
+        };
 
         friend LogWindowReceiver;
     };

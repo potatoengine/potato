@@ -26,7 +26,7 @@ namespace up {
         }
 
         constexpr LogSeverityMask operator&(LogSeverityMask a, LogSeverityMask b) noexcept {
-            return LogSeverityMask{ static_cast<unsigned>(a) & static_cast<unsigned>(b) };
+            return LogSeverityMask{static_cast<unsigned>(a) & static_cast<unsigned>(b)};
         }
     } // namespace log_severity_mask
 
