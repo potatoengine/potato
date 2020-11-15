@@ -7,9 +7,9 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-class up::shell::LogWindow::LogWindowReceiver : public LogReceiver {
+class up::shell::LogWindow::LogWindowSink : public LogSink {
 public:
-    LogWindowReceiver(LogWindow& window) : _window(window) {}
+    LogWindowSink(LogWindow& window) : _window(window) {}
 
     void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept
         override {
@@ -27,7 +27,7 @@ public:
     LogWindow& _window;
 };
 
-up::shell::LogWindow::LogWindow(Logger& logger) : _logger(logger), _receiver(new_shared<LogWindowReceiver>(*this)) {
+up::shell::LogWindow::LogWindow(Logger& logger) : _logger(logger), _receiver(new_shared<LogWindowSink>(*this)) {
     _logger.attach(_receiver);
 }
 

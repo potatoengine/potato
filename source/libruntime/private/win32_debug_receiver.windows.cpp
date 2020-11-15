@@ -1,10 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "win32_debug_receiver.h"
+#include "win32_debug_sink.h"
 
 #include "potato/spud/platform_windows.h"
 
-void up::Win32DebugReceiver::log(
+void up::Win32DebugSink::log(
     string_view loggerName,
     LogSeverity severity,
     string_view message,

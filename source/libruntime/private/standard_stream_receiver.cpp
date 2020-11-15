@@ -1,13 +1,13 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "standard_stream_receiver.h"
 #include "lock_guard.h"
+#include "standard_stream_sink.h"
 
 #include "potato/spud/std_iostream.h"
 
 #include <iostream>
 
-void up::StandardStreamReceiver::log(
+void up::StandardStreamSink::log(
     string_view loggerName,
     LogSeverity severity,
     string_view message,

@@ -20,7 +20,7 @@ namespace up::shell {
         bool open(bool state = true) noexcept { return _open = state; }
 
     private:
-        class LogWindowReceiver;
+        class LogWindowSink;
         struct LogEntry {
             LogSeverity severity = LogSeverity::Info;
             string message;
@@ -29,7 +29,7 @@ namespace up::shell {
         };
 
         Logger& _logger;
-        rc<LogWindowReceiver> _receiver;
+        rc<LogWindowSink> _receiver;
         vector<LogEntry> _logs;
         LogSeverityMask _mask = LogSeverityMask::Everything;
         bool _open = true;
@@ -38,6 +38,6 @@ namespace up::shell {
             0,
         };
 
-        friend LogWindowReceiver;
+        friend LogWindowSink;
     };
 } // namespace up::shell

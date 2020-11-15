@@ -68,9 +68,9 @@ namespace up {
         int line = 0;
     };
 
-    class LogReceiver : public shared<LogReceiver> {
+    class LogSink : public shared<LogSink> {
     public:
-        virtual ~LogReceiver() = default;
+        virtual ~LogSink() = default;
 
         virtual void log(
             string_view loggerName,
@@ -83,7 +83,7 @@ namespace up {
     public:
         UP_RUNTIME_API Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info);
         UP_RUNTIME_API
-        Logger(string name, rc<LogReceiver> receiver, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
+        Logger(string name, rc<LogSink> receiver, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
 
         constexpr bool isEnabledFor(LogSeverity severity) const noexcept { return severity >= _minimumSeverity; }
 
@@ -103,8 +103,8 @@ namespace up {
         }
         void error(string_view message) noexcept { log(LogSeverity::Error, message); }
 
-        void UP_RUNTIME_API attach(rc<LogReceiver> receiver) noexcept;
-        void UP_RUNTIME_API detach(LogReceiver* remove) noexcept;
+        void UP_RUNTIME_API attach(rc<LogSink> receiver) noexcept;
+        void UP_RUNTIME_API detach(LogSink* remove) noexcept;
 
     private:
         static constexpr int log_length = 1024;
@@ -112,7 +112,7 @@ namespace up {
         string _name;
         LogSeverity _minimumSeverity = LogSeverity::Info;
         RWLock _receiversLock;
-        vector<rc<LogReceiver>> _receivers;
+        vector<rc<LogSink>> _receivers;
     };
 
     template <typename... T>
