@@ -27,6 +27,8 @@ namespace ImGui::inline Potato {
     UP_EDITOR_API void SetCaptureRelativeMouseMode(bool captured);
     UP_EDITOR_API auto IsCaptureRelativeMouseMode() -> bool;
 
+    UP_EDITOR_API bool IsModifierDown(ImGuiKeyModFlags modifiers) noexcept;
+
     UP_EDITOR_API bool InputVec3(
         char const* label,
         glm::vec3& value,
