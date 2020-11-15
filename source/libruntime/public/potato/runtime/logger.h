@@ -128,8 +128,8 @@ namespace up {
         }
         void error(string_view message) noexcept { log(LogSeverity::Error, message); }
 
-        void UP_RUNTIME_API attach(rc<LogSink> receiver) noexcept;
-        void UP_RUNTIME_API detach(LogSink* remove) noexcept;
+        void UP_RUNTIME_API attach(rc<LogSink> sink) noexcept;
+        void UP_RUNTIME_API detach(LogSink* sink) noexcept;
 
     private:
         static constexpr int log_length = 1024;

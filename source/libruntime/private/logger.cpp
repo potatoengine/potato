@@ -75,13 +75,13 @@ void up::Logger::attach(rc<LogSink> sink) noexcept {
     _impl->sink = std::move(sink);
 }
 
-void up::Logger::detach(LogSink* remove) noexcept {
-    if (remove == nullptr) {
+void up::Logger::detach(LogSink* sink) noexcept {
+    if (sink == nullptr) {
         return;
     }
 
     LockGuard _(_impl->lock.writer());
-    if (_impl->sink.get() == remove) {
+    if (_impl->sink.get() == sink) {
         _impl->sink = std::move(_impl->sink->_next);
     }
 }
