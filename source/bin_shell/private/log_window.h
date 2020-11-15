@@ -1,6 +1,5 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/log_receiver.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/string.h"
@@ -9,7 +8,7 @@
 namespace up::shell {
     class LogWindow {
     public:
-        LogWindow(Logger& logger);
+        LogWindow();
         ~LogWindow();
 
         LogWindow(LogWindow const&) = delete;
@@ -21,16 +20,16 @@ namespace up::shell {
         bool open(bool state = true) noexcept { return _open = state; }
 
     private:
-        class LogWindowReceiver;
+        class LogWindowSink;
         struct LogEntry {
             LogSeverity severity = LogSeverity::Info;
             string message;
+            string category;
             string location;
             size_t count = 1;
         };
 
-        Logger& _logger;
-        rc<LogWindowReceiver> _receiver;
+        rc<LogWindowSink> _receiver;
         vector<LogEntry> _logs;
         LogSeverityMask _mask = LogSeverityMask::Everything;
         bool _open = true;
@@ -39,6 +38,6 @@ namespace up::shell {
             0,
         };
 
-        friend LogWindowReceiver;
+        friend LogWindowSink;
     };
 } // namespace up::shell

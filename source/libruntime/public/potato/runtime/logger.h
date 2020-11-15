@@ -4,8 +4,6 @@
 
 #include "_export.h"
 #include "lock_guard.h"
-#include "log_receiver.h"
-#include "log_severity.h"
 #include "rwlock.h"
 
 #include "potato/spud/fixed_string_writer.h"
@@ -16,49 +14,143 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
+#include <mutex>
 #include <utility>
 
 namespace up {
+    enum class LogSeverity { Info, Error };
+
+    namespace log_severity_mask {
+        enum class LogSeverityMask : unsigned {
+            Info = 1 << (int)LogSeverity::Info,
+            Error = 1 << (int)LogSeverity::Error,
+            Everything = Info | Error
+        };
+
+        constexpr LogSeverityMask operator~(LogSeverityMask mask) noexcept {
+            return LogSeverityMask{~static_cast<unsigned>(mask)};
+        }
+
+        constexpr LogSeverityMask operator|(LogSeverityMask a, LogSeverityMask b) noexcept {
+            return LogSeverityMask{static_cast<unsigned>(a) | static_cast<unsigned>(b)};
+        }
+
+        constexpr LogSeverityMask operator&(LogSeverityMask a, LogSeverityMask b) noexcept {
+            return LogSeverityMask{static_cast<unsigned>(a) & static_cast<unsigned>(b)};
+        }
+    } // namespace log_severity_mask
+
+    using LogSeverityMask = log_severity_mask::LogSeverityMask;
+
+    constexpr LogSeverityMask toMask(LogSeverity severity) noexcept {
+        return static_cast<LogSeverityMask>(1 << static_cast<int>(severity));
+    }
+
+    constexpr LogSeverityMask toInclusiveMask(LogSeverity severity) noexcept {
+        unsigned const high = 1 << static_cast<int>(severity);
+        unsigned const rest = high - 1;
+        return static_cast<LogSeverityMask>(high | rest);
+    }
+
+    constexpr zstring_view toString(LogSeverity severity) noexcept {
+        switch (severity) {
+            case LogSeverity::Info:
+                return "info"_zsv;
+            case LogSeverity::Error:
+                return "error"_zsv;
+            default:
+                return "unknown"_zsv;
+        }
+    }
+
+    struct LogLocation {
+        zstring_view file;
+        zstring_view function;
+        int line = 0;
+    };
+
+    class LogSink : public shared<LogSink> {
+    public:
+        virtual ~LogSink() = default;
+
+        virtual void log(
+            string_view loggerName,
+            LogSeverity severity,
+            string_view message,
+            LogLocation location = {}) noexcept = 0;
+
+    protected:
+        void UP_RUNTIME_API
+        next(string_view loggerName, LogSeverity severity, string_view message, LogLocation location) noexcept;
+
+    private:
+        rc<LogSink> _next;
+
+        friend class Logger;
+    };
+
+    class DefaultLogSink final : public LogSink {
+        void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept
+            override;
+    };
+
     class Logger {
     public:
-        UP_RUNTIME_API Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info);
-        UP_RUNTIME_API
-        Logger(string name, rc<LogReceiver> receiver, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
+        Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info)
+            : Logger(std::move(name), root()._impl, nullptr, minimumSeverity) {}
+        Logger(string name, Logger& parent, LogSeverity minimumSeverity = LogSeverity::Info)
+            : Logger(std::move(name), parent._impl, nullptr, minimumSeverity) {}
+        Logger(string name, Logger& parent, rc<LogSink> sink, LogSeverity minimumSeverity = LogSeverity::Info)
+            : Logger(std::move(name), parent._impl, std::move(sink), minimumSeverity) {}
 
-        constexpr bool isEnabledFor(LogSeverity severity) const noexcept { return severity >= _minimumSeverity; }
+        UP_RUNTIME_API ~Logger();
+
+        Logger(Logger const&) = delete;
+        Logger& operator=(Logger const&) = delete;
+
+        UP_RUNTIME_API static Logger& root();
+
+        UP_RUNTIME_API bool isEnabledFor(LogSeverity severity) const noexcept;
+
+        template <typename... T>
+        void log(LogSeverity severity, string_view format, T const&... args);
+        void UP_RUNTIME_API log(LogSeverity severity, string_view message) noexcept;
 
         template <typename... T>
         void info(string_view format, T const&... args) {
-            _formatDispatch(LogSeverity::Info, format, args...);
+            log(LogSeverity::Info, format, args...);
         }
-        void info(string_view message) noexcept { _dispatch(LogSeverity::Info, message, {}); }
+        void info(string_view message) noexcept { log(LogSeverity::Info, message); }
 
         template <typename... T>
         void error(string_view format, T const&... args) {
-            _formatDispatch(LogSeverity::Error, format, args...);
+            log(LogSeverity::Error, format, args...);
         }
-        void error(string_view message) noexcept { _dispatch(LogSeverity::Error, message, {}); }
+        void error(string_view message) noexcept { log(LogSeverity::Error, message); }
 
-        void UP_RUNTIME_API attach(rc<LogReceiver> receiver) noexcept;
-        void UP_RUNTIME_API detach(LogReceiver* remove) noexcept;
-
-    protected:
-        template <typename... T>
-        void _formatDispatch(LogSeverity severity, string_view format, T const&... args);
-
-        void UP_RUNTIME_API _dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept;
+        void UP_RUNTIME_API attach(rc<LogSink> sink) noexcept;
+        void UP_RUNTIME_API detach(LogSink* sink) noexcept;
 
     private:
         static constexpr int log_length = 1024;
 
-        string _name;
-        LogSeverity _minimumSeverity = LogSeverity::Info;
-        RWLock _receiversLock;
-        vector<rc<LogReceiver>> _receivers;
+        struct Impl : up::shared<Impl> {
+            string name;
+            LogSeverity minimumSeverity = LogSeverity::Info;
+            RWLock lock;
+            rc<LogSink> sink;
+            rc<Impl> parent;
+        };
+
+        UP_RUNTIME_API
+        Logger(string name, rc<Impl> parent, rc<LogSink> sink, LogSeverity minimumSeverity);
+        static void _dispatch(Impl& impl, LogSeverity severity, string_view loggerName, string_view message) noexcept;
+
+        rc<Impl> _impl;
     };
 
     template <typename... T>
-    void Logger::_formatDispatch(LogSeverity severity, string_view format, T const&... args) {
+    void Logger::log(LogSeverity severity, string_view format, T const&... args) {
         if (!isEnabledFor(severity)) {
             return;
         }
@@ -66,6 +158,6 @@ namespace up {
         fixed_string_writer<log_length> writer;
         format_append(writer, format, args...);
 
-        _dispatch(severity, writer, {});
+        log(severity, writer);
     }
 } // namespace up

@@ -17,10 +17,6 @@ target_sources(potato_libruntime PRIVATE
     $<$<PLATFORM_ID:Windows>:private/debug.windows.h>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.rc>
 
-    # Logger backends
-    #
-    $<$<PLATFORM_ID:Windows>:private/win32_debug_receiver.windows.cpp>
-
     # Semaphore implementations
     #
     $<$<BOOL:${UNIX}>:private/semaphore.posix.cpp>
@@ -45,7 +41,6 @@ target_sources(potato_libruntime PRIVATE
     private/logger.cpp
     private/path.cpp
     "private/filesystem.cpp"
-    private/standard_stream_receiver.cpp
     private/stream.cpp
     private/task_worker.cpp
     private/thread_util.cpp

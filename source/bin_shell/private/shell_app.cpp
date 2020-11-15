@@ -64,7 +64,7 @@
 #    undef Success
 #endif
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell"), _logWindow(_logger) {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 
 up::shell::ShellApp::~ShellApp() {
     _imguiBackend.releaseResources();

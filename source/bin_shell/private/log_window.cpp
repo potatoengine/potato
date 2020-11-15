@@ -7,11 +7,11 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-class up::shell::LogWindow::LogWindowReceiver : public LogReceiver {
+class up::shell::LogWindow::LogWindowSink : public LogSink {
 public:
-    LogWindowReceiver(LogWindow& window) : _window(window) {}
+    LogWindowSink(LogWindow& window) : _window(window) {}
 
-    void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept
+    void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location) noexcept
         override {
         if (!_window._logs.empty()) {
             LogEntry& last = _window._logs.back();
@@ -21,18 +21,20 @@ public:
             }
         }
 
-        _window._logs.push_back({severity, string(message), string{}});
+        _window._logs.push_back({severity, string(message), string(loggerName), string{}});
+
+        next(loggerName, severity, message, location);
     }
 
     LogWindow& _window;
 };
 
-up::shell::LogWindow::LogWindow(Logger& logger) : _logger(logger), _receiver(new_shared<LogWindowReceiver>(*this)) {
-    _logger.attach(_receiver);
+up::shell::LogWindow::LogWindow() : _receiver(new_shared<LogWindowSink>(*this)) {
+    Logger::root().attach(_receiver);
 }
 
 up::shell::LogWindow::~LogWindow() {
-    _logger.detach(_receiver.get());
+    Logger::root().detach(_receiver.get());
 }
 
 void up::shell::LogWindow::draw() {
@@ -80,11 +82,11 @@ void up::shell::LogWindow::draw() {
         ImGui::SameLine();
 
         if (ImGui::Button("Test")) {
-            _logger.info("This is a test");
+            Logger::root().info("This is a test");
         }
         ImGui::SameLine();
         if (ImGui::Button("Error")) {
-            _logger.error("This is an error");
+            Logger::root().error("This is an error");
         }
 
         ImGui::EndGroup();
@@ -103,10 +105,11 @@ void up::shell::LogWindow::draw() {
 
     if (ImGui::BeginTable(
             "##logs",
-            3,
+            4,
             ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg |
                 ImGuiTableFlags_Hideable)) {
         ImGui::TableSetupColumn("Severity", ImGuiTableColumnFlags_None, 1);
+        ImGui::TableSetupColumn("Category", ImGuiTableColumnFlags_None, 2);
         ImGui::TableSetupColumn("Message", ImGuiTableColumnFlags_None, 6);
         ImGui::TableSetupColumn("Location", ImGuiTableColumnFlags_None, 4);
         ImGui::TableHeadersRow();
@@ -127,6 +130,8 @@ void up::shell::LogWindow::draw() {
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::TextColored(color, "%s", toString(log.severity).c_str());
+            ImGui::TableNextColumn();
+            ImGui::TextColored(color, "%s", log.category.c_str());
             ImGui::TableNextColumn();
             ImGui::TextColored(color, "%s", log.message.c_str());
             if (log.count > 1) {
