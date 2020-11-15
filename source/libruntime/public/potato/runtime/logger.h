@@ -91,8 +91,8 @@ namespace up {
             : Logger(std::move(name), root()._impl, nullptr, minimumSeverity) {}
         Logger(string name, Logger& parent, LogSeverity minimumSeverity = LogSeverity::Info)
             : Logger(std::move(name), parent._impl, nullptr, minimumSeverity) {}
-        Logger(string name, Logger& parent, rc<LogSink> receiver, LogSeverity minimumSeverity = LogSeverity::Info)
-            : Logger(std::move(name), parent._impl, std::move(receiver), minimumSeverity) {}
+        Logger(string name, Logger& parent, rc<LogSink> sink, LogSeverity minimumSeverity = LogSeverity::Info)
+            : Logger(std::move(name), parent._impl, std::move(sink), minimumSeverity) {}
 
         UP_RUNTIME_API ~Logger();
 
@@ -129,12 +129,12 @@ namespace up {
             string name;
             LogSeverity minimumSeverity = LogSeverity::Info;
             RWLock lock;
-            vector<rc<LogSink>> receivers;
+            rc<LogSink> sink;
             rc<Impl> parent;
         };
 
         UP_RUNTIME_API
-        Logger(string name, rc<Impl> parent, rc<LogSink> receiver, LogSeverity minimumSeverity);
+        Logger(string name, rc<Impl> parent, rc<LogSink> sink, LogSeverity minimumSeverity);
         static void _dispatch(Impl& impl, LogSeverity severity, string_view loggerName, string_view message) noexcept;
 
         rc<Impl> _impl;

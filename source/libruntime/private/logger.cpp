@@ -38,14 +38,12 @@ void up::DefaultLogSink::log(
 #endif
 }
 
-up::Logger::Logger(string name, rc<Impl> parent, rc<LogSink> receiver, LogSeverity minimumSeverity)
+up::Logger::Logger(string name, rc<Impl> parent, rc<LogSink> sink, LogSeverity minimumSeverity)
     : _impl(new_shared<Impl>()) {
     _impl->name = std::move(name);
     _impl->parent = std::move(parent);
     _impl->minimumSeverity = minimumSeverity;
-    if (receiver != nullptr) {
-        _impl->receivers.push_back(std::move(receiver));
-    }
+    _impl->sink = std::move(sink);
 }
 
 up::Logger::~Logger() = default;
@@ -59,13 +57,13 @@ bool up::Logger::isEnabledFor(LogSeverity severity) const noexcept {
     return severity >= _impl->minimumSeverity;
 }
 
-void up::Logger::attach(rc<LogSink> receiver) noexcept {
-    if (receiver.empty()) {
+void up::Logger::attach(rc<LogSink> sink) noexcept {
+    if (sink.empty()) {
         return;
     }
 
     LockGuard _(_impl->lock.writer());
-    _impl->receivers.push_back(std::move(receiver));
+    _impl->sink = std::move(sink);
 }
 
 void up::Logger::detach(LogSink* remove) noexcept {
@@ -74,12 +72,8 @@ void up::Logger::detach(LogSink* remove) noexcept {
     }
 
     LockGuard _(_impl->lock.writer());
-    auto& receivers = _impl->receivers;
-    for (size_t i = 0; i != receivers.size(); ++i) {
-        if (receivers[i].get() == remove) {
-            receivers.erase(receivers.begin() + i);
-            --i;
-        }
+    if (_impl->sink.get() == remove) {
+        _impl->sink.reset();
     }
 }
 
@@ -88,8 +82,8 @@ void up::Logger::_dispatch(Impl& impl, LogSeverity severity, string_view loggerN
 
     {
         LockGuard _(impl.lock.reader());
-        for (auto& receiver : impl.receivers) {
-            receiver->log(loggerName, severity, message, {});
+        if (impl.sink != nullptr) {
+            impl.sink->log(loggerName, severity, message, {});
         }
         parent = impl.parent;
     }
