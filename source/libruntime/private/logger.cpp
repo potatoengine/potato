@@ -39,13 +39,13 @@ void up::Logger::detach(LogReceiver* remove) noexcept {
     }
 }
 
-void up::Logger::_dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept {
+void up::Logger::log(LogSeverity severity, string_view message) noexcept {
     if (!isEnabledFor(severity)) {
         return;
     }
 
     LockGuard _(_receiversLock.reader());
     for (auto& receiver : _receivers) {
-        receiver->log(_name, severity, message, location);
+        receiver->log(_name, severity, message, {});
     }
 }

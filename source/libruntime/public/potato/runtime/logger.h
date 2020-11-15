@@ -88,25 +88,23 @@ namespace up {
         constexpr bool isEnabledFor(LogSeverity severity) const noexcept { return severity >= _minimumSeverity; }
 
         template <typename... T>
+        void log(LogSeverity severity, string_view format, T const&... args);
+        void UP_RUNTIME_API log(LogSeverity severity, string_view message) noexcept;
+
+        template <typename... T>
         void info(string_view format, T const&... args) {
-            _formatDispatch(LogSeverity::Info, format, args...);
+            log(LogSeverity::Info, format, args...);
         }
-        void info(string_view message) noexcept { _dispatch(LogSeverity::Info, message, {}); }
+        void info(string_view message) noexcept { log(LogSeverity::Info, message); }
 
         template <typename... T>
         void error(string_view format, T const&... args) {
-            _formatDispatch(LogSeverity::Error, format, args...);
+            log(LogSeverity::Error, format, args...);
         }
-        void error(string_view message) noexcept { _dispatch(LogSeverity::Error, message, {}); }
+        void error(string_view message) noexcept { log(LogSeverity::Error, message); }
 
         void UP_RUNTIME_API attach(rc<LogReceiver> receiver) noexcept;
         void UP_RUNTIME_API detach(LogReceiver* remove) noexcept;
-
-    protected:
-        template <typename... T>
-        void _formatDispatch(LogSeverity severity, string_view format, T const&... args);
-
-        void UP_RUNTIME_API _dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept;
 
     private:
         static constexpr int log_length = 1024;
@@ -118,7 +116,7 @@ namespace up {
     };
 
     template <typename... T>
-    void Logger::_formatDispatch(LogSeverity severity, string_view format, T const&... args) {
+    void Logger::log(LogSeverity severity, string_view format, T const&... args) {
         if (!isEnabledFor(severity)) {
             return;
         }
@@ -126,6 +124,6 @@ namespace up {
         fixed_string_writer<log_length> writer;
         format_append(writer, format, args...);
 
-        _dispatch(severity, writer, {});
+        log(severity, writer);
     }
 } // namespace up
