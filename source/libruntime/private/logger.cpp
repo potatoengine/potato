@@ -1,31 +1,57 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "logger.h"
-#include "standard_stream_sink.h"
+
 #if UP_PLATFORM_WINDOWS
-#    include "win32_debug_sink.h"
+#    include "potato/spud/platform_windows.h"
 #endif
+
+#include <iostream>
+
+void up::DefaultLogSink::log(
+    string_view loggerName,
+    LogSeverity severity,
+    string_view message,
+    LogLocation location) noexcept {
+    char buffer[2048] = {
+        0,
+    };
+
+    if (location.file) {
+        format_append(buffer, "{}({}): <{}> ", location.file, location.line, location.function);
+    }
+
+    format_append(buffer, "[{}] {} :: {}\n", toString(severity), loggerName, message);
+
+    {
+        std::ostream& os = severity == LogSeverity::Error ? std::cerr : std::cout;
+
+        os << buffer;
+
+        if (severity != LogSeverity::Info) {
+            os.flush();
+        }
+    }
+
+#if defined(UP_PLATFORM_WINDOWS)
+    OutputDebugStringA(buffer);
+#endif
+}
 
 up::Logger::Logger(string name, rc<Impl> parent, rc<LogSink> receiver, LogSeverity minimumSeverity)
     : _impl(new_shared<Impl>()) {
     _impl->name = std::move(name);
     _impl->parent = std::move(parent);
     _impl->minimumSeverity = minimumSeverity;
-
-    attach(std::move(receiver));
-    static auto standard = up::new_shared<up::StandardStreamSink>();
-    attach(standard);
-
-#if UP_PLATFORM_WINDOWS
-    static auto debug = up::new_shared<up::Win32DebugSink>();
-    attach(debug);
-#endif
+    if (receiver != nullptr) {
+        _impl->receivers.push_back(std::move(receiver));
+    }
 }
 
 up::Logger::~Logger() = default;
 
 auto up::Logger::root() -> up::Logger& {
-    static Logger s_logger("Potato", nullptr, nullptr, LogSeverity::Info);
+    static Logger s_logger("Potato", nullptr, new_shared<DefaultLogSink>(), LogSeverity::Info);
     return s_logger;
 }
 

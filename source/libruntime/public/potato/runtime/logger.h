@@ -14,6 +14,7 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
+#include <mutex>
 #include <utility>
 
 namespace up {
@@ -77,6 +78,11 @@ namespace up {
             LogSeverity severity,
             string_view message,
             LogLocation location = {}) noexcept = 0;
+    };
+
+    class DefaultLogSink final : public LogSink {
+        void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept
+            override;
     };
 
     class Logger {
