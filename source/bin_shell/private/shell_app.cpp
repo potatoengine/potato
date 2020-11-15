@@ -314,6 +314,10 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
 
     _updateTitle();
 
+    if (!_reconClient.start(*_project)) {
+        _logger.error("Failed to start recon");
+    }
+
     return true;
 }
 
@@ -365,6 +369,7 @@ void up::shell::ShellApp::run() {
         _render();
 
         if (_closeProject) {
+            _reconClient.stop();
             _closeProject = false;
             _editors.closeAll();
             _project = nullptr;
