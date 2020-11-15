@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "potato/spud/string_view.h"
+
 #include <cstring>
 
 namespace up {
@@ -9,9 +11,10 @@ namespace up {
     class fixed_writer final {
     public:
         template <std::size_t Count>
-        constexpr fixed_writer(char (&buffer)[Count]) noexcept : _buffer(buffer)
-                                                               , _cursor(buffer)
-                                                               , _length(Count) {
+        constexpr fixed_writer(char (&buffer)[Count], size_t offset = 0) noexcept
+            : _buffer(buffer)
+            , _cursor(buffer + offset)
+            , _length(Count) {
             *buffer = char{};
         }
         constexpr fixed_writer(char* buffer, std::size_t length) noexcept

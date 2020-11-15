@@ -92,4 +92,16 @@ namespace up {
         auto writer = append_writer(receiver);
         return format_to(writer, format_str, args...);
     }
+
+    /// Write the string format using the given parameters into a receiver.
+    /// @param buffer The text buffer to append to.
+    /// @param format_str The primary text and formatting controls to be written.
+    /// @param args The arguments used by the formatting string.
+    /// @returns a result code indicating any errors.
+    template <size_t N, formattable... Args>
+    constexpr auto format_append(char (&buffer)[N], string_view format_str, Args const&... args) -> zstring_view {
+        fixed_writer writer(buffer, stringLength(buffer));
+        format_to(writer, format_str, args...);
+        return buffer;
+    }
 } // namespace up
