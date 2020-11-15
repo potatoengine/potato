@@ -3,6 +3,7 @@
 #pragma once
 
 #include <reproc++/reproc.hpp>
+#include <thread>
 
 namespace up {
     class Project;
@@ -18,5 +19,6 @@ namespace up::shell {
 
     private:
         reproc::process _process;
+        std::thread _thread;
     };
 } // namespace up::shell
