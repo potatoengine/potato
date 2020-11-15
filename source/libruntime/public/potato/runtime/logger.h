@@ -81,11 +81,21 @@ namespace up {
 
     class Logger {
     public:
-        UP_RUNTIME_API Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info);
-        UP_RUNTIME_API
-        Logger(string name, rc<LogSink> receiver, LogSeverity minimumSeverity = LogSeverity::Info) noexcept;
+        Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info)
+            : Logger(std::move(name), root()._impl, nullptr, minimumSeverity) {}
+        Logger(string name, Logger& parent, LogSeverity minimumSeverity = LogSeverity::Info)
+            : Logger(std::move(name), parent._impl, nullptr, minimumSeverity) {}
+        Logger(string name, Logger& parent, rc<LogSink> receiver, LogSeverity minimumSeverity = LogSeverity::Info)
+            : Logger(std::move(name), parent._impl, std::move(receiver), minimumSeverity) {}
 
-        constexpr bool isEnabledFor(LogSeverity severity) const noexcept { return severity >= _minimumSeverity; }
+        UP_RUNTIME_API ~Logger();
+
+        Logger(Logger const&) = delete;
+        Logger& operator=(Logger const&) = delete;
+
+        UP_RUNTIME_API static Logger& root();
+
+        UP_RUNTIME_API bool isEnabledFor(LogSeverity severity) const noexcept;
 
         template <typename... T>
         void log(LogSeverity severity, string_view format, T const&... args);
@@ -109,10 +119,19 @@ namespace up {
     private:
         static constexpr int log_length = 1024;
 
-        string _name;
-        LogSeverity _minimumSeverity = LogSeverity::Info;
-        RWLock _receiversLock;
-        vector<rc<LogSink>> _receivers;
+        struct Impl : up::shared<Impl> {
+            string name;
+            LogSeverity minimumSeverity = LogSeverity::Info;
+            RWLock lock;
+            vector<rc<LogSink>> receivers;
+            rc<Impl> parent;
+        };
+
+        UP_RUNTIME_API
+        Logger(string name, rc<Impl> parent, rc<LogSink> receiver, LogSeverity minimumSeverity);
+        static void _dispatch(Impl& impl, LogSeverity severity, string_view loggerName, string_view message) noexcept;
+
+        rc<Impl> _impl;
     };
 
     template <typename... T>

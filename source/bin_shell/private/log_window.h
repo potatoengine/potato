@@ -8,7 +8,7 @@
 namespace up::shell {
     class LogWindow {
     public:
-        LogWindow(Logger& logger);
+        LogWindow();
         ~LogWindow();
 
         LogWindow(LogWindow const&) = delete;
@@ -24,11 +24,11 @@ namespace up::shell {
         struct LogEntry {
             LogSeverity severity = LogSeverity::Info;
             string message;
+            string category;
             string location;
             size_t count = 1;
         };
 
-        Logger& _logger;
         rc<LogWindowSink> _receiver;
         vector<LogEntry> _logs;
         LogSeverityMask _mask = LogSeverityMask::Everything;
