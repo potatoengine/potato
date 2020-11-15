@@ -64,7 +64,7 @@
 #    undef Success
 #endif
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell"), _logWindow(_logger) {}
 
 up::shell::ShellApp::~ShellApp() {
     _imguiBackend.releaseResources();
@@ -160,6 +160,16 @@ int up::shell::ShellApp::initialize() {
         {.name = "potato.editor.about", .menu = "Help\\About", .icon = ICON_FA_QUESTION_CIRCLE, .action = [this] {
              _aboutDialog = true;
          }});
+    _appActions.addAction(
+        {.name = "potato.editor.logs",
+         .menu = "View\\Logs",
+         .icon = ICON_FA_INFO,
+         .hotKey = "Alt+Shift+L",
+         .checked = [this] { return _logWindow.isOpen(); },
+         .action =
+             [this] {
+                 _logWindow.open(!_logWindow.isOpen());
+             }});
 
     _actions.addGroup(&_appActions);
 
@@ -286,6 +296,8 @@ bool up::shell::ShellApp::_selectAndLoadProject(zstring_view folder) {
 }
 
 bool up::shell::ShellApp::_loadProject(zstring_view path) {
+    _logger.info("Loading project: {}", path);
+
     _project = Project::loadFromFile(path);
     if (_project == nullptr) {
         _errorDialog("Could not load project file");
@@ -382,6 +394,8 @@ void up::shell::ShellApp::_onWindowSizeChanged() {
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+
+    _logger.info("Window resized: {}x{}", width, height);
 }
 
 void up::shell::ShellApp::_updateTitle() {
@@ -555,6 +569,8 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::PopStyleVar(1);
 
     _editors.update(_actions, *_renderer, _lastFrameTime);
+
+    _logWindow.draw();
 
     ImGui::End();
 }
