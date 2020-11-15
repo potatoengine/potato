@@ -10,11 +10,27 @@
 namespace up {
     enum class LogSeverity { Info, Error };
 
-    enum class LogSeverityMask : unsigned {
-        Info = 1 << (int)LogSeverity::Info,
-        Error = 1 << (int)LogSeverity::Error,
-        Everything = Info | Error
-    };
+    namespace log_severity_mask {
+        enum class LogSeverityMask : unsigned {
+            Info = 1 << (int)LogSeverity::Info,
+            Error = 1 << (int)LogSeverity::Error,
+            Everything = Info | Error
+        };
+
+        constexpr LogSeverityMask operator~(LogSeverityMask mask) noexcept {
+            return LogSeverityMask{~static_cast<unsigned>(mask)};
+        }
+
+        constexpr LogSeverityMask operator|(LogSeverityMask a, LogSeverityMask b) noexcept {
+            return LogSeverityMask{static_cast<unsigned>(a) | static_cast<unsigned>(b)};
+        }
+
+        constexpr LogSeverityMask operator&(LogSeverityMask a, LogSeverityMask b) noexcept {
+            return LogSeverityMask{ static_cast<unsigned>(a) & static_cast<unsigned>(b) };
+        }
+    } // namespace log_severity_mask
+
+    using LogSeverityMask = log_severity_mask::LogSeverityMask;
 
     constexpr LogSeverityMask toMask(LogSeverity severity) noexcept {
         return static_cast<LogSeverityMask>(1 << static_cast<int>(severity));
@@ -26,14 +42,14 @@ namespace up {
         return static_cast<LogSeverityMask>(high | rest);
     }
 
-    constexpr string_view toString(LogSeverity severity) noexcept {
+    constexpr zstring_view toString(LogSeverity severity) noexcept {
         switch (severity) {
             case LogSeverity::Info:
-                return "info";
+                return "info"_zsv;
             case LogSeverity::Error:
-                return "error";
+                return "error"_zsv;
             default:
-                return "unknown";
+                return "unknown"_zsv;
         }
     }
 } // namespace up
