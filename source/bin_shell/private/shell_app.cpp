@@ -180,9 +180,9 @@ int up::shell::ShellApp::initialize() {
 
     _audio = AudioEngine::create(_resourceLoader);
 
-#if defined(UP_GPU_ENABLE_D3D11)
+#if defined(UP_GPU_ENABLE_D3D12)
     if (_device == nullptr) {
-        auto factory = CreateFactoryD3D11();
+        auto factory = CreateFactoryD3D12();
         _device = factory->createDevice(0);
     }
 #endif

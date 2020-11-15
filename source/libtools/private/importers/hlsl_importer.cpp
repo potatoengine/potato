@@ -12,8 +12,8 @@
 #include "potato/spud/string_view.h"
 #include "potato/spud/string_writer.h"
 
-#if defined(UP_GPU_ENABLE_D3D11)
-#    include <d3d11.h>
+#if defined(UP_GPU_ENABLE_D3D12)
+#    include <d3d12.h>
 #    include <d3dcompiler.h>
 #    include <fstream>
 

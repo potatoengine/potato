@@ -45,7 +45,7 @@ target_link_libraries(potato_librender
         SDL2
 )
 
-set(UP_GPU_D3D11_SOURCES
+set(UP_GPU_D3D12_SOURCES
     "private/d3d12_backend/d3d12_command_list.cpp"
     "private/d3d12_backend/d3d12_buffer.cpp"
     "private/d3d12_backend/d3d12_device.cpp"
@@ -71,10 +71,9 @@ else()
     # so I'm adding a fake target to get the .cpp files registered
     # but unbuilt
     #
-
     add_library(potato_librender_d3d12 INTERFACE)
     target_sources(potato_librender_d3d12 INTERFACE ${UP_GPU_D3D12_SOURCES})
-endif(D3D12_PATH AND DXGI_PATH)
+endif()
 
 add_executable(potato_librender_test)
 target_sources(potato_librender_test PRIVATE
