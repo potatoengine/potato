@@ -4,8 +4,6 @@
 
 #include "_export.h"
 #include "lock_guard.h"
-#include "log_receiver.h"
-#include "log_severity.h"
 #include "rwlock.h"
 
 #include "potato/spud/fixed_string_writer.h"
@@ -19,6 +17,68 @@
 #include <utility>
 
 namespace up {
+    enum class LogSeverity { Info, Error };
+
+    namespace log_severity_mask {
+        enum class LogSeverityMask : unsigned {
+            Info = 1 << (int)LogSeverity::Info,
+            Error = 1 << (int)LogSeverity::Error,
+            Everything = Info | Error
+        };
+
+        constexpr LogSeverityMask operator~(LogSeverityMask mask) noexcept {
+            return LogSeverityMask{~static_cast<unsigned>(mask)};
+        }
+
+        constexpr LogSeverityMask operator|(LogSeverityMask a, LogSeverityMask b) noexcept {
+            return LogSeverityMask{static_cast<unsigned>(a) | static_cast<unsigned>(b)};
+        }
+
+        constexpr LogSeverityMask operator&(LogSeverityMask a, LogSeverityMask b) noexcept {
+            return LogSeverityMask{static_cast<unsigned>(a) & static_cast<unsigned>(b)};
+        }
+    } // namespace log_severity_mask
+
+    using LogSeverityMask = log_severity_mask::LogSeverityMask;
+
+    constexpr LogSeverityMask toMask(LogSeverity severity) noexcept {
+        return static_cast<LogSeverityMask>(1 << static_cast<int>(severity));
+    }
+
+    constexpr LogSeverityMask toInclusiveMask(LogSeverity severity) noexcept {
+        unsigned const high = 1 << static_cast<int>(severity);
+        unsigned const rest = high - 1;
+        return static_cast<LogSeverityMask>(high | rest);
+    }
+
+    constexpr zstring_view toString(LogSeverity severity) noexcept {
+        switch (severity) {
+            case LogSeverity::Info:
+                return "info"_zsv;
+            case LogSeverity::Error:
+                return "error"_zsv;
+            default:
+                return "unknown"_zsv;
+        }
+    }
+
+    struct LogLocation {
+        zstring_view file;
+        zstring_view function;
+        int line = 0;
+    };
+
+    class LogReceiver : public shared<LogReceiver> {
+    public:
+        virtual ~LogReceiver() = default;
+
+        virtual void log(
+            string_view loggerName,
+            LogSeverity severity,
+            string_view message,
+            LogLocation location = {}) noexcept = 0;
+    };
+
     class Logger {
     public:
         UP_RUNTIME_API Logger(string name, LogSeverity minimumSeverity = LogSeverity::Info);

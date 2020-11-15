@@ -1,6 +1,5 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "potato/runtime/log_receiver.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/string.h"
