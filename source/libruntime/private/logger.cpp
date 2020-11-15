@@ -38,6 +38,16 @@ void up::DefaultLogSink::log(
 #endif
 }
 
+void up::LogSink::next(
+    string_view loggerName,
+    LogSeverity severity,
+    string_view message,
+    LogLocation location) noexcept {
+    if (_next != nullptr) {
+        _next->log(loggerName, severity, message, location);
+    }
+}
+
 up::Logger::Logger(string name, rc<Impl> parent, rc<LogSink> sink, LogSeverity minimumSeverity)
     : _impl(new_shared<Impl>()) {
     _impl->name = std::move(name);
@@ -58,11 +68,10 @@ bool up::Logger::isEnabledFor(LogSeverity severity) const noexcept {
 }
 
 void up::Logger::attach(rc<LogSink> sink) noexcept {
-    if (sink.empty()) {
-        return;
-    }
-
     LockGuard _(_impl->lock.writer());
+    if (sink != nullptr) {
+        sink->_next = std::move(_impl->sink);
+    }
     _impl->sink = std::move(sink);
 }
 
@@ -73,7 +82,7 @@ void up::Logger::detach(LogSink* remove) noexcept {
 
     LockGuard _(_impl->lock.writer());
     if (_impl->sink.get() == remove) {
-        _impl->sink.reset();
+        _impl->sink = std::move(_impl->sink->_next);
     }
 }
 

@@ -78,6 +78,15 @@ namespace up {
             LogSeverity severity,
             string_view message,
             LogLocation location = {}) noexcept = 0;
+
+    protected:
+        void UP_RUNTIME_API
+        next(string_view loggerName, LogSeverity severity, string_view message, LogLocation location) noexcept;
+
+    private:
+        rc<LogSink> _next;
+
+        friend class Logger;
     };
 
     class DefaultLogSink final : public LogSink {

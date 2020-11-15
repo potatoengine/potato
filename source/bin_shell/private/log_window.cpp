@@ -11,7 +11,7 @@ class up::shell::LogWindow::LogWindowSink : public LogSink {
 public:
     LogWindowSink(LogWindow& window) : _window(window) {}
 
-    void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept
+    void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location) noexcept
         override {
         if (!_window._logs.empty()) {
             LogEntry& last = _window._logs.back();
@@ -22,6 +22,8 @@ public:
         }
 
         _window._logs.push_back({severity, string(message), string(loggerName), string{}});
+
+        next(loggerName, severity, message, location);
     }
 
     LogWindow& _window;
