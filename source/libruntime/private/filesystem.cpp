@@ -278,27 +278,19 @@ auto up::fs::writeAllText(zstring_view path, string_view text) -> IOResult {
 up::fs::WatchHandle::WatchHandle() = default;
 
 namespace {
-    struct DmonInitializer {
-        DmonInitializer() {
-            if (!initialized) {
-                initialized = true;
-                dmon_init();
-            }
-        }
-        ~DmonInitializer() {
-            if (initialized) {
-                dmon_deinit();
-            }
-        }
-        bool initialized = false;
-    } dmon_initializer;
-
     class WatchHandleImpl final : public up::fs::WatchHandle {
     public:
         explicit WatchHandleImpl(up::string directory) : _directory(std::move(directory)) {}
-        ~WatchHandleImpl() override { dmon_unwatch(_watch); }
+        ~WatchHandleImpl() override { close(); }
 
         bool start() {
+            {
+                std::unique_lock _(_dmonInitLock);
+                if (_dmonInitCount++ == 0) {
+                    dmon_init();
+                }
+            }
+
             _watch = dmon_watch(
                 _directory.c_str(),
                 _callbackStatic,
@@ -309,12 +301,22 @@ namespace {
 
         bool isOpen() const noexcept override { return _watch.id != 0; }
 
-        bool open() const override { return _watch.id != 0; }
-
         void close() override {
+            if (!isOpen()) {
+                return;
+            }
+
             dmon_unwatch(_watch);
-            _results.close();
             _watch.id = 0;
+
+            {
+                std::unique_lock _(_dmonInitLock);
+                if (--_dmonInitCount == 0) {
+                    dmon_deinit();
+                }
+            }
+
+            _results.close();
             _sema.signal();
         }
 
@@ -368,6 +370,9 @@ namespace {
         up::string _directory;
         up::ConcurrentQueue<up::fs::Watch> _results;
         up::Semaphore _sema;
+
+        static inline std::mutex _dmonInitLock;
+        static inline size_t _dmonInitCount = 0;
     };
 } // namespace
 

@@ -50,7 +50,6 @@ namespace up::fs {
         virtual ~WatchHandle() = default;
 
         virtual bool isOpen() const noexcept = 0;
-        virtual bool open() const = 0;
         virtual void close() = 0;
         virtual bool tryWatch(Watch& out) = 0;
         virtual void watch(Watch& out) = 0;
