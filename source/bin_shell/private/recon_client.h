@@ -25,7 +25,7 @@ namespace up::shell {
 
         reproc::process _process;
         std::thread _thread;
-        std::atomic_bool _staleAssets;
+        std::atomic_bool _staleAssets = false;
 
         friend ReprocSink;
     };
