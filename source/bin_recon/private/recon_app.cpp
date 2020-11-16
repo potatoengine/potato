@@ -1,10 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "recon_app.h"
-#include "file_hash_cache.h"
-#include "recon_protocol.h"
 
 #include "potato/format/format.h"
+#include "potato/recon/file_hash_cache.h"
+#include "potato/recon/recon_protocol.h"
 #include "potato/tools/meta_file.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"

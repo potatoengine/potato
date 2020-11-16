@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "file_hash_cache.h"
 #include "recon_config.h"
 
+#include "potato/recon/file_hash_cache.h"
 #include "potato/tools/asset_library.h"
 #include "potato/tools/importer.h"
 #include "potato/tools/importer_factory.h"
