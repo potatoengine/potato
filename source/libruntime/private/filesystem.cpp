@@ -307,12 +307,21 @@ namespace {
             return _watch.id != 0;
         }
 
+        bool isOpen() const noexcept override { return _watch.id != 0; }
+
         bool open() const override { return _watch.id != 0; }
+
+        void close() override {
+            dmon_unwatch(_watch);
+            _results.close();
+            _watch.id = 0;
+            _sema.signal();
+        }
 
         bool tryWatch(up::fs::Watch& out) override { return _results.tryDeque(out); }
 
         void watch(up::fs::Watch& out) override {
-            while (!_results.tryDeque(out)) {
+            while (!_results.tryDeque(out) && !_results.isClosed()) {
                 _sema.wait();
             }
         }

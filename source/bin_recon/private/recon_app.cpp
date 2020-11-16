@@ -110,8 +110,17 @@ bool up::recon::ReconApp::_runServer() {
         return false;
     }
 
+    fs::WatchHandle& handle = *watchHandle;
+    std::thread waitParent([&handle] {
+        char c{};
+        while (std::cin.get(c) && !std::cin.eof()) {
+            // consume input until there's none left (EOF/closed)
+        }
+        handle.close();
+    });
+
     fs::Watch watch;
-    for (;;) {
+    while (handle.isOpen()) {
         watchHandle->watch(watch);
 
         if (watch.path.starts_with(".library")) {
@@ -127,6 +136,8 @@ bool up::recon::ReconApp::_runServer() {
 
         _writeManifest();
     }
+
+    waitParent.join();
 
     // server only "fails" if it can't run at all
     return true;
