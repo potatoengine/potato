@@ -124,6 +124,8 @@ bool up::recon::ReconApp::_runServer() {
 
         _logger.info("Change: {}", watch.path);
         _importFile(watch.path);
+
+        _writeManifest();
     }
 
     // server only "fails" if it can't run at all

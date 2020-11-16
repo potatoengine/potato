@@ -356,6 +356,10 @@ void up::shell::ShellApp::run() {
             }
         }
 
+        if (_reconClient.hasUpdatedAssets()) {
+            _loadManifest();
+        }
+
         SDL_GetWindowSize(_window.get(), &width, &height);
         imguiIO.DisplaySize.x = static_cast<float>(width);
         imguiIO.DisplaySize.y = static_cast<float>(height);

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <reproc++/reproc.hpp>
+#include <atomic>
 #include <thread>
 
 namespace up {
@@ -17,8 +18,15 @@ namespace up::shell {
         bool start(Project& project);
         void stop();
 
+        bool hasUpdatedAssets() noexcept;
+
     private:
+        struct ReprocSink;
+
         reproc::process _process;
         std::thread _thread;
+        std::atomic_bool _staleAssets;
+
+        friend ReprocSink;
     };
 } // namespace up::shell

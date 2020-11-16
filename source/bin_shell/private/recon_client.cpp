@@ -10,44 +10,46 @@
 
 static up::Logger s_logger("ReconClient");
 
-namespace {
-    struct ReconClientStreamSink {
-        auto operator()(reproc::stream stream, uint8_t const* buffer, size_t bytes) -> std::error_code {
-            uint8_t const* start = buffer;
-            uint8_t const* const end = buffer + bytes;
+struct up::shell::ReconClient::ReprocSink {
+    ReconClient& client;
 
-            // FIXME: this assumes we're getting whole lines, which is not guaranteed!
-            for (uint8_t const* c = buffer; c != end; ++c) {
-                if (*c == '\n') {
-                    handleLine({reinterpret_cast<char const*>(start), static_cast<size_t>(c - start)});
-                    start = c + 1;
-                }
+    auto operator()(reproc::stream stream, uint8_t const* buffer, size_t bytes) -> std::error_code {
+        uint8_t const* start = buffer;
+        uint8_t const* const end = buffer + bytes;
+
+        // FIXME: this assumes we're getting whole lines, which is not guaranteed!
+        for (uint8_t const* c = buffer; c != end; ++c) {
+            if (*c == '\n') {
+                handleLine({reinterpret_cast<char const*>(start), static_cast<size_t>(c - start)});
+                start = c + 1;
             }
-
-            return {};
         }
 
-        bool handleLine(up::string_view line) {
-            nlohmann::json doc = nlohmann::json::parse(line, nullptr, false, true);
-            if (!doc.is_object()) {
-                return false;
-            }
+        return {};
+    }
 
-            auto const& type = doc["$type"].get<up::string_view>();
-            if (type == "log") {
-                auto const severityLabel = doc["severity"].get<up::string_view>();
-                auto const message = doc["message"].get<up::string_view>();
-
-                up::LogSeverity severity =
-                    severityLabel == toString(up::LogSeverity::Error) ? up::LogSeverity::Error : up::LogSeverity::Info;
-
-                s_logger.log(severity, message);
-            }
-
-            return true;
+    bool handleLine(string_view line) {
+        nlohmann::json doc = nlohmann::json::parse(line, nullptr, false, true);
+        if (!doc.is_object()) {
+            return false;
         }
-    };
-} // namespace
+
+        auto const& type = doc["$type"].get<string_view>();
+        if (type == "log") {
+            auto const severityLabel = doc["severity"].get<string_view>();
+            auto const message = doc["message"].get<string_view>();
+
+            LogSeverity severity =
+                severityLabel == toString(LogSeverity::Error) ? LogSeverity::Error : LogSeverity::Info;
+
+            s_logger.log(severity, message);
+
+            client._staleAssets.store(true);
+        }
+
+        return true;
+    }
+};
 
 bool up::shell::ReconClient::start(Project& project) {
     stop();
@@ -64,7 +66,7 @@ bool up::shell::ReconClient::start(Project& project) {
     }
 
     _thread = std::thread([this] {
-        ReconClientStreamSink sink;
+        ReprocSink sink{.client = *this};
         auto const ec = reproc::drain(_process, sink, sink);
         if (ec) {
             s_logger.error("Processing recon output failed: {}", ec.message());
@@ -83,4 +85,8 @@ void up::shell::ReconClient::stop() {
     if (_thread.joinable()) {
         _thread.join();
     }
+}
+
+bool up::shell::ReconClient::hasUpdatedAssets() noexcept {
+    return _staleAssets.exchange(false);
 }
