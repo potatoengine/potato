@@ -32,8 +32,14 @@ namespace up::recon {
     private:
         void _registerImporters();
 
+        bool _runOnce();
+        bool _runServer();
+
         auto _collectSourceFiles() -> vector<string>;
         bool _importFiles(view<string> files);
+        bool _importFile(zstring_view file);
+
+        bool _writeManifest();
 
         bool _isUpToDate(AssetLibrary::Imported const& record, uint64 contentHash, Importer const& importer)
             const noexcept;

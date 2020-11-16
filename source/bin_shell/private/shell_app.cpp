@@ -314,6 +314,10 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
 
     _updateTitle();
 
+    if (!_reconClient.start(*_project)) {
+        _logger.error("Failed to start recon");
+    }
+
     return true;
 }
 
@@ -352,6 +356,10 @@ void up::shell::ShellApp::run() {
             }
         }
 
+        if (_reconClient.hasUpdatedAssets()) {
+            _loadManifest();
+        }
+
         SDL_GetWindowSize(_window.get(), &width, &height);
         imguiIO.DisplaySize.x = static_cast<float>(width);
         imguiIO.DisplaySize.y = static_cast<float>(height);
@@ -365,6 +373,7 @@ void up::shell::ShellApp::run() {
         _render();
 
         if (_closeProject) {
+            _reconClient.stop();
             _closeProject = false;
             _editors.closeAll();
             _project = nullptr;

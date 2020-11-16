@@ -1,11 +1,23 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "assertion.h"
+#include "concurrent_queue.h"
 #include "filesystem.h"
+#include "logger.h"
+#include "semaphore.h"
 #include "stream.h"
 
 #include <filesystem>
 #include <fstream>
+#include <thread>
+
+static up::Logger dmonLogger("DirectoryWatcher");
+
+#define DMON_ASSERT(e) UP_ASSERT(e)
+#define DMON_LOG_ERROR(s) ::dmonLogger.error((s))
+#define DMON_LOG_DEBUG(s) ::dmonLogger.info((s))
+#define DMON_IMPL
+#include <dmon.h>
 
 namespace up {
     namespace {
@@ -261,4 +273,114 @@ auto up::fs::writeAllText(zstring_view path, string_view text) -> IOResult {
         return IOResult::System;
     }
     return writeAllText(stream, text);
+}
+
+up::fs::WatchHandle::WatchHandle() = default;
+
+namespace {
+    class WatchHandleImpl final : public up::fs::WatchHandle {
+    public:
+        explicit WatchHandleImpl(up::string directory) : _directory(std::move(directory)) {}
+        ~WatchHandleImpl() override { close(); }
+
+        bool start() {
+            {
+                std::unique_lock _(_dmonInitLock);
+                if (_dmonInitCount++ == 0) {
+                    dmon_init();
+                }
+            }
+
+            _watch = dmon_watch(
+                _directory.c_str(),
+                _callbackStatic,
+                DMON_WATCHFLAGS_RECURSIVE | DMON_WATCHFLAGS_FOLLOW_SYMLINKS,
+                this);
+            return _watch.id != 0;
+        }
+
+        bool isOpen() const noexcept override { return _watch.id != 0; }
+
+        void close() override {
+            if (!isOpen()) {
+                return;
+            }
+
+            dmon_unwatch(_watch);
+            _watch.id = 0;
+
+            {
+                std::unique_lock _(_dmonInitLock);
+                if (--_dmonInitCount == 0) {
+                    dmon_deinit();
+                }
+            }
+
+            _results.close();
+            _sema.signal();
+        }
+
+        bool tryWatch(up::fs::Watch& out) override { return _results.tryDeque(out); }
+
+        void watch(up::fs::Watch& out) override {
+            while (!_results.tryDeque(out) && !_results.isClosed()) {
+                _sema.wait();
+            }
+        }
+
+    private:
+        static void _callbackStatic(
+            dmon_watch_id,
+            dmon_action action,
+            char const*,
+            char const* filename,
+            char const* oldfilename,
+            void* user) {
+            static_cast<WatchHandleImpl*>(user)->_callback(action, filename, oldfilename);
+        }
+
+        void _callback(dmon_action action, char const* filename, char const* oldfilename) {
+            up::fs::Watch watch;
+            switch (action) {
+                case DMON_ACTION_CREATE:
+                    watch.action = up::fs::WatchAction::Create;
+                    break;
+                case DMON_ACTION_DELETE:
+                    watch.action = up::fs::WatchAction::Delete;
+                    break;
+                case DMON_ACTION_MODIFY:
+                    watch.action = up::fs::WatchAction::Modify;
+                    break;
+                case DMON_ACTION_MOVE:
+                    watch.action = up::fs::WatchAction::Rename;
+                    break;
+                default:
+                    return;
+            }
+
+            watch.path = up::string(filename);
+            // NOLINTNEXTLINE(bugprone-use-after-move)
+            while (!_results.tryEnque(std::move(watch))) {
+                std::this_thread::yield();
+            }
+            _sema.signal();
+        }
+
+        dmon_watch_id _watch = {0};
+        up::string _directory;
+        up::ConcurrentQueue<up::fs::Watch> _results;
+        up::Semaphore _sema;
+
+        static inline std::mutex _dmonInitLock;
+        static inline size_t _dmonInitCount = 0;
+    };
+} // namespace
+
+auto up::fs::watchDirectory(zstring_view path) -> IOReturn<rc<WatchHandle>> {
+    auto handle = new_shared<WatchHandleImpl>(string(path));
+    if (!handle->start()) {
+        return {IOResult::UnsupportedOperation};
+    }
+
+    return IOReturn<rc<WatchHandle>>{IOResult::Success, std::move(handle)};
 }

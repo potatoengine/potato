@@ -7,6 +7,7 @@
 
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/int_types.h"
+#include "potato/spud/rc.h"
 #include "potato/spud/string.h"
 #include "potato/spud/utility.h"
 #include "potato/spud/vector.h"
@@ -31,10 +32,30 @@ namespace up::fs {
 
     enum class FileType { Regular, Directory, SymbolicLink, Other };
 
+    enum class WatchAction { Create, Delete, Rename, Modify };
+
     struct Stat {
         size_t size = 0;
         uint64 mtime = 0;
         FileType type = FileType::Regular;
+    };
+
+    struct Watch {
+        WatchAction action = WatchAction::Modify;
+        string path;
+    };
+
+    class WatchHandle : public shared<WatchHandle> {
+    public:
+        virtual ~WatchHandle() = default;
+
+        virtual bool isOpen() const noexcept = 0;
+        virtual void close() = 0;
+        virtual bool tryWatch(Watch& out) = 0;
+        virtual void watch(Watch& out) = 0;
+
+    protected:
+        WatchHandle();
     };
 
     struct EnumerateItem {
@@ -71,4 +92,6 @@ namespace up::fs {
     [[nodiscard]] UP_RUNTIME_API auto readText(zstring_view path) -> IOReturn<string>;
 
     [[nodiscard]] UP_RUNTIME_API auto writeAllText(zstring_view path, string_view text) -> IOResult;
+
+    [[nodiscard]] UP_RUNTIME_API auto watchDirectory(zstring_view path) -> IOReturn<rc<WatchHandle>>;
 } // namespace up::fs

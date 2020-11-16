@@ -2,6 +2,7 @@
 
 #include "camera.h"
 #include "log_window.h"
+#include "recon_client.h"
 #include "settings.h"
 #include "ui/action.h"
 #include "ui/command_palette.h"
@@ -108,5 +109,6 @@ namespace up::shell {
         string _projectName;
         ResourceLoader _resourceLoader;
         LogWindow _logWindow;
+        ReconClient _reconClient;
     }; // namespace up::shell
 } // namespace up::shell
