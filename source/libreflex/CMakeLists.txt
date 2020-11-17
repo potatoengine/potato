@@ -10,6 +10,7 @@ up_set_common_properties(potato_libreflex)
 include(up_compile_sap)
 up_compile_sap(potato_libreflex SCHEMAS
     schema/common.sap
+    schema/reflex.sap
     schema/constraint.sap
     schema/tools.sap
 )
@@ -33,6 +34,10 @@ target_link_libraries(potato_libreflex
 add_executable(potato_libreflex_test)
 target_sources(potato_libreflex_test PRIVATE
     "tests/main.cpp"
+ "tests/test_schema.cpp")
+
+up_compile_sap(potato_libreflex_test SCHEMAS
+    schema/reflex_test.sap
 )
 
 up_set_common_properties(potato_libreflex_test)

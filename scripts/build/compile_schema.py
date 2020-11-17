@@ -52,6 +52,8 @@ def cxxnamespace(type: type_info.TypeBase, namespace: str='up::schema'):
 def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     """Calculates the qualified name for types"""
     cxxname = type.cxxname
+    if type.has_annotation('cxximport'):
+        return cxxname
     cxxns = cxxnamespace(type, namespace)
     return cxxname if '::' in cxxname or type.module == '$core' else f'{cxxns}::{cxxname}'
 
@@ -62,6 +64,8 @@ def cxxvalue(value):
         return 'false'
     if isinstance(value, str):
         return f'"{value}"' # FIXME: escapes
+    if isinstance(value, dict) and 'kind' in value and value['kind'] == 'enum':
+        return f'{value["type"]}::{value["name"]}'
     return str(value)
 
 def generate_header_types(ctx: Context):
@@ -78,16 +82,27 @@ def generate_header_types(ctx: Context):
 
         ctx.print(f'namespace {cxxns} {{\n')
 
-        ctx.print(f'    struct {type.cxxname} ')
-        if type.kind == type_info.TypeKind.ATTRIBUTE:
-            ctx.print(': reflex::SchemaAttribute ')
-        ctx.print('{\n')
-        for field in type.fields_ordered:
-            ctx.print(f"        {field.cxxtype} {field.cxxname}")
-            if field.has_default:
-                ctx.print(f' = {cxxvalue(field.default_or(None))}')
-            ctx.print(";\n")
-        ctx.print("    };\n")
+        if type.kind == type_info.TypeKind.ENUM:
+            ctx.print(f'    enum class {type.cxxname}')
+            if type.base is not None:
+                ctx.print(f' : {type.base.cxxname}')
+            ctx.print(' {\n')
+            for key in type.names:
+                ctx.print(f'        {key} = {type.value_or(key, 0)},\n')
+            ctx.print("    };\n")
+        else:
+            ctx.print(f'    struct {type.cxxname}')
+            if type.kind == type_info.TypeKind.ATTRIBUTE:
+                ctx.print(' : reflex::SchemaAttribute')
+            elif type.base is not None:
+                ctx.print(f' : {type.base.cxxname}')
+            ctx.print(' {\n')
+            for field in type.fields_ordered:
+                ctx.print(f"        {field.cxxtype} {field.cxxname}")
+                if field.has_default:
+                    ctx.print(f' = {cxxvalue(field.default_or(None))}')
+                ctx.print(";\n")
+            ctx.print("    };\n")
 
         ctx.print('}\n')
 
@@ -224,27 +239,37 @@ def generate_impl_schemas(ctx: Context):
 
         ctx.print(f"up::reflex::TypeInfo const& up::reflex::TypeHolder<{qual_name}>::get() noexcept {{\n")
         ctx.print('    using namespace up::schema;\n')
-        ctx.print(f'    static const TypeInfo info = makeTypeInfo<{qual_name}>("{type.name}", &getSchema<{qual_name}>());\n')
+        ctx.print(f'    static const TypeInfo info = makeTypeInfo<{qual_name}>("{type.name}"_zsv, &getSchema<{qual_name}>());\n')
         ctx.print('    return info;\n')
         ctx.print("}\n")
 
         if type.kind == type_info.TypeKind.OPAQUE:
             continue
+
         ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<{qual_name}>::get() noexcept {{\n")
         ctx.print('    using namespace up::schema;\n')
 
         generate_impl_annotations(ctx, type.name, type)
-        for field in type.fields_ordered:
-            generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
 
-        if len(type.fields_ordered) != 0:
-            ctx.print('    static const SchemaField fields[] = {\n')
-            for field in type.fields_ordered:
-                ctx.print(f'        SchemaField{{.name = "{field.name}", .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {type.name}_{field.name}_annotations}},\n')
+        if type.kind == type_info.TypeKind.ENUM:
+            ctx.print('    static const SchemaEnumValue values[] = {\n')
+            for key in type.names:
+                ctx.print(f'        SchemaEnumValue{{.name = "{key}"_zsv, .value = static_cast<int64>({qual_name}::{key})}},\n')
             ctx.print('    };\n')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .enumValues = values, .annotations = {type.name}_annotations}};\n')
         else:
-            ctx.print('    static constexpr view<SchemaField> fields;\n')
-        ctx.print(f'    static const Schema schema = {{.name = "{type.name}", .primitive = up::reflex::SchemaPrimitive::Object, .fields = fields, .annotations = {type.name}_annotations}};\n')
+            for field in type.fields_ordered:
+                generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
+
+            if len(type.fields_ordered) != 0:
+                ctx.print('    static const SchemaField fields[] = {\n')
+                for field in type.fields_ordered:
+                    ctx.print(f'        SchemaField{{.name = "{field.name}"_zsv, .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {type.name}_{field.name}_annotations}},\n')
+                ctx.print('    };\n')
+            else:
+                ctx.print('    static constexpr view<SchemaField> fields;\n')
+
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .fields = fields, .annotations = {type.name}_annotations}};\n')
         ctx.print('    return schema;\n')
         ctx.print("}\n")
 

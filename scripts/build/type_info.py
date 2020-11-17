@@ -111,6 +111,8 @@ class TypeDatabase:
                 type = TypeAttribute(self, name=key)
             elif kind == TypeKind.OPAQUE.value:
                 type = TypeOpaque(self, name=key)
+            elif kind == TypeKind.ENUM.value:
+                type = TypeEnum(self, name=key)
             else:
                 raise Exception(f'Unknown kind {kind}')
             self.__types[type.name] = type
@@ -223,6 +225,34 @@ class TypeStruct(TypeBase):
         TypeBase.resolve(self, db)
         for field in self.__fields.values():
             field.resolve(db)
+
+class TypeEnum(TypeBase):
+    """User-friendly wrapper of an enum definition"""
+    def __init__(self, db, name):
+        TypeBase.__init__(self, db, name)
+        self.__names = []
+        self.__values = {}
+
+    @property
+    def kind(self):
+        return TypeKind.ENUM
+
+    def value_or(self, key, otherwise=None):
+        return self.__values[key] if key in self.__values else otherwise
+
+    @property
+    def values(self):
+        return self.__values
+
+    @property
+    def names(self):
+        return self.__names
+
+    def load_from_json(self, json):
+        TypeBase.load_from_json(self, json)
+        for key,value in json['values'].items():
+            self.__values[key] = value
+        self.__names = [key for key in json['names']]
 
 class TypeAttribute(TypeStruct):
     """User-friendly wrapper for an attribute struct"""
