@@ -1,0 +1,12 @@
+module recon_messages;
+
+enum ReconLogSeverity {
+    Info,
+    Error
+}
+
+struct ReconLogMessage {
+    string category;
+    string message;
+    ReconLogSeverity severity = Info;
+}

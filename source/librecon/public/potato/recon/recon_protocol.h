@@ -3,18 +3,17 @@
 #pragma once
 
 #include "_export.h"
+#include "recon_messages_schema.h"
 
-#include "potato/runtime/logger.h"
+#include "potato/reflex/schema.h"
+
+#include <nlohmann/json_fwd.hpp>
 
 namespace up::recon {
-    class ReconProtocolLogSink : public LogSink {
-    public:
-        ~ReconProtocolLogSink() override = default;
+    bool encodeReconMessageRaw(nlohmann::json& target, reflex::Schema const& schema, void const* message);
 
-        UP_RECON_API void log(
-            string_view loggerName,
-            LogSeverity severity,
-            string_view message,
-            LogLocation location = {}) noexcept override;
-    };
+    template <typename T>
+    bool encodeReconMessage(nlohmann::json& target, T const& message) {
+        return encodeReconMessageRaw(target, reflex::getSchema<T>(), &message);
+    }
 } // namespace up::recon

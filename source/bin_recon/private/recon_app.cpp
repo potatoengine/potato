@@ -4,7 +4,7 @@
 
 #include "potato/format/format.h"
 #include "potato/recon/file_hash_cache.h"
-#include "potato/recon/recon_protocol.h"
+#include "potato/recon/recon_log_sink.h"
 #include "potato/tools/meta_file.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"

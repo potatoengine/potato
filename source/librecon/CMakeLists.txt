@@ -8,8 +8,9 @@ target_sources(potato_librecon PRIVATE
     "private/file_hash_cache.cpp"
     "public/potato/recon/file_hash_cache.h"
     "public/potato/recon/_export.h"
-    "public/potato/recon/recon_protocol.h"
-    "private/recon_protocol.cpp")
+    "public/potato/recon/recon_log_sink.h"
+    "private/recon_log_sink.cpp"
+ "private/recon_protocol.cpp")
 
 include(up_set_common_properties)
 up_set_common_properties(potato_librecon)
@@ -18,6 +19,7 @@ include(up_compile_sap)
 up_compile_sap(potato_librecon
     SCHEMAS
         schema/config.sap
+        schema/recon_messages.sap
 )
 
 

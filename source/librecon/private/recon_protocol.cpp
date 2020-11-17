@@ -2,23 +2,22 @@
 
 #include "recon_protocol.h"
 
-#include "potato/runtime/json.h"
-
 #include <nlohmann/json.hpp>
-#include <iostream>
 
-void up::recon::ReconProtocolLogSink::log(
-    string_view loggerName,
-    LogSeverity severity,
-    string_view message,
-    LogLocation location) noexcept {
-    nlohmann::json doc;
+bool up::recon::encodeReconMessageRaw(nlohmann::json& target, reflex::Schema const& schema, void const* message) {
+    target = nlohmann::json::object();
+    target["$type"] = schema.name;
 
-    doc = {
-        {"$type", "log"},
-        {"severity", toString(severity)},
-        {"message", message},
-        {"location", {{"file", location.file}, {"function", location.function}, {"line", location.line}}}};
+    for (reflex::SchemaField const& field : schema.fields) {
+        switch (field.schema->primitive) {
+            case reflex::SchemaPrimitive::String:
+                target[field.name.c_str()] =
+                    static_cast<string const&>(static_cast<char const*>(message) + field.offset);
+                break;
+            default:
+                return false;
+        }
+    }
 
-    std::cout << doc.dump() << std::endl;
+    return true;
 }
