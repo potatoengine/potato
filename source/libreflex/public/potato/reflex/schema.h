@@ -39,6 +39,7 @@ namespace up::reflex {
         UInt16,
         UInt32,
         UInt64,
+        Enum,
         Vec3,
         Mat4x4,
         Quat,
@@ -74,17 +75,11 @@ namespace up::reflex {
         Schema const* schema = nullptr;
         int offset = 0;
         view<SchemaAnnotation> annotations;
+    };
 
-        template <typename AttributeT>
-        AttributeT const* queryAnnotation() const noexcept requires(std::is_base_of_v<SchemaAttribute, AttributeT>) {
-            TypeInfo const& type = TypeHolder<AttributeT>::get();
-            for (SchemaAnnotation const& anno : annotations) {
-                if (anno.type == &type) {
-                    return static_cast<AttributeT const*>(anno.attr);
-                }
-            }
-            return nullptr;
-        }
+    struct SchemaEnumValue {
+        zstring_view name;
+        int64 value = 0;
     };
 
     struct Schema {
@@ -93,6 +88,7 @@ namespace up::reflex {
         Schema const* elementType = nullptr;
         SchemaOperations const* operations = nullptr;
         view<SchemaField> fields;
+        view<SchemaEnumValue> enumValues;
         view<SchemaAnnotation> annotations;
 
         template <typename AttributeT>
@@ -106,6 +102,9 @@ namespace up::reflex {
             return nullptr;
         }
     };
+
+    template <typename T>
+    concept IsSchemaAnnotation = std::is_base_of_v<SchemaAttribute, T>;
 
     template <typename T>
     struct SchemaHolder;
@@ -246,5 +245,54 @@ namespace up::reflex {
         else {
             return SchemaHolder<T>::get();
         }
+    }
+
+    template <IsSchemaAnnotation AttributeT>
+    constexpr auto queryAnnotation(view<SchemaAnnotation> annotations) noexcept -> AttributeT const* {
+        TypeInfo const& type = TypeHolder<AttributeT>::get();
+        for (SchemaAnnotation const& anno : annotations) {
+            if (anno.type == &type) {
+                return static_cast<AttributeT const*>(anno.attr);
+            }
+        }
+        return nullptr;
+    }
+
+    template <IsSchemaAnnotation AttributeT>
+    constexpr auto queryAnnotation(Schema const& schema) noexcept -> AttributeT const* {
+        return queryAnnotation<AttributeT>(schema.annotations);
+    }
+
+    template <IsSchemaAnnotation AttributeT>
+    constexpr auto queryAnnotation(SchemaField const& field) noexcept -> AttributeT const* {
+        return queryAnnotation<AttributeT>(field.annotations);
+    }
+
+    constexpr auto enumToString(Schema const& schema, int64 value) noexcept -> zstring_view {
+        for (SchemaEnumValue const& enVal : schema.enumValues) {
+            if (enVal.value == value) {
+                return enVal.name;
+            }
+        }
+        return {};
+    }
+
+    template <enumeration EnumT>
+    constexpr auto enumToString(EnumT en) noexcept -> zstring_view {
+        return enumToString(getSchema<EnumT>(), static_cast<int64>(en));
+    }
+
+    constexpr auto enumToValue(Schema const& schema, string_view name, int64 otherwise = 0) noexcept -> int64 {
+        for (SchemaEnumValue const& enVal : schema.enumValues) {
+            if (enVal.name == name) {
+                return enVal.value;
+            }
+        }
+        return otherwise;
+    }
+
+    template <enumeration EnumT>
+    constexpr auto enumToValue(string_view name, EnumT otherwise = {}) noexcept -> EnumT {
+        return static_cast<EnumT>(enumToValue(getSchema<EnumT>(), name, static_cast<int64>(otherwise)));
     }
 } // namespace up::reflex

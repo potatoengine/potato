@@ -194,11 +194,11 @@ void up::editor::PropertyGrid::_editArrayField(
 }
 
 bool up::editor::PropertyGrid::_beginProperty(reflex::SchemaField const& field, void* object) {
-    if (field.queryAnnotation<schema::Hidden>() != nullptr) {
+    if (queryAnnotation<schema::Hidden>(field) != nullptr) {
         return false;
     }
 
-    auto const* const displayNameAnnotation = field.queryAnnotation<schema::DisplayName>();
+    auto const* const displayNameAnnotation = queryAnnotation<schema::DisplayName>(field);
     zstring_view const displayName = displayNameAnnotation != nullptr && !displayNameAnnotation->name.empty()
         ? displayNameAnnotation->name
         : field.name;
@@ -222,7 +222,7 @@ bool up::editor::PropertyGrid::_beginProperty(reflex::SchemaField const& field, 
     bool const open = ImGui::TreeNodeEx(displayName.c_str(), flags);
     ImGui::PopID();
 
-    auto const* const tooltipAnnotation = field.queryAnnotation<schema::Tooltip>();
+    auto const* const tooltipAnnotation = queryAnnotation<schema::Tooltip>(field);
     if (tooltipAnnotation != nullptr && ImGui::IsItemHovered()) {
         ImGui::BeginTooltip();
         ImGui::Text("%s", tooltipAnnotation->text.c_str());
@@ -244,7 +244,7 @@ void up::editor::PropertyGrid::_editProperties(reflex::Schema const& schema, voi
 
     for (reflex::SchemaField const& field : schema.fields) {
         if (field.schema->primitive == reflex::SchemaPrimitive::Object &&
-            field.queryAnnotation<schema::Flatten>() != nullptr) {
+            queryAnnotation<schema::Flatten>(field) != nullptr) {
             void* const member = static_cast<char*>(object) + field.offset;
             _editProperties(*field.schema, member);
             continue;
@@ -269,7 +269,7 @@ void up::editor::PropertyGrid::_editProperty(reflex::SchemaField const& field, v
 void up::editor::PropertyGrid::_editIntegerField(reflex::SchemaField const& field, int& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
 
-    auto const* const rangeAnnotation = field.queryAnnotation<up::schema::IntRange>();
+    auto const* const rangeAnnotation = queryAnnotation<up::schema::IntRange>(field);
     if (rangeAnnotation != nullptr) {
         ImGui::SliderInt("##int", &value, rangeAnnotation->min, rangeAnnotation->max);
     }
@@ -281,7 +281,7 @@ void up::editor::PropertyGrid::_editIntegerField(reflex::SchemaField const& fiel
 void up::editor::PropertyGrid::_editFloatField(reflex::SchemaField const& field, float& value) noexcept {
     ImGui::SetNextItemWidth(-1.f);
 
-    auto const* const rangeAnnotation = field.queryAnnotation<up::schema::FloatRange>();
+    auto const* const rangeAnnotation = queryAnnotation<up::schema::FloatRange>(field);
     if (rangeAnnotation != nullptr) {
         ImGui::SliderFloat("##float", &value, rangeAnnotation->min, rangeAnnotation->max);
     }

@@ -1,0 +1,11 @@
+module reflex_test;
+
+enum TestEnum {
+    First,
+    Second,
+    Third
+}
+
+struct TestStruct {
+    TestEnum test = First;
+}

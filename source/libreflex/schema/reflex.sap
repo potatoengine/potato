@@ -1,0 +1,8 @@
+module reflex;
+
+import common;
+
+[cxximport("up::reflex::SchemaPrimitive", "potato/reflex/schema.h")]
+enum SchemaPrimitive {
+    Null
+}
