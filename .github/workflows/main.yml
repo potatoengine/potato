@@ -37,9 +37,9 @@ jobs:
           echo "ASSIMPDIR=$Env:DEPS\assimp-5.0.1-win-x64" | Out-File -FilePath "$Env:GITHUB_ENV" -Append
           ls -R $Env:DEPS
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v2
+        uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Setup VS Environment
-        uses: seanmiddleditch/gha-setup-vsdevenv@v2
+        uses: seanmiddleditch/gha-setup-vsdevenv@v3
       - name: Configure
         env:
           CXX: cl.exe
@@ -90,7 +90,7 @@ jobs:
         uses: Trass3r/setup-cpp@v1
         if: matrix.config == 'Debug'
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v2
+        uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
@@ -138,7 +138,7 @@ jobs:
         with:
           lfs: true
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v2
+        uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
         env:
           CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths
@@ -167,7 +167,7 @@ jobs:
         with:
           lfs: true
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v2
+        uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
         env:
           CXX: 'g++-10'
