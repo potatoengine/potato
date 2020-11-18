@@ -48,3 +48,7 @@ FetchContent_Declare(reproc
     GIT_REPOSITORY https://github.com/DaanDeMeyer/reproc.git
     GIT_TAG v14.2.1
 )
+FetchContent_Declare(tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+    GIT_TAG v0.7.4
+)
