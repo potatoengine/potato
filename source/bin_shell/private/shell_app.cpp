@@ -53,6 +53,7 @@
 #include <SDL_keycode.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
+#include <Tracy.hpp>
 #include <chrono>
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -78,6 +79,9 @@ up::shell::ShellApp::~ShellApp() {
 }
 
 int up::shell::ShellApp::initialize() {
+    TracyAppInfo("PotatoShell", stringLength("PotatoShell"));
+    ZoneScopedN("Initialize Shell");
+
     zstring_view configPath = "shell.config.json";
     if (fs::fileExists(configPath)) {
         _loadConfig(configPath);
@@ -335,9 +339,12 @@ void up::shell::ShellApp::run() {
     uint64 hotKeyRevision = 0;
 
     while (isRunning()) {
+        ZoneScopedN("Main Loop");
+
         imguiIO.DeltaTime = _lastFrameTime;
 
         if (!_actions.refresh(hotKeyRevision)) {
+            ZoneScopedN("Rebuild Actions");
             _hotKeys.clear();
             _actions.build([this](ActionId id, ActionDesc const& action) {
                 if (!action.hotKey.empty()) {
@@ -349,6 +356,7 @@ void up::shell::ShellApp::run() {
         _processEvents();
 
         if (_openProject && !_closeProject) {
+            ZoneScopedN("Load Project");
             _openProject = false;
             if (!_selectAndLoadProject(
                     path::join(fs::currentWorkingDirectory(), "..", "..", "..", "..", "resources"))) {
@@ -357,6 +365,7 @@ void up::shell::ShellApp::run() {
         }
 
         if (_reconClient.hasUpdatedAssets()) {
+            ZoneScopedN("Load Manifest");
             _loadManifest();
         }
 
@@ -421,6 +430,8 @@ void up::shell::ShellApp::_updateTitle() {
 }
 
 void up::shell::ShellApp::_processEvents() {
+    ZoneScopedN("Shell Events");
+
     auto& io = ImGui::GetIO();
 
     SDL_SetRelativeMouseMode(ImGui::IsCaptureRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
@@ -508,6 +519,8 @@ void up::shell::ShellApp::_processEvents() {
 }
 
 void up::shell::ShellApp::_render() {
+    ZoneScopedN("Shell Render");
+
     GpuViewportDesc viewport;
     int width = 0;
     int height = 0;
@@ -524,9 +537,12 @@ void up::shell::ShellApp::_render() {
     _renderer->endFrame(_lastFrameTime);
 
     _swapChain->present();
+    FrameMark;
 }
 
 void up::shell::ShellApp::_displayUI() {
+    ZoneScopedN("Shell UI");
+
     auto& imguiIO = ImGui::GetIO();
 
     _displayMainMenu();
