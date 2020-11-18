@@ -50,13 +50,13 @@ Ubuntu in WSL
   sudo add-apt-repository ppa:ubuntu-toolchain-r/test
   sudo add-apt-repository ppa:janisozaur/cmake-update-bionic
   sudo apt-get update
-  sudo apt-get install g++ g++-7 ninja-build cmake
+  sudo apt-get install g++ g++-10 ninja-build cmake
   ```
 
 Building
 --------
 
-- Clone the repository `https://github.com/seanmiddleditch/grimm`. Make sure you also checkout all submodules and not just the root repository.
+- Clone the repository `https://github.com/potatoengine/potato`. Make sure you also checkout all submodules and not just the root repository.
 
 - Open the folder you just checked out in Visual Studio. If you have the Visual Studio CMake workload installed, it will automatically configure the build for you.
 
