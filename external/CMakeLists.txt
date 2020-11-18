@@ -19,6 +19,7 @@ set(EXTERNALS
     sqlite
     dmon
     reproc
+    tracy
 )
 
 # ---------------------------- #
