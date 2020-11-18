@@ -21,7 +21,9 @@ namespace up::reflex {
 
     private:
         bool _encodeObject(nlohmann::json& json, Schema const& schema, void const* obj);
-        bool _encodeField(nlohmann::json& json, Schema const& schema, SchemaField const& field, void const* member);
+        bool _encodeArray(nlohmann::json& json, Schema const& schema, void const* arr);
+        bool _encodeField(nlohmann::json& json, SchemaField const& field, void const* member);
+        bool _encodeValue(nlohmann::json& json, Schema const& schema, void const* obj);
 
         nlohmann::json _document;
     };

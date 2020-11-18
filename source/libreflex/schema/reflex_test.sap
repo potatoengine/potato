@@ -9,3 +9,9 @@ enum TestEnum {
 struct TestStruct {
     TestEnum test = First;
 }
+
+struct TestComplex {
+    float[] values;
+    string name;
+    TestStruct test;
+}
