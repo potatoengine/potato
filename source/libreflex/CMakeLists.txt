@@ -20,6 +20,8 @@ target_sources(potato_libreflex PRIVATE
     "public/potato/reflex/schema.h"
     "public/potato/reflex/traits.h"
     "public/potato/reflex/type.h"
+    "public/potato/reflex/json.h"
+    "private/json.cpp"
 )
 
 target_link_libraries(potato_libreflex
@@ -27,14 +29,15 @@ target_link_libraries(potato_libreflex
         potato::spud
         potato::libruntime
         glm::glm
-    PRIVATE
         nlohmann_json::nlohmann_json
 )
 
 add_executable(potato_libreflex_test)
 target_sources(potato_libreflex_test PRIVATE
     "tests/main.cpp"
- "tests/test_schema.cpp")
+    "tests/test_schema.cpp"
+    "tests/test_json.cpp"
+)
 
 up_compile_sap(potato_libreflex_test SCHEMAS
     schema/reflex_test.sap

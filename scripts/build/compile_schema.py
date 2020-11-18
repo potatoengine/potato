@@ -86,6 +86,8 @@ def generate_header_types(ctx: Context):
             ctx.print(f'    enum class {type.cxxname}')
             if type.base is not None:
                 ctx.print(f' : {type.base.cxxname}')
+            else:
+                ctx.print(' : uint64')
             ctx.print(' {\n')
             for key in type.names:
                 ctx.print(f'        {key} = {type.value_or(key, 0)},\n')
