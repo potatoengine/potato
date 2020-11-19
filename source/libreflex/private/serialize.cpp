@@ -123,10 +123,8 @@ bool up::reflex::_detail::encodeValue(nlohmann::json& json, Schema const& schema
                 if (void const* pointee = schema.operations->pointerDeref(obj)) {
                     return encodeValue(json, *schema.elementType, pointee);
                 }
-                else {
-                    json = nullptr;
-                    return true;
-                }
+                json = nullptr;
+                return true;
             }
             return false;
         case SchemaPrimitive::Array:
