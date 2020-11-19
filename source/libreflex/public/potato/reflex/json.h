@@ -27,4 +27,23 @@ namespace up::reflex {
 
         nlohmann::json _document;
     };
+
+    class JsonDecoder {
+    public:
+        template <typename T>
+        bool decode(nlohmann::json const& json, T& obj) {
+            Schema const& schema = getSchema<T>();
+            return decodeRaw(json, schema, &obj);
+        }
+
+        bool decodeRaw(nlohmann::json const& json, Schema const& schema, void* obj);
+
+    private:
+        bool _decodeObject(nlohmann::json const& json, Schema const& schema, void* obj);
+        bool _decodeArray(nlohmann::json const& json, Schema const& schema, void* arr);
+        bool _decodeField(nlohmann::json const& json, SchemaField const& field, void* member);
+        bool _decodeValue(nlohmann::json const& json, Schema const& schema, void* obj);
+
+        nlohmann::json _document;
+    };
 } // namespace up::reflex

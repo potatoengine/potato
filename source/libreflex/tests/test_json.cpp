@@ -33,4 +33,21 @@ TEST_CASE("TestJson", "[potato][reflex]") {
             json ==
             R"({"$schema":"TestComplex","name":"Frederick","test":{"$schema":"TestStruct","test":"Second"},"values":[42.0,-7.0,6000000000.0]})");
     }
+
+    SECTION("decode complex") {
+        reflex::JsonDecoder decoder;
+
+        string_view const json =
+            R"({"$schema":"TestComplex","name":"Frederick","values":[42.0,-7.0,6000000000.0],"test":{"$schema":"TestStruct","test":"Second"}})";
+
+        TestComplex comp;
+        CHECK(decoder.decode(nlohmann::json::parse(json), comp));
+
+        CHECK(comp.name == "Frederick"_s);
+        REQUIRE(comp.values.size() == 3);
+        CHECK(comp.values[0] == 42.f);
+        CHECK(comp.values[1] == -7.f);
+        CHECK(comp.values[2] == 6'000'000'000.f);
+        CHECK(comp.test.test == TestEnum::Second);
+    }
 }

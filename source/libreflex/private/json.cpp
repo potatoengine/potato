@@ -132,3 +132,70 @@ bool up::reflex::JsonEncoder::_encodeValue(nlohmann::json& json, Schema const& s
             return false;
     }
 }
+
+bool up::reflex::JsonDecoder::decodeRaw(nlohmann::json const& json, Schema const& schema, void* obj) {
+    UP_ASSERT(obj != nullptr);
+    return _decodeValue(json, schema, obj);
+}
+
+bool up::reflex::JsonDecoder::_decodeObject(nlohmann::json const& json, Schema const& schema, void* obj) {
+    if (!json.is_object()) {
+        return false;
+    }
+
+    bool success = true;
+    for (SchemaField const& field : schema.fields) {
+        if (json.contains(field.name.c_str())) {
+            success = _decodeField(json[field.name.c_str()], field, static_cast<char*>(obj) + field.offset) && success;
+        }
+    }
+    return success;
+}
+
+bool up::reflex::JsonDecoder::_decodeArray(nlohmann::json const& json, Schema const& schema, void* arr) {
+    if (!json.is_array()) {
+        return false;
+    }
+
+    if (schema.operations->resize == nullptr) {
+        return false;
+    }
+    if (schema.operations->elementAt == nullptr) {
+        return false;
+    }
+
+    schema.operations->resize(arr, json.size());
+
+    bool success = true;
+    for (size_t index = 0; index != json.size(); ++index) {
+        void* el = schema.operations->elementAt(arr, index);
+        success = _decodeValue(json[index], *schema.elementType, el) && success;
+    }
+
+    return success;
+}
+
+bool up::reflex::JsonDecoder::_decodeField(nlohmann::json const& json, SchemaField const& field, void* member) {
+    return _decodeValue(json, *field.schema, member);
+}
+
+bool up::reflex::JsonDecoder::_decodeValue(nlohmann::json const& json, Schema const& schema, void* obj) {
+    switch (schema.primitive) {
+        case SchemaPrimitive::Float:
+            *static_cast<float*>(obj) = json.get<float>();
+            return true;
+        case SchemaPrimitive::Enum:
+            // FIXME: enums of different base types/sizes
+            *static_cast<int64*>(obj) = enumToValue(schema, json.get<string_view>());
+            return true;
+        case SchemaPrimitive::String:
+            *static_cast<string*>(obj) = json.get<string>();
+            return true;
+        case SchemaPrimitive::Array:
+            return _decodeArray(json, schema, obj);
+        case SchemaPrimitive::Object:
+            return _decodeObject(json, schema, obj);
+        default:
+            return false;
+    }
+}

@@ -62,12 +62,14 @@ namespace up::reflex {
         using SwapIndices = void (*)(void* object, size_t first, size_t second);
         using EraseAt = void (*)(void* object, size_t index);
         using InsertAt = void (*)(void* object, size_t index);
+        using Resize = void (*)(void* object, size_t size);
 
         GetSize getSize = nullptr;
         ElementAt elementAt = nullptr;
         SwapIndices swapIndices = nullptr;
         EraseAt eraseAt = nullptr;
         InsertAt insertAt = nullptr;
+        Resize resize = nullptr;
     };
 
     struct SchemaField {
@@ -218,7 +220,13 @@ namespace up::reflex {
                     [](void* array, size_t index) {
                         auto& arr = *static_cast<Type*>(array);
                         arr.insert(arr.begin() + index, {});
+                    },
+                .resize =
+                    [](void* array, size_t size) {
+                        auto& arr = *static_cast<Type*>(array);
+                        arr.resize(size);
                     }};
+
             static Schema const schema{
                 .name = "vector"_zsv,
                 .primitive = SchemaPrimitive::Array,
