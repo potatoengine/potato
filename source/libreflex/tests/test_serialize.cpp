@@ -2,24 +2,23 @@
 
 #include "reflex_test_schema.h"
 
-#include "potato/reflex/json.h"
+#include "potato/reflex/serialize.h"
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("TestJson", "[potato][reflex]") {
+TEST_CASE("Serialize", "[potato][reflex]") {
     using namespace up;
     using namespace up::schema;
 
-    SECTION("encode test") {
-        reflex::JsonEncoder encoder;
+    SECTION("json encode test") {
         TestStruct s{TestEnum::First};
-        CHECK(encoder.encodeObject(s));
-        auto const json = encoder.document().dump();
+        nlohmann::json doc;
+        CHECK(reflex::encodeToJson(doc, s));
+        auto const json = doc.dump();
         CHECK(json == R"({"$schema":"TestStruct","test":"First"})");
     }
 
-    SECTION("encode complex") {
-        reflex::JsonEncoder encoder;
+    SECTION("json encode complex") {
         TestComplex comp;
         comp.name = "Frederick"_s;
         comp.values.push_back(42.f);
@@ -27,21 +26,20 @@ TEST_CASE("TestJson", "[potato][reflex]") {
         comp.values.push_back(6'000'000'000.f);
         comp.test.test = TestEnum::Second;
 
-        CHECK(encoder.encodeObject(comp));
-        auto const json = encoder.document().dump();
+        nlohmann::json doc;
+        CHECK(reflex::encodeToJson(doc, comp));
+        auto const json = doc.dump();
         CHECK(
             json ==
             R"({"$schema":"TestComplex","name":"Frederick","test":{"$schema":"TestStruct","test":"Second"},"values":[42.0,-7.0,6000000000.0]})");
     }
 
-    SECTION("decode complex") {
-        reflex::JsonDecoder decoder;
-
+    SECTION("json decode complex") {
         string_view const json =
             R"({"$schema":"TestComplex","name":"Frederick","values":[42.0,-7.0,6000000000.0],"test":{"$schema":"TestStruct","test":"Second"}})";
 
         TestComplex comp;
-        CHECK(decoder.decode(nlohmann::json::parse(json), comp));
+        CHECK(reflex::decodeFromJson(nlohmann::json::parse(json), comp));
 
         CHECK(comp.name == "Frederick"_s);
         REQUIRE(comp.values.size() == 3);

@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "json.h"
+#include "serialize.h"
 
 #include "potato/runtime/assertion.h"
 #include "potato/runtime/json.h"
@@ -9,16 +9,27 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
-bool up::reflex::JsonEncoder::encodeObjectRaw(Schema const& schema, void const* obj) {
-    UP_ASSERT(obj != nullptr);
-    UP_ASSERT(schema.primitive == SchemaPrimitive::Object);
+namespace up::reflex::_detail {
+    static bool encodeObject(nlohmann::json& json, Schema const& schema, void const* obj);
+    static bool encodeArray(nlohmann::json& json, Schema const& schema, void const* arr);
+    static bool encodeValue(nlohmann::json& json, Schema const& schema, void const* obj);
 
-    _document = nlohmann::json::object();
+    static bool decodeObject(nlohmann::json const& json, Schema const& schema, void* obj);
+    static bool decodeArray(nlohmann::json const& json, Schema const& schema, void* arr);
+    static bool decodeValue(nlohmann::json const& json, Schema const& schema, void* obj);
+} // namespace up::reflex::_detail
 
-    return _encodeObject(_document, schema, obj);
+bool up::reflex::encodeToJsonRaw(nlohmann::json& json, Schema const& schema, void const* memory) {
+    UP_ASSERT(memory != nullptr);
+    return _detail::encodeValue(json, schema, memory);
 }
 
-bool up::reflex::JsonEncoder::_encodeObject(nlohmann::json& json, Schema const& schema, void const* obj) {
+bool up::reflex::decodeFromJsonRaw(nlohmann::json const& json, Schema const& schema, void* memory) {
+    UP_ASSERT(memory != nullptr);
+    return _detail::decodeValue(json, schema, memory);
+}
+
+bool up::reflex::_detail::encodeObject(nlohmann::json& json, Schema const& schema, void const* obj) {
     UP_ASSERT(schema.primitive == SchemaPrimitive::Object);
 
     json = nlohmann::json::object();
@@ -26,15 +37,14 @@ bool up::reflex::JsonEncoder::_encodeObject(nlohmann::json& json, Schema const& 
 
     bool success = true;
     for (SchemaField const& field : schema.fields) {
-        if (!_encodeField(json, field, static_cast<char const*>(obj) + field.offset)) {
-            success = false;
-        }
+        nlohmann::json& sub = json[field.name.c_str()];
+        success = encodeValue(sub, *field.schema, static_cast<char const*>(obj) + field.offset) && success;
     }
 
     return success;
 }
 
-bool up::reflex::JsonEncoder::_encodeArray(nlohmann::json& json, Schema const& schema, void const* arr) {
+bool up::reflex::_detail::encodeArray(nlohmann::json& json, Schema const& schema, void const* arr) {
     UP_ASSERT(schema.primitive == SchemaPrimitive::Array);
 
     if (schema.operations->getSize == nullptr) {
@@ -50,22 +60,14 @@ bool up::reflex::JsonEncoder::_encodeArray(nlohmann::json& json, Schema const& s
     size_t const size = schema.operations->getSize(arr);
     for (size_t index = 0; index != size; ++index) {
         void const* elem = schema.operations->elementAt(const_cast<void*>(arr), index);
-        nlohmann::json sub;
-        if (!_encodeValue(sub, *schema.elementType, elem)) {
-            success = false;
-        }
-        json.push_back(std::move(sub));
+        json.push_back(nlohmann::json());
+        success = encodeValue(json.back(), *schema.elementType, elem) && success;
     }
 
     return success;
 }
 
-bool up::reflex::JsonEncoder::_encodeField(nlohmann::json& json, SchemaField const& field, void const* member) {
-    nlohmann::json& sub = json[field.name.c_str()];
-    return _encodeValue(sub, *field.schema, member);
-}
-
-bool up::reflex::JsonEncoder::_encodeValue(nlohmann::json& json, Schema const& schema, void const* obj) {
+bool up::reflex::_detail::encodeValue(nlohmann::json& json, Schema const& schema, void const* obj) {
     switch (schema.primitive) {
         case SchemaPrimitive::Bool:
             json = *static_cast<bool const*>(obj);
@@ -122,23 +124,18 @@ bool up::reflex::JsonEncoder::_encodeValue(nlohmann::json& json, Schema const& s
                 return true;
             }
             else {
-                return _encodeValue(json, *schema.elementType, *static_cast<void const* const*>(obj));
+                return encodeValue(json, *schema.elementType, *static_cast<void const* const*>(obj));
             }
         case SchemaPrimitive::Array:
-            return _encodeArray(json, schema, obj);
+            return encodeArray(json, schema, obj);
         case SchemaPrimitive::Object:
-            return _encodeObject(json, schema, obj);
+            return encodeObject(json, schema, obj);
         default:
             return false;
     }
 }
 
-bool up::reflex::JsonDecoder::decodeRaw(nlohmann::json const& json, Schema const& schema, void* obj) {
-    UP_ASSERT(obj != nullptr);
-    return _decodeValue(json, schema, obj);
-}
-
-bool up::reflex::JsonDecoder::_decodeObject(nlohmann::json const& json, Schema const& schema, void* obj) {
+bool up::reflex::_detail::decodeObject(nlohmann::json const& json, Schema const& schema, void* obj) {
     if (!json.is_object()) {
         return false;
     }
@@ -146,13 +143,14 @@ bool up::reflex::JsonDecoder::_decodeObject(nlohmann::json const& json, Schema c
     bool success = true;
     for (SchemaField const& field : schema.fields) {
         if (json.contains(field.name.c_str())) {
-            success = _decodeField(json[field.name.c_str()], field, static_cast<char*>(obj) + field.offset) && success;
+            success =
+                decodeValue(json[field.name.c_str()], *field.schema, static_cast<char*>(obj) + field.offset) && success;
         }
     }
     return success;
 }
 
-bool up::reflex::JsonDecoder::_decodeArray(nlohmann::json const& json, Schema const& schema, void* arr) {
+bool up::reflex::_detail::decodeArray(nlohmann::json const& json, Schema const& schema, void* arr) {
     if (!json.is_array()) {
         return false;
     }
@@ -169,14 +167,10 @@ bool up::reflex::JsonDecoder::_decodeArray(nlohmann::json const& json, Schema co
     bool success = true;
     for (size_t index = 0; index != json.size(); ++index) {
         void* el = schema.operations->elementAt(arr, index);
-        success = _decodeValue(json[index], *schema.elementType, el) && success;
+        success = decodeValue(json[index], *schema.elementType, el) && success;
     }
 
     return success;
-}
-
-bool up::reflex::JsonDecoder::_decodeField(nlohmann::json const& json, SchemaField const& field, void* member) {
-    return _decodeValue(json, *field.schema, member);
 }
 
 template <typename T, typename U = T>
@@ -185,7 +179,7 @@ static bool decodeSimple(nlohmann::json const& json, void* obj) {
     return true;
 }
 
-bool up::reflex::JsonDecoder::_decodeValue(nlohmann::json const& json, Schema const& schema, void* obj) {
+bool up::reflex::_detail::decodeValue(nlohmann::json const& json, Schema const& schema, void* obj) {
     switch (schema.primitive) {
         case SchemaPrimitive::Bool:
             return decodeSimple<bool>(json, obj);
@@ -230,9 +224,9 @@ bool up::reflex::JsonDecoder::_decodeValue(nlohmann::json const& json, Schema co
         case SchemaPrimitive::String:
             return decodeSimple<string>(json, obj);
         case SchemaPrimitive::Array:
-            return _decodeArray(json, schema, obj);
+            return decodeArray(json, schema, obj);
         case SchemaPrimitive::Object:
-            return _decodeObject(json, schema, obj);
+            return decodeObject(json, schema, obj);
         case SchemaPrimitive::Pointer:
             // FIXME: determine how we want to instantiate/reset pointers
             return false;
