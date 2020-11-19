@@ -57,19 +57,21 @@ namespace up::reflex {
     };
 
     struct SchemaOperations {
-        using GetSize = size_t (*)(void const* object);
-        using ElementAt = void* (*)(void* object, size_t index);
-        using SwapIndices = void (*)(void* object, size_t first, size_t second);
-        using EraseAt = void (*)(void* object, size_t index);
-        using InsertAt = void (*)(void* object, size_t index);
-        using Resize = void (*)(void* object, size_t size);
+        using ArrayGetSize = size_t (*)(void const* arr);
+        using ArrayElementAt = void const* (*)(void const* arr, size_t index);
+        using ArrayMutableElementAt = void* (*)(void* arr, size_t index);
+        using ArraySwapIndices = void (*)(void* arr, size_t first, size_t second);
+        using ArrayEraseAt = void (*)(void* arr, size_t index);
+        using ArrayInsertAt = void (*)(void* arr, size_t index);
+        using ArrayResize = void (*)(void* arr, size_t size);
 
-        GetSize getSize = nullptr;
-        ElementAt elementAt = nullptr;
-        SwapIndices swapIndices = nullptr;
-        EraseAt eraseAt = nullptr;
-        InsertAt insertAt = nullptr;
-        Resize resize = nullptr;
+        ArrayGetSize arrayGetSize = nullptr;
+        ArrayElementAt arrayElementAt = nullptr;
+        ArrayMutableElementAt arrayMutableElementAt = nullptr;
+        ArraySwapIndices arraySwapIndices = nullptr;
+        ArrayEraseAt arrayEraseAt = nullptr;
+        ArrayInsertAt arrayInsertAt = nullptr;
+        ArrayResize arrayResize = nullptr;
     };
 
     struct SchemaField {
@@ -196,32 +198,36 @@ namespace up::reflex {
         else if constexpr (is_vector_v<Type>) {
             static Schema const& elementSchema = getSchema<typename Type::value_type>();
             static SchemaOperations const operations = {
-                .getSize =
+                .arrayGetSize =
                     [](void const* array) noexcept {
                         auto const& arr = *static_cast<Type const*>(array);
                         return arr.size();
                     },
-                .elementAt = [](void* array, size_t index) noexcept -> void* {
+                .arrayElementAt = [](void const* array, size_t index) noexcept -> void const* {
+                    auto const& arr = *static_cast<Type const*>(array);
+                    return arr.data() + index;
+                },
+                .arrayMutableElementAt = [](void* array, size_t index) noexcept -> void* {
                     auto& arr = *static_cast<Type*>(array);
                     return arr.data() + index;
                 },
-                .swapIndices =
+                .arraySwapIndices =
                     [](void* array, size_t first, size_t second) noexcept {
                         auto& arr = *static_cast<Type*>(array);
                         using std::swap;
                         swap(arr[first], arr[second]);
                     },
-                .eraseAt =
+                .arrayEraseAt =
                     [](void* array, size_t index) {
                         auto& arr = *static_cast<Type*>(array);
                         arr.erase(arr.begin() + index);
                     },
-                .insertAt =
+                .arrayInsertAt =
                     [](void* array, size_t index) {
                         auto& arr = *static_cast<Type*>(array);
                         arr.insert(arr.begin() + index, {});
                     },
-                .resize =
+                .arrayResize =
                     [](void* array, size_t size) {
                         auto& arr = *static_cast<Type*>(array);
                         arr.resize(size);

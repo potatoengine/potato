@@ -47,19 +47,19 @@ bool up::reflex::_detail::encodeObject(nlohmann::json& json, Schema const& schem
 bool up::reflex::_detail::encodeArray(nlohmann::json& json, Schema const& schema, void const* arr) {
     UP_ASSERT(schema.primitive == SchemaPrimitive::Array);
 
-    if (schema.operations->getSize == nullptr) {
+    if (schema.operations->arrayGetSize == nullptr) {
         return false;
     }
-    if (schema.operations->elementAt == nullptr) {
+    if (schema.operations->arrayElementAt == nullptr) {
         return false;
     }
 
     json = nlohmann::json::array();
 
     bool success = true;
-    size_t const size = schema.operations->getSize(arr);
+    size_t const size = schema.operations->arrayGetSize(arr);
     for (size_t index = 0; index != size; ++index) {
-        void const* elem = schema.operations->elementAt(const_cast<void*>(arr), index);
+        void const* elem = schema.operations->arrayElementAt(arr, index);
         json.push_back(nlohmann::json());
         success = encodeValue(json.back(), *schema.elementType, elem) && success;
     }
@@ -155,18 +155,18 @@ bool up::reflex::_detail::decodeArray(nlohmann::json const& json, Schema const& 
         return false;
     }
 
-    if (schema.operations->resize == nullptr) {
+    if (schema.operations->arrayResize == nullptr) {
         return false;
     }
-    if (schema.operations->elementAt == nullptr) {
+    if (schema.operations->arrayMutableElementAt == nullptr) {
         return false;
     }
 
-    schema.operations->resize(arr, json.size());
+    schema.operations->arrayResize(arr, json.size());
 
     bool success = true;
     for (size_t index = 0; index != json.size(); ++index) {
-        void* el = schema.operations->elementAt(arr, index);
+        void* el = schema.operations->arrayMutableElementAt(arr, index);
         success = decodeValue(json[index], *schema.elementType, el) && success;
     }
 

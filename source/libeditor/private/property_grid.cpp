@@ -103,12 +103,12 @@ void up::editor::PropertyGrid::_editArrayField(
         return;
     }
 
-    if (schema.operations->getSize == nullptr || schema.operations->elementAt == nullptr) {
+    if (schema.operations->arrayGetSize == nullptr || schema.operations->arrayElementAt == nullptr) {
         ImGui::TextDisabled("Unsupported type");
         return;
     }
 
-    size_t const size = schema.operations->getSize(object);
+    size_t const size = schema.operations->arrayGetSize(object);
 
     ImGui::Text("%d items :: %s", static_cast<int>(size), schema.name.c_str());
 
@@ -117,7 +117,7 @@ void up::editor::PropertyGrid::_editArrayField(
     size_t swapSecond = size;
 
     for (size_t index = 0; index != size; ++index) {
-        void* element = schema.operations->elementAt(object, index);
+        void* element = schema.operations->arrayMutableElementAt(object, index);
 
         ImGui::PushID(static_cast<int>(index));
         ImGui::TableNextRow();
@@ -129,7 +129,7 @@ void up::editor::PropertyGrid::_editArrayField(
         float const rowY = ImGui::GetCursorPosY();
 
         // Row for handling drag-n-drop reordering of items
-        if (schema.operations->swapIndices != nullptr) {
+        if (schema.operations->arraySwapIndices != nullptr) {
             bool selected = false;
             ImGui::Selectable("##row", &selected, ImGuiSelectableFlags_AllowItemOverlap);
 
@@ -150,7 +150,7 @@ void up::editor::PropertyGrid::_editArrayField(
         }
 
         // Icon for deleting a row
-        if (schema.operations->eraseAt != nullptr) {
+        if (schema.operations->arrayEraseAt != nullptr) {
             float const availWidth = ImGui::GetContentRegionAvailWidth();
             float const buttonWidth = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.x * 2.f;
             float const adjustWidth = availWidth - buttonWidth;
@@ -168,7 +168,7 @@ void up::editor::PropertyGrid::_editArrayField(
         ImGui::PopID();
     }
 
-    if (schema.operations->insertAt != nullptr) {
+    if (schema.operations->arrayInsertAt != nullptr) {
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
         ImGui::AlignTextToFramePadding();
@@ -177,7 +177,7 @@ void up::editor::PropertyGrid::_editArrayField(
         float const adjustWidth = availWidth - buttonWidth;
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + adjustWidth);
         if (ImGui::IconButton("##add", ICON_FA_PLUS)) {
-            schema.operations->insertAt(object, size);
+            schema.operations->arrayInsertAt(object, size);
         }
 
         ImGui::TableSetColumnIndex(1);
@@ -186,10 +186,10 @@ void up::editor::PropertyGrid::_editArrayField(
     }
 
     if (eraseIndex < size) {
-        schema.operations->eraseAt(object, eraseIndex);
+        schema.operations->arrayEraseAt(object, eraseIndex);
     }
     else if (swapFirst < size) {
-        schema.operations->swapIndices(object, swapFirst, swapSecond);
+        schema.operations->arraySwapIndices(object, swapFirst, swapSecond);
     }
 }
 
