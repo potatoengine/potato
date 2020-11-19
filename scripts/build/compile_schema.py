@@ -258,7 +258,7 @@ def generate_impl_schemas(ctx: Context):
             for key in type.names:
                 ctx.print(f'        SchemaEnumValue{{.name = "{key}"_zsv, .value = static_cast<int64>({qual_name}::{key})}},\n')
             ctx.print('    };\n')
-            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .enumValues = values, .annotations = {type.name}_annotations}};\n')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .elementType = &getSchema<std::underlying_type_t<{qual_name}>>(), .enumValues = values, .annotations = {type.name}_annotations}};\n')
         else:
             for field in type.fields_ordered:
                 generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
