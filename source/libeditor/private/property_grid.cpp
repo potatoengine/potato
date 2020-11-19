@@ -70,8 +70,10 @@ void up::editor::PropertyGrid::_editField(
             _editStringField(field, *static_cast<string*>(object));
             break;
         case reflex::SchemaPrimitive::Pointer:
-            if (void* pointee = *static_cast<void**>(object); pointee != nullptr) {
-                _editField(field, *schema.elementType, pointee);
+            if (schema.operations->pointerMutableDeref != nullptr) {
+                if (void* pointee = schema.operations->pointerMutableDeref(object)) {
+                    _editField(field, *schema.elementType, pointee);
+                }
             }
             break;
         case reflex::SchemaPrimitive::Array:

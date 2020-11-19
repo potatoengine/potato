@@ -65,6 +65,11 @@ namespace up::reflex {
         using ArrayInsertAt = void (*)(void* arr, size_t index);
         using ArrayResize = void (*)(void* arr, size_t size);
 
+        using PointerDeref = void const* (*)(void const* ptr);
+        using PointerMutableDeref = void* (*)(void* ptr);
+        using PointerReset = void (*)(void* ptr);
+        using PointerInstantiate = void* (*)(void* ptr);
+
         ArrayGetSize arrayGetSize = nullptr;
         ArrayElementAt arrayElementAt = nullptr;
         ArrayMutableElementAt arrayMutableElementAt = nullptr;
@@ -72,6 +77,11 @@ namespace up::reflex {
         ArrayEraseAt arrayEraseAt = nullptr;
         ArrayInsertAt arrayInsertAt = nullptr;
         ArrayResize arrayResize = nullptr;
+
+        PointerDeref pointerDeref = nullptr;
+        PointerMutableDeref pointerMutableDeref = nullptr;
+        PointerReset pointerReset = nullptr;
+        PointerInstantiate pointerInstantiate = nullptr;
     };
 
     struct SchemaField {
@@ -241,19 +251,51 @@ namespace up::reflex {
             return schema;
         }
         else if constexpr (is_box_v<Type>) {
+            using ValueType = typename Type::value_type;
             static Schema const& elementSchema = getSchema<typename Type::value_type>();
+            static SchemaOperations const operations = {
+                .pointerDeref = [](void const* ptr) -> void const* { return static_cast<Type const*>(ptr)->get(); },
+                .pointerMutableDeref = [](void* ptr) -> void* { return static_cast<Type const*>(ptr)->get(); },
+                .pointerReset = [](void* ptr) { static_cast<Type*>(ptr)->reset(); },
+                .pointerInstantiate = [](void* ptr) -> void* {
+                    if constexpr (std::is_default_constructible_v<ValueType>) {
+                        return (*static_cast<Type*>(ptr) = new_box<ValueType>()).get();
+                    }
+                    else {
+                        return nullptr; // FIXME: make this whole function nullptr if not supported
+                    }
+                },
+            };
+
             static Schema const schema{
                 .name = "box"_zsv,
                 .primitive = SchemaPrimitive::Pointer,
-                .elementType = &elementSchema};
+                .elementType = &elementSchema,
+                .operations = &operations};
             return schema;
         }
         else if constexpr (is_rc_v<Type>) {
+            using ValueType = typename Type::value_type;
             static Schema const& elementSchema = getSchema<typename Type::value_type>();
+            static SchemaOperations const operations = {
+                .pointerDeref = [](void const* ptr) -> void const* { return static_cast<Type const*>(ptr)->get(); },
+                .pointerMutableDeref = [](void* ptr) -> void* { return static_cast<Type const*>(ptr)->get(); },
+                .pointerReset = [](void* ptr) { static_cast<Type*>(ptr)->reset(); },
+                .pointerInstantiate = [](void* ptr) -> void* {
+                    if constexpr (std::is_default_constructible_v<ValueType>) {
+                        return (*static_cast<Type*>(ptr) = new_shared<ValueType>()).get();
+                    }
+                    else {
+                        return nullptr; // FIXME: make this whole function nullptr if not supported
+                    }
+                },
+            };
+
             static Schema const schema{
-                .name = "box"_zsv,
+                .name = "rc"_zsv,
                 .primitive = SchemaPrimitive::Pointer,
-                .elementType = &elementSchema};
+                .elementType = &elementSchema,
+                .operations = &operations};
             return schema;
         }
         else {

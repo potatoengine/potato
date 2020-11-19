@@ -119,13 +119,16 @@ bool up::reflex::_detail::encodeValue(nlohmann::json& json, Schema const& schema
             json = *static_cast<string const*>(obj);
             return true;
         case SchemaPrimitive::Pointer:
-            if (*static_cast<void const* const*>(obj) == nullptr) {
-                json = nullptr;
-                return true;
+            if (schema.operations->pointerDeref != nullptr) {
+                if (void const* pointee = schema.operations->pointerDeref(obj)) {
+                    return encodeValue(json, *schema.elementType, pointee);
+                }
+                else {
+                    json = nullptr;
+                    return true;
+                }
             }
-            else {
-                return encodeValue(json, *schema.elementType, *static_cast<void const* const*>(obj));
-            }
+            return false;
         case SchemaPrimitive::Array:
             return encodeArray(json, schema, obj);
         case SchemaPrimitive::Object:
@@ -228,7 +231,20 @@ bool up::reflex::_detail::decodeValue(nlohmann::json const& json, Schema const& 
         case SchemaPrimitive::Object:
             return decodeObject(json, schema, obj);
         case SchemaPrimitive::Pointer:
-            // FIXME: determine how we want to instantiate/reset pointers
+            if (json.is_null() && schema.operations->pointerReset != nullptr) {
+                schema.operations->pointerReset(obj);
+                return true;
+            }
+            else if (schema.operations->pointerMutableDeref != nullptr) {
+                if (void* pointee = schema.operations->pointerMutableDeref(obj)) {
+                    return decodeValue(json, *schema.elementType, pointee);
+                }
+            }
+            else if (schema.operations->pointerInstantiate != nullptr) {
+                if (void* pointee = schema.operations->pointerInstantiate(obj)) {
+                    return decodeValue(json, *schema.elementType, pointee);
+                }
+            }
             return false;
         default:
             return false;
