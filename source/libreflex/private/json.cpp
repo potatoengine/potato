@@ -179,22 +179,63 @@ bool up::reflex::JsonDecoder::_decodeField(nlohmann::json const& json, SchemaFie
     return _decodeValue(json, *field.schema, member);
 }
 
+template <typename T, typename U = T>
+static bool decodeSimple(nlohmann::json const& json, void* obj) {
+    *static_cast<T*>(obj) = json.get<U>();
+    return true;
+}
+
 bool up::reflex::JsonDecoder::_decodeValue(nlohmann::json const& json, Schema const& schema, void* obj) {
     switch (schema.primitive) {
-        case SchemaPrimitive::Float:
-            *static_cast<float*>(obj) = json.get<float>();
+        case SchemaPrimitive::Bool:
+            return decodeSimple<bool>(json, obj);
+        case SchemaPrimitive::Int8:
+            return decodeSimple<int8>(json, obj);
+        case SchemaPrimitive::Int16:
+            return decodeSimple<int16>(json, obj);
+        case SchemaPrimitive::Int32:
+            return decodeSimple<int32>(json, obj);
+        case SchemaPrimitive::Int64:
+            return decodeSimple<int64>(json, obj);
+        case SchemaPrimitive::UInt8:
+            return decodeSimple<uint8>(json, obj);
+        case SchemaPrimitive::UInt16:
+            return decodeSimple<uint16>(json, obj);
+        case SchemaPrimitive::UInt32:
+            return decodeSimple<uint32>(json, obj);
+        case SchemaPrimitive::UInt64:
+            return decodeSimple<uint64>(json, obj);
+        case SchemaPrimitive::Vec3:
+            if (!json.is_array() || json.size() < 3) {
+                return false;
+            }
+            if (!json[0].is_number() || !json[1].is_number() || !json[2].is_number()) {
+                return false;
+            }
+            static_cast<glm::vec3*>(obj)->x = json[0].get<float>();
+            static_cast<glm::vec3*>(obj)->y = json[1].get<float>();
+            static_cast<glm::vec3*>(obj)->z = json[2].get<float>();
             return true;
+        case SchemaPrimitive::Mat4x4:
+        case SchemaPrimitive::Quat:
+            return false;
+        case SchemaPrimitive::Float:
+            return decodeSimple<float>(json, obj);
+        case SchemaPrimitive::Double:
+            return decodeSimple<double>(json, obj);
         case SchemaPrimitive::Enum:
             // FIXME: enums of different base types/sizes
             *static_cast<int64*>(obj) = enumToValue(schema, json.get<string_view>());
             return true;
         case SchemaPrimitive::String:
-            *static_cast<string*>(obj) = json.get<string>();
-            return true;
+            return decodeSimple<string>(json, obj);
         case SchemaPrimitive::Array:
             return _decodeArray(json, schema, obj);
         case SchemaPrimitive::Object:
             return _decodeObject(json, schema, obj);
+        case SchemaPrimitive::Pointer:
+            // FIXME: determine how we want to instantiate/reset pointers
+            return false;
         default:
             return false;
     }
