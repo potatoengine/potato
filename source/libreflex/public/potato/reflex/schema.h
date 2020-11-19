@@ -161,19 +161,19 @@ namespace up::reflex {
             static constexpr Schema schema{.name = "int64"_zsv, .primitive = SchemaPrimitive::Int64};
             return schema;
         }
-        else if constexpr (std::is_same_v<Type, int8> || (std::is_same_v<Type, char> && std::is_unsigned_v<char>)) {
+        else if constexpr (std::is_same_v<Type, uint8> || (std::is_same_v<Type, char> && std::is_unsigned_v<char>)) {
             static constexpr Schema schema{.name = "uint8"_zsv, .primitive = SchemaPrimitive::UInt8};
             return schema;
         }
-        else if constexpr (std::is_same_v<Type, int16>) {
+        else if constexpr (std::is_same_v<Type, uint16>) {
             static constexpr Schema schema{.name = "uint16"_zsv, .primitive = SchemaPrimitive::UInt16};
             return schema;
         }
-        else if constexpr (std::is_same_v<Type, int32>) {
+        else if constexpr (std::is_same_v<Type, uint32>) {
             static constexpr Schema schema{.name = "uint32"_zsv, .primitive = SchemaPrimitive::UInt32};
             return schema;
         }
-        else if constexpr (std::is_same_v<Type, int64>) {
+        else if constexpr (std::is_same_v<Type, uint64>) {
             static constexpr Schema schema{.name = "uint64"_zsv, .primitive = SchemaPrimitive::UInt64};
             return schema;
         }
