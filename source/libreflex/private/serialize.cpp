@@ -273,15 +273,15 @@ void up::reflex::_detail::writeInt(Schema const& schema, void* obj, int64 value)
     switch (schema.primitive) {
         case SchemaPrimitive::Int8:
         case SchemaPrimitive::UInt8:
-            *reinterpret_cast<uint8*>(obj) = value;
+            *reinterpret_cast<uint8*>(obj) = static_cast<int8>(value);
             break;
         case SchemaPrimitive::Int16:
         case SchemaPrimitive::UInt16:
-            *reinterpret_cast<uint16*>(obj) = value;
+            *reinterpret_cast<uint16*>(obj) = static_cast<int16>(value);
             break;
         case SchemaPrimitive::Int32:
         case SchemaPrimitive::UInt32:
-            *reinterpret_cast<uint32*>(obj) = value;
+            *reinterpret_cast<uint32*>(obj) = static_cast<int32>(value);
             break;
         case SchemaPrimitive::Int64:
         case SchemaPrimitive::UInt64:
