@@ -3,6 +3,7 @@
 #include "recon_config.h"
 #include "config_schema.h"
 
+#include "potato/reflex/serialize.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/logger.h"
@@ -105,6 +106,5 @@ bool up::recon::parseConfigString(ReconConfig& config, string_view json, zstring
         return false;
     }
 
-    jsonRoot.get_to(config);
-    return true;
+    return reflex::decodeFromJson(jsonRoot, config);
 }
