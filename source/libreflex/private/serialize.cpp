@@ -17,6 +17,9 @@ namespace up::reflex::_detail {
     static bool decodeObject(nlohmann::json const& json, Schema const& schema, void* obj);
     static bool decodeArray(nlohmann::json const& json, Schema const& schema, void* arr);
     static bool decodeValue(nlohmann::json const& json, Schema const& schema, void* obj);
+
+    static int64 readInt(Schema const& schema, void const* obj);
+    static void writeInt(Schema const& schema, void* obj, int64 value);
 } // namespace up::reflex::_detail
 
 bool up::reflex::encodeToJsonRaw(nlohmann::json& json, Schema const& schema, void const* memory) {
@@ -112,8 +115,7 @@ bool up::reflex::_detail::encodeValue(nlohmann::json& json, Schema const& schema
             json = *static_cast<double const*>(obj);
             return true;
         case SchemaPrimitive::Enum:
-            // FIXME: enums of different base types/sizes
-            json = enumToString(schema, *static_cast<int64 const*>(obj));
+            json = enumToString(schema, readInt(*schema.elementType, obj));
             return true;
         case SchemaPrimitive::String:
             json = *static_cast<string const*>(obj);
@@ -219,8 +221,7 @@ bool up::reflex::_detail::decodeValue(nlohmann::json const& json, Schema const& 
         case SchemaPrimitive::Double:
             return decodeSimple<double>(json, obj);
         case SchemaPrimitive::Enum:
-            // FIXME: enums of different base types/sizes
-            *static_cast<int64*>(obj) = enumToValue(schema, json.get<string_view>());
+            writeInt(*schema.elementType, obj, enumToValue(schema, json.get<string_view>()));
             return true;
         case SchemaPrimitive::String:
             return decodeSimple<string>(json, obj);
@@ -246,5 +247,47 @@ bool up::reflex::_detail::decodeValue(nlohmann::json const& json, Schema const& 
             return false;
         default:
             return false;
+    }
+}
+
+up::int64 up::reflex::_detail::readInt(Schema const& schema, void const* obj) {
+    switch (schema.primitive) {
+        case SchemaPrimitive::Int8:
+        case SchemaPrimitive::UInt8:
+            return *reinterpret_cast<uint8 const*>(obj);
+        case SchemaPrimitive::Int16:
+        case SchemaPrimitive::UInt16:
+            return *reinterpret_cast<uint16 const*>(obj);
+        case SchemaPrimitive::Int32:
+        case SchemaPrimitive::UInt32:
+            return *reinterpret_cast<uint32 const*>(obj);
+        case SchemaPrimitive::Int64:
+        case SchemaPrimitive::UInt64:
+            return *reinterpret_cast<uint64 const*>(obj);
+        default:
+            return 0;
+    }
+}
+
+void up::reflex::_detail::writeInt(Schema const& schema, void* obj, int64 value) {
+    switch (schema.primitive) {
+        case SchemaPrimitive::Int8:
+        case SchemaPrimitive::UInt8:
+            *reinterpret_cast<uint8*>(obj) = value;
+            break;
+        case SchemaPrimitive::Int16:
+        case SchemaPrimitive::UInt16:
+            *reinterpret_cast<uint16*>(obj) = value;
+            break;
+        case SchemaPrimitive::Int32:
+        case SchemaPrimitive::UInt32:
+            *reinterpret_cast<uint32*>(obj) = value;
+            break;
+        case SchemaPrimitive::Int64:
+        case SchemaPrimitive::UInt64:
+            *reinterpret_cast<uint64*>(obj) = value;
+            break;
+        default:
+            break;
     }
 }
