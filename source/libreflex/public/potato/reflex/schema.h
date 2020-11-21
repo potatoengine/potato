@@ -57,17 +57,31 @@ namespace up::reflex {
     };
 
     struct SchemaOperations {
-        using GetSize = size_t (*)(void const* object);
-        using ElementAt = void* (*)(void* object, size_t index);
-        using SwapIndices = void (*)(void* object, size_t first, size_t second);
-        using EraseAt = void (*)(void* object, size_t index);
-        using InsertAt = void (*)(void* object, size_t index);
+        using ArrayGetSize = size_t (*)(void const* arr);
+        using ArrayElementAt = void const* (*)(void const* arr, size_t index);
+        using ArrayMutableElementAt = void* (*)(void* arr, size_t index);
+        using ArraySwapIndices = void (*)(void* arr, size_t first, size_t second);
+        using ArrayEraseAt = void (*)(void* arr, size_t index);
+        using ArrayInsertAt = void (*)(void* arr, size_t index);
+        using ArrayResize = void (*)(void* arr, size_t size);
 
-        GetSize getSize = nullptr;
-        ElementAt elementAt = nullptr;
-        SwapIndices swapIndices = nullptr;
-        EraseAt eraseAt = nullptr;
-        InsertAt insertAt = nullptr;
+        using PointerDeref = void const* (*)(void const* ptr);
+        using PointerMutableDeref = void* (*)(void* ptr);
+        using PointerReset = void (*)(void* ptr);
+        using PointerInstantiate = void* (*)(void* ptr);
+
+        ArrayGetSize arrayGetSize = nullptr;
+        ArrayElementAt arrayElementAt = nullptr;
+        ArrayMutableElementAt arrayMutableElementAt = nullptr;
+        ArraySwapIndices arraySwapIndices = nullptr;
+        ArrayEraseAt arrayEraseAt = nullptr;
+        ArrayInsertAt arrayInsertAt = nullptr;
+        ArrayResize arrayResize = nullptr;
+
+        PointerDeref pointerDeref = nullptr;
+        PointerMutableDeref pointerMutableDeref = nullptr;
+        PointerReset pointerReset = nullptr;
+        PointerInstantiate pointerInstantiate = nullptr;
     };
 
     struct SchemaField {
@@ -147,19 +161,19 @@ namespace up::reflex {
             static constexpr Schema schema{.name = "int64"_zsv, .primitive = SchemaPrimitive::Int64};
             return schema;
         }
-        else if constexpr (std::is_same_v<Type, int8> || (std::is_same_v<Type, char> && std::is_unsigned_v<char>)) {
+        else if constexpr (std::is_same_v<Type, uint8> || (std::is_same_v<Type, char> && std::is_unsigned_v<char>)) {
             static constexpr Schema schema{.name = "uint8"_zsv, .primitive = SchemaPrimitive::UInt8};
             return schema;
         }
-        else if constexpr (std::is_same_v<Type, int16>) {
+        else if constexpr (std::is_same_v<Type, uint16>) {
             static constexpr Schema schema{.name = "uint16"_zsv, .primitive = SchemaPrimitive::UInt16};
             return schema;
         }
-        else if constexpr (std::is_same_v<Type, int32>) {
+        else if constexpr (std::is_same_v<Type, uint32>) {
             static constexpr Schema schema{.name = "uint32"_zsv, .primitive = SchemaPrimitive::UInt32};
             return schema;
         }
-        else if constexpr (std::is_same_v<Type, int64>) {
+        else if constexpr (std::is_same_v<Type, uint64>) {
             static constexpr Schema schema{.name = "uint64"_zsv, .primitive = SchemaPrimitive::UInt64};
             return schema;
         }
@@ -194,31 +208,41 @@ namespace up::reflex {
         else if constexpr (is_vector_v<Type>) {
             static Schema const& elementSchema = getSchema<typename Type::value_type>();
             static SchemaOperations const operations = {
-                .getSize =
+                .arrayGetSize =
                     [](void const* array) noexcept {
                         auto const& arr = *static_cast<Type const*>(array);
                         return arr.size();
                     },
-                .elementAt = [](void* array, size_t index) noexcept -> void* {
+                .arrayElementAt = [](void const* array, size_t index) noexcept -> void const* {
+                    auto const& arr = *static_cast<Type const*>(array);
+                    return arr.data() + index;
+                },
+                .arrayMutableElementAt = [](void* array, size_t index) noexcept -> void* {
                     auto& arr = *static_cast<Type*>(array);
                     return arr.data() + index;
                 },
-                .swapIndices =
+                .arraySwapIndices =
                     [](void* array, size_t first, size_t second) noexcept {
                         auto& arr = *static_cast<Type*>(array);
                         using std::swap;
                         swap(arr[first], arr[second]);
                     },
-                .eraseAt =
+                .arrayEraseAt =
                     [](void* array, size_t index) {
                         auto& arr = *static_cast<Type*>(array);
                         arr.erase(arr.begin() + index);
                     },
-                .insertAt =
+                .arrayInsertAt =
                     [](void* array, size_t index) {
                         auto& arr = *static_cast<Type*>(array);
                         arr.insert(arr.begin() + index, {});
+                    },
+                .arrayResize =
+                    [](void* array, size_t size) {
+                        auto& arr = *static_cast<Type*>(array);
+                        arr.resize(size);
                     }};
+
             static Schema const schema{
                 .name = "vector"_zsv,
                 .primitive = SchemaPrimitive::Array,
@@ -227,19 +251,51 @@ namespace up::reflex {
             return schema;
         }
         else if constexpr (is_box_v<Type>) {
+            using ValueType = typename Type::value_type;
             static Schema const& elementSchema = getSchema<typename Type::value_type>();
+            static SchemaOperations const operations = {
+                .pointerDeref = [](void const* ptr) -> void const* { return static_cast<Type const*>(ptr)->get(); },
+                .pointerMutableDeref = [](void* ptr) -> void* { return static_cast<Type const*>(ptr)->get(); },
+                .pointerReset = [](void* ptr) { static_cast<Type*>(ptr)->reset(); },
+                .pointerInstantiate = [](void* ptr) -> void* {
+                    if constexpr (std::is_default_constructible_v<ValueType>) {
+                        return (*static_cast<Type*>(ptr) = new_box<ValueType>()).get();
+                    }
+                    else {
+                        return nullptr; // FIXME: make this whole function nullptr if not supported
+                    }
+                },
+            };
+
             static Schema const schema{
                 .name = "box"_zsv,
                 .primitive = SchemaPrimitive::Pointer,
-                .elementType = &elementSchema};
+                .elementType = &elementSchema,
+                .operations = &operations};
             return schema;
         }
         else if constexpr (is_rc_v<Type>) {
+            using ValueType = typename Type::value_type;
             static Schema const& elementSchema = getSchema<typename Type::value_type>();
+            static SchemaOperations const operations = {
+                .pointerDeref = [](void const* ptr) -> void const* { return static_cast<Type const*>(ptr)->get(); },
+                .pointerMutableDeref = [](void* ptr) -> void* { return static_cast<Type const*>(ptr)->get(); },
+                .pointerReset = [](void* ptr) { static_cast<Type*>(ptr)->reset(); },
+                .pointerInstantiate = [](void* ptr) -> void* {
+                    if constexpr (std::is_default_constructible_v<ValueType>) {
+                        return (*static_cast<Type*>(ptr) = new_shared<ValueType>()).get();
+                    }
+                    else {
+                        return nullptr; // FIXME: make this whole function nullptr if not supported
+                    }
+                },
+            };
+
             static Schema const schema{
-                .name = "box"_zsv,
+                .name = "rc"_zsv,
                 .primitive = SchemaPrimitive::Pointer,
-                .elementType = &elementSchema};
+                .elementType = &elementSchema,
+                .operations = &operations};
             return schema;
         }
         else {

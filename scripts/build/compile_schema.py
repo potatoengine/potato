@@ -127,87 +127,6 @@ def generate_header_schemas(ctx: Context):
     
     ctx.print('}\n')
 
-def generate_header_json_parse_decl(ctx: Context):
-    """Generates json parsing function declarations for types"""
-    for type in ctx.db.exports.values():
-        if not type.has_annotation("serialize"):
-            continue
-        if type.kind == type_info.TypeKind.OPAQUE:
-            continue
-
-        cxxns = cxxnamespace(type)
-        ctx.print(f'namespace {cxxns} {{\n')
-
-        ctx.print(f"    UP_{ctx.library.upper()}_API void from_json(nlohmann::json const& root, {type.cxxname}& value);\n")
-        ctx.print(f"    UP_{ctx.library.upper()}_API void to_json(nlohmann::json& root, {type.cxxname} const& value);\n")
-
-        ctx.print('}\n')
-
-def generate_impl_json_parse(ctx: Context):
-    """Generates json parsing function definition for types"""
-    for type in ctx.db.exports.values():
-        if type.has_annotation('ignore'):
-            continue
-        if not type.has_annotation("serialize"):
-            continue
-        if type.kind == type_info.TypeKind.OPAQUE:
-            continue
-
-        # --- from_json ---
-        ctx.print(f"void up::schema::from_json(nlohmann::json const& root, {type.cxxname}& value) {{\n")
-        ctx.print("""
-    if (!root.is_object()) {
-        return;
-    }
-""")
-        for field in type.fields_ordered:
-            json_name = field.get_annotation_field_or("json", "name", field.name)
-
-            if field.is_array:
-                ctx.print(f'''
-    if (auto it = root.find("{json_name}"); it != root.end() && it->is_array()) {{
-        for (auto const& child : *it) {{
-            child.get_to(value.{field.cxxname}.emplace_back());
-        }}
-    }}
-''')
-            else:
-                ctx.print(f'''
-    if (auto it = root.find("{json_name}"); it != root.end()) {{
-         it->get_to(value.{field.cxxname});
-    }}
-''')
-
-            if field.has_default:
-                ctx.print(f'    else {{\n        value.{field.cxxname} = {cxxvalue(field.default_or(None))};\n    }}\n')
-
-        ctx.print('}\n')
-
-        # --- to_json ---
-        ctx.print(f"void up::schema::to_json(nlohmann::json& root, {type.cxxname} const& value) {{\n")
-        ctx.print("""
-    if (!root.is_object()) {
-        root = nlohmann::json::object();
-    }
-""")
-        for field in type.fields_ordered:
-            json_name = field.get_annotation_field_or("json", "name", field.name)
-
-            if field.is_array:
-                ctx.print(f'''
-    {{
-        nlohmann::json array;
-        for (auto const& item : value.{field.cxxname}) {{
-            array.push_back(item);
-        }}
-        root["{json_name}"] = std::move(array);
-    }}
-''')
-            else:
-                ctx.print(f'    root["{json_name}"] = value.{field.cxxname};')
-
-        ctx.print('}\n')
-
 def generate_impl_annotations(ctx: Context, name: str, entity: type_info.AnnotationsBase):
     """Generates metadata for an annotation"""
     locals = []
@@ -256,7 +175,7 @@ def generate_impl_schemas(ctx: Context):
             for key in type.names:
                 ctx.print(f'        SchemaEnumValue{{.name = "{key}"_zsv, .value = static_cast<int64>({qual_name}::{key})}},\n')
             ctx.print('    };\n')
-            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .enumValues = values, .annotations = {type.name}_annotations}};\n')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .elementType = &getSchema<std::underlying_type_t<{qual_name}>>(), .enumValues = values, .annotations = {type.name}_annotations}};\n')
         else:
             for field in type.fields_ordered:
                 generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
@@ -284,7 +203,6 @@ def generate_header(ctx: Context):
 #include "potato/spud/vector.h"
 #include "potato/reflex/schema.h"
 #include "potato/reflex/type.h"
-#include "potato/runtime/json.h"
 #include "potato/{ctx.library}/_export.h"
 """)
 
@@ -297,19 +215,14 @@ def generate_header(ctx: Context):
             ctx.print(f'#include "{header}"\n')
 
     generate_header_types(ctx)
-    generate_header_json_parse_decl(ctx)
     generate_header_schemas(ctx)
 
 def generate_source(ctx: Context):
     """Generate contents of a source file"""
 
     generate_file_prefix(ctx)
-    ctx.print(f"""
-#include "{ctx.db.module}_schema.h"
-#include <nlohmann/json.hpp>
-""")
+    ctx.print(f'#include "{ctx.db.module}_schema.h"\n')
 
-    generate_impl_json_parse(ctx)
     generate_impl_schemas(ctx)
 
 generators = {

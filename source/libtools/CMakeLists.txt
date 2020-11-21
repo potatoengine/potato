@@ -9,11 +9,8 @@ target_sources(potato_libtools PRIVATE
     "private/evaluator.cpp"
     "private/importer_context.cpp"
     "private/importer_factory.cpp"
-    "private/json_serializer.cpp"
     "private/meta_file.cpp"
     "private/project.cpp"
-    "public/potato/tools/evaluator.h"
-    "public/potato/tools/json_serializer.h"
     "public/potato/tools/evaluator.h"
 )
 
