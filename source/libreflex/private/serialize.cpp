@@ -41,7 +41,7 @@ bool up::reflex::_detail::encodeObject(nlohmann::json& json, Schema const& schem
 
     bool success = true;
     for (SchemaField const& field : schema.fields) {
-        schema::json const* jsonName = queryAnnotation<schema::json>(field);
+        auto const* jsonName = queryAnnotation<schema::json>(field);
         char const* const fieldName = jsonName == nullptr ? field.name.c_str() : jsonName->name.c_str();
         nlohmann::json& sub = json[fieldName];
         success = encodeValue(sub, *field.schema, static_cast<char const*>(obj) + field.offset) && success;
@@ -148,7 +148,7 @@ bool up::reflex::_detail::decodeObject(nlohmann::json const& json, Schema const&
 
     bool success = true;
     for (SchemaField const& field : schema.fields) {
-        schema::json const* jsonName = queryAnnotation<schema::json>(field);
+        auto const* jsonName = queryAnnotation<schema::json>(field);
         char const* const fieldName = jsonName == nullptr ? field.name.c_str() : jsonName->name.c_str();
         if (json.contains(fieldName)) {
             success = decodeValue(json[fieldName], *field.schema, static_cast<char*>(obj) + field.offset) && success;
