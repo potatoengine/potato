@@ -15,7 +15,7 @@ TEST_CASE("Serialize", "[potato][reflex]") {
         nlohmann::json doc;
         CHECK(reflex::encodeToJson(doc, s));
         auto const json = doc.dump();
-        CHECK(json == R"({"$schema":"TestStruct","test":"First"})");
+        CHECK(json == R"({"$schema":"TestStruct","enum":"First"})");
     }
 
     SECTION("json encode complex") {
@@ -31,12 +31,12 @@ TEST_CASE("Serialize", "[potato][reflex]") {
         auto const json = doc.dump();
         CHECK(
             json ==
-            R"({"$schema":"TestComplex","name":"Frederick","test":{"$schema":"TestStruct","test":"Second"},"values":[42.0,-7.0,6000000000.0]})");
+            R"({"$schema":"TestComplex","name":"Frederick","test":{"$schema":"TestStruct","enum":"Second"},"values":[42.0,-7.0,6000000000.0]})");
     }
 
     SECTION("json decode complex") {
         string_view const json =
-            R"({"$schema":"TestComplex","name":"Frederick","values":[42.0,-7.0,6000000000.0],"test":{"$schema":"TestStruct","test":"Second"}})";
+            R"({"$schema":"TestComplex","name":"Frederick","values":[42.0,-7.0,6000000000.0],"test":{"$schema":"TestStruct","enum":"Second"}})";
 
         TestComplex comp;
         CHECK(reflex::decodeFromJson(nlohmann::json::parse(json), comp));

@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "serialize.h"
+#include "common_schema.h"
 
 #include "potato/runtime/assertion.h"
 #include "potato/runtime/json.h"
@@ -40,7 +41,9 @@ bool up::reflex::_detail::encodeObject(nlohmann::json& json, Schema const& schem
 
     bool success = true;
     for (SchemaField const& field : schema.fields) {
-        nlohmann::json& sub = json[field.name.c_str()];
+        schema::json const* jsonName = queryAnnotation<schema::json>(field);
+        char const* const fieldName = jsonName == nullptr ? field.name.c_str() : jsonName->name.c_str();
+        nlohmann::json& sub = json[fieldName];
         success = encodeValue(sub, *field.schema, static_cast<char const*>(obj) + field.offset) && success;
     }
 
@@ -145,9 +148,10 @@ bool up::reflex::_detail::decodeObject(nlohmann::json const& json, Schema const&
 
     bool success = true;
     for (SchemaField const& field : schema.fields) {
-        if (json.contains(field.name.c_str())) {
-            success =
-                decodeValue(json[field.name.c_str()], *field.schema, static_cast<char*>(obj) + field.offset) && success;
+        schema::json const* jsonName = queryAnnotation<schema::json>(field);
+        char const* const fieldName = jsonName == nullptr ? field.name.c_str() : jsonName->name.c_str();
+        if (json.contains(fieldName)) {
+            success = decodeValue(json[fieldName], *field.schema, static_cast<char*>(obj) + field.offset) && success;
         }
     }
     return success;
@@ -265,6 +269,7 @@ up::int64 up::reflex::_detail::readInt(Schema const& schema, void const* obj) {
         case SchemaPrimitive::UInt64:
             return *reinterpret_cast<uint64 const*>(obj);
         default:
+            UP_UNREACHABLE("Incorrect primitive type");
             return 0;
     }
 }
@@ -288,6 +293,7 @@ void up::reflex::_detail::writeInt(Schema const& schema, void* obj, int64 value)
             *reinterpret_cast<uint64*>(obj) = value;
             break;
         default:
+            UP_UNREACHABLE("Incorrect primitive type");
             break;
     }
 }
