@@ -2,6 +2,7 @@
 
 #include "recon_client.h"
 
+#include "potato/recon/recon_protocol.h"
 #include "potato/tools/project.h"
 #include "potato/runtime/logger.h"
 
@@ -30,19 +31,17 @@ struct up::shell::ReconClient::ReprocSink {
 
     bool handleLine(string_view line) {
         nlohmann::json doc = nlohmann::json::parse(line, nullptr, false, true);
-        if (!doc.is_object()) {
+
+        box<schema::ReconMessage> msg;
+        reflex::Schema const* schema = nullptr;
+
+        if (!recon::decodeReconMessage(doc, msg, schema)) {
             return false;
         }
 
-        auto const& type = doc["$type"].get<string_view>();
-        if (type == "log") {
-            auto const severityLabel = doc["severity"].get<string_view>();
-            auto const message = doc["message"].get<string_view>();
-
-            LogSeverity severity =
-                severityLabel == toString(LogSeverity::Error) ? LogSeverity::Error : LogSeverity::Info;
-
-            s_logger.log(severity, message);
+        if (schema == &reflex::getSchema<schema::ReconLogMessage>()) {
+            auto const& log = *static_cast<schema::ReconLogMessage const*>(msg.get());
+            s_logger.log(log.severity, log.message);
 
             client._staleAssets.store(true);
         }

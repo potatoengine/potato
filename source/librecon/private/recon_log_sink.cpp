@@ -16,7 +16,7 @@ void up::recon::ReconProtocolLogSink::log(
     schema::ReconLogMessage msg;
     msg.category = string(loggerName);
     msg.message = string(message);
-    msg.severity = static_cast<schema::ReconLogSeverity>(severity);
+    msg.severity = severity;
 
     nlohmann::json doc;
     if (encodeReconMessage(doc, msg)) {

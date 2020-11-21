@@ -2,22 +2,42 @@
 
 #include "recon_protocol.h"
 
+#include "potato/reflex/serialize.h"
+#include "potato/runtime/assertion.h"
+
 #include <nlohmann/json.hpp>
 
 bool up::recon::encodeReconMessageRaw(nlohmann::json& target, reflex::Schema const& schema, void const* message) {
-    target = nlohmann::json::object();
-    target["$type"] = schema.name;
+    UP_ASSERT(message != nullptr);
+    UP_ASSERT(schema.baseSchema == &reflex::getSchema<schema::ReconMessage>());
 
-    for (reflex::SchemaField const& field : schema.fields) {
-        switch (field.schema->primitive) {
-            case reflex::SchemaPrimitive::String:
-                target[field.name.c_str()] =
-                    static_cast<string const&>(static_cast<char const*>(message) + field.offset);
-                break;
-            default:
-                return false;
-        }
+    return reflex::encodeToJsonRaw(target, schema, message);
+}
+
+bool up::recon::decodeReconMessage(
+    nlohmann::json const& source,
+    box<schema::ReconMessage>& out_msg,
+    reflex::Schema const*& out_schema) {
+    static reflex::Schema const& messageSchema = reflex::getSchema<schema::ReconLogMessage>();
+
+    if (!source.is_object()) {
+        return false;
     }
 
-    return true;
+    if (!source.contains("$schema")) {
+        return false;
+    }
+
+    auto const& schemaName = source["$schema"].get<string_view>();
+
+    if (schemaName == messageSchema.name) {
+        out_msg = new_box<schema::ReconLogMessage>();
+        out_schema = &messageSchema;
+        return reflex::decodeFromJsonRaw(source, messageSchema, out_msg.get());
+    }
+
+    out_msg.reset();
+    out_schema = nullptr;
+
+    return false;
 }
