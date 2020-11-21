@@ -57,7 +57,7 @@ def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     cxxns = cxxnamespace(type, namespace)
     return cxxname if '::' in cxxname or type.module == '$core' else f'{cxxns}::{cxxname}'
 
-def cxxvalue(value):
+def cxxvalue(value, db: type_info.TypeDatabase):
     if value is True:
         return 'true'
     if value is False:
@@ -65,7 +65,9 @@ def cxxvalue(value):
     if isinstance(value, str):
         return f'"{value}"' # FIXME: escapes
     if isinstance(value, dict) and 'kind' in value and value['kind'] == 'enum':
-        return f'{value["type"]}::{value["name"]}'
+        type_name = value['type']
+        type = db.type(type_name)
+        return f'{qualified_cxxname(type)}::{value["name"]}'
     return str(value)
 
 def generate_header_types(ctx: Context):
@@ -100,7 +102,7 @@ def generate_header_types(ctx: Context):
             for field in type.fields_ordered:
                 ctx.print(f"        {field.cxxtype} {field.cxxname}")
                 if field.has_default:
-                    ctx.print(f' = {cxxvalue(field.default_or(None))}')
+                    ctx.print(f' = {cxxvalue(field.default_or(None), ctx.db)}')
                 ctx.print(";\n")
             ctx.print("    };\n")
 
@@ -137,7 +139,7 @@ def generate_impl_annotations(ctx: Context, name: str, entity: type_info.Annotat
 
         ctx.print(f'    static const {attr.cxxname} {local_name}{{')
         for field, value in zip(attr.fields_ordered, annotation.values):
-            ctx.print(f'.{field.cxxname} = {cxxvalue(value)}, ')
+            ctx.print(f'.{field.cxxname} = {cxxvalue(value, ctx.db)}, ')
         ctx.print('};\n')
 
     if len(locals) != 0:
