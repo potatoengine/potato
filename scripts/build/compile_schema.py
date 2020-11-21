@@ -231,8 +231,20 @@ def generate_source(ctx: Context):
 
     generate_file_prefix(ctx)
     ctx.print(f'#include "{ctx.db.module}_schema.h"\n')
+    ctx.print('''
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
+''')
 
     generate_impl_schemas(ctx)
+
+    ctx.print('''
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+''')
 
 generators = {
     'header': generate_header,
