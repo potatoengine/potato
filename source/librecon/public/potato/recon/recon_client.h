@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "_export.h"
+
 #include <reproc++/reproc.hpp>
 #include <atomic>
 #include <thread>
@@ -15,10 +17,10 @@ namespace up::shell {
     public:
         ~ReconClient() { stop(); }
 
-        bool start(Project& project);
-        void stop();
+        bool UP_RECON_API start(Project& project);
+        void UP_RECON_API stop();
 
-        bool hasUpdatedAssets() noexcept;
+        bool UP_RECON_API hasUpdatedAssets() noexcept;
 
     private:
         struct ReprocSink;

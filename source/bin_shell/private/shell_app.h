@@ -2,7 +2,6 @@
 
 #include "camera.h"
 #include "log_window.h"
-#include "recon_client.h"
 #include "settings.h"
 #include "ui/action.h"
 #include "ui/command_palette.h"
@@ -12,6 +11,7 @@
 #include "potato/audio/audio_engine.h"
 #include "potato/editor/hotkeys.h"
 #include "potato/editor/imgui_backend.h"
+#include "potato/recon/recon_client.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/resource_loader.h"
 #include "potato/spud/box.h"

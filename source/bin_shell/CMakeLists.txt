@@ -32,8 +32,6 @@ target_sources(potato_shell PRIVATE
     "private/settings.cpp"
     "private/log_window.h"
     "private/log_window.cpp"
-    "private/recon_client.cpp"
-    "private/recon_client.h"
 )
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)

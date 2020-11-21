@@ -9,8 +9,12 @@ target_sources(potato_librecon PRIVATE
     "public/potato/recon/file_hash_cache.h"
     "public/potato/recon/_export.h"
     "public/potato/recon/recon_log_sink.h"
+    "public/potato/recon/recon_protocol.h"
+    "public/potato/recon/recon_client.h"
+    "private/recon_client.cpp"
     "private/recon_log_sink.cpp"
- "private/recon_protocol.cpp")
+    "private/recon_protocol.cpp"
+)
 
 include(up_set_common_properties)
 up_set_common_properties(potato_librecon)
@@ -29,6 +33,7 @@ target_link_libraries(potato_librecon
         potato::libtools
         potato::libreflex
         potato::libposql
+        reproc++
     PRIVATE
         assimp
         sqlite3
