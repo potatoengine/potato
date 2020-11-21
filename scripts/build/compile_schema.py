@@ -99,6 +99,8 @@ def generate_header_types(ctx: Context):
             elif type.base is not None:
                 ctx.print(f' : {type.base.cxxname}')
             ctx.print(' {\n')
+            if type.has_annotation('virtualbase'):
+                ctx.print(f'        virtual ~{type.cxxname}() = default;\n')
             for field in type.fields_ordered:
                 ctx.print(f"        {field.cxxtype} {field.cxxname}")
                 if field.has_default:
