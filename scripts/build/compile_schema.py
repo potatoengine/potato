@@ -170,12 +170,17 @@ def generate_impl_schemas(ctx: Context):
 
         generate_impl_annotations(ctx, type.name, type)
 
+        if type.base is not None:
+            ctx.print(f'    static const Schema* const base = &getSchema<{qualified_cxxname(type.base)}>();\n')
+        else:
+            ctx.print('    constexpr const Schema* const base = nullptr;\n')
+
         if type.kind == type_info.TypeKind.ENUM:
             ctx.print('    static const SchemaEnumValue values[] = {\n')
             for key in type.names:
                 ctx.print(f'        SchemaEnumValue{{.name = "{key}"_zsv, .value = static_cast<int64>({qual_name}::{key})}},\n')
             ctx.print('    };\n')
-            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .elementType = &getSchema<std::underlying_type_t<{qual_name}>>(), .enumValues = values, .annotations = {type.name}_annotations}};\n')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .baseSchema = base, .elementType = &getSchema<std::underlying_type_t<{qual_name}>>(), .enumValues = values, .annotations = {type.name}_annotations}};\n')
         else:
             for field in type.fields_ordered:
                 generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
@@ -188,7 +193,7 @@ def generate_impl_schemas(ctx: Context):
             else:
                 ctx.print('    static constexpr view<SchemaField> fields;\n')
 
-            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .fields = fields, .annotations = {type.name}_annotations}};\n')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .fields = fields, .annotations = {type.name}_annotations}};\n')
         ctx.print('    return schema;\n')
         ctx.print("}\n")
 

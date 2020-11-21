@@ -99,6 +99,7 @@ namespace up::reflex {
     struct Schema {
         zstring_view name;
         SchemaPrimitive primitive = SchemaPrimitive::Null;
+        Schema const* baseSchema = nullptr;
         Schema const* elementType = nullptr;
         SchemaOperations const* operations = nullptr;
         view<SchemaField> fields;
