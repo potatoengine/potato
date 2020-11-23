@@ -1,10 +1,12 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "recon_app.h"
+#include "recon_messages_schema.h"
 
 #include "potato/format/format.h"
 #include "potato/recon/file_hash_cache.h"
 #include "potato/recon/recon_log_sink.h"
+#include "potato/recon/recon_protocol.h"
 #include "potato/tools/meta_file.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
@@ -111,10 +113,20 @@ bool up::recon::ReconApp::_runServer() {
     }
 
     fs::WatchHandle& handle = *watchHandle;
-    std::thread waitParent([&handle] {
-        char c{};
-        while (std::cin.get(c) && !std::cin.eof()) {
-            // consume input until there's none left (EOF/closed)
+    std::thread waitParent([&handle, this] {
+        nlohmann::json doc;
+        std::string line;
+        box<schema::ReconMessage> msg;
+        reflex::Schema const* schema = nullptr;
+        while (std::getline(std::cin, line) && !std::cin.eof()) {
+            doc = nlohmann::json::parse(line);
+            if (!decodeReconMessage(doc, msg, schema)) {
+                break;
+            }
+            if (schema == &reflex::getSchema<schema::ReconForceImportMessage>()) {
+                auto const& importMsg = static_cast<schema::ReconForceImportMessage const&>(*msg);
+                _logger.info("Got import message for {}", importMsg.dbPath);
+            }
         }
         handle.close();
     });

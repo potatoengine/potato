@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "camera_controller.h"
 #include "components_schema.h"
+#include "recon_messages_schema.h"
 #include "scene.h"
 #include "editors/filetree_editor.h"
 #include "editors/game_editor.h"
@@ -313,8 +314,14 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _loadManifest();
 
     _editors.closeAll();
-    _editors.open(
-        createFileTreeEditor(string{_project->resourceRootPath()}, [this](zstring_view name) { _onFileOpened(name); }));
+    _editors.open(createFileTreeEditor(
+        string{_project->resourceRootPath()},
+        [this](zstring_view name) { _onFileOpened(name); },
+        [this](zstring_view name) {
+            schema::ReconForceImportMessage msg;
+            msg.dbPath = string{name};
+            _reconClient.sendMessage(msg);
+        }));
 
     _updateTitle();
 

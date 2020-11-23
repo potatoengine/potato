@@ -39,14 +39,7 @@ struct up::shell::ReconClient::ReprocSink {
             return false;
         }
 
-        if (schema == &reflex::getSchema<schema::ReconLogMessage>()) {
-            auto const& log = *static_cast<schema::ReconLogMessage const*>(msg.get());
-            s_logger.log(log.severity, log.message);
-
-            client._staleAssets.store(true);
-        }
-
-        return true;
+        return client.handleMessage(*schema, *msg);
     }
 };
 
@@ -88,4 +81,43 @@ void up::shell::ReconClient::stop() {
 
 bool up::shell::ReconClient::hasUpdatedAssets() noexcept {
     return _staleAssets.exchange(false);
+}
+
+bool up::shell::ReconClient::handleMessage(reflex::Schema const& schema, schema::ReconMessage const& msg) {
+    static reflex::Schema const& logSchema = reflex::getSchema<schema::ReconLogMessage>();
+
+    if (&schema == &logSchema) {
+        auto const& log = static_cast<schema::ReconLogMessage const&>(msg);
+        s_logger.log(log.severity, log.message);
+
+        _staleAssets.store(true);
+        return true;
+    }
+
+    return false;
+}
+
+bool up::shell::ReconClient::sendMessage(reflex::Schema const& schema, schema::ReconMessage const& msg) {
+    nlohmann::json doc;
+    if (!recon::encodeReconMessageRaw(doc, schema, &msg)) {
+        return false;
+    }
+
+    auto const str = doc.dump() + "\r\n";
+    auto const [bytes, ec] = _process.write(reinterpret_cast<uint8 const*>(str.data()), str.size());
+    if (ec) {
+        s_logger.log(LogSeverity::Error, "Failed to write `{}` message to recon: {}", schema.name, ec.message());
+        return false;
+    }
+    if (bytes != str.size()) {
+        s_logger.log(
+            LogSeverity::Error,
+            "Failed to write full `{}` message to recon: {} byte written of {}",
+            schema.name,
+            bytes,
+            str.size());
+        return false;
+    }
+
+    return true;
 }

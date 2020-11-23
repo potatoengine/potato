@@ -18,7 +18,8 @@ bool up::recon::decodeReconMessage(
     nlohmann::json const& source,
     box<schema::ReconMessage>& out_msg,
     reflex::Schema const*& out_schema) {
-    static reflex::Schema const& messageSchema = reflex::getSchema<schema::ReconLogMessage>();
+    static reflex::Schema const& logSchema = reflex::getSchema<schema::ReconLogMessage>();
+    static reflex::Schema const& forceImportSchema = reflex::getSchema<schema::ReconForceImportMessage>();
 
     if (!source.is_object()) {
         return false;
@@ -30,10 +31,16 @@ bool up::recon::decodeReconMessage(
 
     auto const& schemaName = source["$schema"].get<string_view>();
 
-    if (schemaName == messageSchema.name) {
+    if (schemaName == logSchema.name) {
         out_msg = new_box<schema::ReconLogMessage>();
-        out_schema = &messageSchema;
-        return reflex::decodeFromJsonRaw(source, messageSchema, out_msg.get());
+        out_schema = &logSchema;
+        return reflex::decodeFromJsonRaw(source, logSchema, out_msg.get());
+    }
+
+    if (schemaName == forceImportSchema.name) {
+        out_msg = new_box<schema::ReconForceImportMessage>();
+        out_schema = &forceImportSchema;
+        return reflex::decodeFromJsonRaw(source, forceImportSchema, out_msg.get());
     }
 
     out_msg.reset();

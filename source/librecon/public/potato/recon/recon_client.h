@@ -4,6 +4,8 @@
 
 #include "_export.h"
 
+#include "potato/spud/concepts.h"
+
 #include <reproc++/reproc.hpp>
 #include <atomic>
 #include <thread>
@@ -11,6 +13,16 @@
 namespace up {
     class Project;
 }
+
+namespace up::schema {
+    class ReconMessage;
+}
+
+namespace up::reflex {
+    struct Schema;
+    template <typename T>
+    Schema const& getSchema();
+} // namespace up::reflex
 
 namespace up::shell {
     class ReconClient {
@@ -21,6 +33,13 @@ namespace up::shell {
         void UP_RECON_API stop();
 
         bool UP_RECON_API hasUpdatedAssets() noexcept;
+        bool UP_RECON_API handleMessage(reflex::Schema const& schema, schema::ReconMessage const& msg);
+        bool UP_RECON_API sendMessage(reflex::Schema const& schema, schema::ReconMessage const& msg);
+
+        template <derived_from<schema::ReconMessage> MessageT>
+        bool sendMessage(MessageT const& msg) {
+            return sendMessage(reflex::getSchema<MessageT>(), msg);
+        }
 
     private:
         struct ReprocSink;

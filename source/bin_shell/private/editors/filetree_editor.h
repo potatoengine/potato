@@ -15,10 +15,12 @@ namespace up::shell {
     class FileTreeEditor : public Editor {
     public:
         using OnFileSelected = delegate<void(zstring_view name)>;
+        using OnFileImport = delegate<void(zstring_view name)>;
 
-        explicit FileTreeEditor(string path, OnFileSelected onFileSelected)
+        explicit FileTreeEditor(string path, OnFileSelected onFileSelected, OnFileImport onFileImport)
             : Editor("FileTreeEditor"_zsv)
             , _onFileSelected(std::move(onFileSelected))
+            , _onFileImport(std::move(onFileImport))
             , _path(std::move(path)) {}
 
         zstring_view displayName() const override { return "Files"; }
@@ -41,11 +43,16 @@ namespace up::shell {
 
         void _enumerateFiles();
         void _handleFileClick(zstring_view name);
+        void _handleImport(zstring_view name);
 
         OnFileSelected _onFileSelected;
+        OnFileImport _onFileImport;
         string _path = "resources";
         vector<Entry> _cache;
     };
 
-    auto createFileTreeEditor(string path, FileTreeEditor::OnFileSelected onFileSelected) -> box<Editor>;
+    auto createFileTreeEditor(
+        string path,
+        FileTreeEditor::OnFileSelected onFileSelected,
+        FileTreeEditor::OnFileImport onFileImport) -> box<Editor>;
 } // namespace up::shell
