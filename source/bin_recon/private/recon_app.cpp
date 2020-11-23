@@ -8,6 +8,7 @@
 #include "potato/recon/recon_log_sink.h"
 #include "potato/recon/recon_protocol.h"
 #include "potato/tools/meta_file.h"
+#include "potato/runtime/concurrent_queue.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/path.h"
@@ -103,17 +104,33 @@ bool up::recon::ReconApp::_runOnce() {
     return true;
 }
 
+namespace up::recon {
+    namespace {
+        enum ReconCommandType { Watch, ForceImport, Quit };
+        struct ReconCommand {
+            ReconCommandType type = ReconCommandType::Watch;
+            fs::WatchAction watchAction = fs::WatchAction::Modify;
+            string path;
+        };
+    } // namespace
+} // namespace up::recon
+
 bool up::recon::ReconApp::_runServer() {
     // import all the initial files
     _runOnce();
 
-    auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath());
+    ConcurrentQueue<ReconCommand> commands;
+
+    auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&commands](auto const& watch) {
+        ReconCommand cmd{.type = ReconCommandType::Watch, .watchAction = watch.action, .path = watch.path};
+        commands.enqueWait(cmd);
+    });
     if (rs != IOResult::Success) {
         return false;
     }
 
     fs::WatchHandle& handle = *watchHandle;
-    std::thread waitParent([&handle, this] {
+    std::thread waitParent([&handle, &commands] {
         nlohmann::json doc;
         std::string line;
         box<schema::ReconMessage> msg;
@@ -125,28 +142,46 @@ bool up::recon::ReconApp::_runServer() {
             }
             if (schema == &reflex::getSchema<schema::ReconForceImportMessage>()) {
                 auto const& importMsg = static_cast<schema::ReconForceImportMessage const&>(*msg);
-                _logger.info("Got import message for {}", importMsg.dbPath);
+                ReconCommand cmd{.type = ReconCommandType::ForceImport, .path = importMsg.dbPath};
+                commands.enqueWait(cmd);
             }
         }
         handle.close();
+        commands.enqueWait(ReconCommand{.type = ReconCommandType::Quit});
     });
 
-    fs::Watch watch;
+    ReconCommand cmd;
     while (handle.isOpen()) {
-        watchHandle->watch(watch);
-
-        if (watch.path.starts_with(".library")) {
+        if (!commands.dequeWait(cmd)) {
+            handle.close();
             continue;
         }
 
-        if (watch.path.ends_with(".meta")) {
-            watch.path = path::changeExtension(watch.path, "");
+        switch (cmd.type) {
+            case ReconCommandType::Watch:
+                if (cmd.path.starts_with(".library")) {
+                    continue;
+                }
+
+                if (cmd.path.ends_with(".meta")) {
+                    cmd.path = path::changeExtension(cmd.path, "");
+                }
+
+                _logger.info("Change: {}", cmd.path);
+
+                _importFile(cmd.path);
+                _writeManifest();
+                break;
+            case ReconCommandType::ForceImport:
+                _logger.info("Force import: {}", cmd.path);
+
+                _importFile(cmd.path, true);
+                _writeManifest();
+                break;
+            case ReconCommandType::Quit:
+                handle.close();
+                break;
         }
-
-        _logger.info("Change: {}", watch.path);
-        _importFile(watch.path);
-
-        _writeManifest();
     }
 
     waitParent.join();
@@ -170,11 +205,11 @@ void up::recon::ReconApp::_registerImporters() {
     }
 }
 
-bool up::recon::ReconApp::_importFiles(view<string> files) {
+bool up::recon::ReconApp::_importFiles(view<string> files, bool force) {
     bool failed = false;
 
     for (auto const& path : files) {
-        if (!_importFile(path)) {
+        if (!_importFile(path, force)) {
             failed = true;
         }
     }
@@ -182,7 +217,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files) {
     return !failed;
 }
 
-bool up::recon::ReconApp::_importFile(zstring_view file) {
+bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     auto assetId = _library.pathToAssetId(file);
     auto record = _library.findRecord(assetId);
 
@@ -197,7 +232,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file) {
 
     bool const upToDate =
         record != nullptr && _isUpToDate(*record, contentHash, *importer) && _isUpToDate(record->dependencies);
-    if (upToDate) {
+    if (upToDate && !force) {
         _logger.info("Asset `{}' is up-to-date", file);
         return true;
     }
@@ -209,8 +244,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file) {
     }
 
     auto name = importer->name();
-    _logger
-        .info("Asset `{}' requires import ({} {})", file, string_view(name.data(), name.size()), importer->revision());
+    _logger.info("Importing asset `{}' ({} {})", file, string_view(name.data(), name.size()), importer->revision());
 
     ImporterContext context(file, _project->resourceRootPath(), _temporaryOutputPath, _logger);
     if (!_checkMetafile(context, file)) {

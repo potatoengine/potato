@@ -1,10 +1,8 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "assertion.h"
-#include "concurrent_queue.h"
 #include "filesystem.h"
 #include "logger.h"
-#include "semaphore.h"
 #include "stream.h"
 
 #include <filesystem>
@@ -280,7 +278,9 @@ up::fs::WatchHandle::WatchHandle() = default;
 namespace {
     class WatchHandleImpl final : public up::fs::WatchHandle {
     public:
-        explicit WatchHandleImpl(up::string directory) : _directory(std::move(directory)) {}
+        explicit WatchHandleImpl(up::string directory, up::fs::WatchCallback callback)
+            : _directory(std::move(directory))
+            , _callback(std::move(callback)) {}
         ~WatchHandleImpl() override { close(); }
 
         bool start() {
@@ -293,7 +293,7 @@ namespace {
 
             _watch = dmon_watch(
                 _directory.c_str(),
-                _callbackStatic,
+                _dmonCallbackStatic,
                 DMON_WATCHFLAGS_RECURSIVE | DMON_WATCHFLAGS_FOLLOW_SYMLINKS,
                 this);
             return _watch.id != 0;
@@ -315,31 +315,20 @@ namespace {
                     dmon_deinit();
                 }
             }
-
-            _results.close();
-            _sema.signal();
-        }
-
-        bool tryWatch(up::fs::Watch& out) override { return _results.tryDeque(out); }
-
-        void watch(up::fs::Watch& out) override {
-            while (!_results.tryDeque(out) && !_results.isClosed()) {
-                _sema.wait();
-            }
         }
 
     private:
-        static void _callbackStatic(
+        static void _dmonCallbackStatic(
             dmon_watch_id,
             dmon_action action,
             char const*,
             char const* filename,
             char const* oldfilename,
             void* user) {
-            static_cast<WatchHandleImpl*>(user)->_callback(action, filename, oldfilename);
+            static_cast<WatchHandleImpl*>(user)->_dmonCallback(action, filename, oldfilename);
         }
 
-        void _callback(dmon_action action, char const* filename, char const* oldfilename) {
+        void _dmonCallback(dmon_action action, char const* filename, char const* oldfilename) {
             up::fs::Watch watch;
             switch (action) {
                 case DMON_ACTION_CREATE:
@@ -359,25 +348,20 @@ namespace {
             }
 
             watch.path = up::string(filename);
-            // NOLINTNEXTLINE(bugprone-use-after-move)
-            while (!_results.tryEnque(std::move(watch))) {
-                std::this_thread::yield();
-            }
-            _sema.signal();
+            _callback(watch);
         }
 
         dmon_watch_id _watch = {0};
         up::string _directory;
-        up::ConcurrentQueue<up::fs::Watch> _results;
-        up::Semaphore _sema;
+        up::fs::WatchCallback _callback;
 
         static inline std::mutex _dmonInitLock;
         static inline size_t _dmonInitCount = 0;
     };
 } // namespace
 
-auto up::fs::watchDirectory(zstring_view path) -> IOReturn<rc<WatchHandle>> {
-    auto handle = new_shared<WatchHandleImpl>(string(path));
+auto up::fs::watchDirectory(zstring_view path, WatchCallback callback) -> IOReturn<rc<WatchHandle>> {
+    auto handle = new_shared<WatchHandleImpl>(string(path), std::move(callback));
     if (!handle->start()) {
         return {IOResult::UnsupportedOperation};
     }

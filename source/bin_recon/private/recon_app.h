@@ -36,8 +36,8 @@ namespace up::recon {
         bool _runServer();
 
         auto _collectSourceFiles() -> vector<string>;
-        bool _importFiles(view<string> files);
-        bool _importFile(zstring_view file);
+        bool _importFiles(view<string> files, bool force = false);
+        bool _importFile(zstring_view file, bool force = false);
 
         bool _writeManifest();
 
