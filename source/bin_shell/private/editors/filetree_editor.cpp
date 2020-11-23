@@ -13,7 +13,10 @@
 
 #include <imgui.h>
 
-auto up::shell::createFileTreeEditor(string path, FileTreeEditor::OnFileSelected onFileSelected, FileTreeEditor::OnFileImport onFileImport) -> box<Editor> {
+auto up::shell::createFileTreeEditor(
+    string path,
+    FileTreeEditor::OnFileSelected onFileSelected,
+    FileTreeEditor::OnFileImport onFileImport) -> box<Editor> {
     return new_box<FileTreeEditor>(std::move(path), std::move(onFileSelected), std::move(onFileImport));
 }
 
