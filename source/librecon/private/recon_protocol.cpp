@@ -19,7 +19,7 @@ bool up::recon::decodeReconMessage(
     box<schema::ReconMessage>& out_msg,
     reflex::Schema const*& out_schema) {
     static reflex::Schema const& logSchema = reflex::getSchema<schema::ReconLogMessage>();
-    static reflex::Schema const& forceImportSchema = reflex::getSchema<schema::ReconForceImportMessage>();
+    static reflex::Schema const& importSchema = reflex::getSchema<schema::ReconImportMessage>();
 
     if (!source.is_object()) {
         return false;
@@ -37,10 +37,10 @@ bool up::recon::decodeReconMessage(
         return reflex::decodeFromJsonRaw(source, logSchema, out_msg.get());
     }
 
-    if (schemaName == forceImportSchema.name) {
-        out_msg = new_box<schema::ReconForceImportMessage>();
-        out_schema = &forceImportSchema;
-        return reflex::decodeFromJsonRaw(source, forceImportSchema, out_msg.get());
+    if (schemaName == importSchema.name) {
+        out_msg = new_box<schema::ReconImportMessage>();
+        out_schema = &importSchema;
+        return reflex::decodeFromJsonRaw(source, importSchema, out_msg.get());
     }
 
     out_msg.reset();

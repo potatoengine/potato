@@ -111,6 +111,7 @@ namespace up::recon {
             ReconCommandType type = ReconCommandType::Watch;
             fs::WatchAction watchAction = fs::WatchAction::Modify;
             string path;
+            bool force = false;
         };
     } // namespace
 } // namespace up::recon
@@ -121,6 +122,7 @@ bool up::recon::ReconApp::_runServer() {
 
     ConcurrentQueue<ReconCommand> commands;
 
+    // watch the target resource root and auto-convert any items that come in
     auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&commands](auto const& watch) {
         ReconCommand cmd{.type = ReconCommandType::Watch, .watchAction = watch.action, .path = watch.path};
         commands.enqueWait(cmd);
@@ -129,6 +131,7 @@ bool up::recon::ReconApp::_runServer() {
         return false;
     }
 
+    // handle processing input from the client
     fs::WatchHandle& handle = *watchHandle;
     std::thread waitParent([&handle, &commands] {
         nlohmann::json doc;
@@ -140,9 +143,12 @@ bool up::recon::ReconApp::_runServer() {
             if (!decodeReconMessage(doc, msg, schema)) {
                 break;
             }
-            if (schema == &reflex::getSchema<schema::ReconForceImportMessage>()) {
-                auto const& importMsg = static_cast<schema::ReconForceImportMessage const&>(*msg);
-                ReconCommand cmd{.type = ReconCommandType::ForceImport, .path = importMsg.dbPath};
+            if (schema == &reflex::getSchema<schema::ReconImportMessage>()) {
+                auto const& importMsg = static_cast<schema::ReconImportMessage const&>(*msg);
+                ReconCommand cmd{
+                    .type = ReconCommandType::ForceImport,
+                    .path = importMsg.path,
+                    .force = importMsg.force};
                 commands.enqueWait(cmd);
             }
         }
@@ -151,8 +157,19 @@ bool up::recon::ReconApp::_runServer() {
     });
 
     ReconCommand cmd;
-    while (handle.isOpen()) {
-        if (!commands.dequeWait(cmd)) {
+    bool quit = false;
+    for (;;) {
+        if (!handle.isOpen()) {
+            quit = true;
+        }
+
+        // ensure we drain out the remaining queued items
+        if (quit) {
+            if (!commands.tryDeque(cmd)) {
+                break;
+            }
+        }
+        else if (!commands.dequeWait(cmd)) {
             handle.close();
             continue;
         }
@@ -169,17 +186,18 @@ bool up::recon::ReconApp::_runServer() {
 
                 _logger.info("Change: {}", cmd.path);
 
-                _importFile(cmd.path);
+                _importFile(cmd.path, cmd.force);
                 _writeManifest();
                 break;
             case ReconCommandType::ForceImport:
-                _logger.info("Force import: {}", cmd.path);
+                _logger.info("Import: {} (force={})", cmd.path, cmd.force);
 
-                _importFile(cmd.path, true);
+                _importFile(cmd.path, cmd.force);
                 _writeManifest();
                 break;
             case ReconCommandType::Quit:
                 handle.close();
+                quit = true;
                 break;
         }
     }
@@ -233,7 +251,6 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     bool const upToDate =
         record != nullptr && _isUpToDate(*record, contentHash, *importer) && _isUpToDate(record->dependencies);
     if (upToDate && !force) {
-        _logger.info("Asset `{}' is up-to-date", file);
         return true;
     }
 

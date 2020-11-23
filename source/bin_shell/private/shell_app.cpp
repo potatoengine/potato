@@ -317,9 +317,10 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _editors.open(createFileTreeEditor(
         string{_project->resourceRootPath()},
         [this](zstring_view name) { _onFileOpened(name); },
-        [this](zstring_view name) {
-            schema::ReconForceImportMessage msg;
-            msg.dbPath = string{name};
+        [this](zstring_view name, bool force) {
+            schema::ReconImportMessage msg;
+            msg.path = string{name};
+            msg.force = force;
             _reconClient.sendMessage(msg);
         }));
 

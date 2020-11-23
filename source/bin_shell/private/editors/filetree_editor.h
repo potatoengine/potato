@@ -15,7 +15,7 @@ namespace up::shell {
     class FileTreeEditor : public Editor {
     public:
         using OnFileSelected = delegate<void(zstring_view name)>;
-        using OnFileImport = delegate<void(zstring_view name)>;
+        using OnFileImport = delegate<void(zstring_view name, bool force)>;
 
         explicit FileTreeEditor(string path, OnFileSelected onFileSelected, OnFileImport onFileImport)
             : Editor("FileTreeEditor"_zsv)
@@ -43,7 +43,7 @@ namespace up::shell {
 
         void _enumerateFiles();
         void _handleFileClick(zstring_view name);
-        void _handleImport(zstring_view name);
+        void _handleImport(zstring_view name, bool force = false);
 
         OnFileSelected _onFileSelected;
         OnFileImport _onFileImport;

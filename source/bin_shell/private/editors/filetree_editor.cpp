@@ -64,8 +64,12 @@ void up::shell::FileTreeEditor::content() {
             if (ImGui::IconMenuItem("Open", nullptr, nullptr, false, !cached.directory)) {
                 _handleFileClick(cached.name);
             }
+            ImGui::IconMenuSeparator();
             if (ImGui::IconMenuItem("Import", nullptr, nullptr, false, !cached.directory)) {
                 _handleImport(cached.name);
+            }
+            if (ImGui::IconMenuItem("Import (Force)", nullptr, nullptr, false, !cached.directory)) {
+                _handleImport(cached.name, true);
             }
             ImGui::EndPopup();
         }
@@ -110,8 +114,8 @@ void up::shell::FileTreeEditor::_handleFileClick(zstring_view name) {
     }
 }
 
-void up::shell::FileTreeEditor::_handleImport(zstring_view name) {
+void up::shell::FileTreeEditor::_handleImport(zstring_view name, bool force) {
     if (_onFileImport != nullptr && !name.empty()) {
-        _onFileImport(name);
+        _onFileImport(name, force);
     }
 }

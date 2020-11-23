@@ -17,6 +17,7 @@ struct ReconLogMessage : ReconMessage {
     ReconLogSeverity severity = Info;
 }
 
-struct ReconForceImportMessage : ReconMessage {
-    string dbPath;
+struct ReconImportMessage : ReconMessage {
+    string path;
+    bool force = false;
 }
