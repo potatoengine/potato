@@ -276,7 +276,7 @@ void up::shell::SceneEditor::_hierarchy() {
 
     if (_create) {
         _create = false;
-        EntityId id = _doc->createEntity("New Entity", _targetId);
+        _doc->createEntity("New Entity", _targetId);
         _targetId = EntityId::None;
     }
     if (_delete) {
