@@ -32,6 +32,7 @@ namespace up {
         int indexOf(EntityId entityId) const noexcept;
 
         EntityId createEntity(string name, EntityId parentId = EntityId::None);
+        void deleteEntity(EntityId targetId);
 
         void parentTo(EntityId childId, EntityId parentId);
 

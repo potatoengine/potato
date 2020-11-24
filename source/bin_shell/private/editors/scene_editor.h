@@ -66,6 +66,9 @@ namespace up::shell {
         HandlePlayClicked _onPlayClicked;
         glm::ivec2 _sceneDimensions = {0, 0};
         bool _enableGrid = true;
+        bool _create = false;
+        bool _delete = false;
+        EntityId _targetId = EntityId::None;
     };
 
     auto createSceneEditor(

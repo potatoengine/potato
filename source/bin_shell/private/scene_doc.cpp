@@ -30,6 +30,32 @@ up::EntityId up::SceneDocument::createEntity(string name, EntityId parentId) {
     return id;
 }
 
+void up::SceneDocument::deleteEntity(EntityId targetId) {
+    auto const index = indexOf(targetId);
+    if (index == -1) {
+        return;
+    }
+
+    // reparent to ensure we're unlinked from a parent's chain
+    parentTo(targetId, EntityId::None);
+
+    // recursively delete childen - we have to buffer this since deleting a child
+    // would mutate the list we're walking
+    vector<EntityId> children;
+    for (int childIndex = _entities[index].firstChild; childIndex != -1;
+         childIndex = _entities[childIndex].nextSibling) {
+        children.push_back(_entities[childIndex].id);
+    }
+
+    for (EntityId const childId : children) {
+        deleteEntity(childId);
+    }
+
+    // actually delete the entity
+    _entities.erase(_entities.begin() + index);
+    _scene->world().deleteEntity(targetId);
+}
+
 void up::SceneDocument::parentTo(EntityId childId, EntityId parentId) {
     int const childIndex = indexOf(childId);
     if (childIndex == -1) {

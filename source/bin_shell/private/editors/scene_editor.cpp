@@ -266,6 +266,17 @@ void up::shell::SceneEditor::_hierarchy() {
             _hierarchyShowIndex(index);
         }
     }
+
+    if (_create) {
+        _create = false;
+        EntityId id = _doc->createEntity("New Entity", _targetId);
+        _targetId = EntityId::None;
+    }
+    if (_delete) {
+        _delete = false;
+        _doc->deleteEntity(_targetId);
+        _targetId = EntityId::None;
+    }
 }
 
 void up::shell::SceneEditor::_hierarchyShowIndex(int index) {
@@ -291,6 +302,17 @@ void up::shell::SceneEditor::_hierarchyShowIndex(int index) {
     bool const open = ImGui::TreeNodeEx(label, flags);
     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
         _selection.select(ent.id);
+    }
+    if (ImGui::BeginPopupContextItem()) {
+        if (ImGui::IconMenuItem("New Entity", ICON_FA_PLUS)) {
+            _targetId = ent.id;
+            _create = true;
+        }
+        if (ImGui::IconMenuItem("Delete", ICON_FA_TRASH)) {
+            _targetId = ent.id;
+            _delete = true;
+        }
+        ImGui::EndPopup();
     }
 
     if (selected) {
