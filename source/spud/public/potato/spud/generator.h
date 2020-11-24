@@ -4,8 +4,18 @@
 
 #include "_assertion.h"
 
-#include <coroutine>
 #include <type_traits>
+#include <version>
+
+#if defined(__cpp_lib_coroutine) && __has_include(<coroutine>)
+#    include <coroutine>
+namespace coro_std = std;
+#elif __has_include(<experimental/coroutine>)
+#    include <experimental/coroutine>
+namespace coro_std = std::experimental;
+#else
+#    error "coroutines support is required"
+#endif
 
 namespace up {
     template <typename ItemT>
@@ -24,10 +34,10 @@ namespace up {
             generator<T> get_return_object() noexcept;
 
             void return_void() const noexcept {}
-            std::suspend_always initial_suspend() const noexcept { return {}; }
-            std::suspend_always final_suspend() const noexcept { return {}; }
+            coro_std::suspend_always initial_suspend() const noexcept { return {}; }
+            coro_std::suspend_always final_suspend() const noexcept { return {}; }
 
-            std::suspend_always yield_value(value_type& value) noexcept {
+            coro_std::suspend_always yield_value(value_type& value) noexcept {
                 _value = &value;
                 return {};
             }
@@ -36,7 +46,7 @@ namespace up {
 
             void unhandled_exception() const noexcept { UP_SPUD_ASSERT(false, "unhandled exception in generator"); }
             template <typename U>
-            std::suspend_never await_transform(U&& value) = delete;
+            coro_std::suspend_never await_transform(U&& value) = delete;
 
             void rethrow_if_exception() const noexcept {}
 
@@ -48,7 +58,7 @@ namespace up {
 
         template <typename T>
         class generator_iterator {
-            using handle_type = std::coroutine_handle<_detail::generator_promise<T>>;
+            using handle_type = coro_std::coroutine_handle<_detail::generator_promise<T>>;
 
         public:
             using difference_type = std::ptrdiff_t;
@@ -77,7 +87,7 @@ namespace up {
 
     template <class ItemT>
     class [[nodiscard]] generator {
-        using handle_type = std::coroutine_handle<_detail::generator_promise<ItemT>>;
+        using handle_type = coro_std::coroutine_handle<_detail::generator_promise<ItemT>>;
 
     public:
         using promise_type = _detail::generator_promise<ItemT>;
