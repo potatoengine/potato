@@ -5,6 +5,7 @@
 #include "camera_controller.h"
 #include "editor.h"
 #include "scene.h"
+#include "scene_doc.h"
 #include "selection.h"
 
 #include "potato/editor/imgui_ext.h"
@@ -23,15 +24,15 @@
 #include <imgui_internal.h>
 
 auto up::shell::createSceneEditor(
-    rc<Scene> scene,
+    box<SceneDocument> sceneDoc,
     SceneEditor::EnumerateComponents components,
     SceneEditor::HandlePlayClicked onPlayClicked) -> box<Editor> {
-    return new_box<SceneEditor>(std::move(scene), std::move(components), std::move(onPlayClicked));
+    return new_box<SceneEditor>(std::move(sceneDoc), std::move(components), std::move(onPlayClicked));
 }
 
 void up::shell::SceneEditor::tick(float deltaTime) {
-    _scene->tick(deltaTime);
-    _scene->flush();
+    _doc->scene()->tick(deltaTime);
+    _doc->scene()->flush();
 }
 
 void up::shell::SceneEditor::configure() {
@@ -48,7 +49,7 @@ void up::shell::SceneEditor::configure() {
          .enabled = [this] { return isActive(); },
          .action =
              [this]() {
-                 _onPlayClicked(_scene);
+                 _onPlayClicked(_doc->scene());
              }});
     addAction(
         {.name = "potato.editors.scene.options.grid.toggle",
@@ -140,8 +141,8 @@ void up::shell::SceneEditor::render(Renderer& renderer, float deltaTime) {
             _drawGrid();
         }
         _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-        if (_scene != nullptr) {
-            _scene->render(ctx);
+        if (_doc->scene() != nullptr) {
+            _doc->scene()->render(ctx);
         }
         renderer.flushDebugDraw(deltaTime);
         renderer.endFrame(deltaTime);
@@ -186,7 +187,7 @@ void up::shell::SceneEditor::_resize(GpuDevice& device, glm::ivec2 size) {
 void up::shell::SceneEditor::_inspector() {
     ComponentId deletedComponent = ComponentId::Unknown;
 
-    if (_scene == nullptr) {
+    if (_doc->scene() == nullptr) {
         return;
     }
 
@@ -199,7 +200,7 @@ void up::shell::SceneEditor::_inspector() {
 
     ImGuiID const addComponentId = ImGui::GetID("##add_component_list");
 
-    _scene->world().interrogateEntityUnsafe(
+    _doc->scene()->world().interrogateEntityUnsafe(
         _selection.selected(),
         [&](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
             ImGui::PushID(data);
@@ -233,7 +234,7 @@ void up::shell::SceneEditor::_inspector() {
     ImGui::EndTable();
 
     if (deletedComponent != ComponentId::Unknown) {
-        _scene->world().removeComponent(_selection.selected(), deletedComponent);
+        _doc->scene()->world().removeComponent(_selection.selected(), deletedComponent);
     }
 
     if (_selection.hasSelection()) {
@@ -246,11 +247,11 @@ void up::shell::SceneEditor::_inspector() {
                 ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings |
                     ImGuiWindowFlags_NoMove)) {
             for (reflex::TypeInfo const* typeInfo : _components()) {
-                if (_scene->world().getComponentSlowUnsafe(
+                if (_doc->scene()->world().getComponentSlowUnsafe(
                         _selection.selected(),
                         static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
                     if (ImGui::IconMenuItem(typeInfo->name.c_str())) {
-                        _scene->world().addComponentDefault(_selection.selected(), *typeInfo);
+                        _doc->scene()->world().addComponentDefault(_selection.selected(), *typeInfo);
                     }
                 }
             }
@@ -264,8 +265,8 @@ void up::shell::SceneEditor::_hierarchy() {
 
     fixed_string_writer<label_length> label;
 
-    if (_scene != nullptr) {
-        for (auto const& chunk : _scene->world().chunks()) {
+    if (_doc->scene() != nullptr) {
+        for (auto const& chunk : _doc->scene()->world().chunks()) {
             for (EntityId entityId : chunk->entities()) {
                 label.clear();
                 format_append(label, "Entity (#{})", entityId);

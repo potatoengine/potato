@@ -173,10 +173,15 @@ namespace up {
 
     template <typename... Components>
     EntityId World::createEntity(Components const&... components) noexcept {
-        reflex::TypeInfo const* const typeInfos[] = {_context->findComponentByType<Components>()...};
-        void const* const componentData[] = {&components...};
+        if constexpr (sizeof...(Components) != 0) {
+            reflex::TypeInfo const* const typeInfos[] = {_context->findComponentByType<Components>()...};
+            void const* const componentData[] = {&components...};
 
-        return _createEntityRaw(typeInfos, componentData);
+            return _createEntityRaw(typeInfos, componentData);
+        }
+        else {
+            return _createEntityRaw({}, {});
+        }
     }
 
     template <typename Component>
