@@ -261,24 +261,47 @@ void up::shell::SceneEditor::_inspector() {
 }
 
 void up::shell::SceneEditor::_hierarchy() {
-    constexpr int label_length = 64;
-
-    fixed_string_writer<label_length> label;
-
-    if (_doc->scene() != nullptr) {
-        for (auto const& chunk : _doc->scene()->world().chunks()) {
-            for (EntityId entityId : chunk->entities()) {
-                label.clear();
-                format_append(label, "Entity (#{})", entityId);
-
-                bool selected = entityId == _selection.selected();
-                if (ImGui::Selectable(label.c_str(), selected)) {
-                    _selection.select(entityId);
-                }
-                if (selected) {
-                    ImGui::SetItemDefaultFocus();
-                }
-            }
+    for (int index : _doc->indices()) {
+        if (_doc->entityAt(index).parent == -1) {
+            _hierarchyShowIndex(index);
         }
     }
+}
+
+void up::shell::SceneEditor::_hierarchyShowIndex(int index) {
+    char label[128];
+
+    SceneEntity const& ent = _doc->entityAt(index);
+
+    format_to(label, "{} (#{})", !ent.name.empty() ? ent.name.c_str() : "Entity", ent.id);
+
+    bool const hasChildren = ent.firstChild != -1;
+    bool const selected = ent.id == _selection.selected();
+
+    unsigned flags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_DefaultOpen |
+        ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow;
+    if (!hasChildren) {
+        flags |= ImGuiTreeNodeFlags_Leaf;
+    }
+    if (selected) {
+        flags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    ImGui::PushID(index);
+    bool const open = ImGui::TreeNodeEx(label, flags);
+    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+        _selection.select(ent.id);
+    }
+
+    if (selected) {
+        ImGui::SetItemDefaultFocus();
+    }
+
+    if (open) {
+        for (int childIndex = ent.firstChild; childIndex != -1; childIndex = _doc->entityAt(childIndex).nextSibling) {
+            _hierarchyShowIndex(childIndex);
+        }
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
 }

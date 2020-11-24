@@ -34,7 +34,6 @@ namespace up::shell {
             , _components(std::move(components))
             , _onPlayClicked(std::move(onPlayClicked)) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-            _selection.select(_doc->scene()->root());
         }
 
         zstring_view displayName() const override { return "Scene"_zsv; }
@@ -53,6 +52,7 @@ namespace up::shell {
         void _resize(GpuDevice& device, glm::ivec2 size);
         void _inspector();
         void _hierarchy();
+        void _hierarchyShowIndex(int index);
 
         rc<GpuTexture> _buffer;
         box<SceneDocument> _doc;

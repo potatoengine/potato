@@ -10,6 +10,9 @@
 #include "potato/spud/vector.h"
 
 namespace up {
+    class Model;
+    class SoundResource;
+
     struct SceneEntity {
         string name;
         EntityId id = EntityId::None;
@@ -28,7 +31,11 @@ namespace up {
         SceneEntity const& entityAt(int index) const noexcept { return _entities[index]; }
         int indexOf(EntityId entityId) const noexcept;
 
-        EntityId createEntity();
+        EntityId createEntity(string name, EntityId parentId = EntityId::None);
+
+        void parentTo(EntityId childId, EntityId parentId);
+
+        void createTestObjects(rc<Model> const& cube, rc<SoundResource> const& ding);
 
     private:
         rc<Scene> _scene;
