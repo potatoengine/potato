@@ -6,6 +6,7 @@
 #include "camera_controller.h"
 #include "editor.h"
 #include "scene.h"
+#include "scene_doc.h"
 #include "selection.h"
 
 #include "potato/editor/property_grid.h"
@@ -23,14 +24,16 @@ namespace up::shell {
         using EnumerateComponents = delegate<view<reflex::TypeInfo const*>()>;
         using HandlePlayClicked = delegate<void(rc<Scene>)>;
 
-        explicit SceneEditor(rc<Scene> scene, EnumerateComponents components, HandlePlayClicked onPlayClicked)
+        explicit SceneEditor(
+            box<SceneDocument> sceneDoc,
+            EnumerateComponents components,
+            HandlePlayClicked onPlayClicked)
             : Editor("SceneEditor"_zsv)
-            , _scene(std::move(scene))
+            , _doc(std::move(sceneDoc))
             , _cameraController(_camera)
             , _components(std::move(components))
             , _onPlayClicked(std::move(onPlayClicked)) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
-            _selection.select(_scene->root());
         }
 
         zstring_view displayName() const override { return "Scene"_zsv; }
@@ -49,9 +52,11 @@ namespace up::shell {
         void _resize(GpuDevice& device, glm::ivec2 size);
         void _inspector();
         void _hierarchy();
+        void _hierarchyShowIndex(int index);
+        void _hierarchyContext(EntityId id);
 
-        rc<Scene> _scene;
         rc<GpuTexture> _buffer;
+        box<SceneDocument> _doc;
         box<GpuResourceView> _bufferView;
         box<RenderCamera> _renderCamera;
         Camera _camera;
@@ -62,10 +67,13 @@ namespace up::shell {
         HandlePlayClicked _onPlayClicked;
         glm::ivec2 _sceneDimensions = {0, 0};
         bool _enableGrid = true;
+        bool _create = false;
+        bool _delete = false;
+        EntityId _targetId = EntityId::None;
     };
 
     auto createSceneEditor(
-        rc<Scene> scene,
+        box<SceneDocument> sceneDoc,
         SceneEditor::EnumerateComponents components,
         SceneEditor::HandlePlayClicked onPlayClicked) -> box<Editor>;
 } // namespace up::shell

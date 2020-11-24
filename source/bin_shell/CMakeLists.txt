@@ -32,7 +32,7 @@ target_sources(potato_shell PRIVATE
     "private/settings.cpp"
     "private/log_window.h"
     "private/log_window.cpp"
-)
+ "public/potato/shell/scene_doc.h" "private/scene_doc.cpp")
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 

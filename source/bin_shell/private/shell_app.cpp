@@ -650,10 +650,10 @@ void up::shell::ShellApp::_createScene() {
 
     auto model = new_shared<Model>(std::move(mesh), std::move(material));
 
-    auto scene = new_shared<Scene>(*_universe, *_audio);
-    scene->create(model, ding);
+    auto doc = new_box<SceneDocument>(new_shared<Scene>(*_universe, *_audio));
+    doc->createTestObjects(model, ding);
     _editors.open(createSceneEditor(
-        scene,
+        std::move(doc),
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
 }

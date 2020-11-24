@@ -32,7 +32,7 @@ namespace up::shell {
         rc<LogWindowSink> _receiver;
         vector<LogEntry> _logs;
         LogSeverityMask _mask = LogSeverityMask::Everything;
-        bool _open = true;
+        bool _open = false;
         bool _stickyBottom = true;
         char _filter[128] = {
             0,

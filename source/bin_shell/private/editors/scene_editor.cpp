@@ -5,6 +5,7 @@
 #include "camera_controller.h"
 #include "editor.h"
 #include "scene.h"
+#include "scene_doc.h"
 #include "selection.h"
 
 #include "potato/editor/imgui_ext.h"
@@ -23,15 +24,15 @@
 #include <imgui_internal.h>
 
 auto up::shell::createSceneEditor(
-    rc<Scene> scene,
+    box<SceneDocument> sceneDoc,
     SceneEditor::EnumerateComponents components,
     SceneEditor::HandlePlayClicked onPlayClicked) -> box<Editor> {
-    return new_box<SceneEditor>(std::move(scene), std::move(components), std::move(onPlayClicked));
+    return new_box<SceneEditor>(std::move(sceneDoc), std::move(components), std::move(onPlayClicked));
 }
 
 void up::shell::SceneEditor::tick(float deltaTime) {
-    _scene->tick(deltaTime);
-    _scene->flush();
+    _doc->scene()->tick(deltaTime);
+    _doc->scene()->flush();
 }
 
 void up::shell::SceneEditor::configure() {
@@ -48,7 +49,7 @@ void up::shell::SceneEditor::configure() {
          .enabled = [this] { return isActive(); },
          .action =
              [this]() {
-                 _onPlayClicked(_scene);
+                 _onPlayClicked(_doc->scene());
              }});
     addAction(
         {.name = "potato.editors.scene.options.grid.toggle",
@@ -140,8 +141,8 @@ void up::shell::SceneEditor::render(Renderer& renderer, float deltaTime) {
             _drawGrid();
         }
         _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-        if (_scene != nullptr) {
-            _scene->render(ctx);
+        if (_doc->scene() != nullptr) {
+            _doc->scene()->render(ctx);
         }
         renderer.flushDebugDraw(deltaTime);
         renderer.endFrame(deltaTime);
@@ -186,8 +187,21 @@ void up::shell::SceneEditor::_resize(GpuDevice& device, glm::ivec2 size) {
 void up::shell::SceneEditor::_inspector() {
     ComponentId deletedComponent = ComponentId::Unknown;
 
-    if (_scene == nullptr) {
+    if (_doc->scene() == nullptr) {
         return;
+    }
+
+    int const index = _doc->indexOf(_selection.selected());
+    if (index == -1) {
+        return;
+    }
+
+    {
+        char buffer[128];
+        format_to(buffer, "{}", _doc->entityAt(index).name);
+        if (ImGui::InputText("Name", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
+            _doc->entityAt(index).name = string{buffer};
+        }
     }
 
     if (!ImGui::BeginTable(
@@ -199,7 +213,7 @@ void up::shell::SceneEditor::_inspector() {
 
     ImGuiID const addComponentId = ImGui::GetID("##add_component_list");
 
-    _scene->world().interrogateEntityUnsafe(
+    _doc->scene()->world().interrogateEntityUnsafe(
         _selection.selected(),
         [&](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
             ImGui::PushID(data);
@@ -233,7 +247,7 @@ void up::shell::SceneEditor::_inspector() {
     ImGui::EndTable();
 
     if (deletedComponent != ComponentId::Unknown) {
-        _scene->world().removeComponent(_selection.selected(), deletedComponent);
+        _doc->scene()->world().removeComponent(_selection.selected(), deletedComponent);
     }
 
     if (_selection.hasSelection()) {
@@ -246,11 +260,11 @@ void up::shell::SceneEditor::_inspector() {
                 ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings |
                     ImGuiWindowFlags_NoMove)) {
             for (reflex::TypeInfo const* typeInfo : _components()) {
-                if (_scene->world().getComponentSlowUnsafe(
+                if (_doc->scene()->world().getComponentSlowUnsafe(
                         _selection.selected(),
                         static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
                     if (ImGui::IconMenuItem(typeInfo->name.c_str())) {
-                        _scene->world().addComponentDefault(_selection.selected(), *typeInfo);
+                        _doc->scene()->world().addComponentDefault(_selection.selected(), *typeInfo);
                     }
                 }
             }
@@ -260,24 +274,83 @@ void up::shell::SceneEditor::_inspector() {
 }
 
 void up::shell::SceneEditor::_hierarchy() {
-    constexpr int label_length = 64;
-
-    fixed_string_writer<label_length> label;
-
-    if (_scene != nullptr) {
-        for (auto const& chunk : _scene->world().chunks()) {
-            for (EntityId entityId : chunk->entities()) {
-                label.clear();
-                format_append(label, "Entity (#{})", entityId);
-
-                bool selected = entityId == _selection.selected();
-                if (ImGui::Selectable(label.c_str(), selected)) {
-                    _selection.select(entityId);
-                }
-                if (selected) {
-                    ImGui::SetItemDefaultFocus();
-                }
+    unsigned const flags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+        ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+    bool const open = ImGui::TreeNodeEx("Scene", flags);
+    _hierarchyContext(EntityId::None);
+    if (open) {
+        for (int index : _doc->indices()) {
+            if (_doc->entityAt(index).parent == -1) {
+                _hierarchyShowIndex(index);
             }
         }
+        ImGui::TreePop();
+    }
+
+    if (_create) {
+        _create = false;
+        _doc->createEntity("New Entity", _targetId);
+        _targetId = EntityId::None;
+    }
+    if (_delete) {
+        _delete = false;
+        _doc->deleteEntity(_targetId);
+        _targetId = EntityId::None;
+    }
+}
+
+void up::shell::SceneEditor::_hierarchyShowIndex(int index) {
+    char label[128];
+
+    SceneEntity const& ent = _doc->entityAt(index);
+
+    format_to(label, "{} (#{})", !ent.name.empty() ? ent.name.c_str() : "Entity", ent.id);
+
+    bool const hasChildren = ent.firstChild != -1;
+    bool const selected = ent.id == _selection.selected();
+
+    unsigned flags =
+        ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow;
+    if (ent.parent == -1) {
+        flags |= ImGuiTreeNodeFlags_DefaultOpen;
+    }
+    if (!hasChildren) {
+        flags |= ImGuiTreeNodeFlags_Leaf;
+    }
+    if (selected) {
+        flags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    ImGui::PushID(index);
+    bool const open = ImGui::TreeNodeEx(label, flags);
+    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+        _selection.select(ent.id);
+    }
+    _hierarchyContext(ent.id);
+
+    if (selected) {
+        ImGui::SetItemDefaultFocus();
+    }
+
+    if (open) {
+        for (int childIndex = ent.firstChild; childIndex != -1; childIndex = _doc->entityAt(childIndex).nextSibling) {
+            _hierarchyShowIndex(childIndex);
+        }
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
+}
+
+void up::shell::SceneEditor::_hierarchyContext(EntityId id) {
+    if (ImGui::BeginPopupContextItem()) {
+        if (ImGui::IconMenuItem("New Entity", ICON_FA_PLUS)) {
+            _targetId = id;
+            _create = true;
+        }
+        if (ImGui::IconMenuItem("Delete", ICON_FA_TRASH, nullptr, false, id != EntityId::None)) {
+            _targetId = id;
+            _delete = true;
+        }
+        ImGui::EndPopup();
     }
 }
