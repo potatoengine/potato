@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "file_hash_cache.h"
 #include "recon_config.h"
 
+#include "potato/recon/file_hash_cache.h"
 #include "potato/tools/asset_library.h"
 #include "potato/tools/importer.h"
 #include "potato/tools/importer_factory.h"
@@ -36,8 +36,8 @@ namespace up::recon {
         bool _runServer();
 
         auto _collectSourceFiles() -> vector<string>;
-        bool _importFiles(view<string> files);
-        bool _importFile(zstring_view file);
+        bool _importFiles(view<string> files, bool force = false);
+        bool _importFile(zstring_view file, bool force = false);
 
         bool _writeManifest();
 

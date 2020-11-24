@@ -14,6 +14,9 @@ namespace up {
     };
 
     template <typename T, typename U>
+    concept derived_from = std::is_base_of_v<U, T>;
+
+    template <typename T, typename U>
     concept equality_comparable_with = requires(T t, U u) {
         { t == u }
         ->convertible_to<bool>;

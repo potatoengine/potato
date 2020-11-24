@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "_export.h"
+
 #include "potato/posql/posql.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/box.h"
@@ -17,19 +19,19 @@
 namespace up {
     class FileHashCache {
     public:
-        FileHashCache();
-        ~FileHashCache();
+        UP_RECON_API FileHashCache();
+        UP_RECON_API ~FileHashCache();
 
         FileHashCache(FileHashCache const&) = delete;
         FileHashCache& operator=(FileHashCache const&) = delete;
 
-        static uint64 hashAssetContent(span<byte const> contents) noexcept;
-        static uint64 hashAssetStream(Stream& stream);
+        static UP_RECON_API uint64 hashAssetContent(span<byte const> contents) noexcept;
+        static UP_RECON_API uint64 hashAssetStream(Stream& stream);
 
-        uint64 hashAssetAtPath(zstring_view path);
+        UP_RECON_API uint64 hashAssetAtPath(zstring_view path);
 
-        bool open(zstring_view cache_path);
-        bool close();
+        UP_RECON_API bool open(zstring_view cache_path);
+        UP_RECON_API bool close();
 
     private:
         struct HashRecord {

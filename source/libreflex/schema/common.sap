@@ -6,6 +6,7 @@ attribute cxxname { string id; }
 attribute cxximport { string id; string header; }
 attribute json { string name; }
 attribute serialize {}
+attribute virtualbase {}
 
 [ignore, cxxname("char")]
 type char;

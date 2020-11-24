@@ -57,7 +57,7 @@ def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     cxxns = cxxnamespace(type, namespace)
     return cxxname if '::' in cxxname or type.module == '$core' else f'{cxxns}::{cxxname}'
 
-def cxxvalue(value):
+def cxxvalue(value, db: type_info.TypeDatabase):
     if value is True:
         return 'true'
     if value is False:
@@ -65,7 +65,9 @@ def cxxvalue(value):
     if isinstance(value, str):
         return f'"{value}"' # FIXME: escapes
     if isinstance(value, dict) and 'kind' in value and value['kind'] == 'enum':
-        return f'{value["type"]}::{value["name"]}'
+        type_name = value['type']
+        type = db.type(type_name)
+        return f'{qualified_cxxname(type)}::{value["name"]}'
     return str(value)
 
 def generate_header_types(ctx: Context):
@@ -97,10 +99,12 @@ def generate_header_types(ctx: Context):
             elif type.base is not None:
                 ctx.print(f' : {type.base.cxxname}')
             ctx.print(' {\n')
+            if type.has_annotation('virtualbase'):
+                ctx.print(f'        virtual ~{type.cxxname}() = default;\n')
             for field in type.fields_ordered:
                 ctx.print(f"        {field.cxxtype} {field.cxxname}")
                 if field.has_default:
-                    ctx.print(f' = {cxxvalue(field.default_or(None))}')
+                    ctx.print(f' = {cxxvalue(field.default_or(None), ctx.db)}')
                 ctx.print(";\n")
             ctx.print("    };\n")
 
@@ -137,7 +141,7 @@ def generate_impl_annotations(ctx: Context, name: str, entity: type_info.Annotat
 
         ctx.print(f'    static const {attr.cxxname} {local_name}{{')
         for field, value in zip(attr.fields_ordered, annotation.values):
-            ctx.print(f'.{field.cxxname} = {cxxvalue(value)}, ')
+            ctx.print(f'.{field.cxxname} = {cxxvalue(value, ctx.db)}, ')
         ctx.print('};\n')
 
     if len(locals) != 0:
@@ -170,12 +174,17 @@ def generate_impl_schemas(ctx: Context):
 
         generate_impl_annotations(ctx, type.name, type)
 
+        if type.base is not None:
+            ctx.print(f'    static const Schema* const base = &getSchema<{qualified_cxxname(type.base)}>();\n')
+        else:
+            ctx.print('    constexpr const Schema* const base = nullptr;\n')
+
         if type.kind == type_info.TypeKind.ENUM:
             ctx.print('    static const SchemaEnumValue values[] = {\n')
             for key in type.names:
                 ctx.print(f'        SchemaEnumValue{{.name = "{key}"_zsv, .value = static_cast<int64>({qual_name}::{key})}},\n')
             ctx.print('    };\n')
-            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .elementType = &getSchema<std::underlying_type_t<{qual_name}>>(), .enumValues = values, .annotations = {type.name}_annotations}};\n')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .baseSchema = base, .elementType = &getSchema<std::underlying_type_t<{qual_name}>>(), .enumValues = values, .annotations = {type.name}_annotations}};\n')
         else:
             for field in type.fields_ordered:
                 generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
@@ -188,7 +197,7 @@ def generate_impl_schemas(ctx: Context):
             else:
                 ctx.print('    static constexpr view<SchemaField> fields;\n')
 
-            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .fields = fields, .annotations = {type.name}_annotations}};\n')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .fields = fields, .annotations = {type.name}_annotations}};\n')
         ctx.print('    return schema;\n')
         ctx.print("}\n")
 
@@ -222,8 +231,20 @@ def generate_source(ctx: Context):
 
     generate_file_prefix(ctx)
     ctx.print(f'#include "{ctx.db.module}_schema.h"\n')
+    ctx.print('''
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
+''')
 
     generate_impl_schemas(ctx)
+
+    ctx.print('''
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+''')
 
 generators = {
     'header': generate_header,

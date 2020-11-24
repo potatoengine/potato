@@ -3,6 +3,7 @@
 #include "filetree_editor.h"
 #include "editor.h"
 
+#include "potato/editor/imgui_ext.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/path.h"
 #include "potato/spud/box.h"
@@ -12,8 +13,11 @@
 
 #include <imgui.h>
 
-auto up::shell::createFileTreeEditor(string path, FileTreeEditor::OnFileSelected onFileSelected) -> box<Editor> {
-    return new_box<FileTreeEditor>(std::move(path), std::move(onFileSelected));
+auto up::shell::createFileTreeEditor(
+    string path,
+    FileTreeEditor::OnFileSelected onFileSelected,
+    FileTreeEditor::OnFileImport onFileImport) -> box<Editor> {
+    return new_box<FileTreeEditor>(std::move(path), std::move(onFileSelected), std::move(onFileImport));
 }
 
 void up::shell::FileTreeEditor::content() {
@@ -52,8 +56,22 @@ void up::shell::FileTreeEditor::content() {
             cached.open = false;
         }
 
-        if (!cached.directory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+        if (!cached.directory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
             _handleFileClick(cached.name);
+        }
+
+        if (ImGui::BeginPopupContextItem()) {
+            if (ImGui::IconMenuItem("Open", nullptr, nullptr, false, !cached.directory)) {
+                _handleFileClick(cached.name);
+            }
+            ImGui::IconMenuSeparator();
+            if (ImGui::IconMenuItem("Import", nullptr, nullptr, false, !cached.directory)) {
+                _handleImport(cached.name);
+            }
+            if (ImGui::IconMenuItem("Import (Force)", nullptr, nullptr, false, !cached.directory)) {
+                _handleImport(cached.name, true);
+            }
+            ImGui::EndPopup();
         }
 
         ImGui::NextColumn();
@@ -93,5 +111,11 @@ void up::shell::FileTreeEditor::_enumerateFiles() {
 void up::shell::FileTreeEditor::_handleFileClick(zstring_view name) {
     if (_onFileSelected != nullptr && !name.empty()) {
         _onFileSelected(name);
+    }
+}
+
+void up::shell::FileTreeEditor::_handleImport(zstring_view name, bool force) {
+    if (_onFileImport != nullptr && !name.empty()) {
+        _onFileImport(name, force);
     }
 }

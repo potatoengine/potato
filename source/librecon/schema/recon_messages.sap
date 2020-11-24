@@ -1,0 +1,27 @@
+module recon_messages;
+
+import common;
+
+[cxximport("up::LogSeverity", "potato/runtime/logger.h")]
+enum ReconLogSeverity {
+    Info,
+    Error
+}
+
+[virtualbase]
+struct ReconMessage {}
+
+struct ReconLogMessage : ReconMessage {
+    string category;
+    string message;
+    ReconLogSeverity severity = Info;
+}
+
+struct ReconImportMessage : ReconMessage {
+    string path;
+    bool force = false;
+}
+
+struct ReconImportAllMessage : ReconMessage {
+    bool force = false;
+}

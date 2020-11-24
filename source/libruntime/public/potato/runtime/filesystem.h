@@ -5,6 +5,7 @@
 #include "_export.h"
 #include "io_result.h"
 
+#include "potato/spud/delegate.h"
 #include "potato/spud/delegate_ref.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/rc.h"
@@ -51,12 +52,11 @@ namespace up::fs {
 
         virtual bool isOpen() const noexcept = 0;
         virtual void close() = 0;
-        virtual bool tryWatch(Watch& out) = 0;
-        virtual void watch(Watch& out) = 0;
 
     protected:
         WatchHandle();
     };
+    using WatchCallback = up::delegate<void(Watch const& watch)>;
 
     struct EnumerateItem {
         zstring_view path;
@@ -93,5 +93,6 @@ namespace up::fs {
 
     [[nodiscard]] UP_RUNTIME_API auto writeAllText(zstring_view path, string_view text) -> IOResult;
 
-    [[nodiscard]] UP_RUNTIME_API auto watchDirectory(zstring_view path) -> IOReturn<rc<WatchHandle>>;
+    [[nodiscard]] UP_RUNTIME_API auto watchDirectory(zstring_view path, WatchCallback callback)
+        -> IOReturn<rc<WatchHandle>>;
 } // namespace up::fs

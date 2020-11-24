@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "camera_controller.h"
 #include "components_schema.h"
+#include "recon_messages_schema.h"
 #include "scene.h"
 #include "editors/filetree_editor.h"
 #include "editors/game_editor.h"
@@ -313,8 +314,15 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _loadManifest();
 
     _editors.closeAll();
-    _editors.open(
-        createFileTreeEditor(string{_project->resourceRootPath()}, [this](zstring_view name) { _onFileOpened(name); }));
+    _editors.open(createFileTreeEditor(
+        string{_project->resourceRootPath()},
+        [this](zstring_view name) { _onFileOpened(name); },
+        [this](zstring_view name, bool force) {
+            schema::ReconImportMessage msg;
+            msg.path = string{name};
+            msg.force = force;
+            _reconClient.sendMessage(msg);
+        }));
 
     _updateTitle();
 
@@ -655,22 +663,9 @@ void up::shell::ShellApp::_createGame(rc<Scene> scene) {
 }
 
 void up::shell::ShellApp::_executeRecon() {
-    reproc::options options;
-    options.redirect.parent = true;
-
-    char const* args[] =
-        {"recon.exe", "-config", "recon.config.json", "-project", _project->projectFilePath().c_str(), nullptr};
-
-    auto const [status, ec] = reproc::run(args, options);
-
-    if (ec) {
-        _logger.error("Failed to start recon.exe: {}", ec.message());
-        return;
-    }
-
-    if (status != 0) {
-        _logger.error("recon.exe exit code {}", status);
-    }
+    schema::ReconImportAllMessage msg;
+    msg.force = true;
+    _reconClient.sendMessage(msg);
 
     _loadManifest();
 }
