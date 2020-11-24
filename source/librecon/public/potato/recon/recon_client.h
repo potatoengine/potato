@@ -15,7 +15,7 @@ namespace up {
 }
 
 namespace up::schema {
-    class ReconMessage;
+    struct ReconMessage;
 }
 
 namespace up::reflex {
