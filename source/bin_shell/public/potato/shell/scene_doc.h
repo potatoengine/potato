@@ -28,7 +28,7 @@ namespace up {
         rc<Scene> const& scene() const { return _scene; }
 
         sequence<int> indices() const noexcept { return sequence{static_cast<int>(_entities.size())}; }
-        SceneEntity const& entityAt(int index) const noexcept { return _entities[index]; }
+        SceneEntity& entityAt(int index) noexcept { return _entities[index]; }
         int indexOf(EntityId entityId) const noexcept;
 
         EntityId createEntity(string name, EntityId parentId = EntityId::None);

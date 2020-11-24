@@ -191,6 +191,19 @@ void up::shell::SceneEditor::_inspector() {
         return;
     }
 
+    int const index = _doc->indexOf(_selection.selected());
+    if (index == -1) {
+        return;
+    }
+
+    {
+        char buffer[128];
+        format_to(buffer, "{}", _doc->entityAt(index).name);
+        if (ImGui::InputText("Name", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
+            _doc->entityAt(index).name = string{buffer};
+        }
+    }
+
     if (!ImGui::BeginTable(
             "##inspector_table",
             2,
