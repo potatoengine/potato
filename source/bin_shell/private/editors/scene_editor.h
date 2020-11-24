@@ -53,6 +53,7 @@ namespace up::shell {
         void _inspector();
         void _hierarchy();
         void _hierarchyShowIndex(int index);
+        void _hierarchyContext(EntityId id);
 
         rc<GpuTexture> _buffer;
         box<SceneDocument> _doc;

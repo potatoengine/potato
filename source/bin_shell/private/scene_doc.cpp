@@ -36,24 +36,25 @@ void up::SceneDocument::deleteEntity(EntityId targetId) {
         return;
     }
 
-    // reparent to ensure we're unlinked from a parent's chain
-    parentTo(targetId, EntityId::None);
-
     // recursively delete childen - we have to buffer this since deleting a child
     // would mutate the list we're walking
-    vector<EntityId> children;
-    for (int childIndex = _entities[index].firstChild; childIndex != -1;
-         childIndex = _entities[childIndex].nextSibling) {
-        children.push_back(_entities[childIndex].id);
-    }
+    vector<EntityId> deleted{targetId};
+    _deleteEntityAt(index, deleted);
 
-    for (EntityId const childId : children) {
-        deleteEntity(childId);
+    for (EntityId const childId : deleted) {
+        _entities.erase(_entities.begin() + indexOf(childId));
+        _scene->world().deleteEntity(childId);
     }
+}
 
-    // actually delete the entity
-    _entities.erase(_entities.begin() + index);
-    _scene->world().deleteEntity(targetId);
+void up::SceneDocument::_deleteEntityAt(int index, vector<EntityId>& out_deleted) {
+    // reparent to ensure we're unlinked from a parent's chain
+    parentTo(_entities[index].id, EntityId::None);
+
+    while (_entities[index].firstChild != -1) {
+        out_deleted.push_back(_entities[_entities[index].firstChild].id);
+        _deleteEntityAt(_entities[index].firstChild, out_deleted);
+    }
 }
 
 void up::SceneDocument::parentTo(EntityId childId, EntityId parentId) {

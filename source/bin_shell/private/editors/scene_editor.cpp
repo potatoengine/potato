@@ -261,10 +261,17 @@ void up::shell::SceneEditor::_inspector() {
 }
 
 void up::shell::SceneEditor::_hierarchy() {
-    for (int index : _doc->indices()) {
-        if (_doc->entityAt(index).parent == -1) {
-            _hierarchyShowIndex(index);
+    unsigned const flags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+        ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+    bool const open = ImGui::TreeNodeEx("Scene", flags);
+    _hierarchyContext(EntityId::None);
+    if (open) {
+        for (int index : _doc->indices()) {
+            if (_doc->entityAt(index).parent == -1) {
+                _hierarchyShowIndex(index);
+            }
         }
+        ImGui::TreePop();
     }
 
     if (_create) {
@@ -289,8 +296,11 @@ void up::shell::SceneEditor::_hierarchyShowIndex(int index) {
     bool const hasChildren = ent.firstChild != -1;
     bool const selected = ent.id == _selection.selected();
 
-    unsigned flags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_DefaultOpen |
-        ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow;
+    unsigned flags =
+        ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow;
+    if (ent.parent == -1) {
+        flags |= ImGuiTreeNodeFlags_DefaultOpen;
+    }
     if (!hasChildren) {
         flags |= ImGuiTreeNodeFlags_Leaf;
     }
@@ -303,17 +313,7 @@ void up::shell::SceneEditor::_hierarchyShowIndex(int index) {
     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
         _selection.select(ent.id);
     }
-    if (ImGui::BeginPopupContextItem()) {
-        if (ImGui::IconMenuItem("New Entity", ICON_FA_PLUS)) {
-            _targetId = ent.id;
-            _create = true;
-        }
-        if (ImGui::IconMenuItem("Delete", ICON_FA_TRASH)) {
-            _targetId = ent.id;
-            _delete = true;
-        }
-        ImGui::EndPopup();
-    }
+    _hierarchyContext(ent.id);
 
     if (selected) {
         ImGui::SetItemDefaultFocus();
@@ -326,4 +326,18 @@ void up::shell::SceneEditor::_hierarchyShowIndex(int index) {
         ImGui::TreePop();
     }
     ImGui::PopID();
+}
+
+void up::shell::SceneEditor::_hierarchyContext(EntityId id) {
+    if (ImGui::BeginPopupContextItem()) {
+        if (ImGui::IconMenuItem("New Entity", ICON_FA_PLUS)) {
+            _targetId = id;
+            _create = true;
+        }
+        if (ImGui::IconMenuItem("Delete", ICON_FA_TRASH, nullptr, false, id != EntityId::None)) {
+            _targetId = id;
+            _delete = true;
+        }
+        ImGui::EndPopup();
+    }
 }

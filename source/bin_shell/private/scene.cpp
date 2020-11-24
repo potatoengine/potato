@@ -63,7 +63,9 @@ void up::Scene::flush() {
 
 void up::Scene::render(RenderContext& ctx) {
     _renderableMeshQuery.select(_world, [&](EntityId, components::Mesh& mesh, components::Transform const& trans) {
-        mesh.model->render(ctx, trans.transform);
+        if (mesh.model != nullptr) {
+            mesh.model->render(ctx, trans.transform);
+        }
     });
 }
 

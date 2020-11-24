@@ -39,6 +39,8 @@ namespace up {
         void createTestObjects(rc<Model> const& cube, rc<SoundResource> const& ding);
 
     private:
+        void _deleteEntityAt(int index, vector<EntityId>& out_deleted);
+
         rc<Scene> _scene;
         vector<SceneEntity> _entities;
     };
