@@ -43,6 +43,7 @@ target_link_libraries(potato_librender
         stb
         imgui
         SDL2
+        dx12memalloc
 )
 
 set(UP_GPU_D3D12_SOURCES
@@ -64,7 +65,7 @@ find_library(D3D12_PATH d3d12)
 if(D3D12_PATH AND DXGI_PATH)
     target_link_libraries(potato_librender PRIVATE ${D3D12_PATH} ${DXGI_PATH})
     target_sources(potato_librender PRIVATE ${UP_GPU_D3D12_SOURCES})
-    target_compile_definitions(potato_librender PUBLIC UP_GPU_ENABLE_D3D12=1)
+    target_compile_definitions(potato_librender PUBLIC UP_GPU_ENABLE_D3D12)
     set_target_properties(potato_librender PROPERTIES UP_GPU_ENABLE_D3D12 ON)
 else()
     # HEADER_FILE_ONLY is not consistently working for me,

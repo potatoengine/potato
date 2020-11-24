@@ -44,3 +44,9 @@ FetchContent_Declare(sapc
     GIT_REPOSITORY https://github.com/potatoengine/sapc.git
     GIT_TAG v0.10-beta
 )
+FetchContent_Declare(dx12memalloc
+    GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git
+    GIT_TAG v1.0.0+vs2017
+)
+
+
