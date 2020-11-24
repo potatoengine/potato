@@ -269,8 +269,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
         return true;
     }
 
-    auto name = importer->name();
-    _logger.info("Importing: {} ({} {})", file, importer->revision());
+    _logger.info("Importing: {} (importer={} revision={})", file, importer->name(), importer->revision());
 
     ImporterContext context(file, _project->resourceRootPath(), _temporaryOutputPath, _logger);
     if (!_checkMetafile(context, file)) {
