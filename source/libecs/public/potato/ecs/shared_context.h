@@ -45,7 +45,7 @@ namespace up {
             const noexcept -> bool;
 
         vector<reflex::TypeInfo const*> components;
-        vector<ArchetypeLayout> archetypes = {ArchetypeLayout{0, 0, 0}};
+        vector<ArchetypeLayout> archetypes = {ArchetypeLayout{0, 0, sizeof(Chunk::Payload) / sizeof(EntityId)}};
         vector<LayoutRow> chunkRows;
         vector<box<Chunk>> allocatedChunks;
         Chunk* freeChunkHead = nullptr;
