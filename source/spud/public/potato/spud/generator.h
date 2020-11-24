@@ -140,7 +140,7 @@ namespace up {
 
     template <typename T>
     auto _detail::generator_promise<T>::get_return_object() noexcept -> generator<T> {
-        return generator{std::coroutine_handle<generator_promise>::from_promise(*this)};
+        return generator{coro_std::coroutine_handle<generator_promise>::from_promise(*this)};
     }
 
     template <typename ItemT>
