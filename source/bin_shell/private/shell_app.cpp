@@ -663,22 +663,9 @@ void up::shell::ShellApp::_createGame(rc<Scene> scene) {
 }
 
 void up::shell::ShellApp::_executeRecon() {
-    reproc::options options;
-    options.redirect.parent = true;
-
-    char const* args[] =
-        {"recon.exe", "-config", "recon.config.json", "-project", _project->projectFilePath().c_str(), nullptr};
-
-    auto const [status, ec] = reproc::run(args, options);
-
-    if (ec) {
-        _logger.error("Failed to start recon.exe: {}", ec.message());
-        return;
-    }
-
-    if (status != 0) {
-        _logger.error("recon.exe exit code {}", status);
-    }
+    schema::ReconImportAllMessage msg;
+    msg.force = true;
+    _reconClient.sendMessage(msg);
 
     _loadManifest();
 }

@@ -106,7 +106,7 @@ bool up::recon::ReconApp::_runOnce() {
 
 namespace up::recon {
     namespace {
-        enum ReconCommandType { Watch, ForceImport, Quit };
+        enum ReconCommandType { Watch, Import, ImportAll, Quit };
         struct ReconCommand {
             ReconCommandType type = ReconCommandType::Watch;
             fs::WatchAction watchAction = fs::WatchAction::Modify;
@@ -145,10 +145,13 @@ bool up::recon::ReconApp::_runServer() {
             }
             if (schema == &reflex::getSchema<schema::ReconImportMessage>()) {
                 auto const& importMsg = static_cast<schema::ReconImportMessage const&>(*msg);
-                ReconCommand cmd{
-                    .type = ReconCommandType::ForceImport,
-                    .path = importMsg.path,
-                    .force = importMsg.force};
+                ReconCommand cmd{.type = ReconCommandType::Import, .path = importMsg.path, .force = importMsg.force};
+                commands.enqueWait(cmd);
+                continue;
+            }
+            if (schema == &reflex::getSchema<schema::ReconImportAllMessage>()) {
+                auto const& importMsg = static_cast<schema::ReconImportAllMessage const&>(*msg);
+                ReconCommand cmd{.type = ReconCommandType::ImportAll, .force = importMsg.force};
                 commands.enqueWait(cmd);
             }
         }
@@ -189,11 +192,16 @@ bool up::recon::ReconApp::_runServer() {
                 _importFile(cmd.path, cmd.force);
                 _writeManifest();
                 break;
-            case ReconCommandType::ForceImport:
+            case ReconCommandType::Import:
                 _logger.info("Import: {} (force={})", cmd.path, cmd.force);
 
                 _importFile(cmd.path, cmd.force);
                 _writeManifest();
+                break;
+            case ReconCommandType::ImportAll:
+                _logger.info("Import All (force={})", cmd.force);
+
+                _runOnce();
                 break;
             case ReconCommandType::Quit:
                 handle.close();
@@ -251,17 +259,18 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     bool const upToDate =
         record != nullptr && _isUpToDate(*record, contentHash, *importer) && _isUpToDate(record->dependencies);
     if (upToDate && !force) {
+        _logger.info("Up-to-date: {}", file);
         return true;
     }
 
     bool const deleted = !fs::fileExists(osPath);
     if (deleted) {
-        _logger.info("Asset `{}` is deleted", file);
+        _logger.info("Deleted: {}", file);
         return true;
     }
 
     auto name = importer->name();
-    _logger.info("Importing asset `{}' ({} {})", file, string_view(name.data(), name.size()), importer->revision());
+    _logger.info("Importing: {} ({} {})", file, importer->revision());
 
     ImporterContext context(file, _project->resourceRootPath(), _temporaryOutputPath, _logger);
     if (!_checkMetafile(context, file)) {
