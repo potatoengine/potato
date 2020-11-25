@@ -4,6 +4,7 @@
 
 #include "editor.h"
 
+#include "potato/editor/asset_edit_service.h"
 #include "potato/runtime/resource_loader.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/hash.h"
@@ -43,6 +44,7 @@ namespace up::shell {
 
         struct Asset {
             string name;
+            string type;
             size_t size = 0;
             int folderIndex = -1;
         };
@@ -66,6 +68,7 @@ namespace up::shell {
         ResourceLoader& _resourceLoader;
         OnFileSelected _onFileSelected;
         OnFileImport _onFileImport;
+        AssetEditService _assetEditService;
         vector<Folder> _folders;
         vector<Asset> _assets;
         int _selectedFolder = 0;

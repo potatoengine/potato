@@ -66,7 +66,7 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
             ImGui::TableNextColumn();
             ImGui::PushID(asset.name.c_str());
 
-            const char* icon = reinterpret_cast<char const*>(ICON_FA_FILE);
+            const char* const icon = reinterpret_cast<char const*>(_assetEditService.getIconForType(asset.type));
 
             ImVec2 const size = ImGui::CalcItemSize({width, width}, 0.0f, 0.0f);
             ImRect const bounds{window->DC.CursorPos, window->DC.CursorPos + size};
@@ -205,7 +205,8 @@ void up::shell::AssetBrowser::_rebuild() {
             folderIndex = _addFolders(record.filename.substr(0, lastSepIndex));
         }
 
-        _assets.push_back({.name = string{record.filename.substr(start)}, .folderIndex = folderIndex});
+        _assets.push_back(
+            {.name = string{record.filename.substr(start)}, .type = string{record.type}, .folderIndex = folderIndex});
     }
 }
 
