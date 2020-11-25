@@ -37,6 +37,36 @@ void up::shell::AssetBrowser::content() {
     ImGuiWindow* const window = ImGui::GetCurrentWindow();
     ImDrawList* const drawList = window->DrawList;
 
+    // navigation trail
+    {
+        drawList->AddRectFilled(
+            window->DC.CursorPos,
+            window->DC.CursorPos +
+                ImVec2{
+                    ImGui::GetContentRegionAvail().x,
+                    ImGui::GetTextLineHeightWithSpacing() + ImGui::GetItemSpacing().y * 3},
+            ImGui::GetColorU32(ImGuiCol_Header),
+            4.f);
+        window->DC.CursorPos += ImGui::GetItemSpacing();
+        ImGui::BeginGroup();
+        if (ImGui::IconButton("##back", ICON_FA_BACKWARD)) {
+            if (_folderHistoryIndex > 0) {
+                _selectedFolder = _folderHistory[--_folderHistoryIndex];
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::IconButton("##forward", ICON_FA_FORWARD)) {
+            if (_folderHistoryIndex + 1 < _folderHistory.size()) {
+                _selectedFolder = _folderHistory[++_folderHistoryIndex];
+            }
+        }
+        ImGui::SameLine();
+
+        _showTrail(_selectedFolder);
+        ImGui::EndGroup();
+        window->DC.CursorPos.y += ImGui::GetItemSpacing().y;
+    }
+
     float const availWidth = ImGui::GetContentRegionAvailWidth();
     constexpr float width = 128;
     constexpr float iconWidth = 96;
@@ -93,6 +123,20 @@ void up::shell::AssetBrowser::content() {
     }
 }
 
+void up::shell::AssetBrowser::_showTrail(int index) {
+    if (_folders[index].parent != -1) {
+        _showTrail(_folders[index].parent);
+        ImGui::SameLine();
+        ImGui::TextDisabled("/");
+        ImGui::SameLine();
+    }
+
+    if (ImGui::Button(_folders[index].name.c_str())) {
+        _selectFolder(index);
+    }
+    ImGui::SameLine();
+}
+
 void up::shell::AssetBrowser::_showFolder(int index) {
     unsigned flags = 0;
 
@@ -109,7 +153,7 @@ void up::shell::AssetBrowser::_showFolder(int index) {
 
     if (ImGui::TreeNodeEx(_folders[index].name.c_str(), flags)) {
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            _selectedFolder = index;
+            _selectFolder(index);
         }
 
         for (int childIndex = _folders[index].firstChild; childIndex != -1;
@@ -151,7 +195,7 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
     int childIndex = _folders[parentIndex].firstChild;
     if (childIndex == -1) {
         int const newIndex = static_cast<int>(_folders.size());
-        _folders.push_back({.name = string{name}});
+        _folders.push_back({.name = string{name}, .parent = parentIndex});
         _folders[parentIndex].firstChild = newIndex;
         return newIndex;
     }
@@ -168,7 +212,7 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
     }
 
     int const newIndex = static_cast<int>(_folders.size());
-    _folders.push_back({.name = string{name}});
+    _folders.push_back({.name = string{name}, .parent = parentIndex});
     _folders[childIndex].nextSibling = newIndex;
     return newIndex;
 }
@@ -189,6 +233,25 @@ int up::shell::AssetBrowser::_addFolders(string_view folders) {
     }
 
     return folderIndex;
+}
+
+void up::shell::AssetBrowser::_selectFolder(int index) {
+    // cut any of the "future" history
+    if (_folderHistory.size() > _folderHistoryIndex + 1) {
+        _folderHistory.resize(_folderHistoryIndex + 1);
+    }
+
+    // ensure our history has a limited length
+    if (_folderHistory.size() >= maxFolderHistory) {
+        _folderHistory.erase(_folderHistory.begin());
+    }
+
+    // add history item
+    _folderHistoryIndex = _folderHistory.size();
+    _folderHistory.push_back(index);
+
+    // select new folder
+    _selectedFolder = index;
 }
 
 void up::shell::AssetBrowser::_handleFileClick(zstring_view name) {

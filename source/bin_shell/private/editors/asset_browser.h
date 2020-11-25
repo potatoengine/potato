@@ -38,7 +38,7 @@ namespace up::shell {
             string name;
             int firstChild = -1;
             int nextSibling = -1;
-            int depth = 0;
+            int parent = -1;
         };
 
         struct Asset {
@@ -47,6 +47,7 @@ namespace up::shell {
             int folderIndex = -1;
         };
 
+        void _showTrail(int index);
         void _showFolder(int index);
         void _showFolders();
 
@@ -54,6 +55,7 @@ namespace up::shell {
         int _addFolder(string_view name, int parentIndex = 0);
         int _addFolders(string_view folders);
 
+        void _selectFolder(int index);
         void _handleFileClick(zstring_view name);
         void _handleImport(zstring_view name, bool force = false);
 
@@ -63,6 +65,10 @@ namespace up::shell {
         vector<Folder> _folders;
         vector<Asset> _assets;
         int _selectedFolder = 0;
+
+        static constexpr size_t maxFolderHistory = 64;
+        size_t _folderHistoryIndex = 0;
+        vector<int> _folderHistory;
     };
 
     auto createAssetBrowser(
