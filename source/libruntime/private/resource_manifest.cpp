@@ -32,6 +32,7 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
     int logicalIdColumn = -1;
     int logicalNameColumn = -1;
     int contentHashColumn = -1;
+    int contentTypeColumn = -1;
     int debugNameColumn = -1;
 
     enum ColumnMask {
@@ -40,7 +41,9 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
         ColumnLogicalNameMask = (1 << 2),
         ColumnContentHashMask = (1 << 3),
         ColumnDebugNameMask = (1 << 4),
-        ColumnRequiredMask = ColumnRootIdMask | ColumnLogicalIdMask | ColumnLogicalNameMask | ColumnContentHashMask
+        ColumnContentTypeMask = (1 << 5),
+        ColumnRequiredMask = ColumnRootIdMask | ColumnLogicalIdMask | ColumnLogicalNameMask | ColumnContentHashMask |
+            ColumnContentTypeMask
     };
 
     string_view::size_type sep = 0;
@@ -100,6 +103,10 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                         debugNameColumn = column;
                         mask |= ColumnDebugNameMask;
                     }
+                    else if (header == columnContentType) {
+                        contentTypeColumn = column;
+                        mask |= ColumnContentTypeMask;
+                    }
 
                     ++column;
                     eol = input[sep] == '\n';
@@ -138,6 +145,10 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                     else if (column == debugNameColumn) {
                         record.filename = string{data};
                         mask |= ColumnDebugNameMask;
+                    }
+                    else if (column == contentTypeColumn) {
+                        record.type = string{data};
+                        mask |= ColumnContentTypeMask;
                     }
 
                     ++column;
