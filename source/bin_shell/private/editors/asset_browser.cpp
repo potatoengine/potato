@@ -4,10 +4,12 @@
 #include "editor.h"
 
 #include "potato/editor/imgui_ext.h"
+#include "potato/editor/imgui_fonts.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/path.h"
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
+#include "potato/spud/numeric_util.h"
 #include "potato/spud/sequence.h"
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
@@ -38,7 +40,7 @@ void up::shell::AssetBrowser::content() {
     float const availWidth = ImGui::GetContentRegionAvailWidth();
     constexpr float width = 128;
     constexpr float iconWidth = 96;
-    int const columns = static_cast<int>(availWidth) / width;
+    int const columns = clamp(static_cast<int>(availWidth / width), 1, 64);
 
     if (ImGui::BeginTable("##assets", columns)) {
         for (Asset const& asset : _assets) {
@@ -65,17 +67,24 @@ void up::shell::AssetBrowser::content() {
                     _handleFileClick(asset.name);
                 }
 
+                ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
+                ImU32 const bgColor = ImGui::GetColorU32(
+                    held ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+
                 if (hovered) {
-                    drawList->AddRectFilled(bounds.Min, bounds.Max, ImGui::GetColorU32(ImGuiCol_FrameBgHovered), 4.f);
+                    drawList->AddRectFilled(bounds.Min, bounds.Max, bgColor, 16.f);
                 }
 
-                ImVec2 const iconPos{innerBounds.Min.x + (innerBounds.GetWidth() - iconWidth), innerBounds.Min.y};
-                ImGui::SetWindowFontScale(iconWidth / ImGui::GetFontSize());
-                drawList->AddText(iconPos, ImGui::GetColorU32(ImGuiCol_Text), icon);
-                ImGui::SetWindowFontScale(1.f);
+                ImGui::PushFont(ImGui::UpFont::FontAwesome_96);
+                ImVec2 const iconSize = ImGui::CalcTextSize(icon);
+                ImVec2 const iconPos{
+                    innerBounds.Min.x + (innerBounds.GetWidth() - iconSize.x) * 0.5f,
+                    innerBounds.Min.y};
+                drawList->AddText(iconPos, textColor, icon);
+                ImGui::PopFont();
 
                 ImVec2 const textPos{innerBounds.Min.x, innerBounds.Max.y - ImGui::GetTextLineHeightWithSpacing()};
-                ImGui::TextCentered(textPos, innerBounds.Max, asset.name.c_str());
+                ImGui::TextCentered(textPos, innerBounds.Max, textColor, asset.name.c_str());
             }
 
             ImGui::PopID();
