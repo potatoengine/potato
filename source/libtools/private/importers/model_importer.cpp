@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "model_importer.h"
+#include "importers/model_importer.h"
 
 #include "potato/render/model_generated.h"
 #include "potato/runtime/filesystem.h"
@@ -112,7 +112,7 @@ bool up::ModelImporter::import(ImporterContext& ctx) {
     file.write(span{reinterpret_cast<byte const*>(builder.GetBufferPointer()), builder.GetSize()});
     file.close();
 
-    ctx.addMainOutput(destPath);
+    ctx.addMainOutput(destPath, "potato.asset.model");
 
     ctx.logger().info("Wrote optimized model to `{}'", destAbsolutePath);
 

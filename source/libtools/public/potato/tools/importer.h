@@ -4,7 +4,18 @@
 
 #include "importer_context.h"
 
+#include "potato/reflex/type.h"
+
+#include <nlohmann/json_fwd.hpp>
+
 namespace up {
+    struct ImporterConfig {
+        ImporterConfig() = default;
+        virtual ~ImporterConfig() = default;
+        ImporterConfig(ImporterConfig const&) = delete;
+        ImporterConfig& operator=(ImporterConfig const&) = delete;
+    };
+
     class Importer {
     public:
         Importer() = default;
@@ -14,6 +25,8 @@ namespace up {
         Importer& operator=(Importer&&) = delete;
 
         virtual bool import(ImporterContext& ctx) = 0;
+
+        virtual reflex::TypeInfo const& configType() const;
 
         virtual string_view generateSettings(ImporterContext& ctd) = 0;
 

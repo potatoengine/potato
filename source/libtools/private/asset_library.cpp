@@ -44,8 +44,12 @@ bool up::AssetLibrary::insertRecord(Imported record) {
 
         (void)_clearOutputsStmt.execute(record.assetId);
         for (auto const& output : record.outputs) {
-            (void)_insertOutputStmt
-                .execute(record.assetId, output.logicalAssetId, output.name.c_str(), output.contentHash);
+            (void)_insertOutputStmt.execute(
+                record.assetId,
+                output.logicalAssetId,
+                output.name.c_str(),
+                output.type.c_str(),
+                output.contentHash);
         }
 
         (void)_clearDependenciesStmt.execute(record.assetId);
@@ -74,6 +78,28 @@ bool up::AssetLibrary::open(zstring_view filename) {
         return false;
     }
 
+    // ensure the asset database has the correct version
+    {
+        if (_db.execute("CREATE TABLE IF NOT EXISTS version(version INTEGER NOT NULL);") != SqlResult::Ok) {
+            return false;
+        }
+        auto dbVersionQueryStmt = _db.prepare("SELECT version FROM version");
+        int64 dbVersion = 0;
+        for (auto const& [versionResult] : dbVersionQueryStmt.query<int64>()) {
+            dbVersion = versionResult;
+        }
+        if (dbVersion != version) {
+            (void)_db.execute("DROP TABLE assets");
+            (void)_db.execute("DROP TABLE dependencies");
+            (void)_db.execute("DROP TABLE outputs");
+            (void)_db.execute("DELETE FROM version");
+            auto dbVersionUpdateStmt = _db.prepare("INSERT INTO version (version) VALUES(?)");
+            if (dbVersionUpdateStmt.execute(version) != SqlResult::Ok) {
+                return false;
+            }
+        }
+    }
+
     // ensure the table is created
     if (_db.execute("CREATE TABLE IF NOT EXISTS assets "
                     "(asset_id INTEGER PRIMARY KEY, "
@@ -81,7 +107,7 @@ bool up::AssetLibrary::open(zstring_view filename) {
                     "importer_name TEXT, importer_revision INTEGER);\n"
 
                     "CREATE TABLE IF NOT EXISTS outputs "
-                    "(asset_id INTEGER, output_id INTEGER, name TEXT, hash TEXT, "
+                    "(asset_id INTEGER, output_id INTEGER, name TEXT, type TEXT, hash TEXT, "
                     "FOREIGN KEY(asset_id) REFERENCES assets(asset_id));\n"
 
                     "CREATE TABLE IF NOT EXISTS dependencies "
@@ -97,7 +123,8 @@ bool up::AssetLibrary::open(zstring_view filename) {
         "VALUES(?, ?, ?, ?, ?)"
         "ON CONFLICT (asset_id) DO UPDATE SET source_hash=excluded.source_hash, "
         " importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
-    _insertOutputStmt = _db.prepare("INSERT INTO outputs (asset_id, output_id, name, hash) VALUES(?, ?, ?, ?)");
+    _insertOutputStmt =
+        _db.prepare("INSERT INTO outputs (asset_id, output_id, name, type, hash) VALUES(?, ?, ?, ?, ?)");
     _insertDependencyStmt = _db.prepare("INSERT INTO dependencies (asset_id, db_path, hash) VALUES(?, ?, ?)");
     _clearOutputsStmt = _db.prepare("DELETE FROM outputs WHERE asset_id=?");
     _clearDependenciesStmt = _db.prepare("DELETE FROM dependencies WHERE asset_id=?");
@@ -105,7 +132,7 @@ bool up::AssetLibrary::open(zstring_view filename) {
     // create our prepared statemtnt to load values
     auto assets_stmt =
         _db.prepare("SELECT asset_id, source_db_path, source_hash, importer_name, importer_revision FROM assets");
-    auto outputs_stmt = _db.prepare("SELECT output_id, name, hash FROM outputs WHERE asset_id=?");
+    auto outputs_stmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE asset_id=?");
     auto dependencies_stmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE asset_id=?");
 
     // read in all the asset records
@@ -118,8 +145,10 @@ bool up::AssetLibrary::open(zstring_view filename) {
             .importerRevision = importVer,
             .sourceContentHash = sourceHash});
 
-        for (auto const& [id, name, hash] : outputs_stmt.query<AssetId, zstring_view, uint64>(assetId)) {
-            record.outputs.push_back(Output{.name = string{name}, .logicalAssetId = id, .contentHash = hash});
+        for (auto const& [id, name, type, hash] :
+             outputs_stmt.query<AssetId, zstring_view, zstring_view, uint64>(assetId)) {
+            record.outputs.push_back(
+                Output{.name = string{name}, .type = string{type}, .logicalAssetId = id, .contentHash = hash});
         }
 
         for (auto const& [path, hash] : dependencies_stmt.query<zstring_view, uint64>(assetId)) {

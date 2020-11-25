@@ -30,6 +30,12 @@ namespace up::recon {
         bool run(span<char const*> args);
 
     private:
+        struct Mapping {
+            delegate<bool(string_view) const> predicate;
+            Importer* conveter = nullptr;
+            box<ImporterConfig> config;
+        };
+
         void _registerImporters();
 
         bool _runOnce();
@@ -47,12 +53,7 @@ namespace up::recon {
 
         bool _checkMetafile(ImporterContext& ctx, zstring_view filename);
 
-        auto _findConverter(string_view path) const -> Importer*;
-
-        struct Mapping {
-            delegate<bool(string_view) const> predicate;
-            Importer* conveter = nullptr;
-        };
+        auto _findConverterMapping(string_view path) const -> Mapping const*;
 
         box<Project> _project;
         string_view _programName;

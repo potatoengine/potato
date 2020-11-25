@@ -5,6 +5,10 @@
 #include "importer.h"
 
 namespace up {
+    struct JsonImporterConfig : ImporterConfig {
+        string type;
+    };
+
     class JsonImporter : public Importer {
     public:
         JsonImporter();
@@ -12,6 +16,8 @@ namespace up {
 
         bool import(ImporterContext& ctx) override;
         string_view generateSettings(ImporterContext& ctd) override { return {}; }
+
+        reflex::TypeInfo const& configType() const noexcept override;
 
         string_view name() const noexcept override { return "json"; }
         uint64 revision() const noexcept override { return 0; }

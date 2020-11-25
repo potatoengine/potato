@@ -22,7 +22,6 @@ up_set_common_properties(potato_librecon)
 include(up_compile_sap)
 up_compile_sap(potato_librecon
     SCHEMAS
-        schema/config.sap
         schema/recon_messages.sap
 )
 
