@@ -6,6 +6,7 @@
 #include "components_schema.h"
 #include "recon_messages_schema.h"
 #include "scene.h"
+#include "editors/asset_browser.h"
 #include "editors/filetree_editor.h"
 #include "editors/game_editor.h"
 #include "editors/scene_editor.h"
@@ -314,8 +315,8 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _loadManifest();
 
     _editors.closeAll();
-    _editors.open(createFileTreeEditor(
-        string{_project->resourceRootPath()},
+    _editors.open(createAssetBrowser(
+        _resourceLoader,
         [this](zstring_view name) { _onFileOpened(name); },
         [this](zstring_view name, bool force) {
             schema::ReconImportMessage msg;
