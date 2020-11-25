@@ -100,6 +100,12 @@ void up::shell::AssetBrowser::_showFolder(int index) {
     if (!hasChildren) {
         flags |= ImGuiTreeNodeFlags_Leaf;
     }
+    if (index == _selectedFolder) {
+        flags |= ImGuiTreeNodeFlags_Selected;
+    }
+    if (index == 0) {
+        flags |= ImGuiTreeNodeFlags_DefaultOpen;
+    }
 
     if (ImGui::TreeNodeEx(_folders[index].name.c_str(), flags)) {
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
