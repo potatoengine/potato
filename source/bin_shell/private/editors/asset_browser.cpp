@@ -52,7 +52,8 @@ void up::shell::AssetBrowser::content() {
             const char* icon = reinterpret_cast<char const*>(ICON_FA_FILE);
 
             ImVec2 const size = ImGui::CalcItemSize({width, width}, 0.0f, 0.0f);
-            ImRect const bounds(window->DC.CursorPos, window->DC.CursorPos + size);
+            ImRect const bounds{window->DC.CursorPos, window->DC.CursorPos + size};
+            ImRect const innerBounds{bounds.Min + ImGui::GetItemSpacing(), bounds.Max - ImGui::GetItemSpacing()};
             ImGuiID const id = ImGui::GetID("##button");
 
             ImGui::ItemSize(size);
@@ -65,16 +66,16 @@ void up::shell::AssetBrowser::content() {
                 }
 
                 if (hovered) {
-                    drawList->AddRectFilled(bounds.Min, bounds.Max, ImGui::GetColorU32(ImGuiCol_FrameBgHovered));
+                    drawList->AddRectFilled(bounds.Min, bounds.Max, ImGui::GetColorU32(ImGuiCol_FrameBgHovered), 4.f);
                 }
 
-                ImVec2 const iconPos{bounds.Min.x + (width - iconWidth), bounds.Min.y};
+                ImVec2 const iconPos{innerBounds.Min.x + (innerBounds.GetWidth() - iconWidth), innerBounds.Min.y};
                 ImGui::SetWindowFontScale(iconWidth / ImGui::GetFontSize());
                 drawList->AddText(iconPos, ImGui::GetColorU32(ImGuiCol_Text), icon);
                 ImGui::SetWindowFontScale(1.f);
 
-                ImVec2 const textPos{bounds.Min.x, bounds.Max.y - ImGui::GetFontSize()};
-                drawList->AddText(textPos, ImGui::GetColorU32(ImGuiCol_Text), asset.name.c_str());
+                ImVec2 const textPos{innerBounds.Min.x, innerBounds.Max.y - ImGui::GetTextLineHeightWithSpacing()};
+                ImGui::TextCentered(textPos, innerBounds.Max, asset.name.c_str());
             }
 
             ImGui::PopID();
