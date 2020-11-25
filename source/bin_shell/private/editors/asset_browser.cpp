@@ -105,18 +105,7 @@ void up::shell::AssetBrowser::_showFolder(int index) {
 }
 
 void up::shell::AssetBrowser::_showFolders() {
-    if (ImGui::TreeNodeEx("<root>", _folders.empty() ? ImGuiTreeNodeFlags_Leaf : 0)) {
-        if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            _selectedFolder = -1;
-        }
-
-        for (int index : sequence<int>(static_cast<int>(_folders.size()))) {
-            if (_folders[index].depth == 0) {
-                _showFolder(index);
-            }
-        }
-        ImGui::TreePop();
-    }
+    _showFolder(0);
 }
 
 void up::shell::AssetBrowser::_rebuild() {
@@ -125,18 +114,65 @@ void up::shell::AssetBrowser::_rebuild() {
     _folders.clear();
     _assets.clear();
 
+    _folders.push_back({.name = "<root>"});
+
     for (ResourceManifest::Record const& record : manifest.records()) {
         auto const lastSepIndex = record.filename.find_last_of("/"_sv);
         auto const start = lastSepIndex != string::npos ? lastSepIndex + 1 : 0;
 
-        int folderIndex = -1;
+        int folderIndex = 0;
         if (lastSepIndex != string::npos) {
-            folderIndex = static_cast<int>(_folders.size());
-            _folders.push_back({.name = string{record.filename.substr(0, lastSepIndex)}});
+            folderIndex = _addFolders(record.filename.substr(0, lastSepIndex));
         }
 
         _assets.push_back({.name = string{record.filename.substr(start)}, .folderIndex = folderIndex});
     }
+}
+
+int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
+    UP_ASSERT(parentIndex >= 0 && parentIndex < static_cast<int>(_folders.size()));
+
+    int childIndex = _folders[parentIndex].firstChild;
+    if (childIndex == -1) {
+        int const newIndex = static_cast<int>(_folders.size());
+        _folders.push_back({.name = string{name}});
+        _folders[parentIndex].firstChild = newIndex;
+        return newIndex;
+    }
+
+    while (_folders[childIndex].nextSibling != -1) {
+        if (_folders[childIndex].name == name) {
+            return childIndex;
+        }
+        childIndex = _folders[childIndex].nextSibling;
+    }
+
+    if (_folders[childIndex].name == name) {
+        return childIndex;
+    }
+
+    int const newIndex = static_cast<int>(_folders.size());
+    _folders.push_back({.name = string{name}});
+    _folders[childIndex].nextSibling = newIndex;
+    return newIndex;
+}
+
+int up::shell::AssetBrowser::_addFolders(string_view folders) {
+    int folderIndex = 0;
+
+    string_view::size_type sep;
+    while ((sep = folders.find('/')) != string_view::npos) {
+        if (sep != 0) {
+            folderIndex = _addFolder(folders.substr(0, sep), folderIndex);
+        }
+        folders = folders.substr(sep + 1);
+    }
+
+    if (!folders.empty()) {
+        folderIndex = _addFolder(folders, folderIndex);
+    }
+
+    return folderIndex;
 }
 
 void up::shell::AssetBrowser::_handleFileClick(zstring_view name) {

@@ -51,6 +51,9 @@ namespace up::shell {
         void _showFolders();
 
         void _rebuild();
+        int _addFolder(string_view name, int parentIndex = 0);
+        int _addFolders(string_view folders);
+
         void _handleFileClick(zstring_view name);
         void _handleImport(zstring_view name, bool force = false);
 
@@ -59,7 +62,7 @@ namespace up::shell {
         OnFileImport _onFileImport;
         vector<Folder> _folders;
         vector<Asset> _assets;
-        int _selectedFolder = -1;
+        int _selectedFolder = 0;
     };
 
     auto createAssetBrowser(
