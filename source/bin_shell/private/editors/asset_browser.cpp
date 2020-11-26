@@ -102,10 +102,10 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
 
             ImGui::ItemSize(size);
             if (ImGui::ItemAdd(bounds, id)) {
-                bool hovered = false;
-                bool held = false;
-                bool const pressed = ImGui::ButtonBehavior(bounds, id, &hovered, &held, 0);
-                if (pressed) {
+                bool const hovered = ImGui::IsMouseHoveringRect(bounds.Min, bounds.Max);
+                bool const held = ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
+
+                if (hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                     _handleFileClick(asset.filename);
                 }
 
@@ -135,9 +135,9 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
     }
 }
 
-void up::shell::AssetBrowser::_showTrail(int index) {
+void up::shell::AssetBrowser::_showBreadcrumb(int index) {
     if (_folders[index].parent != -1) {
-        _showTrail(_folders[index].parent);
+        _showBreadcrumb(_folders[index].parent);
         ImGui::SameLine();
         ImGui::TextDisabled("/");
         ImGui::SameLine();
@@ -178,7 +178,7 @@ void up::shell::AssetBrowser::_showBreadcrumbs() {
     }
     ImGui::SameLine();
 
-    _showTrail(_selectedFolder);
+    _showBreadcrumb(_selectedFolder);
 
     ImGui::EndGroup();
     window->DC.CursorPos.y += ImGui::GetItemSpacing().y;
@@ -271,7 +271,7 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
 int up::shell::AssetBrowser::_addFolders(string_view folders) {
     int folderIndex = 0;
 
-    string_view::size_type sep;
+    string_view::size_type sep = string_view::npos;
     while ((sep = folders.find('/')) != string_view::npos) {
         if (sep != 0) {
             folderIndex = _addFolder(folders.substr(0, sep), folderIndex);

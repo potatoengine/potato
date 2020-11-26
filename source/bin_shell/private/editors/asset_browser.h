@@ -59,7 +59,7 @@ namespace up::shell {
 
         void _showAssets(int folderIndex);
 
-        void _showTrail(int index);
+        void _showBreadcrumb(int index);
         void _showBreadcrumbs();
 
         void _showFolder(int index);
