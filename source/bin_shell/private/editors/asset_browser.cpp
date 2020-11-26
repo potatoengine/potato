@@ -188,7 +188,7 @@ void up::shell::AssetBrowser::_showBreadcrumb(int index) {
     if (_folders[index].parent != -1) {
         _showBreadcrumb(_folders[index].parent);
         ImGui::SameLine(0, 0);
-        ImGui::TextDisabled(reinterpret_cast<char const*>(ICON_FA_CARET_RIGHT));
+        ImGui::TextDisabled("%s", reinterpret_cast<char const*>(ICON_FA_CARET_RIGHT));
         ImGui::SameLine(0, 0);
     }
 
