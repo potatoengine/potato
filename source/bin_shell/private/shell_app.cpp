@@ -669,14 +669,28 @@ void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
         SHELLEXECUTEINFOA info;
         std::memset(&info, 0, sizeof(info));
         info.cbSize = sizeof(info);
-        info.lpFile = fullPath.c_str();
-        info.lpDirectory = _project->libraryPath().c_str();
-        info.lpVerb = "edit";
-        info.fMask = SEE_MASK_FLAG_NO_UI;
-        if (ShellExecuteExA(&info) != TRUE) {
+
+        if (fs::directoryExists(fullPath)) {
+            info.lpFile = fullPath.c_str();
+            info.lpDirectory = fullPath.c_str();
             info.lpVerb = "open";
+            info.fMask = SEE_MASK_FLAG_NO_UI;
+            info.nShow = TRUE;
             if (ShellExecuteExA(&info) != TRUE) {
-                _logger.error("Failed to open application for asset: {}", filename);
+                _logger.error("Failed to open Explorer for folder: {}", fullPath);
+            }
+        }
+        else if (fs::fileExists(fullPath)) {
+            info.lpFile = fullPath.c_str();
+            info.lpDirectory = _project->libraryPath().c_str();
+            info.lpVerb = "edit";
+            info.fMask = SEE_MASK_FLAG_NO_UI;
+            info.nShow = TRUE;
+            if (ShellExecuteExA(&info) != TRUE) {
+                info.lpVerb = "open";
+                if (ShellExecuteExA(&info) != TRUE) {
+                    _logger.error("Failed to open application for asset: {}", fullPath);
+                }
             }
         }
 #endif

@@ -102,11 +102,21 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
 
             ImGui::ItemSize(size);
             if (ImGui::ItemAdd(bounds, id)) {
-                bool const hovered = ImGui::IsMouseHoveringRect(bounds.Min, bounds.Max);
+                bool const hovered = ImGui::IsItemHovered();
                 bool const held = ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
 
                 if (hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                     _handleFileClick(asset.filename);
+                }
+
+                if (ImGui::BeginPopupContextItem()) {
+                    if (ImGui::IconMenuItem("Edit Asset", ICON_FA_EDIT)) {
+                        _handleFileClick(asset.filename);
+                    }
+                    if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
+                        _handleFileClick(string{path::parent(asset.filename)});
+                    }
+                    ImGui::EndPopup();
                 }
 
                 ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
