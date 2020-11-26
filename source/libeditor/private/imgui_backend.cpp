@@ -340,8 +340,8 @@ void up::ImguiBackend::_loadFonts() {
     config.PixelSnapH = false;
     config.FontDataOwnedByAtlas = false;
 
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     _fonts[(int)ImGui::UpFont::Roboto_16] =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(roboto_font_data), roboto_font_size, 16.f, &config);
 
     config.MergeMode = true;
