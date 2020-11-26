@@ -5,8 +5,8 @@
     {
       "type": "default",
       "project": "CMakeLists.txt",
-      "projectTarget": "libruntime_test.exe (bin\\libruntime_test.exe)",
-      "name": "libruntime_test.exe (bin\\libruntime_test.exe)",
+      "projectTarget": "test_runtime.exe (bin\\test_runtime.exe)",
+      "name": "test_runtime.exe (bin\\test_runtime.exe)",
       "currentDir": "@UP_ROOT_DIR@/source/libruntime/tests/fixtures"
     },
     {
