@@ -127,7 +127,11 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
 
     if (ImGui::BeginTable("##assets", columns)) {
         for (int childIndex = _folders[folderIndex].firstChild; childIndex != -1;
-             childIndex = _folders[childIndex].nextSibling) {}
+             childIndex = _folders[childIndex].nextSibling) {
+            if (_showAssetIcon(_folders[childIndex].name, ICON_FA_FOLDER)) {
+                _selectFolder(childIndex);
+            }
+        }
 
         for (Asset const& asset : _assets) {
             if (asset.folderIndex != folderIndex) {
