@@ -229,7 +229,9 @@ void up::recon::ReconApp::_registerImporters() {
 
         string_view pattern = mapping.pattern;
         _importers.push_back(
-            {[pattern](string_view filename) { return path::extension(filename) == pattern; }, importer, std::move(config)});
+            {[pattern](string_view filename) { return path::extension(filename) == pattern; },
+             importer,
+             std::move(config)});
     }
 }
 

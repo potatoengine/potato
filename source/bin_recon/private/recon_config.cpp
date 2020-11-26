@@ -1,7 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "recon_config.h"
-#include "config_schema.h"
 
 #include "potato/reflex/serialize.h"
 #include "potato/runtime/filesystem.h"
