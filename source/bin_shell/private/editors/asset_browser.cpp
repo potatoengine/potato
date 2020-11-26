@@ -125,15 +125,23 @@ bool up::shell::AssetBrowser::_showAssetIcon(zstring_view name, char8_t const* i
         ImGui::SetWindowFontScale(1.f);
         ImGui::PopFont();
 
-        ImVec2 const textSize = ImGui::CalcTextSize(name.c_str(), nullptr, false, innerBounds.GetWidth());
-        ImVec2 const textPos{innerBounds.Min.x, innerBounds.Max.y - ImGui::GetItemSpacing().y - textSize.y};
+        ImVec2 const textSize = ImGui::CalcTextSize(name.c_str(), nullptr, false, 0.f);
+        ImVec2 const textPos{bounds.Min.x, innerBounds.Max.y - ImGui::GetItemSpacing().y - textSize.y};
 
-        window->DrawList->AddRectFilled(
-            ImVec2{bounds.Min.x, textPos.y},
-            ImVec2{bounds.Max.x, textPos.y + textSize.y},
-            ImGui::GetColorU32(hovered ? ImGuiCol_WindowBg : ImGuiCol_Header));
+        if (hovered) {
+            window->DrawList->AddRectFilled(
+                ImVec2{bounds.Min.x, textPos.y},
+                ImVec2{bounds.Max.x, textPos.y + textSize.y},
+                ImGui::GetColorU32(ImGuiCol_Header));
 
-        ImGui::TextCentered(textPos, innerBounds.Max, textColor, name.c_str());
+            if (textSize.x > bounds.GetWidth()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("%s", name.c_str());
+                ImGui::EndTooltip();
+            }
+        }
+
+        ImGui::TextCentered(textPos, ImVec2{bounds.Max.x, innerBounds.Max.y}, textColor, name.c_str());
     }
 
     ImGui::PopID();
