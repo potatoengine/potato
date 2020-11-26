@@ -183,13 +183,13 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
                 if (ch == '/' || ch == '\\') {
                     // ignore duplicate slash
                 }
-                else if (!hasSlash()) {
-                    result.append(to_underlying(sep));
-                }
-                if (ch == '.') {
+                else if (ch == '.') {
                     mode = Part::Dot;
                 }
                 else {
+                    if (!hasSlash()) {
+                        result.append(to_underlying(sep));
+                    }
                     result.append(ch);
                     mode = Part::Component;
                 }
