@@ -107,7 +107,7 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
                 bool held = false;
                 bool const pressed = ImGui::ButtonBehavior(bounds, id, &hovered, &held, 0);
                 if (pressed) {
-                    _handleFileClick(asset.name);
+                    _handleFileClick(asset.filename);
                 }
 
                 ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
@@ -234,7 +234,10 @@ void up::shell::AssetBrowser::_rebuild() {
         }
 
         _assets.push_back(
-            {.name = string{record.filename.substr(start)}, .type = string{record.type}, .folderIndex = folderIndex});
+            {.filename = string{record.filename},
+             .name = string{record.filename.substr(start)},
+             .type = string{record.type},
+             .folderIndex = folderIndex});
     }
 }
 
@@ -303,9 +306,9 @@ void up::shell::AssetBrowser::_selectFolder(int index) {
     _selectedFolder = index;
 }
 
-void up::shell::AssetBrowser::_handleFileClick(zstring_view name) {
-    if (_onFileSelected != nullptr && !name.empty()) {
-        _onFileSelected(name);
+void up::shell::AssetBrowser::_handleFileClick(zstring_view filename) {
+    if (_onFileSelected != nullptr && !filename.empty()) {
+        _onFileSelected(filename);
     }
 }
 

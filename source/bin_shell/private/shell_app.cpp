@@ -60,6 +60,10 @@
 #include <imgui_internal.h>
 #include <nfd.h>
 
+#if defined(UP_PLATFORM_WIN32)
+#    include <shellapi.h>
+#endif
+
 // SDL includes X.h on Linux, which pollutes this name we care about
 // FIXME: clean up this file for better abstractions to avoid header pollution problems
 #if defined(Success)
@@ -285,7 +289,6 @@ int up::shell::ShellApp::initialize() {
         *_loader,
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
-
 
     if (!settings.project.empty()) {
         _loadProject(settings.project);
@@ -658,6 +661,25 @@ bool up::shell::ShellApp::_loadConfig(zstring_view path) {
 void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
     if (path::extension(filename) == ".scene") {
         _createScene();
+    }
+    else {
+#if defined(UP_PLATFORM_WINDOWS)
+        string fullPath = normalize(path::join(_project->resourceRootPath(), filename), path::Separator::Native);
+
+        SHELLEXECUTEINFOA info;
+        std::memset(&info, 0, sizeof(info));
+        info.cbSize = sizeof(info);
+        info.lpFile = fullPath.c_str();
+        info.lpDirectory = _project->libraryPath().c_str();
+        info.lpVerb = "edit";
+        info.fMask = SEE_MASK_FLAG_NO_UI;
+        if (!ShellExecuteExA(&info)) {
+            info.lpVerb = "open";
+            if (!ShellExecuteExA(&info)) {
+                _logger.error("Failed to open application for asset: {}", filename);
+            }
+        }
+#endif
     }
 }
 

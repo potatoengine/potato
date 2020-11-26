@@ -50,6 +50,7 @@ namespace up::shell {
         };
 
         struct Asset {
+            string filename;
             string name;
             string type;
             size_t size = 0;
@@ -69,7 +70,7 @@ namespace up::shell {
         int _addFolders(string_view folders);
 
         void _selectFolder(int index);
-        void _handleFileClick(zstring_view name);
+        void _handleFileClick(zstring_view filename);
         void _handleImport(zstring_view name, bool force = false);
 
         ResourceLoader& _resourceLoader;
