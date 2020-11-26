@@ -57,6 +57,7 @@ namespace up::shell {
             int folderIndex = -1;
         };
 
+        bool _showAssetIcon(zstring_view name, char8_t const* icon);
         void _showAssets(int folderIndex);
 
         void _showBreadcrumb(int index);
@@ -80,6 +81,8 @@ namespace up::shell {
         vector<Folder> _folders;
         vector<Asset> _assets;
         int _selectedFolder = 0;
+
+        static constexpr int assetIconWidth = 128;
 
         static constexpr size_t maxFolderHistory = 64;
         size_t _folderHistoryIndex = 0;

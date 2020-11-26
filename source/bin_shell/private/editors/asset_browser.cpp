@@ -76,70 +76,77 @@ void up::shell::AssetBrowser::content() {
     }
 }
 
-void up::shell::AssetBrowser::_showAssets(int folderIndex) {
+bool up::shell::AssetBrowser::_showAssetIcon(zstring_view name, char8_t const* icon) {
     ImGuiWindow* const window = ImGui::GetCurrentWindow();
-    ImDrawList* const drawList = window->DrawList;
 
+    ImGui::TableNextColumn();
+    ImGui::PushID(name.c_str());
+
+    ImVec2 const size = ImGui::CalcItemSize({assetIconWidth, assetIconWidth}, 0.0f, 0.0f);
+    ImRect const bounds{window->DC.CursorPos, window->DC.CursorPos + size};
+    ImRect const innerBounds{bounds.Min + ImGui::GetItemSpacing(), bounds.Max - ImGui::GetItemSpacing()};
+    ImGuiID const id = ImGui::GetID("##button");
+
+    bool clicked = false;
+
+    ImGui::ItemSize(size);
+    if (ImGui::ItemAdd(bounds, id)) {
+        bool const hovered = ImGui::IsItemHovered();
+        bool const held = ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
+
+        if (hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            clicked = true;
+        }
+
+        ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
+        ImU32 const bgColor =
+            ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+
+        if (hovered) {
+            window->DrawList->AddRectFilled(bounds.Min, bounds.Max, bgColor, 8.f);
+        }
+
+        ImGui::PushFont(ImGui::UpFont::FontAwesome_96);
+        ImVec2 const iconSize = ImGui::CalcTextSize(reinterpret_cast<char const*>(icon));
+        ImVec2 const iconPos{innerBounds.Min.x + (innerBounds.GetWidth() - iconSize.x) * 0.5f, innerBounds.Min.y};
+        window->DrawList->AddText(iconPos, textColor, reinterpret_cast<char const*>(icon));
+        ImGui::PopFont();
+
+        ImVec2 const textPos{innerBounds.Min.x, innerBounds.Max.y - ImGui::GetTextLineHeightWithSpacing()};
+        ImGui::TextCentered(textPos, innerBounds.Max, textColor, name.c_str());
+    }
+
+    ImGui::PopID();
+
+    return clicked;
+}
+
+void up::shell::AssetBrowser::_showAssets(int folderIndex) {
     float const availWidth = ImGui::GetContentRegionAvailWidth();
-    constexpr float width = 128;
-    int const columns = clamp(static_cast<int>(availWidth / width), 1, 64);
+    int const columns = clamp(static_cast<int>(availWidth / assetIconWidth), 1, 64);
 
     if (ImGui::BeginTable("##assets", columns)) {
+        for (int childIndex = _folders[folderIndex].firstChild; childIndex != -1;
+             childIndex = _folders[childIndex].nextSibling) {}
+
         for (Asset const& asset : _assets) {
             if (asset.folderIndex != folderIndex) {
                 continue;
             }
 
-            ImGui::TableNextColumn();
-            ImGui::PushID(asset.name.c_str());
-
-            const char* const icon = reinterpret_cast<char const*>(_assetEditService.getIconForType(asset.type));
-
-            ImVec2 const size = ImGui::CalcItemSize({width, width}, 0.0f, 0.0f);
-            ImRect const bounds{window->DC.CursorPos, window->DC.CursorPos + size};
-            ImRect const innerBounds{bounds.Min + ImGui::GetItemSpacing(), bounds.Max - ImGui::GetItemSpacing()};
-            ImGuiID const id = ImGui::GetID("##button");
-
-            ImGui::ItemSize(size);
-            if (ImGui::ItemAdd(bounds, id)) {
-                bool const hovered = ImGui::IsItemHovered();
-                bool const held = ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
-
-                if (hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                    _handleFileClick(asset.filename);
-                }
-
-                if (ImGui::BeginPopupContextItem()) {
-                    if (ImGui::IconMenuItem("Edit Asset", ICON_FA_EDIT)) {
-                        _handleFileClick(asset.filename);
-                    }
-                    if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
-                        _handleFileClick(string{path::parent(asset.filename)});
-                    }
-                    ImGui::EndPopup();
-                }
-
-                ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
-                ImU32 const bgColor = ImGui::GetColorU32(
-                    held ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
-
-                if (hovered) {
-                    drawList->AddRectFilled(bounds.Min, bounds.Max, bgColor, 8.f);
-                }
-
-                ImGui::PushFont(ImGui::UpFont::FontAwesome_96);
-                ImVec2 const iconSize = ImGui::CalcTextSize(icon);
-                ImVec2 const iconPos{
-                    innerBounds.Min.x + (innerBounds.GetWidth() - iconSize.x) * 0.5f,
-                    innerBounds.Min.y};
-                drawList->AddText(iconPos, textColor, icon);
-                ImGui::PopFont();
-
-                ImVec2 const textPos{innerBounds.Min.x, innerBounds.Max.y - ImGui::GetTextLineHeightWithSpacing()};
-                ImGui::TextCentered(textPos, innerBounds.Max, textColor, asset.name.c_str());
+            if (_showAssetIcon(asset.name, _assetEditService.getIconForType(asset.type))) {
+                _handleFileClick(asset.filename);
             }
 
-            ImGui::PopID();
+            if (ImGui::BeginPopupContextItem()) {
+                if (ImGui::IconMenuItem("Edit Asset", ICON_FA_EDIT)) {
+                    _handleFileClick(asset.filename);
+                }
+                if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
+                    _handleFileClick(string{path::parent(asset.filename)});
+                }
+                ImGui::EndPopup();
+            }
         }
         ImGui::EndTable();
     }
