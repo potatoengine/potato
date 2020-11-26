@@ -15,8 +15,6 @@ target_sources(potato_shell PRIVATE
     "private/scene.cpp"
     "private/editors/scene_editor.cpp"
     "private/shell_app.cpp"
-    "private/editors/filetree_editor.cpp"	
-    "private/editors/filetree_editor.h"	
     "private/editors/game_editor.h"	
     "private/editors/scene_editor.h"	
     "public/potato/shell/ui/action.h"	

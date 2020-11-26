@@ -7,7 +7,6 @@
 #include "recon_messages_schema.h"
 #include "scene.h"
 #include "editors/asset_browser.h"
-#include "editors/filetree_editor.h"
 #include "editors/game_editor.h"
 #include "editors/scene_editor.h"
 
