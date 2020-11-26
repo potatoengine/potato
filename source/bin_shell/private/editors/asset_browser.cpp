@@ -17,11 +17,39 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-auto up::shell::createAssetBrowser(
+namespace up::shell {
+    namespace {
+        class AssetBrowserFactory : public EditorFactory {
+        public:
+            AssetBrowserFactory(
+                ResourceLoader& resourceLoader,
+                AssetBrowser::OnFileSelected onFileSelected,
+                AssetBrowser::OnFileImport onFileImport)
+                : _resourceLoader(resourceLoader)
+                , _onFileSelected(std::move(onFileSelected))
+                , _onFileImport(std::move(onFileImport)) {}
+
+            zstring_view editorName() const noexcept override { return AssetBrowser::editorName; }
+
+            box<Editor> createEditor() override {
+                return new_box<AssetBrowser>(_resourceLoader, _onFileSelected, _onFileImport);
+            }
+
+            box<Editor> createEditorForAsset(zstring_view) override { return nullptr; }
+
+        private:
+            ResourceLoader& _resourceLoader;
+            AssetBrowser::OnFileSelected _onFileSelected;
+            AssetBrowser::OnFileImport _onFileImport;
+        };
+    } // namespace
+} // namespace up::shell
+
+auto up::shell::AssetBrowser::createFactory(
     ResourceLoader& resourceLoader,
     AssetBrowser::OnFileSelected onFileSelected,
-    AssetBrowser::OnFileImport onFileImport) -> box<Editor> {
-    return new_box<AssetBrowser>(resourceLoader, std::move(onFileSelected), std::move(onFileImport));
+    AssetBrowser::OnFileImport onFileImport) -> box<EditorFactory> {
+    return new_box<AssetBrowserFactory>(resourceLoader, std::move(onFileSelected), std::move(onFileImport));
 }
 
 void up::shell::AssetBrowser::configure() {

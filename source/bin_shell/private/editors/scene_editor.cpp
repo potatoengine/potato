@@ -8,6 +8,8 @@
 #include "scene_doc.h"
 #include "selection.h"
 
+#include "potato/audio/audio_engine.h"
+#include "potato/audio/sound_resource.h"
 #include "potato/editor/imgui_ext.h"
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
@@ -15,7 +17,11 @@
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_resource_view.h"
 #include "potato/render/gpu_texture.h"
+#include "potato/render/material.h"
+#include "potato/render/mesh.h"
+#include "potato/render/model.h"
 #include "potato/render/renderer.h"
+#include "potato/runtime/resource_loader.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/fixed_string_writer.h"
 
@@ -23,11 +29,68 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-auto up::shell::createSceneEditor(
-    box<SceneDocument> sceneDoc,
+namespace up::shell {
+    namespace {
+        class SceneEditorFactory : public EditorFactory {
+        public:
+            SceneEditorFactory(
+                AudioEngine& audioEngine,
+                Universe& universe,
+                Loader& loader,
+                SceneEditor::EnumerateComponents components,
+                SceneEditor::HandlePlayClicked onPlayClicked)
+                : _audioEngine(audioEngine)
+                , _universe(universe)
+                , _loader(loader)
+                , _components(std::move(components))
+                , _onPlayClicked(std::move(onPlayClicked)) {}
+
+            zstring_view editorName() const noexcept override { return SceneEditor::editorName; }
+
+            box<Editor> createEditor() override {
+                auto material = _loader.loadMaterialSync("materials/full.mat");
+                if (material == nullptr) {
+                    return nullptr;
+                }
+
+                auto mesh = _loader.loadMeshSync("meshes/cube.obj");
+                if (mesh == nullptr) {
+                    return nullptr;
+                }
+
+                auto ding = _audioEngine.loadSound("audio/kenney/highUp.mp3");
+                if (ding == nullptr) {
+                    return nullptr;
+                }
+
+                auto model = new_shared<Model>(std::move(mesh), std::move(material));
+
+                auto scene = new_shared<Scene>(_universe, _audioEngine);
+                auto doc = new_box<SceneDocument>(std::move(scene));
+                doc->createTestObjects(model, ding);
+
+                return new_box<SceneEditor>(std::move(doc), _components, _onPlayClicked);
+            }
+
+            box<Editor> createEditorForAsset(zstring_view) override { return createEditor(); }
+
+        private:
+            AudioEngine& _audioEngine;
+            Universe& _universe;
+            Loader& _loader;
+            SceneEditor::EnumerateComponents _components;
+            SceneEditor::HandlePlayClicked _onPlayClicked;
+        };
+    } // namespace
+} // namespace up::shell
+
+auto up::shell::SceneEditor::createFactory(
+    AudioEngine& audioEngine,
+    Universe& universe,
+    Loader& loader,
     SceneEditor::EnumerateComponents components,
-    SceneEditor::HandlePlayClicked onPlayClicked) -> box<Editor> {
-    return new_box<SceneEditor>(std::move(sceneDoc), std::move(components), std::move(onPlayClicked));
+    SceneEditor::HandlePlayClicked onPlayClicked) -> box<EditorFactory> {
+    return new_box<SceneEditorFactory>(audioEngine, universe, loader, std::move(components), std::move(onPlayClicked));
 }
 
 void up::shell::SceneEditor::tick(float deltaTime) {

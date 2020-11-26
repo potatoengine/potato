@@ -98,13 +98,9 @@ int up::shell::ShellApp::initialize() {
         SDL_free(prefPathSdl);
     }
 
-    {
-        schema::EditorSettings settings;
-        if (loadShellSettings(_shellSettingsPath, settings)) {
-            if (!settings.project.empty()) {
-                _loadProject(settings.project);
-            }
-        }
+    schema::EditorSettings settings;
+    if (loadShellSettings(_shellSettingsPath, settings)) {
+        _logger.info("Loaded user settings: ", _shellSettingsPath);
     }
 
     _appActions.addAction(
@@ -274,6 +270,27 @@ int up::shell::ShellApp::initialize() {
     _universe->registerComponent<components::Ding>("Ding");
     _universe->registerComponent<components::Test>("Test");
 
+    _editorFactories.push_back(AssetBrowser::createFactory(
+        _resourceLoader,
+        [this](zstring_view name) { _onFileOpened(name); },
+        [this](zstring_view name, bool force) {
+            schema::ReconImportMessage msg;
+            msg.path = string{name};
+            msg.force = force;
+            _reconClient.sendMessage(msg);
+        }));
+    _editorFactories.push_back(SceneEditor::createFactory(
+        *_audio,
+        *_universe,
+        *_loader,
+        [this] { return _universe->components(); },
+        [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
+
+
+    if (!settings.project.empty()) {
+        _loadProject(settings.project);
+    }
+
     return 0;
 }
 
@@ -314,16 +331,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _loadManifest();
 
     _editors.closeAll();
-    _editors.open(createAssetBrowser(
-        _resourceLoader,
-        [this](zstring_view name) { _onFileOpened(name); },
-        [this](zstring_view name, bool force) {
-            schema::ReconImportMessage msg;
-            msg.path = string{name};
-            msg.force = force;
-            _reconClient.sendMessage(msg);
-        }));
-
+    _openEditor(AssetBrowser::editorName);
     _updateTitle();
 
     if (!_reconClient.start(*_project)) {
@@ -331,6 +339,30 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     }
 
     return true;
+}
+
+void up::shell::ShellApp::_openEditor(zstring_view editorName) {
+    for (auto const& factory : _editorFactories) {
+        if (factory->editorName() == editorName) {
+            auto editor = factory->createEditor();
+            if (editor != nullptr) {
+                _editors.open(std::move(editor));
+            }
+            return;
+        }
+    }
+}
+
+void up::shell::ShellApp::_openEditorForAsset(zstring_view editorName, zstring_view asset) {
+    for (auto const& factory : _editorFactories) {
+        if (factory->editorName() == editorName) {
+            auto editor = factory->createEditorForAsset(asset);
+            if (editor != nullptr) {
+                _editors.open(std::move(editor));
+            }
+            return;
+        }
+    }
 }
 
 void up::shell::ShellApp::run() {
@@ -630,32 +662,7 @@ void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
 }
 
 void up::shell::ShellApp::_createScene() {
-    auto material = _loader->loadMaterialSync("materials/full.mat");
-    if (material == nullptr) {
-        _errorDialog("Failed to load basic material");
-        return;
-    }
-
-    auto mesh = _loader->loadMeshSync("meshes/cube.obj");
-    if (mesh == nullptr) {
-        _errorDialog("Failed to load cube mesh");
-        return;
-    }
-
-    auto ding = _audio->loadSound("audio/kenney/highUp.mp3");
-    if (ding == nullptr) {
-        _errorDialog("Failed to load highUp mp3");
-        return;
-    }
-
-    auto model = new_shared<Model>(std::move(mesh), std::move(material));
-
-    auto doc = new_box<SceneDocument>(new_shared<Scene>(*_universe, *_audio));
-    doc->createTestObjects(model, ding);
-    _editors.open(createSceneEditor(
-        std::move(doc),
-        [this] { return _universe->components(); },
-        [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
+    _openEditor(SceneEditor::editorName);
 }
 
 void up::shell::ShellApp::_createGame(rc<Scene> scene) {

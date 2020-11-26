@@ -16,18 +16,25 @@
 namespace up::shell {
     class AssetBrowser : public Editor {
     public:
+        static constexpr zstring_view editorName = "potato.editor.asset_browser"_zsv;
+
         using OnFileSelected = delegate<void(zstring_view name)>;
         using OnFileImport = delegate<void(zstring_view name, bool force)>;
 
-        explicit AssetBrowser(ResourceLoader& resourceLoader, OnFileSelected onFileSelected, OnFileImport onFileImport)
+        AssetBrowser(ResourceLoader& resourceLoader, OnFileSelected& onFileSelected, OnFileImport& onFileImport)
             : Editor("AssetBrowser"_zsv)
             , _resourceLoader(resourceLoader)
-            , _onFileSelected(std::move(onFileSelected))
-            , _onFileImport(std::move(onFileImport)) {}
+            , _onFileSelected(onFileSelected)
+            , _onFileImport(onFileImport) {}
 
         zstring_view displayName() const override { return "Assets"; }
-        zstring_view editorClass() const override { return "potato.editor.asset_browser"; }
+        zstring_view editorClass() const override { return editorName; }
         EditorId uniqueId() const override { return hash_value("/"); }
+
+        static box<EditorFactory> createFactory(
+            ResourceLoader& resourceLoader,
+            AssetBrowser::OnFileSelected onFileSelected,
+            AssetBrowser::OnFileImport onFileImport);
 
     protected:
         void configure() override;
@@ -66,8 +73,8 @@ namespace up::shell {
         void _handleImport(zstring_view name, bool force = false);
 
         ResourceLoader& _resourceLoader;
-        OnFileSelected _onFileSelected;
-        OnFileImport _onFileImport;
+        OnFileSelected& _onFileSelected;
+        OnFileImport& _onFileImport;
         AssetEditService _assetEditService;
         vector<Folder> _folders;
         vector<Asset> _assets;
@@ -77,9 +84,4 @@ namespace up::shell {
         size_t _folderHistoryIndex = 0;
         vector<int> _folderHistory;
     };
-
-    auto createAssetBrowser(
-        ResourceLoader& resourceLoader,
-        AssetBrowser::OnFileSelected onFileSelected,
-        AssetBrowser::OnFileImport onFileImport) -> box<Editor>;
 } // namespace up::shell

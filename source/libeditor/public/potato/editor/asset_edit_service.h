@@ -9,6 +9,7 @@
 namespace up {
     class AssetEditService {
     public:
-        UP_EDITOR_API char8_t const* getIconForType(zstring_view type);
+        UP_EDITOR_API char8_t const* getIconForType(zstring_view type) const noexcept;
+        UP_EDITOR_API zstring_view getEditorForType(zstring_view type) const noexcept;
     };
 } // namespace up
