@@ -266,7 +266,6 @@ bool ImGui::Potato::IconMenuItem(
 
 void ImGui::Potato::TextCentered(ImVec2 minPos, ImVec2 maxPos, ImU32 color, char const* text, char const* end) {
     ImGuiWindow const* const window = GetCurrentWindow();
-    ImDrawList* const drawList = window->DrawList;
     ImFont const* const font = GetFont();
 
     ImVec4 const bounds{minPos.x, minPos.y, maxPos.x, maxPos.y};
