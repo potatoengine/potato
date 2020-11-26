@@ -13,13 +13,13 @@ TEST_CASE("ResourceManifest", "[potato][runtime]") {
             "\n" // blank
             ".meta=value\n"
             ".key=var\n"
-            ":ROOT_ID|LOGICAL_ID|LOGICAL_NAME|CONTENT_HASH|DEBUG_NAME\n"
-            "0|0|0|DEAD|zero\n"
-            "1|1|0|C0DE|one\n"
+            ":ROOT_ID|LOGICAL_ID|LOGICAL_NAME|CONTENT_TYPE|CONTENT_HASH|DEBUG_NAME\n"
+            "0|0|0|nil|DEAD|zero\n"
+            "1|1|0|bin|C0DE|one\n"
             ""_sv;
         ResourceManifest manifest;
         auto parseResult = ResourceManifest::parseManifest(input, manifest);
-        CHECK(parseResult);
+        REQUIRE(parseResult);
 
         CHECK(manifest.size() == 2);
 
