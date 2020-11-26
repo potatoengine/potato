@@ -106,13 +106,33 @@ bool up::shell::AssetBrowser::_showAssetIcon(zstring_view name, char8_t const* i
             window->DrawList->AddRectFilled(bounds.Min, bounds.Max, bgColor, 8.f);
         }
 
-        ImGui::PushFont(ImGui::UpFont::FontAwesome_96);
-        ImVec2 const iconSize = ImGui::CalcTextSize(reinterpret_cast<char const*>(icon));
-        ImVec2 const iconPos{innerBounds.Min.x + (innerBounds.GetWidth() - iconSize.x) * 0.5f, innerBounds.Min.y};
+        // must calculate this _before_ pushing the icon font, since we want to calcualte the size of the
+        // label's height
+        float const iconMaxHeight =
+            innerBounds.GetHeight() - ImGui::GetTextLineHeightWithSpacing() - ImGui::GetItemInnerSpacing().y;
+
+        ImGui::PushFont(ImGui::UpFont::FontAwesome_72);
+        ImVec2 iconSize = ImGui::CalcTextSize(reinterpret_cast<char const*>(icon));
+        float iconScale = 1.f;
+        if (iconSize.y > iconMaxHeight) {
+            iconScale = iconMaxHeight / iconSize.y;
+        }
+        ImGui::SetWindowFontScale(iconScale);
+        ImVec2 const iconPos{
+            innerBounds.Min.x + (innerBounds.GetWidth() - iconSize.x * iconScale) * 0.5f,
+            innerBounds.Min.y};
         window->DrawList->AddText(iconPos, textColor, reinterpret_cast<char const*>(icon));
+        ImGui::SetWindowFontScale(1.f);
         ImGui::PopFont();
 
-        ImVec2 const textPos{innerBounds.Min.x, innerBounds.Max.y - ImGui::GetTextLineHeightWithSpacing()};
+        ImVec2 const textSize = ImGui::CalcTextSize(name.c_str(), nullptr, false, innerBounds.GetWidth());
+        ImVec2 const textPos{innerBounds.Min.x, innerBounds.Max.y - ImGui::GetItemSpacing().y - textSize.y};
+
+        window->DrawList->AddRectFilled(
+            ImVec2{bounds.Min.x, textPos.y},
+            ImVec2{bounds.Max.x, textPos.y + textSize.y},
+            ImGui::GetColorU32(hovered ? ImGuiCol_WindowBg : ImGuiCol_Header));
+
         ImGui::TextCentered(textPos, innerBounds.Max, textColor, name.c_str());
     }
 

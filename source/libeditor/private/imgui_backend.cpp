@@ -362,13 +362,13 @@ void up::ImguiBackend::_loadFonts() {
         s_ranges);
 
     config.MergeMode = false;
-    config.GlyphMinAdvanceX = 96.f;
+    config.GlyphMinAdvanceX = 72.f;
 
-    _fonts[(int)ImGui::UpFont::FontAwesome_96] = io.Fonts->AddFontFromMemoryTTF(
+    _fonts[(int)ImGui::UpFont::FontAwesome_72] = io.Fonts->AddFontFromMemoryTTF(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         const_cast<unsigned char*>(fontawesome_font_data),
         fontawesome_font_size,
-        96.f,
+        72.f,
         &config,
         s_ranges);
 }

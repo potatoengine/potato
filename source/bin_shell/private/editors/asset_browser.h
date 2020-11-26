@@ -82,7 +82,7 @@ namespace up::shell {
         vector<Asset> _assets;
         int _selectedFolder = 0;
 
-        static constexpr int assetIconWidth = 128;
+        static constexpr int assetIconWidth = 96;
 
         static constexpr size_t maxFolderHistory = 64;
         size_t _folderHistoryIndex = 0;
