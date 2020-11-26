@@ -673,9 +673,9 @@ void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
         info.lpDirectory = _project->libraryPath().c_str();
         info.lpVerb = "edit";
         info.fMask = SEE_MASK_FLAG_NO_UI;
-        if (!ShellExecuteExA(&info)) {
+        if (ShellExecuteExA(&info) != TRUE) {
             info.lpVerb = "open";
-            if (!ShellExecuteExA(&info)) {
+            if (ShellExecuteExA(&info) != TRUE) {
                 _logger.error("Failed to open application for asset: {}", filename);
             }
         }
