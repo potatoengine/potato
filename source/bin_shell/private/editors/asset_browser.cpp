@@ -185,6 +185,7 @@ void up::shell::AssetBrowser::_showBreadcrumbs() {
 
     window->DC.CursorPos += ImGui::GetItemSpacing();
     ImGui::BeginGroup();
+    ImGui::PushID("##breadcrumbs");
 
     if (ImGui::IconButton("##back", ICON_FA_BACKWARD)) {
         if (_folderHistoryIndex > 0) {
@@ -201,6 +202,7 @@ void up::shell::AssetBrowser::_showBreadcrumbs() {
 
     _showBreadcrumb(_selectedFolder);
 
+    ImGui::PopID();
     ImGui::EndGroup();
     window->DC.CursorPos.y += ImGui::GetItemSpacing().y;
 }
