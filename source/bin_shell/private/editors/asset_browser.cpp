@@ -82,7 +82,6 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
 
     float const availWidth = ImGui::GetContentRegionAvailWidth();
     constexpr float width = 128;
-    constexpr float iconWidth = 96;
     int const columns = clamp(static_cast<int>(availWidth / width), 1, 64);
 
     if (ImGui::BeginTable("##assets", columns)) {
