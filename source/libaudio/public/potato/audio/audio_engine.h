@@ -4,6 +4,7 @@
 
 #include "_export.h"
 
+#include "potato/runtime/resource_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/zstring_view.h"
@@ -20,7 +21,7 @@ namespace up {
 
         UP_AUDIO_API static auto create(ResourceLoader& resourceLoader) -> box<AudioEngine>;
 
-        virtual auto loadSound(zstring_view path) -> rc<SoundResource> = 0;
+        virtual auto createResourceBackend() -> box<ResourceLoaderBackend> = 0;
         virtual auto play(SoundResource const* sound) -> PlayHandle = 0;
 
     protected:

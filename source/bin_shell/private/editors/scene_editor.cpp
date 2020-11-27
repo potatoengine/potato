@@ -37,11 +37,13 @@ namespace up::shell {
                 AudioEngine& audioEngine,
                 Universe& universe,
                 Loader& loader,
+                ResourceLoader& resourceLoader,
                 SceneEditor::EnumerateComponents components,
                 SceneEditor::HandlePlayClicked onPlayClicked)
                 : _audioEngine(audioEngine)
                 , _universe(universe)
                 , _loader(loader)
+                , _resourceLoader(resourceLoader)
                 , _components(std::move(components))
                 , _onPlayClicked(std::move(onPlayClicked)) {}
 
@@ -58,7 +60,8 @@ namespace up::shell {
                     return nullptr;
                 }
 
-                auto ding = _audioEngine.loadSound("audio/kenney/highUp.mp3");
+                auto ding =
+                    _resourceLoader.loadAsset<SoundResource>(_resourceLoader.translate("audio/kenney/highUp.mp3"));
                 if (ding == nullptr) {
                     return nullptr;
                 }
@@ -78,6 +81,7 @@ namespace up::shell {
             AudioEngine& _audioEngine;
             Universe& _universe;
             Loader& _loader;
+            ResourceLoader& _resourceLoader;
             SceneEditor::EnumerateComponents _components;
             SceneEditor::HandlePlayClicked _onPlayClicked;
         };
@@ -88,9 +92,16 @@ auto up::shell::SceneEditor::createFactory(
     AudioEngine& audioEngine,
     Universe& universe,
     Loader& loader,
+    ResourceLoader& resourceLoader,
     SceneEditor::EnumerateComponents components,
     SceneEditor::HandlePlayClicked onPlayClicked) -> box<EditorFactory> {
-    return new_box<SceneEditorFactory>(audioEngine, universe, loader, std::move(components), std::move(onPlayClicked));
+    return new_box<SceneEditorFactory>(
+        audioEngine,
+        universe,
+        loader,
+        resourceLoader,
+        std::move(components),
+        std::move(onPlayClicked));
 }
 
 void up::shell::SceneEditor::tick(float deltaTime) {

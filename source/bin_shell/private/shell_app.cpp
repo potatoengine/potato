@@ -232,6 +232,7 @@ int up::shell::ShellApp::initialize() {
     }
 
     _audio = AudioEngine::create(_resourceLoader);
+    _resourceLoader.addBackend(_audio->createResourceBackend());
 
 #if defined(UP_GPU_ENABLE_D3D11)
     if (_device == nullptr) {
@@ -287,6 +288,7 @@ int up::shell::ShellApp::initialize() {
         *_audio,
         *_universe,
         *_loader,
+        _resourceLoader,
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
 

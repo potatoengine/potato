@@ -41,7 +41,14 @@ namespace up {
         UP_RUNTIME_API Stream openAsset(string_view assetName, string_view logicalName) const;
         UP_RUNTIME_API Stream openCAS(uint64 contentHash) const;
 
-        UP_RUNTIME_API rc<Resource> loadAsset(ResourceId id, string_view logicalName, string_view type = {});
+        UP_RUNTIME_API ResourceId translate(string_view assetName) const;
+
+        template <typename ResourceT>
+        rc<ResourceT> loadAsset(ResourceId id, string_view logicalName = {}) {
+            zstring_view constexpr typeName = ResourceT::resourceType;
+            return rc<ResourceT>(static_cast<ResourceT*>(loadAsset(id, logicalName, typeName).release()));
+        }
+        UP_RUNTIME_API rc<Resource> loadAsset(ResourceId id, string_view logicalName = {}, string_view type = {});
 
         UP_RUNTIME_API void addBackend(box<ResourceLoaderBackend> backend);
 

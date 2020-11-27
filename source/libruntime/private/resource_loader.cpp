@@ -74,6 +74,10 @@ auto up::ResourceLoader::openCAS(uint64 contentHash) const -> Stream {
     return _openFile(casPath(contentHash));
 }
 
+auto up::ResourceLoader::translate(string_view assetName) const -> ResourceId {
+    return ResourceId{hash_value<fnv1a>(assetName)};
+}
+
 auto up::ResourceLoader::openAsset(string_view assetName) const -> Stream {
     return openAsset(_assetHash(assetName));
 }
@@ -110,7 +114,7 @@ void up::ResourceLoader::addBackend(box<ResourceLoaderBackend> backend) {
 auto up::ResourceLoader::_findRecord(ResourceId id, string_view logicalName, string_view type) const
     -> ResourceManifest::Record const* {
     // find the correct record
-    uint64 const logicalHash = logicalName.empty() ? 0 : hash_value(logicalName);
+    uint64 const logicalHash = hash_value(logicalName);
     for (auto const& record : _manifest.records()) {
         if (record.rootId == id && record.logicalName == logicalHash && record.type == type) {
             return &record;

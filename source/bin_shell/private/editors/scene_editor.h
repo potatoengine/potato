@@ -21,6 +21,7 @@
 namespace up {
     class Universe;
     class Loader;
+    class ResourceLoader;
 } // namespace up
 
 namespace up::shell {
@@ -35,6 +36,7 @@ namespace up::shell {
             AudioEngine& audioEngine,
             Universe& universe,
             Loader& loader,
+            ResourceLoader& resourceLoader,
             SceneEditor::EnumerateComponents components,
             SceneEditor::HandlePlayClicked onPlayClicked) -> box<EditorFactory>;
 
