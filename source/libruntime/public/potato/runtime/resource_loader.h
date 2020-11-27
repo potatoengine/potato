@@ -5,10 +5,26 @@
 #include "_export.h"
 #include "resource_manifest.h"
 
+#include "potato/spud/box.h"
+#include "potato/spud/rc.h"
 #include "potato/spud/string.h"
+#include "potato/spud/vector.h"
 
 namespace up {
     class Stream;
+
+    class Resource : public shared<Resource> {
+    public:
+        virtual ~Resource() = default;
+    };
+
+    class ResourceLoaderBackend {
+    public:
+        virtual ~ResourceLoaderBackend() = default;
+
+        virtual zstring_view typeName() const noexcept = 0;
+        virtual rc<Resource> loadFromStream(Stream stream) = 0;
+    };
 
     class ResourceLoader {
     public:
@@ -18,12 +34,6 @@ namespace up {
         ResourceManifest& manifest() noexcept { return _manifest; }
         void setCasPath(string path) { _casPath = std::move(path); }
 
-        UP_RUNTIME_API string assetPath(ResourceId id) const;
-        UP_RUNTIME_API string assetPath(ResourceId id, string_view logicalName) const;
-
-        UP_RUNTIME_API ResourceId assetHash(string_view assetName) const;
-        UP_RUNTIME_API ResourceId assetHash(string_view assetName, string_view logicalName) const;
-
         UP_RUNTIME_API string casPath(uint64 contentHash) const;
 
         UP_RUNTIME_API Stream openAsset(ResourceId id) const;
@@ -31,9 +41,20 @@ namespace up {
         UP_RUNTIME_API Stream openAsset(string_view assetName, string_view logicalName) const;
         UP_RUNTIME_API Stream openCAS(uint64 contentHash) const;
 
+        UP_RUNTIME_API rc<Resource> loadAsset(ResourceId id, string_view logicalName, string_view type = {});
+
+        UP_RUNTIME_API void addBackend(box<ResourceLoaderBackend> backend);
+
     private:
+        string _assetPath(ResourceId id) const;
+        string _assetPath(ResourceId id, string_view logicalName) const;
+        ResourceId _assetHash(string_view assetName) const;
+        ResourceId _assetHash(string_view assetName, string_view logicalName) const;
+        ResourceManifest::Record const* _findRecord(ResourceId id, string_view logicalName, string_view type) const;
+        ResourceLoaderBackend* _findBackend(string_view type) const;
         Stream _openFile(zstring_view filename) const;
 
+        vector<box<ResourceLoaderBackend>> _backends;
         ResourceManifest _manifest;
         string _casPath;
     };

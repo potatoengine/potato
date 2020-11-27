@@ -14,7 +14,7 @@ up::ResourceLoader::ResourceLoader() = default;
 
 up::ResourceLoader::~ResourceLoader() = default;
 
-auto up::ResourceLoader::assetPath(ResourceId id) const -> string {
+auto up::ResourceLoader::_assetPath(ResourceId id) const -> string {
     for (auto const& record : _manifest.records()) {
         if (record.logicalId == id) {
             return casPath(record.hash);
@@ -23,7 +23,7 @@ auto up::ResourceLoader::assetPath(ResourceId id) const -> string {
     return {};
 }
 
-auto up::ResourceLoader::assetPath(ResourceId id, string_view logicalName) const -> string {
+auto up::ResourceLoader::_assetPath(ResourceId id, string_view logicalName) const -> string {
     auto const hash = hash_value(logicalName);
     for (auto const& record : _manifest.records()) {
         if (record.rootId == id && record.logicalName == hash) {
@@ -33,11 +33,11 @@ auto up::ResourceLoader::assetPath(ResourceId id, string_view logicalName) const
     return {};
 }
 
-auto up::ResourceLoader::assetHash(string_view assetName) const -> ResourceId {
+auto up::ResourceLoader::_assetHash(string_view assetName) const -> ResourceId {
     return ResourceId{hash_value<fnv1a>(assetName)};
 }
 
-auto up::ResourceLoader::assetHash(string_view assetName, string_view logicalName) const -> ResourceId {
+auto up::ResourceLoader::_assetHash(string_view assetName, string_view logicalName) const -> ResourceId {
     fnv1a engine;
     hash_append(engine, assetName);
     if (!logicalName.empty()) {
@@ -67,7 +67,7 @@ auto up::ResourceLoader::_openFile(zstring_view filename) const -> Stream {
 }
 
 auto up::ResourceLoader::openAsset(ResourceId id) const -> Stream {
-    return _openFile(assetPath(id));
+    return _openFile(_assetPath(id));
 }
 
 auto up::ResourceLoader::openCAS(uint64 contentHash) const -> Stream {
@@ -75,9 +75,55 @@ auto up::ResourceLoader::openCAS(uint64 contentHash) const -> Stream {
 }
 
 auto up::ResourceLoader::openAsset(string_view assetName) const -> Stream {
-    return openAsset(assetHash(assetName));
+    return openAsset(_assetHash(assetName));
 }
 
 auto up::ResourceLoader::openAsset(string_view assetName, string_view logicalName) const -> Stream {
-    return openAsset(assetHash(assetName, logicalName));
+    return openAsset(_assetHash(assetName, logicalName));
+}
+
+auto up::ResourceLoader::loadAsset(ResourceId id, string_view logicalName, string_view type) -> rc<Resource> {
+    ResourceLoaderBackend* const backend = _findBackend(type);
+    UP_ASSERT(backend != nullptr, "Unknown backend `{}`", type);
+
+    ResourceManifest::Record const* const record = _findRecord(id, logicalName, type);
+    if (record == nullptr) {
+        return nullptr;
+    }
+
+    string filename = casPath(record->hash);
+
+    Stream stream = fs::openRead(filename);
+    if (!stream) {
+        return nullptr;
+    }
+
+    return backend->loadFromStream(std::move(stream));
+}
+
+void up::ResourceLoader::addBackend(box<ResourceLoaderBackend> backend) {
+    UP_ASSERT(backend != nullptr);
+
+    _backends.push_back(std::move(backend));
+}
+
+auto up::ResourceLoader::_findRecord(ResourceId id, string_view logicalName, string_view type) const
+    -> ResourceManifest::Record const* {
+    // find the correct record
+    uint64 const logicalHash = logicalName.empty() ? 0 : hash_value(logicalName);
+    for (auto const& record : _manifest.records()) {
+        if (record.rootId == id && record.logicalName == logicalHash && record.type == type) {
+            return &record;
+        }
+    }
+    return nullptr;
+}
+
+auto up::ResourceLoader::_findBackend(string_view type) const -> ResourceLoaderBackend* {
+    for (box<ResourceLoaderBackend> const& backend : _backends) {
+        if (backend->typeName() == type) {
+            return backend.get();
+        }
+    }
+    return nullptr;
 }
