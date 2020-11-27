@@ -225,9 +225,13 @@ void up::recon::ReconApp::_registerImporters() {
             _logger.error("Unknown importer `{}'", mapping.importer);
         }
 
+        auto config = _importerFactory.parseConfig(*importer, mapping.config);
+
         string_view pattern = mapping.pattern;
         _importers.push_back(
-            {[pattern](string_view filename) { return path::extension(filename) == pattern; }, importer});
+            {[pattern](string_view filename) { return path::extension(filename) == pattern; },
+             importer,
+             std::move(config)});
     }
 }
 
@@ -250,11 +254,12 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     auto osPath = path::join(_project->resourceRootPath(), file.c_str());
     auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
 
-    Importer* importer = _findConverter(file);
-    if (importer == nullptr) {
+    Mapping const* const mapping = _findConverterMapping(file);
+    if (mapping == nullptr) {
         _logger.error("Importer not found for `{}'", file);
         return false;
     }
+    Importer* const importer = mapping->conveter;
 
     bool const upToDate =
         record != nullptr && _isUpToDate(*record, contentHash, *importer) && _isUpToDate(record->dependencies);
@@ -271,7 +276,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
 
     _logger.info("Importing: {} (importer={} revision={})", file, importer->name(), importer->revision());
 
-    ImporterContext context(file, _project->resourceRootPath(), _temporaryOutputPath, _logger);
+    ImporterContext context(file, _project->resourceRootPath(), _temporaryOutputPath, *mapping->config, _logger);
     if (!_checkMetafile(context, file)) {
         return true;
     }
@@ -305,7 +310,11 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
             output.logicalAsset);
         auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
 
-        newRecord.outputs.push_back({output.logicalAsset, logicalAssetId, outputHash});
+        newRecord.outputs.push_back(
+            {.name = output.logicalAsset,
+             .type = output.type,
+             .logicalAssetId = logicalAssetId,
+             .contentHash = outputHash});
 
         fixed_string_writer<32> casPath;
         format_append(
@@ -358,10 +367,10 @@ bool up::recon::ReconApp::_isUpToDate(span<AssetLibrary::Dependency const> recor
     return true;
 }
 
-auto up::recon::ReconApp::_findConverter(string_view path) const -> Importer* {
+auto up::recon::ReconApp::_findConverterMapping(string_view path) const -> Mapping const* {
     for (auto const& mapping : _importers) {
         if (mapping.predicate(path)) {
-            return mapping.conveter;
+            return &mapping;
         }
     }
 
@@ -396,14 +405,16 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
         dirty = true;
     }
 
-    Importer* importer = _findConverter(filename);
-    if (importer != nullptr) {
+    Mapping const* const mapping = _findConverterMapping(filename);
+    if (mapping != nullptr) {
+        Importer* const importer = mapping->conveter;
         if (importer->name() != string_view{metaFile.importerName}) {
             metaFile.importerName = string{importer->name()};
             dirty = true;
         }
 
-        ImporterContext context(filename, _project->resourceRootPath(), _temporaryOutputPath, _logger);
+        ImporterContext
+            context(filename, _project->resourceRootPath(), _temporaryOutputPath, *mapping->config, _logger);
         string_view settings = importer->generateSettings(context);
         if (settings != metaFile.importerSettings) {
             metaFile.importerSettings = string{settings};

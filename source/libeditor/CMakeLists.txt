@@ -14,7 +14,7 @@ target_sources(potato_libeditor PRIVATE
     "public/potato/editor/imgui_backend.h"
     "public/potato/editor/imgui_ext.h"
     "public/potato/editor/property_grid.h"
-)
+ "public/potato/editor/imgui_fonts.h" "private/imgui_fonts.cpp" "public/potato/editor/asset_edit_service.h" "private/asset_edit_service.cpp")
 
 include(up_headerify)
 up_headerify(potato_libeditor "roboto_font" "data/fonts/roboto/Roboto-Regular.ttf")

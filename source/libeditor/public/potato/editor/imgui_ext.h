@@ -39,4 +39,14 @@ namespace ImGui::inline Potato {
         glm::quat& value,
         char const* format = "%.3f",
         ImGuiSliderFlags flags = ImGuiSliderFlags_None);
+
+    UP_EDITOR_API void TextCentered(
+        ImVec2 minPos,
+        ImVec2 maxPos,
+        ImU32 color,
+        char const* text,
+        char const* end = nullptr);
+
+    UP_EDITOR_API ImVec2 GetItemSpacing();
+    UP_EDITOR_API ImVec2 GetItemInnerSpacing();
 } // namespace ImGui::inline Potato

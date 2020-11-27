@@ -283,6 +283,11 @@ void up::ImguiBackend::_ensureContext() {
     }
 }
 
+ImFont* up::ImguiBackend::getFont(int index) const noexcept {
+    UP_ASSERT(index >= 0 && index < static_cast<int>(ImGui::UpFont::Count_));
+    return _fonts[index];
+}
+
 void up::ImguiBackend::_initialize() {
     _context = ImGui::CreateContext();
     ImGui::SetCurrentContext(_context.get());
@@ -330,19 +335,17 @@ void up::ImguiBackend::_initialize() {
 void up::ImguiBackend::_loadFonts() {
     auto& io = ImGui::GetIO();
 
-    float const fontSize = 16.f;
-    float const iconSize = 12.f;
-
     ImFontConfig config;
     config.MergeMode = false;
     config.PixelSnapH = false;
     config.FontDataOwnedByAtlas = false;
 
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(roboto_font_data), roboto_font_size, fontSize, &config);
+    _fonts[(int)ImGui::UpFont::Roboto_16] =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(roboto_font_data), roboto_font_size, 16.f, &config);
 
     config.MergeMode = true;
-    config.GlyphMinAdvanceX = iconSize * 1.2f;
+    config.GlyphMinAdvanceX = 14.f;
     config.PixelSnapH = true;
     config.FontDataOwnedByAtlas = false;
 
@@ -354,7 +357,18 @@ void up::ImguiBackend::_loadFonts() {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         const_cast<unsigned char*>(fontawesome_font_data),
         fontawesome_font_size,
-        iconSize,
+        12.f,
+        &config,
+        s_ranges);
+
+    config.MergeMode = false;
+    config.GlyphMinAdvanceX = 72.f;
+
+    _fonts[(int)ImGui::UpFont::FontAwesome_72] = io.Fonts->AddFontFromMemoryTTF(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        const_cast<unsigned char*>(fontawesome_font_data),
+        fontawesome_font_size,
+        72.f,
         &config,
         s_ranges);
 }

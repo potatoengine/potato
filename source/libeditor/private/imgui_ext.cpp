@@ -263,3 +263,29 @@ bool ImGui::Potato::IconMenuItem(
 
     return clicked;
 }
+
+void ImGui::Potato::TextCentered(ImVec2 minPos, ImVec2 maxPos, ImU32 color, char const* text, char const* end) {
+    ImGuiWindow const* const window = GetCurrentWindow();
+    ImFont const* const font = GetFont();
+
+    ImVec4 const bounds{minPos.x, minPos.y, maxPos.x, maxPos.y};
+    ImVec2 const size = CalcTextSize(text, end, false, 0.f);
+    float const width = maxPos.x - minPos.x;
+
+    if (size.x >= width) {
+        window->DrawList->AddText(font, font->FontSize, minPos, color, text, end, 0.f, &bounds);
+    }
+    else {
+        float const offsetX = (width - size.x) * 0.5f;
+        ImVec2 const pos{minPos.x + offsetX, minPos.y};
+        window->DrawList->AddText(font, font->FontSize, pos, color, text, end, 0.f, &bounds);
+    }
+}
+
+ImVec2 ImGui::Potato::GetItemSpacing() {
+    return GetStyle().ItemSpacing;
+}
+
+ImVec2 ImGui::Potato::GetItemInnerSpacing() {
+    return GetStyle().ItemInnerSpacing;
+}

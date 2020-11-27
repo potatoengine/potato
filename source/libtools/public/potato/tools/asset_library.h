@@ -25,6 +25,7 @@ namespace up {
 
         struct Output {
             string name;
+            string type;
             AssetId logicalAssetId = AssetId::Invalid;
             uint64 contentHash = 0;
         };
@@ -41,7 +42,7 @@ namespace up {
         };
 
         static constexpr zstring_view typeName = "potato.asset.library"_zsv;
-        static constexpr int version = 11;
+        static constexpr int version = 12;
 
         AssetLibrary() = default;
         UP_TOOLS_API ~AssetLibrary();

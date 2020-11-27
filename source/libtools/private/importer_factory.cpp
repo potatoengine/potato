@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "importer_factory.h"
+#include "importer_configs_schema.h"
 #include "importers/copy_importer.h"
 #include "importers/hlsl_importer.h"
 #include "importers/ignore_importer.h"
@@ -8,6 +9,7 @@
 #include "importers/material_importer.h"
 #include "importers/model_importer.h"
 
+#include "potato/reflex/serialize.h"
 #include "potato/runtime/assertion.h"
 
 up::ImporterFactory::ImporterFactory() = default;
@@ -37,4 +39,20 @@ void up::ImporterFactory::registerDefaultImporters() {
     registerImporter(new_box<JsonImporter>());
     registerImporter(new_box<MaterialImporter>());
     registerImporter(new_box<ModelImporter>());
+}
+
+auto up::ImporterFactory::parseConfig(Importer const& importer, nlohmann::json const& config) const
+    -> box<ImporterConfig> {
+    reflex::TypeInfo const& typeInfo = importer.configType();
+    if (typeInfo.schema == nullptr) {
+        return new_box<ImporterConfig>();
+    }
+
+    void* mem = ::operator new(typeInfo.size);
+    typeInfo.ops.defaultConstructor(mem);
+    box<ImporterConfig> boxed(static_cast<ImporterConfig*>(mem));
+
+    reflex::decodeFromJsonRaw(config, *typeInfo.schema, mem);
+
+    return boxed;
 }

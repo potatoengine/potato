@@ -18,16 +18,30 @@
 
 #include <glm/glm.hpp>
 
+namespace up {
+    class Universe;
+    class Loader;
+} // namespace up
+
 namespace up::shell {
     class SceneEditor : public Editor {
     public:
+        static constexpr zstring_view editorName = "potato.editor.scene"_zsv;
+
         using EnumerateComponents = delegate<view<reflex::TypeInfo const*>()>;
         using HandlePlayClicked = delegate<void(rc<Scene>)>;
 
+        static auto createFactory(
+            AudioEngine& audioEngine,
+            Universe& universe,
+            Loader& loader,
+            SceneEditor::EnumerateComponents components,
+            SceneEditor::HandlePlayClicked onPlayClicked) -> box<EditorFactory>;
+
         explicit SceneEditor(
             box<SceneDocument> sceneDoc,
-            EnumerateComponents components,
-            HandlePlayClicked onPlayClicked)
+            EnumerateComponents& components,
+            HandlePlayClicked& onPlayClicked)
             : Editor("SceneEditor"_zsv)
             , _doc(std::move(sceneDoc))
             , _cameraController(_camera)
@@ -37,7 +51,7 @@ namespace up::shell {
         }
 
         zstring_view displayName() const override { return "Scene"_zsv; }
-        zstring_view editorClass() const override { return "potato.editor.scene"_zsv; }
+        zstring_view editorClass() const override { return editorName; }
         EditorId uniqueId() const override { return hash_value(this); }
 
         void tick(float deltaTime) override;
@@ -74,6 +88,6 @@ namespace up::shell {
 
     auto createSceneEditor(
         box<SceneDocument> sceneDoc,
-        SceneEditor::EnumerateComponents components,
-        SceneEditor::HandlePlayClicked onPlayClicked) -> box<Editor>;
+        SceneEditor::EnumerateComponents& components,
+        SceneEditor::HandlePlayClicked& onPlayClicked) -> box<Editor>;
 } // namespace up::shell

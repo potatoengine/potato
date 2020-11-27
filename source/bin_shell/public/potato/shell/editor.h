@@ -17,6 +17,21 @@ namespace up {
 }
 
 namespace up::shell {
+    class Editor;
+
+    class EditorFactory {
+    public:
+        EditorFactory() = default;
+        virtual ~EditorFactory() = default;
+
+        EditorFactory(EditorFactory const&) = delete;
+        EditorFactory& operator=(EditorFactory const&) = delete;
+
+        virtual zstring_view editorName() const noexcept = 0;
+        virtual box<Editor> createEditorForAsset(zstring_view asset) = 0;
+        virtual box<Editor> createEditor() = 0;
+    };
+
     class Editor {
     public:
         using PanelUpdate = delegate<void()>;

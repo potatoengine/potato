@@ -150,6 +150,11 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
         }
     };
 
+    auto const hasSlash = [&result, sep]() {
+        string_view current = result;
+        return !current.empty() && current.back() == to_underlying(sep);
+    };
+
     enum class Part { Empty, Component, Slash, Dot, DotDot } mode = Part::Empty;
 
     for (auto const ch : path) {
@@ -182,7 +187,9 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
                     mode = Part::Dot;
                 }
                 else {
-                    result.append(to_underlying(sep));
+                    if (!hasSlash()) {
+                        result.append(to_underlying(sep));
+                    }
                     result.append(ch);
                     mode = Part::Component;
                 }

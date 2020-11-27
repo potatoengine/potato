@@ -1,7 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "recon_config.h"
-#include "config_schema.h"
 
 #include "potato/reflex/serialize.h"
 #include "potato/runtime/filesystem.h"
@@ -106,5 +105,31 @@ bool up::recon::parseConfigString(ReconConfig& config, string_view json, zstring
         return false;
     }
 
-    return reflex::decodeFromJson(jsonRoot, config);
+    if (jsonRoot.contains("project") && jsonRoot["project"].is_string()) {
+        config.project = jsonRoot["project"].get<string>();
+    }
+
+    if (jsonRoot.contains("server") && jsonRoot["server"].is_boolean()) {
+        config.server = jsonRoot["server"].get<bool>();
+    }
+
+    if (jsonRoot.contains("mapping") && jsonRoot["mapping"].is_array()) {
+        for (nlohmann::json const& jsonMapping : jsonRoot["mapping"]) {
+            ReconConfigImportMapping& mapping = config.mapping.emplace_back();
+
+            if (jsonMapping.contains("pattern") && jsonMapping["pattern"].is_string()) {
+                mapping.pattern = jsonMapping["pattern"].get<string>();
+            }
+
+            if (jsonMapping.contains("importer") && jsonMapping["importer"].is_string()) {
+                mapping.importer = jsonMapping["importer"].get<string>();
+            }
+
+            if (jsonMapping.contains("config")) {
+                mapping.config = jsonMapping["config"];
+            }
+        }
+    }
+
+    return true;
 }

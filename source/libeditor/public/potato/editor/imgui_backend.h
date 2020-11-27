@@ -3,6 +3,7 @@
 #pragma once
 
 #include "_export.h"
+#include "imgui_fonts.h"
 
 #include "potato/runtime/stream.h"
 #include "potato/spud/box.h"
@@ -25,6 +26,7 @@ struct ImDrawList;
 struct ImData;
 struct ImGuiContext;
 struct ImGuiIO;
+struct ImFont;
 using SDL_Event = union SDL_Event;
 
 namespace up {
@@ -48,6 +50,8 @@ namespace up {
         void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
         auto isCaptureRelativeMouseMode() const noexcept -> bool { return _captureRelativeMouseMode; }
 
+        ImFont* getFont(int index) const noexcept;
+
     private:
         void _initialize();
         void _ensureContext();
@@ -69,5 +73,6 @@ namespace up {
         rc<Shader> _pixelShader;
         string _clipboardTextData;
         bool _captureRelativeMouseMode = false;
+        ImFont* _fonts[static_cast<int>(ImGui::Potato::UpFont::Count_)] = {};
     };
 } // namespace up

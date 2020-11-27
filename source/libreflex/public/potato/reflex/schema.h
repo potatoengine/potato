@@ -88,7 +88,7 @@ namespace up::reflex {
         zstring_view name;
         Schema const* schema = nullptr;
         int offset = 0;
-        view<SchemaAnnotation> annotations;
+        view<SchemaAnnotation> annotations{};
     };
 
     struct SchemaEnumValue {
@@ -102,9 +102,9 @@ namespace up::reflex {
         Schema const* baseSchema = nullptr;
         Schema const* elementType = nullptr;
         SchemaOperations const* operations = nullptr;
-        view<SchemaField> fields;
-        view<SchemaEnumValue> enumValues;
-        view<SchemaAnnotation> annotations;
+        view<SchemaField> fields{};
+        view<SchemaEnumValue> enumValues{};
+        view<SchemaAnnotation> annotations{};
 
         template <typename AttributeT>
         AttributeT const* queryAnnotation() const noexcept requires(std::is_base_of_v<SchemaAttribute, AttributeT>) {

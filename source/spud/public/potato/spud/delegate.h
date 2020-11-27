@@ -255,6 +255,7 @@ void up::_detail::delegate_typed<ReturnType, Const, ParamTypes...>::assign(Funct
         "Alignment of the functor given to delegate is too strict");
     static_assert(sizeof(FunctorType) <= sizeof(storage_t), "Size of the functor given to delegate is too wide");
 
+    // NOLINTNEXTLINE(bugprone-branch-clone)
     if constexpr (Const) {
         this->_vtable = &_detail::vtable_c<FunctorType const, ReturnType, true, ParamTypes...>;
     }

@@ -14,6 +14,11 @@ namespace up {
         return lhs < rhs ? lhs : rhs;
     }
 
+    template <typename T>
+    constexpr T clamp(T const& x, T const& min, T const& max) {
+        return x < min ? min : x > max ? max : x;
+    }
+
     template <typename IteratorT, typename SentinelT, typename FunctionT, typename ResultT, typename ProjT>
     constexpr ResultT accumulate(
         IteratorT first,

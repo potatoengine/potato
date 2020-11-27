@@ -12,7 +12,7 @@ target_sources(potato_libtools PRIVATE
     "private/meta_file.cpp"
     "private/project.cpp"
     "public/potato/tools/evaluator.h"
-)
+ "private/importer.cpp")
 
 target_sources(potato_libtools PRIVATE
     "private/importers/copy_importer.cpp"
@@ -20,10 +20,20 @@ target_sources(potato_libtools PRIVATE
     "private/importers/json_importer.cpp"
     "private/importers/material_importer.cpp"
     "private/importers/model_importer.cpp"
+    "public/potato/tools/importers/copy_importer.h"
+    "public/potato/tools/importers/hlsl_importer.h"
+    "public/potato/tools/importers/json_importer.h"
+    "public/potato/tools/importers/material_importer.h"
+    "public/potato/tools/importers/model_importer.h"
 )
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libtools)
+
+include(up_compile_sap)
+up_compile_sap(potato_libtools SCHEMAS
+    schema/importer_configs.sap
+)
 
 target_link_libraries(potato_libtools
     PUBLIC

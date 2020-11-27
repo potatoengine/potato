@@ -39,6 +39,8 @@ namespace up {
 } // namespace up
 
 namespace up::shell {
+    class EditorFactory;
+
     class ShellApp {
     public:
         ShellApp();
@@ -80,6 +82,9 @@ namespace up::shell {
         bool _selectAndLoadProject(zstring_view folder);
         bool _loadProject(zstring_view path);
 
+        void _openEditor(zstring_view editorName);
+        void _openEditorForAsset(zstring_view editorName, zstring_view asset);
+
         bool _running = true;
         bool _openProject = false;
         bool _closeProject = false;
@@ -101,6 +106,7 @@ namespace up::shell {
         Menu _menu;
         HotKeys _hotKeys;
         EditorGroup _editors;
+        vector<box<EditorFactory>> _editorFactories;
         int _lastCursor = -1;
         ImguiBackend _imguiBackend;
         Logger _logger;

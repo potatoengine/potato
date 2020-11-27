@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "material_importer.h"
+#include "importers/material_importer.h"
 
 #include "potato/render/material_generated.h"
 #include "potato/runtime/filesystem.h"
@@ -78,7 +78,7 @@ bool up::MaterialImporter::import(ImporterContext& ctx) {
     outFile.close();
 
     // output has same name as input
-    ctx.addMainOutput(string{ctx.sourceFilePath()});
+    ctx.addMainOutput(string{ctx.sourceFilePath()}, "potato.asset.material");
 
     ctx.logger().info("Compiled `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
 

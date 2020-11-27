@@ -15,8 +15,6 @@ target_sources(potato_shell PRIVATE
     "private/scene.cpp"
     "private/editors/scene_editor.cpp"
     "private/shell_app.cpp"
-    "private/editors/filetree_editor.cpp"	
-    "private/editors/filetree_editor.h"	
     "private/editors/game_editor.h"	
     "private/editors/scene_editor.h"	
     "public/potato/shell/ui/action.h"	
@@ -32,7 +30,11 @@ target_sources(potato_shell PRIVATE
     "private/settings.cpp"
     "private/log_window.h"
     "private/log_window.cpp"
- "public/potato/shell/scene_doc.h" "private/scene_doc.cpp")
+    "public/potato/shell/scene_doc.h"
+    "private/scene_doc.cpp"
+    "private/editors/asset_browser.cpp"
+    "private/editors/asset_browser.h"
+)
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 

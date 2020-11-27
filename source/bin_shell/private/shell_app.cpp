@@ -6,7 +6,7 @@
 #include "components_schema.h"
 #include "recon_messages_schema.h"
 #include "scene.h"
-#include "editors/filetree_editor.h"
+#include "editors/asset_browser.h"
 #include "editors/game_editor.h"
 #include "editors/scene_editor.h"
 
@@ -60,6 +60,10 @@
 #include <imgui_internal.h>
 #include <nfd.h>
 
+#if defined(UP_PLATFORM_WIN32)
+#    include <shellapi.h>
+#endif
+
 // SDL includes X.h on Linux, which pollutes this name we care about
 // FIXME: clean up this file for better abstractions to avoid header pollution problems
 #if defined(Success)
@@ -98,13 +102,9 @@ int up::shell::ShellApp::initialize() {
         SDL_free(prefPathSdl);
     }
 
-    {
-        schema::EditorSettings settings;
-        if (loadShellSettings(_shellSettingsPath, settings)) {
-            if (!settings.project.empty()) {
-                _loadProject(settings.project);
-            }
-        }
+    schema::EditorSettings settings;
+    if (loadShellSettings(_shellSettingsPath, settings)) {
+        _logger.info("Loaded user settings: ", _shellSettingsPath);
     }
 
     _appActions.addAction(
@@ -274,6 +274,26 @@ int up::shell::ShellApp::initialize() {
     _universe->registerComponent<components::Ding>("Ding");
     _universe->registerComponent<components::Test>("Test");
 
+    _editorFactories.push_back(AssetBrowser::createFactory(
+        _resourceLoader,
+        [this](zstring_view name) { _onFileOpened(name); },
+        [this](zstring_view name, bool force) {
+            schema::ReconImportMessage msg;
+            msg.path = string{name};
+            msg.force = force;
+            _reconClient.sendMessage(msg);
+        }));
+    _editorFactories.push_back(SceneEditor::createFactory(
+        *_audio,
+        *_universe,
+        *_loader,
+        [this] { return _universe->components(); },
+        [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
+
+    if (!settings.project.empty()) {
+        _loadProject(settings.project);
+    }
+
     return 0;
 }
 
@@ -314,16 +334,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _loadManifest();
 
     _editors.closeAll();
-    _editors.open(createFileTreeEditor(
-        string{_project->resourceRootPath()},
-        [this](zstring_view name) { _onFileOpened(name); },
-        [this](zstring_view name, bool force) {
-            schema::ReconImportMessage msg;
-            msg.path = string{name};
-            msg.force = force;
-            _reconClient.sendMessage(msg);
-        }));
-
+    _openEditor(AssetBrowser::editorName);
     _updateTitle();
 
     if (!_reconClient.start(*_project)) {
@@ -331,6 +342,30 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     }
 
     return true;
+}
+
+void up::shell::ShellApp::_openEditor(zstring_view editorName) {
+    for (auto const& factory : _editorFactories) {
+        if (factory->editorName() == editorName) {
+            auto editor = factory->createEditor();
+            if (editor != nullptr) {
+                _editors.open(std::move(editor));
+            }
+            return;
+        }
+    }
+}
+
+void up::shell::ShellApp::_openEditorForAsset(zstring_view editorName, zstring_view asset) {
+    for (auto const& factory : _editorFactories) {
+        if (factory->editorName() == editorName) {
+            auto editor = factory->createEditorForAsset(asset);
+            if (editor != nullptr) {
+                _editors.open(std::move(editor));
+            }
+            return;
+        }
+    }
 }
 
 void up::shell::ShellApp::run() {
@@ -627,35 +662,43 @@ void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
     if (path::extension(filename) == ".scene") {
         _createScene();
     }
+    else {
+#if defined(UP_PLATFORM_WINDOWS)
+        string fullPath = normalize(path::join(_project->resourceRootPath(), filename), path::Separator::Native);
+
+        SHELLEXECUTEINFOA info;
+        std::memset(&info, 0, sizeof(info));
+        info.cbSize = sizeof(info);
+
+        if (fs::directoryExists(fullPath)) {
+            info.lpFile = fullPath.c_str();
+            info.lpDirectory = fullPath.c_str();
+            info.lpVerb = "open";
+            info.fMask = SEE_MASK_FLAG_NO_UI;
+            info.nShow = TRUE;
+            if (ShellExecuteExA(&info) != TRUE) {
+                _logger.error("Failed to open Explorer for folder: {}", fullPath);
+            }
+        }
+        else if (fs::fileExists(fullPath)) {
+            info.lpFile = fullPath.c_str();
+            info.lpDirectory = _project->libraryPath().c_str();
+            info.lpVerb = "edit";
+            info.fMask = SEE_MASK_FLAG_NO_UI;
+            info.nShow = TRUE;
+            if (ShellExecuteExA(&info) != TRUE) {
+                info.lpVerb = "open";
+                if (ShellExecuteExA(&info) != TRUE) {
+                    _logger.error("Failed to open application for asset: {}", fullPath);
+                }
+            }
+        }
+#endif
+    }
 }
 
 void up::shell::ShellApp::_createScene() {
-    auto material = _loader->loadMaterialSync("materials/full.mat");
-    if (material == nullptr) {
-        _errorDialog("Failed to load basic material");
-        return;
-    }
-
-    auto mesh = _loader->loadMeshSync("meshes/cube.obj");
-    if (mesh == nullptr) {
-        _errorDialog("Failed to load cube mesh");
-        return;
-    }
-
-    auto ding = _audio->loadSound("audio/kenney/highUp.mp3");
-    if (ding == nullptr) {
-        _errorDialog("Failed to load highUp mp3");
-        return;
-    }
-
-    auto model = new_shared<Model>(std::move(mesh), std::move(material));
-
-    auto doc = new_box<SceneDocument>(new_shared<Scene>(*_universe, *_audio));
-    doc->createTestObjects(model, ding);
-    _editors.open(createSceneEditor(
-        std::move(doc),
-        [this] { return _universe->components(); },
-        [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
+    _openEditor(SceneEditor::editorName);
 }
 
 void up::shell::ShellApp::_createGame(rc<Scene> scene) {

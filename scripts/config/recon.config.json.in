@@ -15,27 +15,42 @@
     },
     {
       "pattern": ".json",
-      "importer": "json"
+      "importer": "ignore"
     },
     {
       "pattern": ".png",
-      "importer": "copy"
+      "importer": "copy",
+      "config": {
+        "type": "potato.asset.texture"
+      }
     },
     {
       "pattern": ".jpg",
-      "importer": "copy"
+      "importer": "copy",
+      "config": {
+        "type": "potato.asset.texture"
+      }
     },
     {
       "pattern": ".ttf",
-      "importer": "copy"
+      "importer": "copy",
+      "config": {
+        "type": "potato.asset.texture"
+      }
     },
     {
       "pattern": ".wav",
-      "importer": "copy"
+      "importer": "copy",
+      "config": {
+        "type": "potato.asset.sound"
+      }
     },
     {
       "pattern": ".mp3",
-      "importer": "copy"
+      "importer": "copy",
+      "config": {
+        "type": "potato.asset.sound"
+      }
     },
     {
       "pattern": ".popr",
@@ -43,7 +58,10 @@
     },
     {
       "pattern": ".scene",
-      "importer": "json"
+      "importer": "json",
+      "config": {
+        "type": "potato.asset.scene"
+      }
     },
     {
       "pattern": ".obj",
