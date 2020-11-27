@@ -19,9 +19,9 @@ namespace up {
     public:
         virtual ~AudioEngine() = default;
 
-        UP_AUDIO_API static auto create(ResourceLoader& resourceLoader) -> box<AudioEngine>;
+        UP_AUDIO_API static auto create() -> box<AudioEngine>;
 
-        virtual auto createResourceBackend() -> box<ResourceLoaderBackend> = 0;
+        virtual void registerResourceBackends(ResourceLoader& resourceLoader) = 0;
         virtual auto play(SoundResource const* sound) -> PlayHandle = 0;
 
     protected:

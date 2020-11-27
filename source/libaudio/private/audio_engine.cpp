@@ -14,14 +14,13 @@ namespace up {
     namespace {
         class AudioEngineImpl final : public AudioEngine {
         public:
-            explicit AudioEngineImpl(ResourceLoader& resourceLoader);
+            explicit AudioEngineImpl();
             ~AudioEngineImpl() override;
 
-            auto createResourceBackend() -> box<ResourceLoaderBackend> override;
+            void registerResourceBackends(ResourceLoader& resourceLoader) override;
             auto play(SoundResource const* sound) -> PlayHandle override;
 
         private:
-            ResourceLoader& _resourceLoader;
             SoLoud::Soloud _soloud;
         };
 
@@ -38,7 +37,7 @@ namespace up {
     } // namespace
 } // namespace up
 
-up::AudioEngineImpl::AudioEngineImpl(up::ResourceLoader& resourceLoader) : _resourceLoader(resourceLoader) {
+up::AudioEngineImpl::AudioEngineImpl() {
     _soloud = SoLoud::Soloud();
     _soloud.init();
 }
@@ -47,12 +46,12 @@ up::AudioEngineImpl::~AudioEngineImpl() {
     _soloud.deinit();
 }
 
-auto up::AudioEngine::create(ResourceLoader& resourceLoader) -> box<AudioEngine> {
-    return new_box<AudioEngineImpl>(resourceLoader);
+auto up::AudioEngine::create() -> box<AudioEngine> {
+    return new_box<AudioEngineImpl>();
 }
 
-auto up::AudioEngineImpl::createResourceBackend() -> box<ResourceLoaderBackend> {
-    return new_box<SoundResourceLoaderBackend>();
+void up::AudioEngineImpl::registerResourceBackends(ResourceLoader& resourceLoader) {
+    resourceLoader.addBackend(new_box<SoundResourceLoaderBackend>());
 }
 
 auto up::AudioEngineImpl::play(SoundResource const* sound) -> PlayHandle {

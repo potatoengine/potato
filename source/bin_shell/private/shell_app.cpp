@@ -231,8 +231,8 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _audio = AudioEngine::create(_resourceLoader);
-    _resourceLoader.addBackend(_audio->createResourceBackend());
+    _audio = AudioEngine::create();
+    _audio->registerResourceBackends(_resourceLoader);
 
 #if defined(UP_GPU_ENABLE_D3D11)
     if (_device == nullptr) {
