@@ -8,6 +8,10 @@
 
 #include <glm/fwd.hpp>
 
+namespace up {
+    class AssetLoader;
+}
+
 namespace up::inline editor {
     class PropertyEditor {
     public:
@@ -19,6 +23,8 @@ namespace up::inline editor {
 
     class PropertyGrid {
     public:
+        void bindResourceLoader(AssetLoader* assetLoader) { _assetLoader = assetLoader; }
+
         bool beginItem(char const* label);
         void endItem();
 
@@ -53,5 +59,8 @@ namespace up::inline editor {
         void _editMat4x4Field(reflex::SchemaField const& field, glm::mat4x4& value) noexcept;
         void _editQuatField(reflex::SchemaField const& field, glm::quat& value) noexcept;
         void _editStringField(reflex::SchemaField const& field, string& value) noexcept;
+        void _editAssetField(reflex::SchemaField const& field, reflex::Schema const& schema, void* object);
+
+        AssetLoader* _assetLoader = nullptr;
     };
 } // namespace up::inline editor

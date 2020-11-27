@@ -40,13 +40,15 @@ namespace up::shell {
 
         explicit SceneEditor(
             box<SceneDocument> sceneDoc,
+            AssetLoader& assetLoader,
             EnumerateComponents& components,
             HandlePlayClicked& onPlayClicked)
             : Editor("SceneEditor"_zsv)
             , _doc(std::move(sceneDoc))
             , _cameraController(_camera)
             , _components(std::move(components))
-            , _onPlayClicked(std::move(onPlayClicked)) {
+            , _onPlayClicked(std::move(onPlayClicked))
+            , _assetLoader(assetLoader) {
             _camera.lookAt({0, 10, 15}, {0, 0, 0}, {0, 1, 0});
         }
 
@@ -84,10 +86,6 @@ namespace up::shell {
         bool _create = false;
         bool _delete = false;
         EntityId _targetId = EntityId::None;
+        AssetLoader& _assetLoader;
     };
-
-    auto createSceneEditor(
-        box<SceneDocument> sceneDoc,
-        SceneEditor::EnumerateComponents& components,
-        SceneEditor::HandlePlayClicked& onPlayClicked) -> box<Editor>;
 } // namespace up::shell

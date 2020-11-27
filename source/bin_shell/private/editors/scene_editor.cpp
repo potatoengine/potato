@@ -70,7 +70,7 @@ namespace up::shell {
                 auto doc = new_box<SceneDocument>(std::move(scene));
                 doc->createTestObjects(model, ding);
 
-                return new_box<SceneEditor>(std::move(doc), _components, _onPlayClicked);
+                return new_box<SceneEditor>(std::move(doc), _assetLoader, _components, _onPlayClicked);
             }
 
             box<Editor> createEditorForAsset(zstring_view) override { return createEditor(); }
@@ -281,6 +281,8 @@ void up::shell::SceneEditor::_inspector() {
     }
 
     ImGuiID const addComponentId = ImGui::GetID("##add_component_list");
+
+    _propertyGrid.bindResourceLoader(&_assetLoader);
 
     _doc->scene()->world().interrogateEntityUnsafe(
         _selection.selected(),

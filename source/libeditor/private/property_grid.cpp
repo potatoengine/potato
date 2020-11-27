@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "property_grid.h"
+#include "asset_browser_popup.h"
 #include "common_schema.h"
 #include "constraint_schema.h"
 #include "tools_schema.h"
@@ -40,6 +41,12 @@ void up::editor::PropertyGrid::_editField(
     reflex::Schema const& schema,
     void* object) {
     ImGui::PushID(object);
+
+    if (auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(field)) {
+        _editAssetField(field, *field.schema, object);
+        ImGui::PopID();
+        return;
+    }
 
     switch (schema.primitive) {
         case reflex::SchemaPrimitive::Int16:
@@ -343,4 +350,36 @@ void up::editor::PropertyGrid::_editStringField(
     if (ImGui::InputText("##string", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
         value = string(buffer);
     }
+}
+
+void up::editor::PropertyGrid::_editAssetField(
+    reflex::SchemaField const& field,
+    reflex::Schema const& schema,
+    void* object) {
+    ImGui::BeginGroup();
+    if (schema.operations->pointerDeref != nullptr) {
+        void const* pointee = schema.operations->pointerDeref(object);
+        ImGui::Text("%s", pointee != nullptr ? "<unknown>" : "<empty>");
+    }
+    else {
+        ImGui::Text("???");
+    }
+    ImGui::SameLine();
+    if (ImGui::IconButton("##clear", ICON_FA_TRASH) && schema.operations->pointerReset != nullptr) {
+        schema.operations->pointerReset(object);
+    }
+    ImGui::SameLine();
+
+    if (ImGui::IconButton("##select", ICON_FA_FOLDER) && schema.operations->pointerInstantiate != nullptr) {
+        ImGui::OpenPopup("##asset_browser");
+
+        schema.operations->pointerInstantiate(object);
+    }
+
+    if (_assetLoader != nullptr) {
+        string assetRef;
+        up::assetBrowserPopup("##asset_browser", assetRef, *_assetLoader);
+    }
+
+    ImGui::EndGroup();
 }

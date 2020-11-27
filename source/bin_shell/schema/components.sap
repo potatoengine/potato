@@ -31,6 +31,7 @@ struct Transform {
 
 [Component]
 struct Mesh {
+    [AssetReference("potato.asset.model")]
     ModelHandle model;
 }
 
@@ -50,6 +51,7 @@ struct Ding {
     float period = 1;
     [FloatRange(0, 3600)]
     float time = 0;
+    [AssetReference("potato.asset.sound")]
     SoundHandle sound;
 }
 

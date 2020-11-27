@@ -6,3 +6,4 @@ attribute DisplayName { string name; }
 attribute Hidden;
 attribute Flatten;
 attribute Tooltip { string text; }
+attribute AssetReference { string assetType; }
