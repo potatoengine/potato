@@ -7,11 +7,11 @@
 #include "gpu_pipeline_state.h"
 #include "gpu_resource_view.h"
 #include "gpu_sampler.h"
-#include "loader.h"
 #include "material_generated.h"
 #include "shader.h"
 #include "texture.h"
 
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/string.h"
 
 up::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures)
@@ -58,7 +58,7 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
     }
 }
 
-auto up::Material::createFromBuffer(view<byte> buffer, Loader& loader) -> rc<Material> {
+auto up::Material::createFromBuffer(view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!schema::VerifyMaterialBuffer(verifier)) {
         return {};
@@ -78,8 +78,10 @@ auto up::Material::createFromBuffer(view<byte> buffer, Loader& loader) -> rc<Mat
     auto vertexPath = shader->vertex();
     auto pixelPath = shader->pixel();
 
-    vertex = loader.loadShaderSync(string(vertexPath->c_str(), vertexPath->size()), "vertex"_sv);
-    pixel = loader.loadShaderSync(string(pixelPath->c_str(), pixelPath->size()), "pixel"_sv);
+    vertex = assetLoader.loadAssetSync<Shader>(
+        assetLoader.translate(string_view(vertexPath->c_str(), vertexPath->size()), "vertex"_sv));
+    pixel = assetLoader.loadAssetSync<Shader>(
+        assetLoader.translate(string_view(pixelPath->c_str(), pixelPath->size()), "pixel"_sv));
 
     if (vertex == nullptr) {
         return nullptr;
@@ -92,7 +94,7 @@ auto up::Material::createFromBuffer(view<byte> buffer, Loader& loader) -> rc<Mat
     for (auto textureData : *material->textures()) {
         auto texturePath = string(textureData->c_str(), textureData->size());
 
-        auto tex = loader.loadTextureSync(texturePath);
+        auto tex = assetLoader.loadAssetSync<Texture>(assetLoader.translate(texturePath));
         if (!tex) {
             return nullptr;
         }

@@ -4,6 +4,7 @@
 
 #include "_export.h"
 
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/vector.h"
@@ -17,14 +18,15 @@ namespace up {
     class RenderContext;
     class Shader;
     class Texture;
-    class Loader;
 
-    class Material : public shared<Material> {
+    class Material : public Asset {
     public:
-        UP_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures);
-        UP_RENDER_API ~Material();
+        static constexpr zstring_view assetTypeName = "potato.asset.material"_zsv;
 
-        static UP_RENDER_API auto createFromBuffer(view<byte> buffer, Loader& loader) -> rc<Material>;
+        UP_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures);
+        UP_RENDER_API ~Material() override;
+
+        static UP_RENDER_API auto createFromBuffer(view<byte> buffer, AssetLoader& assetLoader) -> rc<Material>;
 
         UP_RENDER_API void bindMaterialToRender(RenderContext& ctx);
 

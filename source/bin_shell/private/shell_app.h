@@ -12,8 +12,8 @@
 #include "potato/editor/hotkeys.h"
 #include "potato/editor/imgui_backend.h"
 #include "potato/recon/recon_client.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/runtime/logger.h"
-#include "potato/runtime/resource_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/unique_resource.h"
 
@@ -22,7 +22,6 @@
 #include <imgui.h>
 
 namespace up {
-    class Loader;
     class Renderer;
     class RenderCamera;
     class Node;
@@ -91,7 +90,6 @@ namespace up::shell {
         bool _aboutDialog = false;
         rc<GpuDevice> _device;
         rc<GpuSwapChain> _swapChain;
-        box<Loader> _loader;
         box<Renderer> _renderer;
         box<RenderCamera> _uiRenderCamera;
         box<Universe> _universe;
@@ -113,7 +111,7 @@ namespace up::shell {
         float _lastFrameTime = 0.f;
         std::chrono::nanoseconds _lastFrameDuration = {};
         string _projectName;
-        ResourceLoader _resourceLoader;
+        AssetLoader _assetLoader;
         LogWindow _logWindow;
         ReconClient _reconClient;
     }; // namespace up::shell

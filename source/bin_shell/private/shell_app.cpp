@@ -231,7 +231,8 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _audio = AudioEngine::create(_resourceLoader);
+    _audio = AudioEngine::create();
+    _audio->registerAssetBackends(_assetLoader);
 
 #if defined(UP_GPU_ENABLE_D3D11)
     if (_device == nullptr) {
@@ -249,8 +250,8 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _loader = new_box<DefaultLoader>(_resourceLoader, _device);
     _renderer = new_box<Renderer>(_device);
+    _renderer->registerAssetBackends(_assetLoader);
 
 #if UP_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
@@ -275,7 +276,7 @@ int up::shell::ShellApp::initialize() {
     _universe->registerComponent<components::Test>("Test");
 
     _editorFactories.push_back(AssetBrowser::createFactory(
-        _resourceLoader,
+        _assetLoader,
         [this](zstring_view name) { _onFileOpened(name); },
         [this](zstring_view name, bool force) {
             schema::ReconImportMessage msg;
@@ -286,7 +287,7 @@ int up::shell::ShellApp::initialize() {
     _editorFactories.push_back(SceneEditor::createFactory(
         *_audio,
         *_universe,
-        *_loader,
+        _assetLoader,
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
 
@@ -714,11 +715,11 @@ void up::shell::ShellApp::_executeRecon() {
 }
 
 void up::shell::ShellApp::_loadManifest() {
-    _resourceLoader.setCasPath(path::join(_project->libraryPath(), "cache"));
+    _assetLoader.setCasPath(path::join(_project->libraryPath(), "cache"));
     string manifestPath = path::join(_project->libraryPath(), "manifest.txt");
     if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
-        _resourceLoader.manifest().clear();
-        if (!ResourceManifest::parseManifest(manifestText, _resourceLoader.manifest())) {
+        _assetLoader.manifest().clear();
+        if (!ResourceManifest::parseManifest(manifestText, _assetLoader.manifest())) {
             _logger.error("Failed to parse resource manifest");
         }
     }

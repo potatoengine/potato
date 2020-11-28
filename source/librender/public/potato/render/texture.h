@@ -5,6 +5,7 @@
 #include "_export.h"
 #include "image.h"
 
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 
@@ -13,10 +14,12 @@ namespace up {
 }
 
 namespace up {
-    class Texture : public shared<Texture> {
+    class Texture : public Asset {
     public:
+        static constexpr zstring_view assetTypeName = "potato.asset.texture"_zsv;
+
         UP_RENDER_API explicit Texture(Image image, rc<GpuTexture> texture);
-        UP_RENDER_API ~Texture();
+        UP_RENDER_API ~Texture() override;
 
         GpuTexture& texture() const noexcept { return *_texture; }
 

@@ -3,55 +3,73 @@
 #include "audio_engine.h"
 #include "sound_resource.h"
 
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/vector.h"
 
 #include <soloud.h>
 #include <soloud_wav.h>
 
-namespace {
-    class AudioEngineImpl final : public up::AudioEngine {
-    public:
-        explicit AudioEngineImpl(up::ResourceLoader& resourceLoader);
-        ~AudioEngineImpl() override;
+namespace up {
+    namespace {
+        class AudioEngineImpl final : public AudioEngine {
+        public:
+            explicit AudioEngineImpl();
+            ~AudioEngineImpl() override;
 
-        auto loadSound(up::zstring_view path) -> up::rc<up::SoundResource> override;
-        auto play(up::SoundResource const* sound) -> up::PlayHandle override;
+            void registerAssetBackends(AssetLoader& assetLoader) override;
+            auto play(SoundResource const* sound) -> PlayHandle override;
 
-    private:
-        up::ResourceLoader& _resourceLoader;
-        SoLoud::Soloud _soloud;
-    };
+        private:
+            SoLoud::Soloud _soloud;
+        };
 
-    class SoundResourceWav final : public up::SoundResource {
-    public:
-        mutable SoLoud::Wav _wav;
-    };
-} // namespace
+        class SoundResourceWav final : public SoundResource {
+        public:
+            mutable SoLoud::Wav _wav;
+        };
 
-AudioEngineImpl::AudioEngineImpl(up::ResourceLoader& resourceLoader) : _resourceLoader(resourceLoader) {
+        class SoundAssetLoaderBackend : public AssetLoaderBackend {
+        public:
+            zstring_view typeName() const noexcept override { return SoundResource::assetTypeName; }
+            rc<Asset> loadFromStream(Stream stream, AssetLoader& assetLoader) override;
+        };
+    } // namespace
+} // namespace up
+
+up::AudioEngineImpl::AudioEngineImpl() {
     _soloud = SoLoud::Soloud();
     _soloud.init();
 }
 
-AudioEngineImpl::~AudioEngineImpl() {
+up::AudioEngineImpl::~AudioEngineImpl() {
     _soloud.deinit();
 }
 
-auto up::AudioEngine::create(ResourceLoader& resourceLoader) -> box<AudioEngine> {
-    return new_box<AudioEngineImpl>(resourceLoader);
+auto up::AudioEngine::create() -> box<AudioEngine> {
+    return new_box<AudioEngineImpl>();
 }
 
-auto AudioEngineImpl::loadSound(up::zstring_view path) -> up::rc<up::SoundResource> {
-    up::vector<up::byte> contents;
-    auto stream = _resourceLoader.openAsset(path);
-    if (auto rs = readBinary(stream, contents); rs != up::IOResult::Success) {
+void up::AudioEngineImpl::registerAssetBackends(AssetLoader& assetLoader) {
+    assetLoader.registerBackend(new_box<SoundAssetLoaderBackend>());
+}
+
+auto up::AudioEngineImpl::play(SoundResource const* sound) -> PlayHandle {
+    if (sound == nullptr) {
+        return {};
+    }
+
+    auto handle = _soloud.play(static_cast<SoundResourceWav const*>(sound)->_wav);
+    return static_cast<PlayHandle>(handle);
+}
+
+auto up::SoundAssetLoaderBackend::loadFromStream(Stream stream, AssetLoader& assetLoader) -> rc<Asset> {
+    vector<byte> contents;
+    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
         return nullptr;
     }
-    stream.close();
 
-    auto wav = up::new_shared<SoundResourceWav>();
+    auto wav = new_shared<SoundResourceWav>();
     auto const result = wav->_wav.loadMem(
         reinterpret_cast<unsigned char const*>(contents.data()),
         static_cast<unsigned int>(contents.size()),
@@ -62,13 +80,4 @@ auto AudioEngineImpl::loadSound(up::zstring_view path) -> up::rc<up::SoundResour
     }
 
     return wav;
-}
-
-auto AudioEngineImpl::play(up::SoundResource const* sound) -> up::PlayHandle {
-    if (sound == nullptr) {
-        return {};
-    }
-
-    auto handle = _soloud.play(static_cast<SoundResourceWav const*>(sound)->_wav);
-    return static_cast<up::PlayHandle>(handle);
 }

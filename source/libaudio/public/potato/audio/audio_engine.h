@@ -12,15 +12,15 @@ namespace up {
     enum class PlayHandle : uint32 { None = 0 };
 
     class SoundResource;
-    class ResourceLoader;
+    class AssetLoader;
 
     class AudioEngine {
     public:
         virtual ~AudioEngine() = default;
 
-        UP_AUDIO_API static auto create(ResourceLoader& resourceLoader) -> box<AudioEngine>;
+        UP_AUDIO_API static auto create() -> box<AudioEngine>;
 
-        virtual auto loadSound(zstring_view path) -> rc<SoundResource> = 0;
+        virtual void registerAssetBackends(AssetLoader& assetLoader) = 0;
         virtual auto play(SoundResource const* sound) -> PlayHandle = 0;
 
     protected:

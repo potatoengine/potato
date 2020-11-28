@@ -39,6 +39,8 @@ namespace up::null {
         view<unsigned char> getDebugShader(GpuShaderStage stage) override;
 
         void execute(GpuCommandList* commands) override {}
+
+        void registerAssetBackends(AssetLoader& assetLoader) override {}
     };
 
     class ResourceViewNull final : public GpuResourceView {

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "_export.h"
-#include "loader.h"
 
 #include "potato/runtime/concurrent_queue.h"
 #include "potato/spud/box.h"
@@ -16,11 +15,7 @@ namespace up {
     class GpuPipelineState;
     class GpuDevice;
     class RenderContext;
-    class Material;
-    class Mesh;
-    class Shader;
-    class Texture;
-    class ResourceLoader;
+    class AssetLoader;
 
     class Renderer {
     public:
@@ -39,6 +34,8 @@ namespace up {
         GpuDevice& device() const noexcept { return *_device; }
         GpuCommandList& commandList() const noexcept { return *_commandList; }
 
+        UP_RENDER_API void registerAssetBackends(AssetLoader& assetLoader);
+
     private:
         rc<GpuDevice> _device;
         box<GpuCommandList> _commandList;
@@ -48,20 +45,5 @@ namespace up {
         uint32 _frameCounter = 0;
         uint64 _startTimestamp = 0;
         double _frameTimestamp = 0;
-    };
-
-    class DefaultLoader : public Loader {
-    public:
-        UP_RENDER_API DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device);
-        ~DefaultLoader() override;
-
-        rc<Mesh> loadMeshSync(zstring_view path) override;
-        rc<Material> loadMaterialSync(zstring_view path) override;
-        rc<Shader> loadShaderSync(zstring_view path, string_view logicalName) override;
-        rc<Texture> loadTextureSync(zstring_view path) override;
-
-    private:
-        ResourceLoader& _resourceLoader;
-        rc<GpuDevice> _device;
     };
 } // namespace up

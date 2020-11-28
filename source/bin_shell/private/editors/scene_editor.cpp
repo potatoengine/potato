@@ -21,7 +21,7 @@
 #include "potato/render/mesh.h"
 #include "potato/render/model.h"
 #include "potato/render/renderer.h"
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/fixed_string_writer.h"
 
@@ -36,29 +36,30 @@ namespace up::shell {
             SceneEditorFactory(
                 AudioEngine& audioEngine,
                 Universe& universe,
-                Loader& loader,
+                AssetLoader& assetLoader,
                 SceneEditor::EnumerateComponents components,
                 SceneEditor::HandlePlayClicked onPlayClicked)
                 : _audioEngine(audioEngine)
                 , _universe(universe)
-                , _loader(loader)
+                , _assetLoader(assetLoader)
                 , _components(std::move(components))
                 , _onPlayClicked(std::move(onPlayClicked)) {}
 
             zstring_view editorName() const noexcept override { return SceneEditor::editorName; }
 
             box<Editor> createEditor() override {
-                auto material = _loader.loadMaterialSync("materials/full.mat");
+                auto material = _assetLoader.loadAssetSync<Material>(_assetLoader.translate("materials/full.mat"));
                 if (material == nullptr) {
                     return nullptr;
                 }
 
-                auto mesh = _loader.loadMeshSync("meshes/cube.obj");
+                auto mesh = _assetLoader.loadAssetSync<Mesh>(_assetLoader.translate("meshes/cube.obj"));
                 if (mesh == nullptr) {
                     return nullptr;
                 }
 
-                auto ding = _audioEngine.loadSound("audio/kenney/highUp.mp3");
+                auto ding =
+                    _assetLoader.loadAssetSync<SoundResource>(_assetLoader.translate("audio/kenney/highUp.mp3"));
                 if (ding == nullptr) {
                     return nullptr;
                 }
@@ -77,7 +78,7 @@ namespace up::shell {
         private:
             AudioEngine& _audioEngine;
             Universe& _universe;
-            Loader& _loader;
+            AssetLoader& _assetLoader;
             SceneEditor::EnumerateComponents _components;
             SceneEditor::HandlePlayClicked _onPlayClicked;
         };
@@ -87,10 +88,15 @@ namespace up::shell {
 auto up::shell::SceneEditor::createFactory(
     AudioEngine& audioEngine,
     Universe& universe,
-    Loader& loader,
+    AssetLoader& assetLoader,
     SceneEditor::EnumerateComponents components,
     SceneEditor::HandlePlayClicked onPlayClicked) -> box<EditorFactory> {
-    return new_box<SceneEditorFactory>(audioEngine, universe, loader, std::move(components), std::move(onPlayClicked));
+    return new_box<SceneEditorFactory>(
+        audioEngine,
+        universe,
+        assetLoader,
+        std::move(components),
+        std::move(onPlayClicked));
 }
 
 void up::shell::SceneEditor::tick(float deltaTime) {

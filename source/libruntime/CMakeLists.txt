@@ -45,9 +45,9 @@ target_sources(potato_libruntime PRIVATE
     private/task_worker.cpp
     private/thread_util.cpp
     private/uuid.cpp
-    "public/potato/runtime/resource_loader.h"
+    "public/potato/runtime/asset_loader.h"
     "public/potato/runtime/resource_manifest.h"
-    "private/resource_loader.cpp"
+    "private/asset_loader.cpp"
     "private/resource_manifest.cpp"
 )
 
