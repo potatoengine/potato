@@ -14,30 +14,7 @@ up::AssetLoader::AssetLoader() : _logger("AssetLoader") {}
 
 up::AssetLoader::~AssetLoader() = default;
 
-auto up::AssetLoader::_assetPath(ResourceId id) const -> string {
-    for (auto const& record : _manifest.records()) {
-        if (record.logicalId == id) {
-            return casPath(record.hash);
-        }
-    }
-    return {};
-}
-
-auto up::AssetLoader::_assetPath(ResourceId id, string_view logicalName) const -> string {
-    auto const hash = hash_value(logicalName);
-    for (auto const& record : _manifest.records()) {
-        if (record.rootId == id && record.logicalName == hash) {
-            return casPath(record.hash);
-        }
-    }
-    return {};
-}
-
-auto up::AssetLoader::_assetHash(string_view assetName) const -> ResourceId {
-    return ResourceId{hash_value<fnv1a>(assetName)};
-}
-
-auto up::AssetLoader::_assetHash(string_view assetName, string_view logicalName) const -> ResourceId {
+auto up::AssetLoader::translate(string_view assetName, string_view logicalName) const -> ResourceId {
     fnv1a engine;
     hash_append(engine, assetName);
     if (!logicalName.empty()) {
@@ -45,45 +22,6 @@ auto up::AssetLoader::_assetHash(string_view assetName, string_view logicalName)
         hash_append(engine, logicalName);
     }
     return ResourceId{engine.finalize()};
-}
-
-auto up::AssetLoader::casPath(uint64 contentHash) const -> string {
-    fixed_string_writer<32> casFilePath;
-    format_append(
-        casFilePath,
-        "{:02X}/{:04X}/{:016X}.bin",
-        (contentHash >> 56) & 0xFF,
-        (contentHash >> 40) & 0XFFFF,
-        contentHash);
-    return path::join(_casPath, casFilePath);
-}
-
-auto up::AssetLoader::_openFile(zstring_view filename) const -> Stream {
-    if (filename.empty()) {
-        return {};
-    }
-
-    return fs::openRead(filename);
-}
-
-auto up::AssetLoader::openAsset(ResourceId id) const -> Stream {
-    return _openFile(_assetPath(id));
-}
-
-auto up::AssetLoader::openCAS(uint64 contentHash) const -> Stream {
-    return _openFile(casPath(contentHash));
-}
-
-auto up::AssetLoader::translate(string_view assetName) const -> ResourceId {
-    return ResourceId{hash_value<fnv1a>(assetName)};
-}
-
-auto up::AssetLoader::openAsset(string_view assetName) const -> Stream {
-    return openAsset(_assetHash(assetName));
-}
-
-auto up::AssetLoader::openAsset(string_view assetName, string_view logicalName) const -> Stream {
-    return openAsset(_assetHash(assetName, logicalName));
 }
 
 auto up::AssetLoader::loadAsset(ResourceId id, string_view logicalName, string_view type) -> rc<Resource> {
@@ -96,7 +34,7 @@ auto up::AssetLoader::loadAsset(ResourceId id, string_view logicalName, string_v
         return nullptr;
     }
 
-    string filename = casPath(record->hash);
+    string filename = _makeCasPath(record->hash);
 
     Stream stream = fs::openRead(filename);
     if (!stream) {
@@ -138,4 +76,17 @@ auto up::AssetLoader::_findBackend(string_view type) const -> AssetLoaderBackend
         }
     }
     return nullptr;
+}
+
+auto up::AssetLoader::_makeCasPath(uint64 contentHash) const -> string {
+    char casFilePath[32] = {
+        0,
+    };
+    format_to(
+        casFilePath,
+        "{:02X}/{:04X}/{:016X}.bin",
+        (contentHash >> 56) & 0xFF,
+        (contentHash >> 40) & 0XFFFF,
+        contentHash);
+    return path::join(_casPath, casFilePath);
 }

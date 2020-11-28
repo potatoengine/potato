@@ -36,14 +36,7 @@ namespace up {
         ResourceManifest& manifest() noexcept { return _manifest; }
         void setCasPath(string path) { _casPath = std::move(path); }
 
-        UP_RUNTIME_API string casPath(uint64 contentHash) const;
-
-        UP_RUNTIME_API Stream openAsset(ResourceId id) const;
-        UP_RUNTIME_API Stream openAsset(string_view assetName) const;
-        UP_RUNTIME_API Stream openAsset(string_view assetName, string_view logicalName) const;
-        UP_RUNTIME_API Stream openCAS(uint64 contentHash) const;
-
-        UP_RUNTIME_API ResourceId translate(string_view assetName) const;
+        UP_RUNTIME_API ResourceId translate(string_view assetName, string_view logicalName = {}) const;
 
         template <typename ResourceT>
         rc<ResourceT> loadAsset(ResourceId id, string_view logicalName = {}) {
@@ -55,13 +48,9 @@ namespace up {
         UP_RUNTIME_API void addBackend(box<AssetLoaderBackend> backend);
 
     private:
-        string _assetPath(ResourceId id) const;
-        string _assetPath(ResourceId id, string_view logicalName) const;
-        ResourceId _assetHash(string_view assetName) const;
-        ResourceId _assetHash(string_view assetName, string_view logicalName) const;
+        string _makeCasPath(uint64 contentHash) const;
         ResourceManifest::Record const* _findRecord(ResourceId id, string_view logicalName, string_view type) const;
         AssetLoaderBackend* _findBackend(string_view type) const;
-        Stream _openFile(zstring_view filename) const;
 
         vector<box<AssetLoaderBackend>> _backends;
         ResourceManifest _manifest;
