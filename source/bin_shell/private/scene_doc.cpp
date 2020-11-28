@@ -108,7 +108,10 @@ void up::SceneDocument::parentTo(EntityId childId, EntityId parentId) {
     }
 }
 
-void up::SceneDocument::createTestObjects(rc<Mesh> const& cube, rc<Material> mat, rc<SoundResource> const& ding) {
+void up::SceneDocument::createTestObjects(
+    rc<Mesh> const& cube,
+    rc<Material> const& mat,
+    rc<SoundResource> const& ding) {
     auto pi = glm::pi<float>();
 
     constexpr int numObjects = 100;

@@ -37,7 +37,7 @@ namespace up {
 
         void parentTo(EntityId childId, EntityId parentId);
 
-        void createTestObjects(rc<Mesh> const& cube, rc<Material> mat, rc<SoundResource> const& ding);
+        void createTestObjects(rc<Mesh> const& cube, rc<Material> const& mat, rc<SoundResource> const& ding);
 
     private:
         void _deleteEntityAt(int index, vector<EntityId>& out_deleted);
