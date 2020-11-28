@@ -13,7 +13,9 @@
 bool up::assetBrowserPopup(zstring_view id, ResourceId& inout_asset, string_view type, AssetLoader& assetLoader) {
     bool changed = false;
 
-    char filename[64] = {0,};
+    char filename[64] = {
+        0,
+    };
 
     ImGui::SetNextWindowSizeConstraints({300, 240}, {0, 0});
     if (ImGui::BeginPopup(id.c_str())) {
