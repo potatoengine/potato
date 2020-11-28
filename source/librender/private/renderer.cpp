@@ -122,22 +122,35 @@ auto up::Renderer::context() -> RenderContext {
     return RenderContext{_frameTimestamp, *_commandList, *_device};
 }
 
+namespace up {
+    namespace {
+        class MeshResourceLoaderBackend : public ResourceLoaderBackend {
+        public:
+            zstring_view typeName() const noexcept override { return Mesh::resourceType; }
+            rc<Resource> loadFromStream(Stream stream) override {
+                vector<byte> contents;
+                if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+                    return nullptr;
+                }
+                stream.close();
+
+                return Mesh::createFromBuffer(contents);
+            }
+        };
+    } // namespace
+} // namespace up
+
+void up::Renderer::registerResourceBackends(ResourceLoader& resourceLoader) {
+    UP_ASSERT(_device != nullptr);
+    resourceLoader.addBackend(new_box<MeshResourceLoaderBackend>());
+    _device->registerResourceBackends(resourceLoader);
+}
+
 up::DefaultLoader::DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device)
     : _resourceLoader(resourceLoader)
     , _device(std::move(device)) {}
 
 up::DefaultLoader::~DefaultLoader() = default;
-
-auto up::DefaultLoader::loadMeshSync(zstring_view path) -> rc<Mesh> {
-    vector<byte> contents;
-    auto stream = _resourceLoader.openAsset(path);
-    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
-        return nullptr;
-    }
-    stream.close();
-
-    return Mesh::createFromBuffer(contents);
-}
 
 auto up::DefaultLoader::loadMaterialSync(zstring_view path) -> rc<Material> {
     vector<byte> contents;

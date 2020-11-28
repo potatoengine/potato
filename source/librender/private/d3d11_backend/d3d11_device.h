@@ -39,6 +39,8 @@ namespace up::d3d11 {
 
         view<unsigned char> getDebugShader(GpuShaderStage stage) override;
 
+        void registerResourceBackends(ResourceLoader& resourceLoader) override;
+
     private:
         com_ptr<IDXGIFactory2> _factory;
         com_ptr<IDXGIAdapter1> _adaptor;

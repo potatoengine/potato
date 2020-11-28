@@ -39,6 +39,8 @@ namespace up {
         GpuDevice& device() const noexcept { return *_device; }
         GpuCommandList& commandList() const noexcept { return *_commandList; }
 
+        UP_RENDER_API void registerResourceBackends(ResourceLoader& resourceLoader);
+
     private:
         rc<GpuDevice> _device;
         box<GpuCommandList> _commandList;
@@ -55,7 +57,6 @@ namespace up {
         UP_RENDER_API DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device);
         ~DefaultLoader() override;
 
-        rc<Mesh> loadMeshSync(zstring_view path) override;
         rc<Material> loadMaterialSync(zstring_view path) override;
         rc<Shader> loadShaderSync(zstring_view path, string_view logicalName) override;
         rc<Texture> loadTextureSync(zstring_view path) override;

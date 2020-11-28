@@ -4,6 +4,7 @@
 
 #include "_export.h"
 #include "resource_manifest.h"
+#include "logger.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
@@ -64,5 +65,6 @@ namespace up {
         vector<box<ResourceLoaderBackend>> _backends;
         ResourceManifest _manifest;
         string _casPath;
+        Logger _logger;
     };
 } // namespace up

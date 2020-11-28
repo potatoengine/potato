@@ -55,7 +55,7 @@ namespace up::shell {
                     return nullptr;
                 }
 
-                auto mesh = _loader.loadMeshSync("meshes/cube.obj");
+                auto mesh = _resourceLoader.loadAsset<Mesh>(_resourceLoader.translate("meshes/cube.obj"));
                 if (mesh == nullptr) {
                     return nullptr;
                 }

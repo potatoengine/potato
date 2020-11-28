@@ -10,7 +10,7 @@
 #include "potato/spud/hash.h"
 #include "potato/spud/hash_fnv1a.h"
 
-up::ResourceLoader::ResourceLoader() = default;
+up::ResourceLoader::ResourceLoader() : _logger("ResourceLoader") {}
 
 up::ResourceLoader::~ResourceLoader() = default;
 
@@ -92,6 +92,7 @@ auto up::ResourceLoader::loadAsset(ResourceId id, string_view logicalName, strin
 
     ResourceManifest::Record const* const record = _findRecord(id, logicalName, type);
     if (record == nullptr) {
+        _logger.error("Failed to find asset `{}:{}` ({})", id, logicalName, type);
         return nullptr;
     }
 
@@ -99,10 +100,17 @@ auto up::ResourceLoader::loadAsset(ResourceId id, string_view logicalName, strin
 
     Stream stream = fs::openRead(filename);
     if (!stream) {
+        _logger.error("Unknown asset `{}:{}` ({}) from `{}`", id, logicalName, type, filename);
         return nullptr;
     }
 
-    return backend->loadFromStream(std::move(stream));
+    auto resource = backend->loadFromStream(std::move(stream));
+    if (!resource) {
+        _logger.error("Load failed for asset `{}:{}` ({}) from `{}`", id, logicalName, type, filename);
+        return nullptr;
+    }
+
+    return resource;
 }
 
 void up::ResourceLoader::addBackend(box<ResourceLoaderBackend> backend) {

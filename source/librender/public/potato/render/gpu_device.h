@@ -16,6 +16,7 @@ namespace up {
     class GpuSampler;
     class GpuSwapChain;
     class GpuTexture;
+    class ResourceLoader;
 
     struct GpuPipelineStateDesc;
     struct GpuTextureDesc;
@@ -43,5 +44,7 @@ namespace up {
         virtual box<GpuResourceView> createShaderResourceView(GpuTexture* texture) = 0;
 
         virtual view<unsigned char> getDebugShader(GpuShaderStage stage) = 0;
+
+        virtual void registerResourceBackends(ResourceLoader& resourceLoader) = 0;
     };
 } // namespace up

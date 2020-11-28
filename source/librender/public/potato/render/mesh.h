@@ -5,6 +5,7 @@
 #include "_export.h"
 #include "gpu_common.h"
 
+#include "potato/runtime/resource_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/rc.h"
@@ -32,8 +33,10 @@ namespace up {
         GpuShaderSemantic semantic = GpuShaderSemantic::Position;
     };
 
-    class Mesh : public shared<Mesh> {
+    class Mesh : public Resource {
     public:
+        static constexpr zstring_view resourceType = "potato.asset.model"_zsv;
+
         UP_RENDER_API explicit Mesh(
             vector<uint16> indices,
             vector<up::byte> data,

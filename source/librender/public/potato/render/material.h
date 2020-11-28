@@ -4,6 +4,7 @@
 
 #include "_export.h"
 
+#include "potato/runtime/resource_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/vector.h"
@@ -19,8 +20,10 @@ namespace up {
     class Texture;
     class Loader;
 
-    class Material : public shared<Material> {
+    class Material : public Resource {
     public:
+        static constexpr zstring_view resourceType = "potato.asset.mesh"_zsv;
+
         UP_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures);
         UP_RENDER_API ~Material();
 
