@@ -19,7 +19,7 @@ namespace up {
         static constexpr zstring_view resourceType = "potato.asset.texture"_zsv;
 
         UP_RENDER_API explicit Texture(Image image, rc<GpuTexture> texture);
-        UP_RENDER_API ~Texture();
+        UP_RENDER_API ~Texture() override;
 
         GpuTexture& texture() const noexcept { return *_texture; }
 

@@ -15,7 +15,6 @@ namespace up {
         static constexpr zstring_view resourceType = "potato.asset.shader"_zsv;
 
         explicit Shader(vector<byte> shader) : _content(std::move(shader)) {}
-        ~Shader() = default;
 
         view<byte> content() const noexcept { return _content; }
 

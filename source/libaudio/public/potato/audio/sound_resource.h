@@ -11,7 +11,5 @@ namespace up {
     class SoundResource : public Resource {
     public:
         static constexpr zstring_view resourceType = "potato.asset.sound"_zsv;
-
-        virtual ~SoundResource() = default;
     };
 } // namespace up

@@ -24,7 +24,7 @@ namespace up {
         static constexpr zstring_view resourceType = "potato.asset.material"_zsv;
 
         UP_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures);
-        UP_RENDER_API ~Material();
+        UP_RENDER_API ~Material() override;
 
         static UP_RENDER_API auto createFromBuffer(view<byte> buffer, AssetLoader& assetLoader) -> rc<Material>;
 
