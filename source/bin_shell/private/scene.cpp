@@ -6,7 +6,7 @@
 #include "potato/audio/audio_engine.h"
 #include "potato/ecs/query.h"
 #include "potato/ecs/world.h"
-#include "potato/render/model.h"
+#include "potato/render/mesh.h"
 #include "potato/runtime/json.h"
 
 #include <glm/common.hpp>
@@ -63,8 +63,8 @@ void up::Scene::flush() {
 
 void up::Scene::render(RenderContext& ctx) {
     _renderableMeshQuery.select(_world, [&](EntityId, components::Mesh& mesh, components::Transform const& trans) {
-        if (mesh.model != nullptr) {
-            mesh.model->render(ctx, trans.transform);
+        if (mesh.mesh != nullptr) {
+            mesh.mesh->render(ctx, mesh.material.get(), trans.transform);
         }
     });
 }

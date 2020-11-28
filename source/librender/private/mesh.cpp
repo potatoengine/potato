@@ -5,11 +5,27 @@
 #include "gpu_buffer.h"
 #include "gpu_command_list.h"
 #include "gpu_device.h"
+#include "material.h"
 #include "model_generated.h"
 
 #include "potato/spud/sequence.h"
 
 #include <glm/vec3.hpp>
+
+namespace {
+    struct alignas(16) Vert {
+        glm::vec3 pos;
+        glm::vec3 color;
+        glm::vec3 normal;
+        glm::vec3 tangent;
+        glm::vec2 uv;
+    };
+
+    struct alignas(16) Trans {
+        glm::mat4x4 modelWorld;
+        glm::mat4x4 worldModel;
+    };
+} // namespace
 
 up::Mesh::Mesh(
     ResourceId id,
@@ -157,4 +173,27 @@ auto up::Mesh::createFromBuffer(ResourceId id, view<byte> buffer) -> rc<Mesh> {
     }
 
     return up::new_shared<Mesh>(id, std::move(indices), vector(data.as_bytes()), span{&bufferDesc, 1}, channels);
+}
+
+void UP_VECTORCALL up::Mesh::render(RenderContext& ctx, Material* material, glm::mat4x4 transform) {
+    if (_transformBuffer == nullptr) {
+        _transformBuffer = ctx.device.createBuffer(GpuBufferType::Constant, sizeof(Trans));
+    }
+
+    auto trans = Trans{
+        .modelWorld = transpose(transform),
+        .worldModel = glm::inverse(transform),
+    };
+
+    updateVertexBuffers(ctx);
+    ctx.commandList.update(_transformBuffer.get(), span{&trans, 1}.as_bytes());
+
+    if (material != nullptr) {
+        material->bindMaterialToRender(ctx);
+    }
+
+    bindVertexBuffers(ctx);
+    ctx.commandList.bindConstantBuffer(2, _transformBuffer.get(), GpuShaderStage::All);
+    ctx.commandList.setPrimitiveTopology(GpuPrimitiveTopology::Triangles);
+    ctx.commandList.drawIndexed(static_cast<uint32>(indexCount()));
 }
