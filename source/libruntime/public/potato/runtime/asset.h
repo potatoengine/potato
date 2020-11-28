@@ -53,6 +53,8 @@ namespace up {
         bool isSet() const noexcept { return _id != AssetId::Invalid; }
         bool ready() const noexcept { return _asset != nullptr; }
 
+        AssetId assetId() const noexcept { return _id; }
+
         template <typename AssetT>
         AssetHandle<AssetT> cast() const& noexcept;
         template <typename AssetT>

@@ -195,7 +195,7 @@ def generate_impl_schemas(ctx: Context):
                                 void* object) {{ *static_cast<Type*>(ptr) = Type{{rc{{static_cast<AssetType*>(object)}}}}; }},
         }};
 ''')
-            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .operations = &operations, .annotations = {type.name}_annotations}};\n')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::AssetRef, .baseSchema = base, .operations = &operations, .annotations = {type.name}_annotations}};\n')
         elif type.kind == type_info.TypeKind.OPAQUE or len(type.fields_ordered) == 0:
             ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .annotations = {type.name}_annotations}};\n')
         else:

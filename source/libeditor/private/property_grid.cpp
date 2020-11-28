@@ -44,12 +44,6 @@ void up::editor::PropertyGrid::_editField(
     void* object) {
     ImGui::PushID(object);
 
-    if (auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema)) {
-        _editAssetField(field, *field.schema, object);
-        ImGui::PopID();
-        return;
-    }
-
     switch (schema.primitive) {
         case reflex::SchemaPrimitive::Int16:
             _editIntegerField(field, *static_cast<int16*>(object));
@@ -90,6 +84,9 @@ void up::editor::PropertyGrid::_editField(
             break;
         case reflex::SchemaPrimitive::Object:
             _drawObjectEditor(schema, object);
+            break;
+        case reflex::SchemaPrimitive::AssetRef:
+            _editAssetField(field, *field.schema, object);
             break;
         default:
             ImGui::Text("Unsupported primitive type for schema `%s`", schema.name.c_str());

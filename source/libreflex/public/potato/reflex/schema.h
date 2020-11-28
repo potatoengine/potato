@@ -4,7 +4,6 @@
 
 #include "traits.h"
 
-#include "potato/runtime/asset.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/span.h"
@@ -49,7 +48,8 @@ namespace up::reflex {
         Pointer,
         String,
         Array,
-        Object
+        Object,
+        AssetRef,
     };
 
     struct SchemaAnnotation {
@@ -122,24 +122,6 @@ namespace up::reflex {
 
     template <typename T>
     struct SchemaHolder;
-
-    template <typename AssetT>
-    struct SchemaHolder<AssetHandle<AssetT>> {
-        static Schema const& get() noexcept {
-            using Type = AssetHandle<AssetT>;
-            static SchemaOperations const operations = {
-                .pointerDeref = [](void const* ptr) -> void const* { return static_cast<Type const*>(ptr)->asset(); },
-                .pointerMutableDeref = [](void* ptr) -> void* { return static_cast<Type const*>(ptr)->get(); },
-                .pointerAssign = [](void* ptr,
-                                    void* object) { *static_cast<Type*>(ptr) = Type{static_cast<AssetT*>(object)}; },
-            };
-            static Schema const schema{
-                .name = "Asset",
-                .primitive = SchemaPrimitive::Pointer,
-                .operations = &operations};
-            return schema;
-        }
-    };
 
     template <typename T>
     concept schema_glm_type =

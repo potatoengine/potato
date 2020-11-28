@@ -2,8 +2,10 @@
 
 #include "serialize.h"
 #include "common_schema.h"
+#include "tools_schema.h"
 
 #include "potato/runtime/assertion.h"
+#include "potato/runtime/asset.h"
 #include "potato/runtime/json.h"
 
 #include <glm/gtx/quaternion.hpp>
@@ -14,6 +16,7 @@ namespace up::reflex::_detail {
     static bool encodeObject(nlohmann::json& json, Schema const& schema, void const* obj);
     static bool encodeArray(nlohmann::json& json, Schema const& schema, void const* arr);
     static bool encodeValue(nlohmann::json& json, Schema const& schema, void const* obj);
+    static bool encodeAssetRef(nlohmann::json& json, Schema const& schema, void const* obj);
 
     static bool decodeObject(nlohmann::json const& json, Schema const& schema, void* obj);
     static bool decodeArray(nlohmann::json const& json, Schema const& schema, void* arr);
@@ -71,6 +74,25 @@ bool up::reflex::_detail::encodeArray(nlohmann::json& json, Schema const& schema
     }
 
     return success;
+}
+
+bool up::reflex::_detail::encodeAssetRef(nlohmann::json& json, Schema const& schema, void const* obj) {
+    UP_ASSERT(schema.primitive == SchemaPrimitive::AssetRef);
+    UP_ASSERT(schema.operations != nullptr);
+    UP_ASSERT(schema.operations->pointerDeref != nullptr);
+
+    json = nlohmann::json::object();
+    json["$schema"] = schema.name;
+
+    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
+    UP_ASSERT(resourceAnnotation != nullptr);
+    json["$assetType"] = resourceAnnotation->assetType;
+
+    UntypedAssetHandle const* const assetHandle = static_cast<UntypedAssetHandle const*>(obj);
+    if (assetHandle->isSet()) {
+        json["$assetId"] = to_underlying(assetHandle->assetId());
+    }
+    return true;
 }
 
 bool up::reflex::_detail::encodeValue(nlohmann::json& json, Schema const& schema, void const* obj) {
@@ -136,6 +158,8 @@ bool up::reflex::_detail::encodeValue(nlohmann::json& json, Schema const& schema
             return encodeArray(json, schema, obj);
         case SchemaPrimitive::Object:
             return encodeObject(json, schema, obj);
+        case SchemaPrimitive::AssetRef:
+            return encodeAssetRef(json, schema, obj);
         default:
             return false;
     }
