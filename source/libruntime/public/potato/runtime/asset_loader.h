@@ -13,18 +13,8 @@
 
 namespace up {
     class Stream;
+    class Asset;
     class AssetLoader;
-
-    class Asset : public shared<Asset> {
-    public:
-        explicit Asset(ResourceId id) noexcept : _id(id) {}
-        virtual ~Asset() = default;
-
-        ResourceId assetId() const noexcept { return _id; }
-
-    private:
-        ResourceId _id{};
-    };
 
     struct AssetLoadContext {
         ResourceId id{};

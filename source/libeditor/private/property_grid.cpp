@@ -8,6 +8,7 @@
 
 #include "potato/editor/icons.h"
 #include "potato/editor/imgui_ext.h"
+#include "potato/runtime/asset.h"
 #include "potato/runtime/asset_loader.h"
 
 #include <glm/gtx/quaternion.hpp>

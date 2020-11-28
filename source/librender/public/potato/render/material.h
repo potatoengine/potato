@@ -4,12 +4,13 @@
 
 #include "_export.h"
 
-#include "potato/runtime/asset_loader.h"
+#include "potato/runtime/asset.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/vector.h"
 
 namespace up {
+    class AssetLoader;
     class CommandList;
     class GpuDevice;
     class GpuPipelineState;

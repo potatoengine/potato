@@ -5,8 +5,7 @@
 #include "_export.h"
 #include "image.h"
 
-#include "potato/runtime/asset_loader.h"
-#include "potato/spud/box.h"
+#include "potato/runtime/asset.h"
 #include "potato/spud/rc.h"
 
 namespace up {

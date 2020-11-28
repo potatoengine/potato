@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "asset_loader.h"
+#include "asset.h"
 #include "filesystem.h"
 #include "path.h"
 #include "stream.h"
