@@ -304,6 +304,7 @@ void ImGui::Potato::EndIconGrid() {
 
 bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, float width, float rounding) {
     UP_ASSERT(label != nullptr);
+    UP_ASSERT(icon != nullptr);
     UP_ASSERT(width > 0);
     UP_ASSERT(rounding >= 0);
 
