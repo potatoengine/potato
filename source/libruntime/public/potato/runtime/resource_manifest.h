@@ -37,8 +37,14 @@ namespace up {
 
         view<Record> records() const noexcept { return _records; }
 
-        UP_RUNTIME_API uint64 findHash(ResourceId id) const noexcept;
-        UP_RUNTIME_API zstring_view findFilename(ResourceId id) const noexcept;
+        Record const* findRecord(ResourceId logicalId) const noexcept {
+            for (Record const& record : _records) {
+                if (record.logicalId == logicalId) {
+                    return &record;
+                }
+            }
+            return nullptr;
+        }
 
         static UP_RUNTIME_API bool parseManifest(string_view input, ResourceManifest& manifest);
 

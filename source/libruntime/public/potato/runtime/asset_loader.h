@@ -4,7 +4,6 @@
 
 #include "_export.h"
 #include "logger.h"
-#include "resource_manifest.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
@@ -12,9 +11,11 @@
 #include "potato/spud/vector.h"
 
 namespace up {
+    using ResourceId = uint64;
     class Stream;
     class Asset;
     class AssetLoader;
+    class ResourceManifest;
 
     struct AssetLoadContext {
         ResourceId id{};
@@ -35,8 +36,9 @@ namespace up {
         UP_RUNTIME_API AssetLoader();
         UP_RUNTIME_API ~AssetLoader();
 
-        ResourceManifest& manifest() noexcept { return _manifest; }
-        void setCasPath(string path) { _casPath = std::move(path); }
+        ResourceManifest const* manifest() const noexcept { return _manifest.get(); }
+
+        UP_RUNTIME_API void bindManifest(box<ResourceManifest> manifest, string casPath);
 
         UP_RUNTIME_API ResourceId translate(string_view assetName, string_view logicalName = {}) const;
         UP_RUNTIME_API zstring_view debugName(ResourceId logicalId) const noexcept;
@@ -52,11 +54,10 @@ namespace up {
 
     private:
         string _makeCasPath(uint64 contentHash) const;
-        ResourceManifest::Record const* _findRecord(ResourceId logicalId) const;
         AssetLoaderBackend* _findBackend(string_view type) const;
 
         vector<box<AssetLoaderBackend>> _backends;
-        ResourceManifest _manifest;
+        box<ResourceManifest> _manifest;
         string _casPath;
         Logger _logger;
     };

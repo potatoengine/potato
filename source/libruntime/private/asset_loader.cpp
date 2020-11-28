@@ -17,6 +17,11 @@ up::AssetLoader::AssetLoader() : _logger("AssetLoader") {}
 
 up::AssetLoader::~AssetLoader() = default;
 
+void up::AssetLoader::bindManifest(box<ResourceManifest> manifest, string casPath) {
+    _manifest = std::move(manifest);
+    _casPath = std::move(casPath);
+}
+
 auto up::AssetLoader::translate(string_view assetName, string_view logicalName) const -> ResourceId {
     fnv1a engine;
     hash_append(engine, assetName);
@@ -28,12 +33,8 @@ auto up::AssetLoader::translate(string_view assetName, string_view logicalName) 
 }
 
 auto up::AssetLoader::debugName(ResourceId logicalId) const noexcept -> zstring_view {
-    for (auto const& record : _manifest.records()) {
-        if (record.logicalId == logicalId) {
-            return record.filename;
-        }
-    }
-    return {};
+    auto const* record = _manifest != nullptr ? _manifest->findRecord(logicalId) : nullptr;
+    return record != nullptr ? record->filename : zstring_view{};
 }
 
 auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Asset> {
@@ -42,7 +43,7 @@ auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Asset
     AssetLoaderBackend* const backend = _findBackend(type);
     UP_ASSERT(backend != nullptr, "Unknown backend `{}`", type);
 
-    ResourceManifest::Record const* const record = _findRecord(id);
+    ResourceManifest::Record const* const record = _manifest != nullptr ? _manifest->findRecord(id) : nullptr;
     if (record == nullptr) {
         _logger.error("Failed to find asset `{}` ({})", id, type);
         return nullptr;
@@ -97,15 +98,6 @@ void up::AssetLoader::registerBackend(box<AssetLoaderBackend> backend) {
     UP_ASSERT(backend != nullptr);
 
     _backends.push_back(std::move(backend));
-}
-
-auto up::AssetLoader::_findRecord(ResourceId logicalId) const -> ResourceManifest::Record const* {
-    for (auto const& record : _manifest.records()) {
-        if (record.logicalId == logicalId) {
-            return &record;
-        }
-    }
-    return nullptr;
 }
 
 auto up::AssetLoader::_findBackend(string_view type) const -> AssetLoaderBackend* {

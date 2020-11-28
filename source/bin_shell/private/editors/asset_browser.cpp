@@ -7,6 +7,7 @@
 #include "potato/editor/imgui_fonts.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/path.h"
+#include "potato/runtime/resource_manifest.h"
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/numeric_util.h"
@@ -191,14 +192,18 @@ void up::shell::AssetBrowser::_showFolders() {
 }
 
 void up::shell::AssetBrowser::_rebuild() {
-    ResourceManifest const& manifest = _assetLoader.manifest();
+    ResourceManifest const* const manifest = _assetLoader.manifest();
 
     _folders.clear();
     _assets.clear();
 
     _folders.push_back({.name = "<root>"});
 
-    for (ResourceManifest::Record const& record : manifest.records()) {
+    if (manifest == nullptr) {
+        return;
+    }
+
+    for (ResourceManifest::Record const& record : manifest->records()) {
         auto const lastSepIndex = record.filename.find_last_of("/"_sv);
         auto const start = lastSepIndex != string::npos ? lastSepIndex + 1 : 0;
 

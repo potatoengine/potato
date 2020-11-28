@@ -713,13 +713,14 @@ void up::shell::ShellApp::_executeRecon() {
 }
 
 void up::shell::ShellApp::_loadManifest() {
-    _assetLoader.setCasPath(path::join(_project->libraryPath(), "cache"));
     string manifestPath = path::join(_project->libraryPath(), "manifest.txt");
     if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
-        _assetLoader.manifest().clear();
-        if (!ResourceManifest::parseManifest(manifestText, _assetLoader.manifest())) {
+        auto manifest = new_box<ResourceManifest>();
+        if (!ResourceManifest::parseManifest(manifestText, *manifest)) {
             _logger.error("Failed to parse resource manifest");
         }
+        string casPath = path::join(_project->libraryPath(), "cache");
+        _assetLoader.bindManifest(std::move(manifest), std::move(casPath));
     }
     else {
         _logger.error("Failed to load resource manifest");

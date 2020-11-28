@@ -7,26 +7,6 @@
 
 #include <charconv>
 
-auto up::ResourceManifest::findHash(ResourceId id) const noexcept -> uint64 {
-    for (auto const& record : _records) {
-        if (record.logicalId == id) {
-            return record.hash;
-        }
-    }
-
-    return 0;
-}
-
-auto up::ResourceManifest::findFilename(ResourceId id) const noexcept -> zstring_view {
-    for (auto const& record : _records) {
-        if (record.logicalId == id) {
-            return record.filename;
-        }
-    }
-
-    return {};
-}
-
 bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& manifest) {
     int rootIdColumn = -1;
     int logicalIdColumn = -1;
