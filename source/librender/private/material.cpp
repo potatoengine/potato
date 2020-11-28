@@ -78,9 +78,9 @@ auto up::Material::createFromBuffer(view<byte> buffer, AssetLoader& assetLoader)
     auto vertexPath = shader->vertex();
     auto pixelPath = shader->pixel();
 
-    vertex = assetLoader.loadAsset<Shader>(
+    vertex = assetLoader.loadAssetSync<Shader>(
         assetLoader.translate(string_view(vertexPath->c_str(), vertexPath->size()), "vertex"_sv));
-    pixel = assetLoader.loadAsset<Shader>(
+    pixel = assetLoader.loadAssetSync<Shader>(
         assetLoader.translate(string_view(pixelPath->c_str(), pixelPath->size()), "pixel"_sv));
 
     if (vertex == nullptr) {
@@ -94,7 +94,7 @@ auto up::Material::createFromBuffer(view<byte> buffer, AssetLoader& assetLoader)
     for (auto textureData : *material->textures()) {
         auto texturePath = string(textureData->c_str(), textureData->size());
 
-        auto tex = assetLoader.loadAsset<Texture>(assetLoader.translate(texturePath));
+        auto tex = assetLoader.loadAssetSync<Texture>(assetLoader.translate(texturePath));
         if (!tex) {
             return nullptr;
         }

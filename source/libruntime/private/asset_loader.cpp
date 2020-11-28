@@ -10,6 +10,8 @@
 #include "potato/spud/hash.h"
 #include "potato/spud/hash_fnv1a.h"
 
+#include <Tracy.hpp>
+
 up::AssetLoader::AssetLoader() : _logger("AssetLoader") {}
 
 up::AssetLoader::~AssetLoader() = default;
@@ -24,7 +26,9 @@ auto up::AssetLoader::translate(string_view assetName, string_view logicalName) 
     return ResourceId{engine.finalize()};
 }
 
-auto up::AssetLoader::loadAsset(ResourceId id, string_view type) -> rc<Resource> {
+auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Resource> {
+    ZoneScopedN("Load Asset Synchronous");
+
     AssetLoaderBackend* const backend = _findBackend(type);
     UP_ASSERT(backend != nullptr, "Unknown backend `{}`", type);
 
@@ -74,7 +78,7 @@ auto up::AssetLoader::loadAsset(ResourceId id, string_view type) -> rc<Resource>
     return resource;
 }
 
-void up::AssetLoader::addBackend(box<AssetLoaderBackend> backend) {
+void up::AssetLoader::registerBackend(box<AssetLoaderBackend> backend) {
     UP_ASSERT(backend != nullptr);
 
     _backends.push_back(std::move(backend));

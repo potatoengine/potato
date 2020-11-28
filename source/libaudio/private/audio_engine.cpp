@@ -51,7 +51,7 @@ auto up::AudioEngine::create() -> box<AudioEngine> {
 }
 
 void up::AudioEngineImpl::registerAssetBackends(AssetLoader& assetLoader) {
-    assetLoader.addBackend(new_box<SoundAssetLoaderBackend>());
+    assetLoader.registerBackend(new_box<SoundAssetLoaderBackend>());
 }
 
 auto up::AudioEngineImpl::play(SoundResource const* sound) -> PlayHandle {

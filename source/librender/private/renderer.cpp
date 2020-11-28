@@ -199,9 +199,9 @@ namespace up {
 
 void up::Renderer::registerAssetBackends(AssetLoader& assetLoader) {
     UP_ASSERT(_device != nullptr);
-    assetLoader.addBackend(new_box<MeshAssetLoaderBackend>());
-    assetLoader.addBackend(new_box<MaterialAssetLoaderBackend>());
-    assetLoader.addBackend(new_box<ShaderAssetLoaderBackend>());
-    assetLoader.addBackend(new_box<TextureAssetLoaderBackend>(*this));
+    assetLoader.registerBackend(new_box<MeshAssetLoaderBackend>());
+    assetLoader.registerBackend(new_box<MaterialAssetLoaderBackend>());
+    assetLoader.registerBackend(new_box<ShaderAssetLoaderBackend>());
+    assetLoader.registerBackend(new_box<TextureAssetLoaderBackend>(*this));
     _device->registerAssetBackends(assetLoader);
 }

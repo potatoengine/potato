@@ -48,17 +48,18 @@ namespace up::shell {
             zstring_view editorName() const noexcept override { return SceneEditor::editorName; }
 
             box<Editor> createEditor() override {
-                auto material = _assetLoader.loadAsset<Material>(_assetLoader.translate("materials/full.mat"));
+                auto material = _assetLoader.loadAssetSync<Material>(_assetLoader.translate("materials/full.mat"));
                 if (material == nullptr) {
                     return nullptr;
                 }
 
-                auto mesh = _assetLoader.loadAsset<Mesh>(_assetLoader.translate("meshes/cube.obj"));
+                auto mesh = _assetLoader.loadAssetSync<Mesh>(_assetLoader.translate("meshes/cube.obj"));
                 if (mesh == nullptr) {
                     return nullptr;
                 }
 
-                auto ding = _assetLoader.loadAsset<SoundResource>(_assetLoader.translate("audio/kenney/highUp.mp3"));
+                auto ding =
+                    _assetLoader.loadAssetSync<SoundResource>(_assetLoader.translate("audio/kenney/highUp.mp3"));
                 if (ding == nullptr) {
                     return nullptr;
                 }
