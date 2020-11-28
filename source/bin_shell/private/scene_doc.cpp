@@ -176,3 +176,41 @@ void up::SceneDocument::_toJson(nlohmann::json& el, int index) const {
         }
     }
 }
+
+void up::SceneDocument::fromJson(nlohmann::json const& doc) {
+    _entities.clear();
+
+    if (doc.contains("objects") && doc["objects"].is_object()) {
+        int const index = static_cast<int>(_entities.size());
+        _entities.emplace_back();
+        _fromJson(doc["objects"], index);
+    }
+}
+
+void up::SceneDocument::_fromJson(nlohmann::json const& el, int index) {
+    if (el.contains("name") && el["name"].is_string()) {
+        _entities[index].name = el["name"].get<string>();
+    }
+
+    _entities[index].id = _scene->world().createEntity();
+
+    if (el.contains("components") && el["components"].is_array()) {
+        for (nlohmann::json const& compEl : el["components"]) {}
+    }
+
+    if (el.contains("children") && el["children"].is_array()) {
+        int prevSibling = -1;
+        for (nlohmann::json const& childEl : el["children"]) {
+            int const childIndex = static_cast<int>(_entities.size());
+            _entities.push_back({.parent = index});
+            if (prevSibling == -1) {
+                _entities[index].firstChild = childIndex;
+            }
+            else {
+                _entities[prevSibling].nextSibling = childIndex;
+            }
+            prevSibling = childIndex;
+            _fromJson(childEl, childIndex);
+        }
+    }
+}

@@ -51,6 +51,10 @@ namespace up::shell {
             box<Editor> createEditor() override { return nullptr; }
 
             box<Editor> createEditorForDocument(zstring_view filename) override {
+                auto scene = new_shared<Scene>(_universe, _audioEngine);
+                auto doc = new_box<SceneDocument>(string(filename), std::move(scene));
+
+#if 0
                 auto material = _assetLoader.loadAssetSync<Material>(_assetLoader.translate("materials/full.mat"));
                 if (!material.isSet()) {
                     return nullptr;
@@ -67,9 +71,13 @@ namespace up::shell {
                     return nullptr;
                 }
 
-                auto scene = new_shared<Scene>(_universe, _audioEngine);
-                auto doc = new_box<SceneDocument>(string(filename), std::move(scene));
                 doc->createTestObjects(mesh, material, ding);
+#else
+                if (auto [rs, text] = fs::readText(filename); rs == IOResult::Success) {
+                    nlohmann::json jsonDoc = nlohmann::json::parse(text);
+                    doc->fromJson(jsonDoc);
+                }
+#endif
 
                 return new_box<SceneEditor>(std::move(doc), _assetLoader, _components, _onPlayClicked);
             }
