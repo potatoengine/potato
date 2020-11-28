@@ -1,12 +1,10 @@
 #pragma once
 
-#include "resource_manifest.h"
-
+#include "potato/spud/int_types.h"
 #include "potato/spud/rc.h"
 
 namespace up {
-    using AssetId = ResourceId;
-    // enum class AssetId : uint64 { Invalid };
+    enum class AssetId : uint64 { Invalid };
 
     class Asset : public shared<Asset> {
     public:

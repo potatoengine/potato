@@ -10,14 +10,14 @@
 #include "potato/spud/vector.h"
 
 namespace up {
-    using ResourceId = uint64;
-
     /// @brief Mapping of resource identifiers to CAS hashes and filenames
     class ResourceManifest {
     public:
+        using Id = uint64;
+
         struct Record {
-            ResourceId rootId = {};
-            ResourceId logicalId = {};
+            Id rootId = {};
+            Id logicalId = {};
             uint64 logicalName = 0;
             uint64 hash = 0;
             string filename;
@@ -37,7 +37,7 @@ namespace up {
 
         view<Record> records() const noexcept { return _records; }
 
-        Record const* findRecord(ResourceId logicalId) const noexcept {
+        Record const* findRecord(Id logicalId) const noexcept {
             for (Record const& record : _records) {
                 if (record.logicalId == logicalId) {
                     return &record;

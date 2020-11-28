@@ -365,7 +365,7 @@ void up::editor::PropertyGrid::_editAssetField(
 
     Asset const* asset = nullptr;
     zstring_view assetName;
-    ResourceId assetId{};
+    AssetId assetId = AssetId::Invalid;
     if (schema.operations->pointerDeref != nullptr) {
         void const* pointee = schema.operations->pointerDeref(object);
         if (pointee != nullptr) {
@@ -393,7 +393,7 @@ void up::editor::PropertyGrid::_editAssetField(
     }
 
     if (_assetLoader != nullptr && schema.operations->pointerAssign != nullptr) {
-        ResourceId targetAssetId = assetId;
+        AssetId targetAssetId = assetId;
         if (up::assetBrowserPopup("##asset_browser", targetAssetId, resourceAnnotation->assetType, *_assetLoader) &&
             targetAssetId != assetId) {
             rc<Asset> newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);

@@ -11,14 +11,15 @@
 #include "potato/spud/vector.h"
 
 namespace up {
-    using ResourceId = uint64;
     class Stream;
     class Asset;
     class AssetLoader;
     class ResourceManifest;
 
+    enum class AssetId : uint64;
+
     struct AssetLoadContext {
-        ResourceId id{};
+        AssetId id{};
         Stream& stream;
         AssetLoader& loader;
     };
@@ -40,15 +41,15 @@ namespace up {
 
         UP_RUNTIME_API void bindManifest(box<ResourceManifest> manifest, string casPath);
 
-        UP_RUNTIME_API ResourceId translate(string_view assetName, string_view logicalName = {}) const;
-        UP_RUNTIME_API zstring_view debugName(ResourceId logicalId) const noexcept;
+        UP_RUNTIME_API AssetId translate(string_view assetName, string_view logicalName = {}) const;
+        UP_RUNTIME_API zstring_view debugName(AssetId logicalId) const noexcept;
 
         template <typename AssetT>
-        rc<AssetT> loadAssetSync(ResourceId id) {
+        rc<AssetT> loadAssetSync(AssetId id) {
             zstring_view constexpr typeName = AssetT::assetTypeName;
             return rc<AssetT>(static_cast<AssetT*>(loadAssetSync(id, typeName).release()));
         }
-        UP_RUNTIME_API rc<Asset> loadAssetSync(ResourceId id, string_view type = {});
+        UP_RUNTIME_API rc<Asset> loadAssetSync(AssetId id, string_view type = {});
 
         UP_RUNTIME_API void registerBackend(box<AssetLoaderBackend> backend);
 

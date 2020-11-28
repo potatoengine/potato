@@ -14,7 +14,7 @@
 #include "potato/runtime/asset_loader.h"
 #include "potato/spud/string.h"
 
-up::Material::Material(ResourceId id, rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures)
+up::Material::Material(AssetId id, rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures)
     : Asset(id)
     , _vertexShader(std::move(vertexShader))
     , _pixelShader(std::move(pixelShader))
@@ -59,7 +59,7 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
     }
 }
 
-auto up::Material::createFromBuffer(ResourceId id, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
+auto up::Material::createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!schema::VerifyMaterialBuffer(verifier)) {
         return {};

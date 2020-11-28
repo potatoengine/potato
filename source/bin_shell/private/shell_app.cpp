@@ -31,6 +31,7 @@
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/path.h"
+#include "potato/runtime/resource_manifest.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"

@@ -11,7 +11,7 @@
 
 #include <imgui.h>
 
-bool up::assetBrowserPopup(zstring_view id, ResourceId& inout_asset, string_view type, AssetLoader& assetLoader) {
+bool up::assetBrowserPopup(zstring_view id, AssetId& inout_asset, string_view type, AssetLoader& assetLoader) {
     bool changed = false;
 
     if (assetLoader.manifest() == nullptr) {
@@ -33,7 +33,7 @@ bool up::assetBrowserPopup(zstring_view id, ResourceId& inout_asset, string_view
                 format_to(filename, "{}", path::filename(asset.filename));
 
                 if (ImGui::IconGridItem(filename, ICON_FA_FILE)) {
-                    inout_asset = asset.logicalId;
+                    inout_asset = static_cast<AssetId>(asset.logicalId);
                     changed = true;
                     ImGui::CloseCurrentPopup();
                 }

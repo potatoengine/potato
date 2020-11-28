@@ -4,6 +4,7 @@
 #include "asset.h"
 #include "filesystem.h"
 #include "path.h"
+#include "resource_manifest.h"
 #include "stream.h"
 
 #include "potato/format/format.h"
@@ -22,28 +23,29 @@ void up::AssetLoader::bindManifest(box<ResourceManifest> manifest, string casPat
     _casPath = std::move(casPath);
 }
 
-auto up::AssetLoader::translate(string_view assetName, string_view logicalName) const -> ResourceId {
+auto up::AssetLoader::translate(string_view assetName, string_view logicalName) const -> AssetId {
     fnv1a engine;
     hash_append(engine, assetName);
     if (!logicalName.empty()) {
         hash_append(engine, ":"_zsv);
         hash_append(engine, logicalName);
     }
-    return ResourceId{engine.finalize()};
+    return AssetId{engine.finalize()};
 }
 
-auto up::AssetLoader::debugName(ResourceId logicalId) const noexcept -> zstring_view {
-    auto const* record = _manifest != nullptr ? _manifest->findRecord(logicalId) : nullptr;
+auto up::AssetLoader::debugName(AssetId logicalId) const noexcept -> zstring_view {
+    auto const* record = _manifest != nullptr ? _manifest->findRecord(static_cast<uint64>(logicalId)) : nullptr;
     return record != nullptr ? record->filename : zstring_view{};
 }
 
-auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Asset> {
+auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> rc<Asset> {
     ZoneScopedN("Load Asset Synchronous");
 
     AssetLoaderBackend* const backend = _findBackend(type);
     UP_ASSERT(backend != nullptr, "Unknown backend `{}`", type);
 
-    ResourceManifest::Record const* const record = _manifest != nullptr ? _manifest->findRecord(id) : nullptr;
+    ResourceManifest::Record const* const record =
+        _manifest != nullptr ? _manifest->findRecord(static_cast<uint64>(id)) : nullptr;
     if (record == nullptr) {
         _logger.error("Failed to find asset `{}` ({})", id, type);
         return nullptr;
