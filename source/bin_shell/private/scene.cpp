@@ -50,7 +50,7 @@ void up::Scene::tick(float frameTime) {
         ding.time += frameTime;
         if (ding.time > ding.period) {
             ding.time -= ding.period;
-            _audioEngine.play(ding.sound.get());
+            _audioEngine.play(ding.sound.asset());
         }
     });
 }
@@ -63,8 +63,8 @@ void up::Scene::flush() {
 
 void up::Scene::render(RenderContext& ctx) {
     _renderableMeshQuery.select(_world, [&](EntityId, components::Mesh& mesh, components::Transform const& trans) {
-        if (mesh.mesh != nullptr) {
-            mesh.mesh->render(ctx, mesh.material.get(), trans.transform);
+        if (mesh.mesh.ready() && mesh.material.ready()) {
+            mesh.mesh.asset()->render(ctx, mesh.material.asset(), trans.transform);
         }
     });
 }

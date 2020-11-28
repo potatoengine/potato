@@ -13,7 +13,7 @@ namespace up {
 }
 
 namespace up {
-    class Texture : public Asset {
+    class Texture : public AssetBase<Texture> {
     public:
         static constexpr zstring_view assetTypeName = "potato.asset.texture"_zsv;
 

@@ -48,18 +48,18 @@ namespace up::shell {
 
             box<Editor> createEditor() override {
                 auto material = _assetLoader.loadAssetSync<Material>(_assetLoader.translate("materials/full.mat"));
-                if (material == nullptr) {
+                if (!material.isSet()) {
                     return nullptr;
                 }
 
                 auto mesh = _assetLoader.loadAssetSync<Mesh>(_assetLoader.translate("meshes/cube.obj"));
-                if (mesh == nullptr) {
+                if (!mesh.isSet()) {
                     return nullptr;
                 }
 
                 auto ding =
                     _assetLoader.loadAssetSync<SoundResource>(_assetLoader.translate("audio/kenney/highUp.mp3"));
-                if (ding == nullptr) {
+                if (!ding.isSet()) {
                     return nullptr;
                 }
 

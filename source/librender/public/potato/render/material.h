@@ -3,6 +3,8 @@
 #pragma once
 
 #include "_export.h"
+#include "shader.h"
+#include "texture.h"
 
 #include "potato/runtime/asset.h"
 #include "potato/spud/box.h"
@@ -17,18 +19,16 @@ namespace up {
     class GpuResourceView;
     class GpuSampler;
     class RenderContext;
-    class Shader;
-    class Texture;
 
-    class Material : public Asset {
+    class Material : public AssetBase<Material> {
     public:
         static constexpr zstring_view assetTypeName = "potato.asset.material"_zsv;
 
         UP_RENDER_API explicit Material(
             AssetId id,
-            rc<Shader> vertexShader,
-            rc<Shader> pixelShader,
-            vector<rc<Texture>> textures);
+            Shader::Handle vertexShader,
+            Shader::Handle pixelShader,
+            vector<Texture::Handle> textures);
         UP_RENDER_API ~Material() override;
 
         static UP_RENDER_API auto createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& assetLoader)
@@ -38,9 +38,9 @@ namespace up {
 
     private:
         box<GpuPipelineState> _state;
-        rc<Shader> _vertexShader;
-        rc<Shader> _pixelShader;
-        vector<rc<Texture>> _textures;
+        Shader::Handle _vertexShader;
+        Shader::Handle _pixelShader;
+        vector<Texture::Handle> _textures;
         vector<box<GpuResourceView>> _srvs;
         vector<box<GpuSampler>> _samplers;
     };

@@ -44,7 +44,7 @@ void up::editor::PropertyGrid::_editField(
     void* object) {
     ImGui::PushID(object);
 
-    if (auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(field)) {
+    if (auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema)) {
         _editAssetField(field, *field.schema, object);
         ImGui::PopID();
         return;
@@ -360,7 +360,7 @@ void up::editor::PropertyGrid::_editAssetField(
     void* object) {
     ImGui::BeginGroup();
 
-    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(field);
+    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
     UP_ASSERT(resourceAnnotation != nullptr);
 
     Asset const* asset = nullptr;
@@ -396,7 +396,7 @@ void up::editor::PropertyGrid::_editAssetField(
         AssetId targetAssetId = assetId;
         if (up::assetBrowserPopup("##asset_browser", targetAssetId, resourceAnnotation->assetType, *_assetLoader) &&
             targetAssetId != assetId) {
-            rc<Asset> newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);
+            UntypedAssetHandle newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);
             schema.operations->pointerAssign(object, newAsset.release());
         }
     }

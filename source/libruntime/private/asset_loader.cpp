@@ -38,7 +38,7 @@ auto up::AssetLoader::debugName(AssetId logicalId) const noexcept -> zstring_vie
     return record != nullptr ? record->filename : zstring_view{};
 }
 
-auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> rc<Asset> {
+auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAssetHandle {
     ZoneScopedN("Load Asset Synchronous");
 
     AssetLoaderBackend* const backend = _findBackend(type);
@@ -48,7 +48,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> rc<Asset> {
         _manifest != nullptr ? _manifest->findRecord(static_cast<uint64>(id)) : nullptr;
     if (record == nullptr) {
         _logger.error("Failed to find asset `{}` ({})", id, type);
-        return nullptr;
+        return {};
     }
 
     if (record->type != type) {
@@ -59,7 +59,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> rc<Asset> {
             record->logicalName,
             record->type,
             type);
-        return nullptr;
+        return {};
     }
 
     string filename = _makeCasPath(record->hash);
@@ -73,7 +73,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> rc<Asset> {
             record->logicalName,
             type,
             filename);
-        return nullptr;
+        return {};
     }
 
     AssetLoadContext const ctx{.id = id, .stream = stream, .loader = *this};
@@ -90,10 +90,10 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> rc<Asset> {
             record->logicalName,
             type,
             filename);
-        return nullptr;
+        return {};
     }
 
-    return asset;
+    return {static_cast<AssetId>(record->logicalId), std::move(asset)};
 }
 
 void up::AssetLoader::registerBackend(box<AssetLoaderBackend> backend) {

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "_export.h"
+#include "asset.h"
 #include "logger.h"
 
 #include "potato/spud/box.h"
@@ -12,7 +13,6 @@
 
 namespace up {
     class Stream;
-    class Asset;
     class AssetLoader;
     class ResourceManifest;
 
@@ -45,11 +45,11 @@ namespace up {
         UP_RUNTIME_API zstring_view debugName(AssetId logicalId) const noexcept;
 
         template <typename AssetT>
-        rc<AssetT> loadAssetSync(AssetId id) {
+        AssetHandle<AssetT> loadAssetSync(AssetId id) {
             zstring_view constexpr typeName = AssetT::assetTypeName;
-            return rc<AssetT>(static_cast<AssetT*>(loadAssetSync(id, typeName).release()));
+            return loadAssetSync(id, typeName).cast<AssetT>();
         }
-        UP_RUNTIME_API rc<Asset> loadAssetSync(AssetId id, string_view type = {});
+        UP_RUNTIME_API UntypedAssetHandle loadAssetSync(AssetId id, string_view type = {});
 
         UP_RUNTIME_API void registerBackend(box<AssetLoaderBackend> backend);
 

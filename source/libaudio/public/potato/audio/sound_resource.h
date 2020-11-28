@@ -8,11 +8,13 @@
 #include "potato/spud/rc.h"
 
 namespace up {
-    class SoundResource : public Asset {
+    class SoundResource : public AssetBase<SoundResource> {
     public:
-        using Asset::Asset;
+        using AssetBase::AssetBase;
         static constexpr zstring_view assetTypeName = "potato.asset.sound"_zsv;
 
     protected:
     };
+
+    using SoundHandle = SoundResource::Handle;
 } // namespace up

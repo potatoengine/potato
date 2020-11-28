@@ -33,7 +33,7 @@ up::Mesh::Mesh(
     vector<up::byte> data,
     view<MeshBuffer> buffers,
     view<MeshChannel> channels)
-    : Asset(id)
+    : AssetBase(id)
     , _buffers(buffers.begin(), buffers.end())
     , _channels(channels.begin(), channels.end())
     , _indices(std::move(indices))

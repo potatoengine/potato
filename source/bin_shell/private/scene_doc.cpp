@@ -109,9 +109,9 @@ void up::SceneDocument::parentTo(EntityId childId, EntityId parentId) {
 }
 
 void up::SceneDocument::createTestObjects(
-    rc<Mesh> const& cube,
-    rc<Material> const& mat,
-    rc<SoundResource> const& ding) {
+    Mesh::Handle const& cube,
+    Material::Handle const& mat,
+    SoundResource::Handle const& ding) {
     auto pi = glm::pi<float>();
 
     constexpr int numObjects = 100;
@@ -123,7 +123,7 @@ void up::SceneDocument::createTestObjects(
         centerId,
         components::Transform{.position = {0, 5, 0}, .rotation = glm::identity<glm::quat>()});
     _scene->world().addComponent(centerId, components::Mesh{cube, mat});
-    _scene->world().addComponent(centerId, components::Ding{2, 0, ding});
+    _scene->world().addComponent(centerId, components::Ding{2, 0, {ding}});
 
     auto const ringId = createEntity("Ring", rootId);
     for (size_t i = 0; i <= numObjects; ++i) {

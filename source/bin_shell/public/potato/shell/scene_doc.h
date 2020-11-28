@@ -4,7 +4,10 @@
 
 #include "scene.h"
 
+#include "potato/audio/sound_resource.h"
 #include "potato/ecs/common.h"
+#include "potato/render/material.h"
+#include "potato/render/mesh.h"
 #include "potato/spud/sequence.h"
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
@@ -12,7 +15,6 @@
 namespace up {
     class Mesh;
     class Material;
-    class SoundResource;
 
     struct SceneEntity {
         string name;
@@ -37,7 +39,7 @@ namespace up {
 
         void parentTo(EntityId childId, EntityId parentId);
 
-        void createTestObjects(rc<Mesh> const& cube, rc<Material> const& mat, rc<SoundResource> const& ding);
+        void createTestObjects(Mesh::Handle const& cube, Material::Handle const& mat, SoundHandle const& ding);
 
     private:
         void _deleteEntityAt(int index, vector<EntityId>& out_deleted);

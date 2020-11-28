@@ -5,7 +5,7 @@
 #include "gpu_texture.h"
 
 up::Texture::Texture(AssetId id, Image image, rc<GpuTexture> texture)
-    : Asset(id)
+    : AssetBase(id)
     , _texture(std::move(texture))
     , _image(std::move(image)) {}
 

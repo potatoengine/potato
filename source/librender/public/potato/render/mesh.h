@@ -36,7 +36,7 @@ namespace up {
         GpuShaderSemantic semantic = GpuShaderSemantic::Position;
     };
 
-    class Mesh : public Asset {
+    class Mesh : public AssetBase<Mesh> {
     public:
         static constexpr zstring_view assetTypeName = "potato.asset.model"_zsv;
 

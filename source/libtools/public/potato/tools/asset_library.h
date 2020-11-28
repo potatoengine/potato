@@ -3,10 +3,10 @@
 #pragma once
 
 #include "_export.h"
-#include "common.h"
 
 #include "potato/format/erased.h"
 #include "potato/posql/posql.h"
+#include "potato/runtime/asset.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/unique_resource.h"
