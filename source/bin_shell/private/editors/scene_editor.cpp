@@ -11,6 +11,7 @@
 #include "potato/audio/audio_engine.h"
 #include "potato/audio/sound_resource.h"
 #include "potato/editor/imgui_ext.h"
+#include "potato/reflex/serialize.h"
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
 #include "potato/render/debug_draw.h"
@@ -137,6 +138,16 @@ void up::shell::SceneEditor::content() {
     if (contentSize.x <= 0 || contentSize.y <= 0) {
         return;
     }
+
+    ImGui::BeginGroup();
+    if (ImGui::IconButton("Play", ICON_FA_PLAY)) {
+        _onPlayClicked(_doc->scene());
+    }
+    ImGui::SameLine();
+    if (ImGui::IconButton("Save", ICON_FA_SAVE)) {
+        _save();
+    }
+    ImGui::EndGroup();
 
     ImGui::BeginChild("SceneContent", contentSize, false);
     {
@@ -421,4 +432,10 @@ void up::shell::SceneEditor::_hierarchyContext(EntityId id) {
         }
         ImGui::EndPopup();
     }
+}
+
+void up::shell::SceneEditor::_save() {
+    nlohmann::json doc;
+    _doc->toJson(doc);
+    auto text = doc.dump();
 }

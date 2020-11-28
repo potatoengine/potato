@@ -11,6 +11,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/vec3.hpp>
+#include <nlohmann/json.hpp>
 
 int up::SceneDocument::indexOf(EntityId entityId) const noexcept {
     for (int index : indices()) {
@@ -141,5 +142,25 @@ void up::SceneDocument::createTestObjects(
         _scene->world().addComponent(id, components::Mesh{cube, mat});
         _scene->world().addComponent(id, components::Wave{0, r});
         _scene->world().addComponent(id, components::Spin{glm::sin(r) * 2.f - 1.f});
+    }
+}
+
+void up::SceneDocument::toJson(nlohmann::json& doc) const {
+    doc = nlohmann::json::object();
+    doc["$type"] = "potato.document.scene";
+    _toJson(doc["objects"], 0);
+}
+
+void up::SceneDocument::_toJson(nlohmann::json& el, int index) const {
+    SceneEntity const& ent = _entities[index];
+    el = nlohmann::json::object();
+    el["name"] = ent.name;
+    if (ent.firstChild != -1) {
+        nlohmann::json& children = el["children"] = nlohmann::json::array();
+        for (int childIndex = ent.firstChild; childIndex != -1; childIndex = _entities[childIndex].nextSibling) {
+            nlohmann::json childEl{};
+            _toJson(childEl, childIndex);
+            children.push_back(std::move(childEl));
+        }
     }
 }

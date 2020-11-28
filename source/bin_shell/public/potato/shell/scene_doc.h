@@ -12,6 +12,8 @@
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
 
+#include <nlohmann/json_fwd.hpp>
+
 namespace up {
     class Mesh;
     class Material;
@@ -41,8 +43,11 @@ namespace up {
 
         void createTestObjects(Mesh::Handle const& cube, Material::Handle const& mat, SoundHandle const& ding);
 
+        void toJson(nlohmann::json& doc) const;
+
     private:
         void _deleteEntityAt(int index, vector<EntityId>& out_deleted);
+        void _toJson(nlohmann::json& el, int index) const;
 
         rc<Scene> _scene;
         vector<SceneEntity> _entities;
