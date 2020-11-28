@@ -8,6 +8,7 @@
 
 #include "potato/editor/icons.h"
 #include "potato/editor/imgui_ext.h"
+#include "potato/runtime/asset_loader.h"
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
@@ -357,13 +358,24 @@ void up::editor::PropertyGrid::_editAssetField(
     reflex::Schema const& schema,
     void* object) {
     ImGui::BeginGroup();
+
+    Asset const* asset = nullptr;
+    zstring_view assetName;
     if (schema.operations->pointerDeref != nullptr) {
         void const* pointee = schema.operations->pointerDeref(object);
-        ImGui::Text("%s", pointee != nullptr ? "<unknown>" : "<empty>");
+        if (pointee != nullptr) {
+            asset = static_cast<Asset const*>(pointee);
+            assetName = _assetLoader->debugName(asset->assetId());
+        }
+        if (assetName.empty()) {
+            assetName = "<empty>"_zsv;
+        }
     }
     else {
-        ImGui::Text("???");
+        assetName = "<unknown>"_zsv;
     }
+
+    ImGui::Text("%s", assetName.c_str());
     ImGui::SameLine();
     if (ImGui::IconButton("##clear", ICON_FA_TRASH) && schema.operations->pointerReset != nullptr) {
         schema.operations->pointerReset(object);
