@@ -234,8 +234,8 @@ bool up::reflex::_detail::decodeValue(nlohmann::json const& json, Schema const& 
         case SchemaPrimitive::Object:
             return decodeObject(json, schema, obj);
         case SchemaPrimitive::Pointer:
-            if (json.is_null() && schema.operations->pointerReset != nullptr) {
-                schema.operations->pointerReset(obj);
+            if (json.is_null() && schema.operations->pointerAssign != nullptr) {
+                schema.operations->pointerAssign(obj, nullptr);
                 return true;
             }
             else if (schema.operations->pointerMutableDeref != nullptr) {
@@ -243,11 +243,13 @@ bool up::reflex::_detail::decodeValue(nlohmann::json const& json, Schema const& 
                     return decodeValue(json, *schema.elementType, pointee);
                 }
             }
-            else if (schema.operations->pointerInstantiate != nullptr) {
-                if (void* pointee = schema.operations->pointerInstantiate(obj)) {
-                    return decodeValue(json, *schema.elementType, pointee);
-                }
-            }
+
+            // This needs some thought to handle polymorphic targets properly
+            // else if (schema.operations->pointerInstantiate != nullptr) {
+            //    if (void* pointee = schema.operations->pointerInstantiate(obj)) {
+            //        return decodeValue(json, *schema.elementType, pointee);
+            //    }
+            //}
             return false;
         default:
             return false;

@@ -359,13 +359,18 @@ void up::editor::PropertyGrid::_editAssetField(
     void* object) {
     ImGui::BeginGroup();
 
+    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(field);
+    UP_ASSERT(resourceAnnotation != nullptr);
+
     Asset const* asset = nullptr;
     zstring_view assetName;
+    ResourceId assetId{};
     if (schema.operations->pointerDeref != nullptr) {
         void const* pointee = schema.operations->pointerDeref(object);
         if (pointee != nullptr) {
             asset = static_cast<Asset const*>(pointee);
-            assetName = _assetLoader->debugName(asset->assetId());
+            assetId = asset->assetId();
+            assetName = _assetLoader->debugName(assetId);
         }
         if (assetName.empty()) {
             assetName = "<empty>"_zsv;
@@ -377,20 +382,22 @@ void up::editor::PropertyGrid::_editAssetField(
 
     ImGui::Text("%s", assetName.c_str());
     ImGui::SameLine();
-    if (ImGui::IconButton("##clear", ICON_FA_TRASH) && schema.operations->pointerReset != nullptr) {
-        schema.operations->pointerReset(object);
+    if (ImGui::IconButton("##clear", ICON_FA_TRASH) && schema.operations->pointerAssign != nullptr) {
+        schema.operations->pointerAssign(object, nullptr);
     }
     ImGui::SameLine();
 
-    if (ImGui::IconButton("##select", ICON_FA_FOLDER) && schema.operations->pointerInstantiate != nullptr) {
+    if (ImGui::IconButton("##select", ICON_FA_FOLDER)) {
         ImGui::OpenPopup("##asset_browser");
-
-        schema.operations->pointerInstantiate(object);
     }
 
-    if (_assetLoader != nullptr) {
-        string assetRef;
-        up::assetBrowserPopup("##asset_browser", assetRef, *_assetLoader);
+    if (_assetLoader != nullptr && schema.operations->pointerAssign != nullptr) {
+        ResourceId targetAssetId = assetId;
+        if (up::assetBrowserPopup("##asset_browser", targetAssetId, resourceAnnotation->assetType, *_assetLoader) &&
+            targetAssetId != assetId) {
+            rc<Asset> newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);
+            schema.operations->pointerAssign(object, newAsset.release());
+        }
     }
 
     ImGui::EndGroup();

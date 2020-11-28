@@ -7,16 +7,21 @@
 
 #include <imgui.h>
 
-bool up::assetBrowserPopup(zstring_view id, string& inout_asset, AssetLoader& assetLoader) {
+bool up::assetBrowserPopup(zstring_view id, ResourceId& inout_asset, string_view type, AssetLoader& assetLoader) {
     bool changed = false;
 
     if (ImGui::BeginPopup(id.c_str())) {
         if (ImGui::BeginTable("##assets", 4)) {
             for (ResourceManifest::Record const& asset : assetLoader.manifest().records()) {
+                if (!type.empty() && type != asset.type) {
+                    continue;
+                }
+
                 ImGui::TableNextColumn();
                 if (ImGui::Button(asset.filename.c_str())) {
-                    inout_asset = string{asset.filename};
+                    inout_asset = asset.logicalId;
                     changed = true;
+                    ImGui::CloseCurrentPopup();
                 }
             }
 

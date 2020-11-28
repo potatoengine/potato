@@ -4,12 +4,13 @@
 
 #include "_export.h"
 
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/string.h"
 
 namespace up {
-    class AssetLoader;
-}
-
-namespace up {
-    UP_EDITOR_API bool assetBrowserPopup(zstring_view, string& inout_asset, AssetLoader& assetLoader);
+    UP_EDITOR_API bool assetBrowserPopup(
+        zstring_view,
+        ResourceId& inout_asset,
+        string_view type,
+        AssetLoader& assetLoader);
 }
