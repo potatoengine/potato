@@ -15,10 +15,6 @@ namespace up {
     class GpuPipelineState;
     class GpuDevice;
     class RenderContext;
-    class Material;
-    class Mesh;
-    class Shader;
-    class Texture;
     class AssetLoader;
 
     class Renderer {
