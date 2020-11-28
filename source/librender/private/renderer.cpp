@@ -14,7 +14,7 @@
 #include "shader.h"
 #include "texture.h"
 
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/numeric_util.h"
 
@@ -124,10 +124,10 @@ auto up::Renderer::context() -> RenderContext {
 
 namespace up {
     namespace {
-        class MeshResourceLoaderBackend : public ResourceLoaderBackend {
+        class MeshAssetLoaderBackend : public AssetLoaderBackend {
         public:
             zstring_view typeName() const noexcept override { return Mesh::resourceType; }
-            rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) override {
+            rc<Resource> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
                 vector<byte> contents;
                 if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
                     return nullptr;
@@ -138,24 +138,24 @@ namespace up {
             }
         };
 
-        class MaterialResourceLoaderBackend : public ResourceLoaderBackend {
+        class MaterialAssetLoaderBackend : public AssetLoaderBackend {
         public:
             zstring_view typeName() const noexcept override { return Material::resourceType; }
-            rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) override {
+            rc<Resource> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
                 vector<byte> contents;
                 if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
                     return nullptr;
                 }
                 stream.close();
 
-                return Material::createFromBuffer(contents, resourceLoader);
+                return Material::createFromBuffer(contents, assetLoader);
             }
         };
 
-        class ShaderResourceLoaderBackend : public ResourceLoaderBackend {
+        class ShaderAssetLoaderBackend : public AssetLoaderBackend {
         public:
             zstring_view typeName() const noexcept override { return Shader::resourceType; }
-            rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) override {
+            rc<Resource> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
                 vector<byte> contents;
                 if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
                     return nullptr;
@@ -166,12 +166,12 @@ namespace up {
             }
         };
 
-        class TextureResourceLoaderBackend : public ResourceLoaderBackend {
+        class TextureAssetLoaderBackend : public AssetLoaderBackend {
         public:
-            TextureResourceLoaderBackend(Renderer& renderer) : _renderer(renderer) {}
+            TextureAssetLoaderBackend(Renderer& renderer) : _renderer(renderer) {}
 
             zstring_view typeName() const noexcept override { return Texture::resourceType; }
-            rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) override {
+            rc<Resource> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
                 auto img = loadImage(stream);
                 if (img.data().empty()) {
                     return nullptr;
@@ -197,11 +197,11 @@ namespace up {
     } // namespace
 } // namespace up
 
-void up::Renderer::registerResourceBackends(ResourceLoader& resourceLoader) {
+void up::Renderer::registerAssetBackends(AssetLoader& assetLoader) {
     UP_ASSERT(_device != nullptr);
-    resourceLoader.addBackend(new_box<MeshResourceLoaderBackend>());
-    resourceLoader.addBackend(new_box<MaterialResourceLoaderBackend>());
-    resourceLoader.addBackend(new_box<ShaderResourceLoaderBackend>());
-    resourceLoader.addBackend(new_box<TextureResourceLoaderBackend>(*this));
-    _device->registerResourceBackends(resourceLoader);
+    assetLoader.addBackend(new_box<MeshAssetLoaderBackend>());
+    assetLoader.addBackend(new_box<MaterialAssetLoaderBackend>());
+    assetLoader.addBackend(new_box<ShaderAssetLoaderBackend>());
+    assetLoader.addBackend(new_box<TextureAssetLoaderBackend>(*this));
+    _device->registerAssetBackends(assetLoader);
 }

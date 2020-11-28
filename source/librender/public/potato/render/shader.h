@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/vector.h"

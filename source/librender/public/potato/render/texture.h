@@ -5,7 +5,7 @@
 #include "_export.h"
 #include "image.h"
 
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 

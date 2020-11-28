@@ -4,7 +4,7 @@
 
 #include "_export.h"
 
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/vector.h"
@@ -26,7 +26,7 @@ namespace up {
         UP_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures);
         UP_RENDER_API ~Material();
 
-        static UP_RENDER_API auto createFromBuffer(view<byte> buffer, ResourceLoader& resourceLoader) -> rc<Material>;
+        static UP_RENDER_API auto createFromBuffer(view<byte> buffer, AssetLoader& assetLoader) -> rc<Material>;
 
         UP_RENDER_API void bindMaterialToRender(RenderContext& ctx);
 

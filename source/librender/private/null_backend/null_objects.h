@@ -40,7 +40,7 @@ namespace up::null {
 
         void execute(GpuCommandList* commands) override {}
 
-        void registerResourceBackends(ResourceLoader& resourceLoader) override {}
+        void registerAssetBackends(AssetLoader& assetLoader) override {}
     };
 
     class ResourceViewNull final : public GpuResourceView {

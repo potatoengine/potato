@@ -19,7 +19,7 @@ namespace up {
     class Mesh;
     class Shader;
     class Texture;
-    class ResourceLoader;
+    class AssetLoader;
 
     class Renderer {
     public:
@@ -38,7 +38,7 @@ namespace up {
         GpuDevice& device() const noexcept { return *_device; }
         GpuCommandList& commandList() const noexcept { return *_commandList; }
 
-        UP_RENDER_API void registerResourceBackends(ResourceLoader& resourceLoader);
+        UP_RENDER_API void registerAssetBackends(AssetLoader& assetLoader);
 
     private:
         rc<GpuDevice> _device;

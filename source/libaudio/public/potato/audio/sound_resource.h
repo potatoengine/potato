@@ -4,7 +4,7 @@
 
 #include "_export.h"
 
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/rc.h"
 
 namespace up {

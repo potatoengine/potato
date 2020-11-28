@@ -11,7 +11,7 @@
 #include "shader.h"
 #include "texture.h"
 
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/string.h"
 
 up::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures)
@@ -58,7 +58,7 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
     }
 }
 
-auto up::Material::createFromBuffer(view<byte> buffer, ResourceLoader& resourceLoader) -> rc<Material> {
+auto up::Material::createFromBuffer(view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!schema::VerifyMaterialBuffer(verifier)) {
         return {};
@@ -78,11 +78,11 @@ auto up::Material::createFromBuffer(view<byte> buffer, ResourceLoader& resourceL
     auto vertexPath = shader->vertex();
     auto pixelPath = shader->pixel();
 
-    vertex = resourceLoader.loadAsset<Shader>(
-        resourceLoader.translate(string_view(vertexPath->c_str(), vertexPath->size())),
+    vertex = assetLoader.loadAsset<Shader>(
+        assetLoader.translate(string_view(vertexPath->c_str(), vertexPath->size())),
         "vertex"_sv);
-    pixel = resourceLoader.loadAsset<Shader>(
-        resourceLoader.translate(string_view(pixelPath->c_str(), pixelPath->size())),
+    pixel = assetLoader.loadAsset<Shader>(
+        assetLoader.translate(string_view(pixelPath->c_str(), pixelPath->size())),
         "pixel"_sv);
 
     if (vertex == nullptr) {
@@ -96,7 +96,7 @@ auto up::Material::createFromBuffer(view<byte> buffer, ResourceLoader& resourceL
     for (auto textureData : *material->textures()) {
         auto texturePath = string(textureData->c_str(), textureData->size());
 
-        auto tex = resourceLoader.loadAsset<Texture>(resourceLoader.translate(texturePath));
+        auto tex = assetLoader.loadAsset<Texture>(assetLoader.translate(texturePath));
         if (!tex) {
             return nullptr;
         }

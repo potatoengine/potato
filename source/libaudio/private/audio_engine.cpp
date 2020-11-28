@@ -3,7 +3,7 @@
 #include "audio_engine.h"
 #include "sound_resource.h"
 
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/vector.h"
 
@@ -17,7 +17,7 @@ namespace up {
             explicit AudioEngineImpl();
             ~AudioEngineImpl() override;
 
-            void registerResourceBackends(ResourceLoader& resourceLoader) override;
+            void registerAssetBackends(AssetLoader& assetLoader) override;
             auto play(SoundResource const* sound) -> PlayHandle override;
 
         private:
@@ -29,10 +29,10 @@ namespace up {
             mutable SoLoud::Wav _wav;
         };
 
-        class SoundResourceLoaderBackend : public ResourceLoaderBackend {
+        class SoundAssetLoaderBackend : public AssetLoaderBackend {
         public:
             zstring_view typeName() const noexcept override { return SoundResource::resourceType; }
-            rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) override;
+            rc<Resource> loadFromStream(Stream stream, AssetLoader& assetLoader) override;
         };
     } // namespace
 } // namespace up
@@ -50,8 +50,8 @@ auto up::AudioEngine::create() -> box<AudioEngine> {
     return new_box<AudioEngineImpl>();
 }
 
-void up::AudioEngineImpl::registerResourceBackends(ResourceLoader& resourceLoader) {
-    resourceLoader.addBackend(new_box<SoundResourceLoaderBackend>());
+void up::AudioEngineImpl::registerAssetBackends(AssetLoader& assetLoader) {
+    assetLoader.addBackend(new_box<SoundAssetLoaderBackend>());
 }
 
 auto up::AudioEngineImpl::play(SoundResource const* sound) -> PlayHandle {
@@ -63,7 +63,7 @@ auto up::AudioEngineImpl::play(SoundResource const* sound) -> PlayHandle {
     return static_cast<PlayHandle>(handle);
 }
 
-auto up::SoundResourceLoaderBackend::loadFromStream(Stream stream, ResourceLoader& resourceLoader) -> rc<Resource> {
+auto up::SoundAssetLoaderBackend::loadFromStream(Stream stream, AssetLoader& assetLoader) -> rc<Resource> {
     vector<byte> contents;
     if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
         return nullptr;

@@ -17,7 +17,6 @@
 
 #include "potato/runtime/assertion.h"
 #include "potato/runtime/com_ptr.h"
-#include "potato/runtime/resource_loader.h"
 #include "potato/spud/out_ptr.h"
 
 #include <utility>
@@ -284,4 +283,4 @@ auto up::d3d11::DeviceD3D11::getDebugShader(GpuShaderStage stage) -> view<unsign
     }
 }
 
-void up::d3d11::DeviceD3D11::registerResourceBackends(ResourceLoader& resourceLoader) {}
+void up::d3d11::DeviceD3D11::registerAssetBackends(AssetLoader& assetLoader) {}

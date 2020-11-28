@@ -13,25 +13,25 @@
 
 namespace up {
     class Stream;
-    class ResourceLoader;
+    class AssetLoader;
 
     class Resource : public shared<Resource> {
     public:
         virtual ~Resource() = default;
     };
 
-    class ResourceLoaderBackend {
+    class AssetLoaderBackend {
     public:
-        virtual ~ResourceLoaderBackend() = default;
+        virtual ~AssetLoaderBackend() = default;
 
         virtual zstring_view typeName() const noexcept = 0;
-        virtual rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) = 0;
+        virtual rc<Resource> loadFromStream(Stream stream, AssetLoader& AssetLoader) = 0;
     };
 
-    class ResourceLoader {
+    class AssetLoader {
     public:
-        UP_RUNTIME_API ResourceLoader();
-        UP_RUNTIME_API ~ResourceLoader();
+        UP_RUNTIME_API AssetLoader();
+        UP_RUNTIME_API ~AssetLoader();
 
         ResourceManifest& manifest() noexcept { return _manifest; }
         void setCasPath(string path) { _casPath = std::move(path); }
@@ -52,7 +52,7 @@ namespace up {
         }
         UP_RUNTIME_API rc<Resource> loadAsset(ResourceId id, string_view logicalName = {}, string_view type = {});
 
-        UP_RUNTIME_API void addBackend(box<ResourceLoaderBackend> backend);
+        UP_RUNTIME_API void addBackend(box<AssetLoaderBackend> backend);
 
     private:
         string _assetPath(ResourceId id) const;
@@ -60,10 +60,10 @@ namespace up {
         ResourceId _assetHash(string_view assetName) const;
         ResourceId _assetHash(string_view assetName, string_view logicalName) const;
         ResourceManifest::Record const* _findRecord(ResourceId id, string_view logicalName, string_view type) const;
-        ResourceLoaderBackend* _findBackend(string_view type) const;
+        AssetLoaderBackend* _findBackend(string_view type) const;
         Stream _openFile(zstring_view filename) const;
 
-        vector<box<ResourceLoaderBackend>> _backends;
+        vector<box<AssetLoaderBackend>> _backends;
         ResourceManifest _manifest;
         string _casPath;
         Logger _logger;

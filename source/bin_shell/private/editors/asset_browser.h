@@ -5,7 +5,7 @@
 #include "editor.h"
 
 #include "potato/editor/asset_edit_service.h"
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/string.h"
@@ -21,9 +21,9 @@ namespace up::shell {
         using OnFileSelected = delegate<void(zstring_view name)>;
         using OnFileImport = delegate<void(zstring_view name, bool force)>;
 
-        AssetBrowser(ResourceLoader& resourceLoader, OnFileSelected& onFileSelected, OnFileImport& onFileImport)
+        AssetBrowser(AssetLoader& assetLoader, OnFileSelected& onFileSelected, OnFileImport& onFileImport)
             : Editor("AssetBrowser"_zsv)
-            , _resourceLoader(resourceLoader)
+            , _assetLoader(assetLoader)
             , _onFileSelected(onFileSelected)
             , _onFileImport(onFileImport) {}
 
@@ -32,7 +32,7 @@ namespace up::shell {
         EditorId uniqueId() const override { return hash_value("/"); }
 
         static box<EditorFactory> createFactory(
-            ResourceLoader& resourceLoader,
+            AssetLoader& assetLoader,
             AssetBrowser::OnFileSelected onFileSelected,
             AssetBrowser::OnFileImport onFileImport);
 
@@ -74,7 +74,7 @@ namespace up::shell {
         void _handleFileClick(zstring_view filename);
         void _handleImport(zstring_view name, bool force = false);
 
-        ResourceLoader& _resourceLoader;
+        AssetLoader& _assetLoader;
         OnFileSelected& _onFileSelected;
         OnFileImport& _onFileImport;
         AssetEditService _assetEditService;
