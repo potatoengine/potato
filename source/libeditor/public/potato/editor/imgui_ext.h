@@ -49,4 +49,8 @@ namespace ImGui::inline Potato {
 
     UP_EDITOR_API ImVec2 GetItemSpacing();
     UP_EDITOR_API ImVec2 GetItemInnerSpacing();
+
+    UP_EDITOR_API bool BeginIconGrid(char const* label, float iconWidth = 96.f);
+    UP_EDITOR_API bool IconGridItem(char const* label, char8_t const* icon, float size = 96.f, float rounding = 8.f);
+    UP_EDITOR_API void EndIconGrid();
 } // namespace ImGui::inline Potato

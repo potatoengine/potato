@@ -28,6 +28,7 @@
 #include "imgui_ext.h"
 #include "imgui_backend.h"
 
+#include "potato/spud/numeric_util.h"
 #include "potato/spud/string_format.h"
 
 #include <glm/gtx/quaternion.hpp>
@@ -288,4 +289,96 @@ ImVec2 ImGui::Potato::GetItemSpacing() {
 
 ImVec2 ImGui::Potato::GetItemInnerSpacing() {
     return GetStyle().ItemInnerSpacing;
+}
+
+bool ImGui::Potato::BeginIconGrid(char const* label, float iconWidth) {
+    float const availWidth = ImGui::GetContentRegionAvailWidth();
+    int const columns = up::clamp(static_cast<int>(availWidth / iconWidth), 1, 64);
+
+    return ImGui::BeginTable(label, columns);
+}
+
+void ImGui::Potato::EndIconGrid() {
+    ImGui::EndTable();
+}
+
+bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, float width, float rounding) {
+    UP_ASSERT(label != nullptr);
+    UP_ASSERT(width > 0);
+    UP_ASSERT(rounding >= 0);
+
+    ImGui::TableNextColumn();
+
+    ImGuiWindow* const window = GetCurrentWindow();
+    if (window->SkipItems) {
+        return false;
+    }
+
+    ImGui::PushID(label);
+
+    ImVec2 const size = ImGui::CalcItemSize({width, width}, 0.0f, 0.0f);
+    ImRect const bounds{window->DC.CursorPos, window->DC.CursorPos + size};
+    ImRect const innerBounds{bounds.Min + ImGui::GetItemSpacing(), bounds.Max - ImGui::GetItemSpacing()};
+    ImGuiID const id = ImGui::GetID("##button");
+
+    bool clicked = false;
+
+    ImGui::ItemSize(size);
+    if (ImGui::ItemAdd(bounds, id)) {
+        bool const hovered = ImGui::IsItemHovered();
+        bool const held = ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
+
+        if (hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            clicked = true;
+        }
+
+        ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
+        ImU32 const bgColor =
+            ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+
+        if (hovered) {
+            window->DrawList->AddRectFilled(bounds.Min, bounds.Max, bgColor, rounding);
+        }
+
+        // must calculate this _before_ pushing the icon font, since we want to calcualte the size of the
+        // label's height
+        float const iconMaxHeight =
+            innerBounds.GetHeight() - ImGui::GetTextLineHeightWithSpacing() - ImGui::GetItemInnerSpacing().y;
+
+        ImGui::PushFont(ImGui::UpFont::FontAwesome_72);
+        ImVec2 iconSize = ImGui::CalcTextSize(reinterpret_cast<char const*>(icon));
+        float iconScale = 1.f;
+        if (iconSize.y > iconMaxHeight) {
+            iconScale = iconMaxHeight / iconSize.y;
+        }
+        ImGui::SetWindowFontScale(iconScale);
+        ImVec2 const iconPos{
+            innerBounds.Min.x + (innerBounds.GetWidth() - iconSize.x * iconScale) * 0.5f,
+            innerBounds.Min.y};
+        window->DrawList->AddText(iconPos, textColor, reinterpret_cast<char const*>(icon));
+        ImGui::SetWindowFontScale(1.f);
+        ImGui::PopFont();
+
+        ImVec2 const textSize = ImGui::CalcTextSize(label, nullptr, true, 0.f);
+        ImVec2 const textPos{bounds.Min.x, innerBounds.Max.y - ImGui::GetItemSpacing().y - textSize.y};
+
+        if (hovered) {
+            window->DrawList->AddRectFilled(
+                ImVec2{bounds.Min.x, textPos.y},
+                ImVec2{bounds.Max.x, textPos.y + textSize.y},
+                ImGui::GetColorU32(ImGuiCol_Header));
+
+            if (textSize.x > bounds.GetWidth()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("%s", label);
+                ImGui::EndTooltip();
+            }
+        }
+
+        ImGui::TextCentered(textPos, ImVec2{bounds.Max.x, innerBounds.Max.y}, textColor, label);
+    }
+
+    ImGui::PopID();
+
+    return clicked;
 }
