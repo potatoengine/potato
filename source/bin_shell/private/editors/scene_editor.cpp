@@ -22,6 +22,7 @@
 #include "potato/render/mesh.h"
 #include "potato/render/renderer.h"
 #include "potato/runtime/asset_loader.h"
+#include "potato/runtime/filesystem.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/fixed_string_writer.h"
 
@@ -438,4 +439,5 @@ void up::shell::SceneEditor::_save() {
     nlohmann::json doc;
     _doc->toJson(doc);
     auto text = doc.dump();
+    (void)fs::writeAllText(_doc->filename(), text);
 }

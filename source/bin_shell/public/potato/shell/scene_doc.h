@@ -45,6 +45,8 @@ namespace up {
 
         void toJson(nlohmann::json& doc) const;
 
+        zstring_view filename() const noexcept { return _filename; }
+
     private:
         void _deleteEntityAt(int index, vector<EntityId>& out_deleted);
         void _toJson(nlohmann::json& el, int index) const;

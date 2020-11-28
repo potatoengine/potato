@@ -660,7 +660,8 @@ bool up::shell::ShellApp::_loadConfig(zstring_view path) {
 
 void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
     if (path::extension(filename) == ".scene") {
-        _openEditorForDocument(SceneEditor::editorName, filename);
+        string fullPath = path::join(_project->resourceRootPath(), filename);
+        _openEditorForDocument(SceneEditor::editorName, fullPath);
     }
     else {
 #if defined(UP_PLATFORM_WINDOWS)

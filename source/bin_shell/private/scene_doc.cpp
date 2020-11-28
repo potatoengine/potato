@@ -4,7 +4,9 @@
 #include "components_schema.h"
 
 #include "potato/ecs/world.h"
+#include "potato/reflex/serialize.h"
 #include "potato/render/mesh.h"
+#include "potato/runtime/json.h"
 
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -155,6 +157,16 @@ void up::SceneDocument::_toJson(nlohmann::json& el, int index) const {
     SceneEntity const& ent = _entities[index];
     el = nlohmann::json::object();
     el["name"] = ent.name;
+
+    nlohmann::json& components = el["components"] = nlohmann::json::array();
+    _scene->world().interrogateEntityUnsafe(
+        ent.id,
+        [&components](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
+            nlohmann::json compEl = nlohmann::json::object();
+            reflex::encodeToJsonRaw(compEl, *typeInfo->schema, data);
+            components.push_back(std::move(compEl));
+        });
+
     if (ent.firstChild != -1) {
         nlohmann::json& children = el["children"] = nlohmann::json::array();
         for (int childIndex = ent.firstChild; childIndex != -1; childIndex = _entities[childIndex].nextSibling) {
