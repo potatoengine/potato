@@ -250,7 +250,6 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _loader = new_box<DefaultLoader>(_resourceLoader, _device);
     _renderer = new_box<Renderer>(_device);
     _renderer->registerResourceBackends(_resourceLoader);
 
@@ -288,7 +287,6 @@ int up::shell::ShellApp::initialize() {
     _editorFactories.push_back(SceneEditor::createFactory(
         *_audio,
         *_universe,
-        *_loader,
         _resourceLoader,
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));

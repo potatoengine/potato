@@ -3,7 +3,6 @@
 #pragma once
 
 #include "_export.h"
-#include "loader.h"
 
 #include "potato/runtime/concurrent_queue.h"
 #include "potato/spud/box.h"
@@ -50,15 +49,5 @@ namespace up {
         uint32 _frameCounter = 0;
         uint64 _startTimestamp = 0;
         double _frameTimestamp = 0;
-    };
-
-    class DefaultLoader : public Loader {
-    public:
-        UP_RENDER_API DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device);
-        ~DefaultLoader() override;
-
-    private:
-        ResourceLoader& _resourceLoader;
-        rc<GpuDevice> _device;
     };
 } // namespace up

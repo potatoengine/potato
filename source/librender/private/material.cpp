@@ -7,7 +7,6 @@
 #include "gpu_pipeline_state.h"
 #include "gpu_resource_view.h"
 #include "gpu_sampler.h"
-#include "loader.h"
 #include "material_generated.h"
 #include "shader.h"
 #include "texture.h"

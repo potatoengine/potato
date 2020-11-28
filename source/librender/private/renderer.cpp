@@ -205,9 +205,3 @@ void up::Renderer::registerResourceBackends(ResourceLoader& resourceLoader) {
     resourceLoader.addBackend(new_box<TextureResourceLoaderBackend>(*this));
     _device->registerResourceBackends(resourceLoader);
 }
-
-up::DefaultLoader::DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device)
-    : _resourceLoader(resourceLoader)
-    , _device(std::move(device)) {}
-
-up::DefaultLoader::~DefaultLoader() = default;

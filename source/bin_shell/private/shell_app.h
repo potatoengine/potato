@@ -22,7 +22,6 @@
 #include <imgui.h>
 
 namespace up {
-    class Loader;
     class Renderer;
     class RenderCamera;
     class Node;
@@ -91,7 +90,6 @@ namespace up::shell {
         bool _aboutDialog = false;
         rc<GpuDevice> _device;
         rc<GpuSwapChain> _swapChain;
-        box<Loader> _loader;
         box<Renderer> _renderer;
         box<RenderCamera> _uiRenderCamera;
         box<Universe> _universe;

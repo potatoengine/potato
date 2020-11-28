@@ -20,7 +20,6 @@
 
 namespace up {
     class Universe;
-    class Loader;
     class ResourceLoader;
 } // namespace up
 
@@ -35,7 +34,6 @@ namespace up::shell {
         static auto createFactory(
             AudioEngine& audioEngine,
             Universe& universe,
-            Loader& loader,
             ResourceLoader& resourceLoader,
             SceneEditor::EnumerateComponents components,
             SceneEditor::HandlePlayClicked onPlayClicked) -> box<EditorFactory>;
