@@ -10,9 +10,9 @@
 namespace up {
     class RenderContext;
 
-    class Shader : public Resource {
+    class Shader : public Asset {
     public:
-        static constexpr zstring_view resourceType = "potato.asset.shader"_zsv;
+        static constexpr zstring_view assetTypeName = "potato.asset.shader"_zsv;
 
         explicit Shader(vector<byte> shader) : _content(std::move(shader)) {}
 

@@ -14,9 +14,9 @@ namespace up {
 }
 
 namespace up {
-    class Texture : public Resource {
+    class Texture : public Asset {
     public:
-        static constexpr zstring_view resourceType = "potato.asset.texture"_zsv;
+        static constexpr zstring_view assetTypeName = "potato.asset.texture"_zsv;
 
         UP_RENDER_API explicit Texture(Image image, rc<GpuTexture> texture);
         UP_RENDER_API ~Texture() override;

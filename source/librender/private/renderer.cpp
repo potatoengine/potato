@@ -126,8 +126,8 @@ namespace up {
     namespace {
         class MeshAssetLoaderBackend : public AssetLoaderBackend {
         public:
-            zstring_view typeName() const noexcept override { return Mesh::resourceType; }
-            rc<Resource> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
+            zstring_view typeName() const noexcept override { return Mesh::assetTypeName; }
+            rc<Asset> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
                 vector<byte> contents;
                 if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
                     return nullptr;
@@ -140,8 +140,8 @@ namespace up {
 
         class MaterialAssetLoaderBackend : public AssetLoaderBackend {
         public:
-            zstring_view typeName() const noexcept override { return Material::resourceType; }
-            rc<Resource> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
+            zstring_view typeName() const noexcept override { return Material::assetTypeName; }
+            rc<Asset> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
                 vector<byte> contents;
                 if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
                     return nullptr;
@@ -154,8 +154,8 @@ namespace up {
 
         class ShaderAssetLoaderBackend : public AssetLoaderBackend {
         public:
-            zstring_view typeName() const noexcept override { return Shader::resourceType; }
-            rc<Resource> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
+            zstring_view typeName() const noexcept override { return Shader::assetTypeName; }
+            rc<Asset> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
                 vector<byte> contents;
                 if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
                     return nullptr;
@@ -170,8 +170,8 @@ namespace up {
         public:
             TextureAssetLoaderBackend(Renderer& renderer) : _renderer(renderer) {}
 
-            zstring_view typeName() const noexcept override { return Texture::resourceType; }
-            rc<Resource> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
+            zstring_view typeName() const noexcept override { return Texture::assetTypeName; }
+            rc<Asset> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
                 auto img = loadImage(stream);
                 if (img.data().empty()) {
                     return nullptr;

@@ -26,7 +26,7 @@ auto up::AssetLoader::translate(string_view assetName, string_view logicalName) 
     return ResourceId{engine.finalize()};
 }
 
-auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Resource> {
+auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Asset> {
     ZoneScopedN("Load Asset Synchronous");
 
     AssetLoaderBackend* const backend = _findBackend(type);
@@ -63,8 +63,8 @@ auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Resou
         return nullptr;
     }
 
-    auto resource = backend->loadFromStream(std::move(stream), *this);
-    if (!resource) {
+    auto asset = backend->loadFromStream(std::move(stream), *this);
+    if (!asset) {
         _logger.error(
             "Load failed for asset `{}` [{}:{}] ({}) from `{}`",
             id,
@@ -75,7 +75,7 @@ auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Resou
         return nullptr;
     }
 
-    return resource;
+    return asset;
 }
 
 void up::AssetLoader::registerBackend(box<AssetLoaderBackend> backend) {

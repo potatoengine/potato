@@ -15,9 +15,9 @@ namespace up {
     class Stream;
     class AssetLoader;
 
-    class Resource : public shared<Resource> {
+    class Asset : public shared<Asset> {
     public:
-        virtual ~Resource() = default;
+        virtual ~Asset() = default;
     };
 
     class AssetLoaderBackend {
@@ -25,7 +25,7 @@ namespace up {
         virtual ~AssetLoaderBackend() = default;
 
         virtual zstring_view typeName() const noexcept = 0;
-        virtual rc<Resource> loadFromStream(Stream stream, AssetLoader& AssetLoader) = 0;
+        virtual rc<Asset> loadFromStream(Stream stream, AssetLoader& AssetLoader) = 0;
     };
 
     class AssetLoader {
@@ -38,12 +38,12 @@ namespace up {
 
         UP_RUNTIME_API ResourceId translate(string_view assetName, string_view logicalName = {}) const;
 
-        template <typename ResourceT>
-        rc<ResourceT> loadAssetSync(ResourceId id) {
-            zstring_view constexpr typeName = ResourceT::resourceType;
-            return rc<ResourceT>(static_cast<ResourceT*>(loadAssetSync(id, typeName).release()));
+        template <typename AssetT>
+        rc<AssetT> loadAssetSync(ResourceId id) {
+            zstring_view constexpr typeName = AssetT::assetTypeName;
+            return rc<AssetT>(static_cast<AssetT*>(loadAssetSync(id, typeName).release()));
         }
-        UP_RUNTIME_API rc<Resource> loadAssetSync(ResourceId id, string_view type = {});
+        UP_RUNTIME_API rc<Asset> loadAssetSync(ResourceId id, string_view type = {});
 
         UP_RUNTIME_API void registerBackend(box<AssetLoaderBackend> backend);
 

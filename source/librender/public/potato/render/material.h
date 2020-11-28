@@ -19,9 +19,9 @@ namespace up {
     class Shader;
     class Texture;
 
-    class Material : public Resource {
+    class Material : public Asset {
     public:
-        static constexpr zstring_view resourceType = "potato.asset.material"_zsv;
+        static constexpr zstring_view assetTypeName = "potato.asset.material"_zsv;
 
         UP_RENDER_API explicit Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures);
         UP_RENDER_API ~Material() override;

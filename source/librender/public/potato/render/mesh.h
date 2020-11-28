@@ -33,9 +33,9 @@ namespace up {
         GpuShaderSemantic semantic = GpuShaderSemantic::Position;
     };
 
-    class Mesh : public Resource {
+    class Mesh : public Asset {
     public:
-        static constexpr zstring_view resourceType = "potato.asset.model"_zsv;
+        static constexpr zstring_view assetTypeName = "potato.asset.model"_zsv;
 
         UP_RENDER_API explicit Mesh(
             vector<uint16> indices,
