@@ -10,6 +10,9 @@
 namespace up {
     class SoundResource : public Asset {
     public:
+        using Asset::Asset;
         static constexpr zstring_view assetTypeName = "potato.asset.sound"_zsv;
+
+    protected:
     };
 } // namespace up

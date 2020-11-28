@@ -26,6 +26,15 @@ auto up::AssetLoader::translate(string_view assetName, string_view logicalName) 
     return ResourceId{engine.finalize()};
 }
 
+auto up::AssetLoader::debugName(ResourceId logicalId) const noexcept -> zstring_view {
+    for (auto const& record : _manifest.records()) {
+        if (record.logicalId == logicalId) {
+            return record.filename;
+        }
+    }
+    return {};
+}
+
 auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Asset> {
     ZoneScopedN("Load Asset Synchronous");
 
@@ -63,7 +72,12 @@ auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Asset
         return nullptr;
     }
 
-    auto asset = backend->loadFromStream(std::move(stream), *this);
+    AssetLoadContext const ctx{.id = id, .stream = stream, .loader = *this};
+
+    auto asset = backend->loadFromStream(ctx);
+
+    stream.close();
+
     if (!asset) {
         _logger.error(
             "Load failed for asset `{}` [{}:{}] ({}) from `{}`",

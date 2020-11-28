@@ -127,42 +127,42 @@ namespace up {
         class MeshAssetLoaderBackend : public AssetLoaderBackend {
         public:
             zstring_view typeName() const noexcept override { return Mesh::assetTypeName; }
-            rc<Asset> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
+            rc<Asset> loadFromStream(AssetLoadContext const& ctx) override {
                 vector<byte> contents;
-                if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+                if (auto rs = readBinary(ctx.stream, contents); rs != IOResult::Success) {
                     return nullptr;
                 }
-                stream.close();
+                ctx.stream.close();
 
-                return Mesh::createFromBuffer(contents);
+                return Mesh::createFromBuffer(ctx.id, contents);
             }
         };
 
         class MaterialAssetLoaderBackend : public AssetLoaderBackend {
         public:
             zstring_view typeName() const noexcept override { return Material::assetTypeName; }
-            rc<Asset> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
+            rc<Asset> loadFromStream(AssetLoadContext const& ctx) override {
                 vector<byte> contents;
-                if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+                if (auto rs = readBinary(ctx.stream, contents); rs != IOResult::Success) {
                     return nullptr;
                 }
-                stream.close();
+                ctx.stream.close();
 
-                return Material::createFromBuffer(contents, assetLoader);
+                return Material::createFromBuffer(ctx.id, contents, ctx.loader);
             }
         };
 
         class ShaderAssetLoaderBackend : public AssetLoaderBackend {
         public:
             zstring_view typeName() const noexcept override { return Shader::assetTypeName; }
-            rc<Asset> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
+            rc<Asset> loadFromStream(AssetLoadContext const& ctx) override {
                 vector<byte> contents;
-                if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+                if (auto rs = readBinary(ctx.stream, contents); rs != IOResult::Success) {
                     return nullptr;
                 }
-                stream.close();
+                ctx.stream.close();
 
-                return up::new_shared<Shader>(std::move(contents));
+                return up::new_shared<Shader>(ctx.id, std::move(contents));
             }
         };
 
@@ -171,8 +171,9 @@ namespace up {
             TextureAssetLoaderBackend(Renderer& renderer) : _renderer(renderer) {}
 
             zstring_view typeName() const noexcept override { return Texture::assetTypeName; }
-            rc<Asset> loadFromStream(Stream stream, AssetLoader& assetLoader) override {
-                auto img = loadImage(stream);
+            rc<Asset> loadFromStream(AssetLoadContext const& ctx) override {
+                auto img = loadImage(ctx.stream);
+                ctx.stream.close();
                 if (img.data().empty()) {
                     return nullptr;
                 }
@@ -188,7 +189,7 @@ namespace up {
                     return nullptr;
                 }
 
-                return new_shared<Texture>(std::move(img), std::move(tex));
+                return new_shared<Texture>(ctx.id, std::move(img), std::move(tex));
             }
 
         private:

@@ -38,13 +38,14 @@ namespace up {
         static constexpr zstring_view assetTypeName = "potato.asset.model"_zsv;
 
         UP_RENDER_API explicit Mesh(
+            ResourceId id,
             vector<uint16> indices,
             vector<up::byte> data,
             view<MeshBuffer> buffers,
             view<MeshChannel> channels);
         UP_RENDER_API ~Mesh() override;
 
-        UP_RENDER_API static auto createFromBuffer(view<byte>) -> rc<Mesh>;
+        UP_RENDER_API static auto createFromBuffer(ResourceId id, view<byte>) -> rc<Mesh>;
 
         UP_RENDER_API void populateLayout(span<GpuInputLayoutElement>& inputLayout) const noexcept;
         UP_RENDER_API void updateVertexBuffers(RenderContext& ctx);

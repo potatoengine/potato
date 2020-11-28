@@ -11,8 +11,14 @@
 
 #include <glm/vec3.hpp>
 
-up::Mesh::Mesh(vector<up::uint16> indices, vector<up::byte> data, view<MeshBuffer> buffers, view<MeshChannel> channels)
-    : _buffers(buffers.begin(), buffers.end())
+up::Mesh::Mesh(
+    ResourceId id,
+    vector<up::uint16> indices,
+    vector<up::byte> data,
+    view<MeshBuffer> buffers,
+    view<MeshChannel> channels)
+    : Asset(id)
+    , _buffers(buffers.begin(), buffers.end())
     , _channels(channels.begin(), channels.end())
     , _indices(std::move(indices))
     , _data(std::move(data)) {}
@@ -51,7 +57,7 @@ void up::Mesh::bindVertexBuffers(RenderContext& ctx) {
     }
 }
 
-auto up::Mesh::createFromBuffer(view<byte> buffer) -> rc<Mesh> {
+auto up::Mesh::createFromBuffer(ResourceId id, view<byte> buffer) -> rc<Mesh> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!schema::VerifyModelBuffer(verifier)) {
         return {};
@@ -150,5 +156,5 @@ auto up::Mesh::createFromBuffer(view<byte> buffer) -> rc<Mesh> {
         }
     }
 
-    return up::new_shared<Mesh>(std::move(indices), vector(data.as_bytes()), span{&bufferDesc, 1}, channels);
+    return up::new_shared<Mesh>(id, std::move(indices), vector(data.as_bytes()), span{&bufferDesc, 1}, channels);
 }
