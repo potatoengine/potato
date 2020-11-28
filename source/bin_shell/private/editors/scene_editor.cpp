@@ -50,7 +50,7 @@ namespace up::shell {
             zstring_view editorName() const noexcept override { return SceneEditor::editorName; }
 
             box<Editor> createEditor() override {
-                auto material = _loader.loadMaterialSync("materials/full.mat");
+                auto material = _resourceLoader.loadAsset<Material>(_resourceLoader.translate("materials/full.mat"));
                 if (material == nullptr) {
                     return nullptr;
                 }

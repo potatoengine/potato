@@ -3,8 +3,8 @@
 #pragma once
 
 #include "_export.h"
-#include "resource_manifest.h"
 #include "logger.h"
+#include "resource_manifest.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
@@ -13,6 +13,7 @@
 
 namespace up {
     class Stream;
+    class ResourceLoader;
 
     class Resource : public shared<Resource> {
     public:
@@ -24,7 +25,7 @@ namespace up {
         virtual ~ResourceLoaderBackend() = default;
 
         virtual zstring_view typeName() const noexcept = 0;
-        virtual rc<Resource> loadFromStream(Stream stream) = 0;
+        virtual rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) = 0;
     };
 
     class ResourceLoader {

@@ -104,7 +104,7 @@ auto up::ResourceLoader::loadAsset(ResourceId id, string_view logicalName, strin
         return nullptr;
     }
 
-    auto resource = backend->loadFromStream(std::move(stream));
+    auto resource = backend->loadFromStream(std::move(stream), *this);
     if (!resource) {
         _logger.error("Load failed for asset `{}:{}` ({}) from `{}`", id, logicalName, type, filename);
         return nullptr;

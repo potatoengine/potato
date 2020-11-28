@@ -127,7 +127,7 @@ namespace up {
         class MeshResourceLoaderBackend : public ResourceLoaderBackend {
         public:
             zstring_view typeName() const noexcept override { return Mesh::resourceType; }
-            rc<Resource> loadFromStream(Stream stream) override {
+            rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) override {
                 vector<byte> contents;
                 if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
                     return nullptr;
@@ -137,12 +137,72 @@ namespace up {
                 return Mesh::createFromBuffer(contents);
             }
         };
+
+        class MaterialResourceLoaderBackend : public ResourceLoaderBackend {
+        public:
+            zstring_view typeName() const noexcept override { return Material::resourceType; }
+            rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) override {
+                vector<byte> contents;
+                if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+                    return nullptr;
+                }
+                stream.close();
+
+                return Material::createFromBuffer(contents, resourceLoader);
+            }
+        };
+
+        class ShaderResourceLoaderBackend : public ResourceLoaderBackend {
+        public:
+            zstring_view typeName() const noexcept override { return Shader::resourceType; }
+            rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) override {
+                vector<byte> contents;
+                if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+                    return nullptr;
+                }
+                stream.close();
+
+                return up::new_shared<Shader>(std::move(contents));
+            }
+        };
+
+        class TextureResourceLoaderBackend : public ResourceLoaderBackend {
+        public:
+            TextureResourceLoaderBackend(Renderer& renderer) : _renderer(renderer) {}
+
+            zstring_view typeName() const noexcept override { return Texture::resourceType; }
+            rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) override {
+                auto img = loadImage(stream);
+                if (img.data().empty()) {
+                    return nullptr;
+                }
+
+                GpuTextureDesc desc = {};
+                desc.type = GpuTextureType::Texture2D;
+                desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
+                desc.width = img.header().width;
+                desc.height = img.header().height;
+
+                auto tex = _renderer.device().createTexture2D(desc, img.data());
+                if (tex == nullptr) {
+                    return nullptr;
+                }
+
+                return new_shared<Texture>(std::move(img), std::move(tex));
+            }
+
+        private:
+            Renderer& _renderer;
+        };
     } // namespace
 } // namespace up
 
 void up::Renderer::registerResourceBackends(ResourceLoader& resourceLoader) {
     UP_ASSERT(_device != nullptr);
     resourceLoader.addBackend(new_box<MeshResourceLoaderBackend>());
+    resourceLoader.addBackend(new_box<MaterialResourceLoaderBackend>());
+    resourceLoader.addBackend(new_box<ShaderResourceLoaderBackend>());
+    resourceLoader.addBackend(new_box<TextureResourceLoaderBackend>(*this));
     _device->registerResourceBackends(resourceLoader);
 }
 
@@ -151,50 +211,3 @@ up::DefaultLoader::DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> d
     , _device(std::move(device)) {}
 
 up::DefaultLoader::~DefaultLoader() = default;
-
-auto up::DefaultLoader::loadMaterialSync(zstring_view path) -> rc<Material> {
-    vector<byte> contents;
-    auto stream = _resourceLoader.openAsset(path);
-    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
-        return nullptr;
-    }
-    stream.close();
-
-    return Material::createFromBuffer(contents, *this);
-}
-
-auto up::DefaultLoader::loadShaderSync(zstring_view path, string_view logicalName) -> rc<Shader> {
-    vector<byte> contents;
-    auto stream = _resourceLoader.openAsset(path, logicalName);
-    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
-        return nullptr;
-    }
-    stream.close();
-
-    return up::new_shared<Shader>(std::move(contents));
-}
-
-auto up::DefaultLoader::loadTextureSync(zstring_view path) -> rc<Texture> {
-    Stream stream = _resourceLoader.openAsset(path);
-    if (!stream) {
-        return nullptr;
-    }
-
-    auto img = loadImage(stream);
-    if (img.data().empty()) {
-        return nullptr;
-    }
-
-    GpuTextureDesc desc = {};
-    desc.type = GpuTextureType::Texture2D;
-    desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
-    desc.width = img.header().width;
-    desc.height = img.header().height;
-
-    auto tex = _device->createTexture2D(desc, img.data());
-    if (tex == nullptr) {
-        return nullptr;
-    }
-
-    return new_shared<Texture>(std::move(img), std::move(tex));
-}

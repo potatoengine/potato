@@ -32,7 +32,7 @@ namespace up {
         class SoundResourceLoaderBackend : public ResourceLoaderBackend {
         public:
             zstring_view typeName() const noexcept override { return SoundResource::resourceType; }
-            rc<Resource> loadFromStream(Stream stream) override;
+            rc<Resource> loadFromStream(Stream stream, ResourceLoader& resourceLoader) override;
         };
     } // namespace
 } // namespace up
@@ -63,7 +63,7 @@ auto up::AudioEngineImpl::play(SoundResource const* sound) -> PlayHandle {
     return static_cast<PlayHandle>(handle);
 }
 
-auto up::SoundResourceLoaderBackend::loadFromStream(Stream stream) -> rc<Resource> {
+auto up::SoundResourceLoaderBackend::loadFromStream(Stream stream, ResourceLoader& resourceLoader) -> rc<Resource> {
     vector<byte> contents;
     if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
         return nullptr;

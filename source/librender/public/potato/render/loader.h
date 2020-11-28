@@ -14,9 +14,5 @@ namespace up {
     class Loader {
     public:
         virtual ~Loader() = default;
-
-        virtual auto loadMaterialSync(zstring_view path) -> rc<Material> = 0;
-        virtual auto loadShaderSync(zstring_view path, string_view logicalName) -> rc<Shader> = 0;
-        virtual auto loadTextureSync(zstring_view path) -> rc<Texture> = 0;
     };
 } // namespace up

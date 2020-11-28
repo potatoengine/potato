@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "potato/runtime/resource_loader.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/vector.h"
@@ -9,8 +10,10 @@
 namespace up {
     class RenderContext;
 
-    class Shader : public shared<Shader> {
+    class Shader : public Resource {
     public:
+        static constexpr zstring_view resourceType = "potato.asset.shader"_zsv;
+
         explicit Shader(vector<byte> shader) : _content(std::move(shader)) {}
         ~Shader() = default;
 

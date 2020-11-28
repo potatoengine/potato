@@ -57,10 +57,6 @@ namespace up {
         UP_RENDER_API DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device);
         ~DefaultLoader() override;
 
-        rc<Material> loadMaterialSync(zstring_view path) override;
-        rc<Shader> loadShaderSync(zstring_view path, string_view logicalName) override;
-        rc<Texture> loadTextureSync(zstring_view path) override;
-
     private:
         ResourceLoader& _resourceLoader;
         rc<GpuDevice> _device;
