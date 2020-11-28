@@ -47,7 +47,9 @@ namespace up::shell {
 
             zstring_view editorName() const noexcept override { return SceneEditor::editorName; }
 
-            box<Editor> createEditor() override {
+            box<Editor> createEditor() override { return nullptr; }
+
+            box<Editor> createEditorForDocument(zstring_view filename) override {
                 auto material = _assetLoader.loadAssetSync<Material>(_assetLoader.translate("materials/full.mat"));
                 if (!material.isSet()) {
                     return nullptr;
@@ -65,13 +67,11 @@ namespace up::shell {
                 }
 
                 auto scene = new_shared<Scene>(_universe, _audioEngine);
-                auto doc = new_box<SceneDocument>(std::move(scene));
+                auto doc = new_box<SceneDocument>(string(filename), std::move(scene));
                 doc->createTestObjects(mesh, material, ding);
 
                 return new_box<SceneEditor>(std::move(doc), _assetLoader, _components, _onPlayClicked);
             }
-
-            box<Editor> createEditorForAsset(zstring_view) override { return createEditor(); }
 
         private:
             AudioEngine& _audioEngine;

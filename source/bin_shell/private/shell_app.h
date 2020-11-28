@@ -82,7 +82,7 @@ namespace up::shell {
         bool _loadProject(zstring_view path);
 
         void _openEditor(zstring_view editorName);
-        void _openEditorForAsset(zstring_view editorName, zstring_view asset);
+        void _openEditorForDocument(zstring_view editorName, zstring_view filename);
 
         bool _running = true;
         bool _openProject = false;

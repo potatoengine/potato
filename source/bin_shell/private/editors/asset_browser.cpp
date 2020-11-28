@@ -36,7 +36,7 @@ namespace up::shell {
                 return new_box<AssetBrowser>(_assetLoader, _onFileSelected, _onFileImport);
             }
 
-            box<Editor> createEditorForAsset(zstring_view) override { return nullptr; }
+            box<Editor> createEditorForDocument(zstring_view) override { return nullptr; }
 
         private:
             AssetLoader& _assetLoader;

@@ -28,7 +28,7 @@ namespace up::shell {
         EditorFactory& operator=(EditorFactory const&) = delete;
 
         virtual zstring_view editorName() const noexcept = 0;
-        virtual box<Editor> createEditorForAsset(zstring_view asset) = 0;
+        virtual box<Editor> createEditorForDocument(zstring_view filename) = 0;
         virtual box<Editor> createEditor() = 0;
     };
 

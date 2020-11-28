@@ -356,10 +356,10 @@ void up::shell::ShellApp::_openEditor(zstring_view editorName) {
     }
 }
 
-void up::shell::ShellApp::_openEditorForAsset(zstring_view editorName, zstring_view asset) {
+void up::shell::ShellApp::_openEditorForDocument(zstring_view editorName, zstring_view filename) {
     for (auto const& factory : _editorFactories) {
         if (factory->editorName() == editorName) {
-            auto editor = factory->createEditorForAsset(asset);
+            auto editor = factory->createEditorForDocument(filename);
             if (editor != nullptr) {
                 _editors.open(std::move(editor));
             }
@@ -660,7 +660,7 @@ bool up::shell::ShellApp::_loadConfig(zstring_view path) {
 
 void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
     if (path::extension(filename) == ".scene") {
-        _createScene();
+        _openEditorForDocument(SceneEditor::editorName, filename);
     }
     else {
 #if defined(UP_PLATFORM_WINDOWS)

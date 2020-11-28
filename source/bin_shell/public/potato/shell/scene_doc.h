@@ -28,7 +28,7 @@ namespace up {
 
     class SceneDocument {
     public:
-        explicit SceneDocument(rc<Scene> scene) : _scene(std::move(scene)) {}
+        SceneDocument(string filename, rc<Scene> scene) : _filename(std::move(filename)), _scene(std::move(scene)) {}
 
         rc<Scene> const& scene() const { return _scene; }
 
@@ -49,6 +49,7 @@ namespace up {
         void _deleteEntityAt(int index, vector<EntityId>& out_deleted);
         void _toJson(nlohmann::json& el, int index) const;
 
+        string _filename;
         rc<Scene> _scene;
         vector<SceneEntity> _entities;
     };
