@@ -4,7 +4,7 @@
 #include "components_schema.h"
 
 #include "potato/ecs/world.h"
-#include "potato/render/model.h"
+#include "potato/render/mesh.h"
 
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -108,7 +108,10 @@ void up::SceneDocument::parentTo(EntityId childId, EntityId parentId) {
     }
 }
 
-void up::SceneDocument::createTestObjects(rc<Model> const& cube, rc<SoundResource> const& ding) {
+void up::SceneDocument::createTestObjects(
+    rc<Mesh> const& cube,
+    rc<Material> const& mat,
+    rc<SoundResource> const& ding) {
     auto pi = glm::pi<float>();
 
     constexpr int numObjects = 100;
@@ -119,7 +122,7 @@ void up::SceneDocument::createTestObjects(rc<Model> const& cube, rc<SoundResourc
     _scene->world().addComponent(
         centerId,
         components::Transform{.position = {0, 5, 0}, .rotation = glm::identity<glm::quat>()});
-    _scene->world().addComponent(centerId, components::Mesh{cube});
+    _scene->world().addComponent(centerId, components::Mesh{cube, mat});
     _scene->world().addComponent(centerId, components::Ding{2, 0, ding});
 
     auto const ringId = createEntity("Ring", rootId);
@@ -135,7 +138,7 @@ void up::SceneDocument::createTestObjects(rc<Model> const& cube, rc<SoundResourc
                      1 + glm::sin(r * 10.f) * 5.f,
                      (20 + glm::sin(r) * 10.f) * glm::cos(r)},
                 .rotation = glm::identity<glm::quat>()});
-        _scene->world().addComponent(id, components::Mesh{cube});
+        _scene->world().addComponent(id, components::Mesh{cube, mat});
         _scene->world().addComponent(id, components::Wave{0, r});
         _scene->world().addComponent(id, components::Spin{glm::sin(r) * 2.f - 1.f});
     }

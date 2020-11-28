@@ -19,7 +19,6 @@
 #include "potato/render/gpu_texture.h"
 #include "potato/render/material.h"
 #include "potato/render/mesh.h"
-#include "potato/render/model.h"
 #include "potato/render/renderer.h"
 #include "potato/runtime/asset_loader.h"
 #include "potato/spud/delegate.h"
@@ -64,13 +63,11 @@ namespace up::shell {
                     return nullptr;
                 }
 
-                auto model = new_shared<Model>(std::move(mesh), std::move(material));
-
                 auto scene = new_shared<Scene>(_universe, _audioEngine);
                 auto doc = new_box<SceneDocument>(std::move(scene));
-                doc->createTestObjects(model, ding);
+                doc->createTestObjects(mesh, material, ding);
 
-                return new_box<SceneEditor>(std::move(doc), _components, _onPlayClicked);
+                return new_box<SceneEditor>(std::move(doc), _assetLoader, _components, _onPlayClicked);
             }
 
             box<Editor> createEditorForAsset(zstring_view) override { return createEditor(); }
@@ -281,6 +278,8 @@ void up::shell::SceneEditor::_inspector() {
     }
 
     ImGuiID const addComponentId = ImGui::GetID("##add_component_list");
+
+    _propertyGrid.bindResourceLoader(&_assetLoader);
 
     _doc->scene()->world().interrogateEntityUnsafe(
         _selection.selected(),

@@ -26,13 +26,15 @@ namespace up {
 
         class SoundResourceWav final : public SoundResource {
         public:
+            using SoundResource::SoundResource;
+
             mutable SoLoud::Wav _wav;
         };
 
         class SoundAssetLoaderBackend : public AssetLoaderBackend {
         public:
             zstring_view typeName() const noexcept override { return SoundResource::assetTypeName; }
-            rc<Asset> loadFromStream(Stream stream, AssetLoader& assetLoader) override;
+            rc<Asset> loadFromStream(AssetLoadContext const& ctx) override;
         };
     } // namespace
 } // namespace up
@@ -63,13 +65,13 @@ auto up::AudioEngineImpl::play(SoundResource const* sound) -> PlayHandle {
     return static_cast<PlayHandle>(handle);
 }
 
-auto up::SoundAssetLoaderBackend::loadFromStream(Stream stream, AssetLoader& assetLoader) -> rc<Asset> {
+auto up::SoundAssetLoaderBackend::loadFromStream(AssetLoadContext const& ctx) -> rc<Asset> {
     vector<byte> contents;
-    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
+    if (auto rs = readBinary(ctx.stream, contents); rs != IOResult::Success) {
         return nullptr;
     }
 
-    auto wav = new_shared<SoundResourceWav>();
+    auto wav = new_shared<SoundResourceWav>(ctx.id);
     auto const result = wav->_wav.loadMem(
         reinterpret_cast<unsigned char const*>(contents.data()),
         static_cast<unsigned int>(contents.size()),

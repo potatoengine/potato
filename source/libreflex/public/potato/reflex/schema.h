@@ -67,8 +67,7 @@ namespace up::reflex {
 
         using PointerDeref = void const* (*)(void const* ptr);
         using PointerMutableDeref = void* (*)(void* ptr);
-        using PointerReset = void (*)(void* ptr);
-        using PointerInstantiate = void* (*)(void* ptr);
+        using PointerAssign = void (*)(void* ptr, void* object);
 
         ArrayGetSize arrayGetSize = nullptr;
         ArrayElementAt arrayElementAt = nullptr;
@@ -80,8 +79,7 @@ namespace up::reflex {
 
         PointerDeref pointerDeref = nullptr;
         PointerMutableDeref pointerMutableDeref = nullptr;
-        PointerReset pointerReset = nullptr;
-        PointerInstantiate pointerInstantiate = nullptr;
+        PointerAssign pointerAssign = nullptr;
     };
 
     struct SchemaField {
@@ -257,15 +255,8 @@ namespace up::reflex {
             static SchemaOperations const operations = {
                 .pointerDeref = [](void const* ptr) -> void const* { return static_cast<Type const*>(ptr)->get(); },
                 .pointerMutableDeref = [](void* ptr) -> void* { return static_cast<Type const*>(ptr)->get(); },
-                .pointerReset = [](void* ptr) { static_cast<Type*>(ptr)->reset(); },
-                .pointerInstantiate = [](void* ptr) -> void* {
-                    if constexpr (std::is_default_constructible_v<ValueType>) {
-                        return (*static_cast<Type*>(ptr) = new_box<ValueType>()).get();
-                    }
-                    else {
-                        return nullptr; // FIXME: make this whole function nullptr if not supported
-                    }
-                },
+                .pointerAssign = [](void* ptr,
+                                    void* object) { static_cast<Type*>(ptr)->reset(static_cast<ValueType*>(object)); },
             };
 
             static Schema const schema{
@@ -281,15 +272,8 @@ namespace up::reflex {
             static SchemaOperations const operations = {
                 .pointerDeref = [](void const* ptr) -> void const* { return static_cast<Type const*>(ptr)->get(); },
                 .pointerMutableDeref = [](void* ptr) -> void* { return static_cast<Type const*>(ptr)->get(); },
-                .pointerReset = [](void* ptr) { static_cast<Type*>(ptr)->reset(); },
-                .pointerInstantiate = [](void* ptr) -> void* {
-                    if constexpr (std::is_default_constructible_v<ValueType>) {
-                        return (*static_cast<Type*>(ptr) = new_shared<ValueType>()).get();
-                    }
-                    else {
-                        return nullptr; // FIXME: make this whole function nullptr if not supported
-                    }
-                },
+                .pointerAssign = [](void* ptr,
+                                    void* object) { static_cast<Type*>(ptr)->reset(static_cast<ValueType*>(object)); },
             };
 
             static Schema const schema{

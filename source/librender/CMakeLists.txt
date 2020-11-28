@@ -13,7 +13,6 @@ target_sources(potato_librender PRIVATE
     "private/image.cpp"
     "private/material.cpp"
     "private/mesh.cpp"
-    "private/model.cpp"
     "private/renderer.cpp"
     "private/stb_impl.cpp"
     "private/texture.cpp"

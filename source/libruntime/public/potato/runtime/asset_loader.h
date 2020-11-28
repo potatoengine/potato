@@ -17,7 +17,19 @@ namespace up {
 
     class Asset : public shared<Asset> {
     public:
+        explicit Asset(ResourceId id) noexcept : _id(id) {}
         virtual ~Asset() = default;
+
+        ResourceId assetId() const noexcept { return _id; }
+
+    private:
+        ResourceId _id{};
+    };
+
+    struct AssetLoadContext {
+        ResourceId id{};
+        Stream& stream;
+        AssetLoader& loader;
     };
 
     class AssetLoaderBackend {
@@ -25,7 +37,7 @@ namespace up {
         virtual ~AssetLoaderBackend() = default;
 
         virtual zstring_view typeName() const noexcept = 0;
-        virtual rc<Asset> loadFromStream(Stream stream, AssetLoader& AssetLoader) = 0;
+        virtual rc<Asset> loadFromStream(AssetLoadContext const& ctx) = 0;
     };
 
     class AssetLoader {
@@ -37,6 +49,7 @@ namespace up {
         void setCasPath(string path) { _casPath = std::move(path); }
 
         UP_RUNTIME_API ResourceId translate(string_view assetName, string_view logicalName = {}) const;
+        UP_RUNTIME_API zstring_view debugName(ResourceId logicalId) const noexcept;
 
         template <typename AssetT>
         rc<AssetT> loadAssetSync(ResourceId id) {

@@ -14,8 +14,9 @@
 #include "potato/runtime/asset_loader.h"
 #include "potato/spud/string.h"
 
-up::Material::Material(rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures)
-    : _vertexShader(std::move(vertexShader))
+up::Material::Material(ResourceId id, rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures)
+    : Asset(id)
+    , _vertexShader(std::move(vertexShader))
     , _pixelShader(std::move(pixelShader))
     , _textures(std::move(textures))
     , _srvs(_textures.size())
@@ -58,7 +59,7 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
     }
 }
 
-auto up::Material::createFromBuffer(view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
+auto up::Material::createFromBuffer(ResourceId id, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!schema::VerifyMaterialBuffer(verifier)) {
         return {};
@@ -102,5 +103,5 @@ auto up::Material::createFromBuffer(view<byte> buffer, AssetLoader& assetLoader)
         textures.push_back(std::move(tex));
     }
 
-    return new_shared<Material>(std::move(vertex), std::move(pixel), std::move(textures));
+    return new_shared<Material>(id, std::move(vertex), std::move(pixel), std::move(textures));
 }

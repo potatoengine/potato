@@ -25,8 +25,6 @@
 #include "potato/render/gpu_swap_chain.h"
 #include "potato/render/gpu_texture.h"
 #include "potato/render/material.h"
-#include "potato/render/mesh.h"
-#include "potato/render/model.h"
 #include "potato/render/renderer.h"
 #include "potato/render/shader.h"
 #include "potato/tools/project.h"

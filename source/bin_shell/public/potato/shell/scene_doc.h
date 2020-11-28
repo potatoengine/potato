@@ -10,7 +10,8 @@
 #include "potato/spud/vector.h"
 
 namespace up {
-    class Model;
+    class Mesh;
+    class Material;
     class SoundResource;
 
     struct SceneEntity {
@@ -36,7 +37,7 @@ namespace up {
 
         void parentTo(EntityId childId, EntityId parentId);
 
-        void createTestObjects(rc<Model> const& cube, rc<SoundResource> const& ding);
+        void createTestObjects(rc<Mesh> const& cube, rc<Material> const& mat, rc<SoundResource> const& ding);
 
     private:
         void _deleteEntityAt(int index, vector<EntityId>& out_deleted);

@@ -76,87 +76,11 @@ void up::shell::AssetBrowser::content() {
     }
 }
 
-bool up::shell::AssetBrowser::_showAssetIcon(zstring_view name, char8_t const* icon) {
-    ImGuiWindow* const window = ImGui::GetCurrentWindow();
-
-    ImGui::TableNextColumn();
-    ImGui::PushID(name.c_str());
-
-    ImVec2 const size = ImGui::CalcItemSize({assetIconWidth, assetIconWidth}, 0.0f, 0.0f);
-    ImRect const bounds{window->DC.CursorPos, window->DC.CursorPos + size};
-    ImRect const innerBounds{bounds.Min + ImGui::GetItemSpacing(), bounds.Max - ImGui::GetItemSpacing()};
-    ImGuiID const id = ImGui::GetID("##button");
-
-    bool clicked = false;
-
-    ImGui::ItemSize(size);
-    if (ImGui::ItemAdd(bounds, id)) {
-        bool const hovered = ImGui::IsItemHovered();
-        bool const held = ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
-
-        if (hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-            clicked = true;
-        }
-
-        ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
-        ImU32 const bgColor =
-            ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
-
-        if (hovered) {
-            window->DrawList->AddRectFilled(bounds.Min, bounds.Max, bgColor, 8.f);
-        }
-
-        // must calculate this _before_ pushing the icon font, since we want to calcualte the size of the
-        // label's height
-        float const iconMaxHeight =
-            innerBounds.GetHeight() - ImGui::GetTextLineHeightWithSpacing() - ImGui::GetItemInnerSpacing().y;
-
-        ImGui::PushFont(ImGui::UpFont::FontAwesome_72);
-        ImVec2 iconSize = ImGui::CalcTextSize(reinterpret_cast<char const*>(icon));
-        float iconScale = 1.f;
-        if (iconSize.y > iconMaxHeight) {
-            iconScale = iconMaxHeight / iconSize.y;
-        }
-        ImGui::SetWindowFontScale(iconScale);
-        ImVec2 const iconPos{
-            innerBounds.Min.x + (innerBounds.GetWidth() - iconSize.x * iconScale) * 0.5f,
-            innerBounds.Min.y};
-        window->DrawList->AddText(iconPos, textColor, reinterpret_cast<char const*>(icon));
-        ImGui::SetWindowFontScale(1.f);
-        ImGui::PopFont();
-
-        ImVec2 const textSize = ImGui::CalcTextSize(name.c_str(), nullptr, false, 0.f);
-        ImVec2 const textPos{bounds.Min.x, innerBounds.Max.y - ImGui::GetItemSpacing().y - textSize.y};
-
-        if (hovered) {
-            window->DrawList->AddRectFilled(
-                ImVec2{bounds.Min.x, textPos.y},
-                ImVec2{bounds.Max.x, textPos.y + textSize.y},
-                ImGui::GetColorU32(ImGuiCol_Header));
-
-            if (textSize.x > bounds.GetWidth()) {
-                ImGui::BeginTooltip();
-                ImGui::Text("%s", name.c_str());
-                ImGui::EndTooltip();
-            }
-        }
-
-        ImGui::TextCentered(textPos, ImVec2{bounds.Max.x, innerBounds.Max.y}, textColor, name.c_str());
-    }
-
-    ImGui::PopID();
-
-    return clicked;
-}
-
 void up::shell::AssetBrowser::_showAssets(int folderIndex) {
-    float const availWidth = ImGui::GetContentRegionAvailWidth();
-    int const columns = clamp(static_cast<int>(availWidth / assetIconWidth), 1, 64);
-
-    if (ImGui::BeginTable("##assets", columns)) {
+    if (ImGui::BeginIconGrid("##assets")) {
         for (int childIndex = _folders[folderIndex].firstChild; childIndex != -1;
              childIndex = _folders[childIndex].nextSibling) {
-            if (_showAssetIcon(_folders[childIndex].name, ICON_FA_FOLDER)) {
+            if (ImGui::IconGridItem(_folders[childIndex].name.c_str(), ICON_FA_FOLDER)) {
                 _selectFolder(childIndex);
             }
         }
@@ -166,7 +90,7 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
                 continue;
             }
 
-            if (_showAssetIcon(asset.name, _assetEditService.getIconForType(asset.type))) {
+            if (ImGui::IconGridItem(asset.name.c_str(), _assetEditService.getIconForType(asset.type))) {
                 _handleFileClick(asset.filename);
             }
 
@@ -180,7 +104,7 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
                 ImGui::EndPopup();
             }
         }
-        ImGui::EndTable();
+        ImGui::EndIconGrid();
     }
 }
 

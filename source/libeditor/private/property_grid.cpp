@@ -1,12 +1,14 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "property_grid.h"
+#include "asset_browser_popup.h"
 #include "common_schema.h"
 #include "constraint_schema.h"
 #include "tools_schema.h"
 
 #include "potato/editor/icons.h"
 #include "potato/editor/imgui_ext.h"
+#include "potato/runtime/asset_loader.h"
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
@@ -40,6 +42,12 @@ void up::editor::PropertyGrid::_editField(
     reflex::Schema const& schema,
     void* object) {
     ImGui::PushID(object);
+
+    if (auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(field)) {
+        _editAssetField(field, *field.schema, object);
+        ImGui::PopID();
+        return;
+    }
 
     switch (schema.primitive) {
         case reflex::SchemaPrimitive::Int16:
@@ -343,4 +351,54 @@ void up::editor::PropertyGrid::_editStringField(
     if (ImGui::InputText("##string", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
         value = string(buffer);
     }
+}
+
+void up::editor::PropertyGrid::_editAssetField(
+    reflex::SchemaField const& field,
+    reflex::Schema const& schema,
+    void* object) {
+    ImGui::BeginGroup();
+
+    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(field);
+    UP_ASSERT(resourceAnnotation != nullptr);
+
+    Asset const* asset = nullptr;
+    zstring_view assetName;
+    ResourceId assetId{};
+    if (schema.operations->pointerDeref != nullptr) {
+        void const* pointee = schema.operations->pointerDeref(object);
+        if (pointee != nullptr) {
+            asset = static_cast<Asset const*>(pointee);
+            assetId = asset->assetId();
+            assetName = _assetLoader->debugName(assetId);
+        }
+        if (assetName.empty()) {
+            assetName = "<empty>"_zsv;
+        }
+    }
+    else {
+        assetName = "<unknown>"_zsv;
+    }
+
+    ImGui::Text("%s", assetName.c_str());
+    ImGui::SameLine();
+    if (ImGui::IconButton("##clear", ICON_FA_TRASH) && schema.operations->pointerAssign != nullptr) {
+        schema.operations->pointerAssign(object, nullptr);
+    }
+    ImGui::SameLine();
+
+    if (ImGui::IconButton("##select", ICON_FA_FOLDER)) {
+        ImGui::OpenPopup("##asset_browser");
+    }
+
+    if (_assetLoader != nullptr && schema.operations->pointerAssign != nullptr) {
+        ResourceId targetAssetId = assetId;
+        if (up::assetBrowserPopup("##asset_browser", targetAssetId, resourceAnnotation->assetType, *_assetLoader) &&
+            targetAssetId != assetId) {
+            rc<Asset> newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);
+            schema.operations->pointerAssign(object, newAsset.release());
+        }
+    }
+
+    ImGui::EndGroup();
 }

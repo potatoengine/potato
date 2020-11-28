@@ -57,7 +57,6 @@ namespace up::shell {
             int folderIndex = -1;
         };
 
-        bool _showAssetIcon(zstring_view name, char8_t const* icon);
         void _showAssets(int folderIndex);
 
         void _showBreadcrumb(int index);
