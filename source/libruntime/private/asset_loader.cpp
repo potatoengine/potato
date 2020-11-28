@@ -24,13 +24,24 @@ auto up::AssetLoader::translate(string_view assetName, string_view logicalName) 
     return ResourceId{engine.finalize()};
 }
 
-auto up::AssetLoader::loadAsset(ResourceId id, string_view logicalName, string_view type) -> rc<Resource> {
+auto up::AssetLoader::loadAsset(ResourceId id, string_view type) -> rc<Resource> {
     AssetLoaderBackend* const backend = _findBackend(type);
     UP_ASSERT(backend != nullptr, "Unknown backend `{}`", type);
 
-    ResourceManifest::Record const* const record = _findRecord(id, logicalName, type);
+    ResourceManifest::Record const* const record = _findRecord(id);
     if (record == nullptr) {
-        _logger.error("Failed to find asset `{}:{}` ({})", id, logicalName, type);
+        _logger.error("Failed to find asset `{}` ({})", id, type);
+        return nullptr;
+    }
+
+    if (record->type != type) {
+        _logger.error(
+            "Invalid type for asset `{}` [{}:{}] ({}, expected {})",
+            id,
+            record->filename,
+            record->logicalName,
+            record->type,
+            type);
         return nullptr;
     }
 
@@ -38,13 +49,25 @@ auto up::AssetLoader::loadAsset(ResourceId id, string_view logicalName, string_v
 
     Stream stream = fs::openRead(filename);
     if (!stream) {
-        _logger.error("Unknown asset `{}:{}` ({}) from `{}`", id, logicalName, type, filename);
+        _logger.error(
+            "Unknown asset `{}` [{}:{}] ({}) from `{}`",
+            id,
+            record->filename,
+            record->logicalName,
+            type,
+            filename);
         return nullptr;
     }
 
     auto resource = backend->loadFromStream(std::move(stream), *this);
     if (!resource) {
-        _logger.error("Load failed for asset `{}:{}` ({}) from `{}`", id, logicalName, type, filename);
+        _logger.error(
+            "Load failed for asset `{}` [{}:{}] ({}) from `{}`",
+            id,
+            record->filename,
+            record->logicalName,
+            type,
+            filename);
         return nullptr;
     }
 
@@ -57,12 +80,9 @@ void up::AssetLoader::addBackend(box<AssetLoaderBackend> backend) {
     _backends.push_back(std::move(backend));
 }
 
-auto up::AssetLoader::_findRecord(ResourceId id, string_view logicalName, string_view type) const
-    -> ResourceManifest::Record const* {
-    // find the correct record
-    uint64 const logicalHash = hash_value(logicalName);
+auto up::AssetLoader::_findRecord(ResourceId logicalId) const -> ResourceManifest::Record const* {
     for (auto const& record : _manifest.records()) {
-        if (record.rootId == id && record.logicalName == logicalHash && record.type == type) {
+        if (record.logicalId == logicalId) {
             return &record;
         }
     }

@@ -39,17 +39,17 @@ namespace up {
         UP_RUNTIME_API ResourceId translate(string_view assetName, string_view logicalName = {}) const;
 
         template <typename ResourceT>
-        rc<ResourceT> loadAsset(ResourceId id, string_view logicalName = {}) {
+        rc<ResourceT> loadAsset(ResourceId id) {
             zstring_view constexpr typeName = ResourceT::resourceType;
-            return rc<ResourceT>(static_cast<ResourceT*>(loadAsset(id, logicalName, typeName).release()));
+            return rc<ResourceT>(static_cast<ResourceT*>(loadAsset(id, typeName).release()));
         }
-        UP_RUNTIME_API rc<Resource> loadAsset(ResourceId id, string_view logicalName = {}, string_view type = {});
+        UP_RUNTIME_API rc<Resource> loadAsset(ResourceId id, string_view type = {});
 
         UP_RUNTIME_API void addBackend(box<AssetLoaderBackend> backend);
 
     private:
         string _makeCasPath(uint64 contentHash) const;
-        ResourceManifest::Record const* _findRecord(ResourceId id, string_view logicalName, string_view type) const;
+        ResourceManifest::Record const* _findRecord(ResourceId logicalId) const;
         AssetLoaderBackend* _findBackend(string_view type) const;
 
         vector<box<AssetLoaderBackend>> _backends;
