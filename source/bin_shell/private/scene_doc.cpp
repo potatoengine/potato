@@ -6,8 +6,8 @@
 #include "potato/ecs/world.h"
 #include "potato/reflex/serialize.h"
 #include "potato/render/mesh.h"
-#include "potato/runtime/json.h"
 #include "potato/runtime/asset_loader.h"
+#include "potato/runtime/json.h"
 
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -216,7 +216,8 @@ void up::SceneDocument::_fromJson(nlohmann::json const& el, int index, AssetLoad
 
             for (reflex::SchemaField const& field : compType->schema->fields) {
                 if (field.schema->primitive == reflex::SchemaPrimitive::AssetRef) {
-                    auto* const assetHandle = reinterpret_cast<UntypedAssetHandle*>(static_cast<char*>(compData) + field.offset);
+                    auto* const assetHandle =
+                        reinterpret_cast<UntypedAssetHandle*>(static_cast<char*>(compData) + field.offset);
                     *assetHandle = assetLoader.loadAssetSync(assetHandle->assetId());
                 }
             }

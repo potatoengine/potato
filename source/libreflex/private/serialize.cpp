@@ -206,10 +206,6 @@ bool up::reflex::_detail::decodeArray(nlohmann::json const& json, Schema const& 
 
 bool up::reflex::_detail::decodeAssetRef(nlohmann::json const& json, Schema const& schema, void* obj) {
     UP_ASSERT(schema.primitive == SchemaPrimitive::AssetRef);
-    UP_ASSERT(schema.operations != nullptr);
-
-    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
-    UP_ASSERT(resourceAnnotation != nullptr);
 
     auto* const assetHandle = static_cast<UntypedAssetHandle*>(obj);
 
