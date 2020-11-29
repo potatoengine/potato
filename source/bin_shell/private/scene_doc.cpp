@@ -7,6 +7,7 @@
 #include "potato/reflex/serialize.h"
 #include "potato/render/mesh.h"
 #include "potato/runtime/json.h"
+#include "potato/runtime/asset_loader.h"
 
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -177,17 +178,17 @@ void up::SceneDocument::_toJson(nlohmann::json& el, int index) const {
     }
 }
 
-void up::SceneDocument::fromJson(nlohmann::json const& doc) {
+void up::SceneDocument::fromJson(nlohmann::json const& doc, AssetLoader& assetLoader) {
     _entities.clear();
 
     if (doc.contains("objects") && doc["objects"].is_object()) {
         int const index = static_cast<int>(_entities.size());
         _entities.emplace_back();
-        _fromJson(doc["objects"], index);
+        _fromJson(doc["objects"], index, assetLoader);
     }
 }
 
-void up::SceneDocument::_fromJson(nlohmann::json const& el, int index) {
+void up::SceneDocument::_fromJson(nlohmann::json const& el, int index, AssetLoader& assetLoader) {
     if (el.contains("name") && el["name"].is_string()) {
         _entities[index].name = el["name"].get<string>();
     }
@@ -200,7 +201,7 @@ void up::SceneDocument::_fromJson(nlohmann::json const& el, int index) {
                 continue;
             }
 
-            string_view const name = compEl["$schema"].get<string_view>();
+            auto const name = compEl["$schema"].get<string_view>();
             reflex::TypeInfo const* const compType = _scene->universe().findComponentByName(name);
             if (compType == nullptr) {
                 continue;
@@ -212,6 +213,13 @@ void up::SceneDocument::_fromJson(nlohmann::json const& el, int index) {
             }
 
             reflex::decodeFromJsonRaw(compEl, *compType->schema, compData);
+
+            for (reflex::SchemaField const& field : compType->schema->fields) {
+                if (field.schema->primitive == reflex::SchemaPrimitive::AssetRef) {
+                    auto* const assetHandle = reinterpret_cast<UntypedAssetHandle*>(static_cast<char*>(compData) + field.offset);
+                    *assetHandle = assetLoader.loadAssetSync(assetHandle->assetId());
+                }
+            }
         }
     }
 
@@ -227,7 +235,7 @@ void up::SceneDocument::_fromJson(nlohmann::json const& el, int index) {
                 _entities[prevSibling].nextSibling = childIndex;
             }
             prevSibling = childIndex;
-            _fromJson(childEl, childIndex);
+            _fromJson(childEl, childIndex, assetLoader);
         }
     }
 }

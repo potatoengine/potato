@@ -17,6 +17,7 @@
 namespace up {
     class Mesh;
     class Material;
+    class AssetLoader;
 
     struct SceneEntity {
         string name;
@@ -44,14 +45,14 @@ namespace up {
         void createTestObjects(Mesh::Handle const& cube, Material::Handle const& mat, SoundHandle const& ding);
 
         void toJson(nlohmann::json& doc) const;
-        void fromJson(nlohmann::json const& doc);
+        void fromJson(nlohmann::json const& doc, AssetLoader& assetLoader);
 
         zstring_view filename() const noexcept { return _filename; }
 
     private:
         void _deleteEntityAt(int index, vector<EntityId>& out_deleted);
         void _toJson(nlohmann::json& el, int index) const;
-        void _fromJson(nlohmann::json const& el, int index);
+        void _fromJson(nlohmann::json const& el, int index, AssetLoader& assetLoader);
 
         string _filename;
         rc<Scene> _scene;

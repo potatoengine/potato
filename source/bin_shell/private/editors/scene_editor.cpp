@@ -75,7 +75,7 @@ namespace up::shell {
 #else
                 if (auto [rs, text] = fs::readText(filename); rs == IOResult::Success) {
                     nlohmann::json jsonDoc = nlohmann::json::parse(text);
-                    doc->fromJson(jsonDoc);
+                    doc->fromJson(jsonDoc, _assetLoader);
                 }
 #endif
 

@@ -41,9 +41,6 @@ auto up::AssetLoader::debugName(AssetId logicalId) const noexcept -> zstring_vie
 auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAssetHandle {
     ZoneScopedN("Load Asset Synchronous");
 
-    AssetLoaderBackend* const backend = _findBackend(type);
-    UP_ASSERT(backend != nullptr, "Unknown backend `{}`", type);
-
     ResourceManifest::Record const* const record =
         _manifest != nullptr ? _manifest->findRecord(static_cast<uint64>(id)) : nullptr;
     if (record == nullptr) {
@@ -51,7 +48,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
         return {};
     }
 
-    if (record->type != type) {
+    if (!type.empty() && record->type != type) {
         _logger.error(
             "Invalid type for asset `{}` [{}:{}] ({}, expected {})",
             id,
@@ -59,6 +56,17 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
             record->logicalName,
             record->type,
             type);
+        return {};
+    }
+
+    AssetLoaderBackend* const backend = _findBackend(record->type);
+    if (backend == nullptr) {
+        _logger.error(
+            "Unknown backend for asset `{}` [{}:{}] ({})",
+            id,
+            record->filename,
+            record->logicalName,
+            record->type);
         return {};
     }
 
@@ -71,7 +79,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
             id,
             record->filename,
             record->logicalName,
-            type,
+            record->type,
             filename);
         return {};
     }
@@ -88,7 +96,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
             id,
             record->filename,
             record->logicalName,
-            type,
+            record->type,
             filename);
         return {};
     }
