@@ -64,9 +64,9 @@ bool up::ImguiBackend::createResources(GpuDevice& device) {
 
     auto font =
         device.createTexture2D(texDesc, span{pixels, static_cast<uint32>(fontWidth * fontHeight * 4)}.as_bytes());
-    _srv = device.createShaderResourceView(font.get());
 
-    _sampler = device.createSampler();
+    //_srv = device.createShaderResourceView(font.get());
+    //_sampler = device.createSampler();
 
     return true;
 }

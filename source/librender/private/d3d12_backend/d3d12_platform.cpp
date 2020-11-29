@@ -23,21 +23,20 @@ auto up::d3d12::toNative(GpuShaderSemantic semantic) noexcept -> zstring_view {
 }
 
 auto up::d3d12::toNative(GpuFormat format) noexcept -> DXGI_FORMAT {
-    switch (format) {
-        case GpuFormat::R32G32B32A32Float:
-            return DXGI_FORMAT_R32G32B32A32_FLOAT;
-        case GpuFormat::R32G32B32Float:
-            return DXGI_FORMAT_R32G32B32_FLOAT;
-        case GpuFormat::R32G32Float:
-            return DXGI_FORMAT_R32G32_FLOAT;
-        case GpuFormat::R8G8B8A8UnsignedNormalized:
-            return DXGI_FORMAT_R8G8B8A8_UNORM;
-        case GpuFormat::D32Float:
-            return DXGI_FORMAT_D32_FLOAT;
-        default:
-            UP_UNREACHABLE("Unknown Format");
-            return DXGI_FORMAT_UNKNOWN;
-    }
+
+    const DXGI_FORMAT toNativeTable[] = {
+        DXGI_FORMAT_UNKNOWN,
+        DXGI_FORMAT_R32G32B32A32_FLOAT,
+        DXGI_FORMAT_R32G32B32_FLOAT,
+        DXGI_FORMAT_R32G32_FLOAT,
+        DXGI_FORMAT_R32_FLOAT,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_D32_FLOAT,
+
+        DXGI_FORMAT_FORCE_UINT, // last item
+    };
+
+    return toNativeTable[format];
 }
 
 auto up::d3d12::fromNative(DXGI_FORMAT format) noexcept -> GpuFormat {

@@ -9,7 +9,9 @@
 #include "potato/runtime/com_ptr.h"
 
 #include <d3d12.h>
-#include <dxgi1_6.h>
+#include <dxgi1_6.h>    
+
+#include <D3D12MemAlloc.h>
 
 // helper global defines 
 using IDXGIFactoryType = IDXGIFactory2;
@@ -26,8 +28,13 @@ using ID3DResourcePtr = up::com_ptr<ID3D12Resource>;
 
 using ID3DCommandAllocatorPtr = up::com_ptr<ID3D12CommandAllocator>;
 
-using ID3DCommandListPtr = up::com_ptr<ID3D12GraphicsCommandList>;
+using ID3DCommandListType = ID3D12GraphicsCommandList; 
+using ID3DCommandListPtr = up::com_ptr<ID3DCommandListType>;
 using ID3DCommandQueuePtr = up::com_ptr<ID3D12CommandQueue>;
+using ID3DDescriptorHeapPtr = up::com_ptr<ID3D12DescriptorHeap>;
+using ID3DPipelineStatePtr = up::com_ptr<ID3D12PipelineState>;
+using ID3DFencePtr = up::com_ptr<ID3D12Fence>;
+
 
 namespace up::d3d12 {
     extern zstring_view toNative(GpuShaderSemantic semantic) noexcept;

@@ -11,13 +11,15 @@
 namespace up::d3d12 {
     class CommandListD3D12 final : public GpuCommandList {
     public:
-        CommandListD3D12(com_ptr<ID3D12DeviceContext> context);
+        CommandListD3D12();
         virtual ~CommandListD3D12();
 
         CommandListD3D12(CommandListD3D12&&) = delete;
         CommandListD3D12& operator=(CommandListD3D12&&) = delete;
 
         static box<CommandListD3D12> createCommandList(ID3D12Device* device, GpuPipelineState* pipelineState);
+
+        bool create(ID3D12Device* device, GpuPipelineState* pipelineState);
 
         void setPipelineState(GpuPipelineState* state) override;
 
@@ -46,7 +48,7 @@ namespace up::d3d12 {
         void unmap(GpuBuffer* buffer, span<byte const> data) override;
         void update(GpuBuffer* buffer, span<byte const> data, uint64 offset = 0) override;
 
-        void flush(bool async); // blocking call to commit and block until command list is done (optional)
+        void flush(ID3D12CommandQueue* pQueue); 
 
     private:
         void _flushBindings();
@@ -55,5 +57,6 @@ namespace up::d3d12 {
 
         bool _bindingsDirty = false;
         ID3DCommandAllocatorPtr _commandAllocator;
+        ID3DCommandListPtr _commandList; 
     };
 } // namespace up::d3d12

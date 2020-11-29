@@ -26,7 +26,7 @@ auto up::d3d12::SwapChainD3D12::createSwapChain(IDXGIFactoryType* factory, ID3DD
     queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-    HRESULT hr = device->CreateCommandQueue(&queueDesc, out_ptr(cmd));
+    HRESULT hr = device->CreateCommandQueue(&queueDesc, __uuidof(ID3D12CommandQueue), out_ptr(cmd));
     if (FAILED(hr) || cmd == nullptr) {
         return nullptr;
     }

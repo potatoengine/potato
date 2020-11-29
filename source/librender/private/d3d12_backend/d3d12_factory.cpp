@@ -1,11 +1,14 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+
 #include "d3d12_factory.h"
 #include "d3d12_device.h"
 #include "d3d12_platform.h"
 
 #include "potato/runtime/assertion.h"
 #include "potato/spud/out_ptr.h"
+
+#include <d3d12.h>
 
 up::d3d12::FactoryD3D12::FactoryD3D12(IDXGIFactoryPtr dxgiFactory) : _dxgiFactory(std::move(dxgiFactory)) {
     UP_ASSERT(_dxgiFactory != nullptr);
@@ -23,7 +26,7 @@ auto up::CreateFactoryD3D12() -> box<GpuDeviceFactory> {
     // NOTE: Enabling the debug layer after device creation will invalidate the active device.
     {
         com_ptr<ID3D12Debug> debugController;
-        if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+        if (SUCCEEDED(D3D12GetDebugInterface(__uuidof(ID3D12Debug), out_ptr(debugController)))) {
             debugController->EnableDebugLayer();
 
             // Enable additional debug layers.
@@ -32,9 +35,9 @@ auto up::CreateFactoryD3D12() -> box<GpuDeviceFactory> {
     }
 #    endif
 
-    DXGIFactoryPtr dxgiFactory;
-    CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&factory));
-    return new_box<d3d12::FactoryD3D12>(std::move(dxgiFactory));
+    IDXGIFactoryPtr factory;
+    CreateDXGIFactory2(dxgiFactoryFlags, __uuidof(IDXGIFactoryType), out_ptr(factory));
+    return new_box<d3d12::FactoryD3D12>(std::move(factory));
 }
 #endif
 

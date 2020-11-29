@@ -18,10 +18,9 @@ namespace up::d3d12 {
         ResourceViewD3D12& operator=(ResourceViewD3D12&&) = delete;
 
         GpuViewType type() const override { return _type; }
-        com_ptr<ID3D12View> const& getView() const { return _view; }
+     
 
     private:
         GpuViewType _type;
-        com_ptr<ID3D12View> _view;
     };
 } // namespace up::d3d12

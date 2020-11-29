@@ -3,13 +3,19 @@
 #pragma once
 
 #include "_export.h"
+#include "potato/spud/int_types.h"
 
 namespace up {
+
+    struct FrameData {
+        uint32 frameNumber = 0;
+        float lastFrameTimeDelta = 0.f;
+        double timeStamp = 0.0;
+    };
+
     class GpuCommandList;
     class GpuDevice;
-} // namespace up
 
-namespace up {
     class RenderContext {
     public:
         double frameTime = 0;

@@ -10,15 +10,13 @@
 namespace up::d3d12 {
     class SamplerD3D12 final : public GpuSampler {
     public:
-        explicit SamplerD3D12(com_ptr<ID3D12SamplerState> sampler);
+        explicit SamplerD3D12();
         virtual ~SamplerD3D12();
 
         SamplerD3D12(SamplerD3D12&&) = delete;
         SamplerD3D12& operator=(SamplerD3D12&&) = delete;
 
-        com_ptr<ID3D12SamplerState> const& get() const noexcept { return _sampler; }
-
+  
     private:
-        com_ptr<ID3D12SamplerState> _sampler;
     };
 } // namespace up::d3d12

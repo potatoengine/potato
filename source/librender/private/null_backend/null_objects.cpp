@@ -16,6 +16,10 @@ auto up::CreateFactoryNull() -> box<GpuDeviceFactory> {
     return new_box<null::FactoryNull>();
 }
 
+auto up::null::DeviceNull::createRenderable(IRenderable* pInterface) -> box<GpuRenderable>{
+    return new_box<RenderableNull>();
+}
+
 auto up::null::DeviceNull::createSwapChain(void* nativeWindow) -> rc<GpuSwapChain> {
     return new_shared<SwapChainNull>();
 }
@@ -28,27 +32,15 @@ auto up::null::DeviceNull::createPipelineState(GpuPipelineStateDesc const&) -> b
     return new_box<PipelineStateNull>();
 }
 
-auto up::null::DeviceNull::createRenderTargetView(GpuTexture* renderTarget) -> box<GpuResourceView> {
-    return new_box<ResourceViewNull>(GpuViewType::RTV);
-}
-
-auto up::null::DeviceNull::createDepthStencilView(GpuTexture* depthStencilBuffer) -> box<GpuResourceView> {
-    return new_box<ResourceViewNull>(GpuViewType::DSV);
-}
-
-auto up::null::DeviceNull::createShaderResourceView(GpuBuffer* buffer) -> box<GpuResourceView> {
-    return new_box<ResourceViewNull>(GpuViewType::SRV);
-}
-
-auto up::null::DeviceNull::createShaderResourceView(GpuTexture* texture) -> box<GpuResourceView> {
-    return new_box<ResourceViewNull>(GpuViewType::SRV);
-}
-
 auto up::null::DeviceNull::createBuffer(GpuBufferType type, up::uint64 size) -> box<GpuBuffer> {
     return new_box<BufferNull>(type);
 }
 
 auto up::null::DeviceNull::createTexture2D(GpuTextureDesc const& desc, span<up::byte const> data) -> rc<GpuTexture> {
+    return new_shared<TextureNull>();
+}
+
+auto up::null::DeviceNull::createRenderTarget(GpuTextureDesc const& desc, GpuSwapChain* swapChain) -> rc<GpuTexture> {
     return new_shared<TextureNull>();
 }
 

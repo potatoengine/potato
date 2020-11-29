@@ -11,6 +11,7 @@
 #include "gpu_sampler.h"
 #include "gpu_swap_chain.h"
 #include "gpu_texture.h"
+#include "gpu_renderable.h"
 
 namespace up::null {
     class DeviceNull;
@@ -24,19 +25,18 @@ namespace up::null {
 
     class DeviceNull final : public GpuDevice {
     public:
+
+        box<GpuRenderable> createRenderable(IRenderable* pInterface) override;
         rc<GpuSwapChain> createSwapChain(void* nativeWindow) override;
         box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) override;
         box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) override;
         box<GpuBuffer> createBuffer(GpuBufferType type, uint64 size) override;
         rc<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) override;
+        rc<GpuTexture> createRenderTarget(GpuTextureDesc const& desc, GpuSwapChain* swapChain) override;
         box<GpuSampler> createSampler() override;
 
-        box<GpuResourceView> createRenderTargetView(GpuTexture* renderTarget) override;
-        box<GpuResourceView> createDepthStencilView(GpuTexture* depthStencilBuffer) override;
-        box<GpuResourceView> createShaderResourceView(GpuBuffer* buffer) override;
-        box<GpuResourceView> createShaderResourceView(GpuTexture* texture) override;
-
-        void execute(GpuCommandList* commands) override {}
+        void render(const FrameData& frameData, GpuRenderable* renderable) override {}
+        void execute() override {}
     };
 
     class ResourceViewNull final : public GpuResourceView {
@@ -48,6 +48,8 @@ namespace up::null {
     private:
         GpuViewType _type;
     };
+
+    class RenderableNull final : public GpuRenderable {};
 
     class SwapChainNull final : public GpuSwapChain {
     public:

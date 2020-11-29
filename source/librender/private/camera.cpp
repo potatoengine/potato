@@ -37,11 +37,11 @@ void up::RenderCamera::updateBuffers(
     glm::vec3 dimensions,
     glm::vec3 cameraPosition,
     glm::mat4x4 cameraTransform) {
-    if (_rtv == nullptr && _backBuffer != nullptr) {
+  /*  if (_rtv == nullptr && _backBuffer != nullptr) {
         _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
-    }
+    }*/
 
-    if (_dsv == nullptr) {
+  /*  if (_dsv == nullptr) {
         GpuTextureDesc desc;
         desc.type = GpuTextureType::DepthStencil;
         desc.format = GpuFormat::D32Float;
@@ -49,7 +49,7 @@ void up::RenderCamera::updateBuffers(
         desc.height = static_cast<uint32>(dimensions.y);
         _depthStencilBuffer = ctx.device.createTexture2D(desc, {});
         _dsv = ctx.device.createDepthStencilView(_depthStencilBuffer.get());
-    }
+    }*/
 
     if (_cameraDataBuffer == nullptr) {
         _cameraDataBuffer = ctx.device.createBuffer(GpuBufferType::Constant, sizeof(CameraData));
@@ -79,25 +79,25 @@ void up::RenderCamera::updateBuffers(
 }
 
 void up::RenderCamera::beginFrame(RenderContext& ctx, glm::vec3 cameraPosition, glm::mat4x4 cameraTransform) {
-    if (_rtv == nullptr && _backBuffer != nullptr) {
-        _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
-    }
+    //if (_rtv == nullptr && _backBuffer != nullptr) {
+    //    _rtv = ctx.device.createRenderTargetView(_backBuffer.get());
+    //}
 
     auto dimensions = _backBuffer->dimensions();
 
-    if (_dsv == nullptr) {
-        GpuTextureDesc desc;
-        desc.type = GpuTextureType::DepthStencil;
-        desc.format = GpuFormat::D32Float;
-        desc.width = static_cast<uint32>(dimensions.x);
-        desc.height = static_cast<uint32>(dimensions.y);
-        _depthStencilBuffer = ctx.device.createTexture2D(desc, {});
-        _dsv = ctx.device.createDepthStencilView(_depthStencilBuffer.get());
-    }
+ /*   if (_dsv == nullptr) {
+           GpuTextureDesc desc;
+           desc.type = GpuTextureType::DepthStencil;
+           desc.format = GpuFormat::D32Float;
+           desc.width = static_cast<uint32>(dimensions.x);
+           desc.height = static_cast<uint32>(dimensions.y);
+           _depthStencilBuffer = ctx.device.createTexture2D(desc, {});
+           _dsv = ctx.device.createDepthStencilView(_depthStencilBuffer.get());
+       }*/
 
-    if (_cameraDataBuffer == nullptr) {
-        _cameraDataBuffer = ctx.device.createBuffer(GpuBufferType::Constant, sizeof(CameraData));
-    }
+ /*   if (_cameraDataBuffer == nullptr) {
+           _cameraDataBuffer = ctx.device.createBuffer(GpuBufferType::Constant, sizeof(CameraData));
+       }*/
 
     GpuViewportDesc viewport;
     viewport.width = static_cast<float>(dimensions.x);

@@ -9,6 +9,7 @@
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/zstring_view.h"
+#include "potato/spud/vector.h"
 
 namespace up {
     class GpuBuffer;
@@ -20,6 +21,14 @@ namespace up {
     class Shader;
     class Texture;
     class ResourceLoader;
+    class GpuRenderable;
+
+    // client-side interface of render object.  
+    class IRenderable {
+    public: 
+        virtual void onSchedule(RenderContext& context) = 0;
+        virtual void onRender(RenderContext& context) = 0; 
+    };
 
     class Renderer {
     public:
@@ -33,14 +42,12 @@ namespace up {
         UP_RENDER_API void flushDebugDraw(float frameTime);
         UP_RENDER_API void endFrame(float frameTime);
 
-        UP_RENDER_API RenderContext context();
+        UP_RENDER_API GpuRenderable* createRendarable(IRenderable* pInterface);
 
         GpuDevice& device() const noexcept { return *_device; }
-        GpuCommandList& commandList() const noexcept { return *_commandList; }
-
+    
     private:
         rc<GpuDevice> _device;
-        box<GpuCommandList> _commandList;
         box<GpuBuffer> _frameDataBuffer;
         rc<Material> _debugLineMaterial;
         box<GpuBuffer> _debugLineBuffer;
@@ -48,6 +55,7 @@ namespace up {
         uint32 _frameCounter = 0;
         uint64 _startTimestamp = 0;
         double _frameTimestamp = 0;
+        vector<box<GpuRenderable>> _rendarables;
     };
 
     class DefaultLoader : public Loader {

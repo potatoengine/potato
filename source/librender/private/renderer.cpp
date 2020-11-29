@@ -8,6 +8,7 @@
 #include "gpu_device.h"
 #include "gpu_swap_chain.h"
 #include "gpu_texture.h"
+#include "gpu_renderable.h"
 #include "material.h"
 #include "mesh.h"
 #include "shader.h"
@@ -15,23 +16,13 @@
 
 #include "potato/runtime/resource_loader.h"
 #include "potato/runtime/stream.h"
-#include "potato/spud/numeric_util.h"
 
 #include <chrono>
 
-namespace {
-    struct FrameData {
-        up::uint32 frameNumber = 0;
-        float lastFrameTimeDelta = 0.f;
-        double timeStamp = 0.0;
-    };
-
-    constexpr int debug_vbo_size = 64 * 1024;
-    constexpr double nano_to_seconds = 1.0 / 1000000000.0;
-} // namespace
+constexpr int debug_vbo_size = 64 * 1024;
+constexpr double nano_to_seconds = 1.0 / 1000000000.0;
 
 up::Renderer::Renderer(Loader& loader, rc<GpuDevice> device) : _device(std::move(device)), _loader(loader) {
-    _commandList = _device->createCommandList();
 
     _debugLineMaterial = _loader.loadMaterialSync("materials/debug_line.mat");
     _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, debug_vbo_size);
@@ -52,51 +43,56 @@ void up::Renderer::beginFrame() {
     double const now = static_cast<double>(nowNanoseconds - _startTimestamp) * nano_to_seconds;
     FrameData frame = {_frameCounter++, static_cast<float>(now - _frameTimestamp), now};
     _frameTimestamp = now;
-
-    _commandList->clear();
-    _commandList->update(_frameDataBuffer.get(), view<byte>{reinterpret_cast<byte*>(&frame), sizeof(frame)});
-    _commandList->bindConstantBuffer(0, _frameDataBuffer.get(), GpuShaderStage::All);
+    
+    for (auto& renderable : _rendarables) {
+        _device->render(frame, renderable.get());
+        ;
+    }
+    //_device->clear();
+    //_device->update(_frameDataBuffer.get(), view<byte>{reinterpret_cast<byte*>(&frame), sizeof(frame)});
+    //_device->bindConstantBuffer(0, _frameDataBuffer.get(), GpuShaderStage::All);
 }
 
 void up::Renderer::endFrame(float frameTime) {
-    _commandList->finish();
-    _device->execute(_commandList.get());
+    _device->execute();
+}
+
+auto up::Renderer::createRendarable(IRenderable* pInterface) -> GpuRenderable* {
+
+    auto renderable = _device->createRenderable(pInterface);
+    return _rendarables.emplace_back(std::move(renderable)).get();
 }
 
 void up::Renderer::flushDebugDraw(float frameTime) {
     static constexpr uint32 bufferSize = 64 * 1024;
     static constexpr uint32 maxVertsPerChunk = bufferSize / sizeof(DebugDrawVertex);
 
-    if (_debugLineBuffer == nullptr) {
-        _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, bufferSize);
-    }
+    //if (_debugLineBuffer == nullptr) {
+    //    _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, bufferSize);
+    //}
 
-    auto ctx = context();
-    _debugLineMaterial->bindMaterialToRender(ctx);
-    _commandList->bindVertexBuffer(0, _debugLineBuffer.get(), sizeof(DebugDrawVertex));
-    _commandList->setPrimitiveTopology(GpuPrimitiveTopology::Lines);
+    //auto ctx = context();
+    //_debugLineMaterial->bindMaterialToRender(ctx);
+    //_commandList->bindVertexBuffer(0, _debugLineBuffer.get(), sizeof(DebugDrawVertex));
+    //_commandList->setPrimitiveTopology(GpuPrimitiveTopology::Lines);
 
-    dumpDebugDraw([this](auto debugVertices) {
-        if (debugVertices.empty()) {
-            return;
-        }
+    //dumpDebugDraw([this](auto debugVertices) {
+    //    if (debugVertices.empty()) {
+    //        return;
+    //    }
 
-        uint32 vertCount = min(static_cast<uint32>(debugVertices.size()), maxVertsPerChunk);
-        uint32 offset = 0;
-        while (offset < debugVertices.size()) {
-            _commandList->update(_debugLineBuffer.get(), debugVertices.subspan(offset, vertCount).as_bytes());
-            _commandList->draw(vertCount);
+    //    uint32 vertCount = min(static_cast<uint32>(debugVertices.size()), maxVertsPerChunk);
+    //    uint32 offset = 0;
+    //    while (offset < debugVertices.size()) {
+    //        _commandList->update(_debugLineBuffer.get(), debugVertices.subspan(offset, vertCount).as_bytes());
+    //        _commandList->draw(vertCount);
 
-            offset += vertCount;
-            vertCount = min(static_cast<uint32>(debugVertices.size()) - offset, maxVertsPerChunk);
-        }
-    });
+    //        offset += vertCount;
+    //        vertCount = min(static_cast<uint32>(debugVertices.size()) - offset, maxVertsPerChunk);
+    //    }
+    //});
 
-    up::flushDebugDraw(frameTime);
-}
-
-auto up::Renderer::context() -> RenderContext {
-    return RenderContext{_frameTimestamp, *_commandList, *_device};
+    //up::flushDebugDraw(frameTime);
 }
 
 up::DefaultLoader::DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device)

@@ -11,7 +11,7 @@
 namespace up::d3d12 {
     class SwapChainD3D12 : public GpuSwapChain {
     public:
-        SwapChainD3D12(com_ptr<IDXGISwapChain1> swapChain);
+        SwapChainD3D12(IDXGISwapChainPtr swapChain, ID3DCommandQueuePtr commandQueue);
         virtual ~SwapChainD3D12();
 
         SwapChainD3D12(SwapChainD3D12&&) = delete;

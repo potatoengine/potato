@@ -349,10 +349,10 @@ void up::shell::ShellApp::_onWindowSizeChanged() {
     int width = 0;
     int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
-    _uiRenderCamera->resetBackBuffer(nullptr);
+    /*_uiRenderCamera->resetBackBuffer(nullptr);
     _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
-    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));*/
 }
 
 void up::shell::ShellApp::_updateTitle() {
@@ -463,15 +463,15 @@ void up::shell::ShellApp::_render() {
     viewport.width = static_cast<float>(width);
     viewport.height = static_cast<float>(height);
 
-    _renderer->beginFrame();
-    auto ctx = _renderer->context();
+   /* _renderer->beginFrame();
+     auto ctx = _renderer->context();
 
-    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
-    _uiRenderCamera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
-    _imguiBackend.render(ctx);
-    _renderer->endFrame(_lastFrameTime);
+     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+     _uiRenderCamera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
+     _imguiBackend.render(ctx);
+     _renderer->endFrame(_lastFrameTime);
 
-    _swapChain->present();
+     _swapChain->present();*/
 }
 
 void up::shell::ShellApp::_displayUI() {

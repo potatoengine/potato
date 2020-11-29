@@ -2,8 +2,8 @@
 
 #include "d3d12_resource_view.h"
 
-up::d3d12::ResourceViewD3D12::ResourceViewD3D12(GpuViewType type, com_ptr<ID3D12View> view)
+up::d3d12::ResourceViewD3D12::ResourceViewD3D12(GpuViewType type)
     : _type(type)
-    , _view(std::move(view)) {}
+{}
 
 up::d3d12::ResourceViewD3D12::~ResourceViewD3D12() = default;

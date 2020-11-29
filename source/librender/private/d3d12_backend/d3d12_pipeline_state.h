@@ -10,6 +10,8 @@
 
 namespace up::d3d12 {
 
+    class CommandListD3D12;
+
     class PipelineStateD3D12 : public GpuPipelineState {
     public:
         explicit PipelineStateD3D12();
@@ -19,8 +21,12 @@ namespace up::d3d12 {
             GpuPipelineStateDesc const& desc,
             ID3D12Device* device);
 
-        void draw(GpuCommandList& cmd);
+        void draw(CommandListD3D12& cmd);
+
+        const ID3DPipelineStatePtr& getState() const { return _state; }
 
     private:
+
+        ID3DPipelineStatePtr _state;
     };
 } // namespace up::d3d12

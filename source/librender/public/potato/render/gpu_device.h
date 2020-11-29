@@ -16,9 +16,13 @@ namespace up {
     class GpuSampler;
     class GpuSwapChain;
     class GpuTexture;
+    class GpuRenderable;
 
     struct GpuPipelineStateDesc;
     struct GpuTextureDesc;
+    struct FrameData; 
+
+    class IRenderable;
 
     class GpuDevice : public shared<GpuDevice> {
     public:
@@ -28,18 +32,16 @@ namespace up {
         GpuDevice(GpuDevice&&) = delete;
         GpuDevice& operator=(GpuDevice&&) = delete;
 
+        virtual box<GpuRenderable> createRenderable(IRenderable* pInterface) = 0;
         virtual rc<GpuSwapChain> createSwapChain(void* nativeWindow) = 0;
         virtual box<GpuCommandList> createCommandList(GpuPipelineState* pipelineState = nullptr) = 0;
         virtual box<GpuPipelineState> createPipelineState(GpuPipelineStateDesc const& desc) = 0;
         virtual box<GpuBuffer> createBuffer(GpuBufferType type, uint64 size) = 0;
+        virtual rc<GpuTexture> createRenderTarget(GpuTextureDesc const& desc, GpuSwapChain* spawpChain) = 0;
         virtual rc<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) = 0;
         virtual box<GpuSampler> createSampler() = 0;
 
-        virtual void execute(GpuCommandList* commandList) = 0;
-
-        virtual box<GpuResourceView> createRenderTargetView(GpuTexture* renderTarget) = 0;
-        virtual box<GpuResourceView> createDepthStencilView(GpuTexture* depthStencilBuffer) = 0;
-        virtual box<GpuResourceView> createShaderResourceView(GpuBuffer* resource) = 0;
-        virtual box<GpuResourceView> createShaderResourceView(GpuTexture* texture) = 0;
+        virtual void render(const FrameData& frameData, GpuRenderable* renderable) = 0;
+        virtual void execute() = 0;
     };
 } // namespace up
