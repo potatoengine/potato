@@ -58,6 +58,7 @@ namespace up::recon {
         box<Project> _project;
         string_view _programName;
         string _temporaryOutputPath;
+        string _manifestPath;
         vector<Mapping> _importers;
         vector<string> _outputs;
         ReconConfig _config;

@@ -85,11 +85,15 @@ bool up::shell::ReconClient::hasUpdatedAssets() noexcept {
 
 bool up::shell::ReconClient::handleMessage(reflex::Schema const& schema, schema::ReconMessage const& msg) {
     static reflex::Schema const& logSchema = reflex::getSchema<schema::ReconLogMessage>();
+    static reflex::Schema const& manifestSchema = reflex::getSchema<schema::ReconManifestMessage>();
 
-    if (&schema == &logSchema) {
+    if (schema.name == logSchema.name) {
         auto const& log = static_cast<schema::ReconLogMessage const&>(msg);
         s_logger.log(log.severity, log.message);
+        return true;
+    }
 
+    if (schema.name == manifestSchema.name) {
         _staleAssets.store(true);
         return true;
     }

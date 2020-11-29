@@ -25,3 +25,7 @@ struct ReconImportMessage : ReconMessage {
 struct ReconImportAllMessage : ReconMessage {
     bool force = false;
 }
+
+struct ReconManifestMessage : ReconMessage {
+    string path;
+}
