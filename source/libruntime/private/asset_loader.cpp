@@ -1,8 +1,10 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "asset_loader.h"
+#include "asset.h"
 #include "filesystem.h"
 #include "path.h"
+#include "resource_manifest.h"
 #include "stream.h"
 
 #include "potato/format/format.h"
@@ -16,38 +18,41 @@ up::AssetLoader::AssetLoader() : _logger("AssetLoader") {}
 
 up::AssetLoader::~AssetLoader() = default;
 
-auto up::AssetLoader::translate(string_view assetName, string_view logicalName) const -> ResourceId {
+void up::AssetLoader::bindManifest(box<ResourceManifest> manifest, string casPath) {
+    _manifest = std::move(manifest);
+    _casPath = std::move(casPath);
+}
+
+auto up::AssetLoader::translate(string_view assetName, string_view logicalName) const -> AssetId {
     fnv1a engine;
     hash_append(engine, assetName);
     if (!logicalName.empty()) {
         hash_append(engine, ":"_zsv);
         hash_append(engine, logicalName);
     }
-    return ResourceId{engine.finalize()};
+    return AssetId{engine.finalize()};
 }
 
-auto up::AssetLoader::debugName(ResourceId logicalId) const noexcept -> zstring_view {
-    for (auto const& record : _manifest.records()) {
-        if (record.logicalId == logicalId) {
-            return record.filename;
-        }
-    }
-    return {};
+auto up::AssetLoader::debugName(AssetId logicalId) const noexcept -> zstring_view {
+    auto const* record = _manifest != nullptr ? _manifest->findRecord(static_cast<uint64>(logicalId)) : nullptr;
+    return record != nullptr ? record->filename : zstring_view{};
 }
 
-auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Asset> {
+auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAssetHandle {
     ZoneScopedN("Load Asset Synchronous");
 
-    AssetLoaderBackend* const backend = _findBackend(type);
-    UP_ASSERT(backend != nullptr, "Unknown backend `{}`", type);
-
-    ResourceManifest::Record const* const record = _findRecord(id);
-    if (record == nullptr) {
-        _logger.error("Failed to find asset `{}` ({})", id, type);
-        return nullptr;
+    if (Asset* asset = _findAsset(id); asset != nullptr) {
+        return {id, rc<Asset>{rc_acquire, asset}};
     }
 
-    if (record->type != type) {
+    ResourceManifest::Record const* const record =
+        _manifest != nullptr ? _manifest->findRecord(static_cast<uint64>(id)) : nullptr;
+    if (record == nullptr) {
+        _logger.error("Failed to find asset `{}` ({})", id, type);
+        return {};
+    }
+
+    if (!type.empty() && record->type != type) {
         _logger.error(
             "Invalid type for asset `{}` [{}:{}] ({}, expected {})",
             id,
@@ -55,7 +60,18 @@ auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Asset
             record->logicalName,
             record->type,
             type);
-        return nullptr;
+        return {};
+    }
+
+    AssetLoaderBackend* const backend = _findBackend(record->type);
+    if (backend == nullptr) {
+        _logger.error(
+            "Unknown backend for asset `{}` [{}:{}] ({})",
+            id,
+            record->filename,
+            record->logicalName,
+            record->type);
+        return {};
     }
 
     string filename = _makeCasPath(record->hash);
@@ -67,9 +83,9 @@ auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Asset
             id,
             record->filename,
             record->logicalName,
-            type,
+            record->type,
             filename);
-        return nullptr;
+        return {};
     }
 
     AssetLoadContext const ctx{.id = id, .stream = stream, .loader = *this};
@@ -84,12 +100,14 @@ auto up::AssetLoader::loadAssetSync(ResourceId id, string_view type) -> rc<Asset
             id,
             record->filename,
             record->logicalName,
-            type,
+            record->type,
             filename);
-        return nullptr;
+        return {};
     }
 
-    return asset;
+    _assets.push_back(asset.get());
+
+    return {static_cast<AssetId>(record->logicalId), std::move(asset)};
 }
 
 void up::AssetLoader::registerBackend(box<AssetLoaderBackend> backend) {
@@ -98,10 +116,10 @@ void up::AssetLoader::registerBackend(box<AssetLoaderBackend> backend) {
     _backends.push_back(std::move(backend));
 }
 
-auto up::AssetLoader::_findRecord(ResourceId logicalId) const -> ResourceManifest::Record const* {
-    for (auto const& record : _manifest.records()) {
-        if (record.logicalId == logicalId) {
-            return &record;
+auto up::AssetLoader::_findAsset(AssetId id) const noexcept -> Asset* {
+    for (Asset* asset : _assets) {
+        if (asset->assetId() == id) {
+            return asset;
         }
     }
     return nullptr;
@@ -127,4 +145,13 @@ auto up::AssetLoader::_makeCasPath(uint64 contentHash) const -> string {
         (contentHash >> 40) & 0XFFFF,
         contentHash);
     return path::join(_casPath, casFilePath);
+}
+
+void up::AssetLoader::onAssetReleased(Asset* asset) {
+    for (auto it = begin(_assets); it != end(_assets); ++it) {
+        if (*it == asset) {
+            _assets.erase(it);
+            return;
+        }
+    }
 }

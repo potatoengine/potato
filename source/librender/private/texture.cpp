@@ -4,8 +4,8 @@
 #include "context.h"
 #include "gpu_texture.h"
 
-up::Texture::Texture(ResourceId id, Image image, rc<GpuTexture> texture)
-    : Asset(id)
+up::Texture::Texture(AssetId id, Image image, rc<GpuTexture> texture)
+    : AssetBase(id)
     , _texture(std::move(texture))
     , _image(std::move(image)) {}
 

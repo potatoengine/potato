@@ -4,13 +4,17 @@
 #include "components_schema.h"
 
 #include "potato/ecs/world.h"
+#include "potato/reflex/serialize.h"
 #include "potato/render/mesh.h"
+#include "potato/runtime/asset_loader.h"
+#include "potato/runtime/json.h"
 
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/vec3.hpp>
+#include <nlohmann/json.hpp>
 
 int up::SceneDocument::indexOf(EntityId entityId) const noexcept {
     for (int index : indices()) {
@@ -109,9 +113,9 @@ void up::SceneDocument::parentTo(EntityId childId, EntityId parentId) {
 }
 
 void up::SceneDocument::createTestObjects(
-    rc<Mesh> const& cube,
-    rc<Material> const& mat,
-    rc<SoundResource> const& ding) {
+    Mesh::Handle const& cube,
+    Material::Handle const& mat,
+    SoundResource::Handle const& ding) {
     auto pi = glm::pi<float>();
 
     constexpr int numObjects = 100;
@@ -123,7 +127,7 @@ void up::SceneDocument::createTestObjects(
         centerId,
         components::Transform{.position = {0, 5, 0}, .rotation = glm::identity<glm::quat>()});
     _scene->world().addComponent(centerId, components::Mesh{cube, mat});
-    _scene->world().addComponent(centerId, components::Ding{2, 0, ding});
+    _scene->world().addComponent(centerId, components::Ding{2, 0, {ding}});
 
     auto const ringId = createEntity("Ring", rootId);
     for (size_t i = 0; i <= numObjects; ++i) {
@@ -141,5 +145,98 @@ void up::SceneDocument::createTestObjects(
         _scene->world().addComponent(id, components::Mesh{cube, mat});
         _scene->world().addComponent(id, components::Wave{0, r});
         _scene->world().addComponent(id, components::Spin{glm::sin(r) * 2.f - 1.f});
+    }
+}
+
+void up::SceneDocument::toJson(nlohmann::json& doc) const {
+    doc = nlohmann::json::object();
+    doc["$type"] = "potato.document.scene";
+    _toJson(doc["objects"], 0);
+}
+
+void up::SceneDocument::_toJson(nlohmann::json& el, int index) const {
+    SceneEntity const& ent = _entities[index];
+    el = nlohmann::json::object();
+    el["name"] = ent.name;
+
+    nlohmann::json& components = el["components"] = nlohmann::json::array();
+    _scene->world().interrogateEntityUnsafe(
+        ent.id,
+        [&components](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
+            nlohmann::json compEl = nlohmann::json::object();
+            reflex::encodeToJsonRaw(compEl, *typeInfo->schema, data);
+            components.push_back(std::move(compEl));
+        });
+
+    if (ent.firstChild != -1) {
+        nlohmann::json& children = el["children"] = nlohmann::json::array();
+        for (int childIndex = ent.firstChild; childIndex != -1; childIndex = _entities[childIndex].nextSibling) {
+            nlohmann::json childEl{};
+            _toJson(childEl, childIndex);
+            children.push_back(std::move(childEl));
+        }
+    }
+}
+
+void up::SceneDocument::fromJson(nlohmann::json const& doc, AssetLoader& assetLoader) {
+    _entities.clear();
+
+    if (doc.contains("objects") && doc["objects"].is_object()) {
+        int const index = static_cast<int>(_entities.size());
+        _entities.emplace_back();
+        _fromJson(doc["objects"], index, assetLoader);
+    }
+}
+
+void up::SceneDocument::_fromJson(nlohmann::json const& el, int index, AssetLoader& assetLoader) {
+    if (el.contains("name") && el["name"].is_string()) {
+        _entities[index].name = el["name"].get<string>();
+    }
+
+    _entities[index].id = _scene->world().createEntity();
+
+    if (el.contains("components") && el["components"].is_array()) {
+        for (nlohmann::json const& compEl : el["components"]) {
+            if (!compEl.contains("$schema") || !compEl["$schema"].is_string()) {
+                continue;
+            }
+
+            auto const name = compEl["$schema"].get<string_view>();
+            reflex::TypeInfo const* const compType = _scene->universe().findComponentByName(name);
+            if (compType == nullptr) {
+                continue;
+            }
+
+            void* const compData = _scene->world().addComponentDefault(_entities[index].id, *compType);
+            if (compData == nullptr) {
+                continue;
+            }
+
+            reflex::decodeFromJsonRaw(compEl, *compType->schema, compData);
+
+            for (reflex::SchemaField const& field : compType->schema->fields) {
+                if (field.schema->primitive == reflex::SchemaPrimitive::AssetRef) {
+                    auto* const assetHandle =
+                        reinterpret_cast<UntypedAssetHandle*>(static_cast<char*>(compData) + field.offset);
+                    *assetHandle = assetLoader.loadAssetSync(assetHandle->assetId());
+                }
+            }
+        }
+    }
+
+    if (el.contains("children") && el["children"].is_array()) {
+        int prevSibling = -1;
+        for (nlohmann::json const& childEl : el["children"]) {
+            int const childIndex = static_cast<int>(_entities.size());
+            _entities.push_back({.parent = index});
+            if (prevSibling == -1) {
+                _entities[index].firstChild = childIndex;
+            }
+            else {
+                _entities[prevSibling].nextSibling = childIndex;
+            }
+            prevSibling = childIndex;
+            _fromJson(childEl, childIndex, assetLoader);
+        }
     }
 }

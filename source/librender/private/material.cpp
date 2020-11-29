@@ -14,8 +14,12 @@
 #include "potato/runtime/asset_loader.h"
 #include "potato/spud/string.h"
 
-up::Material::Material(ResourceId id, rc<Shader> vertexShader, rc<Shader> pixelShader, vector<rc<Texture>> textures)
-    : Asset(id)
+up::Material::Material(
+    AssetId id,
+    Shader::Handle vertexShader,
+    Shader::Handle pixelShader,
+    vector<Texture::Handle> textures)
+    : AssetBase(id)
     , _vertexShader(std::move(vertexShader))
     , _pixelShader(std::move(pixelShader))
     , _textures(std::move(textures))
@@ -38,14 +42,14 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
 
         pipelineDesc.enableDepthTest = true;
         pipelineDesc.enableDepthWrite = true;
-        pipelineDesc.vertShader = _vertexShader->content();
-        pipelineDesc.pixelShader = _pixelShader->content();
+        pipelineDesc.vertShader = _vertexShader.asset()->content();
+        pipelineDesc.pixelShader = _pixelShader.asset()->content();
         pipelineDesc.inputLayout = layout;
         _state = ctx.device.createPipelineState(pipelineDesc);
 
         int texIndex = 0;
         for (auto const& tex : _textures) {
-            _srvs[texIndex] = ctx.device.createShaderResourceView(&tex->texture());
+            _srvs[texIndex] = ctx.device.createShaderResourceView(&tex.asset()->texture());
             _samplers[texIndex++] = ctx.device.createSampler();
         }
     }
@@ -59,7 +63,7 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
     }
 }
 
-auto up::Material::createFromBuffer(ResourceId id, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
+auto up::Material::createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!schema::VerifyMaterialBuffer(verifier)) {
         return {};
@@ -67,9 +71,9 @@ auto up::Material::createFromBuffer(ResourceId id, view<byte> buffer, AssetLoade
 
     auto material = up::schema::GetMaterial(buffer.data());
 
-    rc<Shader> vertex;
-    rc<Shader> pixel;
-    vector<rc<Texture>> textures;
+    Shader::Handle vertex;
+    Shader::Handle pixel;
+    vector<Texture::Handle> textures;
 
     auto shader = material->shader();
     if (shader == nullptr) {
@@ -84,11 +88,11 @@ auto up::Material::createFromBuffer(ResourceId id, view<byte> buffer, AssetLoade
     pixel = assetLoader.loadAssetSync<Shader>(
         assetLoader.translate(string_view(pixelPath->c_str(), pixelPath->size()), "pixel"_sv));
 
-    if (vertex == nullptr) {
+    if (!vertex.ready()) {
         return nullptr;
     }
 
-    if (pixel == nullptr) {
+    if (!vertex.ready()) {
         return nullptr;
     }
 
@@ -96,7 +100,7 @@ auto up::Material::createFromBuffer(ResourceId id, view<byte> buffer, AssetLoade
         auto texturePath = string(textureData->c_str(), textureData->size());
 
         auto tex = assetLoader.loadAssetSync<Texture>(assetLoader.translate(texturePath));
-        if (!tex) {
+        if (!tex.ready()) {
             return nullptr;
         }
 

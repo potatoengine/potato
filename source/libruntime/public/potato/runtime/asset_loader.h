@@ -3,8 +3,8 @@
 #pragma once
 
 #include "_export.h"
+#include "asset.h"
 #include "logger.h"
-#include "resource_manifest.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
@@ -14,20 +14,12 @@
 namespace up {
     class Stream;
     class AssetLoader;
+    class ResourceManifest;
 
-    class Asset : public shared<Asset> {
-    public:
-        explicit Asset(ResourceId id) noexcept : _id(id) {}
-        virtual ~Asset() = default;
-
-        ResourceId assetId() const noexcept { return _id; }
-
-    private:
-        ResourceId _id{};
-    };
+    enum class AssetId : uint64;
 
     struct AssetLoadContext {
-        ResourceId id{};
+        AssetId id{};
         Stream& stream;
         AssetLoader& loader;
     };
@@ -40,33 +32,36 @@ namespace up {
         virtual rc<Asset> loadFromStream(AssetLoadContext const& ctx) = 0;
     };
 
-    class AssetLoader {
+    class AssetLoader : private AssetTracker {
     public:
         UP_RUNTIME_API AssetLoader();
         UP_RUNTIME_API ~AssetLoader();
 
-        ResourceManifest& manifest() noexcept { return _manifest; }
-        void setCasPath(string path) { _casPath = std::move(path); }
+        ResourceManifest const* manifest() const noexcept { return _manifest.get(); }
 
-        UP_RUNTIME_API ResourceId translate(string_view assetName, string_view logicalName = {}) const;
-        UP_RUNTIME_API zstring_view debugName(ResourceId logicalId) const noexcept;
+        UP_RUNTIME_API void bindManifest(box<ResourceManifest> manifest, string casPath);
+
+        UP_RUNTIME_API AssetId translate(string_view assetName, string_view logicalName = {}) const;
+        UP_RUNTIME_API zstring_view debugName(AssetId logicalId) const noexcept;
 
         template <typename AssetT>
-        rc<AssetT> loadAssetSync(ResourceId id) {
+        AssetHandle<AssetT> loadAssetSync(AssetId id) {
             zstring_view constexpr typeName = AssetT::assetTypeName;
-            return rc<AssetT>(static_cast<AssetT*>(loadAssetSync(id, typeName).release()));
+            return loadAssetSync(id, typeName).cast<AssetT>();
         }
-        UP_RUNTIME_API rc<Asset> loadAssetSync(ResourceId id, string_view type = {});
+        UP_RUNTIME_API UntypedAssetHandle loadAssetSync(AssetId id, string_view type = {});
 
         UP_RUNTIME_API void registerBackend(box<AssetLoaderBackend> backend);
 
     private:
+        Asset* _findAsset(AssetId id) const noexcept;
         string _makeCasPath(uint64 contentHash) const;
-        ResourceManifest::Record const* _findRecord(ResourceId logicalId) const;
         AssetLoaderBackend* _findBackend(string_view type) const;
+        void onAssetReleased(Asset* asset) override;
 
         vector<box<AssetLoaderBackend>> _backends;
-        ResourceManifest _manifest;
+        vector<Asset*> _assets;
+        box<ResourceManifest> _manifest;
         string _casPath;
         Logger _logger;
     };

@@ -11,6 +11,11 @@ auto up::EcsSharedContext::findComponentById(ComponentId id) const noexcept -> r
     return it != components.end() ? *it : nullptr;
 }
 
+auto up::EcsSharedContext::findComponentByName(string_view name) const noexcept -> reflex::TypeInfo const* {
+    auto const* it = find(components, name, equality{}, &reflex::TypeInfo::name);
+    return it != components.end() ? *it : nullptr;
+}
+
 auto up::EcsSharedContext::_findComponentByTypeHash(uint64 typeHash) const noexcept -> reflex::TypeInfo const* {
     auto const* it = find(components, typeHash, equality{}, &reflex::TypeInfo::hash);
     return it != components.end() ? *it : nullptr;

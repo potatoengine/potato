@@ -8,6 +8,7 @@
 
 #include "potato/editor/icons.h"
 #include "potato/editor/imgui_ext.h"
+#include "potato/runtime/asset.h"
 #include "potato/runtime/asset_loader.h"
 
 #include <glm/gtx/quaternion.hpp>
@@ -42,12 +43,6 @@ void up::editor::PropertyGrid::_editField(
     reflex::Schema const& schema,
     void* object) {
     ImGui::PushID(object);
-
-    if (auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(field)) {
-        _editAssetField(field, *field.schema, object);
-        ImGui::PopID();
-        return;
-    }
 
     switch (schema.primitive) {
         case reflex::SchemaPrimitive::Int16:
@@ -89,6 +84,9 @@ void up::editor::PropertyGrid::_editField(
             break;
         case reflex::SchemaPrimitive::Object:
             _drawObjectEditor(schema, object);
+            break;
+        case reflex::SchemaPrimitive::AssetRef:
+            _editAssetField(field, *field.schema, object);
             break;
         default:
             ImGui::Text("Unsupported primitive type for schema `%s`", schema.name.c_str());
@@ -359,12 +357,12 @@ void up::editor::PropertyGrid::_editAssetField(
     void* object) {
     ImGui::BeginGroup();
 
-    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(field);
+    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
     UP_ASSERT(resourceAnnotation != nullptr);
 
     Asset const* asset = nullptr;
     zstring_view assetName;
-    ResourceId assetId{};
+    AssetId assetId = AssetId::Invalid;
     if (schema.operations->pointerDeref != nullptr) {
         void const* pointee = schema.operations->pointerDeref(object);
         if (pointee != nullptr) {
@@ -392,10 +390,10 @@ void up::editor::PropertyGrid::_editAssetField(
     }
 
     if (_assetLoader != nullptr && schema.operations->pointerAssign != nullptr) {
-        ResourceId targetAssetId = assetId;
+        AssetId targetAssetId = assetId;
         if (up::assetBrowserPopup("##asset_browser", targetAssetId, resourceAnnotation->assetType, *_assetLoader) &&
             targetAssetId != assetId) {
-            rc<Asset> newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);
+            UntypedAssetHandle newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);
             schema.operations->pointerAssign(object, newAsset.release());
         }
     }

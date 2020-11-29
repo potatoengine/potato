@@ -1,5 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
+#pragma once
+
 #include "_export.h"
 
 #include "potato/format/erased.h"
@@ -8,14 +10,14 @@
 #include "potato/spud/vector.h"
 
 namespace up {
-    using ResourceId = uint64;
-
     /// @brief Mapping of resource identifiers to CAS hashes and filenames
     class ResourceManifest {
     public:
+        using Id = uint64;
+
         struct Record {
-            ResourceId rootId = {};
-            ResourceId logicalId = {};
+            Id rootId = {};
+            Id logicalId = {};
             uint64 logicalName = 0;
             uint64 hash = 0;
             string filename;
@@ -35,8 +37,14 @@ namespace up {
 
         view<Record> records() const noexcept { return _records; }
 
-        UP_RUNTIME_API uint64 findHash(ResourceId id) const noexcept;
-        UP_RUNTIME_API zstring_view findFilename(ResourceId id) const noexcept;
+        Record const* findRecord(Id logicalId) const noexcept {
+            for (Record const& record : _records) {
+                if (record.logicalId == logicalId) {
+                    return &record;
+                }
+            }
+            return nullptr;
+        }
 
         static UP_RUNTIME_API bool parseManifest(string_view input, ResourceManifest& manifest);
 

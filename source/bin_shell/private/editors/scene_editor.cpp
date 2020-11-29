@@ -11,6 +11,7 @@
 #include "potato/audio/audio_engine.h"
 #include "potato/audio/sound_resource.h"
 #include "potato/editor/imgui_ext.h"
+#include "potato/reflex/serialize.h"
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
 #include "potato/render/debug_draw.h"
@@ -21,6 +22,7 @@
 #include "potato/render/mesh.h"
 #include "potato/render/renderer.h"
 #include "potato/runtime/asset_loader.h"
+#include "potato/runtime/filesystem.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/fixed_string_writer.h"
 
@@ -46,31 +48,39 @@ namespace up::shell {
 
             zstring_view editorName() const noexcept override { return SceneEditor::editorName; }
 
-            box<Editor> createEditor() override {
+            box<Editor> createEditor() override { return nullptr; }
+
+            box<Editor> createEditorForDocument(zstring_view filename) override {
+                auto scene = new_shared<Scene>(_universe, _audioEngine);
+                auto doc = new_box<SceneDocument>(string(filename), std::move(scene));
+
+#if 0
                 auto material = _assetLoader.loadAssetSync<Material>(_assetLoader.translate("materials/full.mat"));
-                if (material == nullptr) {
+                if (!material.isSet()) {
                     return nullptr;
                 }
 
                 auto mesh = _assetLoader.loadAssetSync<Mesh>(_assetLoader.translate("meshes/cube.obj"));
-                if (mesh == nullptr) {
+                if (!mesh.isSet()) {
                     return nullptr;
                 }
 
                 auto ding =
                     _assetLoader.loadAssetSync<SoundResource>(_assetLoader.translate("audio/kenney/highUp.mp3"));
-                if (ding == nullptr) {
+                if (!ding.isSet()) {
                     return nullptr;
                 }
 
-                auto scene = new_shared<Scene>(_universe, _audioEngine);
-                auto doc = new_box<SceneDocument>(std::move(scene));
                 doc->createTestObjects(mesh, material, ding);
+#else
+                if (auto [rs, text] = fs::readText(filename); rs == IOResult::Success) {
+                    nlohmann::json jsonDoc = nlohmann::json::parse(text);
+                    doc->fromJson(jsonDoc, _assetLoader);
+                }
+#endif
 
                 return new_box<SceneEditor>(std::move(doc), _assetLoader, _components, _onPlayClicked);
             }
-
-            box<Editor> createEditorForAsset(zstring_view) override { return createEditor(); }
 
         private:
             AudioEngine& _audioEngine;
@@ -137,6 +147,16 @@ void up::shell::SceneEditor::content() {
     if (contentSize.x <= 0 || contentSize.y <= 0) {
         return;
     }
+
+    ImGui::BeginGroup();
+    if (ImGui::IconButton("Play", ICON_FA_PLAY)) {
+        _onPlayClicked(_doc->scene());
+    }
+    ImGui::SameLine();
+    if (ImGui::IconButton("Save", ICON_FA_SAVE)) {
+        _save();
+    }
+    ImGui::EndGroup();
 
     ImGui::BeginChild("SceneContent", contentSize, false);
     {
@@ -421,4 +441,11 @@ void up::shell::SceneEditor::_hierarchyContext(EntityId id) {
         }
         ImGui::EndPopup();
     }
+}
+
+void up::shell::SceneEditor::_save() {
+    nlohmann::json doc;
+    _doc->toJson(doc);
+    auto text = doc.dump();
+    (void)fs::writeAllText(_doc->filename(), text);
 }

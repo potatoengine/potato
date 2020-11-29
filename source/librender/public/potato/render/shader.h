@@ -2,19 +2,18 @@
 
 #pragma once
 
-#include "potato/runtime/asset_loader.h"
+#include "potato/runtime/asset.h"
 #include "potato/spud/int_types.h"
-#include "potato/spud/rc.h"
 #include "potato/spud/vector.h"
 
 namespace up {
     class RenderContext;
 
-    class Shader : public Asset {
+    class Shader : public AssetBase<Shader> {
     public:
         static constexpr zstring_view assetTypeName = "potato.asset.shader"_zsv;
 
-        explicit Shader(ResourceId id, vector<byte> shader) noexcept : Asset(id), _content(std::move(shader)) {}
+        explicit Shader(AssetId id, vector<byte> shader) noexcept : AssetBase(id), _content(std::move(shader)) {}
 
         view<byte> content() const noexcept { return _content; }
 

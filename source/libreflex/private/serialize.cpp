@@ -2,8 +2,10 @@
 
 #include "serialize.h"
 #include "common_schema.h"
+#include "tools_schema.h"
 
 #include "potato/runtime/assertion.h"
+#include "potato/runtime/asset.h"
 #include "potato/runtime/json.h"
 
 #include <glm/gtx/quaternion.hpp>
@@ -13,10 +15,12 @@
 namespace up::reflex::_detail {
     static bool encodeObject(nlohmann::json& json, Schema const& schema, void const* obj);
     static bool encodeArray(nlohmann::json& json, Schema const& schema, void const* arr);
+    static bool encodeAssetRef(nlohmann::json& json, Schema const& schema, void const* obj);
     static bool encodeValue(nlohmann::json& json, Schema const& schema, void const* obj);
 
     static bool decodeObject(nlohmann::json const& json, Schema const& schema, void* obj);
     static bool decodeArray(nlohmann::json const& json, Schema const& schema, void* arr);
+    static bool decodeAssetRef(nlohmann::json const& json, Schema const& schema, void* obj);
     static bool decodeValue(nlohmann::json const& json, Schema const& schema, void* obj);
 
     static int64 readInt(Schema const& schema, void const* obj);
@@ -71,6 +75,24 @@ bool up::reflex::_detail::encodeArray(nlohmann::json& json, Schema const& schema
     }
 
     return success;
+}
+
+bool up::reflex::_detail::encodeAssetRef(nlohmann::json& json, Schema const& schema, void const* obj) {
+    UP_ASSERT(schema.primitive == SchemaPrimitive::AssetRef);
+    UP_ASSERT(schema.operations != nullptr);
+
+    json = nlohmann::json::object();
+    json["$schema"] = schema.name;
+
+    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
+    UP_ASSERT(resourceAnnotation != nullptr);
+    json["$assetType"] = resourceAnnotation->assetType;
+
+    auto const* const assetHandle = static_cast<UntypedAssetHandle const*>(obj);
+    if (assetHandle->isSet()) {
+        json["$assetId"] = to_underlying(assetHandle->assetId());
+    }
+    return true;
 }
 
 bool up::reflex::_detail::encodeValue(nlohmann::json& json, Schema const& schema, void const* obj) {
@@ -136,6 +158,8 @@ bool up::reflex::_detail::encodeValue(nlohmann::json& json, Schema const& schema
             return encodeArray(json, schema, obj);
         case SchemaPrimitive::Object:
             return encodeObject(json, schema, obj);
+        case SchemaPrimitive::AssetRef:
+            return encodeAssetRef(json, schema, obj);
         default:
             return false;
     }
@@ -178,6 +202,21 @@ bool up::reflex::_detail::decodeArray(nlohmann::json const& json, Schema const& 
     }
 
     return success;
+}
+
+bool up::reflex::_detail::decodeAssetRef(nlohmann::json const& json, Schema const& schema, void* obj) {
+    UP_ASSERT(schema.primitive == SchemaPrimitive::AssetRef);
+
+    auto* const assetHandle = static_cast<UntypedAssetHandle*>(obj);
+
+    if (json.contains("$assetId")) {
+        *assetHandle = UntypedAssetHandle(static_cast<AssetId>(json["$assetId"].get<uint64>()));
+    }
+    else {
+        *assetHandle = UntypedAssetHandle(AssetId::Invalid);
+    }
+
+    return true;
 }
 
 template <typename T, typename U = T>
@@ -251,6 +290,8 @@ bool up::reflex::_detail::decodeValue(nlohmann::json const& json, Schema const& 
             //    }
             //}
             return false;
+        case SchemaPrimitive::AssetRef:
+            return decodeAssetRef(json, schema, obj);
         default:
             return false;
     }

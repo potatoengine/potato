@@ -28,12 +28,12 @@ namespace {
 } // namespace
 
 up::Mesh::Mesh(
-    ResourceId id,
+    AssetId id,
     vector<up::uint16> indices,
     vector<up::byte> data,
     view<MeshBuffer> buffers,
     view<MeshChannel> channels)
-    : Asset(id)
+    : AssetBase(id)
     , _buffers(buffers.begin(), buffers.end())
     , _channels(channels.begin(), channels.end())
     , _indices(std::move(indices))
@@ -73,7 +73,7 @@ void up::Mesh::bindVertexBuffers(RenderContext& ctx) {
     }
 }
 
-auto up::Mesh::createFromBuffer(ResourceId id, view<byte> buffer) -> rc<Mesh> {
+auto up::Mesh::createFromBuffer(AssetId id, view<byte> buffer) -> rc<Mesh> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!schema::VerifyModelBuffer(verifier)) {
         return {};

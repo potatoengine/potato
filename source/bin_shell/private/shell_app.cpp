@@ -31,6 +31,7 @@
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/path.h"
+#include "potato/runtime/resource_manifest.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
@@ -355,10 +356,10 @@ void up::shell::ShellApp::_openEditor(zstring_view editorName) {
     }
 }
 
-void up::shell::ShellApp::_openEditorForAsset(zstring_view editorName, zstring_view asset) {
+void up::shell::ShellApp::_openEditorForDocument(zstring_view editorName, zstring_view filename) {
     for (auto const& factory : _editorFactories) {
         if (factory->editorName() == editorName) {
-            auto editor = factory->createEditorForAsset(asset);
+            auto editor = factory->createEditorForDocument(filename);
             if (editor != nullptr) {
                 _editors.open(std::move(editor));
             }
@@ -659,7 +660,8 @@ bool up::shell::ShellApp::_loadConfig(zstring_view path) {
 
 void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
     if (path::extension(filename) == ".scene") {
-        _createScene();
+        string fullPath = path::join(_project->resourceRootPath(), filename);
+        _openEditorForDocument(SceneEditor::editorName, fullPath);
     }
     else {
 #if defined(UP_PLATFORM_WINDOWS)
@@ -713,13 +715,14 @@ void up::shell::ShellApp::_executeRecon() {
 }
 
 void up::shell::ShellApp::_loadManifest() {
-    _assetLoader.setCasPath(path::join(_project->libraryPath(), "cache"));
     string manifestPath = path::join(_project->libraryPath(), "manifest.txt");
     if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
-        _assetLoader.manifest().clear();
-        if (!ResourceManifest::parseManifest(manifestText, _assetLoader.manifest())) {
+        auto manifest = new_box<ResourceManifest>();
+        if (!ResourceManifest::parseManifest(manifestText, *manifest)) {
             _logger.error("Failed to parse resource manifest");
         }
+        string casPath = path::join(_project->libraryPath(), "cache");
+        _assetLoader.bindManifest(std::move(manifest), std::move(casPath));
     }
     else {
         _logger.error("Failed to load resource manifest");

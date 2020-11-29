@@ -117,6 +117,8 @@ def generate_header_schemas(ctx: Context):
     for type in ctx.db.exports.values():
         if type.has_annotation('ignore'):
             continue
+        #if type.has_annotation('cxximport'):
+        #    continue
 
         qual_name = qualified_cxxname(type=type)
 
@@ -166,9 +168,6 @@ def generate_impl_schemas(ctx: Context):
         ctx.print('    return info;\n')
         ctx.print("}\n")
 
-        if type.kind == type_info.TypeKind.OPAQUE:
-            continue
-
         ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<{qual_name}>::get() noexcept {{\n")
         ctx.print('    using namespace up::schema;\n')
 
@@ -185,19 +184,31 @@ def generate_impl_schemas(ctx: Context):
                 ctx.print(f'        SchemaEnumValue{{.name = "{key}"_zsv, .value = static_cast<int64>({qual_name}::{key})}},\n')
             ctx.print('    };\n')
             ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .baseSchema = base, .elementType = &getSchema<std::underlying_type_t<{qual_name}>>(), .enumValues = values, .annotations = {type.name}_annotations}};\n')
+        elif type.has_annotation('AssetReference'):
+            ctx.print(f'''
+        using Type = {qual_name};
+        using AssetType = typename Type::AssetType;
+        static SchemaOperations const operations = {{
+            .pointerDeref = [](void const* ptr) -> void const* {{ return static_cast<Type const*>(ptr)->asset(); }},
+            .pointerMutableDeref = [](void* ptr) -> void* {{ return static_cast<Type const*>(ptr)->asset(); }},
+            .pointerAssign = [](void* ptr,
+                                void* object) {{ *static_cast<Type*>(ptr) = Type{{rc{{static_cast<AssetType*>(object)}}}}; }},
+        }};
+''')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::AssetRef, .baseSchema = base, .operations = &operations, .annotations = {type.name}_annotations}};\n')
+        elif type.kind == type_info.TypeKind.OPAQUE or len(type.fields_ordered) == 0:
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .annotations = {type.name}_annotations}};\n')
         else:
             for field in type.fields_ordered:
                 generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
 
-            if len(type.fields_ordered) != 0:
-                ctx.print('    static const SchemaField fields[] = {\n')
-                for field in type.fields_ordered:
-                    ctx.print(f'        SchemaField{{.name = "{field.name}"_zsv, .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {type.name}_{field.name}_annotations}},\n')
-                ctx.print('    };\n')
-            else:
-                ctx.print('    static constexpr view<SchemaField> fields;\n')
+            ctx.print('    static const SchemaField fields[] = {\n')
+            for field in type.fields_ordered:
+                ctx.print(f'        SchemaField{{.name = "{field.name}"_zsv, .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {type.name}_{field.name}_annotations}},\n')
+            ctx.print('    };\n')
 
             ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .fields = fields, .annotations = {type.name}_annotations}};\n')
+
         ctx.print('    return schema;\n')
         ctx.print("}\n")
 

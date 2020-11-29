@@ -70,6 +70,7 @@ namespace up::shell {
         void _hierarchy();
         void _hierarchyShowIndex(int index);
         void _hierarchyContext(EntityId id);
+        void _save();
 
         rc<GpuTexture> _buffer;
         box<SceneDocument> _doc;

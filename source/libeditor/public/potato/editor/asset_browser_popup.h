@@ -10,7 +10,7 @@
 namespace up {
     UP_EDITOR_API bool assetBrowserPopup(
         zstring_view,
-        ResourceId& inout_asset,
+        AssetId& inout_asset,
         string_view type,
         AssetLoader& assetLoader);
 }

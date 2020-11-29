@@ -48,7 +48,8 @@ namespace up::reflex {
         Pointer,
         String,
         Array,
-        Object
+        Object,
+        AssetRef,
     };
 
     struct SchemaAnnotation {

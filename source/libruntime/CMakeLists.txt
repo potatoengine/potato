@@ -49,7 +49,7 @@ target_sources(potato_libruntime PRIVATE
     "public/potato/runtime/resource_manifest.h"
     "private/asset_loader.cpp"
     "private/resource_manifest.cpp"
-)
+ "public/potato/runtime/asset.h")
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libruntime)
