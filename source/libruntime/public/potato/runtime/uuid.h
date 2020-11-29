@@ -5,6 +5,7 @@
 #include "_export.h"
 
 #include "potato/spud/string.h"
+#include "potato/spud/string_format.h"
 
 #include <array>
 
@@ -29,6 +30,30 @@ namespace up {
         }
 
         auto toString() const -> string;
+
+        template <format_writable FormatterT>
+        friend void format_value(FormatterT& writer, UUID uuid) {
+            // format 9554084e-4100-4098-b470-2125f5eed133
+            format_to(
+                writer,
+                "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+                uuid._data.ub[0],
+                uuid._data.ub[1],
+                uuid._data.ub[2],
+                uuid._data.ub[3],
+                uuid._data.ub[4],
+                uuid._data.ub[5],
+                uuid._data.ub[6],
+                uuid._data.ub[7],
+                uuid._data.ub[8],
+                uuid._data.ub[9],
+                uuid._data.ub[10],
+                uuid._data.ub[11],
+                uuid._data.ub[12],
+                uuid._data.ub[13],
+                uuid._data.ub[14],
+                uuid._data.ub[15]);
+        }
 
         static auto generate() noexcept -> UUID;
         static auto fromString(string_view id) noexcept -> UUID;
