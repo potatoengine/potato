@@ -32,7 +32,7 @@ namespace up {
         virtual rc<Asset> loadFromStream(AssetLoadContext const& ctx) = 0;
     };
 
-    class AssetLoader {
+    class AssetLoader : private AssetTracker {
     public:
         UP_RUNTIME_API AssetLoader();
         UP_RUNTIME_API ~AssetLoader();
@@ -54,10 +54,13 @@ namespace up {
         UP_RUNTIME_API void registerBackend(box<AssetLoaderBackend> backend);
 
     private:
+        Asset* _findAsset(AssetId id) const noexcept;
         string _makeCasPath(uint64 contentHash) const;
         AssetLoaderBackend* _findBackend(string_view type) const;
+        void onAssetReleased(Asset* asset) override;
 
         vector<box<AssetLoaderBackend>> _backends;
+        vector<Asset*> _assets;
         box<ResourceManifest> _manifest;
         string _casPath;
         Logger _logger;

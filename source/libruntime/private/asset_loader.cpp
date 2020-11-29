@@ -41,6 +41,10 @@ auto up::AssetLoader::debugName(AssetId logicalId) const noexcept -> zstring_vie
 auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAssetHandle {
     ZoneScopedN("Load Asset Synchronous");
 
+    if (Asset* asset = _findAsset(id); asset != nullptr) {
+        return {id, rc<Asset>{rc_acquire, asset}};
+    }
+
     ResourceManifest::Record const* const record =
         _manifest != nullptr ? _manifest->findRecord(static_cast<uint64>(id)) : nullptr;
     if (record == nullptr) {
@@ -101,6 +105,8 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
         return {};
     }
 
+    _assets.push_back(asset.get());
+
     return {static_cast<AssetId>(record->logicalId), std::move(asset)};
 }
 
@@ -108,6 +114,15 @@ void up::AssetLoader::registerBackend(box<AssetLoaderBackend> backend) {
     UP_ASSERT(backend != nullptr);
 
     _backends.push_back(std::move(backend));
+}
+
+auto up::AssetLoader::_findAsset(AssetId id) const noexcept -> Asset* {
+    for (Asset* asset : _assets) {
+        if (asset->assetId() == id) {
+            return asset;
+        }
+    }
+    return nullptr;
 }
 
 auto up::AssetLoader::_findBackend(string_view type) const -> AssetLoaderBackend* {
@@ -130,4 +145,13 @@ auto up::AssetLoader::_makeCasPath(uint64 contentHash) const -> string {
         (contentHash >> 40) & 0XFFFF,
         contentHash);
     return path::join(_casPath, casFilePath);
+}
+
+void up::AssetLoader::onAssetReleased(Asset* asset) {
+    for (auto it = begin(_assets); it != end(_assets); ++it) {
+        if (*it == asset) {
+            _assets.erase(it);
+            return;
+        }
+    }
 }

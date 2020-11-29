@@ -12,19 +12,33 @@ namespace up {
     enum class AssetId : uint64 { Invalid };
 
     class Asset;
+    class AssetTracker;
     template <typename AssetT>
     class AssetHandle;
 
     class Asset : public shared<Asset> {
     public:
         explicit Asset(AssetId id) noexcept : _id(id) {}
-        virtual ~Asset() = default;
+        inline virtual ~Asset();
 
         virtual zstring_view assetType() const noexcept = 0;
         AssetId assetId() const noexcept { return _id; }
 
     private:
         AssetId _id{};
+        AssetTracker* _tracker = nullptr;
+
+        friend class AssetTracker;
+    };
+
+    class AssetTracker {
+    protected:
+        ~AssetTracker() = default;
+
+    private:
+        friend class Asset;
+
+        virtual void onAssetReleased(Asset* asset) = 0;
     };
 
     template <typename DerivedT>
@@ -81,6 +95,12 @@ namespace up {
         AssetT* asset() const noexcept { return static_cast<AssetT*>(UntypedAssetHandle::asset()); }
         AssetT* release() noexcept { return static_cast<AssetT*>(UntypedAssetHandle::release()); }
     };
+
+    Asset::~Asset() {
+        if (_tracker != nullptr) {
+            _tracker->onAssetReleased(this);
+        }
+    }
 
     template <typename AssetT>
     AssetHandle<AssetT> UntypedAssetHandle::cast() const& noexcept {
