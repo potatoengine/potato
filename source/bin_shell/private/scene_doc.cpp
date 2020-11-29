@@ -195,7 +195,24 @@ void up::SceneDocument::_fromJson(nlohmann::json const& el, int index) {
     _entities[index].id = _scene->world().createEntity();
 
     if (el.contains("components") && el["components"].is_array()) {
-        for (nlohmann::json const& compEl : el["components"]) {}
+        for (nlohmann::json const& compEl : el["components"]) {
+            if (!compEl.contains("$schema") || !compEl["$schema"].is_string()) {
+                continue;
+            }
+
+            string_view const name = compEl["$schema"].get<string_view>();
+            reflex::TypeInfo const* const compType = _scene->universe().findComponentByName(name);
+            if (compType == nullptr) {
+                continue;
+            }
+
+            void* const compData = _scene->world().addComponentDefault(_entities[index].id, *compType);
+            if (compData == nullptr) {
+                continue;
+            }
+
+            reflex::decodeFromJsonRaw(compEl, *compType->schema, compData);
+        }
     }
 
     if (el.contains("children") && el["children"].is_array()) {

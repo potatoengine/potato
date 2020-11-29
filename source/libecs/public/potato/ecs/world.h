@@ -57,7 +57,8 @@ namespace up {
         /// @brief Add a default-constructed component to an existing entity.
         /// @param entity The entity to add the componet to.
         /// @param typeInfo Metadata for the to-be-added component.
-        UP_ECS_API void addComponentDefault(EntityId entity, reflex::TypeInfo const& typeInfo);
+        /// @returns unsafe raw pointer to the created component.
+        UP_ECS_API void* addComponentDefault(EntityId entity, reflex::TypeInfo const& typeInfo);
 
         /// Removes a Component from an existing Entity.
         ///
@@ -157,7 +158,7 @@ namespace up {
             int destIndex,
             ComponentId srcComponent,
             void const* srcData);
-        void _constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component);
+        void* _constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component);
         void _destroyAt(ArchetypeId arch, Chunk& chunk, int index);
 
         auto _addChunk(ArchetypeId archetype, Chunk* chunk) -> uint16;

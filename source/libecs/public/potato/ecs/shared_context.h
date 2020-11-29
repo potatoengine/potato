@@ -26,6 +26,7 @@ namespace up {
         };
 
         auto findComponentById(ComponentId id) const noexcept -> reflex::TypeInfo const*;
+        auto findComponentByName(string_view name) const noexcept -> reflex::TypeInfo const*;
 
         template <typename Component>
         auto findComponentByType() const noexcept -> reflex::TypeInfo const*;

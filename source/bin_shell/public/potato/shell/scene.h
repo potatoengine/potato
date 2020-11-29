@@ -39,9 +39,11 @@ namespace up {
         bool playing(bool active) { return _playing = active; }
 
         World& world() noexcept { return _world; }
+        Universe& universe() noexcept { return _universe; }
 
     private:
         AudioEngine& _audioEngine;
+        Universe& _universe;
         World _world;
         bool _playing = false;
 

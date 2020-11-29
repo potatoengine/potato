@@ -18,6 +18,7 @@
 
 up::Scene::Scene(Universe& universe, AudioEngine& audioEngine)
     : _audioEngine(audioEngine)
+    , _universe(universe)
     , _world{universe.createWorld()}
     , _waveQuery{universe.createQuery<components::Transform, components::Wave>()}
     , _orbitQuery{universe.createQuery<components::Transform>()}
