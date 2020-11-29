@@ -20,17 +20,6 @@
 
 #include <nlohmann/json.hpp>
 
-namespace up::recon {
-    namespace {
-        template <derived_from<schema::ReconMessage> MessageT>
-        void sendMessage(MessageT const& message) {
-            nlohmann::json doc;
-            encodeReconMessage(doc, message);
-            std::cout << doc.dump() << '\r\n';
-        }
-    } // namespace
-} // namespace up::recon
-
 up::recon::ReconApp::ReconApp() : _programName("recon"), _logger("recon") {}
 
 up::recon::ReconApp::~ReconApp() = default;
