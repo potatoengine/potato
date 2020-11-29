@@ -88,7 +88,7 @@ bool up::reflex::_detail::encodeAssetRef(nlohmann::json& json, Schema const& sch
     UP_ASSERT(resourceAnnotation != nullptr);
     json["$assetType"] = resourceAnnotation->assetType;
 
-    UntypedAssetHandle const* const assetHandle = static_cast<UntypedAssetHandle const*>(obj);
+    auto const* const assetHandle = static_cast<UntypedAssetHandle const*>(obj);
     if (assetHandle->isSet()) {
         json["$assetId"] = to_underlying(assetHandle->assetId());
     }
@@ -211,7 +211,7 @@ bool up::reflex::_detail::decodeAssetRef(nlohmann::json const& json, Schema cons
     auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
     UP_ASSERT(resourceAnnotation != nullptr);
 
-    UntypedAssetHandle* const assetHandle = static_cast<UntypedAssetHandle*>(obj);
+    auto* const assetHandle = static_cast<UntypedAssetHandle*>(obj);
 
     if (json.contains("$assetId")) {
         *assetHandle = UntypedAssetHandle(static_cast<AssetId>(json["$assetId"].get<uint64>()));

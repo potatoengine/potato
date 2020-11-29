@@ -87,7 +87,9 @@ namespace up {
     public:
         using AssetType = AssetT;
 
-        using UntypedAssetHandle::UntypedAssetHandle;
+        AssetHandle() = default;
+        explicit AssetHandle(AssetId id) noexcept : UntypedAssetHandle(id) {}
+        AssetHandle(AssetId id, rc<AssetT> asset) noexcept : UntypedAssetHandle(id, std::move(asset)) {}
         explicit AssetHandle(rc<AssetT> asset) noexcept : UntypedAssetHandle(std::move(asset)) {}
 
         zstring_view typeName() const noexcept { return AssetT::assetTypeName; }
@@ -109,6 +111,6 @@ namespace up {
 
     template <typename AssetT>
     AssetHandle<AssetT> UntypedAssetHandle::cast() && noexcept {
-        return {_id, std::move(_asset)};
+        return {_id, rc{static_cast<AssetT*>(_asset.release())}};
     }
 } // namespace up
