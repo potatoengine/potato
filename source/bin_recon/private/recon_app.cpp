@@ -499,7 +499,7 @@ bool up::recon::ReconApp::_writeManifest() {
         msg.path = _manifestPath;
         nlohmann::json doc;
         encodeReconMessage(doc, msg);
-        std::cout << doc.dump() << '\r\n';
+        std::cout << doc.dump() << "\r\n";
     }
 
     return true;
