@@ -20,6 +20,17 @@
 
 #include <nlohmann/json.hpp>
 
+namespace up::recon {
+    namespace {
+        template <derived_from<schema::ReconMessage> MessageT>
+        void sendMessage(MessageT const& message) {
+            nlohmann::json doc;
+            encodeReconMessage(doc, message);
+            std::cout << doc.dump() << '\r\n';
+        }
+    } // namespace
+} // namespace up::recon
+
 up::recon::ReconApp::ReconApp() : _programName("recon"), _logger("recon") {}
 
 up::recon::ReconApp::~ReconApp() = default;
@@ -45,6 +56,8 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         _logger.error("Failed to load project file `{}`", _config.project);
         return false;
     }
+
+    _manifestPath = path::join(_project->libraryPath(), "manifest.txt");
 
     if (auto const rs = fs::createDirectories(_project->libraryPath()); rs != IOResult::Success) {
         _logger.error("Failed to create library folder `{}`: {}", _project->libraryPath(), rs);
@@ -472,14 +485,22 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
 };
 
 bool up::recon::ReconApp::_writeManifest() {
-    auto manifestPath = path::join(_project->libraryPath(), "manifest.txt");
-    auto manifestFile = fs::openWrite(manifestPath.c_str(), fs::OpenMode::Text);
+    auto manifestFile = fs::openWrite(_manifestPath.c_str(), fs::OpenMode::Text);
     if (!manifestFile) {
-        _logger.error("Failed to open manifest `{}'", manifestPath);
+        _logger.error("Failed to open manifest `{}'", _manifestPath);
         return false;
     };
     _library.generateManifest(manifestFile);
+    manifestFile.flush();
     manifestFile.close();
+
+    if (_config.server) {
+        schema::ReconManifestMessage msg;
+        msg.path = _manifestPath;
+        nlohmann::json doc;
+        encodeReconMessage(doc, msg);
+        std::cout << doc.dump() << '\r\n';
+    }
 
     return true;
 }
