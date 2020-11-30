@@ -6,8 +6,9 @@
 #include "potato/spud/ascii.h"
 #include "potato/spud/string_writer.h"
 
-constexpr up::UUID::UUID(Bytes const& bytes) noexcept : _data{HighLow{}} {
-    for (unsigned i = 0; i != sizeof(bytes); ++i) {
+up::UUID::UUID(up::byte const* bytes, size_t length) noexcept : _data{HighLow{}} {
+    UP_ASSERT(length == octects);
+    for (unsigned i = 0; i != octects; ++i) {
         _data.ub[i] = bytes[i];
     }
 }

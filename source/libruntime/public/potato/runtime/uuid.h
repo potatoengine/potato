@@ -20,7 +20,8 @@ namespace up {
 
         constexpr UUID() noexcept : _data{HighLow{}} {}
         constexpr UUID(UUID const& rhs) noexcept : _data{rhs._data.u64} {}
-        constexpr UUID(Bytes const& bytes) noexcept;
+        explicit UUID(Bytes const& bytes) noexcept : UUID(bytes, sizeof(bytes)) {}
+        UUID(up::byte const* bytes, size_t length) noexcept;
 
         constexpr bool isValid() const noexcept { return _data.u64.high != 0 || _data.u64.low != 0; }
 
@@ -32,6 +33,8 @@ namespace up {
         }
 
         auto toString() const -> string;
+
+        up::byte const* bytes() const noexcept { return _data.ub; }
 
         template <format_writable FormatterT>
         friend void format_value(FormatterT& writer, UUID uuid) {
