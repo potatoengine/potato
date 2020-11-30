@@ -19,7 +19,6 @@ namespace up {
         struct Record {
             UUID uuid = {};
             Id logicalId = {};
-            uint64 logicalName = 0;
             uint64 hash = 0;
             string filename;
             string type;
@@ -27,7 +26,6 @@ namespace up {
 
         static constexpr zstring_view columnUuid = "UUID"_zsv;
         static constexpr zstring_view columnLogicalId = "LOGICAL_ID"_zsv;
-        static constexpr zstring_view columnLogicalName = "LOGICAL_NAME"_zsv;
         static constexpr zstring_view columnContentType = "CONTENT_TYPE"_zsv;
         static constexpr zstring_view columnContentHash = "CONTENT_HASH"_zsv;
         static constexpr zstring_view columnDebugName = "DEBUG_NAME"_zsv;

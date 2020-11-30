@@ -5,6 +5,7 @@
 #include "_export.h"
 #include "asset.h"
 #include "logger.h"
+#include "uuid.h"
 
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
@@ -41,7 +42,7 @@ namespace up {
 
         UP_RUNTIME_API void bindManifest(box<ResourceManifest> manifest, string casPath);
 
-        UP_RUNTIME_API AssetId translate(string_view assetName, string_view logicalName = {}) const;
+        UP_RUNTIME_API AssetId translate(UUID uuid, string_view logicalName = {}) const;
         UP_RUNTIME_API zstring_view debugName(AssetId logicalId) const noexcept;
 
         template <typename AssetT>

@@ -318,7 +318,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
             newRecord.sourcePath,
             output.logicalAsset.empty() ? "" : ":",
             output.logicalAsset);
-        auto const logicalAssetId = _library.createLogicalAssetId(context.uuid(), logicalAssetName);
+        auto const logicalAssetId = AssetLibrary::createLogicalAssetId(context.uuid(), output.logicalAsset);
 
         newRecord.outputs.push_back(
             {.name = output.logicalAsset,

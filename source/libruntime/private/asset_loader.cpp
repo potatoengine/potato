@@ -23,14 +23,12 @@ void up::AssetLoader::bindManifest(box<ResourceManifest> manifest, string casPat
     _casPath = std::move(casPath);
 }
 
-auto up::AssetLoader::translate(string_view assetName, string_view logicalName) const -> AssetId {
-    fnv1a engine;
-    hash_append(engine, assetName);
+auto up::AssetLoader::translate(UUID uuid, string_view logicalName) const -> AssetId {
+    uint64 hash = hash_value(uuid);
     if (!logicalName.empty()) {
-        hash_append(engine, ":"_zsv);
-        hash_append(engine, logicalName);
+        hash = hash_combine(hash, hash_value(logicalName));
     }
-    return AssetId{engine.finalize()};
+    return AssetId{hash};
 }
 
 auto up::AssetLoader::debugName(AssetId logicalId) const noexcept -> zstring_view {
@@ -53,24 +51,13 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
     }
 
     if (!type.empty() && record->type != type) {
-        _logger.error(
-            "Invalid type for asset `{}` [{}:{}] ({}, expected {})",
-            id,
-            record->filename,
-            record->logicalName,
-            record->type,
-            type);
+        _logger.error("Invalid type for asset `{}` [{}] ({}, expected {})", id, record->filename, record->type, type);
         return {};
     }
 
     AssetLoaderBackend* const backend = _findBackend(record->type);
     if (backend == nullptr) {
-        _logger.error(
-            "Unknown backend for asset `{}` [{}:{}] ({})",
-            id,
-            record->filename,
-            record->logicalName,
-            record->type);
+        _logger.error("Unknown backend for asset `{}` [{}] ({})", id, record->filename, record->type);
         return {};
     }
 
@@ -78,13 +65,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
 
     Stream stream = fs::openRead(filename);
     if (!stream) {
-        _logger.error(
-            "Unknown asset `{}` [{}:{}] ({}) from `{}`",
-            id,
-            record->filename,
-            record->logicalName,
-            record->type,
-            filename);
+        _logger.error("Unknown asset `{}` [{}] ({}) from `{}`", id, record->filename, record->type, filename);
         return {};
     }
 
@@ -95,13 +76,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
     stream.close();
 
     if (!asset) {
-        _logger.error(
-            "Load failed for asset `{}` [{}:{}] ({}) from `{}`",
-            id,
-            record->filename,
-            record->logicalName,
-            record->type,
-            filename);
+        _logger.error("Load failed for asset `{}` [{}] ({}) from `{}`", id, record->filename, record->type, filename);
         return {};
     }
 
