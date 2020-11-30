@@ -4,6 +4,7 @@
 
 #include "_export.h"
 
+#include "potato/spud/hash.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_format.h"
 
@@ -14,6 +15,7 @@ namespace up {
     class UP_RUNTIME_API UUID {
     public:
         static constexpr int octects = 16;
+        static constexpr int strLength = 37; // 32 hex values, four dashes, and NUL
         using Bytes = up::byte[octects];
 
         constexpr UUID() noexcept : _data{HighLow{}} {}
@@ -53,6 +55,14 @@ namespace up {
                 uuid._data.ub[13],
                 uuid._data.ub[14],
                 uuid._data.ub[15]);
+        }
+
+        template <typename HashAlgorithm = default_hash>
+        friend uint64 hash_value(UUID uuid) noexcept {
+            HashAlgorithm hasher{};
+            hash_append(hasher, uuid._data.u64.high);
+            hash_append(hasher, uuid._data.u64.low);
+            return hasher.finalize();
         }
 
         static auto generate() noexcept -> UUID;
