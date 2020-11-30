@@ -21,12 +21,12 @@ auto up::AssetLibrary::pathToUuid(string_view path) const noexcept -> UUID {
     return {};
 }
 
-auto up::AssetLibrary::uuidToPath(UUID uuid) const noexcept -> string_view {
+auto up::AssetLibrary::uuidToPath(UUID const& uuid) const noexcept -> string_view {
     auto record = findRecordByUuid(uuid);
     return record != nullptr ? string_view(record->sourcePath) : string_view{};
 }
 
-auto up::AssetLibrary::findRecordByUuid(UUID uuid) const noexcept -> Imported const* {
+auto up::AssetLibrary::findRecordByUuid(UUID const& uuid) const noexcept -> Imported const* {
     for (auto const& record : _records) {
         if (record.uuid == uuid) {
             return &record;
@@ -35,7 +35,7 @@ auto up::AssetLibrary::findRecordByUuid(UUID uuid) const noexcept -> Imported co
     return nullptr;
 }
 
-auto up::AssetLibrary::createLogicalAssetId(UUID uuid, string_view logicalName) noexcept -> AssetId {
+auto up::AssetLibrary::createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept -> AssetId {
     uint64 hash = hash_value(uuid);
     if (!logicalName.empty()) {
         hash = hash_combine(hash, hash_value(logicalName));

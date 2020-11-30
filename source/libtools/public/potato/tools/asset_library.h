@@ -52,11 +52,11 @@ namespace up {
         AssetLibrary& operator=(AssetLibrary const&) = delete;
 
         UP_TOOLS_API auto pathToUuid(string_view path) const noexcept -> UUID;
-        UP_TOOLS_API auto uuidToPath(UUID uuid) const noexcept -> string_view;
+        UP_TOOLS_API auto uuidToPath(UUID const& uuid) const noexcept -> string_view;
 
-        static UP_TOOLS_API AssetId createLogicalAssetId(UUID uuid, string_view logicalName) noexcept;
+        static UP_TOOLS_API AssetId createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept;
 
-        UP_TOOLS_API Imported const* findRecordByUuid(UUID uuid) const noexcept;
+        UP_TOOLS_API Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
 
         UP_TOOLS_API bool insertRecord(Imported record);
 

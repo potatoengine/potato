@@ -53,7 +53,7 @@ namespace up {
         view<Output> outputs() const noexcept { return _outputs; }
 
         UUID const& uuid() const noexcept { return _uuid; }
-        void setUuid(UUID uuid) noexcept { _uuid = std::move(uuid); }
+        void setUuid(UUID const& uuid) noexcept { _uuid = uuid; }
 
         Logger& logger() noexcept { return _logger; }
 
