@@ -15,7 +15,7 @@ file(GLOB SAP_SCHEMA_COMPILE_FILES
 function(up_compile_sap TARGET)
     cmake_parse_arguments(ARG "" "" "SCHEMAS" ${ARGN})
 
-    set(GEN_TGT "generate_flat_schemas_${TARGET}")
+    set(GEN_TGT "generate_sap_schemas_${TARGET}")
     set(OUT_FILES)
 
     up_get_target_shortname(${TARGET} SHORT_NAME)
