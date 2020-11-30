@@ -23,7 +23,7 @@ void up::AssetLoader::bindManifest(box<ResourceManifest> manifest, string casPat
     _casPath = std::move(casPath);
 }
 
-auto up::AssetLoader::translate(UUID uuid, string_view logicalName) const -> AssetId {
+auto up::AssetLoader::translate(UUID const& uuid, string_view logicalName) const -> AssetId {
     uint64 hash = hash_value(uuid);
     if (!logicalName.empty()) {
         hash = hash_combine(hash, hash_value(logicalName));

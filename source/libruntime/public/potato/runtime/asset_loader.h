@@ -42,7 +42,7 @@ namespace up {
 
         UP_RUNTIME_API void bindManifest(box<ResourceManifest> manifest, string casPath);
 
-        UP_RUNTIME_API AssetId translate(UUID uuid, string_view logicalName = {}) const;
+        UP_RUNTIME_API AssetId translate(UUID const& uuid, string_view logicalName = {}) const;
         UP_RUNTIME_API zstring_view debugName(AssetId logicalId) const noexcept;
 
         template <typename AssetT>

@@ -65,9 +65,8 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
 
 static auto toUUID(up::schema::UUID const& src) noexcept -> up::UUID {
     flatbuffers::Array<int8_t, 16> const& arr = *src.b();
-    up::byte const* bytes = reinterpret_cast<up::byte const*>(arr.data());
-    up::UUID const result{bytes, arr.size()};
-    return result;
+    auto const* bytes = reinterpret_cast<up::byte const*>(arr.data());
+    return {bytes, arr.size()};
 }
 
 auto up::Material::createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
