@@ -31,7 +31,7 @@ namespace up::inline editor {
         void editObjectRaw(reflex::Schema const& schema, void* object) { _editProperties(schema, object); }
 
         template <typename T>
-        void editObject(T const& value) {
+        void editObject(T& value) {
             editObjectRaw(reflex::getSchema<T>(), &value);
         }
 

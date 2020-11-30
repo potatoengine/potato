@@ -33,13 +33,13 @@ include(up_compile_flat_schema)
 up_compile_flat_schema(potato_librender
     NAME render
     SCHEMAS
-        "schemas/material.fbs"
-        "schemas/model.fbs"
+        "schema/material.fbs"
+        "schema/model.fbs"
 )
 
 include(up_compile_sap)
 up_compile_sap(potato_librender SCHEMAS
-    "schemas/material.sap"
+    "schema/material.sap"
 )
 
 target_link_libraries(potato_librender

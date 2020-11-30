@@ -4,14 +4,7 @@ import common;
 import ecs;
 import tools;
 import constraint;
-
-[cxximport("up::Mesh::Handle", "potato/render/mesh.h")]
-[AssetReference("potato.asset.model")]
-type MeshHandle;
-
-[cxximport("up::Material::Handle", "potato/render/material.h")]
-[AssetReference("potato.asset.material")]
-type MaterialHandle;
+import material;
 
 [cxximport("up::SoundResource::Handle", "potato/audio/sound_resource.h")]
 [AssetReference("potato.asset.sound")]

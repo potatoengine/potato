@@ -10,6 +10,7 @@
 #include "potato/editor/imgui_ext.h"
 #include "potato/runtime/asset.h"
 #include "potato/runtime/asset_loader.h"
+#include "potato/runtime/resource_manifest.h"
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
@@ -86,7 +87,10 @@ void up::editor::PropertyGrid::_editField(
             _drawObjectEditor(schema, object);
             break;
         case reflex::SchemaPrimitive::AssetRef:
-            _editAssetField(field, *field.schema, object);
+            _editAssetField(field, schema, object);
+            break;
+        case reflex::SchemaPrimitive::Uuid:
+            _editAssetField(field, schema, object);
             break;
         default:
             ImGui::Text("Unsupported primitive type for schema `%s`", schema.name.c_str());
@@ -357,44 +361,85 @@ void up::editor::PropertyGrid::_editAssetField(
     void* object) {
     ImGui::BeginGroup();
 
-    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
-    UP_ASSERT(resourceAnnotation != nullptr);
+    if (schema.primitive == reflex::SchemaPrimitive::AssetRef) {
+        auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
+        UP_ASSERT(resourceAnnotation != nullptr);
 
-    Asset const* asset = nullptr;
-    zstring_view assetName;
-    AssetId assetId = AssetId::Invalid;
-    if (schema.operations->pointerDeref != nullptr) {
-        void const* pointee = schema.operations->pointerDeref(object);
-        if (pointee != nullptr) {
-            asset = static_cast<Asset const*>(pointee);
-            assetId = asset->assetId();
-            assetName = _assetLoader->debugName(assetId);
+        Asset const* asset = nullptr;
+        zstring_view assetName;
+        AssetId assetId = AssetId::Invalid;
+        if (schema.operations->pointerDeref != nullptr) {
+            void const* pointee = schema.operations->pointerDeref(object);
+            if (pointee != nullptr) {
+                asset = static_cast<Asset const*>(pointee);
+                assetId = asset->assetId();
+                assetName = _assetLoader->debugName(assetId);
+            }
+            if (assetName.empty()) {
+                assetName = "<empty>"_zsv;
+            }
         }
-        if (assetName.empty()) {
+        else {
+            assetName = "<unknown>"_zsv;
+        }
+
+        ImGui::Text("%s", assetName.c_str());
+        ImGui::SameLine();
+        if (ImGui::IconButton("##clear", ICON_FA_TRASH) && schema.operations->pointerAssign != nullptr) {
+            schema.operations->pointerAssign(object, nullptr);
+        }
+        ImGui::SameLine();
+
+        if (ImGui::IconButton("##select", ICON_FA_FOLDER)) {
+            ImGui::OpenPopup("##asset_browser");
+        }
+
+        if (_assetLoader != nullptr && schema.operations->pointerAssign != nullptr) {
+            AssetId targetAssetId = assetId;
+            if (up::assetBrowserPopup("##asset_browser", targetAssetId, resourceAnnotation->assetType, *_assetLoader) &&
+                targetAssetId != assetId) {
+                UntypedAssetHandle newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);
+                schema.operations->pointerAssign(object, newAsset.release());
+            }
+        }
+    }
+    else if (schema.primitive == reflex::SchemaPrimitive::Uuid) {
+        auto* uuid = static_cast<UUID*>(object);
+
+        zstring_view assetName = "<unknown>"_zsv;
+        AssetId assetId = AssetId::Invalid;
+
+        if (!uuid->isValid()) {
             assetName = "<empty>"_zsv;
         }
-    }
-    else {
-        assetName = "<unknown>"_zsv;
-    }
+        else if (_assetLoader != nullptr) {
+            for (auto const& record : _assetLoader->manifest()->records()) {
+                if (record.uuid == *uuid) {
+                    assetName = record.filename;
+                    assetId = static_cast<AssetId>(record.logicalId);
+                    break;
+                }
+            }
+        }
 
-    ImGui::Text("%s", assetName.c_str());
-    ImGui::SameLine();
-    if (ImGui::IconButton("##clear", ICON_FA_TRASH) && schema.operations->pointerAssign != nullptr) {
-        schema.operations->pointerAssign(object, nullptr);
-    }
-    ImGui::SameLine();
+        ImGui::Text("%s", assetName.c_str());
+        ImGui::SameLine();
+        if (ImGui::IconButton("##clear", ICON_FA_TRASH)) {
+            *uuid = UUID{};
+        }
+        ImGui::SameLine();
+        if (ImGui::IconButton("##select", ICON_FA_FOLDER)) {
+            ImGui::OpenPopup("##asset_browser");
+        }
 
-    if (ImGui::IconButton("##select", ICON_FA_FOLDER)) {
-        ImGui::OpenPopup("##asset_browser");
-    }
-
-    if (_assetLoader != nullptr && schema.operations->pointerAssign != nullptr) {
         AssetId targetAssetId = assetId;
-        if (up::assetBrowserPopup("##asset_browser", targetAssetId, resourceAnnotation->assetType, *_assetLoader) &&
-            targetAssetId != assetId) {
-            UntypedAssetHandle newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);
-            schema.operations->pointerAssign(object, newAsset.release());
+        if (up::assetBrowserPopup("##asset_browser", targetAssetId, {}, *_assetLoader) && targetAssetId != assetId) {
+            for (auto const& record : _assetLoader->manifest()->records()) {
+                if (static_cast<AssetId>(record.logicalId) == targetAssetId) {
+                    *uuid = record.uuid;
+                    break;
+                }
+            }
         }
     }
 
