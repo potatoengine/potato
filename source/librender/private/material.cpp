@@ -63,7 +63,7 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
     }
 }
 
-static auto toUUID(up::schema::UUID const& src) noexcept -> up::UUID {
+static auto toUUID(up::flat::UUID const& src) noexcept -> up::UUID {
     flatbuffers::Array<int8_t, 16> const& arr = *src.b();
     auto const* bytes = reinterpret_cast<up::byte const*>(arr.data());
     return {bytes, arr.size()};
@@ -71,11 +71,11 @@ static auto toUUID(up::schema::UUID const& src) noexcept -> up::UUID {
 
 auto up::Material::createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
-    if (!schema::VerifyMaterialBuffer(verifier)) {
+    if (!flat::VerifyMaterialBuffer(verifier)) {
         return {};
     }
 
-    auto material = up::schema::GetMaterial(buffer.data());
+    auto material = flat::GetMaterial(buffer.data());
 
     Shader::Handle vertex;
     Shader::Handle pixel;

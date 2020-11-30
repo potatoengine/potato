@@ -1,0 +1,22 @@
+module material;
+
+import common;
+import tools;
+
+[cxximport("up::Mesh::Handle", "potato/render/mesh.h")]
+[AssetReference("potato.asset.model")]
+type MeshHandle;
+
+[cxximport("up::Material::Handle", "potato/render/material.h")]
+[AssetReference("potato.asset.material")]
+type MaterialHandle;
+
+struct MaterialShaders {
+    uuid vertex;
+    uuid pixel;
+}
+
+struct Material {
+    MaterialShaders shaders;
+    uuid[] textures;
+}

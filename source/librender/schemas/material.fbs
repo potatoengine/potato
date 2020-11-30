@@ -1,4 +1,4 @@
-namespace up.schema;
+namespace up.flat;
 
 struct UUID {
     b:[byte:16];

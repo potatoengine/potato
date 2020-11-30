@@ -14,6 +14,6 @@ namespace up {
         string_view generateSettings(ImporterContext& ctd) const override { return {}; }
 
         string_view name() const noexcept override { return "material"; }
-        uint64 revision() const noexcept override { return 2; }
+        uint64 revision() const noexcept override { return 3; }
     };
 } // namespace up

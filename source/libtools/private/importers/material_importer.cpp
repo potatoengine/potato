@@ -1,7 +1,9 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "importers/material_importer.h"
+#include "material_schema.h"
 
+#include "potato/reflex/serialize.h"
 #include "potato/render/material_generated.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
@@ -43,37 +45,34 @@ bool up::MaterialImporter::import(ImporterContext& ctx) {
 
     inFile.close();
 
-    auto jsonShaders = doc["shaders"];
-    if (!jsonShaders.is_object()) {
+    schema::Material material;
+    if (!reflex::decodeFromJson(doc, material)) {
+        ctx.logger().error("Failed to deserialize `{}': {}", sourceAbsolutePath);
         return false;
     }
 
-    auto vertexUuid = UUID::fromString(jsonShaders["vertex"].get<string_view>());
-    auto pixelUuid = UUID::fromString(jsonShaders["pixel"].get<string_view>());
-
     flatbuffers::FlatBufferBuilder builder;
 
-    schema::UUID schemaVertexUuid;
-    schema::UUID schemaPixelUuid;
+    flat::UUID schemaVertexUuid;
+    flat::UUID schemaPixelUuid;
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    std::memcpy(const_cast<int8_t*>(schemaVertexUuid.b()->data()), vertexUuid.bytes(), UUID::octects);
+    std::memcpy(const_cast<int8_t*>(schemaVertexUuid.b()->data()), material.shaders.vertex.bytes(), UUID::octects);
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    std::memcpy(const_cast<int8_t*>(schemaPixelUuid.b()->data()), pixelUuid.bytes(), UUID::octects);
+    std::memcpy(const_cast<int8_t*>(schemaPixelUuid.b()->data()), material.shaders.pixel.bytes(), UUID::octects);
 
-    std::vector<schema::UUID> textures;
+    std::vector<flat::UUID> textures;
 
     auto jsonTextures = doc["textures"];
-    for (auto const& jsonTexture : jsonTextures) {
-        auto textureUuid = UUID::fromString(jsonTexture.get<string_view>());
-        schema::UUID& schemaTextureUuid = textures.emplace_back();
+    for (UUID const& textureUuid : material.textures) {
+        flat::UUID& schemaTextureUuid = textures.emplace_back();
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         std::memcpy(const_cast<int8_t*>(schemaTextureUuid.b()->data()), textureUuid.bytes(), UUID::octects);
     }
 
-    auto mat = schema::CreateMaterialDirect(
+    auto mat = flat::CreateMaterialDirect(
         builder,
-        schema::CreateMaterialShader(builder, &schemaVertexUuid, &schemaPixelUuid),
+        flat::CreateMaterialShader(builder, &schemaVertexUuid, &schemaPixelUuid),
         &textures);
 
     builder.Finish(mat);
