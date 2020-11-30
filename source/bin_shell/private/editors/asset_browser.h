@@ -6,6 +6,7 @@
 
 #include "potato/editor/asset_edit_service.h"
 #include "potato/runtime/asset_loader.h"
+#include "potato/runtime/uuid.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/string.h"
@@ -50,6 +51,8 @@ namespace up::shell {
         };
 
         struct Asset {
+            UUID uuid;
+            AssetId logicalAssetId = AssetId::Invalid;
             string filename;
             string name;
             string type;
