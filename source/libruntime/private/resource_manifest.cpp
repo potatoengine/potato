@@ -10,20 +10,17 @@
 bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& manifest) {
     int rootIdColumn = -1;
     int logicalIdColumn = -1;
-    int logicalNameColumn = -1;
     int contentHashColumn = -1;
     int contentTypeColumn = -1;
     int debugNameColumn = -1;
 
     enum ColumnMask {
-        ColumnRootIdMask = (1 << 0),
+        ColumnUuidMask = (1 << 0),
         ColumnLogicalIdMask = (1 << 1),
-        ColumnLogicalNameMask = (1 << 2),
         ColumnContentHashMask = (1 << 3),
         ColumnDebugNameMask = (1 << 4),
         ColumnContentTypeMask = (1 << 5),
-        ColumnRequiredMask = ColumnRootIdMask | ColumnLogicalIdMask | ColumnLogicalNameMask | ColumnContentHashMask |
-            ColumnContentTypeMask
+        ColumnRequiredMask = ColumnUuidMask | ColumnLogicalIdMask | ColumnContentHashMask | ColumnContentTypeMask
     };
 
     string_view::size_type sep = 0;
@@ -63,17 +60,13 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                 while (!eol && (sep = input.find_first_of("|\n")) != string_view::npos) {
                     string_view const header = input.substr(0, sep);
 
-                    if (header == columnRootId) {
+                    if (header == columnUuid) {
                         rootIdColumn = column;
-                        mask |= ColumnRootIdMask;
+                        mask |= ColumnUuidMask;
                     }
                     else if (header == columnLogicalId) {
                         logicalIdColumn = column;
                         mask |= ColumnLogicalIdMask;
-                    }
-                    else if (header == columnLogicalName) {
-                        logicalNameColumn = column;
-                        mask |= ColumnLogicalNameMask;
                     }
                     else if (header == columnContentHash) {
                         contentHashColumn = column;
@@ -107,16 +100,12 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                     string_view const data = input.substr(0, sep);
 
                     if (column == rootIdColumn) {
-                        std::from_chars(data.begin(), data.end(), static_cast<uint64&>(record.rootId), 16);
-                        mask |= ColumnRootIdMask;
+                        record.uuid = UUID::fromString(data);
+                        mask |= ColumnUuidMask;
                     }
                     else if (column == logicalIdColumn) {
                         std::from_chars(data.begin(), data.end(), static_cast<uint64&>(record.logicalId), 16);
                         mask |= ColumnLogicalIdMask;
-                    }
-                    else if (column == logicalNameColumn) {
-                        std::from_chars(data.begin(), data.end(), static_cast<uint64&>(record.logicalName), 16);
-                        mask |= ColumnLogicalNameMask;
                     }
                     else if (column == contentHashColumn) {
                         std::from_chars(data.begin(), data.end(), record.hash, 16);

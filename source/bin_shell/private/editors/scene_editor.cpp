@@ -54,19 +54,21 @@ namespace up::shell {
                 auto scene = new_shared<Scene>(_universe, _audioEngine);
                 auto doc = new_box<SceneDocument>(string(filename), std::move(scene));
 
-#if 0
-                auto material = _assetLoader.loadAssetSync<Material>(_assetLoader.translate("materials/full.mat"));
+#if 1
+                auto material = _assetLoader.loadAssetSync<Material>(
+                    _assetLoader.translate(UUID::fromString("1fe16c8f-6225-f246-9df4-824e34a28913")));
                 if (!material.isSet()) {
                     return nullptr;
                 }
 
-                auto mesh = _assetLoader.loadAssetSync<Mesh>(_assetLoader.translate("meshes/cube.obj"));
+                auto mesh = _assetLoader.loadAssetSync<Mesh>(
+                    _assetLoader.translate(UUID::fromString("8b589d73-8596-6a45-962b-4816b33d9ca3")));
                 if (!mesh.isSet()) {
                     return nullptr;
                 }
 
-                auto ding =
-                    _assetLoader.loadAssetSync<SoundResource>(_assetLoader.translate("audio/kenney/highUp.mp3"));
+                auto ding = _assetLoader.loadAssetSync<SoundResource>(
+                    _assetLoader.translate(UUID::fromString("df3a7c47-d06a-cc44-abc4-e928aa4ab035")));
                 if (!ding.isSet()) {
                     return nullptr;
                 }

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "_export.h"
+#include "uuid.h"
 
 #include "potato/format/erased.h"
 #include "potato/spud/int_types.h"
@@ -16,17 +17,15 @@ namespace up {
         using Id = uint64;
 
         struct Record {
-            Id rootId = {};
+            UUID uuid = {};
             Id logicalId = {};
-            uint64 logicalName = 0;
             uint64 hash = 0;
             string filename;
             string type;
         };
 
-        static constexpr zstring_view columnRootId = "ROOT_ID"_zsv;
+        static constexpr zstring_view columnUuid = "UUID"_zsv;
         static constexpr zstring_view columnLogicalId = "LOGICAL_ID"_zsv;
-        static constexpr zstring_view columnLogicalName = "LOGICAL_NAME"_zsv;
         static constexpr zstring_view columnContentType = "CONTENT_TYPE"_zsv;
         static constexpr zstring_view columnContentHash = "CONTENT_HASH"_zsv;
         static constexpr zstring_view columnDebugName = "DEBUG_NAME"_zsv;

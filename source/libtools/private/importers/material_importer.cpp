@@ -48,22 +48,33 @@ bool up::MaterialImporter::import(ImporterContext& ctx) {
         return false;
     }
 
-    auto vertexPath = jsonShaders["vertex"].get<string>();
-    auto pixelPath = jsonShaders["pixel"].get<string>();
+    auto vertexUuid = UUID::fromString(jsonShaders["vertex"].get<string_view>());
+    auto pixelUuid = UUID::fromString(jsonShaders["pixel"].get<string_view>());
 
     flatbuffers::FlatBufferBuilder builder;
 
-    auto shader = schema::CreateMaterialShaderDirect(builder, vertexPath.c_str(), pixelPath.c_str());
+    schema::UUID schemaVertexUuid;
+    schema::UUID schemaPixelUuid;
 
-    std::vector<flatbuffers::Offset<flatbuffers::String>> textures;
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    std::memcpy(const_cast<int8_t*>(schemaVertexUuid.b()->data()), vertexUuid.bytes(), UUID::octects);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    std::memcpy(const_cast<int8_t*>(schemaPixelUuid.b()->data()), pixelUuid.bytes(), UUID::octects);
+
+    std::vector<schema::UUID> textures;
 
     auto jsonTextures = doc["textures"];
     for (auto const& jsonTexture : jsonTextures) {
-        auto texturePath = jsonTexture.get<string>();
-        textures.push_back(builder.CreateString(texturePath.c_str()));
+        auto textureUuid = UUID::fromString(jsonTexture.get<string_view>());
+        schema::UUID& schemaTextureUuid = textures.emplace_back();
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        std::memcpy(const_cast<int8_t*>(schemaTextureUuid.b()->data()), textureUuid.bytes(), UUID::octects);
     }
 
-    auto mat = schema::CreateMaterialDirect(builder, shader, &textures);
+    auto mat = schema::CreateMaterialDirect(
+        builder,
+        schema::CreateMaterialShader(builder, &schemaVertexUuid, &schemaPixelUuid),
+        &textures);
 
     builder.Finish(mat);
 

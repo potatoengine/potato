@@ -10,7 +10,7 @@ namespace up {
         IgnoreImporter() = default;
 
         bool import(ImporterContext& ctx) override { return true; }
-        string_view generateSettings(ImporterContext& ctd) override { return {}; }
+        string_view generateSettings(ImporterContext& ctd) const override { return {}; }
 
         string_view name() const noexcept override { return "ignore"; }
         uint64 revision() const noexcept override { return 0; }

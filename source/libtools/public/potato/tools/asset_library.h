@@ -7,6 +7,7 @@
 #include "potato/format/erased.h"
 #include "potato/posql/posql.h"
 #include "potato/runtime/asset.h"
+#include "potato/runtime/uuid.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/unique_resource.h"
@@ -31,7 +32,7 @@ namespace up {
         };
 
         struct Imported {
-            AssetId assetId = AssetId::Invalid;
+            UUID uuid;
             string sourcePath;
             string importerName;
             uint64 importerRevision = 0;
@@ -42,7 +43,7 @@ namespace up {
         };
 
         static constexpr zstring_view typeName = "potato.asset.library"_zsv;
-        static constexpr int version = 12;
+        static constexpr int version = 13;
 
         AssetLibrary() = default;
         UP_TOOLS_API ~AssetLibrary();
@@ -50,10 +51,12 @@ namespace up {
         AssetLibrary(AssetLibrary const&) = delete;
         AssetLibrary& operator=(AssetLibrary const&) = delete;
 
-        UP_TOOLS_API auto pathToAssetId(string_view path) const -> AssetId;
-        UP_TOOLS_API auto assetIdToPath(AssetId assetId) const -> string_view;
+        UP_TOOLS_API auto pathToUuid(string_view path) const noexcept -> UUID;
+        UP_TOOLS_API auto uuidToPath(UUID const& uuid) const noexcept -> string_view;
 
-        UP_TOOLS_API Imported const* findRecord(AssetId assetId) const;
+        static UP_TOOLS_API AssetId createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept;
+
+        UP_TOOLS_API Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
 
         UP_TOOLS_API bool insertRecord(Imported record);
 

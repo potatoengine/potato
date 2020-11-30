@@ -9,9 +9,11 @@ up::ImporterContext::ImporterContext(
     zstring_view sourceFilePath,
     zstring_view sourceFolderPath,
     zstring_view destinationFolderPath,
+    Importer const* importer,
     ImporterConfig const& config,
     Logger& logger)
-    : _config(&config)
+    : _importer(importer)
+    , _config(&config)
     , _sourceFilePath(sourceFilePath)
     , _sourceFolderPath(sourceFolderPath)
     , _destinationFolderPath(destinationFolderPath)

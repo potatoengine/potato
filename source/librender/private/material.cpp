@@ -63,6 +63,12 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
     }
 }
 
+static auto toUUID(up::schema::UUID const& src) noexcept -> up::UUID {
+    flatbuffers::Array<int8_t, 16> const& arr = *src.b();
+    auto const* bytes = reinterpret_cast<up::byte const*>(arr.data());
+    return {bytes, arr.size()};
+}
+
 auto up::Material::createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!schema::VerifyMaterialBuffer(verifier)) {
@@ -80,13 +86,11 @@ auto up::Material::createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& 
         return nullptr;
     }
 
-    auto vertexPath = shader->vertex();
-    auto pixelPath = shader->pixel();
+    auto const vertexUuid = toUUID(*shader->vertex());
+    auto const pixelUuid = toUUID(*shader->pixel());
 
-    vertex = assetLoader.loadAssetSync<Shader>(
-        assetLoader.translate(string_view(vertexPath->c_str(), vertexPath->size()), "vertex"_sv));
-    pixel = assetLoader.loadAssetSync<Shader>(
-        assetLoader.translate(string_view(pixelPath->c_str(), pixelPath->size()), "pixel"_sv));
+    vertex = assetLoader.loadAssetSync<Shader>(assetLoader.translate(vertexUuid, "vertex"_sv));
+    pixel = assetLoader.loadAssetSync<Shader>(assetLoader.translate(pixelUuid, "pixel"_sv));
 
     if (!vertex.ready()) {
         return nullptr;
@@ -97,9 +101,9 @@ auto up::Material::createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& 
     }
 
     for (auto textureData : *material->textures()) {
-        auto texturePath = string(textureData->c_str(), textureData->size());
+        auto const textureUuid = toUUID(*textureData);
 
-        auto tex = assetLoader.loadAssetSync<Texture>(assetLoader.translate(texturePath));
+        auto tex = assetLoader.loadAssetSync<Texture>(assetLoader.translate(textureUuid));
         if (!tex.ready()) {
             return nullptr;
         }

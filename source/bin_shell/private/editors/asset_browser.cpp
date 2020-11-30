@@ -13,6 +13,7 @@
 #include "potato/spud/numeric_util.h"
 #include "potato/spud/sequence.h"
 #include "potato/spud/string.h"
+#include "potato/spud/string_format.h"
 #include "potato/spud/vector.h"
 
 #include <imgui.h>
@@ -98,6 +99,14 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
             if (ImGui::BeginPopupContextItem()) {
                 if (ImGui::IconMenuItem("Edit Asset", ICON_FA_EDIT)) {
                     _handleFileClick(asset.filename);
+                }
+                if (ImGui::IconMenuItem("Copy Path", ICON_FA_COPY)) {
+                    ImGui::SetClipboardText(asset.filename.c_str());
+                }
+                if (ImGui::IconMenuItem("Copy UUID")) {
+                    char buf[UUID::strLength] = {0};
+                    format_to(buf, "{}", asset.uuid);
+                    ImGui::SetClipboardText(buf);
                 }
                 if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
                     _handleFileClick(string{path::parent(asset.filename)});
@@ -213,7 +222,9 @@ void up::shell::AssetBrowser::_rebuild() {
         }
 
         _assets.push_back(
-            {.filename = string{record.filename},
+            {.uuid = record.uuid,
+             .logicalAssetId = static_cast<AssetId>(record.logicalId),
+             .filename = string{record.filename},
              .name = string{record.filename.substr(start)},
              .type = string{record.type},
              .folderIndex = folderIndex});
