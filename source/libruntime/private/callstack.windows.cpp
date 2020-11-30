@@ -7,6 +7,8 @@
 #include "potato/spud/platform.h"
 #include "potato/spud/platform_windows.h"
 
+#include <Tracy.hpp>
+
 #pragma warning(disable : 4091)
 #include <dbghelp.h>
 
@@ -49,6 +51,7 @@ namespace {
         SymCleanupType _symCleanup;
         SymGetLineFromAddr64Type _symGetLineFromAddr64;
         SymFromAddrType _symFromAddr;
+        DWORD _initValue = ERROR_SUCCESS;
 #endif // !defined(NDEBUG)
     };
 
@@ -93,9 +96,12 @@ namespace {
             return;
         }
 
+#    if !defined(TRACY_ENABLE) // Tracy initializes the dbghelp.dll if enabled
         if (_symInitialize(_process, nullptr, TRUE) == FALSE) {
+            _initValue = ::GetLastError();
             return;
         }
+#    endif // !defined(TRACE_ENABL)
 #endif // !defined(NDEBUG)
 
         _initialized = true;
