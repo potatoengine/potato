@@ -16,14 +16,14 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
     int debugNameColumn = -1;
 
     enum ColumnMask {
-        ColumnRootIdMask = (1 << 0),
+        ColumnUuidMask = (1 << 0),
         ColumnLogicalIdMask = (1 << 1),
         ColumnLogicalNameMask = (1 << 2),
         ColumnContentHashMask = (1 << 3),
         ColumnDebugNameMask = (1 << 4),
         ColumnContentTypeMask = (1 << 5),
-        ColumnRequiredMask = ColumnRootIdMask | ColumnLogicalIdMask | ColumnLogicalNameMask | ColumnContentHashMask |
-            ColumnContentTypeMask
+        ColumnRequiredMask =
+            ColumnUuidMask | ColumnLogicalIdMask | ColumnLogicalNameMask | ColumnContentHashMask | ColumnContentTypeMask
     };
 
     string_view::size_type sep = 0;
@@ -63,9 +63,9 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                 while (!eol && (sep = input.find_first_of("|\n")) != string_view::npos) {
                     string_view const header = input.substr(0, sep);
 
-                    if (header == columnRootId) {
+                    if (header == columnUuid) {
                         rootIdColumn = column;
-                        mask |= ColumnRootIdMask;
+                        mask |= ColumnUuidMask;
                     }
                     else if (header == columnLogicalId) {
                         logicalIdColumn = column;
@@ -107,8 +107,8 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                     string_view const data = input.substr(0, sep);
 
                     if (column == rootIdColumn) {
-                        std::from_chars(data.begin(), data.end(), static_cast<uint64&>(record.rootId), 16);
-                        mask |= ColumnRootIdMask;
+                        record.uuid = UUID::fromString(data);
+                        mask |= ColumnUuidMask;
                     }
                     else if (column == logicalIdColumn) {
                         std::from_chars(data.begin(), data.end(), static_cast<uint64&>(record.logicalId), 16);

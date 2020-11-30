@@ -12,49 +12,60 @@
 
 up::AssetLibrary::~AssetLibrary() = default;
 
-auto up::AssetLibrary::pathToAssetId(string_view path) const -> AssetId {
-    auto hash = hash_value<fnv1a>(path);
-    return static_cast<AssetId>(hash);
+auto up::AssetLibrary::pathToUuid(string_view path) const noexcept -> UUID {
+    for (auto const& record : _records) {
+        if (record.sourcePath == path) {
+            return record.uuid;
+        }
+    }
+    return {};
 }
 
-auto up::AssetLibrary::assetIdToPath(AssetId assetId) const -> string_view {
-    auto record = findRecord(assetId);
+auto up::AssetLibrary::uuidToPath(UUID uuid) const noexcept -> string_view {
+    auto record = findRecordByUuid(uuid);
     return record != nullptr ? string_view(record->sourcePath) : string_view{};
 }
 
-auto up::AssetLibrary::findRecord(AssetId assetId) const -> Imported const* {
+auto up::AssetLibrary::findRecordByUuid(UUID uuid) const noexcept -> Imported const* {
     for (auto const& record : _records) {
-        if (record.assetId == assetId) {
+        if (record.uuid == uuid) {
             return &record;
         }
     }
     return nullptr;
 }
 
+auto up::AssetLibrary::createLogicalAssetId(UUID uuid, string_view logicalName) noexcept -> AssetId {
+    uint64 hash = hash_value(uuid);
+    if (!logicalName.empty()) {
+        hash = hash_combine(hash, hash_value(logicalName));
+    }
+    return static_cast<AssetId>(hash);
+}
+
 bool up::AssetLibrary::insertRecord(Imported record) {
+    char uuidStr[UUID::strLength] = {};
+    format_to(uuidStr, "{}", record.uuid);
+
     // update database
     if (_insertAssetStmt) {
         auto tx = _db.begin();
         (void)_insertAssetStmt.execute(
-            record.assetId,
+            uuidStr,
             record.sourcePath.c_str(),
             record.sourceContentHash,
             record.importerName.c_str(),
             record.importerRevision);
 
-        (void)_clearOutputsStmt.execute(record.assetId);
+        (void)_clearOutputsStmt.execute(uuidStr);
         for (auto const& output : record.outputs) {
-            (void)_insertOutputStmt.execute(
-                record.assetId,
-                output.logicalAssetId,
-                output.name.c_str(),
-                output.type.c_str(),
-                output.contentHash);
+            (void)_insertOutputStmt
+                .execute(uuidStr, output.logicalAssetId, output.name.c_str(), output.type.c_str(), output.contentHash);
         }
 
-        (void)_clearDependenciesStmt.execute(record.assetId);
+        (void)_clearDependenciesStmt.execute(uuidStr);
         for (auto const& dep : record.dependencies) {
-            (void)_insertDependencyStmt.execute(record.assetId, dep.path.c_str(), dep.contentHash);
+            (void)_insertDependencyStmt.execute(uuidStr, dep.path.c_str(), dep.contentHash);
         }
 
         tx.commit();
@@ -62,7 +73,7 @@ bool up::AssetLibrary::insertRecord(Imported record) {
 
     // update in-memory data
     for (auto& current : _records) {
-        if (current.assetId == record.assetId) {
+        if (current.uuid == record.uuid) {
             current = std::move(record);
             return true;
         }
@@ -102,56 +113,55 @@ bool up::AssetLibrary::open(zstring_view filename) {
 
     // ensure the table is created
     if (_db.execute("CREATE TABLE IF NOT EXISTS assets "
-                    "(asset_id INTEGER PRIMARY KEY, "
+                    "(uuid TEXT PRIMARY KEY, "
                     "source_db_path TEXT, source_hash INTEGER, "
                     "importer_name TEXT, importer_revision INTEGER);\n"
 
                     "CREATE TABLE IF NOT EXISTS outputs "
-                    "(asset_id INTEGER, output_id INTEGER, name TEXT, type TEXT, hash TEXT, "
-                    "FOREIGN KEY(asset_id) REFERENCES assets(asset_id));\n"
+                    "(uuid TEXT, output_id INTEGER, name TEXT, type TEXT, hash TEXT, "
+                    "FOREIGN KEY(uuid) REFERENCES assets(uuid));\n"
 
                     "CREATE TABLE IF NOT EXISTS dependencies "
-                    "(asset_id INTEGER, db_path TEXT, hash TEXT, "
-                    "FOREIGN KEY(asset_id) REFERENCES assets(asset_id));\n") != SqlResult::Ok) {
+                    "(uuid TEXT, db_path TEXT, hash TEXT, "
+                    "FOREIGN KEY(uuid) REFERENCES assets(uuid));\n") != SqlResult::Ok) {
         return false;
     }
 
     // create our prepared statements for later use
     _insertAssetStmt = _db.prepare(
         "INSERT INTO assets "
-        "(asset_id, source_db_path, source_hash, importer_name, importer_revision) "
+        "(uuid, source_db_path, source_hash, importer_name, importer_revision) "
         "VALUES(?, ?, ?, ?, ?)"
-        "ON CONFLICT (asset_id) DO UPDATE SET source_hash=excluded.source_hash, "
+        "ON CONFLICT (uuid) DO UPDATE SET source_hash=excluded.source_hash, "
         " importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
-    _insertOutputStmt =
-        _db.prepare("INSERT INTO outputs (asset_id, output_id, name, type, hash) VALUES(?, ?, ?, ?, ?)");
-    _insertDependencyStmt = _db.prepare("INSERT INTO dependencies (asset_id, db_path, hash) VALUES(?, ?, ?)");
-    _clearOutputsStmt = _db.prepare("DELETE FROM outputs WHERE asset_id=?");
-    _clearDependenciesStmt = _db.prepare("DELETE FROM dependencies WHERE asset_id=?");
+    _insertOutputStmt = _db.prepare("INSERT INTO outputs (uuid, output_id, name, type, hash) VALUES(?, ?, ?, ?, ?)");
+    _insertDependencyStmt = _db.prepare("INSERT INTO dependencies (uuid, db_path, hash) VALUES(?, ?, ?)");
+    _clearOutputsStmt = _db.prepare("DELETE FROM outputs WHERE uuid=?");
+    _clearDependenciesStmt = _db.prepare("DELETE FROM dependencies WHERE uuid=?");
 
     // create our prepared statemtnt to load values
     auto assets_stmt =
-        _db.prepare("SELECT asset_id, source_db_path, source_hash, importer_name, importer_revision FROM assets");
-    auto outputs_stmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE asset_id=?");
-    auto dependencies_stmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE asset_id=?");
+        _db.prepare("SELECT uuid, source_db_path, source_hash, importer_name, importer_revision FROM assets");
+    auto outputs_stmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE uuid=?");
+    auto dependencies_stmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE uuid=?");
 
     // read in all the asset records
-    for (auto const& [assetId, southPath, sourceHash, importName, importVer] :
-         assets_stmt.query<AssetId, zstring_view, uint64, zstring_view, uint64>()) {
+    for (auto const& [uuid, southPath, sourceHash, importName, importVer] :
+         assets_stmt.query<zstring_view, zstring_view, uint64, zstring_view, uint64>()) {
         auto& record = _records.push_back(Imported{
-            .assetId = assetId,
+            .uuid = UUID::fromString(uuid),
             .sourcePath = string{southPath},
             .importerName = string{importName},
             .importerRevision = importVer,
             .sourceContentHash = sourceHash});
 
         for (auto const& [id, name, type, hash] :
-             outputs_stmt.query<AssetId, zstring_view, zstring_view, uint64>(assetId)) {
+             outputs_stmt.query<AssetId, zstring_view, zstring_view, uint64>(uuid)) {
             record.outputs.push_back(
                 Output{.name = string{name}, .type = string{type}, .logicalAssetId = id, .contentHash = hash});
         }
 
-        for (auto const& [path, hash] : dependencies_stmt.query<zstring_view, uint64>(assetId)) {
+        for (auto const& [path, hash] : dependencies_stmt.query<zstring_view, uint64>(uuid)) {
             record.dependencies.push_back(Dependency{.path = string{path}, .contentHash = hash});
         }
     }
@@ -170,7 +180,7 @@ void up::AssetLibrary::generateManifest(erased_writer writer) const {
     format_to(
         writer,
         ":{}|{}|{}|{}|{}|{}\n",
-        ResourceManifest::columnRootId,
+        ResourceManifest::columnUuid,
         ResourceManifest::columnLogicalId,
         ResourceManifest::columnLogicalName,
         ResourceManifest::columnContentType,
@@ -184,14 +194,14 @@ void up::AssetLibrary::generateManifest(erased_writer writer) const {
             fullName.clear();
             fullName.append(record.sourcePath);
 
-            if (output.logicalAssetId != record.assetId) {
+            if (!output.name.empty()) {
                 format_append(fullName, ":{}", output.name);
             }
 
             format_to(
                 writer,
-                "{:016X}|{:016X}|{:016X}|{}|{:016X}|{}\n",
-                record.assetId,
+                "{}|{:016X}|{:016X}|{}|{:016X}|{}\n",
+                record.uuid,
                 output.logicalAssetId,
                 hash_value(output.name),
                 output.type,

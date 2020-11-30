@@ -4,6 +4,7 @@
 
 #include "_export.h"
 
+#include "potato/runtime/uuid.h"
 #include "potato/spud/box.h"
 #include "potato/spud/concepts.h"
 #include "potato/spud/std_iostream.h"
@@ -15,6 +16,7 @@
 
 namespace up {
     class Logger;
+    class Importer;
     struct ImporterConfig;
 
     class ImporterContext {
@@ -29,6 +31,7 @@ namespace up {
             zstring_view sourceFilePath,
             zstring_view sourceFolderPath,
             zstring_view destinationFolderPath,
+            Importer const* importer,
             ImporterConfig const& config,
             Logger& logger);
         UP_TOOLS_API ~ImporterContext();
@@ -44,8 +47,13 @@ namespace up {
         void addOutput(string logicalAsset, string path, string type);
         void addMainOutput(string path, string type);
 
+        Importer const* importer() const noexcept { return _importer; }
+
         view<string> sourceDependencies() const noexcept { return _sourceDependencies; }
         view<Output> outputs() const noexcept { return _outputs; }
+
+        UUID const& uuid() const noexcept { return _uuid; }
+        void setUuid(UUID uuid) noexcept { _uuid = std::move(uuid); }
 
         Logger& logger() noexcept { return _logger; }
 
@@ -56,10 +64,12 @@ namespace up {
         }
 
     private:
+        Importer const* _importer = nullptr;
         ImporterConfig const* _config = nullptr;
         zstring_view _sourceFilePath;
         zstring_view _sourceFolderPath;
         zstring_view _destinationFolderPath;
+        UUID _uuid;
 
         vector<string> _sourceDependencies;
         vector<Output> _outputs;

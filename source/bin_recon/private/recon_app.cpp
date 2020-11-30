@@ -250,46 +250,54 @@ bool up::recon::ReconApp::_importFiles(view<string> files, bool force) {
 }
 
 bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
-    auto assetId = _library.pathToAssetId(file);
-    auto record = _library.findRecord(assetId);
-
     auto osPath = path::join(_project->resourceRootPath(), file.c_str());
     auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
 
     Mapping const* const mapping = _findConverterMapping(file);
-    if (mapping == nullptr) {
-        _logger.error("Importer not found for `{}'", file);
-        return false;
-    }
-    Importer* const importer = mapping->conveter;
+    Importer* const importer = mapping != nullptr ? mapping->conveter : nullptr;
 
-    bool const upToDate =
-        record != nullptr && _isUpToDate(*record, contentHash, *importer) && _isUpToDate(record->dependencies);
-    if (upToDate && !force) {
-        _logger.info("Up-to-date: {}", file);
-        return true;
-    }
+    bool dirty = false;
 
     bool const deleted = !fs::fileExists(osPath);
-    if (deleted) {
-        _logger.info("Deleted: {}", file);
+    dirty |= deleted;
+
+    ImporterContext
+        context(file, _project->resourceRootPath(), _temporaryOutputPath, importer, *mapping->config, _logger);
+    dirty |= !_checkMetafile(context, file);
+
+    auto const* record = _library.findRecordByUuid(context.uuid());
+    dirty |= record == nullptr || !_isUpToDate(*record, contentHash, *importer) || !_isUpToDate(record->dependencies);
+
+    string_writer importedName;
+    {
+        if (context.uuid().isValid()) {
+            format_append(importedName, "{{{}} ", context.uuid());
+        }
+        importedName.append(file);
+        if (importer != nullptr) {
+            format_append(importedName, " ({})", importer->name());
+        }
+    }
+
+    if (importer == nullptr) {
+        _logger.error("{}: unknown file type", importedName);
+        return false;
+    }
+
+    if (!dirty) {
+        _logger.info("{}: up-to-date", importedName);
         return true;
     }
 
-    _logger.info("Importing: {} (importer={} revision={})", file, importer->name(), importer->revision());
-
-    ImporterContext context(file, _project->resourceRootPath(), _temporaryOutputPath, *mapping->config, _logger);
-    if (!_checkMetafile(context, file)) {
-        return true;
-    }
+    _logger.info("{}: importing", importedName);
 
     if (!importer->import(context)) {
-        _logger.error("Failed import for `{}'", file);
+        _logger.error("{}: import failed", importedName);
         return false;
     }
 
     AssetLibrary::Imported newRecord;
-    newRecord.assetId = assetId;
+    newRecord.uuid = context.uuid();
     newRecord.sourcePath = string(file);
     newRecord.sourceContentHash = contentHash;
     newRecord.importerName = string(importer->name());
@@ -310,7 +318,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
             newRecord.sourcePath,
             output.logicalAsset.empty() ? "" : ":",
             output.logicalAsset);
-        auto const logicalAssetId = _library.pathToAssetId(logicalAssetName);
+        auto const logicalAssetId = _library.createLogicalAssetId(context.uuid(), logicalAssetName);
 
         newRecord.outputs.push_back(
             {.name = output.logicalAsset,
@@ -407,22 +415,20 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
         dirty = true;
     }
 
-    Mapping const* const mapping = _findConverterMapping(filename);
-    if (mapping != nullptr) {
-        Importer* const importer = mapping->conveter;
-        if (importer->name() != string_view{metaFile.importerName}) {
-            metaFile.importerName = string{importer->name()};
+    if (ctx.importer() != nullptr) {
+        if (ctx.importer()->name() != string_view{metaFile.importerName}) {
+            metaFile.importerName = string{ctx.importer()->name()};
             dirty = true;
         }
 
-        ImporterContext
-            context(filename, _project->resourceRootPath(), _temporaryOutputPath, *mapping->config, _logger);
-        string_view settings = importer->generateSettings(context);
+        string_view settings = ctx.importer()->generateSettings(ctx);
         if (settings != metaFile.importerSettings) {
             metaFile.importerSettings = string{settings};
             dirty = true;
         }
     }
+
+    ctx.setUuid(metaFile.uuid);
 
     if (dirty) {
         _logger.info("Writing meta file `{}'", metaFilePath);

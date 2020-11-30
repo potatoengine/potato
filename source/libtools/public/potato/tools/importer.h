@@ -28,7 +28,7 @@ namespace up {
 
         virtual reflex::TypeInfo const& configType() const;
 
-        virtual string_view generateSettings(ImporterContext& ctd) = 0;
+        virtual string_view generateSettings(ImporterContext& ctd) const = 0;
 
         virtual string_view name() const noexcept = 0;
         virtual uint64 revision() const noexcept = 0;

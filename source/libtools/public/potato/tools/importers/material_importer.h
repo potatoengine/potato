@@ -11,7 +11,7 @@ namespace up {
         ~MaterialImporter() override;
 
         bool import(ImporterContext& ctx) override;
-        string_view generateSettings(ImporterContext& ctd) override { return {}; }
+        string_view generateSettings(ImporterContext& ctd) const override { return {}; }
 
         string_view name() const noexcept override { return "material"; }
         uint64 revision() const noexcept override { return 1; }
