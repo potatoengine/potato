@@ -54,7 +54,7 @@ namespace up::shell {
                 auto scene = new_shared<Scene>(_universe, _audioEngine);
                 auto doc = new_box<SceneDocument>(string(filename), std::move(scene));
 
-#if 1
+#if 0
                 auto material = _assetLoader.loadAssetSync<Material>(
                     _assetLoader.translate(UUID::fromString("1fe16c8f-6225-f246-9df4-824e34a28913")));
                 if (!material.isSet()) {
@@ -448,6 +448,6 @@ void up::shell::SceneEditor::_hierarchyContext(EntityId id) {
 void up::shell::SceneEditor::_save() {
     nlohmann::json doc;
     _doc->toJson(doc);
-    auto text = doc.dump();
+    auto text = doc.dump(4);
     (void)fs::writeAllText(_doc->filename(), text);
 }
