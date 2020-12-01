@@ -7,14 +7,12 @@
                     {
                         "$schema": "Mesh",
                         "material": {
-                            "$assetId": 5792848338564628033,
-                            "$assetType": "potato.asset.material",
-                            "$schema": "MaterialHandle"
+                            "$schema": "MaterialHandle",
+                            "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                         },
                         "mesh": {
-                            "$assetId": 242427462848578966,
-                            "$assetType": "potato.asset.model",
-                            "$schema": "MeshHandle"
+                            "$schema": "MeshHandle",
+                            "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                         }
                     },
                     {
@@ -31,9 +29,9 @@
                         "$schema": "Ding",
                         "period": 2.0,
                         "sound": {
-                            "$assetId": 15610340531063446667,
-                            "$assetType": "potato.asset.sound",
-                            "$schema": "SoundHandle"
+                            "$schema": "SoundHandle",
+                            "type": "potato.asset.sound",
+                            "uuid": "df3a7c47-d06a-cc44-abc4-e928aa4ab035"
                         },
                         "time": 0.0
                     }
@@ -47,14 +45,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -84,14 +80,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -121,14 +115,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -158,14 +150,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -195,14 +185,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -232,14 +220,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -269,14 +255,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -306,14 +290,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -343,14 +325,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -380,14 +360,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -417,14 +395,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -454,14 +430,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -491,14 +465,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -528,14 +500,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -565,14 +535,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -602,14 +570,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -639,14 +605,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -676,14 +640,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -713,14 +675,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -750,14 +710,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -787,14 +745,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -824,14 +780,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -861,14 +815,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -898,14 +850,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -935,14 +885,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -972,14 +920,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1009,14 +955,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1046,14 +990,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1083,14 +1025,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1120,14 +1060,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1157,14 +1095,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1194,14 +1130,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1231,14 +1165,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1268,14 +1200,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1305,14 +1235,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1342,14 +1270,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1379,14 +1305,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1416,14 +1340,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1453,14 +1375,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1490,14 +1410,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1527,14 +1445,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1564,14 +1480,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1601,14 +1515,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1638,14 +1550,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1675,14 +1585,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1712,14 +1620,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1749,14 +1655,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1786,14 +1690,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1823,14 +1725,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1860,14 +1760,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1897,14 +1795,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1934,14 +1830,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -1971,14 +1865,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2008,14 +1900,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2045,14 +1935,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2082,14 +1970,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2119,14 +2005,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2156,14 +2040,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2193,14 +2075,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2230,14 +2110,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2267,14 +2145,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2304,14 +2180,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2341,14 +2215,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2378,14 +2250,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2415,14 +2285,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2452,14 +2320,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2489,14 +2355,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2526,14 +2390,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2563,14 +2425,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2600,14 +2460,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2637,14 +2495,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2674,14 +2530,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2711,14 +2565,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2748,14 +2600,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2785,14 +2635,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2822,14 +2670,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2859,14 +2705,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2896,14 +2740,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2933,14 +2775,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -2970,14 +2810,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3007,14 +2845,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3044,14 +2880,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3081,14 +2915,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3118,14 +2950,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3155,14 +2985,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3192,14 +3020,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3229,14 +3055,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3266,14 +3090,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3303,14 +3125,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3340,14 +3160,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3377,14 +3195,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3414,14 +3230,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3451,14 +3265,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3488,14 +3300,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3525,14 +3335,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3562,14 +3370,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3599,14 +3405,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3636,14 +3440,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3673,14 +3475,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3710,14 +3510,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {
@@ -3747,14 +3545,12 @@
                             {
                                 "$schema": "Mesh",
                                 "material": {
-                                    "$assetId": 5792848338564628033,
-                                    "$assetType": "potato.asset.material",
-                                    "$schema": "MaterialHandle"
+                                    "$schema": "MaterialHandle",
+                                    "uuid": "1fe16c8f-6225-f246-9df4-824e34a28913"
                                 },
                                 "mesh": {
-                                    "$assetId": 242427462848578966,
-                                    "$assetType": "potato.asset.model",
-                                    "$schema": "MeshHandle"
+                                    "$schema": "MeshHandle",
+                                    "uuid": "8b589d73-8596-6a45-962b-4816b33d9ca3"
                                 }
                             },
                             {

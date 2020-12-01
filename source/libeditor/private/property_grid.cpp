@@ -10,6 +10,7 @@
 #include "potato/editor/imgui_ext.h"
 #include "potato/runtime/asset.h"
 #include "potato/runtime/asset_loader.h"
+#include "potato/runtime/resource_manifest.h"
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
@@ -86,7 +87,10 @@ void up::editor::PropertyGrid::_editField(
             _drawObjectEditor(schema, object);
             break;
         case reflex::SchemaPrimitive::AssetRef:
-            _editAssetField(field, *field.schema, object);
+            _editAssetField(field, schema, object);
+            break;
+        case reflex::SchemaPrimitive::Uuid:
+            _editUuidField(field, *static_cast<UUID*>(object));
             break;
         default:
             ImGui::Text("Unsupported primitive type for schema `%s`", schema.name.c_str());
@@ -356,47 +360,65 @@ void up::editor::PropertyGrid::_editAssetField(
     reflex::Schema const& schema,
     void* object) {
     ImGui::BeginGroup();
+    UP_ASSERT(schema.primitive == reflex::SchemaPrimitive::AssetRef);
 
-    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
-    UP_ASSERT(resourceAnnotation != nullptr);
-
-    Asset const* asset = nullptr;
-    zstring_view assetName;
-    AssetId assetId = AssetId::Invalid;
-    if (schema.operations->pointerDeref != nullptr) {
-        void const* pointee = schema.operations->pointerDeref(object);
-        if (pointee != nullptr) {
-            asset = static_cast<Asset const*>(pointee);
-            assetId = asset->assetId();
-            assetName = _assetLoader->debugName(assetId);
-        }
-        if (assetName.empty()) {
-            assetName = "<empty>"_zsv;
-        }
-    }
-    else {
-        assetName = "<unknown>"_zsv;
+    zstring_view assetType{};
+    if (auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
+        resourceAnnotation != nullptr) {
+        assetType = resourceAnnotation->assetType;
     }
 
-    ImGui::Text("%s", assetName.c_str());
+    auto* const handle = static_cast<UntypedAssetHandle*>(object);
+    AssetId const assetId = handle->assetId();
+    zstring_view displayName = "<empty>"_zsv;
+
+    if (handle->isSet()) {
+        displayName = _assetLoader->debugName(assetId);
+    }
+
+    ImGui::Text("%s", displayName.c_str());
     ImGui::SameLine();
     if (ImGui::IconButton("##clear", ICON_FA_TRASH) && schema.operations->pointerAssign != nullptr) {
         schema.operations->pointerAssign(object, nullptr);
     }
     ImGui::SameLine();
 
+    char browserId[32] = {
+        0,
+    };
+    format_to(browserId, "##assets{}", ImGui::GetID("popup"));
+
     if (ImGui::IconButton("##select", ICON_FA_FOLDER)) {
-        ImGui::OpenPopup("##asset_browser");
+        ImGui::OpenPopup(browserId);
     }
 
     if (_assetLoader != nullptr && schema.operations->pointerAssign != nullptr) {
         AssetId targetAssetId = assetId;
-        if (up::assetBrowserPopup("##asset_browser", targetAssetId, resourceAnnotation->assetType, *_assetLoader) &&
-            targetAssetId != assetId) {
-            UntypedAssetHandle newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);
-            schema.operations->pointerAssign(object, newAsset.release());
+        if (up::assetBrowserPopup(browserId, targetAssetId, assetType, *_assetLoader) && targetAssetId != assetId) {
+            *handle = _assetLoader->loadAssetSync(targetAssetId, assetType);
         }
     }
 
     ImGui::EndGroup();
+}
+
+void up::editor::PropertyGrid::_editUuidField([[maybe_unused]] reflex::SchemaField const& field, UUID& value) noexcept {
+    ImGui::SetNextItemWidth(-1.f);
+
+    // FIXME:
+    // up::string is an immutable string type, which isn't easy to make editable
+    // in a well-performing way. we ideally want to know when a string is being
+    // edited, make a temporary copy into a cheaply-resizable buffer, then post-
+    // edit copy that back into a new up::string. For now... just this.
+    char buffer[UUID::strLength];
+    format_to(buffer, "{}", value);
+
+    if (ImGui::InputText(
+            "##uuid",
+            buffer,
+            sizeof(buffer),
+            ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsHexadecimal |
+                ImGuiInputTextFlags_CharsDecimal /* for dash */)) {
+        value = UUID::fromString(buffer);
+    }
 }

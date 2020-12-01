@@ -179,9 +179,10 @@ void up::AssetLibrary::generateManifest(erased_writer writer) const {
     format_to(writer, ".version={}\n", ResourceManifest::version);
     format_to(
         writer,
-        ":{}|{}|{}|{}|{}\n",
+        ":{}|{}|{}|{}|{}|{}\n",
         ResourceManifest::columnUuid,
         ResourceManifest::columnLogicalId,
+        ResourceManifest::columnLogicalName,
         ResourceManifest::columnContentType,
         ResourceManifest::columnContentHash,
         ResourceManifest::columnDebugName);
@@ -199,9 +200,10 @@ void up::AssetLibrary::generateManifest(erased_writer writer) const {
 
             format_to(
                 writer,
-                "{}|{:016X}|{}|{:016X}|{}\n",
+                "{}|{:016X}|{}|{}|{:016X}|{}\n",
                 record.uuid,
                 output.logicalAssetId,
+                output.name,
                 output.type,
                 output.contentHash,
                 fullName);

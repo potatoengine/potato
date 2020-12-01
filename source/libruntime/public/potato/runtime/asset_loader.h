@@ -20,7 +20,7 @@ namespace up {
     enum class AssetId : uint64;
 
     struct AssetLoadContext {
-        AssetId id{};
+        AssetKey key;
         Stream& stream;
         AssetLoader& loader;
     };

@@ -33,8 +33,13 @@ include(up_compile_flat_schema)
 up_compile_flat_schema(potato_librender
     NAME render
     SCHEMAS
-        "schemas/material.fbs"
-        "schemas/model.fbs"
+        "schema/material.fbs"
+        "schema/model.fbs"
+)
+
+include(up_compile_sap)
+up_compile_sap(potato_librender SCHEMAS
+    "schema/material.sap"
 )
 
 target_link_libraries(potato_librender
@@ -43,6 +48,7 @@ target_link_libraries(potato_librender
         potato::spud
         glm
     PRIVATE
+        potato::libreflex
         stb
         imgui
         SDL2

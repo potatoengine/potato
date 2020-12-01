@@ -13,7 +13,9 @@ namespace up {
     public:
         static constexpr zstring_view assetTypeName = "potato.asset.shader"_zsv;
 
-        explicit Shader(AssetId id, vector<byte> shader) noexcept : AssetBase(id), _content(std::move(shader)) {}
+        explicit Shader(AssetKey key, vector<byte> shader) noexcept
+            : AssetBase(std::move(key))
+            , _content(std::move(shader)) {}
 
         view<byte> content() const noexcept { return _content; }
 

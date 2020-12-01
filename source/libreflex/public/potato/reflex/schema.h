@@ -16,7 +16,8 @@
 
 namespace up {
     class string;
-}
+    class UUID;
+} // namespace up
 
 namespace up::reflex {
     struct TypeInfo;
@@ -50,6 +51,7 @@ namespace up::reflex {
         Array,
         Object,
         AssetRef,
+        Uuid,
     };
 
     struct SchemaAnnotation {
@@ -203,6 +205,10 @@ namespace up::reflex {
         }
         else if constexpr (std::is_same_v<Type, std::nullptr_t>) {
             static constexpr Schema schema{.name = "nullptr"_zsv, .primitive = SchemaPrimitive::Pointer};
+            return schema;
+        }
+        else if constexpr (std::is_same_v<Type, up::UUID>) {
+            static constexpr Schema schema{.name = "uuid"_zsv, .primitive = SchemaPrimitive::Uuid};
             return schema;
         }
         else if constexpr (is_vector_v<Type>) {

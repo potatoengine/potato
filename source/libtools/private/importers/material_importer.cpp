@@ -1,7 +1,9 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "importers/material_importer.h"
+#include "material_schema.h"
 
+#include "potato/reflex/serialize.h"
 #include "potato/render/material_generated.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
@@ -43,38 +45,24 @@ bool up::MaterialImporter::import(ImporterContext& ctx) {
 
     inFile.close();
 
-    auto jsonShaders = doc["shaders"];
-    if (!jsonShaders.is_object()) {
+    schema::Material material;
+    if (!reflex::decodeFromJson(doc, material)) {
+        ctx.logger().error("Failed to deserialize `{}': {}", sourceAbsolutePath);
         return false;
     }
 
-    auto vertexUuid = UUID::fromString(jsonShaders["vertex"].get<string_view>());
-    auto pixelUuid = UUID::fromString(jsonShaders["pixel"].get<string_view>());
-
     flatbuffers::FlatBufferBuilder builder;
 
-    schema::UUID schemaVertexUuid;
-    schema::UUID schemaPixelUuid;
+    flat::AssetId vertexId{static_cast<uint64>(material.shaders.vertex.assetId())};
+    flat::AssetId pixelId{static_cast<uint64>(material.shaders.pixel.assetId())};
 
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    std::memcpy(const_cast<int8_t*>(schemaVertexUuid.b()->data()), vertexUuid.bytes(), UUID::octects);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    std::memcpy(const_cast<int8_t*>(schemaPixelUuid.b()->data()), pixelUuid.bytes(), UUID::octects);
-
-    std::vector<schema::UUID> textures;
-
+    std::vector<flat::AssetId> textures;
     auto jsonTextures = doc["textures"];
-    for (auto const& jsonTexture : jsonTextures) {
-        auto textureUuid = UUID::fromString(jsonTexture.get<string_view>());
-        schema::UUID& schemaTextureUuid = textures.emplace_back();
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-        std::memcpy(const_cast<int8_t*>(schemaTextureUuid.b()->data()), textureUuid.bytes(), UUID::octects);
+    for (auto const& handle : material.textures) {
+        textures.emplace_back(flat::AssetId(static_cast<uint64>(handle.assetId())));
     }
 
-    auto mat = schema::CreateMaterialDirect(
-        builder,
-        schema::CreateMaterialShader(builder, &schemaVertexUuid, &schemaPixelUuid),
-        &textures);
+    auto mat = flat::CreateMaterialDirect(builder, flat::CreateMaterialShader(builder, &vertexId, &pixelId), &textures);
 
     builder.Finish(mat);
 

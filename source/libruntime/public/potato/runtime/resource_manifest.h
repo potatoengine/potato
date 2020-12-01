@@ -20,16 +20,18 @@ namespace up {
             UUID uuid = {};
             Id logicalId = {};
             uint64 hash = 0;
+            string logicalName;
             string filename;
             string type;
         };
 
         static constexpr zstring_view columnUuid = "UUID"_zsv;
         static constexpr zstring_view columnLogicalId = "LOGICAL_ID"_zsv;
+        static constexpr zstring_view columnLogicalName = "LOGICAL_NAME"_zsv;
         static constexpr zstring_view columnContentType = "CONTENT_TYPE"_zsv;
         static constexpr zstring_view columnContentHash = "CONTENT_HASH"_zsv;
         static constexpr zstring_view columnDebugName = "DEBUG_NAME"_zsv;
-        static constexpr int version = 2;
+        static constexpr int version = 3;
 
         void clear() { _records.clear(); }
         auto size() const noexcept { return _records.size(); }

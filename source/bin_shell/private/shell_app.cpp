@@ -8,6 +8,7 @@
 #include "scene.h"
 #include "editors/asset_browser.h"
 #include "editors/game_editor.h"
+#include "editors/material_editor.h"
 #include "editors/scene_editor.h"
 
 #include "potato/audio/sound_resource.h"
@@ -289,6 +290,7 @@ int up::shell::ShellApp::initialize() {
         _assetLoader,
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
+    _editorFactories.push_back(MaterialEditor::createFactory(_assetLoader));
 
     if (!settings.project.empty()) {
         _loadProject(settings.project);
@@ -662,6 +664,10 @@ void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
     if (path::extension(filename) == ".scene") {
         string fullPath = path::join(_project->resourceRootPath(), filename);
         _openEditorForDocument(SceneEditor::editorName, fullPath);
+    }
+    else if (path::extension(filename) == ".mat") {
+        string fullPath = path::join(_project->resourceRootPath(), filename);
+        _openEditorForDocument(MaterialEditor::editorName, fullPath);
     }
     else {
 #if defined(UP_PLATFORM_WINDOWS)

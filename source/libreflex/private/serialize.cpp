@@ -16,11 +16,13 @@ namespace up::reflex::_detail {
     static bool encodeObject(nlohmann::json& json, Schema const& schema, void const* obj);
     static bool encodeArray(nlohmann::json& json, Schema const& schema, void const* arr);
     static bool encodeAssetRef(nlohmann::json& json, Schema const& schema, void const* obj);
+    static bool encodeUuid(nlohmann::json& json, Schema const& schema, void const* obj);
     static bool encodeValue(nlohmann::json& json, Schema const& schema, void const* obj);
 
     static bool decodeObject(nlohmann::json const& json, Schema const& schema, void* obj);
     static bool decodeArray(nlohmann::json const& json, Schema const& schema, void* arr);
     static bool decodeAssetRef(nlohmann::json const& json, Schema const& schema, void* obj);
+    static bool decodeUuid(nlohmann::json const& json, Schema const& schema, void* obj);
     static bool decodeValue(nlohmann::json const& json, Schema const& schema, void* obj);
 
     static int64 readInt(Schema const& schema, void const* obj);
@@ -85,13 +87,39 @@ bool up::reflex::_detail::encodeAssetRef(nlohmann::json& json, Schema const& sch
     json["$schema"] = schema.name;
 
     auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
-    UP_ASSERT(resourceAnnotation != nullptr);
-    json["$assetType"] = resourceAnnotation->assetType;
+    if (resourceAnnotation != nullptr) {
+        json["type"] = resourceAnnotation->assetType;
+    }
 
     auto const* const assetHandle = static_cast<UntypedAssetHandle const*>(obj);
-    if (assetHandle->isSet()) {
+    AssetKey const& key = assetHandle->assetKey();
+    if (key.uuid.isValid()) {
+        json["uuid"] = key.uuid.toString();
+        if (!key.logical.empty()) {
+            json["logical"] = key.logical;
+        }
+    }
+    else if (assetHandle->isSet()) {
         json["$assetId"] = to_underlying(assetHandle->assetId());
     }
+    return true;
+}
+
+bool up::reflex::_detail::encodeUuid(nlohmann::json& json, Schema const& schema, void const* obj) {
+    UP_ASSERT(schema.primitive == SchemaPrimitive::Uuid);
+
+    auto const& uuid = *static_cast<UUID const*>(obj);
+    if (!uuid.isValid()) {
+        json = nullptr;
+        return true;
+    }
+
+    char buf[UUID::strLength] = {
+        0,
+    };
+    format_to(buf, "{}", uuid);
+
+    json = buf;
     return true;
 }
 
@@ -160,6 +188,8 @@ bool up::reflex::_detail::encodeValue(nlohmann::json& json, Schema const& schema
             return encodeObject(json, schema, obj);
         case SchemaPrimitive::AssetRef:
             return encodeAssetRef(json, schema, obj);
+        case SchemaPrimitive::Uuid:
+            return encodeUuid(json, schema, obj);
         default:
             return false;
     }
@@ -209,14 +239,42 @@ bool up::reflex::_detail::decodeAssetRef(nlohmann::json const& json, Schema cons
 
     auto* const assetHandle = static_cast<UntypedAssetHandle*>(obj);
 
-    if (json.contains("$assetId")) {
-        *assetHandle = UntypedAssetHandle(static_cast<AssetId>(json["$assetId"].get<uint64>()));
+    if (json.is_string()) {
+        AssetKey key;
+        key.uuid = UUID::fromString(json.get<string_view>());
+        *assetHandle = UntypedAssetHandle(std::move(key));
+    }
+    else if (json.contains("uuid") && json["uuid"].is_string()) {
+        AssetKey key;
+        key.uuid = UUID::fromString(json["uuid"].get<string_view>());
+        if (json.contains("logical") && json["logical"].is_string()) {
+            key.logical = json["logical"].get<string>();
+        }
+        *assetHandle = UntypedAssetHandle(std::move(key));
     }
     else {
-        *assetHandle = UntypedAssetHandle(AssetId::Invalid);
+        *assetHandle = UntypedAssetHandle();
     }
 
     return true;
+}
+
+bool up::reflex::_detail::decodeUuid(nlohmann::json const& json, Schema const& schema, void* obj) {
+    UP_ASSERT(schema.primitive == SchemaPrimitive::Uuid);
+
+    auto& uuid = *static_cast<UUID*>(obj);
+
+    if (json.is_null()) {
+        uuid = UUID{};
+        return true;
+    }
+
+    if (json.is_string()) {
+        uuid = UUID::fromString(json.get<string_view>());
+        return true; // FIXME: error check result somehow?
+    }
+
+    return false;
 }
 
 template <typename T, typename U = T>
@@ -292,6 +350,8 @@ bool up::reflex::_detail::decodeValue(nlohmann::json const& json, Schema const& 
             return false;
         case SchemaPrimitive::AssetRef:
             return decodeAssetRef(json, schema, obj);
+        case SchemaPrimitive::Uuid:
+            return decodeUuid(json, schema, obj);
         default:
             return false;
     }

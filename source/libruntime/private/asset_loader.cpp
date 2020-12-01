@@ -40,7 +40,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
     ZoneScopedN("Load Asset Synchronous");
 
     if (Asset* asset = _findAsset(id); asset != nullptr) {
-        return {id, rc<Asset>{rc_acquire, asset}};
+        return {asset->assetKey(), rc<Asset>{rc_acquire, asset}};
     }
 
     ResourceManifest::Record const* const record =
@@ -69,7 +69,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
         return {};
     }
 
-    AssetLoadContext const ctx{.id = id, .stream = stream, .loader = *this};
+    AssetLoadContext const ctx{.key = {.uuid = record->uuid, .logical = string{}}, .stream = stream, .loader = *this};
 
     auto asset = backend->loadFromStream(ctx);
 
@@ -82,7 +82,7 @@ auto up::AssetLoader::loadAssetSync(AssetId id, string_view type) -> UntypedAsse
 
     _assets.push_back(asset.get());
 
-    return {static_cast<AssetId>(record->logicalId), std::move(asset)};
+    return {AssetKey{.uuid = record->uuid, .logical = record->logicalName}, std::move(asset)};
 }
 
 void up::AssetLoader::registerBackend(box<AssetLoaderBackend> backend) {

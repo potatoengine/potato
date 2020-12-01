@@ -25,13 +25,13 @@ namespace up {
         static constexpr zstring_view assetTypeName = "potato.asset.material"_zsv;
 
         UP_RENDER_API explicit Material(
-            AssetId id,
+            AssetKey key,
             Shader::Handle vertexShader,
             Shader::Handle pixelShader,
             vector<Texture::Handle> textures);
         UP_RENDER_API ~Material() override;
 
-        static UP_RENDER_API auto createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& assetLoader)
+        static UP_RENDER_API auto createFromBuffer(AssetKey key, view<byte> buffer, AssetLoader& assetLoader)
             -> rc<Material>;
 
         UP_RENDER_API void bindMaterialToRender(RenderContext& ctx);

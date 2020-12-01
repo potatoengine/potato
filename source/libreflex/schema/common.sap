@@ -25,3 +25,6 @@ type mat4x4;
 
 [ignore, cxximport("glm::quat", "glm/gtx/quaternion.hpp")]
 type quat;
+
+[cxximport("up::UUID", "potato/runtime/uuid.h")]
+type uuid;

@@ -34,7 +34,7 @@ target_sources(potato_shell PRIVATE
     "public/potato/shell/ui/action.h"	
     "public/potato/shell/ui/command_palette.h"	
     "public/potato/shell/ui/menu.h"	
-)
+ "private/editors/material_editor.h" "private/editors/material_editor.cpp")
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 
