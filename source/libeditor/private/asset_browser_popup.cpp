@@ -22,9 +22,13 @@ bool up::assetBrowserPopup(zstring_view id, AssetId& inout_asset, string_view ty
         0,
     };
 
-    ImGui::SetNextWindowSizeConstraints({300, 240}, {0, 0});
+    ImVec2 const viewportSize = ImGui::GetIO().DisplaySize;
+    ImVec2 const minSize{viewportSize.x * 0.25f, viewportSize.y * 0.25f};
+    ImVec2 const maxSize{viewportSize.x * 0.5f, viewportSize.y * 0.5f};
+
+    ImGui::SetNextWindowSizeConstraints(minSize, maxSize);
     if (ImGui::BeginPopup(id.c_str())) {
-        if (ImGui::BeginIconGrid("##assets")) {
+        if (ImGui::BeginIconGrid("##assetbrowser_grid")) {
             for (ResourceManifest::Record const& asset : assetLoader.manifest()->records()) {
                 if (!type.empty() && type != asset.type) {
                     continue;
