@@ -53,27 +53,16 @@ bool up::MaterialImporter::import(ImporterContext& ctx) {
 
     flatbuffers::FlatBufferBuilder builder;
 
-    flat::UUID schemaVertexUuid;
-    flat::UUID schemaPixelUuid;
+    flat::AssetId vertexId{static_cast<uint64>(material.shaders.vertex.assetId())};
+    flat::AssetId pixelId{static_cast<uint64>(material.shaders.pixel.assetId())};
 
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    std::memcpy(const_cast<int8_t*>(schemaVertexUuid.b()->data()), material.shaders.vertex.bytes(), UUID::octects);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    std::memcpy(const_cast<int8_t*>(schemaPixelUuid.b()->data()), material.shaders.pixel.bytes(), UUID::octects);
-
-    std::vector<flat::UUID> textures;
-
+    std::vector<flat::AssetId> textures;
     auto jsonTextures = doc["textures"];
-    for (UUID const& textureUuid : material.textures) {
-        flat::UUID& schemaTextureUuid = textures.emplace_back();
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-        std::memcpy(const_cast<int8_t*>(schemaTextureUuid.b()->data()), textureUuid.bytes(), UUID::octects);
+    for (auto const& handle : material.textures) {
+        textures.emplace_back(flat::AssetId(static_cast<uint64>(handle.assetId())));
     }
 
-    auto mat = flat::CreateMaterialDirect(
-        builder,
-        flat::CreateMaterialShader(builder, &schemaVertexUuid, &schemaPixelUuid),
-        &textures);
+    auto mat = flat::CreateMaterialDirect(builder, flat::CreateMaterialShader(builder, &vertexId, &pixelId), &textures);
 
     builder.Finish(mat);
 

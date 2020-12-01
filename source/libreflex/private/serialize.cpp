@@ -114,7 +114,7 @@ bool up::reflex::_detail::encodeUuid(nlohmann::json& json, Schema const& schema,
         return true;
     }
 
-    char buf[UUID::octects] = {
+    char buf[UUID::strLength] = {
         0,
     };
     format_to(buf, "{}", uuid);

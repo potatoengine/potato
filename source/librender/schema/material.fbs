@@ -1,17 +1,17 @@
 namespace up.flat;
 
-struct UUID {
-    b:[byte:16];
+struct AssetId {
+    id:uint64;
 }
 
 table MaterialShader {
-    vertex:UUID;
-    pixel:UUID;
+    vertex:AssetId;
+    pixel:AssetId;
 }
 
 table Material {
     shader:MaterialShader;
-    textures:[UUID];
+    textures:[AssetId];
 }
 
 root_type Material;

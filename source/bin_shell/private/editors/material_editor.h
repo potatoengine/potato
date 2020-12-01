@@ -28,6 +28,8 @@ namespace up::shell {
         void configure() override;
         void content() override;
 
+        void _save();
+
         AssetLoader& _assetLoader;
         box<schema::Material> _material;
         string _filename;

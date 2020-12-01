@@ -2,7 +2,8 @@
 
 #include "material_editor.h"
 
-#include "potato/editor/property_grid.h"
+#include "potato/editor/icons.h"
+#include "potato/editor/imgui_ext.h"
 #include "potato/reflex/serialize.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
@@ -51,6 +52,12 @@ void up::shell::MaterialEditor::configure() {
 }
 
 void up::shell::MaterialEditor::content() {
+    ImGui::BeginGroup();
+    if (ImGui::IconButton("Save", ICON_FA_SAVE)) {
+        _save();
+    }
+    ImGui::EndGroup();
+
     if (!ImGui::BeginTable("##material", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBodyUntilResize)) {
         return;
     }
@@ -58,4 +65,11 @@ void up::shell::MaterialEditor::content() {
     _propertyGrid.editObject(*_material);
 
     ImGui::EndTable();
+}
+
+void up::shell::MaterialEditor::_save() {
+    nlohmann::json doc;
+    reflex::encodeToJson(doc, *_material);
+    auto text = doc.dump(4);
+    (void)fs::writeAllText(_filename, text);
 }

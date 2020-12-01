@@ -63,12 +63,6 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
     }
 }
 
-static auto toUUID(up::flat::UUID const& src) noexcept -> up::UUID {
-    flatbuffers::Array<int8_t, 16> const& arr = *src.b();
-    auto const* bytes = reinterpret_cast<up::byte const*>(arr.data());
-    return {bytes, arr.size()};
-}
-
 auto up::Material::createFromBuffer(AssetKey key, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!flat::VerifyMaterialBuffer(verifier)) {
@@ -86,11 +80,8 @@ auto up::Material::createFromBuffer(AssetKey key, view<byte> buffer, AssetLoader
         return nullptr;
     }
 
-    auto const vertexUuid = toUUID(*shader->vertex());
-    auto const pixelUuid = toUUID(*shader->pixel());
-
-    vertex = assetLoader.loadAssetSync<Shader>(assetLoader.translate(vertexUuid, "vertex"_sv));
-    pixel = assetLoader.loadAssetSync<Shader>(assetLoader.translate(pixelUuid, "pixel"_sv));
+    vertex = assetLoader.loadAssetSync<Shader>(static_cast<AssetId>(shader->vertex()->id()));
+    pixel = assetLoader.loadAssetSync<Shader>(static_cast<AssetId>(shader->pixel()->id()));
 
     if (!vertex.ready()) {
         return nullptr;
@@ -101,9 +92,7 @@ auto up::Material::createFromBuffer(AssetKey key, view<byte> buffer, AssetLoader
     }
 
     for (auto textureData : *material->textures()) {
-        auto const textureUuid = toUUID(*textureData);
-
-        auto tex = assetLoader.loadAssetSync<Texture>(assetLoader.translate(textureUuid));
+        auto tex = assetLoader.loadAssetSync<Texture>(static_cast<AssetId>(textureData->id()));
         if (!tex.ready()) {
             return nullptr;
         }
