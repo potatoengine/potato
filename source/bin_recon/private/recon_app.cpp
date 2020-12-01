@@ -279,6 +279,12 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
         }
     }
 
+    if (deleted) {
+        _logger.info("{}: deleted", importedName);
+        _library.deleteSource(file);
+        return true;
+    }
+
     if (importer == nullptr) {
         _logger.error("{}: unknown file type", importedName);
         return false;
