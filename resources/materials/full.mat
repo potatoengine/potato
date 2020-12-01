@@ -2,12 +2,29 @@
     "$schema": "Material",
     "shaders": {
         "$schema": "MaterialShaders",
-        "pixel": "96d7f040-9d15-c74f-b6c9-2226c1fe3f61",
-        "vertex": "96d7f040-9d15-c74f-b6c9-2226c1fe3f61"
+        "pixel": {
+            "$schema": "ShaderHandle",
+            "logical": "pixel",
+            "uuid": "96d7f040-9d15-c74f-b6c9-2226c1fe3f61"
+        },
+        "vertex": {
+            "$schema": "ShaderHandle",
+            "logical": "vertex",
+            "uuid": "96d7f040-9d15-c74f-b6c9-2226c1fe3f61"
+        }
     },
     "textures": [
-        "e18259a1-0d35-c341-b99f-78a33771a979",
-        "e6180b41-cb1e-b444-b58e-005eaac33dda",
-        "d078592f-40ad-454d-9ecf-12c10ceb963a"
+        {
+            "$schema": "TextureHandle",
+            "uuid": "e18259a1-0d35-c341-b99f-78a33771a979"
+        },
+        {
+            "$schema": "TextureHandle",
+            "uuid": "e6180b41-cb1e-b444-b58e-005eaac33dda"
+        },
+        {
+            "$schema": "TextureHandle",
+            "uuid": "d078592f-40ad-454d-9ecf-12c10ceb963a"
+        }
     ]
 }
