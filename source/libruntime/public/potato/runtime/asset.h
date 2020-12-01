@@ -80,7 +80,7 @@ namespace up {
             }
         }
         UntypedAssetHandle(AssetKey key, rc<Asset> asset) noexcept : _key(std::move(key)), _asset(std::move(asset)) {
-            UP_ASSERT(asset == nullptr || asset->assetKey() == key);
+            UP_ASSERT(asset == nullptr || asset->assetKey() == _key);
         }
 
         bool isSet() const noexcept { return _key.uuid.isValid(); }
