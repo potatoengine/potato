@@ -114,6 +114,10 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                         std::from_chars(data.begin(), data.end(), static_cast<uint64&>(record.logicalId), 16);
                         mask |= ColumnLogicalIdMask;
                     }
+                    else if (column == logicalNameColumn) {
+                        record.logicalName = string{data};
+                        mask |= ColumnLogicalNameMask;
+                    }
                     else if (column == contentHashColumn) {
                         std::from_chars(data.begin(), data.end(), record.hash, 16);
                         mask |= ColumnContentHashMask;
