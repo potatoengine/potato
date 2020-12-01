@@ -108,6 +108,7 @@ namespace up {
         using AssetType = AssetT;
 
         AssetHandle() = default;
+        // NOLINTNEXTLINE(performance-unnecessary-value-param) -- clang-tidy false-positive
         AssetHandle(AssetKey key, rc<AssetT> asset) noexcept : UntypedAssetHandle(std::move(key), std::move(asset)) {}
         explicit AssetHandle(rc<AssetT> asset) noexcept : UntypedAssetHandle(std::move(asset)) {}
 
