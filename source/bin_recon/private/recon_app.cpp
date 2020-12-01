@@ -189,8 +189,6 @@ bool up::recon::ReconApp::_runServer() {
                     cmd.path = path::changeExtension(cmd.path, "");
                 }
 
-                _logger.info("Change: {}", cmd.path);
-
                 _importFile(cmd.path, cmd.force);
                 _writeManifest();
                 break;
@@ -251,6 +249,7 @@ bool up::recon::ReconApp::_importFiles(view<string> files, bool force) {
 
 bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     auto osPath = path::join(_project->resourceRootPath(), file.c_str());
+    auto metaPath = _makeMetaFilename(file);
     auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
 
     Mapping const* const mapping = _findConverterMapping(file);
@@ -263,10 +262,13 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
 
     ImporterContext
         context(file, _project->resourceRootPath(), _temporaryOutputPath, importer, *mapping->config, _logger);
-    dirty |= !_checkMetafile(context, file);
+    dirty |= !_checkMetafile(context, metaPath, !deleted);
 
     auto const* record = _library.findRecordByUuid(context.uuid());
-    dirty |= record == nullptr || !_isUpToDate(*record, contentHash, *importer) || !_isUpToDate(record->dependencies);
+    if (!deleted) {
+        dirty |=
+            record == nullptr || !_isUpToDate(*record, contentHash, *importer) || !_isUpToDate(record->dependencies);
+    }
 
     string_writer importedName;
     {
@@ -282,6 +284,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     if (deleted) {
         _logger.info("{}: deleted", importedName);
         _library.deleteSource(file);
+        (void)fs::remove(path::join(_project->resourceRootPath(), metaPath));
         return true;
     }
 
@@ -393,12 +396,15 @@ auto up::recon::ReconApp::_findConverterMapping(string_view path) const -> Mappi
     return nullptr;
 }
 
-auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view filename) -> bool {
+auto up::recon::ReconApp::_makeMetaFilename(zstring_view assetFilename) -> string {
     string_writer metaFilePath;
-    metaFilePath.append(filename);
+    metaFilePath.append(assetFilename);
     metaFilePath.append(".meta");
+    return metaFilePath.to_string();
+}
 
-    string metaFileOsPath = path::join(_project->resourceRootPath(), metaFilePath);
+auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view metaFilename, bool autoCreate) -> bool {
+    string metaFileOsPath = path::join(_project->resourceRootPath(), metaFilename);
 
     MetaFile metaFile;
     bool dirty = false;
@@ -436,21 +442,21 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
 
     ctx.setUuid(metaFile.uuid);
 
-    if (dirty) {
-        _logger.info("Writing meta file `{}'", metaFilePath);
+    if (dirty && autoCreate) {
+        _logger.info("Writing meta file `{}'", metaFilename);
 
         string jsonText = metaFile.toJson();
 
         auto stream = fs::openWrite(metaFileOsPath, fs::OpenMode::Text);
         if (!stream || writeAllText(stream, jsonText) != IOResult::Success) {
-            _logger.error("Failed to write meta file for {}", metaFilePath);
+            _logger.error("Failed to write meta file for {}", metaFilename);
             return false;
         }
     }
 
     // adding meta files to source deps to ensure proper rebuild when meta files change for any reason
     // (like convert settings for a file)
-    ctx.addSourceDependency(metaFilePath);
+    ctx.addSourceDependency(metaFilename);
     return true;
 }
 
