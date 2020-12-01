@@ -73,22 +73,21 @@ namespace up {
     class UntypedAssetHandle {
     public:
         UntypedAssetHandle() = default;
-        explicit UntypedAssetHandle(AssetKey key) noexcept : _key(std::move(key)), _id(_key.makeAssetId()) {}
-        explicit UntypedAssetHandle(AssetId id) noexcept : _id(id) {}
+        explicit UntypedAssetHandle(AssetKey key) noexcept : _key(std::move(key)) {}
         explicit UntypedAssetHandle(rc<Asset> asset) noexcept : _asset(std::move(asset)) {
             if (_asset != nullptr) {
-                _id = _asset->assetId();
+                _key = _asset->assetKey();
             }
         }
         UntypedAssetHandle(AssetKey key, rc<Asset> asset) noexcept : _key(std::move(key)), _asset(std::move(asset)) {
             UP_ASSERT(asset == nullptr || asset->assetKey() == key);
         }
 
-        bool isSet() const noexcept { return _id != AssetId::Invalid; }
+        bool isSet() const noexcept { return _key.uuid.isValid(); }
         bool ready() const noexcept { return _asset != nullptr; }
 
         AssetKey const& assetKey() const noexcept { return _key; }
-        AssetId assetId() const noexcept { return _id; }
+        AssetId assetId() const noexcept { return _key.makeAssetId(); }
 
         template <typename AssetT>
         AssetHandle<AssetT> cast() const& noexcept;
@@ -100,7 +99,6 @@ namespace up {
 
     private:
         AssetKey _key{};
-        AssetId _id = AssetId::Invalid;
         rc<Asset> _asset;
     };
 

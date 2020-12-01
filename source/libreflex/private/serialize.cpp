@@ -244,9 +244,6 @@ bool up::reflex::_detail::decodeAssetRef(nlohmann::json const& json, Schema cons
         key.uuid = UUID::fromString(json.get<string_view>());
         *assetHandle = UntypedAssetHandle(std::move(key));
     }
-    else if (json.contains("$assetId") && json["$assetId"].is_number_integer()) {
-        *assetHandle = UntypedAssetHandle(static_cast<AssetId>(json["$assetId"].get<uint64>()));
-    }
     else if (json.contains("uuid") && json["uuid"].is_string()) {
         AssetKey key;
         key.uuid = UUID::fromString(json["uuid"].get<string_view>());
@@ -256,7 +253,7 @@ bool up::reflex::_detail::decodeAssetRef(nlohmann::json const& json, Schema cons
         *assetHandle = UntypedAssetHandle(std::move(key));
     }
     else {
-        *assetHandle = UntypedAssetHandle(AssetId::Invalid);
+        *assetHandle = UntypedAssetHandle();
     }
 
     return true;
