@@ -10,7 +10,8 @@
 
 namespace up {
     class AssetLoader;
-}
+    class UUID;
+} // namespace up
 
 namespace up::inline editor {
     class PropertyEditor {
@@ -60,6 +61,7 @@ namespace up::inline editor {
         void _editQuatField(reflex::SchemaField const& field, glm::quat& value) noexcept;
         void _editStringField(reflex::SchemaField const& field, string& value) noexcept;
         void _editAssetField(reflex::SchemaField const& field, reflex::Schema const& schema, void* object);
+        void _editUuidField(reflex::SchemaField const& field, UUID& value) noexcept;
 
         AssetLoader* _assetLoader = nullptr;
     };
