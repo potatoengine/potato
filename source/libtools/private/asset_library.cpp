@@ -83,6 +83,23 @@ bool up::AssetLibrary::insertRecord(Imported record) {
     return true;
 }
 
+bool up::AssetLibrary::deleteSource(string_view sourcePath) {
+    // update database
+    if (_deleteAssetStmt) {
+        (void)_deleteAssetStmt.execute(sourcePath);
+    }
+
+    // update in-memory data
+    for (auto it = begin(_records); it != end(_records); ++it) {
+        if (it->sourcePath == sourcePath) {
+            _records.erase(it);
+            return true;
+        }
+    }
+
+    return true;
+}
+
 bool up::AssetLibrary::open(zstring_view filename) {
     // open the database
     if (_db.open(filename.c_str()) != SqlResult::Ok) {
@@ -136,6 +153,7 @@ bool up::AssetLibrary::open(zstring_view filename) {
         " importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
     _insertOutputStmt = _db.prepare("INSERT INTO outputs (uuid, output_id, name, type, hash) VALUES(?, ?, ?, ?, ?)");
     _insertDependencyStmt = _db.prepare("INSERT INTO dependencies (uuid, db_path, hash) VALUES(?, ?, ?)");
+    _deleteAssetStmt = _db.prepare("DELETE FROM assets WHERE source_db_path=?");
     _clearOutputsStmt = _db.prepare("DELETE FROM outputs WHERE uuid=?");
     _clearDependenciesStmt = _db.prepare("DELETE FROM dependencies WHERE uuid=?");
 

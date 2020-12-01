@@ -148,7 +148,7 @@ namespace up {
             }
 
             UP_POSQL_API void _bind(int index, int64 value) noexcept;
-            UP_POSQL_API void _bind(int index, zstring_view value) noexcept;
+            UP_POSQL_API void _bind(int index, string_view value) noexcept;
             template <enumeration E>
             void _bind(int index, E value) noexcept {
                 _bind(index, to_underlying(value));

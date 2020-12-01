@@ -59,6 +59,7 @@ namespace up {
         UP_TOOLS_API Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
 
         UP_TOOLS_API bool insertRecord(Imported record);
+        UP_TOOLS_API bool deleteSource(string_view sourcePath);
 
         UP_TOOLS_API bool open(zstring_view filename);
         UP_TOOLS_API bool close();
@@ -75,6 +76,7 @@ namespace up {
         Statement _insertAssetStmt;
         Statement _insertOutputStmt;
         Statement _insertDependencyStmt;
+        Statement _deleteAssetStmt;
         Statement _clearOutputsStmt;
         Statement _clearDependenciesStmt;
     };
