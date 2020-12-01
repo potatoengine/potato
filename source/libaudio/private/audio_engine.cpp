@@ -71,7 +71,7 @@ auto up::SoundAssetLoaderBackend::loadFromStream(AssetLoadContext const& ctx) ->
         return nullptr;
     }
 
-    auto wav = new_shared<SoundResourceWav>(ctx.id);
+    auto wav = new_shared<SoundResourceWav>(ctx.key);
     auto const result = wav->_wav.loadMem(
         reinterpret_cast<unsigned char const*>(contents.data()),
         static_cast<unsigned int>(contents.size()),

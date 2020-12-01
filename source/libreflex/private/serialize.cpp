@@ -87,11 +87,19 @@ bool up::reflex::_detail::encodeAssetRef(nlohmann::json& json, Schema const& sch
     json["$schema"] = schema.name;
 
     auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
-    UP_ASSERT(resourceAnnotation != nullptr);
-    json["$assetType"] = resourceAnnotation->assetType;
+    if (resourceAnnotation != nullptr) {
+        json["type"] = resourceAnnotation->assetType;
+    }
 
     auto const* const assetHandle = static_cast<UntypedAssetHandle const*>(obj);
-    if (assetHandle->isSet()) {
+    AssetKey const& key = assetHandle->assetKey();
+    if (key.uuid.isValid()) {
+        json["uuid"] = key.uuid.toString();
+        if (!key.logical.empty()) {
+            json["logical"] = key.logical;
+        }
+    }
+    else if (assetHandle->isSet()) {
         json["$assetId"] = to_underlying(assetHandle->assetId());
     }
     return true;
@@ -231,8 +239,21 @@ bool up::reflex::_detail::decodeAssetRef(nlohmann::json const& json, Schema cons
 
     auto* const assetHandle = static_cast<UntypedAssetHandle*>(obj);
 
-    if (json.contains("$assetId")) {
+    if (json.is_string()) {
+        AssetKey key;
+        key.uuid = UUID::fromString(json.get<string_view>());
+        *assetHandle = UntypedAssetHandle(std::move(key));
+    }
+    else if (json.contains("$assetId") && json["$assetId"].is_number_integer()) {
         *assetHandle = UntypedAssetHandle(static_cast<AssetId>(json["$assetId"].get<uint64>()));
+    }
+    else if (json.contains("uuid") && json["uuid"].is_string()) {
+        AssetKey key;
+        key.uuid = UUID::fromString(json["uuid"].get<string_view>());
+        if (json.contains("logical") && json["logical"].is_string()) {
+            key.logical = json["logical"].get<string>();
+        }
+        *assetHandle = UntypedAssetHandle(std::move(key));
     }
     else {
         *assetHandle = UntypedAssetHandle(AssetId::Invalid);

@@ -10,6 +10,7 @@
 bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& manifest) {
     int rootIdColumn = -1;
     int logicalIdColumn = -1;
+    int logicalNameColumn = -1;
     int contentHashColumn = -1;
     int contentTypeColumn = -1;
     int debugNameColumn = -1;
@@ -17,10 +18,12 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
     enum ColumnMask {
         ColumnUuidMask = (1 << 0),
         ColumnLogicalIdMask = (1 << 1),
+        ColumnLogicalNameMask = (1 << 1),
         ColumnContentHashMask = (1 << 3),
         ColumnDebugNameMask = (1 << 4),
         ColumnContentTypeMask = (1 << 5),
-        ColumnRequiredMask = ColumnUuidMask | ColumnLogicalIdMask | ColumnContentHashMask | ColumnContentTypeMask
+        ColumnRequiredMask =
+            ColumnUuidMask | ColumnLogicalIdMask | ColumnLogicalNameMask | ColumnContentHashMask | ColumnContentTypeMask
     };
 
     string_view::size_type sep = 0;
@@ -67,6 +70,10 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                     else if (header == columnLogicalId) {
                         logicalIdColumn = column;
                         mask |= ColumnLogicalIdMask;
+                    }
+                    else if (header == columnLogicalName) {
+                        logicalNameColumn = column;
+                        mask |= ColumnLogicalNameMask;
                     }
                     else if (header == columnContentHash) {
                         contentHashColumn = column;

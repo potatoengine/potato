@@ -134,7 +134,7 @@ namespace up {
                 }
                 ctx.stream.close();
 
-                return Mesh::createFromBuffer(ctx.id, contents);
+                return Mesh::createFromBuffer(ctx.key, contents);
             }
         };
 
@@ -148,7 +148,7 @@ namespace up {
                 }
                 ctx.stream.close();
 
-                return Material::createFromBuffer(ctx.id, contents, ctx.loader);
+                return Material::createFromBuffer(ctx.key, contents, ctx.loader);
             }
         };
 
@@ -162,7 +162,7 @@ namespace up {
                 }
                 ctx.stream.close();
 
-                return up::new_shared<Shader>(ctx.id, std::move(contents));
+                return up::new_shared<Shader>(ctx.key, std::move(contents));
             }
         };
 
@@ -189,7 +189,7 @@ namespace up {
                     return nullptr;
                 }
 
-                return new_shared<Texture>(ctx.id, std::move(img), std::move(tex));
+                return new_shared<Texture>(ctx.key, std::move(img), std::move(tex));
             }
 
         private:

@@ -15,11 +15,11 @@
 #include "potato/spud/string.h"
 
 up::Material::Material(
-    AssetId id,
+    AssetKey key,
     Shader::Handle vertexShader,
     Shader::Handle pixelShader,
     vector<Texture::Handle> textures)
-    : AssetBase(id)
+    : AssetBase(std::move(key))
     , _vertexShader(std::move(vertexShader))
     , _pixelShader(std::move(pixelShader))
     , _textures(std::move(textures))
@@ -69,7 +69,7 @@ static auto toUUID(up::flat::UUID const& src) noexcept -> up::UUID {
     return {bytes, arr.size()};
 }
 
-auto up::Material::createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
+auto up::Material::createFromBuffer(AssetKey key, view<byte> buffer, AssetLoader& assetLoader) -> rc<Material> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!flat::VerifyMaterialBuffer(verifier)) {
         return {};
@@ -111,5 +111,5 @@ auto up::Material::createFromBuffer(AssetId id, view<byte> buffer, AssetLoader& 
         textures.push_back(std::move(tex));
     }
 
-    return new_shared<Material>(id, std::move(vertex), std::move(pixel), std::move(textures));
+    return new_shared<Material>(std::move(key), std::move(vertex), std::move(pixel), std::move(textures));
 }

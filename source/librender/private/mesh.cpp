@@ -28,12 +28,12 @@ namespace {
 } // namespace
 
 up::Mesh::Mesh(
-    AssetId id,
+    AssetKey key,
     vector<up::uint16> indices,
     vector<up::byte> data,
     view<MeshBuffer> buffers,
     view<MeshChannel> channels)
-    : AssetBase(id)
+    : AssetBase(std::move(key))
     , _buffers(buffers.begin(), buffers.end())
     , _channels(channels.begin(), channels.end())
     , _indices(std::move(indices))
@@ -73,7 +73,7 @@ void up::Mesh::bindVertexBuffers(RenderContext& ctx) {
     }
 }
 
-auto up::Mesh::createFromBuffer(AssetId id, view<byte> buffer) -> rc<Mesh> {
+auto up::Mesh::createFromBuffer(AssetKey key, view<byte> buffer) -> rc<Mesh> {
     flatbuffers::Verifier verifier(reinterpret_cast<uint8 const*>(buffer.data()), buffer.size());
     if (!schema::VerifyModelBuffer(verifier)) {
         return {};
@@ -172,7 +172,12 @@ auto up::Mesh::createFromBuffer(AssetId id, view<byte> buffer) -> rc<Mesh> {
         }
     }
 
-    return up::new_shared<Mesh>(id, std::move(indices), vector(data.as_bytes()), span{&bufferDesc, 1}, channels);
+    return up::new_shared<Mesh>(
+        std::move(key),
+        std::move(indices),
+        vector(data.as_bytes()),
+        span{&bufferDesc, 1},
+        channels);
 }
 
 void UP_VECTORCALL up::Mesh::render(RenderContext& ctx, Material* material, glm::mat4x4 transform) {

@@ -3,9 +3,12 @@
 #pragma once
 
 #include "assertion.h"
+#include "uuid.h"
 
+#include "potato/spud/hash.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/rc.h"
+#include "potato/spud/string.h"
 #include "potato/spud/zstring_view.h"
 
 namespace up {
@@ -16,16 +19,32 @@ namespace up {
     template <typename AssetT>
     class AssetHandle;
 
+    struct AssetKey {
+        UUID uuid;
+        string logical;
+
+        AssetId makeAssetId() const noexcept {
+            uint64 hash = hash_value(uuid);
+            if (!logical.empty()) {
+                hash = hash_combine(hash, hash_value(logical));
+            }
+            return static_cast<AssetId>(hash);
+        }
+
+        constexpr bool operator==(AssetKey const&) const noexcept = default;
+    };
+
     class Asset : public shared<Asset> {
     public:
-        explicit Asset(AssetId id) noexcept : _id(id) {}
+        explicit Asset(AssetKey key) noexcept : _key(std::move(key)) {}
         inline virtual ~Asset();
 
         virtual zstring_view assetType() const noexcept = 0;
-        AssetId assetId() const noexcept { return _id; }
+        AssetKey const& assetKey() const noexcept { return _key; }
+        AssetId assetId() const noexcept { return _key.makeAssetId(); }
 
     private:
-        AssetId _id{};
+        AssetKey _key{};
         AssetTracker* _tracker = nullptr;
 
         friend class AssetTracker;
@@ -54,19 +73,21 @@ namespace up {
     class UntypedAssetHandle {
     public:
         UntypedAssetHandle() = default;
+        explicit UntypedAssetHandle(AssetKey key) noexcept : _key(std::move(key)), _id(_key.makeAssetId()) {}
         explicit UntypedAssetHandle(AssetId id) noexcept : _id(id) {}
         explicit UntypedAssetHandle(rc<Asset> asset) noexcept : _asset(std::move(asset)) {
             if (_asset != nullptr) {
                 _id = _asset->assetId();
             }
         }
-        UntypedAssetHandle(AssetId id, rc<Asset> asset) noexcept : _id(id), _asset(std::move(asset)) {
-            UP_ASSERT(asset == nullptr || asset->assetId() == id);
+        UntypedAssetHandle(AssetKey key, rc<Asset> asset) noexcept : _key(std::move(key)), _asset(std::move(asset)) {
+            UP_ASSERT(asset == nullptr || asset->assetKey() == key);
         }
 
         bool isSet() const noexcept { return _id != AssetId::Invalid; }
         bool ready() const noexcept { return _asset != nullptr; }
 
+        AssetKey const& assetKey() const noexcept { return _key; }
         AssetId assetId() const noexcept { return _id; }
 
         template <typename AssetT>
@@ -78,6 +99,7 @@ namespace up {
         Asset* release() noexcept { return _asset.release(); }
 
     private:
+        AssetKey _key{};
         AssetId _id = AssetId::Invalid;
         rc<Asset> _asset;
     };
@@ -89,7 +111,7 @@ namespace up {
 
         AssetHandle() = default;
         explicit AssetHandle(AssetId id) noexcept : UntypedAssetHandle(id) {}
-        AssetHandle(AssetId id, rc<AssetT> asset) noexcept : UntypedAssetHandle(id, std::move(asset)) {}
+        AssetHandle(AssetKey key, rc<AssetT> asset) noexcept : UntypedAssetHandle(std::move(key), std::move(asset)) {}
         explicit AssetHandle(rc<AssetT> asset) noexcept : UntypedAssetHandle(std::move(asset)) {}
 
         zstring_view typeName() const noexcept { return AssetT::assetTypeName; }
@@ -106,11 +128,11 @@ namespace up {
 
     template <typename AssetT>
     AssetHandle<AssetT> UntypedAssetHandle::cast() const& noexcept {
-        return {_id, _asset};
+        return {_key, _asset};
     }
 
     template <typename AssetT>
     AssetHandle<AssetT> UntypedAssetHandle::cast() && noexcept {
-        return {_id, rc{static_cast<AssetT*>(_asset.release())}};
+        return {_key, rc{static_cast<AssetT*>(_asset.release())}};
     }
 } // namespace up

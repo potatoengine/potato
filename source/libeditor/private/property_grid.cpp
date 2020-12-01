@@ -362,8 +362,11 @@ void up::editor::PropertyGrid::_editAssetField(
     ImGui::BeginGroup();
 
     if (schema.primitive == reflex::SchemaPrimitive::AssetRef) {
-        auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
-        UP_ASSERT(resourceAnnotation != nullptr);
+        zstring_view assetType{};
+        if (auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
+            resourceAnnotation != nullptr) {
+            assetType = resourceAnnotation->assetType;
+        }
 
         Asset const* asset = nullptr;
         zstring_view assetName;
@@ -396,9 +399,9 @@ void up::editor::PropertyGrid::_editAssetField(
 
         if (_assetLoader != nullptr && schema.operations->pointerAssign != nullptr) {
             AssetId targetAssetId = assetId;
-            if (up::assetBrowserPopup("##asset_browser", targetAssetId, resourceAnnotation->assetType, *_assetLoader) &&
+            if (up::assetBrowserPopup("##asset_browser", targetAssetId, assetType, *_assetLoader) &&
                 targetAssetId != assetId) {
-                UntypedAssetHandle newAsset = _assetLoader->loadAssetSync(targetAssetId, resourceAnnotation->assetType);
+                UntypedAssetHandle newAsset = _assetLoader->loadAssetSync(targetAssetId, assetType);
                 schema.operations->pointerAssign(object, newAsset.release());
             }
         }
