@@ -108,7 +108,6 @@ namespace up {
         using AssetType = AssetT;
 
         AssetHandle() = default;
-        explicit AssetHandle(AssetId id) noexcept : UntypedAssetHandle(id) {}
         AssetHandle(AssetKey key, rc<AssetT> asset) noexcept : UntypedAssetHandle(std::move(key), std::move(asset)) {}
         explicit AssetHandle(rc<AssetT> asset) noexcept : UntypedAssetHandle(std::move(asset)) {}
 
