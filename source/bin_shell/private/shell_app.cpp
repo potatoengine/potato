@@ -275,15 +275,8 @@ int up::shell::ShellApp::initialize() {
     _universe->registerComponent<components::Ding>("Ding");
     _universe->registerComponent<components::Test>("Test");
 
-    _editorFactories.push_back(AssetBrowser::createFactory(
-        _assetLoader,
-        [this](zstring_view name) { _onFileOpened(name); },
-        [this](zstring_view name, bool force) {
-            schema::ReconImportMessage msg;
-            msg.path = string{name};
-            msg.force = force;
-            _reconClient.sendMessage(msg);
-        }));
+    _editorFactories.push_back(
+        AssetBrowser::createFactory(_assetLoader, _reconClient, [this](zstring_view name) { _onFileOpened(name); }));
     _editorFactories.push_back(SceneEditor::createFactory(
         *_audio,
         *_universe,

@@ -5,6 +5,7 @@
 
 #include "potato/editor/imgui_ext.h"
 #include "potato/editor/imgui_fonts.h"
+#include "potato/recon/recon_client.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/path.h"
 #include "potato/runtime/resource_manifest.h"
@@ -25,33 +26,33 @@ namespace up::shell {
         public:
             AssetBrowserFactory(
                 AssetLoader& assetLoader,
-                AssetBrowser::OnFileSelected onFileSelected,
-                AssetBrowser::OnFileImport onFileImport)
+                ReconClient& reconClient,
+                AssetBrowser::OnFileSelected onFileSelected)
                 : _assetLoader(assetLoader)
-                , _onFileSelected(std::move(onFileSelected))
-                , _onFileImport(std::move(onFileImport)) {}
+                , _reconClient(reconClient)
+                , _onFileSelected(std::move(onFileSelected)) {}
 
             zstring_view editorName() const noexcept override { return AssetBrowser::editorName; }
 
             box<Editor> createEditor() override {
-                return new_box<AssetBrowser>(_assetLoader, _onFileSelected, _onFileImport);
+                return new_box<AssetBrowser>(_assetLoader, _reconClient, _onFileSelected);
             }
 
             box<Editor> createEditorForDocument(zstring_view) override { return nullptr; }
 
         private:
             AssetLoader& _assetLoader;
+            ReconClient& _reconClient;
             AssetBrowser::OnFileSelected _onFileSelected;
-            AssetBrowser::OnFileImport _onFileImport;
         };
     } // namespace
 } // namespace up::shell
 
 auto up::shell::AssetBrowser::createFactory(
     AssetLoader& assetLoader,
-    AssetBrowser::OnFileSelected onFileSelected,
-    AssetBrowser::OnFileImport onFileImport) -> box<EditorFactory> {
-    return new_box<AssetBrowserFactory>(assetLoader, std::move(onFileSelected), std::move(onFileImport));
+    ReconClient& reconClient,
+    AssetBrowser::OnFileSelected onFileSelected) -> box<EditorFactory> {
+    return new_box<AssetBrowserFactory>(assetLoader, reconClient, std::move(onFileSelected));
 }
 
 void up::shell::AssetBrowser::configure() {
@@ -96,10 +97,17 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
                 _handleFileClick(asset.filename);
             }
 
-            if (ImGui::BeginPopupContextItem()) {
+            if (ImGui::BeginIconMenuContextPopup()) {
                 if (ImGui::IconMenuItem("Edit Asset", ICON_FA_EDIT)) {
                     _handleFileClick(asset.filename);
                 }
+                if (ImGui::IconMenuItem("Import", ICON_FA_DOWNLOAD)) {
+                    _handleImport(asset.filename);
+                }
+                if (ImGui::IconMenuItem("Import (Force)")) {
+                    _handleImport(asset.filename, true);
+                }
+                ImGui::IconMenuSeparator();
                 if (ImGui::IconMenuItem("Copy Path", ICON_FA_COPY)) {
                     ImGui::SetClipboardText(asset.filename.c_str());
                 }
@@ -303,7 +311,8 @@ void up::shell::AssetBrowser::_handleFileClick(zstring_view filename) {
 }
 
 void up::shell::AssetBrowser::_handleImport(zstring_view name, bool force) {
-    if (_onFileImport != nullptr && !name.empty()) {
-        _onFileImport(name, force);
-    }
+    schema::ReconImportMessage msg;
+    msg.path = string{name};
+    msg.force = force;
+    _reconClient.sendMessage(msg);
 }

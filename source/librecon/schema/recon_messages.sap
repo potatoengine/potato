@@ -8,24 +8,21 @@ enum ReconLogSeverity {
     Error
 }
 
-[virtualbase]
-struct ReconMessage {}
-
-struct ReconLogMessage : ReconMessage {
+struct ReconLogMessage {
     string category;
     string message;
     ReconLogSeverity severity = Info;
 }
 
-struct ReconImportMessage : ReconMessage {
+struct ReconImportMessage {
     string path;
     bool force = false;
 }
 
-struct ReconImportAllMessage : ReconMessage {
+struct ReconImportAllMessage {
     bool force = false;
 }
 
-struct ReconManifestMessage : ReconMessage {
+struct ReconManifestMessage {
     string path;
 }

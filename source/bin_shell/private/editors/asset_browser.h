@@ -14,19 +14,22 @@
 
 #include <imgui.h>
 
+namespace up {
+    class ReconClient;
+}
+
 namespace up::shell {
     class AssetBrowser : public Editor {
     public:
         static constexpr zstring_view editorName = "potato.editor.asset_browser"_zsv;
 
         using OnFileSelected = delegate<void(zstring_view name)>;
-        using OnFileImport = delegate<void(zstring_view name, bool force)>;
 
-        AssetBrowser(AssetLoader& assetLoader, OnFileSelected& onFileSelected, OnFileImport& onFileImport)
+        AssetBrowser(AssetLoader& assetLoader, ReconClient& reconClient, OnFileSelected& onFileSelected)
             : Editor("AssetBrowser"_zsv)
             , _assetLoader(assetLoader)
-            , _onFileSelected(onFileSelected)
-            , _onFileImport(onFileImport) {}
+            , _reconClient(reconClient)
+            , _onFileSelected(onFileSelected) {}
 
         zstring_view displayName() const override { return "Assets"; }
         zstring_view editorClass() const override { return editorName; }
@@ -34,8 +37,8 @@ namespace up::shell {
 
         static box<EditorFactory> createFactory(
             AssetLoader& assetLoader,
-            AssetBrowser::OnFileSelected onFileSelected,
-            AssetBrowser::OnFileImport onFileImport);
+            ReconClient& reconClient,
+            AssetBrowser::OnFileSelected onFileSelected);
 
     protected:
         void configure() override;
@@ -77,8 +80,8 @@ namespace up::shell {
         void _handleImport(zstring_view name, bool force = false);
 
         AssetLoader& _assetLoader;
+        ReconClient& _reconClient;
         OnFileSelected& _onFileSelected;
-        OnFileImport& _onFileImport;
         AssetEditService _assetEditService;
         vector<Folder> _folders;
         vector<Asset> _assets;

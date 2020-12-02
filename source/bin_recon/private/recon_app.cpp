@@ -124,6 +124,25 @@ bool up::recon::ReconApp::_runServer() {
 
     ConcurrentQueue<ReconCommand> commands;
 
+    struct Receiver {
+        decltype(commands)& queue;
+
+        void handle(schema::ReconImportMessage const& msg) {
+            ReconCommand cmd;
+            cmd.type = ReconCommandType::Import;
+            cmd.path = msg.path;
+            cmd.force = msg.force;
+            queue.enqueWait(std::move(cmd));
+        }
+
+        void handle(schema::ReconImportAllMessage const& msg) {
+            ReconCommand cmd;
+            cmd.type = ReconCommandType::ImportAll;
+            cmd.force = msg.force;
+            queue.enqueWait(std::move(cmd));
+        }
+    };
+
     // watch the target resource root and auto-convert any items that come in
     auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&commands](auto const& watch) {
         ReconCommand cmd{.type = ReconCommandType::Watch, .watchAction = watch.action, .path = watch.path};
@@ -138,23 +157,12 @@ bool up::recon::ReconApp::_runServer() {
     std::thread waitParent([&handle, &commands] {
         nlohmann::json doc;
         std::string line;
-        box<schema::ReconMessage> msg;
         reflex::Schema const* schema = nullptr;
+        Receiver receiver{commands};
         while (std::getline(std::cin, line) && !std::cin.eof()) {
             doc = nlohmann::json::parse(line);
-            if (!decodeReconMessage(doc, msg, schema)) {
+            if (!decodeReconMessage(doc, receiver)) {
                 break;
-            }
-            if (schema == &reflex::getSchema<schema::ReconImportMessage>()) {
-                auto const& importMsg = static_cast<schema::ReconImportMessage const&>(*msg);
-                ReconCommand cmd{.type = ReconCommandType::Import, .path = importMsg.path, .force = importMsg.force};
-                commands.enqueWait(cmd);
-                continue;
-            }
-            if (schema == &reflex::getSchema<schema::ReconImportAllMessage>()) {
-                auto const& importMsg = static_cast<schema::ReconImportAllMessage const&>(*msg);
-                ReconCommand cmd{.type = ReconCommandType::ImportAll, .force = importMsg.force};
-                commands.enqueWait(cmd);
             }
         }
         handle.close();
