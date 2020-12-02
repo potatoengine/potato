@@ -86,6 +86,13 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
             if (ImGui::IconGridItem(_folders[childIndex].name.c_str(), ICON_FA_FOLDER)) {
                 _selectFolder(childIndex);
             }
+
+            if (ImGui::BeginIconMenuContextPopup()) {
+                if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
+                    _handleFileClick(_folders[childIndex].name);
+                }
+                ImGui::EndPopup();
+            }
         }
 
         for (Asset const& asset : _assets) {
