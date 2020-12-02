@@ -9,6 +9,7 @@
 #include <imgui.h>
 
 namespace ImGui::inline Potato {
+    UP_EDITOR_API bool BeginIconMenuContextPopup();
     UP_EDITOR_API bool BeginIconMenu(const char* label, bool enabled = true);
     UP_EDITOR_API void IconMenuSeparator();
     UP_EDITOR_API bool IconMenuItem(

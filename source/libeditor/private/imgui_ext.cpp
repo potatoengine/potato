@@ -145,6 +145,22 @@ bool ImGui::Potato::InputQuat(char const* label, glm::quat& value, char const* f
     return false;
 }
 
+bool ImGui::BeginIconMenuContextPopup() {
+    ImGuiWindow* window = GetCurrentWindow();
+    if (window->SkipItems) {
+        return false;
+    }
+
+    ImGuiID const id = window->DC.LastItemId;
+
+    if (IsMouseReleased(ImGuiMouseButton_Right) && IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup)) {
+        OpenPopupEx(id, 0);
+    }
+    return BeginPopupEx(
+        id,
+        ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings);
+}
+
 bool ImGui::BeginIconMenu(const char* label, bool enabled) {
     ImGuiWindow* window = GetCurrentWindow();
     if (window->SkipItems) {
