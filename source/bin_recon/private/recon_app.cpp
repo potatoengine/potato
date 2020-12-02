@@ -108,7 +108,7 @@ bool up::recon::ReconApp::_runOnce() {
 
 namespace up::recon {
     namespace {
-        enum ReconCommandType { Watch, Import, ImportAll, Quit };
+        enum ReconCommandType { Watch, Import, ImportAll, Delete, Quit };
         struct ReconCommand {
             ReconCommandType type = ReconCommandType::Watch;
             fs::WatchAction watchAction = fs::WatchAction::Modify;
@@ -139,6 +139,13 @@ bool up::recon::ReconApp::_runServer() {
             ReconCommand cmd;
             cmd.type = ReconCommandType::ImportAll;
             cmd.force = msg.force;
+            queue.enqueWait(std::move(cmd));
+        }
+
+        void handle(schema::ReconDeleteMessage const& msg) {
+            ReconCommand cmd;
+            cmd.type = ReconCommandType::Delete;
+            cmd.path = msg.path;
             queue.enqueWait(std::move(cmd));
         }
     };
@@ -197,19 +204,32 @@ bool up::recon::ReconApp::_runServer() {
                     cmd.path = path::changeExtension(cmd.path, "");
                 }
 
-                _importFile(cmd.path, cmd.force);
-                _writeManifest();
+                if (auto const* record = _library.findRecordByFilename(cmd.path); record != nullptr) {
+                    _importFile(record->sourcePath, cmd.force);
+                    _writeManifest();
+                }
                 break;
             case ReconCommandType::Import:
-                _logger.info("Import: {} (force={})", cmd.path, cmd.force);
+                if (auto const* record = _library.findRecordByFilename(cmd.path); record != nullptr) {
+                    _logger.info("Import: {} (force={})", record->sourcePath, cmd.force);
 
-                _importFile(cmd.path, cmd.force);
-                _writeManifest();
+                    _importFile(record->sourcePath, cmd.force);
+                    _writeManifest();
+                }
                 break;
             case ReconCommandType::ImportAll:
                 _logger.info("Import All (force={})", cmd.force);
 
                 _runOnce();
+                break;
+            case ReconCommandType::Delete:
+                if (auto const* record = _library.findRecordByFilename(cmd.path); record != nullptr) {
+                    _logger.info("Delete: {}", record->sourcePath);
+
+                    (void)fs::remove(path::join(_project->resourceRootPath(), record->sourcePath));
+                    _importFile(record->sourcePath, false);
+                    _writeManifest();
+                }
                 break;
             case ReconCommandType::Quit:
                 handle.close();
@@ -301,7 +321,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
         return false;
     }
 
-    if (!dirty) {
+    if (!dirty && !force) {
         _logger.info("{}: up-to-date", importedName);
         return true;
     }
