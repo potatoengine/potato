@@ -28,6 +28,7 @@
 #include "potato/render/material.h"
 #include "potato/render/renderer.h"
 #include "potato/render/shader.h"
+#include "potato/tools/desktop.h"
 #include "potato/tools/project.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
@@ -43,13 +44,7 @@
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
 
-#include <glm/common.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/functions.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/vec3.hpp>
 #include <nlohmann/json.hpp>
-#include <reproc++/run.hpp>
 #include <SDL.h>
 #include <SDL_keycode.h>
 #include <SDL_messagebox.h>
@@ -59,10 +54,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <nfd.h>
-
-#if defined(UP_PLATFORM_WIN32)
-#    include <shellapi.h>
-#endif
 
 // SDL includes X.h on Linux, which pollutes this name we care about
 // FIXME: clean up this file for better abstractions to avoid header pollution problems
@@ -663,37 +654,10 @@ void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
         _openEditorForDocument(MaterialEditor::editorName, fullPath);
     }
     else {
-#if defined(UP_PLATFORM_WINDOWS)
-        string fullPath = normalize(path::join(_project->resourceRootPath(), filename), path::Separator::Native);
-
-        SHELLEXECUTEINFOA info;
-        std::memset(&info, 0, sizeof(info));
-        info.cbSize = sizeof(info);
-
-        if (fs::directoryExists(fullPath)) {
-            info.lpFile = fullPath.c_str();
-            info.lpDirectory = fullPath.c_str();
-            info.lpVerb = "open";
-            info.fMask = SEE_MASK_FLAG_NO_UI;
-            info.nShow = TRUE;
-            if (ShellExecuteExA(&info) != TRUE) {
-                _logger.error("Failed to open Explorer for folder: {}", fullPath);
-            }
+        string fullPath = path::join(_project->resourceRootPath(), filename);
+        if (!desktop::openInExternalEditor(fullPath)) {
+            _logger.error("Failed to open application for asset: {}", fullPath);
         }
-        else if (fs::fileExists(fullPath)) {
-            info.lpFile = fullPath.c_str();
-            info.lpDirectory = _project->libraryPath().c_str();
-            info.lpVerb = "edit";
-            info.fMask = SEE_MASK_FLAG_NO_UI;
-            info.nShow = TRUE;
-            if (ShellExecuteExA(&info) != TRUE) {
-                info.lpVerb = "open";
-                if (ShellExecuteExA(&info) != TRUE) {
-                    _logger.error("Failed to open application for asset: {}", fullPath);
-                }
-            }
-        }
-#endif
     }
 }
 

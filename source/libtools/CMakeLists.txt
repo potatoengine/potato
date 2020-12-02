@@ -12,7 +12,13 @@ target_sources(potato_libtools PRIVATE
     "private/meta_file.cpp"
     "private/project.cpp"
     "public/potato/tools/evaluator.h"
- "private/importer.cpp")
+    "private/importer.cpp"
+    "public/potato/tools/desktop.h"
+
+    $<$<BOOL:${UNIX}>:private/desktop.posix.cpp>
+    $<$<PLATFORM_ID:Windows>:private/desktop.windows.cpp>
+
+)
 
 target_sources(potato_libtools PRIVATE
     "private/importers/copy_importer.cpp"
