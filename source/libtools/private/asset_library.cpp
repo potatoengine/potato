@@ -35,6 +35,15 @@ auto up::AssetLibrary::findRecordByUuid(UUID const& uuid) const noexcept -> Impo
     return nullptr;
 }
 
+auto  up::AssetLibrary::findRecordByFilename(zstring_view filename) const noexcept -> Imported const*{
+    for (auto const& record : _records) {
+        if (record.sourcePath == filename) {
+            return &record;
+        }
+    }
+    return nullptr;
+}
+
 auto up::AssetLibrary::createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept -> AssetId {
     uint64 hash = hash_value(uuid);
     if (!logicalName.empty()) {

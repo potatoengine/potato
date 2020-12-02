@@ -57,6 +57,7 @@ namespace up {
         static UP_TOOLS_API AssetId createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept;
 
         UP_TOOLS_API Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
+        UP_TOOLS_API Imported const* findRecordByFilename(zstring_view filename) const noexcept;
 
         UP_TOOLS_API bool insertRecord(Imported record);
         UP_TOOLS_API bool deleteSource(string_view sourcePath);
