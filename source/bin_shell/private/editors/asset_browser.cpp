@@ -119,6 +119,10 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
                 if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
                     _handleFileClick(string{path::parent(asset.filename)});
                 }
+                ImGui::IconMenuSeparator();
+                if (ImGui::IconMenuItem("Delete Asset", ICON_FA_TRASH)) {
+                    _handleDelete(asset.filename);
+                }
                 ImGui::EndPopup();
             }
         }
@@ -314,5 +318,11 @@ void up::shell::AssetBrowser::_handleImport(zstring_view name, bool force) {
     schema::ReconImportMessage msg;
     msg.path = string{name};
     msg.force = force;
+    _reconClient.sendMessage(msg);
+}
+
+void up::shell::AssetBrowser::_handleDelete(zstring_view name) {
+    schema::ReconDeleteMessage msg;
+    msg.path = string{name};
     _reconClient.sendMessage(msg);
 }

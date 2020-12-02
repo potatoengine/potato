@@ -78,6 +78,7 @@ namespace up::shell {
         void _selectFolder(int index);
         void _handleFileClick(zstring_view filename);
         void _handleImport(zstring_view name, bool force = false);
+        void _handleDelete(zstring_view name);
 
         AssetLoader& _assetLoader;
         ReconClient& _reconClient;
