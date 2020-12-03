@@ -267,7 +267,9 @@ int up::shell::ShellApp::initialize() {
     _universe->registerComponent<components::Test>("Test");
 
     _editorFactories.push_back(
-        AssetBrowser::createFactory(_assetLoader, _reconClient, [this](zstring_view name) { _onFileOpened(name); }));
+        AssetBrowser::createFactory(_assetLoader, _reconClient, _assetEditService, [this](zstring_view name) {
+            _onFileOpened(name);
+        }));
     _editorFactories.push_back(SceneEditor::createFactory(
         *_audio,
         *_universe,
@@ -316,6 +318,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     }
 
     _projectName = string{path::filebasename(path)};
+    _assetEditService.setAssetRoot(string{ _project->resourceRootPath() });
 
     _loadManifest();
 

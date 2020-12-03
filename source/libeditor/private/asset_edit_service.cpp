@@ -3,6 +3,8 @@
 #include "asset_edit_service.h"
 #include "icons.h"
 
+#include "potato/runtime/path.h"
+
 char8_t const* up::AssetEditService::getIconForType(zstring_view type) const noexcept {
     if (type == "potato.asset.sound"_sv) {
         return ICON_FA_FILE_AUDIO;
@@ -27,4 +29,8 @@ auto up::AssetEditService::getEditorForType(zstring_view type) const noexcept ->
         return "potato.editor.scene"_zsv;
     }
     return "external"_zsv;
+}
+
+auto up::AssetEditService::makeFullPath(zstring_view filename) const -> string {
+    return path::normalize(path::join(_assetRoot, filename), path::Separator::Native);
 }

@@ -49,8 +49,11 @@ bool up::desktop::selectInExplorer(zstring_view filename) {
     wchar_t widePath[2048] = {};
 
     MultiByteToWideChar(CP_UTF8, 0, filename.c_str(), filename.size(), widePath, sizeof(widePath));
-    SHParseDisplayName(widePath, nullptr, &pidl, 0, &flags);
-    SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
+    if (HRESULT const hs = SHParseDisplayName(widePath, nullptr, &pidl, 0, &flags); hs != S_OK) {
+        return false;
+    }
+
+    HRESULT const hs = SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
     ILFree(pidl);
-    return true;
+    return hs == S_OK;
 }

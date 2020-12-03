@@ -9,6 +9,7 @@
 #include "ui/menu.h"
 
 #include "potato/audio/audio_engine.h"
+#include "potato/editor/asset_edit_service.h"
 #include "potato/editor/hotkeys.h"
 #include "potato/editor/imgui_backend.h"
 #include "potato/recon/recon_client.h"
@@ -114,5 +115,6 @@ namespace up::shell {
         AssetLoader _assetLoader;
         LogWindow _logWindow;
         ReconClient _reconClient;
+        AssetEditService _assetEditService;
     }; // namespace up::shell
 } // namespace up::shell

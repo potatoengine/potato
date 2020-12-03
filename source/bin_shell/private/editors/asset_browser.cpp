@@ -6,6 +6,7 @@
 #include "potato/editor/imgui_ext.h"
 #include "potato/editor/imgui_fonts.h"
 #include "potato/recon/recon_client.h"
+#include "potato/tools/desktop.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/path.h"
 #include "potato/runtime/resource_manifest.h"
@@ -27,15 +28,17 @@ namespace up::shell {
             AssetBrowserFactory(
                 AssetLoader& assetLoader,
                 ReconClient& reconClient,
+                AssetEditService& assetEditService,
                 AssetBrowser::OnFileSelected onFileSelected)
                 : _assetLoader(assetLoader)
                 , _reconClient(reconClient)
+                , _assetEditService(assetEditService)
                 , _onFileSelected(std::move(onFileSelected)) {}
 
             zstring_view editorName() const noexcept override { return AssetBrowser::editorName; }
 
             box<Editor> createEditor() override {
-                return new_box<AssetBrowser>(_assetLoader, _reconClient, _onFileSelected);
+                return new_box<AssetBrowser>(_assetLoader, _reconClient, _assetEditService, _onFileSelected);
             }
 
             box<Editor> createEditorForDocument(zstring_view) override { return nullptr; }
@@ -43,6 +46,7 @@ namespace up::shell {
         private:
             AssetLoader& _assetLoader;
             ReconClient& _reconClient;
+            AssetEditService& _assetEditService;
             AssetBrowser::OnFileSelected _onFileSelected;
         };
     } // namespace
@@ -51,8 +55,9 @@ namespace up::shell {
 auto up::shell::AssetBrowser::createFactory(
     AssetLoader& assetLoader,
     ReconClient& reconClient,
+    AssetEditService& assetEditService,
     AssetBrowser::OnFileSelected onFileSelected) -> box<EditorFactory> {
-    return new_box<AssetBrowserFactory>(assetLoader, reconClient, std::move(onFileSelected));
+    return new_box<AssetBrowserFactory>(assetLoader, reconClient, assetEditService, std::move(onFileSelected));
 }
 
 void up::shell::AssetBrowser::configure() {
@@ -89,7 +94,7 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
 
             if (ImGui::BeginIconMenuContextPopup()) {
                 if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
-                    _handleFileClick(_folders[childIndex].name);
+                    desktop::openInExplorer(_assetEditService.makeFullPath(_folders[childIndex].name));
                 }
                 ImGui::EndPopup();
             }
@@ -123,8 +128,8 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
                     format_to(buf, "{}", asset.uuid);
                     ImGui::SetClipboardText(buf);
                 }
-                if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
-                    _handleFileClick(string{path::parent(asset.filename)});
+                if (ImGui::IconMenuItem("Show in Explorer", ICON_FA_FOLDER_OPEN)) {
+                    desktop::selectInExplorer(_assetEditService.makeFullPath(asset.filename));
                 }
                 ImGui::IconMenuSeparator();
                 if (ImGui::IconMenuItem("Delete Asset", ICON_FA_TRASH)) {

@@ -25,9 +25,14 @@ namespace up::shell {
 
         using OnFileSelected = delegate<void(zstring_view name)>;
 
-        AssetBrowser(AssetLoader& assetLoader, ReconClient& reconClient, OnFileSelected& onFileSelected)
+        AssetBrowser(
+            AssetLoader& assetLoader,
+            ReconClient& reconClient,
+            AssetEditService& assetEditService,
+            OnFileSelected& onFileSelected)
             : Editor("AssetBrowser"_zsv)
             , _assetLoader(assetLoader)
+            , _assetEditService(assetEditService)
             , _reconClient(reconClient)
             , _onFileSelected(onFileSelected) {}
 
@@ -38,6 +43,7 @@ namespace up::shell {
         static box<EditorFactory> createFactory(
             AssetLoader& assetLoader,
             ReconClient& reconClient,
+            AssetEditService& assetEditService,
             AssetBrowser::OnFileSelected onFileSelected);
 
     protected:
@@ -83,7 +89,7 @@ namespace up::shell {
         AssetLoader& _assetLoader;
         ReconClient& _reconClient;
         OnFileSelected& _onFileSelected;
-        AssetEditService _assetEditService;
+        AssetEditService& _assetEditService;
         vector<Folder> _folders;
         vector<Asset> _assets;
         int _selectedFolder = 0;
