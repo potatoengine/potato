@@ -39,7 +39,7 @@ target_sources(potato_spud_test PRIVATE
     "tests/test_vector.cpp"
     "tests/test_zstring_view.cpp"
     "tests/test_generator.cpp"
-)
+ "public/potato/spud/overload.h" "tests/test_overload.cpp")
 
 up_set_common_properties(potato_spud_test)
 
