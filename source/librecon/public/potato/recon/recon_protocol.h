@@ -39,7 +39,7 @@ namespace up {
 
     template <typename ReceiverT, typename MessageT>
     concept ReconReceiverHandles = requires(ReceiverT& receiver, MessageT const& msg) {
-        receiver.handle(msg);
+        receiver(msg);
     };
 
     template <typename ReceiverT>
@@ -57,7 +57,7 @@ namespace up {
         template <typename MessageT>
         bool _handle(MessageT const& msg) const {
             if constexpr (ReconReceiverHandles<ReceiverT, MessageT>) {
-                _receiver.handle(msg);
+                _receiver(msg);
                 return true;
             }
             return false;

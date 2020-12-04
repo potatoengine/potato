@@ -35,8 +35,8 @@ struct up::ReconClient::ReprocSink {
         return decodeReconMessage(doc, *this);
     }
 
-    void handle(schema::ReconLogMessage const& msg) { client._handle(msg); }
-    void handle(schema::ReconManifestMessage const& msg) { client._handle(msg); }
+    void operator()(schema::ReconLogMessage const& msg) { client._handle(msg); }
+    void operator()(schema::ReconManifestMessage const& msg) { client._handle(msg); }
 };
 
 bool up::ReconClient::start(Project& project) {

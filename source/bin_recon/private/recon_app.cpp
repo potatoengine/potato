@@ -14,6 +14,7 @@
 #include "potato/runtime/path.h"
 #include "potato/runtime/stream.h"
 #include "potato/runtime/uuid.h"
+#include "potato/spud/overload.h"
 #include "potato/spud/std_iostream.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/string_writer.h"
@@ -124,31 +125,28 @@ bool up::recon::ReconApp::_runServer() {
 
     ConcurrentQueue<ReconCommand> commands;
 
-    struct Receiver {
-        decltype(commands)& queue;
-
-        void handle(schema::ReconImportMessage const& msg) {
+    auto receiver = overload(
+        [&](schema::ReconImportMessage const& msg) {
             ReconCommand cmd;
             cmd.type = ReconCommandType::Import;
             cmd.path = msg.path;
             cmd.force = msg.force;
-            queue.enqueWait(std::move(cmd));
-        }
+            commands.enqueWait(std::move(cmd));
+        },
 
-        void handle(schema::ReconImportAllMessage const& msg) {
+        [&](schema::ReconImportAllMessage const& msg) {
             ReconCommand cmd;
             cmd.type = ReconCommandType::ImportAll;
             cmd.force = msg.force;
-            queue.enqueWait(std::move(cmd));
-        }
+            commands.enqueWait(std::move(cmd));
+        },
 
-        void handle(schema::ReconDeleteMessage const& msg) {
+        [&](schema::ReconDeleteMessage const& msg) {
             ReconCommand cmd;
             cmd.type = ReconCommandType::Delete;
             cmd.path = msg.path;
-            queue.enqueWait(std::move(cmd));
-        }
-    };
+            commands.enqueWait(std::move(cmd));
+        });
 
     // watch the target resource root and auto-convert any items that come in
     auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&commands](auto const& watch) {
@@ -161,14 +159,14 @@ bool up::recon::ReconApp::_runServer() {
 
     // handle processing input from the client
     fs::WatchHandle& handle = *watchHandle;
-    std::thread waitParent([&handle, &commands] {
+    std::thread waitParent([this, &handle, &commands, &receiver] {
         nlohmann::json doc;
         std::string line;
         reflex::Schema const* schema = nullptr;
-        Receiver receiver{commands};
         while (std::getline(std::cin, line) && !std::cin.eof()) {
             doc = nlohmann::json::parse(line);
             if (!decodeReconMessage(doc, receiver)) {
+                _logger.error("Unhandled JSON message");
                 break;
             }
         }
@@ -205,7 +203,7 @@ bool up::recon::ReconApp::_runServer() {
                 }
 
                 if (auto const* record = _library.findRecordByFilename(cmd.path); record != nullptr) {
-                    _importFile(record->sourcePath, cmd.force);
+                    _importFile(cmd.path, cmd.force);
                     _writeManifest();
                 }
                 break;
@@ -213,7 +211,7 @@ bool up::recon::ReconApp::_runServer() {
                 if (auto const* record = _library.findRecordByFilename(cmd.path); record != nullptr) {
                     _logger.info("Import: {} (force={})", record->sourcePath, cmd.force);
 
-                    _importFile(record->sourcePath, cmd.force);
+                    _importFile(record->sourcePath, false);
                     _writeManifest();
                 }
                 break;
