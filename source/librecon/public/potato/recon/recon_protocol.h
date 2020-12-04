@@ -66,10 +66,11 @@ namespace up {
         ReceiverT& _receiver;
     };
 
-    bool UP_RECON_API decodeReconMessage(nlohmann::json const& source, ReconMessageReceiverBase const& receiver);
+    bool UP_RECON_API
+    decodeReconMessageDispatch(nlohmann::json const& source, ReconMessageReceiverBase const& receiver);
 
     template <typename ReceiverT>
-    bool decodeReconMessage(nlohmann::json const& source, ReceiverT& receiver) {
-        return decodeReconMessage(source, ReconMessageReceiverWrapper{receiver});
+    bool decodeReconMessage(nlohmann::json const& source, ReceiverT&& receiver) {
+        return decodeReconMessageDispatch(source, ReconMessageReceiverWrapper{receiver});
     }
 } // namespace up

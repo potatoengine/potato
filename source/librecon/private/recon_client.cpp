@@ -5,6 +5,7 @@
 #include "potato/recon/recon_protocol.h"
 #include "potato/tools/project.h"
 #include "potato/runtime/logger.h"
+#include "potato/spud/overload.h"
 
 #include <nlohmann/json.hpp>
 #include <reproc++/drain.hpp>
@@ -32,11 +33,12 @@ struct up::ReconClient::ReprocSink {
     bool handleLine(string_view line) {
         nlohmann::json doc = nlohmann::json::parse(line, nullptr, false, true);
 
-        return decodeReconMessage(doc, *this);
+        return decodeReconMessage(
+            doc,
+            overload(
+                [this](schema::ReconLogMessage const& msg) { client._handle(msg); },
+                [this](schema::ReconManifestMessage const& msg) { client._handle(msg); }));
     }
-
-    void operator()(schema::ReconLogMessage const& msg) { client._handle(msg); }
-    void operator()(schema::ReconManifestMessage const& msg) { client._handle(msg); }
 };
 
 bool up::ReconClient::start(Project& project) {

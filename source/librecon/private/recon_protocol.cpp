@@ -13,7 +13,7 @@ bool up::encodeReconMessageRaw(nlohmann::json& target, reflex::Schema const& sch
     return reflex::encodeToJsonRaw(target, schema, message);
 }
 
-bool up::decodeReconMessage(nlohmann::json const& source, ReconMessageReceiverBase const& receiver) {
+bool up::decodeReconMessageDispatch(nlohmann::json const& source, ReconMessageReceiverBase const& receiver) {
     using namespace schema;
 
     if (!source.is_object()) {
