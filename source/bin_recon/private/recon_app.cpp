@@ -202,16 +202,14 @@ bool up::recon::ReconApp::_runServer() {
                     cmd.path = path::changeExtension(cmd.path, "");
                 }
 
-                if (auto const* record = _library.findRecordByFilename(cmd.path); record != nullptr) {
-                    _importFile(cmd.path, cmd.force);
-                    _writeManifest();
-                }
+                _importFile(cmd.path, cmd.force);
+                _writeManifest();
                 break;
             case ReconCommandType::Import:
                 if (auto const* record = _library.findRecordByFilename(cmd.path); record != nullptr) {
                     _logger.info("Import: {} (force={})", record->sourcePath, cmd.force);
 
-                    _importFile(record->sourcePath, false);
+                    _importFile(record->sourcePath, cmd.force);
                     _writeManifest();
                 }
                 break;
