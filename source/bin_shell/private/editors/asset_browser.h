@@ -70,6 +70,8 @@ namespace up::shell {
         };
 
         void _showAssets(int folderIndex);
+        void _showAsset(Asset const& asset);
+        void _showFolder(int index, Folder const& folder);
 
         void _showBreadcrumb(int index);
         void _showBreadcrumbs();
@@ -81,10 +83,10 @@ namespace up::shell {
         int _addFolder(string_view name, int parentIndex = 0);
         int _addFolders(string_view folders);
 
-        void _selectFolder(int index);
-        void _handleFileClick(zstring_view filename);
-        void _handleImport(zstring_view name, bool force = false);
-        void _handleDelete(zstring_view name);
+        void _openFolder(int index);
+        void _openAsset(zstring_view filename);
+        void _importAsset(zstring_view name, bool force = false);
+        void _deleteAsset(zstring_view name);
 
         AssetLoader& _assetLoader;
         ReconClient& _reconClient;
@@ -98,6 +100,6 @@ namespace up::shell {
 
         static constexpr size_t maxFolderHistory = 64;
         size_t _folderHistoryIndex = 0;
-        vector<int> _folderHistory;
+        vector<int> _folderHistory{0};
     };
 } // namespace up::shell

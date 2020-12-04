@@ -89,7 +89,7 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
         for (int childIndex = _folders[folderIndex].firstChild; childIndex != -1;
              childIndex = _folders[childIndex].nextSibling) {
             if (ImGui::IconGridItem(_folders[childIndex].name.c_str(), ICON_FA_FOLDER)) {
-                _selectFolder(childIndex);
+                _openFolder(childIndex);
             }
 
             if (ImGui::BeginIconMenuContextPopup()) {
@@ -101,44 +101,63 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
         }
 
         for (Asset const& asset : _assets) {
-            if (asset.folderIndex != folderIndex) {
-                continue;
-            }
-
-            if (ImGui::IconGridItem(asset.name.c_str(), _assetEditService.getIconForType(asset.type))) {
-                _handleFileClick(asset.filename);
-            }
-
-            if (ImGui::BeginIconMenuContextPopup()) {
-                if (ImGui::IconMenuItem("Edit Asset", ICON_FA_EDIT)) {
-                    _handleFileClick(asset.filename);
-                }
-                if (ImGui::IconMenuItem("Import", ICON_FA_DOWNLOAD)) {
-                    _handleImport(asset.filename);
-                }
-                if (ImGui::IconMenuItem("Import (Force)")) {
-                    _handleImport(asset.filename, true);
-                }
-                ImGui::IconMenuSeparator();
-                if (ImGui::IconMenuItem("Copy Path", ICON_FA_COPY)) {
-                    ImGui::SetClipboardText(asset.filename.c_str());
-                }
-                if (ImGui::IconMenuItem("Copy UUID")) {
-                    char buf[UUID::strLength] = {0};
-                    format_to(buf, "{}", asset.uuid);
-                    ImGui::SetClipboardText(buf);
-                }
-                if (ImGui::IconMenuItem("Show in Explorer", ICON_FA_FOLDER_OPEN)) {
-                    desktop::selectInExplorer(_assetEditService.makeFullPath(asset.filename));
-                }
-                ImGui::IconMenuSeparator();
-                if (ImGui::IconMenuItem("Delete Asset", ICON_FA_TRASH)) {
-                    _handleDelete(asset.filename);
-                }
-                ImGui::EndPopup();
+            if (asset.folderIndex == folderIndex) {
+                _showAsset(asset);
             }
         }
         ImGui::EndIconGrid();
+    }
+}
+
+void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
+    ImGui::PushID(hash_value(asset.uuid));
+
+    if (ImGui::IconGridItem(asset.name.c_str(), _assetEditService.getIconForType(asset.type))) {
+        _openAsset(asset.filename);
+    }
+
+    if (ImGui::BeginIconMenuContextPopup()) {
+        if (ImGui::IconMenuItem("Edit Asset", ICON_FA_EDIT)) {
+            _openAsset(asset.filename);
+        }
+        if (ImGui::IconMenuItem("Import", ICON_FA_DOWNLOAD)) {
+            _importAsset(asset.filename);
+        }
+        if (ImGui::IconMenuItem("Import (Force)")) {
+            _importAsset(asset.filename, true);
+        }
+        ImGui::IconMenuSeparator();
+        if (ImGui::IconMenuItem("Copy Path", ICON_FA_COPY)) {
+            ImGui::SetClipboardText(asset.filename.c_str());
+        }
+        if (ImGui::IconMenuItem("Copy UUID")) {
+            char buf[UUID::strLength] = {0};
+            format_to(buf, "{}", asset.uuid);
+            ImGui::SetClipboardText(buf);
+        }
+        if (ImGui::IconMenuItem("Show in Explorer", ICON_FA_FOLDER_OPEN)) {
+            desktop::selectInExplorer(_assetEditService.makeFullPath(asset.filename));
+        }
+        ImGui::IconMenuSeparator();
+        if (ImGui::IconMenuItem("Delete Asset", ICON_FA_TRASH)) {
+            _deleteAsset(asset.filename);
+        }
+        ImGui::EndPopup();
+    }
+
+    ImGui::PopID();
+}
+
+void up::shell::AssetBrowser::_showFolder(int index, Folder const& folder) {
+    if (ImGui::IconGridItem(folder.name.c_str(), ICON_FA_FOLDER)) {
+        _openFolder(index);
+    }
+
+    if (ImGui::BeginIconMenuContextPopup()) {
+        if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
+            desktop::openInExplorer(_assetEditService.makeFullPath(folder.name));
+        }
+        ImGui::EndPopup();
     }
 }
 
@@ -151,7 +170,7 @@ void up::shell::AssetBrowser::_showBreadcrumb(int index) {
     }
 
     if (ImGui::Button(_folders[index].name.c_str())) {
-        _selectFolder(index);
+        _openFolder(index);
     }
     ImGui::SameLine();
 }
@@ -209,7 +228,7 @@ void up::shell::AssetBrowser::_showFolder(int index) {
 
     if (ImGui::TreeNodeEx(_folders[index].name.c_str(), flags)) {
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            _selectFolder(index);
+            _openFolder(index);
         }
 
         for (int childIndex = _folders[index].firstChild; childIndex != -1;
@@ -301,7 +320,7 @@ int up::shell::AssetBrowser::_addFolders(string_view folders) {
     return folderIndex;
 }
 
-void up::shell::AssetBrowser::_selectFolder(int index) {
+void up::shell::AssetBrowser::_openFolder(int index) {
     // cut any of the "future" history
     if (_folderHistory.size() > _folderHistoryIndex + 1) {
         _folderHistory.resize(_folderHistoryIndex + 1);
@@ -320,20 +339,20 @@ void up::shell::AssetBrowser::_selectFolder(int index) {
     _selectedFolder = index;
 }
 
-void up::shell::AssetBrowser::_handleFileClick(zstring_view filename) {
+void up::shell::AssetBrowser::_openAsset(zstring_view filename) {
     if (_onFileSelected != nullptr && !filename.empty()) {
         _onFileSelected(filename);
     }
 }
 
-void up::shell::AssetBrowser::_handleImport(zstring_view name, bool force) {
+void up::shell::AssetBrowser::_importAsset(zstring_view name, bool force) {
     schema::ReconImportMessage msg;
     msg.path = string{name};
     msg.force = force;
     _reconClient.sendMessage(msg);
 }
 
-void up::shell::AssetBrowser::_handleDelete(zstring_view name) {
+void up::shell::AssetBrowser::_deleteAsset(zstring_view name) {
     schema::ReconDeleteMessage msg;
     msg.path = string{name};
     _reconClient.sendMessage(msg);
