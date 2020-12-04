@@ -281,24 +281,6 @@ bool ImGui::Potato::IconMenuItem(
     return clicked;
 }
 
-void ImGui::Potato::TextCentered(ImVec2 minPos, ImVec2 maxPos, ImU32 color, char const* text, char const* end) {
-    ImGuiWindow const* const window = GetCurrentWindow();
-    ImFont const* const font = GetFont();
-
-    ImVec4 const bounds{minPos.x, minPos.y, maxPos.x, maxPos.y};
-    ImVec2 const size = CalcTextSize(text, end, false, 0.f);
-    float const width = maxPos.x - minPos.x;
-
-    if (size.x >= width) {
-        window->DrawList->AddText(font, font->FontSize, minPos, color, text, end, 0.f, &bounds);
-    }
-    else {
-        float const offsetX = (width - size.x) * 0.5f;
-        ImVec2 const pos{minPos.x + offsetX, minPos.y};
-        window->DrawList->AddText(font, font->FontSize, pos, color, text, end, 0.f, &bounds);
-    }
-}
-
 ImVec2 ImGui::Potato::GetItemSpacing() {
     return GetStyle().ItemSpacing;
 }
@@ -326,34 +308,40 @@ bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, float w
 
     ImGui::TableNextColumn();
 
-    ImGuiWindow* const window = GetCurrentWindow();
+    ImGuiWindow* const window = ImGui::GetCurrentWindow();
     if (window->SkipItems) {
         return false;
     }
 
-    ImGui::PushID(label);
+    ImGuiID const id = ImGui::GetID(label);
 
     ImVec2 const size = ImGui::CalcItemSize({width, width}, 0.0f, 0.0f);
     ImRect const bounds{window->DC.CursorPos, window->DC.CursorPos + size};
     ImRect const innerBounds{bounds.Min + ImGui::GetItemSpacing(), bounds.Max - ImGui::GetItemSpacing()};
-    ImGuiID const id = ImGui::GetID("##button");
 
     bool clicked = false;
 
     ImGui::ItemSize(size);
     if (ImGui::ItemAdd(bounds, id)) {
         bool const hovered = ImGui::IsItemHovered();
-        bool const held = ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left);
 
         if (hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-            clicked = true;
+            ImGui::SetActiveID(id, window);
+        }
+
+        bool const active = ImGui::IsItemActive();
+        bool const held = active && ImGui::IsMouseDown(ImGuiMouseButton_Left);
+
+        if (active && !ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+            clicked = hovered;
+            ImGui::SetActiveID(0, nullptr);
         }
 
         ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
         ImU32 const bgColor =
             ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
 
-        if (hovered) {
+        if (hovered || held) {
             window->DrawList->AddRectFilled(bounds.Min, bounds.Max, bgColor, rounding);
         }
 
@@ -376,26 +364,36 @@ bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, float w
         ImGui::SetWindowFontScale(1.f);
         ImGui::PopFont();
 
-        ImVec2 const textSize = ImGui::CalcTextSize(label, nullptr, true, 0.f);
-        ImVec2 const textPos{bounds.Min.x, innerBounds.Max.y - ImGui::GetItemSpacing().y - textSize.y};
+        char const* const labelEnd = ImGui::FindRenderedTextEnd(label);
+        float const textHeight = ImGui::GetTextLineHeight();
+        ImRect const textBounds{
+            ImVec2{bounds.Min.x, innerBounds.Max.y - ImGui::GetItemSpacing().y - textHeight},
+            ImVec2{bounds.Max.x, innerBounds.Max.y - ImGui::GetItemSpacing().y}};
 
-        if (hovered) {
-            window->DrawList->AddRectFilled(
-                ImVec2{bounds.Min.x, textPos.y},
-                ImVec2{bounds.Max.x, textPos.y + textSize.y},
-                ImGui::GetColorU32(ImGuiCol_Header));
-
-            if (textSize.x > bounds.GetWidth()) {
-                ImGui::BeginTooltip();
-                ImGui::Text("%s", label);
-                ImGui::EndTooltip();
-            }
+        if (hovered || held) {
+            window->DrawList->AddRectFilled(textBounds.Min, textBounds.Max, ImGui::GetColorU32(ImGuiCol_Header));
         }
 
-        ImGui::TextCentered(textPos, ImVec2{bounds.Max.x, innerBounds.Max.y}, textColor, label);
-    }
+        ImFont const* const font = GetFont();
+        ImVec2 const textSize = CalcTextSize(label, nullptr, true, 0.f);
+        ImVec4 const textFineBounds{textBounds.Min.x, textBounds.Min.y, textBounds.Max.x, textBounds.Max.y};
+        if (size.x > textBounds.GetWidth()) {
+            window->DrawList
+                ->AddText(font, font->FontSize, textBounds.Min, textColor, label, labelEnd, 0.f, &textFineBounds);
+        }
+        else {
+            float const offsetX = (textBounds.GetWidth() - textSize.x) * 0.5f;
+            ImVec2 const centerPos{textBounds.Min.x + offsetX, textBounds.Min.y};
+            window->DrawList
+                ->AddText(font, font->FontSize, centerPos, textColor, label, labelEnd, 0.f, &textFineBounds);
+        }
 
-    ImGui::PopID();
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("%s", label);
+            ImGui::EndTooltip();
+        }
+    }
 
     return clicked;
 }
