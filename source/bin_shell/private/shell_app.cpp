@@ -649,9 +649,11 @@ bool up::shell::ShellApp::_loadConfig(zstring_view path) {
 
 void up::shell::ShellApp::_openAssetEditor(UUID const& uuid) {
     string assetPath;
+    uint64 assetTypeHash = 0;
     for (auto const& record : _assetLoader.manifest()->records()) {
         if (record.uuid == uuid) {
             assetPath = path::join(_project->resourceRootPath(), record.filename);
+            assetTypeHash = hash_value(record.type);
             break;
         }
     }
@@ -659,11 +661,9 @@ void up::shell::ShellApp::_openAssetEditor(UUID const& uuid) {
         return;
     }
 
-    if (path::extension(assetPath) == ".scene") {
+    zstring_view const editor = _assetEditService.getEditorForAssetTypeHash(assetTypeHash);
+    if (!editor.empty()) {
         _openEditorForDocument(SceneEditor::editorName, assetPath);
-    }
-    else if (path::extension(assetPath) == ".mat") {
-        _openEditorForDocument(MaterialEditor::editorName, assetPath);
     }
     else {
         if (!desktop::openInExternalEditor(assetPath)) {

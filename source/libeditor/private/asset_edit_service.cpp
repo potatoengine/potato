@@ -29,6 +29,9 @@ auto up::AssetEditService::getEditorForAssetTypeHash(uint64 typeHash) const noex
     if (typeHash == hash_value("potato.asset.scene")) {
         return "potato.editor.scene"_zsv;
     }
+    if (typeHash == hash_value("potato.asset.material")) {
+        return "potato.editor.material"_zsv;
+    }
     return {};
 }
 
