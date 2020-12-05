@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "desktop.h"
+
 #include "potato/runtime/assertion.h"
 
 bool up::desktop::openInExternalEditor(zstring_view filename) {
@@ -19,6 +20,11 @@ bool up::desktop::openInExplorer(zstring_view folder) {
 }
 
 bool up::desktop::selectInExplorer(zstring_view filename) {
+    UP_UNREACHABLE("not implemented");
+    return false;
+}
+
+bool selectInExplorer(zstring_view folder, view<zstring_view> files) {
     UP_UNREACHABLE("not implemented");
     return false;
 }

@@ -4,8 +4,9 @@
 
 #include "potato/runtime/assertion.h"
 #include "potato/spud/platform_windows.h"
+#include "potato/spud/unique_resource.h"
+#include "potato/spud/vector.h"
 
-#define STRICT_TYPED_ITEMIDS
 #include <Shlobj.h>
 #include <shellapi.h>
 
@@ -42,18 +43,26 @@ bool up::desktop::openInExplorer(zstring_view folder) {
     return ShellExecuteExA(&info) == TRUE;
 }
 
+static auto makeIdList(up::zstring_view name) -> up::unique_resource<__unaligned ITEMIDLIST*, ILFree> {
+    return up::unique_resource<__unaligned ITEMIDLIST*, ILFree>(ILCreateFromPathA(name.c_str()));
+}
+
 bool up::desktop::selectInExplorer(zstring_view filename) {
-    PIDLIST_ABSOLUTE pidl = nullptr;
-    SFGAOF flags = 0;
+    auto id = makeIdList(filename);
+    HRESULT const hs = SHOpenFolderAndSelectItems(id.get(), 0, nullptr, 0);
+    return hs == S_OK;
+}
 
-    wchar_t widePath[2048] = {};
+bool up::desktop::selectInExplorer(zstring_view folder, view<zstring_view> files) {
+    auto folderId = makeIdList(folder);
 
-    MultiByteToWideChar(CP_UTF8, 0, filename.c_str(), filename.size(), widePath, sizeof(widePath));
-    if (HRESULT const hs = SHParseDisplayName(widePath, nullptr, &pidl, 0, &flags); hs != S_OK) {
-        return false;
+    vector<unique_resource<__unaligned ITEMIDLIST*, ILFree>> items;
+    items.reserve(files.size());
+    for (zstring_view file : files) {
+        items.push_back(makeIdList(file));
     }
 
-    HRESULT const hs = SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
-    ILFree(pidl);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast) -- there's no other sensible way to deal with this API
+    HRESULT const hs = SHOpenFolderAndSelectItems(folderId.get(), items.size(), (LPCITEMIDLIST*)items.data(), 0);
     return hs == S_OK;
 }
