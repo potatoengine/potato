@@ -90,6 +90,8 @@ TEST_CASE("up::path", "[potato][runtime]") {
         CHECK(normalize("/foo/../../bar") == "/bar");
         CHECK(normalize(".") == "/");
         CHECK(normalize("..") == "/");
+
+        CHECK(normalize("..", Separator::Windows) == "\\");
     }
 
     SECTION("join") {
@@ -101,5 +103,7 @@ TEST_CASE("up::path", "[potato][runtime]") {
         CHECK(join().empty());
 
         CHECK(join("/foo", "/bar"_sv, "baz.txt"_s) == "/foo//bar/baz.txt");
+
+        CHECK(join(Separator::Windows, "/foo", "/bar"_sv, "baz.txt"_s) == "/foo\\/bar\\baz.txt");
     }
 }
