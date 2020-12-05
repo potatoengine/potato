@@ -285,8 +285,11 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     auto metaPath = _makeMetaFilename(file);
     auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
 
+    static const ImporterConfig defaultConfig;
+
     Mapping const* const mapping = _findConverterMapping(file);
     Importer* const importer = mapping != nullptr ? mapping->conveter : nullptr;
+    ImporterConfig const& importerConfig = mapping != nullptr ? *mapping->config : defaultConfig;
 
     bool dirty = false;
 
@@ -294,7 +297,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     dirty |= deleted;
 
     ImporterContext
-        context(file, _project->resourceRootPath(), _temporaryOutputPath, importer, *mapping->config, _logger);
+        context(file, _project->resourceRootPath(), _temporaryOutputPath, importer, importerConfig, _logger);
     dirty |= !_checkMetafile(context, metaPath, !deleted);
 
     auto const* record = _library.findRecordByUuid(context.uuid());
