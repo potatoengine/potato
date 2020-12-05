@@ -15,7 +15,7 @@ struct ReconLogMessage {
 }
 
 struct ReconImportMessage {
-    string path;
+    UUID uuid;
     bool force = false;
 }
 
@@ -28,5 +28,5 @@ struct ReconManifestMessage {
 }
 
 struct ReconDeleteMessage {
-    string path;
+    UUID uuid;
 }

@@ -358,16 +358,16 @@ void up::shell::AssetBrowser::_openFolder(int index) {
     _selection.clear();
 }
 
-void up::shell::AssetBrowser::_importAsset(zstring_view name, bool force) {
+void up::shell::AssetBrowser::_importAsset(UUID const& uuid, bool force) {
     schema::ReconImportMessage msg;
-    msg.path = string{name};
+    msg.uuid = uuid;
     msg.force = force;
     _reconClient.sendMessage(msg);
 }
 
-void up::shell::AssetBrowser::_deleteAsset(zstring_view name) {
+void up::shell::AssetBrowser::_deleteAsset(UUID const& uuid) {
     schema::ReconDeleteMessage msg;
-    msg.path = string{name};
+    msg.uuid = uuid;
     _reconClient.sendMessage(msg);
 }
 
@@ -415,7 +415,7 @@ void up::shell::AssetBrowser::_executeCommand() {
         case Command::Delete:
             for (Asset const& asset : _assets) {
                 if (_selection.selected(asset.id)) {
-                    _deleteAsset(asset.filename);
+                    _deleteAsset(asset.uuid);
                 }
             }
             break;
@@ -423,7 +423,7 @@ void up::shell::AssetBrowser::_executeCommand() {
         case Command::ForceImport:
             for (Asset const& asset : _assets) {
                 if (_selection.selected(hash_value(asset.uuid))) {
-                    _importAsset(asset.filename, cmd == Command::ForceImport);
+                    _importAsset(asset.uuid, cmd == Command::ForceImport);
                 }
             }
             break;

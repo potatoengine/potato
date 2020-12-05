@@ -91,8 +91,8 @@ namespace up::shell {
         int _addFolders(string_view folderPath);
 
         void _openFolder(int index);
-        void _importAsset(zstring_view name, bool force = false);
-        void _deleteAsset(zstring_view name);
+        void _importAsset(UUID const& uuid, bool force = false);
+        void _deleteAsset(UUID const& uuid);
 
         void _executeCommand();
 

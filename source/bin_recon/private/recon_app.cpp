@@ -113,6 +113,7 @@ namespace up::recon {
         struct ReconCommand {
             ReconCommandType type = ReconCommandType::Watch;
             fs::WatchAction watchAction = fs::WatchAction::Modify;
+            UUID uuid;
             string path;
             bool force = false;
         };
@@ -129,7 +130,7 @@ bool up::recon::ReconApp::_runServer() {
         [&](schema::ReconImportMessage const& msg) {
             ReconCommand cmd;
             cmd.type = ReconCommandType::Import;
-            cmd.path = msg.path;
+            cmd.uuid = msg.uuid;
             cmd.force = msg.force;
             commands.enqueWait(std::move(cmd));
         },
@@ -144,7 +145,7 @@ bool up::recon::ReconApp::_runServer() {
         [&](schema::ReconDeleteMessage const& msg) {
             ReconCommand cmd;
             cmd.type = ReconCommandType::Delete;
-            cmd.path = msg.path;
+            cmd.uuid = msg.uuid;
             commands.enqueWait(std::move(cmd));
         });
 
@@ -176,6 +177,7 @@ bool up::recon::ReconApp::_runServer() {
 
     ReconCommand cmd;
     bool quit = false;
+    bool dirty = false;
     for (;;) {
         if (!handle.isOpen()) {
             quit = true;
@@ -192,45 +194,52 @@ bool up::recon::ReconApp::_runServer() {
             continue;
         }
 
-        switch (cmd.type) {
-            case ReconCommandType::Watch:
-                if (cmd.path.starts_with(".library")) {
-                    continue;
-                }
+        do {
+            switch (cmd.type) {
+                case ReconCommandType::Watch:
+                    if (cmd.path.starts_with(".library")) {
+                        continue;
+                    }
 
-                if (cmd.path.ends_with(".meta")) {
-                    cmd.path = path::changeExtension(cmd.path, "");
-                }
+                    if (cmd.path.ends_with(".meta")) {
+                        cmd.path = path::changeExtension(cmd.path, "");
+                    }
 
-                _importFile(cmd.path, cmd.force);
-                _writeManifest();
-                break;
-            case ReconCommandType::Import:
-                if (auto const* record = _library.findRecordByFilename(cmd.path); record != nullptr) {
-                    _logger.info("Import: {} (force={})", record->sourcePath, cmd.force);
+                    _importFile(cmd.path, cmd.force);
+                    dirty = true;
+                    break;
+                case ReconCommandType::Import:
+                    if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
+                        _logger.info("Import: {} (force={})", record->sourcePath, cmd.force);
 
-                    _importFile(record->sourcePath, cmd.force);
-                    _writeManifest();
-                }
-                break;
-            case ReconCommandType::ImportAll:
-                _logger.info("Import All (force={})", cmd.force);
+                        _importFile(record->sourcePath, cmd.force);
+                        dirty = true;
+                    }
+                    break;
+                case ReconCommandType::ImportAll:
+                    _logger.info("Import All (force={})", cmd.force);
 
-                _runOnce();
-                break;
-            case ReconCommandType::Delete:
-                if (auto const* record = _library.findRecordByFilename(cmd.path); record != nullptr) {
-                    _logger.info("Delete: {}", record->sourcePath);
+                    _importFiles(_collectSourceFiles());
+                    dirty = true;
+                    break;
+                case ReconCommandType::Delete:
+                    if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
+                        _logger.info("Delete: {}", record->sourcePath);
 
-                    (void)fs::remove(path::join(_project->resourceRootPath(), record->sourcePath));
-                    _importFile(record->sourcePath, false);
-                    _writeManifest();
-                }
-                break;
-            case ReconCommandType::Quit:
-                handle.close();
-                quit = true;
-                break;
+                        (void)fs::remove(path::join(_project->resourceRootPath(), record->sourcePath));
+                        _importFile(record->sourcePath, false);
+                        dirty = true;
+                    }
+                    break;
+                case ReconCommandType::Quit:
+                    handle.close();
+                    quit = true;
+                    break;
+            }
+        } while (commands.tryDeque(cmd));
+
+        if (dirty) {
+            _writeManifest();
         }
     }
 
