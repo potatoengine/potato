@@ -66,3 +66,20 @@ bool up::desktop::selectInExplorer(zstring_view folder, view<zstring_view> files
     HRESULT const hs = SHOpenFolderAndSelectItems(folderId.get(), items.size(), (LPCITEMIDLIST*)items.data(), 0);
     return hs == S_OK;
 }
+
+bool up::desktop::moveToTrash(zstring_view filename) {
+    vector<char> buffer;
+    buffer.reserve(filename.size() + 2 /*double NULs termination*/);
+    buffer.insert(buffer.begin(), filename.begin(), filename.end());
+    buffer.push_back('\0'); // first NUL to terminate path
+    buffer.push_back('\0'); // second NUL to terminate sequence
+
+    SHFILEOPSTRUCTA op;
+    std::memset(&op, 0, sizeof(op));
+    op.wFunc = FO_DELETE;
+    op.fFlags = FOF_ALLOWUNDO /* | FOF_NOCONFIRMATION*/ | FOF_RENAMEONCOLLISION;
+    op.pFrom = buffer.data();
+
+    int const rs = SHFileOperationA(&op);
+    return rs != FALSE;
+}

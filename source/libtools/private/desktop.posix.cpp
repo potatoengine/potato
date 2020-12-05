@@ -24,7 +24,12 @@ bool up::desktop::selectInExplorer(zstring_view filename) {
     return false;
 }
 
-bool selectInExplorer(zstring_view folder, view<zstring_view> files) {
+bool up::desktop::selectInExplorer(zstring_view folder, view<zstring_view> files) {
+    UP_UNREACHABLE("not implemented");
+    return false;
+}
+
+bool up::desktop::moveToTrash(zstring_view filename) {
     UP_UNREACHABLE("not implemented");
     return false;
 }
