@@ -82,22 +82,15 @@ void up::shell::AssetBrowser::content() {
 
         ImGui::EndTable();
     }
+
+    _executeCommand();
 }
 
 void up::shell::AssetBrowser::_showAssets(int folderIndex) {
     if (ImGui::BeginIconGrid("##assets")) {
         for (int childIndex = _folders[folderIndex].firstChild; childIndex != -1;
              childIndex = _folders[childIndex].nextSibling) {
-            if (ImGui::IconGridItem(_folders[childIndex].name.c_str(), ICON_FA_FOLDER)) {
-                _openFolder(childIndex);
-            }
-
-            if (ImGui::BeginIconMenuContextPopup()) {
-                if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
-                    desktop::openInExplorer(_assetEditService.makeFullPath(_folders[childIndex].name));
-                }
-                ImGui::EndPopup();
-            }
+            _showFolder(childIndex, _folders[childIndex]);
         }
 
         for (Asset const& asset : _assets) {
@@ -110,10 +103,17 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
 }
 
 void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
-    ImGui::PushID(hash_value(asset.uuid));
+    auto const id = hash_value(asset.uuid);
 
-    if (ImGui::IconGridItem(asset.name.c_str(), _assetEditService.getIconForType(asset.type))) {
+    if (ImGui::IconGridItem(
+            asset.name.c_str(),
+            _assetEditService.getIconForType(asset.type),
+            _selection.selected(id))) {
         _openAsset(asset.filename);
+    }
+
+    if (ImGui::IsItemClicked()) {
+        _selection.click(id, ImGui::IsModifierDown(ImGuiKeyModFlags_Ctrl));
     }
 
     if (ImGui::BeginIconMenuContextPopup()) {
@@ -121,10 +121,10 @@ void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
             _openAsset(asset.filename);
         }
         if (ImGui::IconMenuItem("Import", ICON_FA_DOWNLOAD)) {
-            _importAsset(asset.filename);
+            _command = Command::Import;
         }
         if (ImGui::IconMenuItem("Import (Force)")) {
-            _importAsset(asset.filename, true);
+            _command = Command::ForceImport;
         }
         ImGui::IconMenuSeparator();
         if (ImGui::IconMenuItem("Copy Path", ICON_FA_COPY)) {
@@ -139,22 +139,27 @@ void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
             desktop::selectInExplorer(_assetEditService.makeFullPath(asset.filename));
         }
         ImGui::IconMenuSeparator();
-        if (ImGui::IconMenuItem("Delete Asset", ICON_FA_TRASH)) {
-            _deleteAsset(asset.filename);
+        if (ImGui::IconMenuItem("Delete", ICON_FA_TRASH)) {
+            _command = Command::Delete;
         }
         ImGui::EndPopup();
     }
-
-    ImGui::PopID();
 }
 
 void up::shell::AssetBrowser::_showFolder(int index, Folder const& folder) {
-    if (ImGui::IconGridItem(folder.name.c_str(), ICON_FA_FOLDER)) {
+    if (ImGui::IconGridItem(folder.name.c_str(), ICON_FA_FOLDER, _selection.selected(index))) {
         _openFolder(index);
     }
 
+    if (ImGui::IsItemClicked()) {
+        _selection.click(index, ImGui::IsModifierDown(ImGuiKeyModFlags_Ctrl));
+    }
+
     if (ImGui::BeginIconMenuContextPopup()) {
-        if (ImGui::IconMenuItem("Open Folder in Explorer", ICON_FA_FOLDER_OPEN)) {
+        if (ImGui::IconMenuItem("Open", ICON_FA_FOLDER_OPEN)) {
+            _openFolder(index);
+        }
+        if (ImGui::IconMenuItem("Open in Explorer", nullptr)) {
             desktop::openInExplorer(_assetEditService.makeFullPath(folder.name));
         }
         ImGui::EndPopup();
@@ -356,4 +361,29 @@ void up::shell::AssetBrowser::_deleteAsset(zstring_view name) {
     schema::ReconDeleteMessage msg;
     msg.path = string{name};
     _reconClient.sendMessage(msg);
+}
+
+void up::shell::AssetBrowser::_executeCommand() {
+    Command cmd = _command;
+    _command = Command::None;
+
+    switch (cmd) {
+        case Command::Delete:
+            for (Asset const& asset : _assets) {
+                if (_selection.selected(hash_value(asset.uuid))) {
+                    _deleteAsset(asset.filename);
+                }
+            }
+            break;
+        case Command::Import:
+        case Command::ForceImport:
+            for (Asset const& asset : _assets) {
+                if (_selection.selected(hash_value(asset.uuid))) {
+                    _importAsset(asset.filename, cmd == Command::ForceImport);
+                }
+            }
+            break;
+        default:
+            break;
+    }
 }

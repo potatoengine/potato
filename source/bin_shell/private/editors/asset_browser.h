@@ -3,6 +3,7 @@
 #pragma once
 
 #include "editor.h"
+#include "selection.h"
 
 #include "potato/editor/asset_edit_service.h"
 #include "potato/runtime/asset_loader.h"
@@ -69,6 +70,8 @@ namespace up::shell {
             int folderIndex = -1;
         };
 
+        enum class Command { None, Delete, Import, ForceImport };
+
         void _showAssets(int folderIndex);
         void _showAsset(Asset const& asset);
         void _showFolder(int index, Folder const& folder);
@@ -88,13 +91,17 @@ namespace up::shell {
         void _importAsset(zstring_view name, bool force = false);
         void _deleteAsset(zstring_view name);
 
+        void _executeCommand();
+
         AssetLoader& _assetLoader;
         ReconClient& _reconClient;
         OnFileSelected& _onFileSelected;
         AssetEditService& _assetEditService;
+        SelectionState _selection;
         vector<Folder> _folders;
         vector<Asset> _assets;
         int _selectedFolder = 0;
+        Command _command = Command::None;
 
         static constexpr int assetIconWidth = 96;
 
