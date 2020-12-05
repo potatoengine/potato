@@ -264,7 +264,7 @@ void up::shell::AssetBrowser::_rebuild() {
     _folders.clear();
     _assets.clear();
 
-    _folders.push_back({.id = hash_value("<root>"), .name = "<root>"});
+    _folders.push_back({.id = hash_value("<root>"), .osPath = _assetEditService.makeFullPath("/"), .name = "<root>"});
 
     if (manifest == nullptr) {
         return;
@@ -300,7 +300,7 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
     if (childIndex == -1) {
         int const newIndex = static_cast<int>(_folders.size());
         _folders.push_back(
-            {.id = id, .osPath = path::join(parent.osPath, name), .name = string{name}, .parent = parentIndex});
+            {.id = id, .osPath = path::join(path::Separator::Native, parent.osPath, name), .name = string{name}, .parent = parentIndex});
         return _folders[parentIndex].firstChild = newIndex;
     }
 
@@ -317,7 +317,7 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
 
     int const newIndex = static_cast<int>(_folders.size());
     _folders.push_back(
-        {.id = id, .osPath = path::join(parent.osPath, name), .name = string{name}, .parent = parentIndex});
+        {.id = id, .osPath = path::join(path::Separator::Native, parent.osPath, name), .name = string{name}, .parent = parentIndex});
     return _folders[childIndex].nextSibling = newIndex;
 }
 
