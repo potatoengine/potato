@@ -73,7 +73,7 @@ namespace up::shell {
             int folderIndex = -1;
         };
 
-        enum class Command { None, OpenFolder, OpenInExplorer, EditAsset, Delete, Import, ForceImport };
+        enum class Command { None, OpenFolder, OpenInExplorer, EditAsset, Delete, Trash, Import, ForceImport };
 
         void _showAssets(int folderIndex);
         void _showAsset(Asset const& asset);

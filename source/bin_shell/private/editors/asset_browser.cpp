@@ -170,6 +170,10 @@ void up::shell::AssetBrowser::_showFolder(Folder const& folder) {
         if (ImGui::IconMenuItem("Copy Path", ICON_FA_COPY)) {
             ImGui::SetClipboardText(folder.osPath.c_str());
         }
+        ImGui::IconMenuSeparator();
+        if (ImGui::IconMenuItem("Move to Trash", ICON_FA_TRASH)) {
+            _command = Command::Trash;
+        }
         ImGui::EndPopup();
     }
 }
@@ -415,6 +419,13 @@ void up::shell::AssetBrowser::_executeCommand() {
             for (Asset const& asset : _assets) {
                 if (_selection.selected(asset.id)) {
                     _deleteAsset(asset.uuid);
+                }
+            }
+            break;
+        case Command::Trash:
+            for (Folder const& folder : _folders) {
+                if (_selection.selected(folder.id)) {
+                    desktop::moveToTrash(folder.osPath);
                 }
             }
             break;
