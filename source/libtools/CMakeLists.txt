@@ -5,11 +5,9 @@ add_library(potato_libtools)
 add_library(potato::libtools ALIAS potato_libtools)
 
 target_sources(potato_libtools PRIVATE
-    "private/evaluator.cpp"
     "private/importer_context.cpp"
     "private/importer_factory.cpp"
     "private/project.cpp"
-    "public/potato/tools/evaluator.h"
     "private/importer.cpp"
     "public/potato/tools/desktop.h"
 
@@ -59,7 +57,6 @@ add_executable(potato_libtools_test)
 
 target_sources(potato_libtools_test PRIVATE
     "tests/main.cpp"
-    "tests/test_evaluator.cpp"
 )
 
 up_set_common_properties(potato_libtools_test)
