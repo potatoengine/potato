@@ -26,9 +26,14 @@ namespace up {
             return false;
         }
 
-        bool click(SelectionId id, bool multiselect = false) {
+        bool click(SelectionId id, bool multiselect = false, bool context = false) {
             auto it = find(_selected, id);
             bool const wasSelected = it != _selected.end();
+
+            // context behavior: right-click a selected item never deselects other items
+            if (context && wasSelected) {
+                return true;
+            }
 
             // multi-select behavior: add or remove on ctrl-click
             if (multiselect) {
