@@ -300,7 +300,7 @@ void ImGui::Potato::EndIconGrid() {
     ImGui::EndTable();
 }
 
-bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, float width, float rounding) {
+bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, bool selected, float width, float rounding) {
     UP_ASSERT(label != nullptr);
     UP_ASSERT(icon != nullptr);
     UP_ASSERT(width > 0);
@@ -323,25 +323,18 @@ bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, float w
 
     ImGui::ItemSize(size);
     if (ImGui::ItemAdd(bounds, id)) {
-        bool const hovered = ImGui::IsItemHovered();
-
-        if (hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-            ImGui::SetActiveID(id, window);
-        }
-
-        bool const active = ImGui::IsItemActive();
-        bool const held = active && ImGui::IsMouseDown(ImGuiMouseButton_Left);
-
-        if (active && !ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-            clicked = hovered;
-            ImGui::SetActiveID(0, nullptr);
-        }
+        bool hovered = false;
+        bool held = false;
+        clicked = ButtonBehavior(bounds, id, &hovered, &held, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_PressedOnDoubleClick | ImGuiButtonFlags_NoKeyModifiers);
 
         ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
-        ImU32 const bgColor =
-            ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+        ImU32 const bgColor = ImGui::GetColorU32(
+            held ? ImGuiCol_ButtonActive
+                 : hovered ? ImGuiCol_ButtonHovered : selected ? ImGuiCol_Header : ImGuiCol_Button);
 
-        if (hovered || held) {
+        bool const showBg = hovered || held || selected;
+
+        if (showBg) {
             window->DrawList->AddRectFilled(bounds.Min, bounds.Max, bgColor, rounding);
         }
 
@@ -370,7 +363,7 @@ bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, float w
             ImVec2{bounds.Min.x, innerBounds.Max.y - ImGui::GetItemSpacing().y - textHeight},
             ImVec2{bounds.Max.x, innerBounds.Max.y - ImGui::GetItemSpacing().y}};
 
-        if (hovered || held) {
+        if (showBg) {
             window->DrawList->AddRectFilled(textBounds.Min, textBounds.Max, ImGui::GetColorU32(ImGuiCol_Header));
         }
 
