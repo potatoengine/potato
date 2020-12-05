@@ -82,8 +82,8 @@ namespace up::shell {
         void _showBreadcrumb(int index);
         void _showBreadcrumbs();
 
-        void _showFolder(int index);
-        void _showFolders();
+        void _showTreeFolder(int index);
+        void _showTreeFolders();
 
         void _rebuild();
         int _addFolder(string_view name, int parentIndex = 0);

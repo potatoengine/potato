@@ -75,7 +75,7 @@ void up::shell::AssetBrowser::content() {
         ImGui::TableSetupColumn("##assets", 0, 4);
 
         ImGui::TableNextColumn();
-        _showFolders();
+        _showTreeFolders();
 
         ImGui::TableNextColumn();
         _showBreadcrumbs();
@@ -166,6 +166,10 @@ void up::shell::AssetBrowser::_showFolder(Folder const& folder) {
         if (ImGui::IconMenuItem("Open in Explorer", nullptr)) {
             _command = Command::OpenInExplorer;
         }
+        ImGui::IconMenuSeparator();
+        if (ImGui::IconMenuItem("Copy Path", ICON_FA_COPY)) {
+            ImGui::SetClipboardText(folder.osPath.c_str());
+        }
         ImGui::EndPopup();
     }
 }
@@ -223,7 +227,7 @@ void up::shell::AssetBrowser::_showBreadcrumbs() {
     window->DC.CursorPos.y += ImGui::GetItemSpacing().y;
 }
 
-void up::shell::AssetBrowser::_showFolder(int index) {
+void up::shell::AssetBrowser::_showTreeFolder(int index) {
     unsigned flags = 0;
 
     bool const hasChildren = _folders[index].firstChild != -1;
@@ -244,14 +248,14 @@ void up::shell::AssetBrowser::_showFolder(int index) {
 
         for (int childIndex = _folders[index].firstChild; childIndex != -1;
              childIndex = _folders[childIndex].nextSibling) {
-            _showFolder(childIndex);
+            _showTreeFolder(childIndex);
         }
         ImGui::TreePop();
     }
 }
 
-void up::shell::AssetBrowser::_showFolders() {
-    _showFolder(0);
+void up::shell::AssetBrowser::_showTreeFolders() {
+    _showTreeFolder(0);
 }
 
 void up::shell::AssetBrowser::_rebuild() {
