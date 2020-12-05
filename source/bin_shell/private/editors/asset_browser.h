@@ -25,7 +25,7 @@ namespace up::shell {
     public:
         static constexpr zstring_view editorName = "potato.editor.asset_browser"_zsv;
 
-        using OnFileSelected = delegate<void(zstring_view name)>;
+        using OnFileSelected = delegate<void(UUID const& uuid)>;
 
         AssetBrowser(
             AssetLoader& assetLoader,
@@ -91,7 +91,6 @@ namespace up::shell {
         int _addFolders(string_view folderPath);
 
         void _openFolder(int index);
-        void _openAsset(zstring_view filename);
         void _importAsset(zstring_view name, bool force = false);
         void _deleteAsset(zstring_view name);
 

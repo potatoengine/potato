@@ -107,7 +107,7 @@ void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
             asset.name.c_str(),
             _assetEditService.getIconForType(asset.type),
             _selection.selected(asset.id))) {
-        _openAsset(asset.filename);
+        _command = Command::EditAsset;
     }
 
     if (ImGui::IsItemClicked() || ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
@@ -358,12 +358,6 @@ void up::shell::AssetBrowser::_openFolder(int index) {
     _selection.clear();
 }
 
-void up::shell::AssetBrowser::_openAsset(zstring_view filename) {
-    if (_onFileSelected != nullptr && !filename.empty()) {
-        _onFileSelected(filename);
-    }
-}
-
 void up::shell::AssetBrowser::_importAsset(zstring_view name, bool force) {
     schema::ReconImportMessage msg;
     msg.path = string{name};
@@ -414,7 +408,7 @@ void up::shell::AssetBrowser::_executeCommand() {
         case Command::EditAsset:
             for (Asset const& asset : _assets) {
                 if (_selection.selected(asset.id)) {
-                    _openAsset(asset.filename);
+                    _onFileSelected(asset.uuid);
                 }
             }
             break;

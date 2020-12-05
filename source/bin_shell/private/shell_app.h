@@ -36,6 +36,7 @@ namespace up {
     class CameraController;
     class Universe;
     class Project;
+    class UUID;
 } // namespace up
 
 namespace up::shell {
@@ -71,7 +72,7 @@ namespace up::shell {
 
         bool _loadConfig(zstring_view path);
 
-        void _onFileOpened(zstring_view filename);
+        void _openAssetEditor(UUID const& uuid);
 
         void _createScene();
         void _createGame(rc<Scene> scene);

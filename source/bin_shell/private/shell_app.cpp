@@ -267,8 +267,8 @@ int up::shell::ShellApp::initialize() {
     _universe->registerComponent<components::Test>("Test");
 
     _editorFactories.push_back(
-        AssetBrowser::createFactory(_assetLoader, _reconClient, _assetEditService, [this](zstring_view name) {
-            _onFileOpened(name);
+        AssetBrowser::createFactory(_assetLoader, _reconClient, _assetEditService, [this](UUID const& uuid) {
+            _openAssetEditor(uuid);
         }));
     _editorFactories.push_back(SceneEditor::createFactory(
         *_audio,
@@ -318,7 +318,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     }
 
     _projectName = string{path::filebasename(path)};
-    _assetEditService.setAssetRoot(string{ _project->resourceRootPath() });
+    _assetEditService.setAssetRoot(string{_project->resourceRootPath()});
 
     _loadManifest();
 
@@ -647,19 +647,27 @@ bool up::shell::ShellApp::_loadConfig(zstring_view path) {
     return true;
 }
 
-void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
-    if (path::extension(filename) == ".scene") {
-        string fullPath = path::join(_project->resourceRootPath(), filename);
-        _openEditorForDocument(SceneEditor::editorName, fullPath);
+void up::shell::ShellApp::_openAssetEditor(UUID const& uuid) {
+    string assetPath;
+    for (auto const& record : _assetLoader.manifest()->records()) {
+        if (record.uuid == uuid) {
+            assetPath = path::join(_project->resourceRootPath(), record.filename);
+            break;
+        }
     }
-    else if (path::extension(filename) == ".mat") {
-        string fullPath = path::join(_project->resourceRootPath(), filename);
-        _openEditorForDocument(MaterialEditor::editorName, fullPath);
+    if (assetPath.empty()) {
+        return;
+    }
+
+    if (path::extension(assetPath) == ".scene") {
+        _openEditorForDocument(SceneEditor::editorName, assetPath);
+    }
+    else if (path::extension(assetPath) == ".mat") {
+        _openEditorForDocument(MaterialEditor::editorName, assetPath);
     }
     else {
-        string fullPath = path::join(_project->resourceRootPath(), filename);
-        if (!desktop::openInExternalEditor(fullPath)) {
-            _logger.error("Failed to open application for asset: {}", fullPath);
+        if (!desktop::openInExternalEditor(assetPath)) {
+            _logger.error("Failed to open application for asset: {}", assetPath);
         }
     }
 }
