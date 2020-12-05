@@ -105,7 +105,7 @@ void up::shell::AssetBrowser::_showAssets(int folderIndex) {
 void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
     if (ImGui::IconGridItem(
             asset.name.c_str(),
-            _assetEditService.getIconForType(asset.type),
+            _assetEditService.getIconForAssetTypeHash(asset.typeHash),
             _selection.selected(asset.id))) {
         _command = Command::EditAsset;
     }
@@ -129,7 +129,7 @@ void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
         }
         ImGui::IconMenuSeparator();
         if (ImGui::IconMenuItem("Copy Path", ICON_FA_COPY)) {
-            ImGui::SetClipboardText(asset.filename.c_str());
+            ImGui::SetClipboardText(asset.osPath.c_str());
         }
         if (ImGui::IconMenuItem("Copy UUID")) {
             char buf[UUID::strLength] = {0};
@@ -278,10 +278,9 @@ void up::shell::AssetBrowser::_rebuild() {
         _assets.push_back(
             {.id = hash_value(record.uuid),
              .uuid = record.uuid,
-             .logicalAssetId = static_cast<AssetId>(record.logicalId),
-             .filename = string{record.filename},
+             .osPath = _assetEditService.makeFullPath(record.filename),
              .name = string{record.filename.substr(start)},
-             .type = string{record.type},
+             .typeHash = hash_value(record.type),
              .folderIndex = folderIndex});
     }
 }
@@ -297,7 +296,7 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
     if (childIndex == -1) {
         int const newIndex = static_cast<int>(_folders.size());
         _folders.push_back(
-            {.id = id, .folderPath = path::join(parent.folderPath, name), .name = string{name}, .parent = parentIndex});
+            {.id = id, .osPath = path::join(parent.osPath, name), .name = string{name}, .parent = parentIndex});
         return _folders[parentIndex].firstChild = newIndex;
     }
 
@@ -314,7 +313,7 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
 
     int const newIndex = static_cast<int>(_folders.size());
     _folders.push_back(
-        {.id = id, .folderPath = path::join(parent.folderPath, name), .name = string{name}, .parent = parentIndex});
+        {.id = id, .osPath = path::join(parent.osPath, name), .name = string{name}, .parent = parentIndex});
     return _folders[childIndex].nextSibling = newIndex;
 }
 
@@ -387,22 +386,18 @@ void up::shell::AssetBrowser::_executeCommand() {
         case Command::OpenInExplorer:
             for (Folder const& folder : _folders) {
                 if (_selection.selected(folder.id)) {
-                    desktop::openInExplorer(_assetEditService.makeFullPath(folder.folderPath));
+                    desktop::openInExplorer(folder.osPath);
                 }
             }
 
             {
-                vector<string> fullPaths;
-                vector<zstring_view> fullPathViews;
+                vector<zstring_view> files;
                 for (Asset const& asset : _assets) {
                     if (_selection.selected(asset.id)) {
-                        fullPaths.push_back(_assetEditService.makeFullPath(asset.filename));
-                        fullPathViews.push_back(fullPaths.back());
+                        files.push_back(asset.osPath);
                     }
                 }
-                desktop::selectInExplorer(
-                    _assetEditService.makeFullPath(_folders[_selectedFolder].folderPath),
-                    fullPathViews);
+                desktop::selectInExplorer(_assetEditService.makeFullPath(_folders[_selectedFolder].osPath), files);
             }
             break;
         case Command::EditAsset:

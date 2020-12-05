@@ -56,7 +56,7 @@ namespace up::shell {
     private:
         struct Folder {
             uint64 id = 0;
-            string folderPath;
+            string osPath;
             string name;
             int firstChild = -1;
             int nextSibling = -1;
@@ -66,10 +66,9 @@ namespace up::shell {
         struct Asset {
             uint64 id = 0;
             UUID uuid;
-            AssetId logicalAssetId = AssetId::Invalid;
-            string filename;
+            string osPath;
             string name;
-            string type;
+            uint64 typeHash;
             size_t size = 0;
             int folderIndex = -1;
         };
