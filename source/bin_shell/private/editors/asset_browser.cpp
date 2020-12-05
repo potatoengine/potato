@@ -111,7 +111,10 @@ void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
     }
 
     if (ImGui::IsItemClicked() || ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-        _selection.click(asset.id, ImGui::IsModifierDown(ImGuiKeyModFlags_Ctrl));
+        _selection.click(
+            asset.id,
+            ImGui::IsModifierDown(ImGuiKeyModFlags_Ctrl),
+            ImGui::IsMouseDown(ImGuiMouseButton_Right));
     }
 
     if (ImGui::BeginIconMenuContextPopup()) {
@@ -134,7 +137,7 @@ void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
             ImGui::SetClipboardText(buf);
         }
         if (ImGui::IconMenuItem("Show in Explorer", ICON_FA_FOLDER_OPEN)) {
-            desktop::selectInExplorer(_assetEditService.makeFullPath(asset.filename));
+            _command = Command::OpenInExplorer;
         }
         ImGui::IconMenuSeparator();
         if (ImGui::IconMenuItem("Delete", ICON_FA_TRASH)) {
@@ -150,7 +153,10 @@ void up::shell::AssetBrowser::_showFolder(Folder const& folder) {
     }
 
     if (ImGui::IsItemClicked() || ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-        _selection.click(folder.id, ImGui::IsModifierDown(ImGuiKeyModFlags_Ctrl));
+        _selection.click(
+            folder.id,
+            ImGui::IsModifierDown(ImGuiKeyModFlags_Ctrl),
+            ImGui::IsMouseDown(ImGuiMouseButton_Right));
     }
 
     if (ImGui::BeginIconMenuContextPopup()) {
@@ -390,10 +396,19 @@ void up::shell::AssetBrowser::_executeCommand() {
                     desktop::openInExplorer(_assetEditService.makeFullPath(folder.folderPath));
                 }
             }
-            for (Asset const& asset : _assets) {
-                if (_selection.selected(asset.id)) {
-                    desktop::selectInExplorer(_assetEditService.makeFullPath(asset.filename));
+
+            {
+                vector<string> fullPaths;
+                vector<zstring_view> fullPathViews;
+                for (Asset const& asset : _assets) {
+                    if (_selection.selected(asset.id)) {
+                        fullPaths.push_back(_assetEditService.makeFullPath(asset.filename));
+                        fullPathViews.push_back(fullPaths.back());
+                    }
                 }
+                desktop::selectInExplorer(
+                    _assetEditService.makeFullPath(_folders[_selectedFolder].folderPath),
+                    fullPathViews);
             }
             break;
         case Command::EditAsset:
