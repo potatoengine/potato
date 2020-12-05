@@ -5,8 +5,6 @@ add_library(potato_librecon)
 add_library(potato::librecon ALIAS potato_librecon)
 
 target_sources(potato_librecon PRIVATE
-    "private/file_hash_cache.cpp"
-    "public/potato/recon/file_hash_cache.h"
     "public/potato/recon/_export.h"
     "public/potato/recon/recon_log_sink.h"
     "public/potato/recon/recon_protocol.h"

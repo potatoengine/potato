@@ -1,13 +1,13 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "recon_app.h"
+#include "file_hash_cache.h"
+#include "meta_file.h"
 #include "recon_messages_schema.h"
 
 #include "potato/format/format.h"
-#include "potato/recon/file_hash_cache.h"
 #include "potato/recon/recon_log_sink.h"
 #include "potato/recon/recon_protocol.h"
-#include "potato/tools/meta_file.h"
 #include "potato/runtime/concurrent_queue.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
@@ -329,7 +329,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
         return false;
     }
 
-    AssetLibrary::Imported newRecord;
+    AssetDatabase::Imported newRecord;
     newRecord.uuid = context.uuid();
     newRecord.sourcePath = string(file);
     newRecord.sourceContentHash = contentHash;
@@ -351,7 +351,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
             newRecord.sourcePath,
             output.logicalAsset.empty() ? "" : ":",
             output.logicalAsset);
-        auto const logicalAssetId = AssetLibrary::createLogicalAssetId(context.uuid(), output.logicalAsset);
+        auto const logicalAssetId = AssetDatabase::createLogicalAssetId(context.uuid(), output.logicalAsset);
 
         newRecord.outputs.push_back(
             {.name = output.logicalAsset,
@@ -392,14 +392,14 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
 }
 
 bool up::recon::ReconApp::_isUpToDate(
-    AssetLibrary::Imported const& record,
+    AssetDatabase::Imported const& record,
     up::uint64 contentHash,
     Importer const& importer) const noexcept {
     return record.sourceContentHash == contentHash && string_view(record.importerName) == importer.name() &&
         record.importerRevision == importer.revision();
 }
 
-bool up::recon::ReconApp::_isUpToDate(span<AssetLibrary::Dependency const> records) {
+bool up::recon::ReconApp::_isUpToDate(span<AssetDatabase::Dependency const> records) {
     for (auto const& rec : records) {
         auto osPath = path::join(_project->resourceRootPath(), rec.path.c_str());
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());

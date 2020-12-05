@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "asset_library.h"
+#include "asset_database.h"
 
 #include "potato/runtime/json.h"
 #include "potato/runtime/resource_manifest.h"
@@ -10,9 +10,9 @@
 #include "potato/spud/out_ptr.h"
 #include "potato/spud/string_writer.h"
 
-up::AssetLibrary::~AssetLibrary() = default;
+up::AssetDatabase::~AssetDatabase() = default;
 
-auto up::AssetLibrary::pathToUuid(string_view path) const noexcept -> UUID {
+auto up::AssetDatabase::pathToUuid(string_view path) const noexcept -> UUID {
     for (auto const& record : _records) {
         if (record.sourcePath == path) {
             return record.uuid;
@@ -21,12 +21,12 @@ auto up::AssetLibrary::pathToUuid(string_view path) const noexcept -> UUID {
     return {};
 }
 
-auto up::AssetLibrary::uuidToPath(UUID const& uuid) const noexcept -> string_view {
+auto up::AssetDatabase::uuidToPath(UUID const& uuid) const noexcept -> string_view {
     auto record = findRecordByUuid(uuid);
     return record != nullptr ? string_view(record->sourcePath) : string_view{};
 }
 
-auto up::AssetLibrary::findRecordByUuid(UUID const& uuid) const noexcept -> Imported const* {
+auto up::AssetDatabase::findRecordByUuid(UUID const& uuid) const noexcept -> Imported const* {
     for (auto const& record : _records) {
         if (record.uuid == uuid) {
             return &record;
@@ -35,7 +35,7 @@ auto up::AssetLibrary::findRecordByUuid(UUID const& uuid) const noexcept -> Impo
     return nullptr;
 }
 
-auto  up::AssetLibrary::findRecordByFilename(zstring_view filename) const noexcept -> Imported const*{
+auto up::AssetDatabase::findRecordByFilename(zstring_view filename) const noexcept -> Imported const* {
     for (auto const& record : _records) {
         if (record.sourcePath == filename) {
             return &record;
@@ -44,7 +44,7 @@ auto  up::AssetLibrary::findRecordByFilename(zstring_view filename) const noexce
     return nullptr;
 }
 
-auto up::AssetLibrary::createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept -> AssetId {
+auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept -> AssetId {
     uint64 hash = hash_value(uuid);
     if (!logicalName.empty()) {
         hash = hash_combine(hash, hash_value(logicalName));
@@ -52,7 +52,7 @@ auto up::AssetLibrary::createLogicalAssetId(UUID const& uuid, string_view logica
     return static_cast<AssetId>(hash);
 }
 
-bool up::AssetLibrary::insertRecord(Imported record) {
+bool up::AssetDatabase::insertRecord(Imported record) {
     char uuidStr[UUID::strLength] = {};
     format_to(uuidStr, "{}", record.uuid);
 
@@ -92,7 +92,7 @@ bool up::AssetLibrary::insertRecord(Imported record) {
     return true;
 }
 
-bool up::AssetLibrary::deleteSource(string_view sourcePath) {
+bool up::AssetDatabase::deleteSource(string_view sourcePath) {
     // update database
     if (_deleteAssetStmt) {
         (void)_deleteAssetStmt.execute(sourcePath);
@@ -109,7 +109,7 @@ bool up::AssetLibrary::deleteSource(string_view sourcePath) {
     return true;
 }
 
-bool up::AssetLibrary::open(zstring_view filename) {
+bool up::AssetDatabase::open(zstring_view filename) {
     // open the database
     if (_db.open(filename.c_str()) != SqlResult::Ok) {
         return false;
@@ -196,12 +196,12 @@ bool up::AssetLibrary::open(zstring_view filename) {
     return true;
 }
 
-bool up::AssetLibrary::close() {
+bool up::AssetDatabase::close() {
     _db.close();
     return true;
 }
 
-void up::AssetLibrary::generateManifest(erased_writer writer) const {
+void up::AssetDatabase::generateManifest(erased_writer writer) const {
     format_to(writer, "# Potato Manifest\n");
     format_to(writer, ".version={}\n", ResourceManifest::version);
     format_to(
