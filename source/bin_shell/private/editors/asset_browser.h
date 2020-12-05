@@ -9,6 +9,7 @@
 #include "potato/runtime/asset_loader.h"
 #include "potato/runtime/uuid.h"
 #include "potato/spud/delegate.h"
+#include "potato/spud/generator.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
@@ -54,6 +55,8 @@ namespace up::shell {
 
     private:
         struct Folder {
+            uint64 id = 0;
+            string folderPath;
             string name;
             int firstChild = -1;
             int nextSibling = -1;
@@ -61,6 +64,7 @@ namespace up::shell {
         };
 
         struct Asset {
+            uint64 id = 0;
             UUID uuid;
             AssetId logicalAssetId = AssetId::Invalid;
             string filename;
@@ -70,11 +74,11 @@ namespace up::shell {
             int folderIndex = -1;
         };
 
-        enum class Command { None, Delete, Import, ForceImport };
+        enum class Command { None, OpenFolder, OpenInExplorer, EditAsset, Delete, Import, ForceImport };
 
         void _showAssets(int folderIndex);
         void _showAsset(Asset const& asset);
-        void _showFolder(int index, Folder const& folder);
+        void _showFolder(Folder const& folder);
 
         void _showBreadcrumb(int index);
         void _showBreadcrumbs();
@@ -84,7 +88,7 @@ namespace up::shell {
 
         void _rebuild();
         int _addFolder(string_view name, int parentIndex = 0);
-        int _addFolders(string_view folders);
+        int _addFolders(string_view folderPath);
 
         void _openFolder(int index);
         void _openAsset(zstring_view filename);
@@ -92,6 +96,13 @@ namespace up::shell {
         void _deleteAsset(zstring_view name);
 
         void _executeCommand();
+
+        generator<Folder const&> _childFolders(int folderIndex) const {
+            for (int childIndex = _folders[folderIndex].firstChild; childIndex != -1;
+                 childIndex = _folders[childIndex].nextSibling) {
+                co_yield _folders[childIndex];
+            }
+        }
 
         AssetLoader& _assetLoader;
         ReconClient& _reconClient;
