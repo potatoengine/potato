@@ -8,7 +8,7 @@
       "environment": "up_msvc",
       "namespace": "up_msvc",
       "CXXFLAGS": "/FC /Zi",
-      "UP_CXXFLAGS": "/W3 /WX"
+      "UP_CXXFLAGS": "/W3 /WX /w34295 /w34189 /w34100"
     },
     {
       "environment": "up_msvc_debug",
@@ -44,6 +44,10 @@
           "value": "${up_msvc_debug.CXXFLAGS}"
         },
         {
+          "name": "UP_CXXFLAGS",
+          "value": "${up_msvc.UP_CXXFLAGS}"
+        },
+        {
           "name": "BUILD_SHARED_LIBS",
           "value": "YES",
           "type": "BOOL"
@@ -70,6 +74,10 @@
           "value": "${up_msvc_debug.CXXFLAGS}"
         },
         {
+          "name": "UP_CXXFLAGS",
+          "value": "${up_msvc.UP_CXXFLAGS}"
+        },
+        {
           "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
           "value": "ON",
           "type": "BOOL"
@@ -89,6 +97,10 @@
         {
           "name": "CMAKE_CXX_FLAGS_RELEASE",
           "value": "${up_msvc_release.CXXFLAGS}"
+        },
+        {
+          "name": "UP_CXXFLAGS",
+          "value": "${up_msvc.UP_CXXFLAGS}"
         },
         {
           "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
