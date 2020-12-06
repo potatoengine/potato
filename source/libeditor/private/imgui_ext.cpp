@@ -325,7 +325,12 @@ bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, bool se
     if (ImGui::ItemAdd(bounds, id)) {
         bool hovered = false;
         bool held = false;
-        clicked = ButtonBehavior(bounds, id, &hovered, &held, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_PressedOnDoubleClick | ImGuiButtonFlags_NoKeyModifiers);
+        clicked = ButtonBehavior(
+            bounds,
+            id,
+            &hovered,
+            &held,
+            ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_PressedOnDoubleClick | ImGuiButtonFlags_NoKeyModifiers);
 
         ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
         ImU32 const bgColor = ImGui::GetColorU32(

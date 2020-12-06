@@ -165,7 +165,6 @@ bool up::recon::ReconApp::_runServer() {
     std::thread waitParent([this, &handle, &commands, &receiver] {
         nlohmann::json doc;
         std::string line;
-        reflex::Schema const* schema = nullptr;
         while (std::getline(std::cin, line) && !std::cin.eof()) {
             doc = nlohmann::json::parse(line);
             if (!decodeReconMessage(doc, receiver)) {

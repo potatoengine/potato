@@ -94,7 +94,7 @@ namespace up {
         using iterator = _detail::generator_iterator<ItemT>;
         using sentinel = _detail::generator_sentinel;
 
-        generator() noexcept {}
+        generator() noexcept = default;
         ~generator() { reset(); }
 
         generator(generator const&) = delete;

@@ -123,7 +123,7 @@ void up::Statement::_bind(int index, int64 value) noexcept {
 }
 
 void up::Statement::_bind(int index, string_view value) noexcept {
-    sqlite3_bind_text(_stmt, index + 1, value.data(), value.size(), nullptr);
+    sqlite3_bind_text(_stmt, index + 1, value.data(), static_cast<int>(value.size()), nullptr);
 }
 
 up::int64 up::Statement::_column_int64(int index) noexcept {
