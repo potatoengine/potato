@@ -54,23 +54,16 @@ namespace up::shell {
         bool isClosable() override { return false; }
 
     private:
-        struct Folder {
-            uint64 id = 0;
-            string osPath;
-            string name;
-            int firstChild = -1;
-            int nextSibling = -1;
-            int parent = -1;
-        };
-
-        struct Asset {
+        struct Entry {
             uint64 id = 0;
             UUID uuid;
             string osPath;
             string name;
-            uint64 typeHash;
+            uint64 typeHash = 0;
             size_t size = 0;
-            int folderIndex = -1;
+            int firstChild = -1;
+            int nextSibling = -1;
+            int parentIndex = -1;
         };
 
         enum class Command {
@@ -85,9 +78,9 @@ namespace up::shell {
             Rename,
         };
 
-        void _showAssets(int folderIndex);
-        void _showAsset(Asset const& asset);
-        void _showFolder(Folder const& folder);
+        void _showAssets(Entry const& folder);
+        void _showAsset(Entry const& asset);
+        void _showFolder(Entry const& folder);
 
         void _showBreadcrumb(int index);
         void _showBreadcrumbs();
@@ -106,10 +99,9 @@ namespace up::shell {
 
         void _executeCommand();
 
-        generator<Folder const&> _childFolders(int folderIndex) const {
-            for (int childIndex = _folders[folderIndex].firstChild; childIndex != -1;
-                 childIndex = _folders[childIndex].nextSibling) {
-                co_yield _folders[childIndex];
+        generator<Entry const&> _children(Entry const& folder) const {
+            for (int childIndex = folder.firstChild; childIndex != -1; childIndex = _entries[childIndex].nextSibling) {
+                co_yield _entries[childIndex];
             }
         }
 
@@ -118,15 +110,15 @@ namespace up::shell {
         ReconClient& _reconClient;
         OnFileSelected& _onFileSelected;
         SelectionState _selection;
-        vector<Folder> _folders;
-        vector<Asset> _assets;
-        int _selectedFolder = 0;
+        vector<Entry> _entries;
+        int _currentFolder = 0;
         int _manifestRevision = 0;
         Command _command = Command::None;
         char _originalNameBuffer[128] = {0};
         char _renameBuffer[128] = {0};
 
         static constexpr int assetIconWidth = 96;
+        static constexpr uint64 folderTypeHash = hash_value("$folder");
 
         static constexpr size_t maxFolderHistory = 64;
         size_t _folderHistoryIndex = 0;
