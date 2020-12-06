@@ -66,6 +66,10 @@ void up::shell::AssetBrowser::configure() {
 }
 
 void up::shell::AssetBrowser::content() {
+    if (_manifestRevision != _assetLoader.manifestRevision()) {
+        _rebuild();
+    }
+
     if (ImGui::BeginTable(
             "##asset_browser",
             2,
@@ -264,6 +268,7 @@ void up::shell::AssetBrowser::_showTreeFolders() {
 
 void up::shell::AssetBrowser::_rebuild() {
     ResourceManifest const* const manifest = _assetLoader.manifest();
+    _manifestRevision = _assetLoader.manifestRevision();
 
     _folders.clear();
     _assets.clear();

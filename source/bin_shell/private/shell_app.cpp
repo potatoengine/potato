@@ -397,7 +397,6 @@ void up::shell::ShellApp::run() {
         }
 
         if (_reconClient.hasUpdatedAssets()) {
-            ZoneScopedN("Load Manifest");
             _loadManifest();
         }
 
@@ -689,7 +688,9 @@ void up::shell::ShellApp::_executeRecon() {
 }
 
 void up::shell::ShellApp::_loadManifest() {
+    ZoneScopedN("Load Manifest");
     string manifestPath = path::join(_project->libraryPath(), "manifest.txt");
+    _logger.info("Loading manifest {}", manifestPath);
     if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
         auto manifest = new_box<ResourceManifest>();
         if (!ResourceManifest::parseManifest(manifestText, *manifest)) {

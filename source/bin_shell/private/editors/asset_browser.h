@@ -109,6 +109,7 @@ namespace up::shell {
         vector<Folder> _folders;
         vector<Asset> _assets;
         int _selectedFolder = 0;
+        int _manifestRevision = 0;
         Command _command = Command::None;
 
         static constexpr int assetIconWidth = 96;
