@@ -282,7 +282,7 @@ void up::shell::AssetBrowser::_showRenameDialog() {
     if (ImGui::BeginPopup(assetBrowserRenameDialogName.c_str(), ImGuiWindowFlags_Modal)) {
         auto filterCallback = +[](ImGuiInputTextCallbackData* data) -> int {
             constexpr string_view banList = "/\\;:"_sv;
-            if (banList.find(data->EventChar) != string_view::npos) {
+            if (banList.find(static_cast<char>(data->EventChar)) != string_view::npos) {
                 return 1;
             }
             return 0;
@@ -438,7 +438,7 @@ void up::shell::AssetBrowser::_executeCommand() {
         case Command::OpenFolder:
             for (auto const& [index, folder] : enumerate(_folders)) {
                 if (_selection.selected(folder.id)) {
-                    _openFolder(index);
+                    _openFolder(static_cast<int>(index));
                     break;
                 }
             }

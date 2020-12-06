@@ -66,12 +66,12 @@ jobs:
           - cxx: g++-10
             cc: gcc-10
             cxxflags: -fcoroutines
-            warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized -Wno-deprecated-enum-enum-conversion # GLM triggers volatile, Tracy triggers maybe-unitialized, imgui triggers enum-enum-conversion
+            warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized -Wno-deprecated-enum-enum-conversion # GLM triggers volatile, Tracy triggers maybe-unitialized, imgui triggers deprecated-enum-enum-conversion
             packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
             cxxflags: -stdlib=libc++ -fdiagnostics-absolute-paths
-            warnings: -Wall -Werror -Wno-deprecated-volatile # GLM triggers deprecated-volatile
+            warnings: -Wall -Werror -Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion # GLM triggers deprecated-volatile, imgui triggers deprecated-enum-enum-conversion
             packages: clang-10 libc++-10-dev libc++abi-10-dev
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
