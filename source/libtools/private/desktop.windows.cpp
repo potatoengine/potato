@@ -55,11 +55,17 @@ bool up::desktop::selectInExplorer(zstring_view filename) {
 
 bool up::desktop::selectInExplorer(zstring_view folder, view<zstring_view> files) {
     auto folderId = makeIdList(folder);
+    if (folderId.get() == nullptr) {
+        return false;
+    }
 
     vector<unique_resource<__unaligned ITEMIDLIST*, ILFree>> items;
     items.reserve(files.size());
     for (zstring_view file : files) {
-        items.push_back(makeIdList(file));
+        auto id = makeIdList(file);
+        if (id.get() != nullptr) {
+            items.push_back(std::move(id));
+        }
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast) -- there's no other sensible way to deal with this API

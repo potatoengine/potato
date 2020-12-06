@@ -304,7 +304,10 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
     if (childIndex == -1) {
         int const newIndex = static_cast<int>(_folders.size());
         _folders.push_back(
-            {.id = id, .osPath = path::join(path::Separator::Native, parent.osPath, name), .name = string{name}, .parent = parentIndex});
+            {.id = id,
+             .osPath = path::join(path::Separator::Native, parent.osPath, name),
+             .name = string{name},
+             .parent = parentIndex});
         return _folders[parentIndex].firstChild = newIndex;
     }
 
@@ -321,7 +324,10 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
 
     int const newIndex = static_cast<int>(_folders.size());
     _folders.push_back(
-        {.id = id, .osPath = path::join(path::Separator::Native, parent.osPath, name), .name = string{name}, .parent = parentIndex});
+        {.id = id,
+         .osPath = path::join(path::Separator::Native, parent.osPath, name),
+         .name = string{name},
+         .parent = parentIndex});
     return _folders[childIndex].nextSibling = newIndex;
 }
 
@@ -405,7 +411,7 @@ void up::shell::AssetBrowser::_executeCommand() {
                         files.push_back(asset.osPath);
                     }
                 }
-                desktop::selectInExplorer(_assetEditService.makeFullPath(_folders[_selectedFolder].osPath), files);
+                desktop::selectInExplorer(_folders[_selectedFolder].osPath, files);
             }
             break;
         case Command::EditAsset:
