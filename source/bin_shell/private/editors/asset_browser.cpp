@@ -390,8 +390,6 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
 
     Entry const& parent = _entries[parentIndex];
 
-    uint64 const id = hash_combine(parent.id, hash_value(name));
-
     int childIndex = parent.firstChild;
     if (childIndex != -1) {
         while (_entries[childIndex].nextSibling != -1) {
