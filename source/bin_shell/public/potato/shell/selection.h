@@ -53,6 +53,7 @@ namespace up {
         }
 
         [[nodiscard]] bool empty() const noexcept { return _selected.empty(); }
+        [[nodiscard]] auto size() const noexcept { return _selected.size(); }
 
         [[nodiscard]] bool selected(SelectionId id) const noexcept { return contains(_selected, id); }
         [[nodiscard]] view<SelectionId> selected() const noexcept { return _selected; }

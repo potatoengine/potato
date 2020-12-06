@@ -73,7 +73,17 @@ namespace up::shell {
             int folderIndex = -1;
         };
 
-        enum class Command { None, OpenFolder, OpenInExplorer, EditAsset, Trash, Import, ForceImport };
+        enum class Command {
+            None,
+            OpenFolder,
+            OpenInExplorer,
+            EditAsset,
+            Trash,
+            Import,
+            ForceImport,
+            ShowRenameDialog,
+            Rename,
+        };
 
         void _showAssets(int folderIndex);
         void _showAsset(Asset const& asset);
@@ -84,6 +94,8 @@ namespace up::shell {
 
         void _showTreeFolder(int index);
         void _showTreeFolders();
+
+        void _showRenameDialog();
 
         void _rebuild();
         int _addFolder(string_view name, int parentIndex = 0);
@@ -111,6 +123,8 @@ namespace up::shell {
         int _selectedFolder = 0;
         int _manifestRevision = 0;
         Command _command = Command::None;
+        char _originalNameBuffer[128] = {0};
+        char _renameBuffer[128] = {0};
 
         static constexpr int assetIconWidth = 96;
 

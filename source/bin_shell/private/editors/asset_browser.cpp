@@ -22,6 +22,10 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+namespace up {
+    static constexpr zstring_view assetBrowserRenameDialogName = "##asset_browser_rename"_zsv;
+}
+
 namespace up::shell {
     namespace {
         class AssetBrowserFactory : public EditorFactory {
@@ -88,6 +92,8 @@ void up::shell::AssetBrowser::content() {
         ImGui::EndTable();
     }
 
+    _showRenameDialog();
+
     _executeCommand();
 }
 
@@ -142,6 +148,10 @@ void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
         }
         if (ImGui::IconMenuItem("Show in Explorer", ICON_FA_FOLDER_OPEN)) {
             _command = Command::OpenInExplorer;
+        }
+        ImGui::IconMenuSeparator();
+        if (ImGui::IconMenuItem("Rename", ICON_FA_PEN)) {
+            _command = Command::ShowRenameDialog;
         }
         ImGui::IconMenuSeparator();
         if (ImGui::IconMenuItem("Move to Trash", ICON_FA_TRASH)) {
@@ -263,7 +273,44 @@ void up::shell::AssetBrowser::_showTreeFolder(int index) {
 }
 
 void up::shell::AssetBrowser::_showTreeFolders() {
-    _showTreeFolder(0);
+    if (!_folders.empty()) {
+        _showTreeFolder(0);
+    }
+}
+
+void up::shell::AssetBrowser::_showRenameDialog() {
+    if (ImGui::BeginPopup(assetBrowserRenameDialogName.c_str(), ImGuiWindowFlags_Modal)) {
+        auto filterCallback = +[](ImGuiInputTextCallbackData* data) -> int {
+            constexpr string_view banList = "/\\;:"_sv;
+            if (banList.find(data->EventChar) != string_view::npos) {
+                return 1;
+            }
+            return 0;
+        };
+
+        if (_selection.size() == 1) {
+            ImGui::LabelText("Original Name", "%s", _originalNameBuffer);
+            ImGui::InputText(
+                "New Name",
+                _renameBuffer,
+                sizeof(_renameBuffer),
+                ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackCharFilter,
+                filterCallback);
+
+            if (ImGui::Button("Accept")) {
+                ImGui::CloseCurrentPopup();
+                _command = Command::Rename;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel")) {
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        else {
+            ImGui::TextDisabled("Multi-rename not yet supported.");
+        }
+        ImGui::EndPopup();
+    }
 }
 
 void up::shell::AssetBrowser::_rebuild() {
@@ -442,6 +489,32 @@ void up::shell::AssetBrowser::_executeCommand() {
             for (Asset const& asset : _assets) {
                 if (_selection.selected(hash_value(asset.uuid))) {
                     _importAsset(asset.uuid, cmd == Command::ForceImport);
+                }
+            }
+            break;
+        case Command::ShowRenameDialog:
+            if (_selection.size() == 1) {
+                for (Asset const& asset : _assets) {
+                    if (_selection.selected(asset.id)) {
+                        format_to(_originalNameBuffer, "{}", asset.name);
+                        format_to(_renameBuffer, "{}", asset.name);
+                        break;
+                    }
+                }
+            }
+
+            ImGui::OpenPopup(assetBrowserRenameDialogName.c_str());
+            break;
+        case Command::Rename:
+            if (_selection.size() == 1) {
+                for (Asset const& asset : _assets) {
+                    if (_selection.selected(asset.id)) {
+                        string newPath = path::join(path::parent(asset.osPath), _renameBuffer);
+                        if (auto const rs = fs::moveFileTo(asset.osPath, newPath); rs != IOResult::Success) {
+                            // FIXME: show diagnostics
+                        }
+                        break;
+                    }
                 }
             }
             break;
