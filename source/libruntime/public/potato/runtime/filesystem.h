@@ -43,7 +43,8 @@ namespace up::fs {
 
     struct Watch {
         WatchAction action = WatchAction::Modify;
-        string path;
+        zstring_view path;
+        zstring_view renamedFromPath;
     };
 
     class WatchHandle : public shared<WatchHandle> {
