@@ -26,7 +26,3 @@ struct ReconImportAllMessage {
 struct ReconManifestMessage {
     string path;
 }
-
-struct ReconDeleteMessage {
-    UUID uuid;
-}

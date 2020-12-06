@@ -14,4 +14,5 @@ namespace up::desktop {
     UP_TOOLS_API bool selectInExplorer(zstring_view filename);
     UP_TOOLS_API bool selectInExplorer(zstring_view folder, view<zstring_view> files);
     UP_TOOLS_API bool moveToTrash(zstring_view filename);
+    UP_TOOLS_API bool moveToTrash(view<zstring_view> files);
 } // namespace up::desktop

@@ -23,7 +23,6 @@ namespace up {
         virtual bool handle(schema::ReconManifestMessage const& msg) const { return _handleUnknown(msg); }
         virtual bool handle(schema::ReconImportMessage const& msg) const { return _handleUnknown(msg); }
         virtual bool handle(schema::ReconImportAllMessage const& msg) const { return _handleUnknown(msg); }
-        virtual bool handle(schema::ReconDeleteMessage const& msg) const { return _handleUnknown(msg); }
 
         virtual bool handleUnknownRaw(reflex::Schema const& schema, void const* object) const { return false; }
 
@@ -51,7 +50,6 @@ namespace up {
         bool handle(schema::ReconManifestMessage const& msg) const override { return _handle(msg); }
         bool handle(schema::ReconImportMessage const& msg) const override { return _handle(msg); }
         bool handle(schema::ReconImportAllMessage const& msg) const override { return _handle(msg); }
-        bool handle(schema::ReconDeleteMessage const& msg) const override { return _handle(msg); }
 
     private:
         template <typename MessageT>

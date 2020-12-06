@@ -36,5 +36,5 @@ bool up::decodeReconMessageDispatch(nlohmann::json const& source, ReconMessageRe
     };
 
     return handle(tag<ReconLogMessage>{}) || handle(tag<ReconManifestMessage>{}) || handle(tag<ReconImportMessage>{}) ||
-        handle(tag<ReconImportAllMessage>{}) || handle(tag<ReconDeleteMessage>{});
+        handle(tag<ReconImportAllMessage>{});
 }

@@ -74,11 +74,28 @@ bool up::desktop::selectInExplorer(zstring_view folder, view<zstring_view> files
 }
 
 bool up::desktop::moveToTrash(zstring_view filename) {
+    zstring_view files[1] = {filename};
+    return moveToTrash(files);
+}
+
+bool up::desktop::moveToTrash(view<zstring_view> files) {
+    if (files.empty()) {
+        return false;
+    }
+
+    // API requires all file names appended into a buffer, separated by NUL, terminated by double-NUL
+    size_t length = 1; /* space for the final NUL */
+    for (auto const file : files) {
+        length += file.size() + 1 /*NUL separator*/;
+    }
+
     vector<char> buffer;
-    buffer.reserve(filename.size() + 2 /*double NULs termination*/);
-    buffer.insert(buffer.begin(), filename.begin(), filename.end());
-    buffer.push_back('\0'); // first NUL to terminate path
-    buffer.push_back('\0'); // second NUL to terminate sequence
+    buffer.reserve(length);
+    for (auto const file : files) {
+        buffer.insert(buffer.end(), file.begin(), file.end());
+        buffer.push_back('\0'); // separator
+    }
+    buffer.push_back('\0'); // final NUL terminator
 
     SHFILEOPSTRUCTA op;
     std::memset(&op, 0, sizeof(op));

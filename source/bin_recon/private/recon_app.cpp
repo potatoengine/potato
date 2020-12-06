@@ -141,13 +141,6 @@ bool up::recon::ReconApp::_runServer() {
             cmd.type = ReconCommandType::ImportAll;
             cmd.force = msg.force;
             commands.enqueWait(std::move(cmd));
-        },
-
-        [&](schema::ReconDeleteMessage const& msg) {
-            ReconCommand cmd;
-            cmd.type = ReconCommandType::Delete;
-            cmd.uuid = msg.uuid;
-            commands.enqueWait(std::move(cmd));
         });
 
     // watch the target resource root and auto-convert any items that come in
@@ -289,6 +282,11 @@ bool up::recon::ReconApp::_importFiles(view<string> files, bool force) {
 
 bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     auto osPath = path::join(_project->resourceRootPath(), file.c_str());
+
+    if (fs::directoryExists(osPath)) {
+        return true;
+    }
+
     auto metaPath = _makeMetaFilename(file);
     auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
 
@@ -328,6 +326,10 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
         if (record != nullptr) {
             _logger.info("{}: deleted", importedName);
             _library.deleteRecordByUuid(record->uuid);
+
+            if (fs::fileExists(metaPath)) {
+                (void)fs::remove(metaPath);
+            }
         }
         return true;
     }

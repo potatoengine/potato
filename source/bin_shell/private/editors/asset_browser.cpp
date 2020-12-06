@@ -140,8 +140,8 @@ void up::shell::AssetBrowser::_showAsset(Asset const& asset) {
             _command = Command::OpenInExplorer;
         }
         ImGui::IconMenuSeparator();
-        if (ImGui::IconMenuItem("Delete", ICON_FA_TRASH)) {
-            _command = Command::Delete;
+        if (ImGui::IconMenuItem("Move to Trash", ICON_FA_TRASH)) {
+            _command = Command::Trash;
         }
         ImGui::EndPopup();
     }
@@ -378,12 +378,6 @@ void up::shell::AssetBrowser::_importAsset(UUID const& uuid, bool force) {
     _reconClient.sendMessage(msg);
 }
 
-void up::shell::AssetBrowser::_deleteAsset(UUID const& uuid) {
-    schema::ReconDeleteMessage msg;
-    msg.uuid = uuid;
-    _reconClient.sendMessage(msg);
-}
-
 void up::shell::AssetBrowser::_executeCommand() {
     Command cmd = _command;
     _command = Command::None;
@@ -421,18 +415,21 @@ void up::shell::AssetBrowser::_executeCommand() {
                 }
             }
             break;
-        case Command::Delete:
-            for (Asset const& asset : _assets) {
-                if (_selection.selected(asset.id)) {
-                    _deleteAsset(asset.uuid);
-                }
-            }
-            break;
         case Command::Trash:
-            for (Folder const& folder : _folders) {
-                if (_selection.selected(folder.id)) {
-                    desktop::moveToTrash(folder.osPath);
+            // recursively deletes folders, and also files
+            {
+                vector<zstring_view> files;
+                for (Folder const& folder : _folders) {
+                    if (_selection.selected(folder.id)) {
+                        files.push_back(folder.osPath);
+                    }
                 }
+                for (Asset const& asset : _assets) {
+                    if (_selection.selected(asset.id)) {
+                        files.push_back(asset.osPath);
+                    }
+                }
+                desktop::moveToTrash(files);
             }
             break;
         case Command::Import:

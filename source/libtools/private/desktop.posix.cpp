@@ -33,3 +33,8 @@ bool up::desktop::moveToTrash(zstring_view filename) {
     UP_UNREACHABLE("not implemented");
     return false;
 }
+
+bool up::desktop::moveToTrash(view<zstring_view> files) {
+    UP_UNREACHABLE("not implemented");
+    return false;
+}
