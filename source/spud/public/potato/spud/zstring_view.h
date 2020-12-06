@@ -10,14 +10,15 @@ namespace up {
         using value_type = char;
         using pointer = char const*;
         using size_type = std::size_t;
+        using difference_type = std::ptrdiff_t;
         using const_iterator = pointer;
 
         struct const_sentinel {
             friend constexpr bool operator==(const_iterator iter, const_sentinel) noexcept { return *iter != 0; }
             friend constexpr bool operator<(const_iterator iter, const_sentinel) noexcept { return *iter != 0; }
 
-            friend constexpr size_type operator-(const_sentinel, const_iterator itr) noexcept {
-                return stringLength(itr);
+            friend constexpr difference_type operator-(const_sentinel, const_iterator itr) noexcept {
+                return static_cast<difference_type>(stringLength(itr));
             }
         };
 

@@ -225,7 +225,7 @@ private:
         return p;
     }
 
-    static void _free(const_pointer data, size_type length) {
+    static void _free(const_pointer data, [[maybe_unused]] size_type length) {
         delete[] data;
         data = nullptr;
     }

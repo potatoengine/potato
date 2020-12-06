@@ -87,8 +87,8 @@ namespace up {
             inline delegate_base(delegate_base&& rhs) noexcept;
             inline delegate_base& operator=(delegate_base&& rhs) noexcept;
 
-            /*implicit*/ delegate_base(std::nullptr_t null) noexcept {}
-            delegate_base& operator=(std::nullptr_t null) {
+            /*implicit*/ delegate_base(std::nullptr_t) noexcept {}
+            delegate_base& operator=(std::nullptr_t) {
                 reset();
                 return *this;
             }

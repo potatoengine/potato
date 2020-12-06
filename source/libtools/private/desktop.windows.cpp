@@ -69,7 +69,8 @@ bool up::desktop::selectInExplorer(zstring_view folder, view<zstring_view> files
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast) -- there's no other sensible way to deal with this API
-    HRESULT const hs = SHOpenFolderAndSelectItems(folderId.get(), items.size(), (LPCITEMIDLIST*)items.data(), 0);
+    HRESULT const hs =
+        SHOpenFolderAndSelectItems(folderId.get(), static_cast<UINT>(items.size()), (LPCITEMIDLIST*)items.data(), 0);
     return hs == S_OK;
 }
 
