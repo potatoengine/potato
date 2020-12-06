@@ -115,6 +115,7 @@ namespace up::recon {
             fs::WatchAction watchAction = fs::WatchAction::Modify;
             UUID uuid;
             string path;
+            string renamedFromPath;
             bool force = false;
         };
     } // namespace
@@ -151,7 +152,15 @@ bool up::recon::ReconApp::_runServer() {
 
     // watch the target resource root and auto-convert any items that come in
     auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&commands](auto const& watch) {
-        ReconCommand cmd{.type = ReconCommandType::Watch, .watchAction = watch.action, .path = watch.path};
+        // ignore dot files
+        if (watch.path.empty() || watch.path.front() == '.') {
+            return;
+        }
+        ReconCommand cmd{
+            .type = ReconCommandType::Watch,
+            .watchAction = watch.action,
+            .path = string{watch.path},
+            .renamedFromPath = string{watch.renamedFromPath}};
         commands.enqueWait(cmd);
     });
     if (rs != IOResult::Success) {
@@ -197,15 +206,12 @@ bool up::recon::ReconApp::_runServer() {
         do {
             switch (cmd.type) {
                 case ReconCommandType::Watch:
-                    if (cmd.path.starts_with(".library")) {
-                        continue;
-                    }
-
+                    // changes to meta-files should be processed as changes to the real file
                     if (cmd.path.ends_with(".meta")) {
                         cmd.path = path::changeExtension(cmd.path, "");
                     }
 
-                    _importFile(cmd.path, cmd.force);
+                    _importFile(cmd.path);
                     dirty = true;
                     break;
                 case ReconCommandType::Import:
@@ -239,6 +245,7 @@ bool up::recon::ReconApp::_runServer() {
         } while (commands.tryDeque(cmd));
 
         if (dirty) {
+            dirty = false;
             _writeManifest();
         }
     }
@@ -318,9 +325,10 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     }
 
     if (deleted) {
-        _logger.info("{}: deleted", importedName);
-        _library.deleteSource(file);
-        (void)fs::remove(path::join(_project->resourceRootPath(), metaPath));
+        if (record != nullptr) {
+            _logger.info("{}: deleted", importedName);
+            _library.deleteRecordByUuid(record->uuid);
+        }
         return true;
     }
 

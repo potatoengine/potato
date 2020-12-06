@@ -58,7 +58,7 @@ namespace up {
         Imported const* findRecordByFilename(zstring_view filename) const noexcept;
 
         bool insertRecord(Imported record);
-        bool deleteSource(string_view sourcePath);
+        bool deleteRecordByUuid(UUID const& uuid);
 
         bool open(zstring_view filename);
         bool close();

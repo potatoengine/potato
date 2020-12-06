@@ -92,15 +92,18 @@ bool up::AssetDatabase::insertRecord(Imported record) {
     return true;
 }
 
-bool up::AssetDatabase::deleteSource(string_view sourcePath) {
+bool up::AssetDatabase::deleteRecordByUuid(UUID const& uuid) {
+    char uuidStr[UUID::strLength] = {};
+    format_to(uuidStr, "{}", uuid);
+
     // update database
     if (_deleteAssetStmt) {
-        (void)_deleteAssetStmt.execute(sourcePath);
+        (void)_deleteAssetStmt.execute(uuidStr);
     }
 
     // update in-memory data
     for (auto it = begin(_records); it != end(_records); ++it) {
-        if (it->sourcePath == sourcePath) {
+        if (it->uuid == uuid) {
             _records.erase(it);
             return true;
         }
@@ -162,7 +165,7 @@ bool up::AssetDatabase::open(zstring_view filename) {
         " importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
     _insertOutputStmt = _db.prepare("INSERT INTO outputs (uuid, output_id, name, type, hash) VALUES(?, ?, ?, ?, ?)");
     _insertDependencyStmt = _db.prepare("INSERT INTO dependencies (uuid, db_path, hash) VALUES(?, ?, ?)");
-    _deleteAssetStmt = _db.prepare("DELETE FROM assets WHERE source_db_path=?");
+    _deleteAssetStmt = _db.prepare("DELETE FROM assets WHERE uuid=?");
     _clearOutputsStmt = _db.prepare("DELETE FROM outputs WHERE uuid=?");
     _clearDependenciesStmt = _db.prepare("DELETE FROM dependencies WHERE uuid=?");
 
