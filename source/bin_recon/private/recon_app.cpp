@@ -181,65 +181,72 @@ bool up::recon::ReconApp::_runServer() {
     bool quit = false;
     bool dirty = false;
     for (;;) {
-        if (!handle.isOpen()) {
-            quit = true;
-        }
-
         // ensure we drain out the remaining queued items
         if (quit) {
             if (!commands.tryDeque(cmd)) {
                 break;
             }
         }
-        else if (!commands.dequeWait(cmd)) {
-            handle.close();
-            continue;
+        if (commands.dequeWait(cmd)) {
+            do {
+                switch (cmd.type) {
+                    case ReconCommandType::Watch:
+                        // changes to meta-files should be processed as changes to the real file
+                        if (cmd.path.ends_with(".meta")) {
+                            cmd.path = path::changeExtension(cmd.path, "");
+                        }
+
+                        _importFile(cmd.path);
+                        dirty = true;
+                        break;
+                    case ReconCommandType::Import:
+                        if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
+                            _logger.info("Import: {} (force={})", record->sourcePath, cmd.force);
+
+                            _importFile(record->sourcePath, cmd.force);
+                            dirty = true;
+                        }
+                        break;
+                    case ReconCommandType::ImportAll:
+                        _logger.info("Import All (force={})", cmd.force);
+
+                        _importFiles(_collectSourceFiles());
+                        dirty = true;
+                        break;
+                    case ReconCommandType::Delete:
+                        if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
+                            _logger.info("Delete: {}", record->sourcePath);
+
+                            (void)fs::remove(path::join(_project->resourceRootPath(), record->sourcePath));
+                            _importFile(record->sourcePath, false);
+                            dirty = true;
+                        }
+                        break;
+                    case ReconCommandType::Quit:
+                        handle.close();
+                        quit = true;
+                        break;
+                }
+            } while (commands.tryDeque(cmd));
         }
-
-        do {
-            switch (cmd.type) {
-                case ReconCommandType::Watch:
-                    // changes to meta-files should be processed as changes to the real file
-                    if (cmd.path.ends_with(".meta")) {
-                        cmd.path = path::changeExtension(cmd.path, "");
-                    }
-
-                    _importFile(cmd.path);
-                    dirty = true;
-                    break;
-                case ReconCommandType::Import:
-                    if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
-                        _logger.info("Import: {} (force={})", record->sourcePath, cmd.force);
-
-                        _importFile(record->sourcePath, cmd.force);
-                        dirty = true;
-                    }
-                    break;
-                case ReconCommandType::ImportAll:
-                    _logger.info("Import All (force={})", cmd.force);
-
-                    _importFiles(_collectSourceFiles());
-                    dirty = true;
-                    break;
-                case ReconCommandType::Delete:
-                    if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
-                        _logger.info("Delete: {}", record->sourcePath);
-
-                        (void)fs::remove(path::join(_project->resourceRootPath(), record->sourcePath));
-                        _importFile(record->sourcePath, false);
-                        dirty = true;
-                    }
-                    break;
-                case ReconCommandType::Quit:
-                    handle.close();
-                    quit = true;
-                    break;
-            }
-        } while (commands.tryDeque(cmd));
+        else {
+            handle.close();
+        }
 
         if (dirty) {
             dirty = false;
             _writeManifest();
+
+            schema::ReconManifestMessage msg;
+            msg.path = _manifestPath;
+            nlohmann::json doc;
+            encodeReconMessage(doc, msg);
+            std::cout << doc.dump() << "\r\n";
+            std::cout.flush();
+        }
+
+        if (!handle.isOpen()) {
+            quit = true;
         }
     }
 
@@ -546,14 +553,5 @@ bool up::recon::ReconApp::_writeManifest() {
     _library.generateManifest(manifestFile);
     manifestFile.flush();
     manifestFile.close();
-
-    if (_config.server) {
-        schema::ReconManifestMessage msg;
-        msg.path = _manifestPath;
-        nlohmann::json doc;
-        encodeReconMessage(doc, msg);
-        std::cout << doc.dump() << "\r\n";
-    }
-
     return true;
 }
