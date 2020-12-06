@@ -114,9 +114,9 @@ namespace up::shell {
         }
 
         AssetLoader& _assetLoader;
+        AssetEditService& _assetEditService;
         ReconClient& _reconClient;
         OnFileSelected& _onFileSelected;
-        AssetEditService& _assetEditService;
         SelectionState _selection;
         vector<Folder> _folders;
         vector<Asset> _assets;
