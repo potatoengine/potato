@@ -70,6 +70,7 @@ namespace up::shell {
             None,
             OpenFolder,
             OpenInExplorer,
+            ShowInExplorer,
             EditAsset,
             Trash,
             Import,

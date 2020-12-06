@@ -23,7 +23,7 @@
 #include <imgui_internal.h>
 
 namespace up {
-    static constexpr zstring_view assetBrowserRenameDialogName = "##asset_browser_rename"_zsv;
+    static constexpr zstring_view assetBrowserRenameDialogName = "Rename Files and Folders##asset_browser_rename"_zsv;
 }
 
 namespace up::shell {
@@ -148,7 +148,7 @@ void up::shell::AssetBrowser::_showAsset(Entry const& asset) {
             ImGui::SetClipboardText(buf);
         }
         if (ImGui::IconMenuItem("Show in Explorer", ICON_FA_FOLDER_OPEN)) {
-            _command = Command::OpenInExplorer;
+            _command = Command::ShowInExplorer;
         }
         ImGui::IconMenuSeparator();
         if (ImGui::IconMenuItem("Rename", ICON_FA_PEN)) {
@@ -186,6 +186,10 @@ void up::shell::AssetBrowser::_showFolder(Entry const& folder) {
         ImGui::IconMenuSeparator();
         if (ImGui::IconMenuItem("Copy Path", ICON_FA_COPY)) {
             ImGui::SetClipboardText(folder.osPath.c_str());
+        }
+        ImGui::IconMenuSeparator();
+        if (ImGui::IconMenuItem("Rename", ICON_FA_PEN)) {
+            _command = Command::ShowRenameDialog;
         }
         ImGui::IconMenuSeparator();
         if (ImGui::IconMenuItem("Move to Trash", ICON_FA_TRASH)) {
@@ -286,7 +290,7 @@ void up::shell::AssetBrowser::_showTreeFolders() {
 }
 
 void up::shell::AssetBrowser::_showRenameDialog() {
-    if (ImGui::BeginPopup(assetBrowserRenameDialogName.c_str(), ImGuiWindowFlags_Modal)) {
+    if (ImGui::BeginPopupModal(assetBrowserRenameDialogName.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         auto filterCallback = +[](ImGuiInputTextCallbackData* data) -> int {
             constexpr string_view banList = "/\\;:"_sv;
             if (banList.find(static_cast<char>(data->EventChar)) != string_view::npos) {
@@ -315,6 +319,9 @@ void up::shell::AssetBrowser::_showRenameDialog() {
         }
         else {
             ImGui::TextDisabled("Multi-rename not yet supported.");
+            if (ImGui::Button("Cancel")) {
+                ImGui::CloseCurrentPopup();
+            }
         }
         ImGui::EndPopup();
     }
@@ -329,11 +336,9 @@ void up::shell::AssetBrowser::_rebuild() {
     _entries.clear();
     _currentFolder = 0;
 
+    auto rootOsPath = _assetEditService.makeFullPath("/");
     _entries.push_back(
-        {.id = hash_value("<root>"),
-         .osPath = _assetEditService.makeFullPath("/"),
-         .name = "<root>",
-         .typeHash = folderTypeHash});
+        {.id = hash_value(rootOsPath), .osPath = std::move(rootOsPath), .name = "<root>", .typeHash = folderTypeHash});
 
     if (manifest == nullptr) {
         return;
@@ -403,9 +408,10 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
 
     int const newIndex = static_cast<int>(_entries.size());
 
+    auto osPath = path::join(path::Separator::Native, parent.osPath, name);
     _entries.push_back(
-        {.id = id,
-         .osPath = path::join(path::Separator::Native, parent.osPath, name),
+        {.id = hash_value(osPath),
+         .osPath = std::move(osPath),
          .name = string{name},
          .typeHash = folderTypeHash,
          .parentIndex = parentIndex});
@@ -461,6 +467,10 @@ void up::shell::AssetBrowser::_openFolder(int index) {
 }
 
 void up::shell::AssetBrowser::_importAsset(UUID const& uuid, bool force) {
+    if (!uuid.isValid()) {
+        return;
+    }
+
     schema::ReconImportMessage msg;
     msg.uuid = uuid;
     msg.force = force;
@@ -474,7 +484,7 @@ void up::shell::AssetBrowser::_executeCommand() {
     switch (cmd) {
         case Command::OpenFolder:
             for (auto const& [index, folder] : enumerate(_entries)) {
-                if (_selection.selected(folder.id)) {
+                if (folder.typeHash == folderTypeHash && _selection.selected(folder.id)) {
                     _openFolder(static_cast<int>(index));
                     break;
                 }
@@ -482,11 +492,13 @@ void up::shell::AssetBrowser::_executeCommand() {
             break;
         case Command::OpenInExplorer:
             for (Entry const& folder : _entries) {
-                if (_selection.selected(folder.id)) {
+                if (folder.typeHash == folderTypeHash && _selection.selected(folder.id)) {
                     desktop::openInExplorer(folder.osPath);
                 }
             }
-
+            break;
+        case Command::ShowInExplorer:
+            // find paths to show in the explorer
             {
                 vector<zstring_view> files;
                 for (Entry const& asset : _entries) {
@@ -499,20 +511,15 @@ void up::shell::AssetBrowser::_executeCommand() {
             break;
         case Command::EditAsset:
             for (Entry const& asset : _entries) {
-                if (_selection.selected(asset.id)) {
+                if (_selection.selected(asset.id) && asset.uuid.isValid()) {
                     _onFileSelected(asset.uuid);
                 }
             }
             break;
         case Command::Trash:
-            // recursively deletes folders, and also files
+            // recursively deletes folders and files
             {
                 vector<zstring_view> files;
-                for (Entry const& folder : _entries) {
-                    if (_selection.selected(folder.id)) {
-                        files.push_back(folder.osPath);
-                    }
-                }
                 for (Entry const& asset : _entries) {
                     if (_selection.selected(asset.id)) {
                         files.push_back(asset.osPath);
@@ -524,17 +531,17 @@ void up::shell::AssetBrowser::_executeCommand() {
         case Command::Import:
         case Command::ForceImport:
             for (Entry const& asset : _entries) {
-                if (_selection.selected(hash_value(asset.uuid))) {
+                if (asset.uuid.isValid() && _selection.selected(asset.id)) {
                     _importAsset(asset.uuid, cmd == Command::ForceImport);
                 }
             }
             break;
         case Command::ShowRenameDialog:
             if (_selection.size() == 1) {
-                for (Entry const& asset : _entries) {
-                    if (_selection.selected(asset.id)) {
-                        format_to(_originalNameBuffer, "{}", asset.name);
-                        format_to(_renameBuffer, "{}", asset.name);
+                for (Entry const& entry : _entries) {
+                    if (_selection.selected(entry.id)) {
+                        format_to(_originalNameBuffer, "{}", entry.name);
+                        format_to(_renameBuffer, "{}", entry.name);
                         break;
                     }
                 }
@@ -544,10 +551,10 @@ void up::shell::AssetBrowser::_executeCommand() {
             break;
         case Command::Rename:
             if (_selection.size() == 1) {
-                for (Entry const& asset : _entries) {
-                    if (_selection.selected(asset.id)) {
-                        string newPath = path::join(path::parent(asset.osPath), _renameBuffer);
-                        if (auto const rs = fs::moveFileTo(asset.osPath, newPath); rs != IOResult::Success) {
+                for (Entry const& entry : _entries) {
+                    if (_selection.selected(entry.id)) {
+                        string newPath = path::join(path::parent(entry.osPath), _renameBuffer);
+                        if (auto const rs = fs::moveFileTo(entry.osPath, newPath); rs != IOResult::Success) {
                             // FIXME: show diagnostics
                         }
                         break;
