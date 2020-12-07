@@ -46,6 +46,7 @@ namespace ImGui::inline Potato {
 
     UP_EDITOR_API bool BeginIconGrid(char const* label, float iconWidth = 96.f);
     UP_EDITOR_API bool IconGridItem(
+        ImGuiID id,
         char const* label,
         char8_t const* icon,
         bool selected = false,

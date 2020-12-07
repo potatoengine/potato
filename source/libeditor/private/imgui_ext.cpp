@@ -300,7 +300,13 @@ void ImGui::Potato::EndIconGrid() {
     ImGui::EndTable();
 }
 
-bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, bool selected, float width, float rounding) {
+bool ImGui::Potato::IconGridItem(
+    ImGuiID id,
+    char const* label,
+    char8_t const* icon,
+    bool selected,
+    float width,
+    float rounding) {
     UP_ASSERT(label != nullptr);
     UP_ASSERT(icon != nullptr);
     UP_ASSERT(width > 0);
@@ -312,8 +318,6 @@ bool ImGui::Potato::IconGridItem(char const* label, char8_t const* icon, bool se
     if (window->SkipItems) {
         return false;
     }
-
-    ImGuiID const id = ImGui::GetID(label);
 
     ImVec2 const size = ImGui::CalcItemSize({width, width}, 0.0f, 0.0f);
     ImRect const bounds{window->DC.CursorPos, window->DC.CursorPos + size};
