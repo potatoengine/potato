@@ -47,24 +47,24 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         return false;
     }
 
-    _manifestPath = path::join(_project->libraryPath(), "manifest.txt");
+    _manifestPath = path::join(path::Separator::Native, _project->libraryPath(), "manifest.txt");
 
     if (auto const rs = fs::createDirectories(_project->libraryPath()); rs != IOResult::Success) {
         _logger.error("Failed to create library folder `{}`: {}", _project->libraryPath(), rs);
         return false;
     }
 
-    _temporaryOutputPath = path::join(_project->libraryPath(), "temp");
+    _temporaryOutputPath = path::join(path::Separator::Native, _project->libraryPath(), "temp");
 
     _registerImporters();
 
-    auto libraryPath = path::join(_project->libraryPath(), "assets.db");
+    auto libraryPath = path::join(path::Separator::Native, _project->libraryPath(), "assets.db");
     if (!_library.open(libraryPath)) {
         _logger.error("Failed to open asset library `{}'", libraryPath);
     }
     _logger.info("Opened asset library `{}'", libraryPath);
 
-    auto hashCachePath = path::join(_project->libraryPath(), "hash_cache.db");
+    auto hashCachePath = path::join(path::Separator::Native, _project->libraryPath(), "hash_cache.db");
     if (!_hashes.open(hashCachePath)) {
         _logger.error("Failed to open hash cache `{}'", hashCachePath);
     }
@@ -216,7 +216,8 @@ bool up::recon::ReconApp::_runServer() {
                         if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
                             _logger.info("Delete: {}", record->sourcePath);
 
-                            (void)fs::remove(path::join(_project->resourceRootPath(), record->sourcePath));
+                            (void)fs::remove(
+                                path::join(path::Separator::Native, _project->resourceRootPath(), record->sourcePath));
                             _importFile(record->sourcePath, false);
                             dirty = true;
                         }
@@ -287,32 +288,28 @@ bool up::recon::ReconApp::_importFiles(view<string> files, bool force) {
 }
 
 bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
-    auto osPath = path::join(_project->resourceRootPath(), file.c_str());
+    auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), file.c_str());
 
-    if (fs::directoryExists(osPath)) {
-        return true;
-    }
+    auto const [statRs, stat] = fs::fileStat(osPath);
+    bool const deleted = statRs == IOResult::FileNotFound;
+    bool const isFolder = stat.type == fs::FileType::Directory;
 
-    auto metaPath = _makeMetaFilename(file);
-    auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
+    auto metaPath = _makeMetaFilename(file, isFolder);
+    auto const contentHash = isFolder ? 0 : _hashes.hashAssetAtPath(osPath.c_str());
 
     static const ImporterConfig defaultConfig;
 
-    Mapping const* const mapping = _findConverterMapping(file);
+    Mapping const* const mapping = isFolder ? nullptr : _findConverterMapping(file);
     Importer* const importer = mapping != nullptr ? mapping->conveter : nullptr;
     ImporterConfig const& importerConfig = mapping != nullptr ? *mapping->config : defaultConfig;
 
-    bool dirty = false;
-
-    bool const deleted = !fs::fileExists(osPath);
-    dirty |= deleted;
-
     ImporterContext
         context(file, _project->resourceRootPath(), _temporaryOutputPath, importer, importerConfig, _logger);
+    bool dirty = deleted;
     dirty |= !_checkMetafile(context, metaPath, !deleted);
 
     auto const* record = _library.findRecordByUuid(context.uuid());
-    if (!deleted) {
+    if (!deleted && importer != nullptr) {
         dirty |=
             record == nullptr || !_isUpToDate(*record, contentHash, *importer) || !_isUpToDate(record->dependencies);
     }
@@ -333,14 +330,15 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
             _logger.info("{}: deleted", importedName);
             _library.deleteRecordByUuid(record->uuid);
 
-            if (fs::fileExists(metaPath)) {
-                (void)fs::remove(metaPath);
+            auto metaOsPath = path::join(path::Separator::Native, _project->resourceRootPath(), metaPath);
+            if (fs::fileExists(metaOsPath)) {
+                (void)fs::remove(metaOsPath);
             }
         }
         return true;
     }
 
-    if (importer == nullptr) {
+    if (importer == nullptr && !isFolder) {
         _logger.error("{}: unknown file type", importedName);
         return false;
     }
@@ -350,26 +348,30 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
         return true;
     }
 
-    _logger.info("{}: importing", importedName);
+    if (importer != nullptr) {
+        _logger.info("{}: importing", importedName);
 
-    if (!importer->import(context)) {
-        _logger.error("{}: import failed", importedName);
-        return false;
+        if (!importer->import(context)) {
+            _logger.error("{}: import failed", importedName);
+            return false;
+        }
     }
 
     AssetDatabase::Imported newRecord;
     newRecord.uuid = context.uuid();
     newRecord.sourcePath = string(file);
     newRecord.sourceContentHash = contentHash;
-    newRecord.importerName = string(importer->name());
-    newRecord.importerRevision = importer->revision();
+    if (importer != nullptr) {
+        newRecord.importerName = string(importer->name());
+        newRecord.importerRevision = importer->revision();
+    }
 
     string_writer logicalAssetName;
 
     // move outputs to CAS
     //
     for (auto const& output : context.outputs()) {
-        auto outputOsPath = path::join(_temporaryOutputPath, output.path);
+        auto outputOsPath = path::join(path::Separator::Native, _temporaryOutputPath, output.path);
         auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
 
         logicalAssetName.clear();
@@ -395,7 +397,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
             (outputHash >> 40) & 0XFFFF,
             outputHash);
 
-        auto casOsPath = path::join(_project->libraryPath(), "cache", casPath);
+        auto casOsPath = path::join(path::Separator::Native, _project->libraryPath(), "cache", casPath);
         auto casOsFolder = string{path::parent(casOsPath)};
 
         if (auto const rs = fs::createDirectories(casOsFolder); rs != IOResult::Success) {
@@ -429,7 +431,7 @@ bool up::recon::ReconApp::_isUpToDate(
 
 bool up::recon::ReconApp::_isUpToDate(span<AssetDatabase::Dependency const> records) {
     for (auto const& rec : records) {
-        auto osPath = path::join(_project->resourceRootPath(), rec.path.c_str());
+        auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), rec.path.c_str());
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
         if (contentHash != rec.contentHash) {
             return false;
@@ -448,20 +450,23 @@ auto up::recon::ReconApp::_findConverterMapping(string_view path) const -> Mappi
     return nullptr;
 }
 
-auto up::recon::ReconApp::_makeMetaFilename(zstring_view assetFilename) -> string {
+auto up::recon::ReconApp::_makeMetaFilename(zstring_view basePath, bool directory) -> string {
+    if (directory) {
+        return path::join(basePath, ".meta");
+    }
     string_writer metaFilePath;
-    metaFilePath.append(assetFilename);
+    metaFilePath.append(basePath);
     metaFilePath.append(".meta");
     return metaFilePath.to_string();
 }
 
-auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view metaFilename, bool autoCreate) -> bool {
-    string metaFileOsPath = path::join(_project->resourceRootPath(), metaFilename);
+auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view metaPath, bool autoCreate) -> bool {
+    string metaOsPath = path::join(path::Separator::Native, _project->resourceRootPath(), metaPath);
 
     MetaFile metaFile;
     bool dirty = false;
 
-    if (Stream stream = fs::openRead(metaFileOsPath, fs::OpenMode::Text); stream) {
+    if (Stream stream = fs::openRead(metaOsPath, fs::OpenMode::Text); stream) {
         auto [result, jsonText] = readText(stream);
         if (result == IOResult::Success) {
             if (!metaFile.parseJson(jsonText)) {
@@ -495,20 +500,20 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view meta
     ctx.setUuid(metaFile.uuid);
 
     if (dirty && autoCreate) {
-        _logger.info("Writing meta file `{}'", metaFilename);
+        _logger.info("Writing meta file `{}'", metaOsPath);
 
         string jsonText = metaFile.toJson();
 
-        auto stream = fs::openWrite(metaFileOsPath, fs::OpenMode::Text);
+        auto stream = fs::openWrite(metaOsPath, fs::OpenMode::Text);
         if (!stream || writeAllText(stream, jsonText) != IOResult::Success) {
-            _logger.error("Failed to write meta file for {}", metaFilename);
+            _logger.error("Failed to write meta file for {}", metaOsPath);
             return false;
         }
     }
 
     // adding meta files to source deps to ensure proper rebuild when meta files change for any reason
     // (like convert settings for a file)
-    ctx.addSourceDependency(metaFilename);
+    ctx.addSourceDependency(metaPath);
     return true;
 }
 
@@ -526,15 +531,13 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
             return fs::next;
         }
 
-        if (item.type == fs::FileType::Regular) {
-            // skip .meta files
-            //
-            if (path::extension(item.path) == ".meta") {
-                return fs::next;
-            }
-
-            files.push_back(item.path);
+        // skip .meta files
+        //
+        if (path::extension(item.path) == ".meta") {
+            return fs::next;
         }
+
+        files.push_back(item.path);
 
         return fs::recurse;
     };

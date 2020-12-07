@@ -18,10 +18,13 @@ auto up::MetaFile::toJson() const -> string {
     doc["$version"] = 1;
 
     doc["id"] = uuid.toString();
-    auto importerJson = nlohmann::json();
-    importerJson["name"] = importerName;
-    importerJson["settings"] = importerSettings;
-    doc["importer"] = std::move(importerJson);
+
+    if (!importerName.empty() && !importerSettings.empty()) {
+        auto importerJson = nlohmann::json();
+        importerJson["name"] = importerName;
+        importerJson["settings"] = importerSettings;
+        doc["importer"] = std::move(importerJson);
+    }
 
     return string(doc.dump(2).c_str());
 }

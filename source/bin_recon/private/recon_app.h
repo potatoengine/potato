@@ -51,8 +51,8 @@ namespace up::recon {
             const noexcept;
         bool _isUpToDate(span<AssetDatabase::Dependency const> records);
 
-        string _makeMetaFilename(zstring_view assetFilename);
-        bool _checkMetafile(ImporterContext& ctx, zstring_view filename, bool autoCreate = true);
+        string _makeMetaFilename(zstring_view basePath, bool directory);
+        bool _checkMetafile(ImporterContext& ctx, zstring_view metaPath, bool autoCreate = true);
 
         auto _findConverterMapping(string_view path) const -> Mapping const*;
 
