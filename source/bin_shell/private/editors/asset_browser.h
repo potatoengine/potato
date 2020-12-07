@@ -119,7 +119,8 @@ namespace up::shell {
         char _renameBuffer[128] = {0};
 
         static constexpr int assetIconWidth = 96;
-        static constexpr uint64 folderTypeHash = hash_value("$folder");
+        static constexpr char folderType[] = "potato.folder";
+        static constexpr uint64 folderTypeHash = hash_value(folderType);
 
         static constexpr size_t maxFolderHistory = 64;
         size_t _folderHistoryIndex = 0;

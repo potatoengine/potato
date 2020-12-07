@@ -115,6 +115,7 @@ void up::shell::AssetBrowser::_showAsset(Entry const& asset) {
     UP_ASSERT(asset.typeHash != folderTypeHash);
 
     if (ImGui::IconGridItem(
+            asset.id,
             asset.name.c_str(),
             _assetEditService.getIconForAssetTypeHash(asset.typeHash),
             _selection.selected(asset.id))) {
@@ -165,7 +166,7 @@ void up::shell::AssetBrowser::_showAsset(Entry const& asset) {
 void up::shell::AssetBrowser::_showFolder(Entry const& folder) {
     UP_ASSERT(folder.typeHash == folderTypeHash);
 
-    if (ImGui::IconGridItem(folder.name.c_str(), ICON_FA_FOLDER, _selection.selected(folder.id))) {
+    if (ImGui::IconGridItem(folder.id, folder.name.c_str(), ICON_FA_FOLDER, _selection.selected(folder.id))) {
         _command = Command::OpenFolder;
     }
 
@@ -337,8 +338,8 @@ void up::shell::AssetBrowser::_rebuild() {
     _currentFolder = 0;
 
     auto rootOsPath = _assetEditService.makeFullPath("/");
-    _entries.push_back(
-        {.id = hash_value(rootOsPath), .osPath = std::move(rootOsPath), .name = "<root>", .typeHash = folderTypeHash});
+    auto const id = hash_value(rootOsPath);
+    _entries.push_back({.id = id, .osPath = std::move(rootOsPath), .name = "<root>", .typeHash = folderTypeHash});
 
     if (manifest == nullptr) {
         return;
@@ -348,7 +349,11 @@ void up::shell::AssetBrowser::_rebuild() {
         auto const lastSepIndex = record.filename.find_last_of("/"_sv);
         auto const start = lastSepIndex != string::npos ? lastSepIndex + 1 : 0;
 
-        if (record.type == "folder"_zsv) {
+        if (record.logicalId != ResourceManifest::Id{}) {
+            continue;
+        }
+
+        if (record.type == folderType) {
             _addFolders(record.filename);
             continue;
         }
@@ -395,11 +400,15 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
 
     Entry const& parent = _entries[parentIndex];
 
-    int childIndex = parent.firstChild;
-    if (childIndex != -1) {
+    int childIndex = -1;
+    if (parent.firstChild != -1 && _entries[parent.firstChild].typeHash == folderTypeHash) {
+        childIndex = parent.firstChild;
         while (_entries[childIndex].nextSibling != -1) {
             if (_entries[childIndex].name == name) {
                 return childIndex;
+            }
+            if (_entries[_entries[childIndex].nextSibling].typeHash != folderTypeHash) {
+                break;
             }
             childIndex = _entries[childIndex].nextSibling;
         }
@@ -420,9 +429,11 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
          .parentIndex = parentIndex});
 
     if (childIndex == -1) {
+        _entries[newIndex].nextSibling = _entries[parentIndex].firstChild;
         _entries[parentIndex].firstChild = newIndex;
     }
     else {
+        _entries[newIndex].nextSibling = _entries[childIndex].nextSibling;
         _entries[childIndex].nextSibling = newIndex;
     }
 
