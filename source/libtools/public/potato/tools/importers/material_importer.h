@@ -11,9 +11,11 @@ namespace up {
         ~MaterialImporter() override;
 
         bool import(ImporterContext& ctx) override;
+        string_view assetType(ImporterContext&) const noexcept override { return "potato.asset.material"_sv; }
+
         string_view generateSettings(ImporterContext& ctd) const override { return {}; }
 
-        string_view name() const noexcept override { return "material"; }
+        string_view name() const noexcept override { return "material"_sv; }
         uint64 revision() const noexcept override { return 4; }
     };
 } // namespace up

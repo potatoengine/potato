@@ -33,6 +33,7 @@ namespace up {
             UUID uuid;
             string sourcePath;
             string importerName;
+            string assetType;
             uint64 importerRevision = 0;
             uint64 sourceContentHash = 0;
 
@@ -41,7 +42,7 @@ namespace up {
         };
 
         static constexpr zstring_view typeName = "potato.asset.library"_zsv;
-        static constexpr int version = 13;
+        static constexpr int version = 15;
 
         AssetDatabase() = default;
         ~AssetDatabase();

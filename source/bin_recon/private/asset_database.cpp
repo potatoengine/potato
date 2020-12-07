@@ -63,6 +63,7 @@ bool up::AssetDatabase::insertRecord(Imported record) {
             uuidStr,
             record.sourcePath.c_str(),
             record.sourceContentHash,
+            record.assetType.c_str(),
             record.importerName.c_str(),
             record.importerRevision);
 
@@ -143,7 +144,7 @@ bool up::AssetDatabase::open(zstring_view filename) {
     // ensure the table is created
     if (_db.execute("CREATE TABLE IF NOT EXISTS assets "
                     "(uuid TEXT PRIMARY KEY, "
-                    "source_db_path TEXT, source_hash INTEGER, "
+                    "source_db_path TEXT, source_hash INTEGER, asset_type TEXT, "
                     "importer_name TEXT, importer_revision INTEGER);\n"
 
                     "CREATE TABLE IF NOT EXISTS outputs "
@@ -159,10 +160,10 @@ bool up::AssetDatabase::open(zstring_view filename) {
     // create our prepared statements for later use
     _insertAssetStmt = _db.prepare(
         "INSERT INTO assets "
-        "(uuid, source_db_path, source_hash, importer_name, importer_revision) "
-        "VALUES(?, ?, ?, ?, ?)"
-        "ON CONFLICT (uuid) DO UPDATE SET source_hash=excluded.source_hash, "
-        " importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
+        "(uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision) "
+        "VALUES(?, ?, ?, ?, ?, ?)"
+        "ON CONFLICT (uuid) DO UPDATE SET source_hash=excluded.source_hash, asset_type=excluded.asset_type, "
+        "importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
     _insertOutputStmt = _db.prepare("INSERT INTO outputs (uuid, output_id, name, type, hash) VALUES(?, ?, ?, ?, ?)");
     _insertDependencyStmt = _db.prepare("INSERT INTO dependencies (uuid, db_path, hash) VALUES(?, ?, ?)");
     _deleteAssetStmt = _db.prepare("DELETE FROM assets WHERE uuid=?");
@@ -170,18 +171,19 @@ bool up::AssetDatabase::open(zstring_view filename) {
     _clearDependenciesStmt = _db.prepare("DELETE FROM dependencies WHERE uuid=?");
 
     // create our prepared statemtnt to load values
-    auto assets_stmt =
-        _db.prepare("SELECT uuid, source_db_path, source_hash, importer_name, importer_revision FROM assets");
+    auto assets_stmt = _db.prepare(
+        "SELECT uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision FROM assets");
     auto outputs_stmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE uuid=?");
     auto dependencies_stmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE uuid=?");
 
     // read in all the asset records
-    for (auto const& [uuid, southPath, sourceHash, importName, importVer] :
-         assets_stmt.query<zstring_view, zstring_view, uint64, zstring_view, uint64>()) {
+    for (auto const& [uuid, southPath, sourceHash, assetType, importName, importVer] :
+         assets_stmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>()) {
         auto& record = _records.push_back(Imported{
             .uuid = UUID::fromString(uuid),
             .sourcePath = string{southPath},
             .importerName = string{importName},
+            .assetType = string(assetType),
             .importerRevision = importVer,
             .sourceContentHash = sourceHash});
 
@@ -220,13 +222,10 @@ void up::AssetDatabase::generateManifest(erased_writer writer) const {
     string_writer fullName;
 
     for (auto const& record : _records) {
-        format_to(
-            writer,
-            "{}|||{}||{}\n",
-            record.uuid,
-            record.importerName.empty() ? "folder"_zsv : record.importerName,
-            record.sourcePath);
+        format_to(writer, "{}|||{}||{}\n", record.uuid, record.assetType, record.sourcePath);
+    }
 
+    for (auto const& record : _records) {
         for (auto const& output : record.outputs) {
             fullName.clear();
             fullName.append(record.sourcePath);

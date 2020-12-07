@@ -45,3 +45,8 @@ bool up::CopyImporter::import(ImporterContext& ctx) {
 
     return true;
 }
+
+auto up::CopyImporter::assetType(ImporterContext& ctx) const noexcept -> string_view {
+    auto const& config = ctx.config<CopyImporterConfig>();
+    return config.type;
+}

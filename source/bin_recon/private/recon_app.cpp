@@ -309,7 +309,8 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     dirty |= !_checkMetafile(context, metaPath, !deleted);
 
     auto const* record = _library.findRecordByUuid(context.uuid());
-    if (!deleted && importer != nullptr) {
+    dirty |= record == nullptr;
+    if (!dirty && !deleted && importer != nullptr) {
         dirty |=
             record == nullptr || !_isUpToDate(*record, contentHash, *importer) || !_isUpToDate(record->dependencies);
     }
@@ -364,6 +365,10 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     if (importer != nullptr) {
         newRecord.importerName = string(importer->name());
         newRecord.importerRevision = importer->revision();
+        newRecord.assetType = string(importer->assetType(context));
+    }
+    else if (isFolder) {
+        newRecord.assetType = "potato.folder"_s;
     }
 
     string_writer logicalAssetName;

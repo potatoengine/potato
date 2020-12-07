@@ -70,3 +70,8 @@ bool up::JsonImporter::import(ImporterContext& ctx) {
 
     return true;
 }
+
+auto up::JsonImporter::assetType(ImporterContext& ctx) const noexcept -> string_view {
+    auto const& config = ctx.config<JsonImporterConfig>();
+    return config.type;
+}
