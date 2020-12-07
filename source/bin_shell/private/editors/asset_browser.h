@@ -77,6 +77,8 @@ namespace up::shell {
             ForceImport,
             ShowRenameDialog,
             Rename,
+            ShowNewFolderDialog,
+            CreateFolder,
         };
 
         void _showAssets(Entry const& folder);
@@ -90,6 +92,7 @@ namespace up::shell {
         void _showTreeFolders();
 
         void _showRenameDialog();
+        void _showNewFolderDialog();
 
         void _rebuild();
         int _addFolder(string_view name, int parentIndex = 0);
@@ -115,7 +118,7 @@ namespace up::shell {
         int _currentFolder = 0;
         int _manifestRevision = 0;
         Command _command = Command::None;
-        char _originalNameBuffer[128] = {0};
+        char _nameBuffer[128] = {0};
         char _renameBuffer[128] = {0};
 
         static constexpr int assetIconWidth = 96;

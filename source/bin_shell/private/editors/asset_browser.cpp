@@ -24,7 +24,8 @@
 
 namespace up {
     static constexpr zstring_view assetBrowserRenameDialogName = "Rename Files and Folders##asset_browser_rename"_zsv;
-}
+    static constexpr zstring_view assetBrowserNewFolderDialogName = "New Folder##asset_browser_rename"_zsv;
+} // namespace up
 
 namespace up::shell {
     namespace {
@@ -89,10 +90,24 @@ void up::shell::AssetBrowser::content() {
         _showBreadcrumbs();
         _showAssets(_entries[_currentFolder]);
 
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && !ImGui::IsAnyItemHovered() &&
+            ImGui::TableGetHoveredColumn() == 1) {
+            ImGui::OpenPopup("##folder_popup");
+        }
+        if (ImGui::BeginPopup(
+                "##folder_popup",
+                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
+            if (ImGui::IconMenuItem("New Folder", ICON_FA_FOLDER)) {
+                _command = Command::ShowNewFolderDialog;
+            }
+            ImGui::EndPopup();
+        }
+
         ImGui::EndTable();
     }
 
     _showRenameDialog();
+    _showNewFolderDialog();
 
     _executeCommand();
 }
@@ -301,7 +316,7 @@ void up::shell::AssetBrowser::_showRenameDialog() {
         };
 
         if (_selection.size() == 1) {
-            ImGui::LabelText("Original Name", "%s", _originalNameBuffer);
+            ImGui::LabelText("Original Name", "%s", _nameBuffer);
             ImGui::InputText(
                 "New Name",
                 _renameBuffer,
@@ -323,6 +338,35 @@ void up::shell::AssetBrowser::_showRenameDialog() {
             if (ImGui::Button("Cancel")) {
                 ImGui::CloseCurrentPopup();
             }
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void up::shell::AssetBrowser::_showNewFolderDialog() {
+    if (ImGui::BeginPopupModal(assetBrowserNewFolderDialogName.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        auto filterCallback = +[](ImGuiInputTextCallbackData* data) -> int {
+            constexpr string_view banList = "/\\;:"_sv;
+            if (banList.find(static_cast<char>(data->EventChar)) != string_view::npos) {
+                return 1;
+            }
+            return 0;
+        };
+
+        ImGui::InputText(
+            "Folder Name",
+            _nameBuffer,
+            sizeof(_nameBuffer),
+            ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackCharFilter,
+            filterCallback);
+
+        if (ImGui::Button("Accept")) {
+            ImGui::CloseCurrentPopup();
+            _command = Command::CreateFolder;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
     }
@@ -554,7 +598,7 @@ void up::shell::AssetBrowser::_executeCommand() {
             if (_selection.size() == 1) {
                 for (Entry const& entry : _entries) {
                     if (_selection.selected(entry.id)) {
-                        format_to(_originalNameBuffer, "{}", entry.name);
+                        format_to(_nameBuffer, "{}", entry.name);
                         format_to(_renameBuffer, "{}", entry.name);
                         break;
                     }
@@ -562,6 +606,17 @@ void up::shell::AssetBrowser::_executeCommand() {
             }
 
             ImGui::OpenPopup(assetBrowserRenameDialogName.c_str());
+            break;
+        case Command::ShowNewFolderDialog:
+            _nameBuffer[0] = '\0';
+            ImGui::OpenPopup(assetBrowserNewFolderDialogName.c_str());
+            break;
+        case Command::CreateFolder:
+            if (auto const rs = fs::createDirectories(
+                    path::join(path::Separator::Native, _entries[_currentFolder].osPath, _nameBuffer));
+                rs != IOResult::Success) {
+                // FIXME: show diagnostics
+            }
             break;
         case Command::Rename:
             if (_selection.size() == 1) {
