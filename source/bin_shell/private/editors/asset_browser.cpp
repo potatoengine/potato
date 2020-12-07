@@ -348,6 +348,11 @@ void up::shell::AssetBrowser::_rebuild() {
         auto const lastSepIndex = record.filename.find_last_of("/"_sv);
         auto const start = lastSepIndex != string::npos ? lastSepIndex + 1 : 0;
 
+        if (record.type == "folder"_zsv) {
+            _addFolders(record.filename);
+            continue;
+        }
+
         int folderIndex = 0;
         if (lastSepIndex != string::npos) {
             folderIndex = _addFolders(record.filename.substr(0, lastSepIndex));

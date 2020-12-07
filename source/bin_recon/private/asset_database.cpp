@@ -220,6 +220,13 @@ void up::AssetDatabase::generateManifest(erased_writer writer) const {
     string_writer fullName;
 
     for (auto const& record : _records) {
+        format_to(
+            writer,
+            "{}|||{}||{}\n",
+            record.uuid,
+            record.importerName.empty() ? "folder"_zsv : record.importerName,
+            record.sourcePath);
+
         for (auto const& output : record.outputs) {
             fullName.clear();
             fullName.append(record.sourcePath);
