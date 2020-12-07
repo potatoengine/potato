@@ -3,6 +3,7 @@
 #pragma once
 
 #include "string_view.h"
+#include <cassert> // our assertion library requires zstring_view...
 
 namespace up {
     class zstring_view {
@@ -25,7 +26,7 @@ namespace up {
         static constexpr size_type npos = ~size_type(0);
 
         constexpr zstring_view() = default;
-        constexpr zstring_view(pointer str) noexcept : _str(str) {}
+        constexpr zstring_view(pointer str) noexcept : _str(str) { assert(str != nullptr); }
         constexpr zstring_view(std::nullptr_t) noexcept {}
 
         constexpr explicit operator bool() const noexcept { return *_str != 0; }
