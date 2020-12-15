@@ -161,7 +161,7 @@ public:
         return lhs.size() == rhsSize && stringCompare(lhs.data(), rhs, rhsSize) == 0;
     }
 
-    /*implicit*/ operator string_view() const noexcept { return { _data != nullptr ? _data : _empty, _size}; }
+    /*implicit*/ operator string_view() const noexcept { return {_data != nullptr ? _data : _empty, _size}; }
 
     /*implicit*/ operator zstring_view() const noexcept { return {_data != nullptr ? _data : _empty}; }
 
