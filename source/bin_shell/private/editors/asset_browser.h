@@ -79,6 +79,8 @@ namespace up::shell {
             Rename,
             ShowNewFolderDialog,
             CreateFolder,
+            ShowNewAssetDialog,
+            CreateAsset,
         };
 
         void _showAssets(Entry const& folder);
@@ -93,6 +95,7 @@ namespace up::shell {
 
         void _showRenameDialog();
         void _showNewFolderDialog();
+        void _showNewAssetDialog();
 
         void _rebuild();
         int _addFolder(string_view name, int parentIndex = 0);
@@ -120,6 +123,7 @@ namespace up::shell {
         Command _command = Command::None;
         char _nameBuffer[128] = {0};
         char _renameBuffer[128] = {0};
+        uint64 _newAssetType = 0;
 
         static constexpr int assetIconWidth = 96;
         static constexpr char folderType[] = "potato.folder";

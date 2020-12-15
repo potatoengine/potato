@@ -6,33 +6,46 @@
 #include "potato/runtime/path.h"
 #include "potato/spud/hash.h"
 
-char8_t const* up::AssetEditService::getIconForAssetTypeHash(uint64 typeHash) const noexcept {
-    if (typeHash == hash_value("potato.asset.sound")) {
-        return ICON_FA_FILE_AUDIO;
+namespace up {
+    namespace {
+
+        static constexpr up::AssetEditService::AssetTypeInfo unknownAssetType = {
+            .name = "Unknown"_zsv,
+            .icon = ICON_FA_FILE};
+        static constexpr up::AssetEditService::AssetTypeInfo assetTypes[] = {
+            {.name = "Sound"_zsv, .icon = ICON_FA_FILE_AUDIO, .typeHash = hash_value("potato.asset.sound")},
+            {.name = "Texture"_zsv, .icon = ICON_FA_FILE_IMAGE, .typeHash = hash_value("potato.asset.texture")},
+            {.name = "Shader"_zsv, .icon = ICON_FA_FILE_CODE, .typeHash = hash_value("potato.asset.shader")},
+            {.name = "Model"_zsv, .icon = ICON_FA_FILE_ALT, .typeHash = hash_value("potato.asset.model")},
+            {.name = "Material"_zsv,
+             .extension = ".mat"_zsv,
+             .editor = "potato.editor.material"_zsv,
+             .icon = unknownAssetType.icon,
+             .typeHash = hash_value("potato.asset.material")},
+            {.name = "Scene"_zsv,
+             .extension = ".scene"_zsv,
+             .editor = "potato.editor.scene"_zsv,
+             .icon = ICON_FA_FILE_VIDEO,
+             .typeHash = hash_value("potato.asset.scene")},
+        };
+        static constexpr int assetTypeCount = sizeof(assetTypes) / sizeof(assetTypes[0]);
+    } // namespace
+} // namespace up
+
+auto up::AssetEditService::findInfoForAssetTypeHash(uint64 typeHash) const noexcept -> AssetTypeInfo const& {
+    for (AssetTypeInfo const& info : assetTypes) {
+        if (info.typeHash == typeHash) {
+            return info;
+        }
     }
-    if (typeHash == hash_value("potato.asset.texture")) {
-        return ICON_FA_FILE_IMAGE;
-    }
-    if (typeHash == hash_value("potato.asset.shader")) {
-        return ICON_FA_FILE_CODE;
-    }
-    if (typeHash == hash_value("potato.asset.model")) {
-        return ICON_FA_FILE_ALT;
-    }
-    if (typeHash == hash_value("potato.asset.scene")) {
-        return ICON_FA_FILE_VIDEO;
-    }
-    return ICON_FA_FILE;
+    return unknownAssetType;
 }
 
-auto up::AssetEditService::getEditorForAssetTypeHash(uint64 typeHash) const noexcept -> zstring_view {
-    if (typeHash == hash_value("potato.asset.scene")) {
-        return "potato.editor.scene"_zsv;
+auto up::AssetEditService::findInfoForIndex(int index) const noexcept -> AssetTypeInfo const& {
+    if (index >= 0 && index < assetTypeCount) {
+        return assetTypes[index];
     }
-    if (typeHash == hash_value("potato.asset.material")) {
-        return "potato.editor.material"_zsv;
-    }
-    return {};
+    return unknownAssetType;
 }
 
 auto up::AssetEditService::makeFullPath(zstring_view filename) const -> string {

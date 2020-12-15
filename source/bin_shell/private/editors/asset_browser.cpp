@@ -24,7 +24,8 @@
 
 namespace up {
     static constexpr zstring_view assetBrowserRenameDialogName = "Rename Files and Folders##asset_browser_rename"_zsv;
-    static constexpr zstring_view assetBrowserNewFolderDialogName = "New Folder##asset_browser_rename"_zsv;
+    static constexpr zstring_view assetBrowserNewFolderDialogName = "New Folder##asset_browser_new_folder"_zsv;
+    static constexpr zstring_view assetBrowserNewAssetDialogName = "New Asset##asset_browser_new_asset"_zsv;
 } // namespace up
 
 namespace up::shell {
@@ -108,6 +109,7 @@ void up::shell::AssetBrowser::content() {
 
     _showRenameDialog();
     _showNewFolderDialog();
+    _showNewAssetDialog();
 
     _executeCommand();
 }
@@ -132,7 +134,7 @@ void up::shell::AssetBrowser::_showAsset(Entry const& asset) {
     if (ImGui::IconGridItem(
             asset.id,
             asset.name.c_str(),
-            _assetEditService.getIconForAssetTypeHash(asset.typeHash),
+            _assetEditService.findInfoForAssetTypeHash(asset.typeHash).icon,
             _selection.selected(asset.id))) {
         _command = Command::EditAsset;
     }
@@ -245,6 +247,15 @@ void up::shell::AssetBrowser::_showBreadcrumbs() {
     window->DC.CursorPos += ImGui::GetItemSpacing();
     ImGui::BeginGroup();
     ImGui::PushID("##breadcrumbs");
+
+    if (ImGui::IconButton("New Asset", ICON_FA_FILE)) {
+        _command = Command::ShowNewAssetDialog;
+    }
+    ImGui::SameLine();
+    if (ImGui::IconButton("New Folder", ICON_FA_FOLDER)) {
+        _command = Command::ShowNewFolderDialog;
+    }
+    ImGui::SameLine(0.f, 12.f);
 
     if (ImGui::IconButton("##back", ICON_FA_BACKWARD)) {
         if (_folderHistoryIndex > 0) {
@@ -363,6 +374,57 @@ void up::shell::AssetBrowser::_showNewFolderDialog() {
         if (ImGui::Button("Accept")) {
             ImGui::CloseCurrentPopup();
             _command = Command::CreateFolder;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void up::shell::AssetBrowser::_showNewAssetDialog() {
+    if (ImGui::BeginPopupModal(assetBrowserNewAssetDialogName.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        auto filterCallback = +[](ImGuiInputTextCallbackData* data) -> int {
+            constexpr string_view banList = "/\\;:"_sv;
+            if (banList.find(static_cast<char>(data->EventChar)) != string_view::npos) {
+                return 1;
+            }
+            return 0;
+        };
+
+        if (ImGui::BeginCombo(
+                "Type",
+                _assetEditService.findInfoForAssetTypeHash(_newAssetType).name.c_str(),
+                ImGuiComboFlags_PopupAlignLeft)) {
+            AssetEditService::AssetTypeInfo info;
+            for (int index = 0; (info = _assetEditService.findInfoForIndex(index)).typeHash != 0; ++index) {
+                bool selected = _newAssetType == 0;
+                if (ImGui::Selectable(info.name.c_str(), &selected)) {
+                    _newAssetType = info.typeHash;
+                    if (_nameBuffer[0] != '\0' && !info.extension.empty()) {
+                        auto const base = path::filebasename(_nameBuffer);
+                        _nameBuffer[base.size()] = '\0';
+                        format_append(_nameBuffer, "{}", info.extension);
+                    }
+                }
+                if (selected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::LabelText("Folder", "%s", _entries[_currentFolder].name.c_str());
+        ImGui::InputText(
+            "Asset Name",
+            _nameBuffer,
+            sizeof(_nameBuffer),
+            ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackCharFilter,
+            filterCallback);
+
+        if (ImGui::Button("Accept")) {
+            ImGui::CloseCurrentPopup();
+            _command = Command::CreateAsset;
         }
         ImGui::SameLine();
         if (ImGui::Button("Cancel")) {
@@ -611,6 +673,11 @@ void up::shell::AssetBrowser::_executeCommand() {
             _nameBuffer[0] = '\0';
             ImGui::OpenPopup(assetBrowserNewFolderDialogName.c_str());
             break;
+        case Command::ShowNewAssetDialog:
+            format_to(_nameBuffer, "new.scene");
+            _newAssetType = hash_value("potato.asset.scene");
+            ImGui::OpenPopup(assetBrowserNewAssetDialogName.c_str());
+            break;
         case Command::CreateFolder:
             if (auto const rs = fs::createDirectories(
                     path::join(path::Separator::Native, _entries[_currentFolder].osPath, _nameBuffer));
@@ -631,6 +698,12 @@ void up::shell::AssetBrowser::_executeCommand() {
                 }
             }
             break;
+        case Command::CreateAsset:
+            if (auto const rs = fs::writeAllText(
+                path::join(path::Separator::Native, _entries[_currentFolder].osPath, _nameBuffer), "{}"_sv);
+                rs != IOResult::Success) {
+                // FIXME: show diagnostics
+            }
         default:
             break;
     }

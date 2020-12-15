@@ -660,7 +660,7 @@ void up::shell::ShellApp::_openAssetEditor(UUID const& uuid) {
         return;
     }
 
-    zstring_view const editor = _assetEditService.getEditorForAssetTypeHash(assetTypeHash);
+    zstring_view const editor = _assetEditService.findInfoForAssetTypeHash(assetTypeHash).editor;
     if (!editor.empty()) {
         _openEditorForDocument(SceneEditor::editorName, assetPath);
     }
