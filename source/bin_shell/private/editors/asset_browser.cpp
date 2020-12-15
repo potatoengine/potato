@@ -438,7 +438,7 @@ void up::shell::AssetBrowser::_rebuild() {
     ResourceManifest const* const manifest = _assetLoader.manifest();
     _manifestRevision = _assetLoader.manifestRevision();
 
-    uint64 const selectedId = _currentFolder < _entries.size() ? _entries[_currentFolder].id : 0;
+    uint64 const selectedId = _currentFolder < static_cast<int>(_entries.size()) ? _entries[_currentFolder].id : 0;
 
     _entries.clear();
     _currentFolder = 0;
@@ -700,7 +700,8 @@ void up::shell::AssetBrowser::_executeCommand() {
             break;
         case Command::CreateAsset:
             if (auto const rs = fs::writeAllText(
-                path::join(path::Separator::Native, _entries[_currentFolder].osPath, _nameBuffer), "{}"_sv);
+                    path::join(path::Separator::Native, _entries[_currentFolder].osPath, _nameBuffer),
+                    "{}"_sv);
                 rs != IOResult::Success) {
                 // FIXME: show diagnostics
             }
