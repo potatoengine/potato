@@ -8,7 +8,7 @@
       "environment": "up_msvc",
       "namespace": "up_msvc",
       "CXXFLAGS": "/FC /Zi",
-      "UP_CXXFLAGS": "/W3 /WX /w34295 /w34189 /w34100"
+      "UP_CXXFLAGS": "/W3 /WX /w34295 /w34189"
     },
     {
       "environment": "up_msvc_debug",
