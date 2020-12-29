@@ -47,7 +47,7 @@ jobs:
           CXXFLAGS: /FC
         run: |
           mkdir build
-          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES
+          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX /w34295 /w34189" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
       - name: Test
@@ -66,7 +66,7 @@ jobs:
           - cxx: g++-10
             cc: gcc-10
             cxxflags: -fcoroutines
-            warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized # GLM triggers volatile, Tracy triggers maybe-unitialized
+            warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized -Wno-deprecated-enum-enum-conversion # GLM triggers volatile, Tracy triggers maybe-unitialized, imgui triggers enum-enum-conversion
             packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
