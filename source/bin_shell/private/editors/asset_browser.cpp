@@ -132,7 +132,7 @@ void up::shell::AssetBrowser::_showAsset(Entry const& asset) {
     UP_ASSERT(asset.typeHash != folderTypeHash);
 
     if (ImGui::IconGridItem(
-            asset.id,
+            static_cast<ImGuiID>(asset.id),
             asset.name.c_str(),
             _assetEditService.findInfoForAssetTypeHash(asset.typeHash).icon,
             _selection.selected(asset.id))) {
@@ -183,7 +183,11 @@ void up::shell::AssetBrowser::_showAsset(Entry const& asset) {
 void up::shell::AssetBrowser::_showFolder(Entry const& folder) {
     UP_ASSERT(folder.typeHash == folderTypeHash);
 
-    if (ImGui::IconGridItem(folder.id, folder.name.c_str(), ICON_FA_FOLDER, _selection.selected(folder.id))) {
+    if (ImGui::IconGridItem(
+            static_cast<ImGuiID>(folder.id),
+            folder.name.c_str(),
+            ICON_FA_FOLDER,
+            _selection.selected(folder.id))) {
         _command = Command::OpenFolder;
     }
 
