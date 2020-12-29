@@ -18,7 +18,6 @@ namespace up::_detail {
     };
 
     constexpr format_impl_inner_result format_impl_inner(
-        char const*& begin,
         char const* const end,
         char const*& iter,
         unsigned next_index) noexcept {
@@ -93,7 +92,7 @@ namespace up::_detail {
                 continue;
             }
 
-            auto const [result, index, spec_string] = format_impl_inner(begin, end, iter, next_index);
+            auto const [result, index, spec_string] = format_impl_inner(end, iter, next_index);
             if (result != format_result::success) {
                 return result;
             }
