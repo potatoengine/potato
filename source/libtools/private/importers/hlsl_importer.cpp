@@ -61,7 +61,7 @@ up::HlslImporter::HlslImporter() = default;
 up::HlslImporter::~HlslImporter() = default;
 
 bool up::HlslImporter::import(ImporterContext& ctx) {
-#if defined(UP_GPU_ENABLE_D3D11)
+#if defined(UP_GPU_ENABLE_D3D12)
     auto absoluteSourcePath = path::join(string_view(ctx.sourceFolderPath()), ctx.sourceFilePath());
 
     auto stream = fs::openRead(absoluteSourcePath.c_str(), fs::OpenMode::Text);
@@ -86,7 +86,7 @@ bool up::HlslImporter::import(ImporterContext& ctx) {
 #endif
 }
 
-#if defined(UP_GPU_ENABLE_D3D11)
+#if defined(UP_GPU_ENABLE_D3D12)
 bool up::HlslImporter::_compile(
     ImporterContext& ctx,
     zstring_view absoluteSourcePath,
