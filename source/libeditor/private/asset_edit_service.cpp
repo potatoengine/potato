@@ -7,29 +7,24 @@
 #include "potato/spud/hash.h"
 
 namespace up {
-    namespace {
-
-        static constexpr up::AssetEditService::AssetTypeInfo unknownAssetType = {
-            .name = "Unknown"_zsv,
-            .icon = ICON_FA_FILE};
-        static constexpr up::AssetEditService::AssetTypeInfo assetTypes[] = {
-            {.name = "Sound"_zsv, .icon = ICON_FA_FILE_AUDIO, .typeHash = hash_value("potato.asset.sound")},
-            {.name = "Texture"_zsv, .icon = ICON_FA_FILE_IMAGE, .typeHash = hash_value("potato.asset.texture")},
-            {.name = "Shader"_zsv, .icon = ICON_FA_FILE_CODE, .typeHash = hash_value("potato.asset.shader")},
-            {.name = "Model"_zsv, .icon = ICON_FA_FILE_ALT, .typeHash = hash_value("potato.asset.model")},
-            {.name = "Material"_zsv,
-             .extension = ".mat"_zsv,
-             .editor = "potato.editor.material"_zsv,
-             .icon = unknownAssetType.icon,
-             .typeHash = hash_value("potato.asset.material")},
-            {.name = "Scene"_zsv,
-             .extension = ".scene"_zsv,
-             .editor = "potato.editor.scene"_zsv,
-             .icon = ICON_FA_FILE_VIDEO,
-             .typeHash = hash_value("potato.asset.scene")},
-        };
-        static constexpr int assetTypeCount = sizeof(assetTypes) / sizeof(assetTypes[0]);
-    } // namespace
+    static constexpr AssetEditService::AssetTypeInfo unknownAssetType = {.name = "Unknown"_zsv, .icon = ICON_FA_FILE};
+    static constexpr AssetEditService::AssetTypeInfo assetTypes[] = {
+        {.name = "Sound"_zsv, .icon = ICON_FA_FILE_AUDIO, .typeHash = hash_value("potato.asset.sound")},
+        {.name = "Texture"_zsv, .icon = ICON_FA_FILE_IMAGE, .typeHash = hash_value("potato.asset.texture")},
+        {.name = "Shader"_zsv, .icon = ICON_FA_FILE_CODE, .typeHash = hash_value("potato.asset.shader")},
+        {.name = "Model"_zsv, .icon = ICON_FA_FILE_ALT, .typeHash = hash_value("potato.asset.model")},
+        {.name = "Material"_zsv,
+         .extension = ".mat"_zsv,
+         .editor = "potato.editor.material"_zsv,
+         .icon = unknownAssetType.icon,
+         .typeHash = hash_value("potato.asset.material")},
+        {.name = "Scene"_zsv,
+         .extension = ".scene"_zsv,
+         .editor = "potato.editor.scene"_zsv,
+         .icon = ICON_FA_FILE_VIDEO,
+         .typeHash = hash_value("potato.asset.scene")},
+    };
+    static constexpr int assetTypeCount = sizeof(assetTypes) / sizeof(assetTypes[0]);
 } // namespace up
 
 auto up::AssetEditService::findInfoForAssetTypeHash(uint64 typeHash) const noexcept -> AssetTypeInfo const& {
