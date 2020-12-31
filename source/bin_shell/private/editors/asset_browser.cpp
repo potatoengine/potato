@@ -531,8 +531,9 @@ int up::shell::AssetBrowser::_addFolder(string_view name, int parentIndex) {
     int const newIndex = static_cast<int>(_entries.size());
 
     auto osPath = path::join(path::Separator::Native, parent.osPath, name);
+    auto const id = hash_value(osPath);
     _entries.push_back(
-        {.id = hash_value(osPath),
+        {.id = id,
          .osPath = std::move(osPath),
          .name = string{name},
          .typeHash = folderTypeHash,
