@@ -138,6 +138,8 @@ jobs:
       - uses: actions/checkout@master
         with:
           lfs: true
+      - name: Install Problem Matchers
+        uses: Trass3r/setup-cpp@v1
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
