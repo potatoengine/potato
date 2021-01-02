@@ -5,13 +5,14 @@
 #include "potato/recon/recon_protocol.h"
 #include "potato/tools/project.h"
 #include "potato/runtime/logger.h"
+#include "potato/spud/overload.h"
 
 #include <nlohmann/json.hpp>
 #include <reproc++/drain.hpp>
 
 static up::Logger s_logger("ReconClient");
 
-struct up::shell::ReconClient::ReprocSink {
+struct up::ReconClient::ReprocSink {
     ReconClient& client;
 
     auto operator()(reproc::stream stream, uint8_t const* buffer, size_t bytes) -> std::error_code {
@@ -32,18 +33,15 @@ struct up::shell::ReconClient::ReprocSink {
     bool handleLine(string_view line) {
         nlohmann::json doc = nlohmann::json::parse(line, nullptr, false, true);
 
-        box<schema::ReconMessage> msg;
-        reflex::Schema const* schema = nullptr;
-
-        if (!recon::decodeReconMessage(doc, msg, schema)) {
-            return false;
-        }
-
-        return client.handleMessage(*schema, *msg);
+        return decodeReconMessage(
+            doc,
+            overload(
+                [this](schema::ReconLogMessage const& msg) { client._handle(msg); },
+                [this](schema::ReconManifestMessage const& msg) { client._handle(msg); }));
     }
 };
 
-bool up::shell::ReconClient::start(Project& project) {
+bool up::ReconClient::start(Project& project) {
     stop();
 
     reproc::options options = {
@@ -71,7 +69,7 @@ bool up::shell::ReconClient::start(Project& project) {
     return true;
 }
 
-void up::shell::ReconClient::stop() {
+void up::ReconClient::stop() {
     _process.kill();
 
     if (_thread.joinable()) {
@@ -79,31 +77,21 @@ void up::shell::ReconClient::stop() {
     }
 }
 
-bool up::shell::ReconClient::hasUpdatedAssets() noexcept {
+bool up::ReconClient::hasUpdatedAssets() noexcept {
     return _staleAssets.exchange(false);
 }
 
-bool up::shell::ReconClient::handleMessage(reflex::Schema const& schema, schema::ReconMessage const& msg) {
-    static reflex::Schema const& logSchema = reflex::getSchema<schema::ReconLogMessage>();
-    static reflex::Schema const& manifestSchema = reflex::getSchema<schema::ReconManifestMessage>();
-
-    if (schema.name == logSchema.name) {
-        auto const& log = static_cast<schema::ReconLogMessage const&>(msg);
-        s_logger.log(log.severity, log.message);
-        return true;
-    }
-
-    if (schema.name == manifestSchema.name) {
-        _staleAssets.store(true);
-        return true;
-    }
-
-    return false;
+void up::ReconClient::_handle(schema::ReconLogMessage const& msg) {
+    s_logger.log(msg.severity, msg.message);
 }
 
-bool up::shell::ReconClient::sendMessage(reflex::Schema const& schema, schema::ReconMessage const& msg) {
+void up::ReconClient::_handle(schema::ReconManifestMessage const& msg) {
+    _staleAssets.store(true);
+}
+
+bool up::ReconClient::_sendRaw(reflex::Schema const& schema, void const* object) {
     nlohmann::json doc;
-    if (!recon::encodeReconMessageRaw(doc, schema, &msg)) {
+    if (!encodeReconMessageRaw(doc, schema, object)) {
         return false;
     }
 

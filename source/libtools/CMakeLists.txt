@@ -5,14 +5,15 @@ add_library(potato_libtools)
 add_library(potato::libtools ALIAS potato_libtools)
 
 target_sources(potato_libtools PRIVATE
-    "private/asset_library.cpp"
-    "private/evaluator.cpp"
     "private/importer_context.cpp"
     "private/importer_factory.cpp"
-    "private/meta_file.cpp"
     "private/project.cpp"
-    "public/potato/tools/evaluator.h"
- "private/importer.cpp")
+    "private/importer.cpp"
+    "public/potato/tools/desktop.h"
+
+    $<$<BOOL:${UNIX}>:private/desktop.posix.cpp>
+    $<$<PLATFORM_ID:Windows>:private/desktop.windows.cpp>
+)
 
 target_sources(potato_libtools PRIVATE
     "private/importers/copy_importer.cpp"
@@ -56,8 +57,6 @@ add_executable(potato_libtools_test)
 
 target_sources(potato_libtools_test PRIVATE
     "tests/main.cpp"
-    "tests/test_asset_library.cpp"
-     "tests/test_evaluator.cpp"
 )
 
 up_set_common_properties(potato_libtools_test)

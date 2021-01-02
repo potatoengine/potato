@@ -36,7 +36,7 @@ bool up::assetBrowserPopup(zstring_view id, AssetId& inout_asset, string_view ty
 
                 format_to(filename, "{}", path::filename(asset.filename));
 
-                if (ImGui::IconGridItem(filename, ICON_FA_FILE)) {
+                if (ImGui::IconGridItem(static_cast<ImGuiID>(hash_value(asset.uuid)), filename, ICON_FA_FILE)) {
                     inout_asset = static_cast<AssetId>(asset.logicalId);
                     changed = true;
                     ImGui::CloseCurrentPopup();

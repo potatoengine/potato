@@ -7,20 +7,14 @@
 
 #include <nlohmann/json.hpp>
 
-bool up::recon::encodeReconMessageRaw(nlohmann::json& target, reflex::Schema const& schema, void const* message) {
+bool up::encodeReconMessageRaw(nlohmann::json& target, reflex::Schema const& schema, void const* message) {
     UP_ASSERT(message != nullptr);
-    UP_ASSERT(schema.baseSchema == &reflex::getSchema<schema::ReconMessage>());
 
     return reflex::encodeToJsonRaw(target, schema, message);
 }
 
-bool up::recon::decodeReconMessage(
-    nlohmann::json const& source,
-    box<schema::ReconMessage>& out_msg,
-    reflex::Schema const*& out_schema) {
-    static reflex::Schema const& logSchema = reflex::getSchema<schema::ReconLogMessage>();
-    static reflex::Schema const& importSchema = reflex::getSchema<schema::ReconImportMessage>();
-    static reflex::Schema const& importAllSchema = reflex::getSchema<schema::ReconImportAllMessage>();
+bool up::decodeReconMessageDispatch(nlohmann::json const& source, ReconMessageReceiverBase const& receiver) {
+    using namespace schema;
 
     if (!source.is_object()) {
         return false;
@@ -32,26 +26,15 @@ bool up::recon::decodeReconMessage(
 
     auto const& schemaName = source["$schema"].get<string_view>();
 
-    if (schemaName == logSchema.name) {
-        out_msg = new_box<schema::ReconLogMessage>();
-        out_schema = &logSchema;
-        return reflex::decodeFromJsonRaw(source, logSchema, out_msg.get());
-    }
+    auto handle = [&]<typename MessageT>(tag<MessageT>) -> bool {
+        static reflex::Schema const& schema = reflex::getSchema<MessageT>();
+        MessageT msg{};
+        if (schemaName == schema.name && reflex::decodeFromJsonRaw(source, schema, &msg)) {
+            return receiver.handle(msg);
+        }
+        return false;
+    };
 
-    if (schemaName == importSchema.name) {
-        out_msg = new_box<schema::ReconImportMessage>();
-        out_schema = &importSchema;
-        return reflex::decodeFromJsonRaw(source, importSchema, out_msg.get());
-    }
-
-    if (schemaName == importAllSchema.name) {
-        out_msg = new_box<schema::ReconImportAllMessage>();
-        out_schema = &importAllSchema;
-        return reflex::decodeFromJsonRaw(source, importAllSchema, out_msg.get());
-    }
-
-    out_msg.reset();
-    out_schema = nullptr;
-
-    return false;
+    return handle(tag<ReconLogMessage>{}) || handle(tag<ReconManifestMessage>{}) || handle(tag<ReconImportMessage>{}) ||
+        handle(tag<ReconImportAllMessage>{});
 }

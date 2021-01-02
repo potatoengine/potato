@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include "asset_database.h"
+#include "file_hash_cache.h"
 #include "recon_config.h"
 
-#include "potato/recon/file_hash_cache.h"
-#include "potato/tools/asset_library.h"
 #include "potato/tools/importer.h"
 #include "potato/tools/importer_factory.h"
 #include "potato/tools/project.h"
@@ -47,11 +47,12 @@ namespace up::recon {
 
         bool _writeManifest();
 
-        bool _isUpToDate(AssetLibrary::Imported const& record, uint64 contentHash, Importer const& importer)
+        bool _isUpToDate(AssetDatabase::Imported const& record, uint64 contentHash, Importer const& importer)
             const noexcept;
-        bool _isUpToDate(span<AssetLibrary::Dependency const> records);
+        bool _isUpToDate(span<AssetDatabase::Dependency const> records);
 
-        bool _checkMetafile(ImporterContext& ctx, zstring_view filename);
+        string _makeMetaFilename(zstring_view basePath, bool directory);
+        bool _checkMetafile(ImporterContext& ctx, zstring_view metaPath, bool autoCreate = true);
 
         auto _findConverterMapping(string_view path) const -> Mapping const*;
 
@@ -62,7 +63,7 @@ namespace up::recon {
         vector<Mapping> _importers;
         vector<string> _outputs;
         ReconConfig _config;
-        AssetLibrary _library;
+        AssetDatabase _library;
         FileHashCache _hashes;
         Logger _logger;
         ImporterFactory _importerFactory;

@@ -5,9 +5,17 @@ add_executable(potato_recon)
 add_executable(potato::recon ALIAS potato_recon)
 
 target_sources(potato_recon PRIVATE
-    "private/recon_app.cpp"
-    "private/recon_config.cpp"
+    "private/asset_database.cpp"
+    "private/asset_database.h"
+    "private/file_hash_cache.cpp"
+    "private/file_hash_cache.h"
     "private/main.cpp"
+    "private/meta_file.cpp"
+    "private/meta_file.h"
+    "private/recon_app.cpp"
+    "private/recon_app.h"
+    "private/recon_config.cpp"
+    "private/recon_config.h"
 )
 
 set_target_properties(potato_recon PROPERTIES

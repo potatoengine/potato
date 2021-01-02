@@ -50,6 +50,9 @@ namespace {
 
         switch (msg) {
             case WM_INITDIALOG: {
+                // force the dialog to show
+                ShowWindow(hwnd, TRUE);
+
                 // save this for the copy button
                 SetWindowLongPtrW(hwnd, GWLP_USERDATA, lparam);
 

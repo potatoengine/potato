@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "asset_library.h"
+#include "asset_database.h"
 
 #include "potato/runtime/json.h"
 #include "potato/runtime/resource_manifest.h"
@@ -10,9 +10,9 @@
 #include "potato/spud/out_ptr.h"
 #include "potato/spud/string_writer.h"
 
-up::AssetLibrary::~AssetLibrary() = default;
+up::AssetDatabase::~AssetDatabase() = default;
 
-auto up::AssetLibrary::pathToUuid(string_view path) const noexcept -> UUID {
+auto up::AssetDatabase::pathToUuid(string_view path) const noexcept -> UUID {
     for (auto const& record : _records) {
         if (record.sourcePath == path) {
             return record.uuid;
@@ -21,12 +21,12 @@ auto up::AssetLibrary::pathToUuid(string_view path) const noexcept -> UUID {
     return {};
 }
 
-auto up::AssetLibrary::uuidToPath(UUID const& uuid) const noexcept -> string_view {
+auto up::AssetDatabase::uuidToPath(UUID const& uuid) const noexcept -> string_view {
     auto record = findRecordByUuid(uuid);
     return record != nullptr ? string_view(record->sourcePath) : string_view{};
 }
 
-auto up::AssetLibrary::findRecordByUuid(UUID const& uuid) const noexcept -> Imported const* {
+auto up::AssetDatabase::findRecordByUuid(UUID const& uuid) const noexcept -> Imported const* {
     for (auto const& record : _records) {
         if (record.uuid == uuid) {
             return &record;
@@ -35,7 +35,16 @@ auto up::AssetLibrary::findRecordByUuid(UUID const& uuid) const noexcept -> Impo
     return nullptr;
 }
 
-auto up::AssetLibrary::createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept -> AssetId {
+auto up::AssetDatabase::findRecordByFilename(zstring_view filename) const noexcept -> Imported const* {
+    for (auto const& record : _records) {
+        if (record.sourcePath == filename) {
+            return &record;
+        }
+    }
+    return nullptr;
+}
+
+auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept -> AssetId {
     uint64 hash = hash_value(uuid);
     if (!logicalName.empty()) {
         hash = hash_combine(hash, hash_value(logicalName));
@@ -43,7 +52,7 @@ auto up::AssetLibrary::createLogicalAssetId(UUID const& uuid, string_view logica
     return static_cast<AssetId>(hash);
 }
 
-bool up::AssetLibrary::insertRecord(Imported record) {
+bool up::AssetDatabase::insertRecord(Imported record) {
     char uuidStr[UUID::strLength] = {};
     format_to(uuidStr, "{}", record.uuid);
 
@@ -54,6 +63,7 @@ bool up::AssetLibrary::insertRecord(Imported record) {
             uuidStr,
             record.sourcePath.c_str(),
             record.sourceContentHash,
+            record.assetType.c_str(),
             record.importerName.c_str(),
             record.importerRevision);
 
@@ -83,7 +93,27 @@ bool up::AssetLibrary::insertRecord(Imported record) {
     return true;
 }
 
-bool up::AssetLibrary::open(zstring_view filename) {
+bool up::AssetDatabase::deleteRecordByUuid(UUID const& uuid) {
+    char uuidStr[UUID::strLength] = {};
+    format_to(uuidStr, "{}", uuid);
+
+    // update database
+    if (_deleteAssetStmt) {
+        (void)_deleteAssetStmt.execute(uuidStr);
+    }
+
+    // update in-memory data
+    for (auto it = begin(_records); it != end(_records); ++it) {
+        if (it->uuid == uuid) {
+            _records.erase(it);
+            return true;
+        }
+    }
+
+    return true;
+}
+
+bool up::AssetDatabase::open(zstring_view filename) {
     // open the database
     if (_db.open(filename.c_str()) != SqlResult::Ok) {
         return false;
@@ -114,7 +144,7 @@ bool up::AssetLibrary::open(zstring_view filename) {
     // ensure the table is created
     if (_db.execute("CREATE TABLE IF NOT EXISTS assets "
                     "(uuid TEXT PRIMARY KEY, "
-                    "source_db_path TEXT, source_hash INTEGER, "
+                    "source_db_path TEXT, source_hash INTEGER, asset_type TEXT, "
                     "importer_name TEXT, importer_revision INTEGER);\n"
 
                     "CREATE TABLE IF NOT EXISTS outputs "
@@ -130,28 +160,30 @@ bool up::AssetLibrary::open(zstring_view filename) {
     // create our prepared statements for later use
     _insertAssetStmt = _db.prepare(
         "INSERT INTO assets "
-        "(uuid, source_db_path, source_hash, importer_name, importer_revision) "
-        "VALUES(?, ?, ?, ?, ?)"
-        "ON CONFLICT (uuid) DO UPDATE SET source_hash=excluded.source_hash, "
-        " importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
+        "(uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision) "
+        "VALUES(?, ?, ?, ?, ?, ?)"
+        "ON CONFLICT (uuid) DO UPDATE SET source_hash=excluded.source_hash, asset_type=excluded.asset_type, "
+        "importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
     _insertOutputStmt = _db.prepare("INSERT INTO outputs (uuid, output_id, name, type, hash) VALUES(?, ?, ?, ?, ?)");
     _insertDependencyStmt = _db.prepare("INSERT INTO dependencies (uuid, db_path, hash) VALUES(?, ?, ?)");
+    _deleteAssetStmt = _db.prepare("DELETE FROM assets WHERE uuid=?");
     _clearOutputsStmt = _db.prepare("DELETE FROM outputs WHERE uuid=?");
     _clearDependenciesStmt = _db.prepare("DELETE FROM dependencies WHERE uuid=?");
 
     // create our prepared statemtnt to load values
-    auto assets_stmt =
-        _db.prepare("SELECT uuid, source_db_path, source_hash, importer_name, importer_revision FROM assets");
+    auto assets_stmt = _db.prepare(
+        "SELECT uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision FROM assets");
     auto outputs_stmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE uuid=?");
     auto dependencies_stmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE uuid=?");
 
     // read in all the asset records
-    for (auto const& [uuid, southPath, sourceHash, importName, importVer] :
-         assets_stmt.query<zstring_view, zstring_view, uint64, zstring_view, uint64>()) {
+    for (auto const& [uuid, southPath, sourceHash, assetType, importName, importVer] :
+         assets_stmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>()) {
         auto& record = _records.push_back(Imported{
             .uuid = UUID::fromString(uuid),
             .sourcePath = string{southPath},
             .importerName = string{importName},
+            .assetType = string(assetType),
             .importerRevision = importVer,
             .sourceContentHash = sourceHash});
 
@@ -169,12 +201,12 @@ bool up::AssetLibrary::open(zstring_view filename) {
     return true;
 }
 
-bool up::AssetLibrary::close() {
+bool up::AssetDatabase::close() {
     _db.close();
     return true;
 }
 
-void up::AssetLibrary::generateManifest(erased_writer writer) const {
+void up::AssetDatabase::generateManifest(erased_writer writer) const {
     format_to(writer, "# Potato Manifest\n");
     format_to(writer, ".version={}\n", ResourceManifest::version);
     format_to(
@@ -188,6 +220,10 @@ void up::AssetLibrary::generateManifest(erased_writer writer) const {
         ResourceManifest::columnDebugName);
 
     string_writer fullName;
+
+    for (auto const& record : _records) {
+        format_to(writer, "{}|||{}||{}\n", record.uuid, record.assetType, record.sourcePath);
+    }
 
     for (auto const& record : _records) {
         for (auto const& output : record.outputs) {

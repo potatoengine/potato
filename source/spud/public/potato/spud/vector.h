@@ -446,7 +446,7 @@ namespace up {
                 "Inserting a sub-range of a vector into itself is not supported");
         }
 
-        auto const count = end - begin;
+        difference_type const count = end - begin;
 
         if (_sentinel - _last >= count) {
             iterator mpos = _to_iterator(pos);

@@ -9,6 +9,7 @@
 #include "ui/menu.h"
 
 #include "potato/audio/audio_engine.h"
+#include "potato/editor/asset_edit_service.h"
 #include "potato/editor/hotkeys.h"
 #include "potato/editor/imgui_backend.h"
 #include "potato/recon/recon_client.h"
@@ -35,6 +36,7 @@ namespace up {
     class CameraController;
     class Universe;
     class Project;
+    class UUID;
 } // namespace up
 
 namespace up::shell {
@@ -70,7 +72,7 @@ namespace up::shell {
 
         bool _loadConfig(zstring_view path);
 
-        void _onFileOpened(zstring_view filename);
+        void _openAssetEditor(UUID const& uuid);
 
         void _createScene();
         void _createGame(rc<Scene> scene);
@@ -114,5 +116,6 @@ namespace up::shell {
         AssetLoader _assetLoader;
         LogWindow _logWindow;
         ReconClient _reconClient;
+        AssetEditService _assetEditService;
     }; // namespace up::shell
 } // namespace up::shell

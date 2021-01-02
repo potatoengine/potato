@@ -78,7 +78,7 @@ namespace up::shell {
         box<RenderCamera> _renderCamera;
         Camera _camera;
         ArcBallCameraController _cameraController;
-        Selection _selection;
+        SelectionState _selection;
         EnumerateComponents _components;
         PropertyGrid _propertyGrid;
         HandlePlayClicked _onPlayClicked;

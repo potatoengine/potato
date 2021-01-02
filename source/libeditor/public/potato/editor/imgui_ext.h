@@ -9,6 +9,7 @@
 #include <imgui.h>
 
 namespace ImGui::inline Potato {
+    UP_EDITOR_API bool BeginIconMenuContextPopup();
     UP_EDITOR_API bool BeginIconMenu(const char* label, bool enabled = true);
     UP_EDITOR_API void IconMenuSeparator();
     UP_EDITOR_API bool IconMenuItem(
@@ -40,17 +41,16 @@ namespace ImGui::inline Potato {
         char const* format = "%.3f",
         ImGuiSliderFlags flags = ImGuiSliderFlags_None);
 
-    UP_EDITOR_API void TextCentered(
-        ImVec2 minPos,
-        ImVec2 maxPos,
-        ImU32 color,
-        char const* text,
-        char const* end = nullptr);
-
     UP_EDITOR_API ImVec2 GetItemSpacing();
     UP_EDITOR_API ImVec2 GetItemInnerSpacing();
 
     UP_EDITOR_API bool BeginIconGrid(char const* label, float iconWidth = 96.f);
-    UP_EDITOR_API bool IconGridItem(char const* label, char8_t const* icon, float width = 96.f, float rounding = 8.f);
+    UP_EDITOR_API bool IconGridItem(
+        ImGuiID id,
+        char const* label,
+        char8_t const* icon,
+        bool selected = false,
+        float width = 96.f,
+        float rounding = 8.f);
     UP_EDITOR_API void EndIconGrid();
 } // namespace ImGui::inline Potato

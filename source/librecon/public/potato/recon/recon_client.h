@@ -3,20 +3,11 @@
 #pragma once
 
 #include "_export.h"
-
-#include "potato/spud/concepts.h"
+#include "recon_messages_schema.h"
 
 #include <reproc++/reproc.hpp>
 #include <atomic>
 #include <thread>
-
-namespace up {
-    class Project;
-}
-
-namespace up::schema {
-    struct ReconMessage;
-}
 
 namespace up::reflex {
     struct Schema;
@@ -24,7 +15,9 @@ namespace up::reflex {
     Schema const& getSchema();
 } // namespace up::reflex
 
-namespace up::shell {
+namespace up {
+    class Project;
+
     class ReconClient {
     public:
         ~ReconClient() { stop(); }
@@ -33,16 +26,18 @@ namespace up::shell {
         void UP_RECON_API stop();
 
         bool UP_RECON_API hasUpdatedAssets() noexcept;
-        bool UP_RECON_API handleMessage(reflex::Schema const& schema, schema::ReconMessage const& msg);
-        bool UP_RECON_API sendMessage(reflex::Schema const& schema, schema::ReconMessage const& msg);
 
-        template <derived_from<schema::ReconMessage> MessageT>
+        template <typename MessageT>
         bool sendMessage(MessageT const& msg) {
-            return sendMessage(reflex::getSchema<MessageT>(), msg);
+            return _sendRaw(reflex::getSchema<MessageT>(), &msg);
         }
 
     private:
         struct ReprocSink;
+
+        bool UP_RECON_API _sendRaw(reflex::Schema const& schema, void const* object);
+        void _handle(schema::ReconLogMessage const& msg);
+        void _handle(schema::ReconManifestMessage const& msg);
 
         reproc::process _process;
         std::thread _thread;
@@ -50,4 +45,4 @@ namespace up::shell {
 
         friend ReprocSink;
     };
-} // namespace up::shell
+} // namespace up

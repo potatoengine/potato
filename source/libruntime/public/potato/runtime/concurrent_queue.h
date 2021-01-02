@@ -32,10 +32,14 @@ namespace up {
 
         template <typename InsertT>
         [[nodiscard]] bool tryEnque(InsertT&& value);
+        template <typename InsertT>
+        [[nodiscard]] bool tryEnque(InsertT const& value);
         [[nodiscard]] bool tryDeque(T& out);
 
         template <typename InsertT>
         void enqueWait(InsertT&& value);
+        template <typename InsertT>
+        void enqueWait(InsertT const& value);
         [[nodiscard]] bool dequeWait(T& out);
 
     private:
@@ -108,6 +112,27 @@ namespace up {
     }
 
     template <typename T>
+    template <typename InsertT>
+    bool ConcurrentQueue<T>::tryEnque(InsertT const& value) {
+        std::unique_lock lock(_lock);
+
+        if (_closed) {
+            return false;
+        }
+
+        if (_size - 1 == _mask) {
+            return false;
+        }
+
+        new (&_buffer[(_start + _size) & _mask]) T(value);
+        ++_size;
+
+        lock.unlock();
+        _condition.notify_one();
+        return true;
+    }
+
+    template <typename T>
     bool ConcurrentQueue<T>::tryDeque(T& out) {
         std::unique_lock lock(_lock);
 
@@ -125,6 +150,14 @@ namespace up {
     template <typename InsertT>
     void ConcurrentQueue<T>::enqueWait(InsertT&& value) {
         while (!tryEnque(std::forward<InsertT>(value))) {
+            std::this_thread::yield();
+        }
+    }
+
+    template <typename T>
+    template <typename InsertT>
+    void ConcurrentQueue<T>::enqueWait(InsertT const& value) {
+        while (!tryEnque(value)) {
             std::this_thread::yield();
         }
     }

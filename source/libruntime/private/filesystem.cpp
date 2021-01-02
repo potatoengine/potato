@@ -347,7 +347,7 @@ namespace {
                     return;
             }
 
-            watch.path = up::string(filename);
+            watch.path = filename;
             _callback(watch);
         }
 

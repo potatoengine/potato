@@ -1,19 +1,20 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "recon_app.h"
+#include "file_hash_cache.h"
+#include "meta_file.h"
 #include "recon_messages_schema.h"
 
 #include "potato/format/format.h"
-#include "potato/recon/file_hash_cache.h"
 #include "potato/recon/recon_log_sink.h"
 #include "potato/recon/recon_protocol.h"
-#include "potato/tools/meta_file.h"
 #include "potato/runtime/concurrent_queue.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/path.h"
 #include "potato/runtime/stream.h"
 #include "potato/runtime/uuid.h"
+#include "potato/spud/overload.h"
 #include "potato/spud/std_iostream.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/string_writer.h"
@@ -46,24 +47,24 @@ bool up::recon::ReconApp::run(span<char const*> args) {
         return false;
     }
 
-    _manifestPath = path::join(_project->libraryPath(), "manifest.txt");
+    _manifestPath = path::join(path::Separator::Native, _project->libraryPath(), "manifest.txt");
 
     if (auto const rs = fs::createDirectories(_project->libraryPath()); rs != IOResult::Success) {
         _logger.error("Failed to create library folder `{}`: {}", _project->libraryPath(), rs);
         return false;
     }
 
-    _temporaryOutputPath = path::join(_project->libraryPath(), "temp");
+    _temporaryOutputPath = path::join(path::Separator::Native, _project->libraryPath(), "temp");
 
     _registerImporters();
 
-    auto libraryPath = path::join(_project->libraryPath(), "assets.db");
+    auto libraryPath = path::join(path::Separator::Native, _project->libraryPath(), "assets.db");
     if (!_library.open(libraryPath)) {
         _logger.error("Failed to open asset library `{}'", libraryPath);
     }
     _logger.info("Opened asset library `{}'", libraryPath);
 
-    auto hashCachePath = path::join(_project->libraryPath(), "hash_cache.db");
+    auto hashCachePath = path::join(path::Separator::Native, _project->libraryPath(), "hash_cache.db");
     if (!_hashes.open(hashCachePath)) {
         _logger.error("Failed to open hash cache `{}'", hashCachePath);
     }
@@ -108,11 +109,13 @@ bool up::recon::ReconApp::_runOnce() {
 
 namespace up::recon {
     namespace {
-        enum ReconCommandType { Watch, Import, ImportAll, Quit };
+        enum ReconCommandType { Watch, Import, ImportAll, Delete, Quit };
         struct ReconCommand {
             ReconCommandType type = ReconCommandType::Watch;
             fs::WatchAction watchAction = fs::WatchAction::Modify;
+            UUID uuid;
             string path;
+            string renamedFromPath;
             bool force = false;
         };
     } // namespace
@@ -124,9 +127,33 @@ bool up::recon::ReconApp::_runServer() {
 
     ConcurrentQueue<ReconCommand> commands;
 
+    auto receiver = overload(
+        [&](schema::ReconImportMessage const& msg) {
+            ReconCommand cmd;
+            cmd.type = ReconCommandType::Import;
+            cmd.uuid = msg.uuid;
+            cmd.force = msg.force;
+            commands.enqueWait(std::move(cmd));
+        },
+
+        [&](schema::ReconImportAllMessage const& msg) {
+            ReconCommand cmd;
+            cmd.type = ReconCommandType::ImportAll;
+            cmd.force = msg.force;
+            commands.enqueWait(std::move(cmd));
+        });
+
     // watch the target resource root and auto-convert any items that come in
     auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&commands](auto const& watch) {
-        ReconCommand cmd{.type = ReconCommandType::Watch, .watchAction = watch.action, .path = watch.path};
+        // ignore dot files
+        if (watch.path.empty() || watch.path.front() == '.') {
+            return;
+        }
+        ReconCommand cmd{
+            .type = ReconCommandType::Watch,
+            .watchAction = watch.action,
+            .path = string{watch.path},
+            .renamedFromPath = string{watch.renamedFromPath}};
         commands.enqueWait(cmd);
     });
     if (rs != IOResult::Success) {
@@ -135,26 +162,14 @@ bool up::recon::ReconApp::_runServer() {
 
     // handle processing input from the client
     fs::WatchHandle& handle = *watchHandle;
-    std::thread waitParent([&handle, &commands] {
+    std::thread waitParent([this, &handle, &commands, &receiver] {
         nlohmann::json doc;
         std::string line;
-        box<schema::ReconMessage> msg;
-        reflex::Schema const* schema = nullptr;
         while (std::getline(std::cin, line) && !std::cin.eof()) {
             doc = nlohmann::json::parse(line);
-            if (!decodeReconMessage(doc, msg, schema)) {
+            if (!decodeReconMessage(doc, receiver)) {
+                _logger.error("Unhandled JSON message");
                 break;
-            }
-            if (schema == &reflex::getSchema<schema::ReconImportMessage>()) {
-                auto const& importMsg = static_cast<schema::ReconImportMessage const&>(*msg);
-                ReconCommand cmd{.type = ReconCommandType::Import, .path = importMsg.path, .force = importMsg.force};
-                commands.enqueWait(cmd);
-                continue;
-            }
-            if (schema == &reflex::getSchema<schema::ReconImportAllMessage>()) {
-                auto const& importMsg = static_cast<schema::ReconImportAllMessage const&>(*msg);
-                ReconCommand cmd{.type = ReconCommandType::ImportAll, .force = importMsg.force};
-                commands.enqueWait(cmd);
             }
         }
         handle.close();
@@ -163,52 +178,75 @@ bool up::recon::ReconApp::_runServer() {
 
     ReconCommand cmd;
     bool quit = false;
+    bool dirty = false;
     for (;;) {
-        if (!handle.isOpen()) {
-            quit = true;
-        }
-
         // ensure we drain out the remaining queued items
         if (quit) {
             if (!commands.tryDeque(cmd)) {
                 break;
             }
         }
-        else if (!commands.dequeWait(cmd)) {
+        if (commands.dequeWait(cmd)) {
+            do {
+                switch (cmd.type) {
+                    case ReconCommandType::Watch:
+                        // changes to meta-files should be processed as changes to the real file
+                        if (cmd.path.ends_with(".meta")) {
+                            cmd.path = path::changeExtension(cmd.path, "");
+                        }
+
+                        _importFile(cmd.path);
+                        dirty = true;
+                        break;
+                    case ReconCommandType::Import:
+                        if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
+                            _logger.info("Import: {} (force={})", record->sourcePath, cmd.force);
+
+                            _importFile(record->sourcePath, cmd.force);
+                            dirty = true;
+                        }
+                        break;
+                    case ReconCommandType::ImportAll:
+                        _logger.info("Import All (force={})", cmd.force);
+
+                        _importFiles(_collectSourceFiles());
+                        dirty = true;
+                        break;
+                    case ReconCommandType::Delete:
+                        if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
+                            _logger.info("Delete: {}", record->sourcePath);
+
+                            (void)fs::remove(
+                                path::join(path::Separator::Native, _project->resourceRootPath(), record->sourcePath));
+                            _importFile(record->sourcePath, false);
+                            dirty = true;
+                        }
+                        break;
+                    case ReconCommandType::Quit:
+                        handle.close();
+                        quit = true;
+                        break;
+                }
+            } while (commands.tryDeque(cmd));
+        }
+        else {
             handle.close();
-            continue;
         }
 
-        switch (cmd.type) {
-            case ReconCommandType::Watch:
-                if (cmd.path.starts_with(".library")) {
-                    continue;
-                }
+        if (dirty) {
+            dirty = false;
+            _writeManifest();
 
-                if (cmd.path.ends_with(".meta")) {
-                    cmd.path = path::changeExtension(cmd.path, "");
-                }
+            schema::ReconManifestMessage msg;
+            msg.path = _manifestPath;
+            nlohmann::json doc;
+            encodeReconMessage(doc, msg);
+            std::cout << doc.dump() << "\r\n";
+            std::cout.flush();
+        }
 
-                _logger.info("Change: {}", cmd.path);
-
-                _importFile(cmd.path, cmd.force);
-                _writeManifest();
-                break;
-            case ReconCommandType::Import:
-                _logger.info("Import: {} (force={})", cmd.path, cmd.force);
-
-                _importFile(cmd.path, cmd.force);
-                _writeManifest();
-                break;
-            case ReconCommandType::ImportAll:
-                _logger.info("Import All (force={})", cmd.force);
-
-                _runOnce();
-                break;
-            case ReconCommandType::Quit:
-                handle.close();
-                quit = true;
-                break;
+        if (!handle.isOpen()) {
+            quit = true;
         }
     }
 
@@ -250,23 +288,32 @@ bool up::recon::ReconApp::_importFiles(view<string> files, bool force) {
 }
 
 bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
-    auto osPath = path::join(_project->resourceRootPath(), file.c_str());
-    auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
+    auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), file.c_str());
 
-    Mapping const* const mapping = _findConverterMapping(file);
+    auto const [statRs, stat] = fs::fileStat(osPath);
+    bool const deleted = statRs == IOResult::FileNotFound;
+    bool const isFolder = stat.type == fs::FileType::Directory;
+
+    auto metaPath = _makeMetaFilename(file, isFolder);
+    auto const contentHash = isFolder ? 0 : _hashes.hashAssetAtPath(osPath.c_str());
+
+    static const ImporterConfig defaultConfig;
+
+    Mapping const* const mapping = isFolder ? nullptr : _findConverterMapping(file);
     Importer* const importer = mapping != nullptr ? mapping->conveter : nullptr;
-
-    bool dirty = false;
-
-    bool const deleted = !fs::fileExists(osPath);
-    dirty |= deleted;
+    ImporterConfig const& importerConfig = mapping != nullptr ? *mapping->config : defaultConfig;
 
     ImporterContext
-        context(file, _project->resourceRootPath(), _temporaryOutputPath, importer, *mapping->config, _logger);
-    dirty |= !_checkMetafile(context, file);
+        context(file, _project->resourceRootPath(), _temporaryOutputPath, importer, importerConfig, _logger);
+    bool dirty = deleted;
+    dirty |= !_checkMetafile(context, metaPath, !deleted);
 
     auto const* record = _library.findRecordByUuid(context.uuid());
-    dirty |= record == nullptr || !_isUpToDate(*record, contentHash, *importer) || !_isUpToDate(record->dependencies);
+    dirty |= record == nullptr;
+    if (!dirty && !deleted && importer != nullptr) {
+        dirty |=
+            record == nullptr || !_isUpToDate(*record, contentHash, *importer) || !_isUpToDate(record->dependencies);
+    }
 
     string_writer importedName;
     {
@@ -279,36 +326,57 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
         }
     }
 
-    if (importer == nullptr) {
+    if (deleted) {
+        if (record != nullptr) {
+            _logger.info("{}: deleted", importedName);
+            _library.deleteRecordByUuid(record->uuid);
+
+            auto metaOsPath = path::join(path::Separator::Native, _project->resourceRootPath(), metaPath);
+            if (fs::fileExists(metaOsPath)) {
+                (void)fs::remove(metaOsPath);
+            }
+        }
+        return true;
+    }
+
+    if (importer == nullptr && !isFolder) {
         _logger.error("{}: unknown file type", importedName);
         return false;
     }
 
-    if (!dirty) {
+    if (!dirty && !force) {
         _logger.info("{}: up-to-date", importedName);
         return true;
     }
 
-    _logger.info("{}: importing", importedName);
+    if (importer != nullptr) {
+        _logger.info("{}: importing", importedName);
 
-    if (!importer->import(context)) {
-        _logger.error("{}: import failed", importedName);
-        return false;
+        if (!importer->import(context)) {
+            _logger.error("{}: import failed", importedName);
+            return false;
+        }
     }
 
-    AssetLibrary::Imported newRecord;
+    AssetDatabase::Imported newRecord;
     newRecord.uuid = context.uuid();
     newRecord.sourcePath = string(file);
     newRecord.sourceContentHash = contentHash;
-    newRecord.importerName = string(importer->name());
-    newRecord.importerRevision = importer->revision();
+    if (importer != nullptr) {
+        newRecord.importerName = string(importer->name());
+        newRecord.importerRevision = importer->revision();
+        newRecord.assetType = string(importer->assetType(context));
+    }
+    else if (isFolder) {
+        newRecord.assetType = "potato.folder"_s;
+    }
 
     string_writer logicalAssetName;
 
     // move outputs to CAS
     //
     for (auto const& output : context.outputs()) {
-        auto outputOsPath = path::join(_temporaryOutputPath, output.path);
+        auto outputOsPath = path::join(path::Separator::Native, _temporaryOutputPath, output.path);
         auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
 
         logicalAssetName.clear();
@@ -318,7 +386,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
             newRecord.sourcePath,
             output.logicalAsset.empty() ? "" : ":",
             output.logicalAsset);
-        auto const logicalAssetId = AssetLibrary::createLogicalAssetId(context.uuid(), output.logicalAsset);
+        auto const logicalAssetId = AssetDatabase::createLogicalAssetId(context.uuid(), output.logicalAsset);
 
         newRecord.outputs.push_back(
             {.name = output.logicalAsset,
@@ -334,7 +402,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
             (outputHash >> 40) & 0XFFFF,
             outputHash);
 
-        auto casOsPath = path::join(_project->libraryPath(), "cache", casPath);
+        auto casOsPath = path::join(path::Separator::Native, _project->libraryPath(), "cache", casPath);
         auto casOsFolder = string{path::parent(casOsPath)};
 
         if (auto const rs = fs::createDirectories(casOsFolder); rs != IOResult::Success) {
@@ -359,16 +427,16 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
 }
 
 bool up::recon::ReconApp::_isUpToDate(
-    AssetLibrary::Imported const& record,
+    AssetDatabase::Imported const& record,
     up::uint64 contentHash,
     Importer const& importer) const noexcept {
     return record.sourceContentHash == contentHash && string_view(record.importerName) == importer.name() &&
         record.importerRevision == importer.revision();
 }
 
-bool up::recon::ReconApp::_isUpToDate(span<AssetLibrary::Dependency const> records) {
+bool up::recon::ReconApp::_isUpToDate(span<AssetDatabase::Dependency const> records) {
     for (auto const& rec : records) {
-        auto osPath = path::join(_project->resourceRootPath(), rec.path.c_str());
+        auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), rec.path.c_str());
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
         if (contentHash != rec.contentHash) {
             return false;
@@ -387,17 +455,23 @@ auto up::recon::ReconApp::_findConverterMapping(string_view path) const -> Mappi
     return nullptr;
 }
 
-auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view filename) -> bool {
+auto up::recon::ReconApp::_makeMetaFilename(zstring_view basePath, bool directory) -> string {
+    if (directory) {
+        return path::join(basePath, ".meta");
+    }
     string_writer metaFilePath;
-    metaFilePath.append(filename);
+    metaFilePath.append(basePath);
     metaFilePath.append(".meta");
+    return metaFilePath.to_string();
+}
 
-    string metaFileOsPath = path::join(_project->resourceRootPath(), metaFilePath);
+auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view metaPath, bool autoCreate) -> bool {
+    string metaOsPath = path::join(path::Separator::Native, _project->resourceRootPath(), metaPath);
 
     MetaFile metaFile;
     bool dirty = false;
 
-    if (Stream stream = fs::openRead(metaFileOsPath, fs::OpenMode::Text); stream) {
+    if (Stream stream = fs::openRead(metaOsPath, fs::OpenMode::Text); stream) {
         auto [result, jsonText] = readText(stream);
         if (result == IOResult::Success) {
             if (!metaFile.parseJson(jsonText)) {
@@ -430,21 +504,21 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view file
 
     ctx.setUuid(metaFile.uuid);
 
-    if (dirty) {
-        _logger.info("Writing meta file `{}'", metaFilePath);
+    if (dirty && autoCreate) {
+        _logger.info("Writing meta file `{}'", metaOsPath);
 
         string jsonText = metaFile.toJson();
 
-        auto stream = fs::openWrite(metaFileOsPath, fs::OpenMode::Text);
+        auto stream = fs::openWrite(metaOsPath, fs::OpenMode::Text);
         if (!stream || writeAllText(stream, jsonText) != IOResult::Success) {
-            _logger.error("Failed to write meta file for {}", metaFilePath);
+            _logger.error("Failed to write meta file for {}", metaOsPath);
             return false;
         }
     }
 
     // adding meta files to source deps to ensure proper rebuild when meta files change for any reason
     // (like convert settings for a file)
-    ctx.addSourceDependency(metaFilePath);
+    ctx.addSourceDependency(metaPath);
     return true;
 }
 
@@ -462,15 +536,13 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
             return fs::next;
         }
 
-        if (item.type == fs::FileType::Regular) {
-            // skip .meta files
-            //
-            if (path::extension(item.path) == ".meta") {
-                return fs::next;
-            }
-
-            files.push_back(item.path);
+        // skip .meta files
+        //
+        if (path::extension(item.path) == ".meta") {
+            return fs::next;
         }
+
+        files.push_back(item.path);
 
         return fs::recurse;
     };
@@ -488,14 +560,5 @@ bool up::recon::ReconApp::_writeManifest() {
     _library.generateManifest(manifestFile);
     manifestFile.flush();
     manifestFile.close();
-
-    if (_config.server) {
-        schema::ReconManifestMessage msg;
-        msg.path = _manifestPath;
-        nlohmann::json doc;
-        encodeReconMessage(doc, msg);
-        std::cout << doc.dump() << "\r\n";
-    }
-
     return true;
 }

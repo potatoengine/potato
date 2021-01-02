@@ -61,7 +61,7 @@ namespace up::path {
     // adds a / between each component, e.g. foo/, bar -> foo//bar
     // result is not normalized
     // empty components are ignored, e.g. "", bar -> bar
-    UP_RUNTIME_API string join(view<string_view> components);
+    UP_RUNTIME_API string join(view<string_view> components, Separator sep = Separator::Normalized);
 
     // joins path components together
     template <typename... String>
@@ -69,6 +69,18 @@ namespace up::path {
         if constexpr (sizeof...(String) != 0) {
             string_view views[] = {string_view{components}...};
             return join(views);
+        }
+        else {
+            return {};
+        }
+    }
+
+    // joins path components together
+    template <typename... String>
+    string join(Separator sep, String const&... components) requires(convertible_to<String, string_view>&&...) {
+        if constexpr (sizeof...(String) != 0) {
+            string_view views[] = {string_view{components}...};
+            return join(views, sep);
         }
         else {
             return {};

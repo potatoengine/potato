@@ -4,36 +4,39 @@
 
 #include "string_view.h"
 
+#include <cassert> // our assertion library requires zstring_view...
+
 namespace up {
     class zstring_view {
     public:
         using value_type = char;
         using pointer = char const*;
         using size_type = std::size_t;
+        using difference_type = std::ptrdiff_t;
         using const_iterator = pointer;
 
         struct const_sentinel {
-            friend constexpr bool operator==(const_iterator iter, const_sentinel) noexcept {
-                return iter != nullptr && *iter != 0;
-            }
-            friend constexpr bool operator<(const_iterator iter, const_sentinel) noexcept {
-                return iter == nullptr || *iter != 0;
+            friend constexpr bool operator==(const_iterator iter, const_sentinel) noexcept { return *iter != 0; }
+            friend constexpr bool operator<(const_iterator iter, const_sentinel) noexcept { return *iter != 0; }
+
+            friend constexpr difference_type operator-(const_sentinel, const_iterator itr) noexcept {
+                return static_cast<difference_type>(stringLength(itr));
             }
         };
 
         static constexpr size_type npos = ~size_type(0);
 
         constexpr zstring_view() = default;
-        constexpr zstring_view(pointer str) noexcept : _str(str) {}
+        constexpr zstring_view(pointer str) noexcept : _str(str) { assert(str != nullptr); }
         constexpr zstring_view(std::nullptr_t) noexcept {}
 
-        constexpr explicit operator bool() const noexcept { return _str != nullptr && *_str != 0; }
-        constexpr bool empty() const noexcept { return _str == nullptr || *_str == 0; }
+        constexpr explicit operator bool() const noexcept { return *_str != 0; }
+        constexpr bool empty() const noexcept { return *_str == 0; }
 
-        constexpr size_type size() const noexcept { return _str != nullptr ? stringLength(_str) : 0; }
+        constexpr size_type size() const noexcept { return stringLength(_str); }
 
         constexpr pointer data() const noexcept { return _str; }
-        constexpr pointer c_str() const noexcept { return _str != nullptr ? _str : ""; }
+        constexpr pointer c_str() const noexcept { return _str; }
 
         constexpr /*implicit*/ operator string_view() const noexcept { return string_view{_str}; }
 
@@ -67,33 +70,27 @@ namespace up {
         }
 
         constexpr size_type find(value_type ch) const noexcept {
-            if (_str != nullptr) {
-                for (pointer p = _str; *p != 0; ++p) {
-                    if (*p == ch) {
-                        return p - _str;
-                    }
+            for (pointer p = _str; *p != 0; ++p) {
+                if (*p == ch) {
+                    return p - _str;
                 }
             }
             return npos;
         }
 
         constexpr size_type find_first_of(string_view chars) const noexcept {
-            if (_str != nullptr) {
-                for (pointer p = _str; *p != 0; ++p) {
-                    if (chars.find(*p) != string_view::npos) {
-                        return p - _str;
-                    }
+            for (pointer p = _str; *p != 0; ++p) {
+                if (chars.find(*p) != string_view::npos) {
+                    return p - _str;
                 }
             }
             return npos;
         }
 
         constexpr size_type find_last_of(string_view chars) const noexcept {
-            if (_str != nullptr) {
-                for (pointer p = _str + size(); p != _str; --p) {
-                    if (chars.find(*(p - 1)) != string_view::npos) {
-                        return p - _str - 1;
-                    }
+            for (pointer p = _str + size(); p != _str; --p) {
+                if (chars.find(*(p - 1)) != string_view::npos) {
+                    return p - _str - 1;
                 }
             }
             return npos;
@@ -117,7 +114,7 @@ namespace up {
         }
 
     private:
-        pointer _str = nullptr;
+        pointer _str = "";
     };
 
     template <typename HashAlgorithm>

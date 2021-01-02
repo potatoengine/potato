@@ -15,13 +15,7 @@ namespace up {
             : _buffer(buffer)
             , _cursor(buffer + offset)
             , _length(Count) {
-            *buffer = char{};
-        }
-        constexpr fixed_writer(char* buffer, std::size_t length) noexcept
-            : _buffer(buffer)
-            , _cursor(buffer)
-            , _length(length) {
-            *buffer = char{};
+            *_cursor = '\0';
         }
 
         void write(string_view str) noexcept {

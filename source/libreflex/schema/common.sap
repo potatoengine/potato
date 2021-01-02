@@ -27,4 +27,4 @@ type mat4x4;
 type quat;
 
 [cxximport("up::UUID", "potato/runtime/uuid.h")]
-type uuid;
+type UUID;

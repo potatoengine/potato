@@ -232,13 +232,13 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
     }
 
     if (result.empty()) {
-        result.append('/');
+        result.append(to_underlying(sep));
     }
 
     return std::move(result).to_string();
 }
 
-auto up::path::join(view<string_view> components) -> string {
+auto up::path::join(view<string_view> components, Separator sep) -> string {
     std::size_t size = 0;
 
     for (auto sv : components) {
@@ -254,7 +254,7 @@ auto up::path::join(view<string_view> components) -> string {
 
     for (auto sv : components) {
         if (!sv.empty() && !result.empty()) {
-            result.append('/');
+            result.append(to_underlying(sep));
         }
         result.append(sv.data(), sv.size());
     }

@@ -39,6 +39,7 @@ namespace up {
         UP_RUNTIME_API ~AssetLoader();
 
         ResourceManifest const* manifest() const noexcept { return _manifest.get(); }
+        int manifestRevision() const noexcept { return _manifestRevision; }
 
         UP_RUNTIME_API void bindManifest(box<ResourceManifest> manifest, string casPath);
 
@@ -65,5 +66,6 @@ namespace up {
         box<ResourceManifest> _manifest;
         string _casPath;
         Logger _logger;
+        int _manifestRevision = 0;
     };
 } // namespace up

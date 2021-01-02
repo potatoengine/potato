@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "_export.h"
-
 #include "potato/format/erased.h"
 #include "potato/posql/posql.h"
 #include "potato/runtime/asset.h"
@@ -17,7 +15,7 @@ namespace up {
     class Stream;
     class ResourceManifest;
 
-    class AssetLibrary {
+    class AssetDatabase {
     public:
         struct Dependency {
             string path;
@@ -35,6 +33,7 @@ namespace up {
             UUID uuid;
             string sourcePath;
             string importerName;
+            string assetType;
             uint64 importerRevision = 0;
             uint64 sourceContentHash = 0;
 
@@ -43,27 +42,29 @@ namespace up {
         };
 
         static constexpr zstring_view typeName = "potato.asset.library"_zsv;
-        static constexpr int version = 13;
+        static constexpr int version = 15;
 
-        AssetLibrary() = default;
-        UP_TOOLS_API ~AssetLibrary();
+        AssetDatabase() = default;
+        ~AssetDatabase();
 
-        AssetLibrary(AssetLibrary const&) = delete;
-        AssetLibrary& operator=(AssetLibrary const&) = delete;
+        AssetDatabase(AssetDatabase const&) = delete;
+        AssetDatabase& operator=(AssetDatabase const&) = delete;
 
-        UP_TOOLS_API auto pathToUuid(string_view path) const noexcept -> UUID;
-        UP_TOOLS_API auto uuidToPath(UUID const& uuid) const noexcept -> string_view;
+        auto pathToUuid(string_view path) const noexcept -> UUID;
+        auto uuidToPath(UUID const& uuid) const noexcept -> string_view;
 
-        static UP_TOOLS_API AssetId createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept;
+        static AssetId createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept;
 
-        UP_TOOLS_API Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
+        Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
+        Imported const* findRecordByFilename(zstring_view filename) const noexcept;
 
-        UP_TOOLS_API bool insertRecord(Imported record);
+        bool insertRecord(Imported record);
+        bool deleteRecordByUuid(UUID const& uuid);
 
-        UP_TOOLS_API bool open(zstring_view filename);
-        UP_TOOLS_API bool close();
+        bool open(zstring_view filename);
+        bool close();
 
-        UP_TOOLS_API void generateManifest(erased_writer writer) const;
+        void generateManifest(erased_writer writer) const;
 
     private:
         struct HashAssetId {
@@ -75,6 +76,7 @@ namespace up {
         Statement _insertAssetStmt;
         Statement _insertOutputStmt;
         Statement _insertDependencyStmt;
+        Statement _deleteAssetStmt;
         Statement _clearOutputsStmt;
         Statement _clearDependenciesStmt;
     };

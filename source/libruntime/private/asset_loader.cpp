@@ -21,6 +21,7 @@ up::AssetLoader::~AssetLoader() = default;
 void up::AssetLoader::bindManifest(box<ResourceManifest> manifest, string casPath) {
     _manifest = std::move(manifest);
     _casPath = std::move(casPath);
+    ++_manifestRevision;
 }
 
 auto up::AssetLoader::translate(UUID const& uuid, string_view logicalName) const -> AssetId {

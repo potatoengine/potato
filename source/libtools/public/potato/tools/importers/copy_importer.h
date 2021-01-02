@@ -15,6 +15,8 @@ namespace up {
         ~CopyImporter() override;
 
         bool import(ImporterContext& ctx) override;
+        string_view assetType(ImporterContext& ctx) const noexcept override;
+
         string_view generateSettings(ImporterContext& ctd) const override { return {}; }
 
         reflex::TypeInfo const& configType() const noexcept override;

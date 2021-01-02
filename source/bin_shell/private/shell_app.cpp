@@ -28,6 +28,7 @@
 #include "potato/render/material.h"
 #include "potato/render/renderer.h"
 #include "potato/render/shader.h"
+#include "potato/tools/desktop.h"
 #include "potato/tools/project.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
@@ -43,13 +44,7 @@
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
 
-#include <glm/common.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/functions.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/vec3.hpp>
 #include <nlohmann/json.hpp>
-#include <reproc++/run.hpp>
 #include <SDL.h>
 #include <SDL_keycode.h>
 #include <SDL_messagebox.h>
@@ -59,10 +54,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <nfd.h>
-
-#if defined(UP_PLATFORM_WIN32)
-#    include <shellapi.h>
-#endif
 
 // SDL includes X.h on Linux, which pollutes this name we care about
 // FIXME: clean up this file for better abstractions to avoid header pollution problems
@@ -275,14 +266,9 @@ int up::shell::ShellApp::initialize() {
     _universe->registerComponent<components::Ding>("Ding");
     _universe->registerComponent<components::Test>("Test");
 
-    _editorFactories.push_back(AssetBrowser::createFactory(
-        _assetLoader,
-        [this](zstring_view name) { _onFileOpened(name); },
-        [this](zstring_view name, bool force) {
-            schema::ReconImportMessage msg;
-            msg.path = string{name};
-            msg.force = force;
-            _reconClient.sendMessage(msg);
+    _editorFactories.push_back(
+        AssetBrowser::createFactory(_assetLoader, _reconClient, _assetEditService, [this](UUID const& uuid) {
+            _openAssetEditor(uuid);
         }));
     _editorFactories.push_back(SceneEditor::createFactory(
         *_audio,
@@ -332,6 +318,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     }
 
     _projectName = string{path::filebasename(path)};
+    _assetEditService.setAssetRoot(string{_project->resourceRootPath()});
 
     _loadManifest();
 
@@ -410,7 +397,6 @@ void up::shell::ShellApp::run() {
         }
 
         if (_reconClient.hasUpdatedAssets()) {
-            ZoneScopedN("Load Manifest");
             _loadManifest();
         }
 
@@ -660,47 +646,28 @@ bool up::shell::ShellApp::_loadConfig(zstring_view path) {
     return true;
 }
 
-void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
-    if (path::extension(filename) == ".scene") {
-        string fullPath = path::join(_project->resourceRootPath(), filename);
-        _openEditorForDocument(SceneEditor::editorName, fullPath);
+void up::shell::ShellApp::_openAssetEditor(UUID const& uuid) {
+    string assetPath;
+    uint64 assetTypeHash = 0;
+    for (auto const& record : _assetLoader.manifest()->records()) {
+        if (record.uuid == uuid) {
+            assetPath = path::join(_project->resourceRootPath(), record.filename);
+            assetTypeHash = hash_value(record.type);
+            break;
+        }
     }
-    else if (path::extension(filename) == ".mat") {
-        string fullPath = path::join(_project->resourceRootPath(), filename);
-        _openEditorForDocument(MaterialEditor::editorName, fullPath);
+    if (assetPath.empty()) {
+        return;
+    }
+
+    zstring_view const editor = _assetEditService.findInfoForAssetTypeHash(assetTypeHash).editor;
+    if (!editor.empty()) {
+        _openEditorForDocument(SceneEditor::editorName, assetPath);
     }
     else {
-#if defined(UP_PLATFORM_WINDOWS)
-        string fullPath = normalize(path::join(_project->resourceRootPath(), filename), path::Separator::Native);
-
-        SHELLEXECUTEINFOA info;
-        std::memset(&info, 0, sizeof(info));
-        info.cbSize = sizeof(info);
-
-        if (fs::directoryExists(fullPath)) {
-            info.lpFile = fullPath.c_str();
-            info.lpDirectory = fullPath.c_str();
-            info.lpVerb = "open";
-            info.fMask = SEE_MASK_FLAG_NO_UI;
-            info.nShow = TRUE;
-            if (ShellExecuteExA(&info) != TRUE) {
-                _logger.error("Failed to open Explorer for folder: {}", fullPath);
-            }
+        if (!desktop::openInExternalEditor(assetPath)) {
+            _logger.error("Failed to open application for asset: {}", assetPath);
         }
-        else if (fs::fileExists(fullPath)) {
-            info.lpFile = fullPath.c_str();
-            info.lpDirectory = _project->libraryPath().c_str();
-            info.lpVerb = "edit";
-            info.fMask = SEE_MASK_FLAG_NO_UI;
-            info.nShow = TRUE;
-            if (ShellExecuteExA(&info) != TRUE) {
-                info.lpVerb = "open";
-                if (ShellExecuteExA(&info) != TRUE) {
-                    _logger.error("Failed to open application for asset: {}", fullPath);
-                }
-            }
-        }
-#endif
     }
 }
 
@@ -721,7 +688,9 @@ void up::shell::ShellApp::_executeRecon() {
 }
 
 void up::shell::ShellApp::_loadManifest() {
+    ZoneScopedN("Load Manifest");
     string manifestPath = path::join(_project->libraryPath(), "manifest.txt");
+    _logger.info("Loading manifest {}", manifestPath);
     if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
         auto manifest = new_box<ResourceManifest>();
         if (!ResourceManifest::parseManifest(manifestText, *manifest)) {

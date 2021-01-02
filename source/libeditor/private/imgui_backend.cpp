@@ -123,11 +123,9 @@ bool up::ImguiBackend::handleEvent(SDL_Event const& ev) {
             return io.WantCaptureMouse;
         case SDL_MOUSEBUTTONDOWN:
             io.MouseDown[toImguiButton(ev.button.button)] = true;
-            io.MouseClickedPos[toImguiButton(ev.button.button)] = {(float)ev.button.x, (float)ev.button.y};
             return io.WantCaptureMouse;
         case SDL_MOUSEBUTTONUP:
             io.MouseDown[toImguiButton(ev.button.button)] = false;
-            io.MouseClickedPos[toImguiButton(ev.button.button)] = {(float)ev.button.x, (float)ev.button.y};
             return io.WantCaptureMouse;
         case SDL_MOUSEWHEEL:
             if (ev.wheel.y > 0) {
