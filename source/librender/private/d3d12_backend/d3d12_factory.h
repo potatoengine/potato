@@ -7,9 +7,6 @@
 
 #include "potato/runtime/com_ptr.h"
 
-using DXGIFactoryType = IDXGIFactory4;
-using DXGIAdapterType = IDXGIAdapter1;
-
 namespace up::d3d12 {
     class FactoryD3D12 final : public GpuDeviceFactory {
     public:

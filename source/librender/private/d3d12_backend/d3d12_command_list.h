@@ -9,6 +9,8 @@
 #include "potato/spud/box.h"
 
 namespace up::d3d12 {
+    class PipelineStateD3D12;
+
     class CommandListD3D12 final : public GpuCommandList {
     public:
         CommandListD3D12();
@@ -17,9 +19,9 @@ namespace up::d3d12 {
         CommandListD3D12(CommandListD3D12&&) = delete;
         CommandListD3D12& operator=(CommandListD3D12&&) = delete;
 
-        static box<CommandListD3D12> createCommandList(ID3D12Device* device, GpuPipelineState* pipelineState);
+        static box<CommandListD3D12> createCommandList(ID3D12Device* device, GpuPipelineState* pipelineState, D3D12_COMMAND_LIST_TYPE type);
 
-        bool create(ID3D12Device* device, GpuPipelineState* pipelineState);
+        bool create(ID3D12Device* device, ID3D12PipelineState* pipelineState, D3D12_COMMAND_LIST_TYPE type);
 
         void setPipelineState(GpuPipelineState* state) override;
 
@@ -29,7 +31,7 @@ namespace up::d3d12 {
         void bindVertexBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override;
         void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, GpuShaderStage stage) override;
         void bindShaderResource(uint32 slot, GpuResourceView* view, GpuShaderStage stage) override;
-        void bindSampler(uint32 slot, GpuSampler* sampler, GpuShaderStage stage) override;
+        void bindTexture(uint32 slot, GpuResourceView* view, GpuSampler* sampler, GpuShaderStage stage) override;
         void setClipRect(GpuClipRect rect) override;
 
         void setPrimitiveTopology(GpuPrimitiveTopology topology) override;
@@ -41,6 +43,7 @@ namespace up::d3d12 {
         void clearRenderTarget(GpuResourceView* view, glm::vec4 color) override;
         void clearDepthStencil(GpuResourceView* view) override;
 
+        void start(GpuPipelineState* pipelineState) override; 
         void finish() override;
         void clear(GpuPipelineState* pipelineState = nullptr) override;
 
@@ -50,6 +53,8 @@ namespace up::d3d12 {
 
         void flush(ID3D12CommandQueue* pQueue); 
 
+        ID3DCommandListType* getResource() const { return _commandList.get(); }
+
     private:
         void _flushBindings();
 
@@ -57,6 +62,9 @@ namespace up::d3d12 {
 
         bool _bindingsDirty = false;
         ID3DCommandAllocatorPtr _commandAllocator;
-        ID3DCommandListPtr _commandList; 
+        ID3DCommandListPtr _commandList;
+
+        // temp stuff to see if I can make this api works 
+        PipelineStateD3D12* _pipeline = nullptr; 
     };
 } // namespace up::d3d12

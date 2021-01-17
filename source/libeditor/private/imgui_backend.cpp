@@ -62,11 +62,9 @@ bool up::ImguiBackend::createResources(GpuDevice& device) {
     texDesc.width = fontWidth;
     texDesc.height = fontHeight;
 
-    auto font =
-        device.createTexture2D(texDesc, span{pixels, static_cast<uint32>(fontWidth * fontHeight * 4)}.as_bytes());
-
-    //_srv = device.createShaderResourceView(font.get());
-    //_sampler = device.createSampler();
+    _font = device.createTexture2D(texDesc, span{pixels, static_cast<uint32>(fontWidth * fontHeight * 4)}.as_bytes());
+    _srv = device.createShaderResourceView(_pipelineState.get(), _font.get());
+    _sampler = device.createSampler();
 
     return true;
 }
@@ -121,7 +119,7 @@ void up::ImguiBackend::releaseResources() {
     _vertexBuffer.reset();
     _constantBuffer.reset();
     _pipelineState.reset();
-    _srv.reset();
+    _font.reset();
     _sampler.reset();
 }
 
@@ -136,6 +134,15 @@ void up::ImguiBackend::beginFrame() {
 void up::ImguiBackend::endFrame() {
     ImGui::SetCurrentContext(_context.get());
     ImGui::EndFrame();
+}
+
+void up::ImguiBackend::draw(Renderer& renderer) {
+
+    if (!_imGuiRenderer) {
+        _imGuiRenderer = new_box<ImGuiRenderer>(this);
+    }
+
+    renderer.createRendarable(_imGuiRenderer.get());
 }
 
 bool up::ImguiBackend::handleEvent(SDL_Event const& ev) {
@@ -259,8 +266,7 @@ void up::ImguiBackend::render(RenderContext& ctx) {
     ctx.commandList.bindIndexBuffer(_indexBuffer.get(), GpuIndexFormat::Unsigned16, 0);
     ctx.commandList.bindVertexBuffer(0, _vertexBuffer.get(), sizeof(ImDrawVert));
     ctx.commandList.bindConstantBuffer(0, _constantBuffer.get(), GpuShaderStage::Vertex);
-    ctx.commandList.bindSampler(0, _sampler.get(), GpuShaderStage::Pixel);
-
+    
     GpuViewportDesc viewport;
     viewport.width = data.DisplaySize.x;
     viewport.height = data.DisplaySize.y;
@@ -287,8 +293,8 @@ void up::ImguiBackend::render(RenderContext& ctx) {
             }
 
             auto const srv = static_cast<GpuResourceView*>(cmd.TextureId);
-            ctx.commandList.bindShaderResource(0, srv != nullptr ? srv : _srv.get(), GpuShaderStage::Pixel);
-
+            ctx.commandList.bindTexture(0, srv != nullptr ? srv : _srv.get(), _sampler.get(), GpuShaderStage::Pixel);
+            
             GpuClipRect scissor;
             scissor.left = (uint32)cmd.ClipRect.x - (uint32)pos.x;
             scissor.top = (uint32)cmd.ClipRect.y - (uint32)pos.y;
@@ -328,7 +334,7 @@ void up::ImguiBackend::_initialize() {
     ImGui::SetCurrentContext(_context.get());
     auto& io = ImGui::GetIO();
 
-    // io.Fonts->AddFontDefault();
+    io.Fonts->AddFontDefault();
 
     _applyStyle();
 

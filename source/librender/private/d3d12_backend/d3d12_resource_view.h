@@ -9,6 +9,7 @@
 #include "potato/spud/box.h"
 
 namespace up::d3d12 {
+    class DescriptorHeapD3D12; 
     class ResourceViewD3D12 final : public GpuResourceView {
     public:
         explicit ResourceViewD3D12(GpuViewType type);
@@ -17,10 +18,16 @@ namespace up::d3d12 {
         ResourceViewD3D12(ResourceViewD3D12&&) = delete;
         ResourceViewD3D12& operator=(ResourceViewD3D12&&) = delete;
 
+        void create(DescriptorHeapD3D12* heap, D3D12_GPU_DESCRIPTOR_HANDLE hGpu, D3D12_CPU_DESCRIPTOR_HANDLE hCpu = {});
+
         GpuViewType type() const override { return _type; }
-     
+
+        DescriptorHeapD3D12* heap() { return _heap; }
 
     private:
         GpuViewType _type;
+        DescriptorHeapD3D12* _heap = nullptr;
+        D3D12_GPU_DESCRIPTOR_HANDLE _hGpu = {};
+        D3D12_CPU_DESCRIPTOR_HANDLE _hCpu = {};
     };
 } // namespace up::d3d12

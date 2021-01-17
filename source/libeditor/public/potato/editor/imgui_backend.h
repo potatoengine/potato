@@ -10,6 +10,8 @@
 #include "potato/spud/string.h"
 #include "potato/spud/unique_resource.h"
 
+#include "potato/render/renderer.h"
+
 namespace up {
     class GpuBuffer;
     class GpuCommandList;
@@ -18,6 +20,7 @@ namespace up {
     class GpuResourceView;
     class GpuSampler;
     class RenderContext;
+    class GpuTexture; 
 } // namespace up
 
 struct ImDrawData;
@@ -48,12 +51,25 @@ namespace up {
         UP_EDITOR_API void beginFrame();
         UP_EDITOR_API void endFrame();
 
-        UP_EDITOR_API void render(RenderContext& ctx);
+        UP_EDITOR_API void draw(Renderer& renderer);
+
+        void render(RenderContext& ctx);
 
         void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
         auto isCaptureRelativeMouseMode() const noexcept -> bool { return _captureRelativeMouseMode; }
 
     private:
+        class ImGuiRenderer : public up::IRenderable {
+        public:
+            ImGuiRenderer(ImguiBackend* backend) : _backend(backend) {}
+
+            void onSchedule(up::RenderContext& ctx) override{};
+            void onRender(up::RenderContext& ctx) override { _backend->render(ctx); };
+
+        private:
+            ImguiBackend* _backend;
+        };
+
         void _initialize();
         void _ensureContext();
         void _applyStyle();
@@ -68,10 +84,12 @@ namespace up {
         box<GpuBuffer> _constantBuffer;
         box<GpuPipelineState> _pipelineState;
         box<GpuResourceView> _srv;
+        rc<GpuTexture> _font;
         box<GpuSampler> _sampler;
         rc<Shader> _vertShader;
         rc<Shader> _pixelShader;
         string _clipboardTextData;
+        box<ImGuiRenderer> _imGuiRenderer;
         bool _captureRelativeMouseMode = false;
     };
 } // namespace up

@@ -7,6 +7,8 @@
 #include "potato/runtime/stream.h"
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
+#include "potato/render/renderer.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace up::components {
     struct Transform;
@@ -28,13 +30,29 @@ namespace up {
         explicit Scene(Universe& universe, AudioEngine& audioEngine);
         ~Scene();
 
+        class MeshRenderer : public up::IRenderable {
+        public:
+            MeshRenderer(Query<components::Mesh, components::Transform>* meshQuery, World* world)
+                :_meshQuery(meshQuery)
+                ,_world(world)
+                {}
+
+            void onSchedule(up::RenderContext& ctx) override;
+            void onRender(up::RenderContext& ctx) override;
+
+        private:
+            Query<components::Mesh, components::Transform>* _meshQuery;
+            World* _world;
+        };
+
+
         Scene(Scene const&) = delete;
         Scene& operator=(Scene const&) = delete;
 
         void create(rc<Model> const& cube, rc<SoundResource> const& ding);
         void tick(float frameTime);
         void flush();
-        void render(RenderContext& ctx);
+        void render(Renderer& renderer);
 
         bool load(Stream file);
         void save(Stream file);
@@ -51,6 +69,8 @@ namespace up {
         World _world;
         EntityId _root = EntityId::None;
         bool _playing = false;
+
+        box<MeshRenderer> _meshRenderer;
 
         Query<components::Transform, components::Wave> _waveQuery;
         Query<components::Transform> _orbitQuery;

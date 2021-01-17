@@ -7,6 +7,7 @@
 #include "d3d12_resource_view.h"
 #include "d3d12_sampler.h"
 #include "d3d12_texture.h"
+#include "d3d12_desc_heap.h"
 
 #include "potato/runtime/assertion.h"
 #include "potato/spud/int_types.h"
@@ -16,54 +17,67 @@ up::d3d12::CommandListD3D12::CommandListD3D12() {}
 
 up::d3d12::CommandListD3D12::~CommandListD3D12() = default;
 
-auto up::d3d12::CommandListD3D12::createCommandList(ID3D12Device* device, GpuPipelineState* pipelineState)
+auto up::d3d12::CommandListD3D12::createCommandList(ID3D12Device* device, GpuPipelineState* pipelineState, D3D12_COMMAND_LIST_TYPE type)
     -> box<CommandListD3D12> {
-
     auto cl = new_box<CommandListD3D12>();
-    cl->create(device, pipelineState); 
+    auto state = pipelineState != nullptr ? static_cast<PipelineStateD3D12*>(pipelineState)->state() : nullptr;
+    cl->create(device, state, type);
     return std::move(cl);
 }
 
-auto up::d3d12::CommandListD3D12::create(ID3D12Device * device, GpuPipelineState * pipelineState)
-        -> bool {
-    device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), out_ptr(_commandAllocator));
+auto up::d3d12::CommandListD3D12::create(ID3D12Device* device, ID3D12PipelineState* pipelineState, D3D12_COMMAND_LIST_TYPE type) -> bool {
+    device->CreateCommandAllocator(type,
+        __uuidof(ID3D12CommandAllocator),
+        out_ptr(_commandAllocator));
 
-    auto d3dPipelineState = static_cast<PipelineStateD3D12*>(pipelineState);
+    _commandAllocator->SetName(L"CommandAllocator");
+
     HRESULT hr = device->CreateCommandList(
         0,
-        D3D12_COMMAND_LIST_TYPE_DIRECT,
+        type,
         _commandAllocator.get(),
-        d3dPipelineState->getState().get(),
+        pipelineState,
         __uuidof(ID3D12GraphicsCommandList),
         out_ptr(_commandList));
+
     if (FAILED(hr)) {
         return false;
     }
-
+    _commandList->SetName(L"CommandList");
+    _commandList->Close();
     return true;
 }
 
 void up::d3d12::CommandListD3D12::setPipelineState(GpuPipelineState* state) {
     UP_ASSERT(state != nullptr);
+    _pipeline = static_cast<PipelineStateD3D12*>(state);
+    _pipeline->bindPipeline(_commandList.get());
 }
-  
 
 void up::d3d12::CommandListD3D12::bindRenderTarget(up::uint32 index, GpuResourceView* view) {
     UP_ASSERT(index < maxRenderTargetBindings);
-
- }
+    auto srv = static_cast<ResourceViewD3D12*>(view);
+    auto desc = srv->heap()->get_cpu(0);
+    _commandList->OMSetRenderTargets(1, &desc, FALSE, nullptr);
+}
 
 void up::d3d12::CommandListD3D12::bindDepthStencil(GpuResourceView* view) {
     auto dsv = static_cast<ResourceViewD3D12*>(view);
     UP_ASSERT(dsv->type() == GpuViewType::DSV);
-
- }
+}
 
 void up::d3d12::CommandListD3D12::bindIndexBuffer(GpuBuffer* buffer, GpuIndexFormat indexType, up::uint32 offset) {
     UP_ASSERT(buffer != nullptr);
     UP_ASSERT(buffer->type() == GpuBufferType::Index);
 
- }
+    auto impl = static_cast<BufferD3D12*>(buffer);
+    D3D12_INDEX_BUFFER_VIEW view;
+    view.BufferLocation = impl->buffer()->GetGPUVirtualAddress();
+    view.Format = toNative(indexType);
+    view.SizeInBytes = impl->size();
+
+    _commandList->IASetIndexBuffer(&view);
+}
 
 void up::d3d12::CommandListD3D12::bindVertexBuffer(
     up::uint32 slot,
@@ -72,26 +86,46 @@ void up::d3d12::CommandListD3D12::bindVertexBuffer(
     up::uint64 offset) {
     UP_ASSERT(buffer != nullptr);
     UP_ASSERT(buffer->type() == GpuBufferType::Vertex);
+
+    auto impl = static_cast<BufferD3D12*>(buffer);
+    D3D12_VERTEX_BUFFER_VIEW view;
+    view.BufferLocation = impl->buffer()->GetGPUVirtualAddress();
+    view.StrideInBytes = stride;
+    view.SizeInBytes = impl->size();
+
+    _commandList->IASetVertexBuffers(slot, 1, &view);
 }
 
 void up::d3d12::CommandListD3D12::bindConstantBuffer(up::uint32 slot, GpuBuffer* buffer, GpuShaderStage stage) {
     UP_ASSERT(buffer != nullptr);
     UP_ASSERT(buffer->type() == GpuBufferType::Constant);
 
+    auto cb = static_cast<BufferD3D12*>(buffer);
+
+    _pipeline->bindConstBuffer(_commandList.get(), cb->buffer()->GetGPUVirtualAddress());
 }
 
 void up::d3d12::CommandListD3D12::bindShaderResource(up::uint32 slot, GpuResourceView* view, GpuShaderStage stage) {
     UP_ASSERT(view != nullptr);
-
 }
 
-void up::d3d12::CommandListD3D12::bindSampler(up::uint32 slot, GpuSampler* sampler, GpuShaderStage stage) {
+void up::d3d12::CommandListD3D12::bindTexture(
+    up::uint32 slot,
+    GpuResourceView* view,
+    GpuSampler* sampler,
+    GpuShaderStage stage) {
+    UP_ASSERT(view != nullptr);
     UP_ASSERT(sampler != nullptr);
 
+    auto srv = static_cast<ResourceViewD3D12*>(view);
+    auto s = static_cast<SamplerD3D12*>(sampler);
+
+    auto heap = srv->heap();
+    _pipeline->bindTexture(_commandList.get(), heap->heap()->GetGPUDescriptorHandleForHeapStart(), s->desc());
 }
 
 void up::d3d12::CommandListD3D12::setPrimitiveTopology(GpuPrimitiveTopology topology) {
-    D3D12_PRIMITIVE_TOPOLOGY primitive = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    D3D12_PRIMITIVE_TOPOLOGY primitive = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST; // default 
     switch (topology) {
         case GpuPrimitiveTopology::Lines:
             primitive = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
@@ -121,71 +155,70 @@ void up::d3d12::CommandListD3D12::setClipRect(GpuClipRect rect) {
 }
 
 void up::d3d12::CommandListD3D12::draw(up::uint32 vertexCount, up::uint32 firstVertex) {
-    _flushBindings();
-
+    _commandList->DrawInstanced(vertexCount, 1, firstVertex, 0);
 }
 
 void up::d3d12::CommandListD3D12::drawIndexed(up::uint32 indexCount, up::uint32 firstIndex, up::uint32 baseIndex) {
-    _flushBindings();
-
+    _commandList->DrawIndexedInstanced(indexCount, 1, firstIndex, baseIndex, 0); 
 }
 
 void up::d3d12::CommandListD3D12::clearRenderTarget(GpuResourceView* view, glm::vec4 color) {
     UP_ASSERT(view != nullptr);
+    auto srv = static_cast<ResourceViewD3D12*>(view);
 
-    FLOAT c[4] = {color.x, color.y, color.z, color.w};
+    float clearColor[4] = {color.x, color.y, color.z, color.w};
+    _commandList->ClearRenderTargetView(srv->heap()->get_cpu(0), clearColor, 0, nullptr);
 }
 
 void up::d3d12::CommandListD3D12::clearDepthStencil(GpuResourceView* view) {
     UP_ASSERT(view != nullptr);
 }
 
+void up::d3d12::CommandListD3D12::start(GpuPipelineState* pipelineState) {
+    auto ps = static_cast<PipelineStateD3D12*>(pipelineState);
+    _commandAllocator->Reset();
+    _commandList->Reset(_commandAllocator.get(), ps ? ps->state() : nullptr);
+}
+
 void up::d3d12::CommandListD3D12::finish() {
+    _commandList->Close();
 }
 
 void up::d3d12::CommandListD3D12::clear(GpuPipelineState* pipelineState) {
+    UP_ASSERT(pipelineState != nullptr);
 
-    auto d3dPipelinState = static_cast<PipelineStateD3D12*>(pipelineState); 
-    _commandList->ClearState(d3dPipelinState->getState().get());
+    auto ps = static_cast<PipelineStateD3D12*>(pipelineState);
+    _commandList->ClearState(ps->state());
     _commandList->RSSetScissorRects(0, nullptr);
     if (pipelineState != nullptr) {
         setPipelineState(pipelineState);
     }
 }
 
-void up::d3d12::CommandListD3D12::flush(ID3D12CommandQueue* queue) {
-
-    UP_ASSERT(queue);
-
-    // done with this command list -- close it before we submit it.
-    _commandList->Close();
-
-    ID3D12CommandList* ppCommandLists[] = {_commandList.get()};
-    queue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-}
-
-
 auto up::d3d12::CommandListD3D12::map(GpuBuffer* buffer, up::uint64 size, up::uint64 offset) -> span<up::byte> {
     if (buffer == nullptr) {
         return {};
     }
-
-    return {static_cast<up::byte*>(nullptr), static_cast<std::size_t>(size)};
+    auto d3dBuffer = static_cast<BufferD3D12*>(buffer);
+    D3D12_RANGE readRange = {0, 0}; // We do not intend to read from this resource on the CPU.
+    up::byte* data = nullptr;
+    d3dBuffer->buffer()->Map(0, &readRange, reinterpret_cast<void**>(&data));
+    return {static_cast<up::byte*>(data), static_cast<std::size_t>(size)};
 }
 
 void up::d3d12::CommandListD3D12::unmap(GpuBuffer* buffer, span<up::byte const> data) {
     if (buffer == nullptr) {
         return;
     }
+
+    auto d3dBuffer = static_cast<BufferD3D12*>(buffer);
+    d3dBuffer->buffer()->Unmap(0, nullptr);
 }
 
 void up::d3d12::CommandListD3D12::update(GpuBuffer* buffer, span<up::byte const> data, up::uint64 offset) {
     if (buffer == nullptr) {
         return;
     }
-
 }
 
-void up::d3d12::CommandListD3D12::_flushBindings() {
-  
-}
+void up::d3d12::CommandListD3D12::_flushBindings() {}

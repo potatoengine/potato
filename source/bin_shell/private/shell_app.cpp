@@ -235,7 +235,10 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
+    // #dx12: for now kick off new frame for resource creation -- will have to build a new system for that.
+    _device->beginResourceCreation();
     _imguiBackend.createResources(*_device);
+    _device->endResourceCreation();
 
     _universe = new_box<Universe>();
 
@@ -335,6 +338,9 @@ void up::shell::ShellApp::run() {
         _lastFrameTime = static_cast<float>(_lastFrameDuration.count() * nano_to_seconds);
         now = endFrame;
     }
+
+    // clean-up
+    _renderer->quit();
 }
 
 void up::shell::ShellApp::quit() {
@@ -463,15 +469,11 @@ void up::shell::ShellApp::_render() {
     viewport.width = static_cast<float>(width);
     viewport.height = static_cast<float>(height);
 
-   /* _renderer->beginFrame();
-     auto ctx = _renderer->context();
+    _imguiBackend.draw(*_renderer.get());
 
-     _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
-     _uiRenderCamera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
-     _imguiBackend.render(ctx);
-     _renderer->endFrame(_lastFrameTime);
-
-     _swapChain->present();*/
+    _renderer->beginFrame(_swapChain.get());
+    _renderer->endFrame(_swapChain.get(), 0.0f);
+    _swapChain->present();
 }
 
 void up::shell::ShellApp::_displayUI() {

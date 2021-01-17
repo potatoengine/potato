@@ -48,6 +48,10 @@ auto up::null::DeviceNull::createSampler() -> box<GpuSampler> {
     return new_box<SamplerNull>();
 }
 
+auto up::null::DeviceNull::createShaderResourceView(GpuPipelineState* pipelineState, GpuTexture* resource) -> box<GpuResourceView> {
+    return new_box<ResourceViewNull>(GpuViewType::SRV);
+}
+
 auto up::null::SwapChainNull::getBuffer(int index) -> rc<GpuTexture> {
     return new_shared<TextureNull>();
 }
@@ -55,3 +59,4 @@ auto up::null::SwapChainNull::getBuffer(int index) -> rc<GpuTexture> {
 int up::null::SwapChainNull::getCurrentBufferIndex() {
     return 0;
 }
+

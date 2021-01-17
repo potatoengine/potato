@@ -40,8 +40,16 @@ namespace up {
         virtual rc<GpuTexture> createRenderTarget(GpuTextureDesc const& desc, GpuSwapChain* spawpChain) = 0;
         virtual rc<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) = 0;
         virtual box<GpuSampler> createSampler() = 0;
+        virtual box<GpuResourceView> createShaderResourceView(GpuPipelineState* pipeline, GpuTexture* resource) = 0;
+
+        virtual void beginFrame(GpuSwapChain* swapChain) = 0;
+        virtual void endFrame(GpuSwapChain* swapChain) = 0;
+
+        // temp API for managing resource creation commands
+        virtual void beginResourceCreation() = 0;
+        virtual void endResourceCreation() = 0;
 
         virtual void render(const FrameData& frameData, GpuRenderable* renderable) = 0;
-        virtual void execute() = 0;
+        virtual void execute(bool quitting) = 0;
     };
 } // namespace up

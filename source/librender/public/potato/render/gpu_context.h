@@ -4,25 +4,18 @@
 
 #include "gpu_common.h"
 
-#include "potato/spud/int_types.h"
-#include "potato/spud/span.h"
+#include "potato/spud/rc.h"
 
-#include <glm/vec4.hpp>
+#include <glm/vec3.hpp>
 
 namespace up {
-    class GpuBuffer;
-    class GpuResourceView;
-    class GpuPipelineState;
-    class GpuSampler;
-    class GpuTexture;
-
-    class GpuCommandList {
+    class GpuContext : public shared<GpuContext> {
     public:
-        GpuCommandList() = default;
-        virtual ~GpuCommandList() = default;
+        GpuContext() = default;
+        virtual ~GpuContext() = default;
 
-        GpuCommandList(GpuCommandList&&) = delete;
-        GpuCommandList& operator=(GpuCommandList&&) = delete;
+        GpuContext(GpuContext&&) = delete;
+        GpuContext& operator=(GpuContext&&) = delete;
 
         virtual void setPipelineState(GpuPipelineState* state) = 0;
 
@@ -43,7 +36,6 @@ namespace up {
         virtual void clearRenderTarget(GpuResourceView* view, glm::vec4 color) = 0;
         virtual void clearDepthStencil(GpuResourceView* view) = 0;
 
-        virtual void start(GpuPipelineState* pipelineState) = 0;
         virtual void finish() = 0;
         virtual void clear(GpuPipelineState* pipelineState = nullptr) = 0;
 

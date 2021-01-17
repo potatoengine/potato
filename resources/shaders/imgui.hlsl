@@ -4,6 +4,15 @@ cbuffer vertexBuffer : register(b0) {
 sampler sampler0;
 Texture2D texture0;
 
+#define ImGuiRS \
+"RootFlags ( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |" \
+"            DENY_DOMAIN_SHADER_ROOT_ACCESS |" \
+"            DENY_GEOMETRY_SHADER_ROOT_ACCESS |" \
+"            DENY_HULL_SHADER_ROOT_ACCESS )," \
+"CBV(b0),"\
+"DescriptorTable ( SRV(t0), visibility = SHADER_VISIBILITY_PIXEL ),"\
+"DescriptorTable ( Sampler(s0), visibility = SHADER_VISIBILITY_PIXEL )"
+
 struct VS_Input {
     float2 pos : POSITION;
     float4 col : COLOR0;

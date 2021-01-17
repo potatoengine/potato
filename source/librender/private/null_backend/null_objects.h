@@ -34,9 +34,14 @@ namespace up::null {
         rc<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) override;
         rc<GpuTexture> createRenderTarget(GpuTextureDesc const& desc, GpuSwapChain* swapChain) override;
         box<GpuSampler> createSampler() override;
+        box<GpuResourceView> createShaderResourceView(GpuPipelineState* pipelineState, GpuTexture* resource) override; 
 
+        void beginFrame(GpuSwapChain* swapChain) override {}
+        void endFrame(GpuSwapChain* swapChain) override {}
+        void beginResourceCreation() override {}
+        void endResourceCreation() override {}
         void render(const FrameData& frameData, GpuRenderable* renderable) override {}
-        void execute() override {}
+        void execute(bool quitting) override {}
     };
 
     class ResourceViewNull final : public GpuResourceView {
@@ -53,6 +58,8 @@ namespace up::null {
 
     class SwapChainNull final : public GpuSwapChain {
     public:
+        void bind(GpuCommandList* cmd) override{};
+        void unbind(GpuCommandList* cmd) override{};
         void present() override {}
         void resizeBuffers(int width, int height) override {}
         rc<GpuTexture> getBuffer(int index) override;
@@ -71,6 +78,7 @@ namespace up::null {
         void draw(uint32 vertexCount, uint32 firstVertex = 0) override {}
         void drawIndexed(uint32 indexCount, uint32 firstIndex = 0, uint32 baseIndex = 0) override {}
 
+        void start(GpuPipelineState* pipelineState) override {}
         void finish() override {}
         void clear(GpuPipelineState* pipelineState = nullptr) override {}
 
@@ -84,7 +92,7 @@ namespace up::null {
         void bindVertexBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override {}
         void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, GpuShaderStage stage) override {}
         void bindShaderResource(uint32 slot, GpuResourceView* view, GpuShaderStage stage) override {}
-        void bindSampler(uint32 slot, GpuSampler* sampler, GpuShaderStage stage) override {}
+        void bindTexture(uint32 slot, GpuResourceView* view, GpuSampler* sampler, GpuShaderStage stage) override {}
         void setPrimitiveTopology(GpuPrimitiveTopology topology) override {}
         void setViewport(GpuViewportDesc const& viewport) override {}
         void setClipRect(GpuClipRect rect) override {}

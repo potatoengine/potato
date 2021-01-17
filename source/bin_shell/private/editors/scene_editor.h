@@ -8,6 +8,7 @@
 #include "scene.h"
 #include "selection.h"
 
+#include "potato/render/renderer.h"
 #include "potato/editor/property_grid.h"
 #include "potato/render/camera.h"
 #include "potato/render/gpu_device.h"
@@ -18,6 +19,13 @@
 #include <glm/glm.hpp>
 
 namespace up::shell {
+
+    class GridRenderer : public up::IRenderable {
+    public:
+        void onSchedule(up::RenderContext& ctx) override;
+        void onRender(up::RenderContext& ctx) override;
+    };
+
     class SceneEditor : public Editor {
     public:
         using EnumerateComponents = delegate<view<reflex::TypeInfo const*>()>;
@@ -62,6 +70,7 @@ namespace up::shell {
         HandlePlayClicked _onPlayClicked;
         glm::ivec2 _sceneDimensions = {0, 0};
         bool _enableGrid = true;
+        box<GridRenderer> _gridRenderer;
     };
 
     auto createSceneEditor(

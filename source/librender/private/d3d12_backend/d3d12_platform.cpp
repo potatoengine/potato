@@ -22,18 +22,34 @@ auto up::d3d12::toNative(GpuShaderSemantic semantic) noexcept -> zstring_view {
     }
 }
 
+auto up::d3d12::toByteSize(GpuShaderSemantic sementic) noexcept -> uint32 {
+    switch (sementic) {
+        case GpuShaderSemantic::Position:
+        case GpuShaderSemantic::Normal:
+        case GpuShaderSemantic::Tangent:
+            return 12;
+        case GpuShaderSemantic::Color:
+            return 16;
+        case GpuShaderSemantic::TexCoord:
+            return 8;
+        default:
+            UP_UNREACHABLE("Unknown Semantic");
+            return 0;
+    }
+}
+    
+
 auto up::d3d12::toNative(GpuFormat format) noexcept -> DXGI_FORMAT {
 
     const DXGI_FORMAT toNativeTable[] = {
-        DXGI_FORMAT_UNKNOWN,
-        DXGI_FORMAT_R32G32B32A32_FLOAT,
-        DXGI_FORMAT_R32G32B32_FLOAT,
-        DXGI_FORMAT_R32G32_FLOAT,
-        DXGI_FORMAT_R32_FLOAT,
-        DXGI_FORMAT_R8G8B8A8_UNORM,
-        DXGI_FORMAT_D32_FLOAT,
+        DXGI_FORMAT_UNKNOWN,                // Unknown
+        DXGI_FORMAT_R32G32B32A32_FLOAT,     // R32G32B32A32Float
+        DXGI_FORMAT_R32G32B32_FLOAT,        // R32G32B32Float
+        DXGI_FORMAT_R32G32_FLOAT,           // R32G32Float
+        DXGI_FORMAT_R8G8B8A8_UNORM,         // R8G8B8A8UnsignedNormalized
+        DXGI_FORMAT_D32_FLOAT,              // D32Float
 
-        DXGI_FORMAT_FORCE_UINT, // last item
+        DXGI_FORMAT_FORCE_UINT,             // Max
     };
 
     return toNativeTable[format];

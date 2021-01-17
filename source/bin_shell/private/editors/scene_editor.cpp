@@ -117,26 +117,14 @@ void up::shell::SceneEditor::content() {
     }
 }
 
-//class GridRenderer : public  up::IRenderable {
-//
-//    void onSchedule() override {
-//
-//    }
-//
-//    void onRender(RenderContext& ctx) override {
-//        _renderCamera->resetBackBuffer(_buffer);
-//        if (_enableGrid) {
-//            _drawGrid();
-//        }
-//        _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-//        if (_scene != nullptr) {
-//            _scene->render(ctx);
-//        }
-//        renderer.flushDebugDraw(deltaTime);
-//        renderer.endFrame(deltaTime);
-//
-//    }
-//};
+void up::shell::GridRenderer::onSchedule(up::RenderContext& ctx) {}
+
+void up::shell::GridRenderer::onRender(up::RenderContext& ctx) {
+
+ //   if (_enableGrid) {
+ //       _drawGrid();
+ //   }
+}
 
 void up::shell::SceneEditor::render(Renderer& renderer, float deltaTime) {
     if (_sceneDimensions.x == 0 || _sceneDimensions.y == 0) {
@@ -152,9 +140,15 @@ void up::shell::SceneEditor::render(Renderer& renderer, float deltaTime) {
         _renderCamera = new_box<RenderCamera>();
     }
 
-    //if (_buffer != nullptr) {
-    //    renderer.createRendarable(_gridRenderer);
-    //}
+    if (_gridRenderer == nullptr) {
+        _gridRenderer = new_box<GridRenderer>();
+    }
+
+    // first draw the grid
+    renderer.createRendarable(_gridRenderer.get());
+
+    // render the scene
+    _scene->render(renderer);
 }
 
 void up::shell::SceneEditor::_drawGrid() {

@@ -17,7 +17,6 @@ namespace up::d3d12 {
         ID3DDeviceType* _device;
         GpuCommandList* _cmdList;
         D3D12MA::Allocator* _allocator; 
-
     };
 
 } // namespace up::d3d12

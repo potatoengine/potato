@@ -53,8 +53,7 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
 
     int texIndex = 0;
     for (auto const& srv : _srvs) {
-        ctx.commandList.bindSampler(texIndex, _samplers[texIndex].get(), GpuShaderStage::Pixel);
-        ctx.commandList.bindShaderResource(texIndex++, srv.get(), GpuShaderStage::Pixel);
+        ctx.commandList.bindTexture(texIndex, srv.get(), _samplers[texIndex].get(), GpuShaderStage::Pixel);
     }
 }
 

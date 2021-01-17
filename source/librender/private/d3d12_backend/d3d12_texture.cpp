@@ -1,9 +1,11 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "d3d12_texture.h"
+#include "d3d12_command_list.h"
+#include "d3d12_context.h"
 #include "d3d12_platform.h"
 #include "d3d12_utils.h"
-#include "d3d12_context.h"
+#include "d3d12_desc_heap.h"
 
 #include "potato/runtime/assertion.h"
 #include "potato/runtime/com_ptr.h"
@@ -11,67 +13,154 @@
 
 #include <d3d12.h>
 
-up::d3d12::TextureD3D12::TextureD3D12() {
+up::d3d12::TextureD3D12::TextureD3D12() {}
+
+up::d3d12::TextureD3D12::TextureD3D12(ID3DResourcePtr buffer) : _texture(buffer) {}
+
+up::d3d12::TextureD3D12::~TextureD3D12() {}
+
+namespace ResourceDesc { 
+static inline D3D12_RESOURCE_DESC ResourceDesc(
+    D3D12_RESOURCE_DIMENSION dimension,
+    UINT64 alignment,
+    UINT64 width,
+    UINT height,
+    UINT16 depthOrArraySize,
+    UINT16 mipLevels,
+    DXGI_FORMAT format,
+    UINT sampleCount,
+    UINT sampleQuality,
+    D3D12_TEXTURE_LAYOUT layout,
+    D3D12_RESOURCE_FLAGS flags) {
+
+    D3D12_RESOURCE_DESC desc = {};
+    desc.Dimension = dimension;
+    desc.Alignment = alignment;
+    desc.Width = width;
+    desc.Height = height;
+    desc.DepthOrArraySize = depthOrArraySize;
+    desc.MipLevels = mipLevels;
+    desc.Format = format;
+    desc.SampleDesc.Count = sampleCount;
+    desc.SampleDesc.Quality = sampleQuality;
+    desc.Layout = layout;
+    desc.Flags = flags;
+    return desc; 
 }
 
-up::d3d12::TextureD3D12::TextureD3D12(ID3DResourcePtr buffer)
-    : _texture(buffer) {
-
+ static inline D3D12_RESOURCE_DESC Buffer(
+    UINT64 width,
+    D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
+    UINT64 alignment = 0) noexcept {
+    return ResourceDesc(
+        D3D12_RESOURCE_DIMENSION_BUFFER,
+        alignment,
+        width,
+        1,
+        1,
+        1,
+        DXGI_FORMAT_UNKNOWN,
+        1,
+        0,
+        D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+        flags);
 }
 
-up::d3d12::TextureD3D12::~TextureD3D12() {
-    _allocation->Release();
-    _allocation = nullptr;
+ static inline D3D12_RESOURCE_DESC Tex2D(
+    DXGI_FORMAT format,
+    UINT64 width,
+    UINT height,
+    UINT16 arraySize = 1,
+    UINT16 mipLevels = 0,
+    UINT sampleCount = 1,
+    UINT sampleQuality = 0,
+    D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
+    D3D12_TEXTURE_LAYOUT layout = D3D12_TEXTURE_LAYOUT_UNKNOWN,
+    UINT64 alignment = 0) noexcept {
+    return ResourceDesc(
+        D3D12_RESOURCE_DIMENSION_TEXTURE2D,
+        alignment,
+        width,
+        height,
+        arraySize,
+        mipLevels,
+        format,
+        sampleCount,
+        sampleQuality,
+        layout,
+        flags);
 }
+} // namespace ResourceDesc
 
-bool up::d3d12::TextureD3D12::create(ContextD3D12 const& ctx, GpuTextureDesc const& desc, span<up::byte const> data) {
+auto up::d3d12::TextureD3D12::create(ContextD3D12 const& ctx, GpuTextureDesc const& desc, span<up::byte const> data)
+    -> bool {
 
-    D3D12_RESOURCE_DESC resourceDesc = {};
-    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    resourceDesc.Alignment = 0;
-    resourceDesc.Width = desc.width;
-    resourceDesc.Height = desc.height;
-    resourceDesc.DepthOrArraySize = 1;
-    resourceDesc.MipLevels = 1;
-    resourceDesc.Format = toNative(desc.format);
-    resourceDesc.SampleDesc.Count = 1;
-    resourceDesc.SampleDesc.Quality = 0;
-    resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+    _format = toNative(desc.format);
+    D3D12_RESOURCE_DESC resourceDesc = ResourceDesc::Tex2D(_format, desc.width, desc.height);
 
     D3D12MA::ALLOCATION_DESC allocDesc = {};
     allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 
-    
     HRESULT hr = ctx._allocator->CreateResource(
         &allocDesc,
         &resourceDesc,
         D3D12_RESOURCE_STATE_COPY_DEST,
         NULL,
-        &_allocation,
+        out_ptr(_allocation),
         __uuidof(ID3D12Resource),
         out_ptr(_texture));
 
-    //ctx._cmdList->ResourceBarrier(
-    //    1,
-    //    &CD3DX12_RESOURCE_BARRIER::Transition(
-    //        _texture.Get(),
-    //        D3D12_RESOURCE_STATE_COPY_DEST,
-    //        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+    uint32 stride = desc.width * toByteSize(desc.format);
 
-    //// Describe and create a SRV for the texture.
-    //D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    //srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    //srvDesc.Format = Convert(desc.format);
-    //srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    //srvDesc.Texture2D.MipLevels = 1;
-    //ctx._device->CreateShaderResourceView(_texture.Get(), &srvDesc, m_srvHeap->GetCPUDescriptorHandleForHeapStart());
+    UINT64 textureUploadBufferSize = 0;
+    ctx._device->GetCopyableFootprints(
+        &resourceDesc,
+        0, // FirstSubresource
+        1, // NumSubresources
+        0, // BaseOffset
+        nullptr, // pLayouts
+        nullptr, // pNumRows
+        nullptr, // pRowSizeInBytes
+        &textureUploadBufferSize); // pTotalBytes
+
+    D3D12MA::ALLOCATION_DESC uploadAllocDesc = {};
+    uploadAllocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+
+    D3D12_RESOURCE_DESC uploadBufferDesc = ResourceDesc::Buffer(textureUploadBufferSize);
+
+    ctx._allocator->CreateResource(
+        &uploadAllocDesc,
+        &uploadBufferDesc,
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr, // pOptimizedClearValue
+        out_ptr(_uploadAlloc),
+        __uuidof(ID3D12Resource),
+        out_ptr(_uploadTexture));
+    _uploadTexture->SetName(L"textureUpload");
+
+    auto impl = static_cast<CommandListD3D12*>(ctx._cmdList);
+
+    D3D12_SUBRESOURCE_DATA textureSubresourceData = {};
+    textureSubresourceData.pData = data.data();
+    textureSubresourceData.RowPitch = stride;
+    textureSubresourceData.SlicePitch = stride * desc.height;
+
+    UpdateSubresources(ctx._device, impl->getResource(), _texture.get(), _uploadTexture.get(), 0, 0, 1, &textureSubresourceData);
+
+    D3D12_RESOURCE_BARRIER textureBarrier = {};
+    textureBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    textureBarrier.Transition.pResource = _texture.get();
+    textureBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+    textureBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    textureBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+    impl->getResource()->ResourceBarrier(1, &textureBarrier);
 
     return true;
 }
 
 auto up::d3d12::TextureD3D12::type() const noexcept -> GpuTextureType {
-    // @dx12 @todo integrate proper texture types
+    // #dx12 #todo integrate proper texture types
     return GpuTextureType::Texture2D;
 }
 
@@ -80,8 +169,7 @@ auto up::d3d12::TextureD3D12::format() const noexcept -> GpuFormat {
 }
 
 DXGI_FORMAT up::d3d12::TextureD3D12::nativeFormat() const noexcept {
-    // @dx12 @todo
-    return DXGI_FORMAT_UNKNOWN;
+    return _format;
 }
 
 auto up::d3d12::TextureD3D12::dimensions() const noexcept -> glm::ivec3 {

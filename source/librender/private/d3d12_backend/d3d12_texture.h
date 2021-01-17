@@ -10,6 +10,7 @@
 
 namespace up::d3d12 {
     class ContextD3D12;
+    class DescriptorHeapD3D12;
 
     class TextureD3D12 final : public GpuTexture {
     public:
@@ -29,8 +30,19 @@ namespace up::d3d12 {
         DXGI_FORMAT nativeFormat() const noexcept;
         ID3DResourcePtr const& get() const { return _texture; }
 
+        DescriptorHeapD3D12* desc() const { return _cbvHeap.get(); }
+
     private:
         ID3DResourcePtr _texture;
-        D3D12MA::Allocation* _allocation = nullptr;
+        com_ptr<D3D12MA::Allocation> _allocation;
+
+        ID3DResourcePtr _uploadTexture;
+        com_ptr<D3D12MA::Allocation> _uploadAlloc;
+
+         // const buffer bits for now here while testing
+        box<DescriptorHeapD3D12> _cbvHeap;
+
+        DXGI_FORMAT _format; 
+    
     };
 } // namespace up::d3d12

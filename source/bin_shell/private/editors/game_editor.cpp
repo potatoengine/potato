@@ -125,17 +125,8 @@ void up::shell::GameEditor::render(Renderer& renderer, float deltaTime) {
         _renderCamera = new_box<RenderCamera>();
     }
 
-    if (_buffer != nullptr) {
-        /*renderer.beginFrame();
-        auto ctx = renderer.context();
-
-        _renderCamera->resetBackBuffer(_buffer);
-        _renderCamera->beginFrame(ctx, _camera.position(), _camera.matrix());
-        if (_scene != nullptr) {
-            _scene->render(ctx);
-        }
-        renderer.flushDebugDraw(deltaTime);
-        renderer.endFrame(deltaTime);*/
+    if (_buffer != nullptr && _scene != nullptr) {
+        _scene->render(renderer);
     }
 }
 
@@ -148,5 +139,5 @@ void up::shell::GameEditor::_resize(GpuDevice& device, glm::ivec2 size) {
     desc.height = size.y;
     _buffer = device.createTexture2D(desc, {});
 
-//    _bufferView = device.createShaderResourceView(_buffer.get());
+    //_bufferView = device.createShaderResourceView(_buffer.get());
 }

@@ -30,7 +30,8 @@ up::Renderer::Renderer(Loader& loader, rc<GpuDevice> device) : _device(std::move
 
 up::Renderer::~Renderer() = default;
 
-void up::Renderer::beginFrame() {
+void up::Renderer::beginFrame(GpuSwapChain* swapChain) {
+    UP_ASSERT(swapChain != nullptr);
     if (_frameDataBuffer == nullptr) {
         _frameDataBuffer = _device->createBuffer(GpuBufferType::Constant, sizeof(FrameData));
     }
@@ -43,19 +44,24 @@ void up::Renderer::beginFrame() {
     double const now = static_cast<double>(nowNanoseconds - _startTimestamp) * nano_to_seconds;
     FrameData frame = {_frameCounter++, static_cast<float>(now - _frameTimestamp), now};
     _frameTimestamp = now;
-    
+
+    _device->beginFrame(swapChain);
     for (auto& renderable : _rendarables) {
         _device->render(frame, renderable.get());
-        ;
     }
-    //_device->clear();
-    //_device->update(_frameDataBuffer.get(), view<byte>{reinterpret_cast<byte*>(&frame), sizeof(frame)});
-    //_device->bindConstantBuffer(0, _frameDataBuffer.get(), GpuShaderStage::All);
+    _rendarables.clear(); 
+    _device->endFrame(swapChain);
 }
 
-void up::Renderer::endFrame(float frameTime) {
-    _device->execute();
+void up::Renderer::endFrame(GpuSwapChain* swapChain, float frameTime) {
+    UP_ASSERT(swapChain != nullptr);
+    _device->execute(false);
 }
+
+void up::Renderer::quit() {
+    _device->execute(true);
+}
+
 
 auto up::Renderer::createRendarable(IRenderable* pInterface) -> GpuRenderable* {
 

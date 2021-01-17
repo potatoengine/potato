@@ -46,7 +46,7 @@ bool up::d3d12::FactoryD3D12::isEnabled() const {
 }
 
 void up::d3d12::FactoryD3D12::enumerateDevices(delegate<void(GpuDeviceInfo const&)> callback) {
-    com_ptr<DXGIAdapterType> adapter;
+    com_ptr<IDXGIAdapterType> adapter;
 
     int index = 0;
     while (_dxgiFactory->EnumAdapters1(index, out_ptr(adapter)) == S_OK) {
@@ -56,7 +56,7 @@ void up::d3d12::FactoryD3D12::enumerateDevices(delegate<void(GpuDeviceInfo const
 }
 
 auto up::d3d12::FactoryD3D12::createDevice(int index) -> rc<GpuDevice> {
-    com_ptr<DXGIAdapterType> adapter;
+    com_ptr<IDXGIAdapterType> adapter;
 
     UINT targetIndex = 0;
     while (_dxgiFactory->EnumAdapters1(index, out_ptr(adapter)) == S_OK) {

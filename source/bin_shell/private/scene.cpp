@@ -90,10 +90,14 @@ void up::Scene::flush() {
     });
 }
 
-void up::Scene::render(RenderContext& ctx) {
-    _renderableMeshQuery.select(_world, [&](EntityId, components::Mesh& mesh, components::Transform const& trans) {
-        mesh.model->render(ctx, trans.transform);
-    });
+void up::Scene::render(Renderer& renderer) {
+
+    //#todo: need to make this a thread safe operation so that rendering can be performed independent of the
+    // state of the world.
+    if (!_meshRenderer) {
+        _meshRenderer = new_box<MeshRenderer>(&_renderableMeshQuery, &_world);
+    }
+    renderer.createRendarable(_meshRenderer.get());
 }
 
 auto up::Scene::load(Stream file) -> bool {
@@ -106,4 +110,12 @@ auto up::Scene::load(Stream file) -> bool {
 
 void up::Scene::save(Stream file) {
     auto doc = nlohmann::json::object();
+}
+
+void up::Scene::MeshRenderer::onSchedule(up::RenderContext& ctx) {}
+
+void up::Scene::MeshRenderer::onRender(up::RenderContext& ctx) {
+    _meshQuery->select(*_world, [&](EntityId, components::Mesh& mesh, components::Transform const& trans) {
+        mesh.model->render(ctx, trans.transform);
+    });
 }

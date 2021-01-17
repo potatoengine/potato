@@ -14,6 +14,7 @@ namespace up {
 
 namespace up::d3d12 {
     class CommandListD3D12;
+    class DescriptorHeapD3D12;
 
     class DeviceD3D12 final : public GpuDevice {
     public:
@@ -35,12 +36,20 @@ namespace up::d3d12 {
         rc<GpuTexture> createRenderTarget(GpuTextureDesc const& desc, GpuSwapChain* swapChain) override;
         rc<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) override;
         box<GpuSampler> createSampler() override;
+        box<GpuResourceView> createShaderResourceView(GpuPipelineState* pipeline, GpuTexture* resource) override; 
 
         bool create();
         void render(const FrameData& frameData, GpuRenderable* renderable) override;
-        void execute();
+        void execute(bool quitting);
+
+        void beginFrame(GpuSwapChain* swapChain) override;
+        void endFrame(GpuSwapChain* swapChain) override;
+
+        void beginResourceCreation() override;
+        void endResourceCreation() override;
 
     protected:
+        void createDefaultSampler();
         void createAllocator(); 
         void createFrameSync();
         void waitForFrame();
@@ -50,26 +59,25 @@ namespace up::d3d12 {
         IDXGIAdapterPtr _adapter;
         ID3DDevicePtr _device;
 
-        ID3DDescriptorHeapPtr _rtvHeap;
-        ID3DDescriptorHeapPtr _srvUavHeap;
+        box<DescriptorHeapD3D12> _rtvHeap;
+        box<DescriptorHeapD3D12> _dsvHeap;
+        box<DescriptorHeapD3D12> _samplerHeap;
 
         ID3DCommandQueuePtr _commandQueue;
       
-        uint32 _rtvDescriptorSize = 0;
-        uint32 _srvUavDescriptorSize = 0;
-
         // main command list -- for now we use single command list but that will most likely change
         // in the future
-        box<CommandListD3D12> _commandList; 
+        box<CommandListD3D12> _mainCmdList;
+        box<CommandListD3D12> _uploadCmdList; 
 
-        // sync objects
-        HANDLE _swapChainEvent;
-        ID3DFencePtr _renderFrameFence;
-        uint64 _renderContextFenceValue;
-        HANDLE _renderContextFenceEvent;
+        // Synchronization objects.
+        UINT _frameIndex;
+        HANDLE _fenceEvent;
+        com_ptr<ID3D12Fence> _fence;
+        UINT64 _fenceValue;
 
         // allocator
-        D3D12MA::Allocator* _allocator;
+       com_ptr< D3D12MA::Allocator> _allocator;
 
     };
 } // namespace up::d3d12

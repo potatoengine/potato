@@ -132,14 +132,17 @@ namespace up::d3d12 {
         }
         else {
             for (UINT i = 0; i < NumSubresources; ++i) {
-                D3D12_TEXTURE_COPY_LOCATION Dst = {
-                    pDestinationResource,
-                    D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
-                    i + FirstSubresource};
-                D3D12_TEXTURE_COPY_LOCATION Src = {
-                    pIntermediate,
-                    D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
-                    pLayouts[i]};
+                D3D12_TEXTURE_COPY_LOCATION Dst = {};
+                Dst.pResource = pDestinationResource;
+                Dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+                Dst.PlacedFootprint = {};
+                Dst.SubresourceIndex = i + FirstSubresource;
+            
+                D3D12_TEXTURE_COPY_LOCATION Src = {};
+                Src.pResource = pIntermediate;
+                Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+                Src.PlacedFootprint = pLayouts[i];
+               
                 pCmdList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
             }
         }
@@ -149,6 +152,7 @@ namespace up::d3d12 {
     //------------------------------------------------------------------------------------------------
     // Heap-allocating UpdateSubresources implementation
     inline UINT64 UpdateSubresources(
+        _In_ ID3D12Device* pDevice,
         _In_ ID3D12GraphicsCommandList* pCmdList,
         _In_ ID3D12Resource* pDestinationResource,
         _In_ ID3D12Resource* pIntermediate,
@@ -172,8 +176,6 @@ namespace up::d3d12 {
         UINT* pNumRows = reinterpret_cast<UINT*>(pRowSizesInBytes + NumSubresources);
 
         auto Desc = pDestinationResource->GetDesc();
-        ID3D12Device* pDevice = nullptr;
-        pDestinationResource->GetDevice(IID_ID3D12Device, reinterpret_cast<void**>(&pDevice));
         pDevice->GetCopyableFootprints(
             &Desc,
             FirstSubresource,
@@ -183,7 +185,6 @@ namespace up::d3d12 {
             pNumRows,
             pRowSizesInBytes,
             &RequiredSize);
-        pDevice->Release();
 
         UINT64 Result = UpdateSubresources(
             pCmdList,
