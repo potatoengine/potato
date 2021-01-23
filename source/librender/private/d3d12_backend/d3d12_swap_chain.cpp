@@ -4,6 +4,8 @@
 #include "d3d12_desc_heap.h"
 #include "d3d12_platform.h"
 #include "d3d12_texture.h"
+#include "d3d12_resource_view.h"
+
 #include "d3d12_command_list.h"
 
 #include "potato/runtime/com_ptr.h"
@@ -15,10 +17,12 @@
 auto up::d3d12::SwapChainD3D12::createSwapChain(
     IDXGIFactoryType* factory,
     ID3DDeviceType* device,
-    ID3D12CommandQueue* queue, void* nativeWindow)
+    ID3D12CommandQueue* queue,
+    DescriptorHeapD3D12* descHeap,
+    void* nativeWindow)
     -> rc<GpuSwapChain> {
     auto swapchain = new_shared<SwapChainD3D12>();
-    swapchain->create(factory, device, queue, nativeWindow);
+    swapchain->create(factory, device, queue, descHeap, nativeWindow);
     return swapchain;
 }
 
@@ -26,6 +30,7 @@ auto up::d3d12::SwapChainD3D12::create(
     IDXGIFactoryType* factory,
     ID3D12Device* device,
     ID3D12CommandQueue* queue,
+    DescriptorHeapD3D12* descHeap,
     void* nativeWindow) -> bool {
 
     DXGI_SWAP_CHAIN_DESC1 desc = {0};
@@ -49,14 +54,12 @@ auto up::d3d12::SwapChainD3D12::create(
 
     factory->MakeWindowAssociation(window, DXGI_MWA_NO_ALT_ENTER);
 
-    _rtvHeap = new_box<DescriptorHeapD3D12>(device, kNumFrames, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
     for (uint32 i = 0; i < kNumFrames; i++) {
         _swapChain->GetBuffer(i, __uuidof(ID3D12Resource), out_ptr(_backBuffer[i]));
-        device->CreateRenderTargetView(_backBuffer[i].get(), nullptr, _rtvHeap->get_cpu(i));
+        device->CreateRenderTargetView(_backBuffer[i].get(), nullptr, descHeap->get_cpu(i));
     }
 
-
+    _descHeap = descHeap; 
     _bufferIndex = _swapChain->GetCurrentBackBufferIndex();
 
     return true;
@@ -82,18 +85,16 @@ void up::d3d12::SwapChainD3D12::bind(GpuCommandList* cmd) {
     auto cl = static_cast<CommandListD3D12*>(cmd);
 
     // Indicate that the back buffer will be used as a render target.
-     D3D12_RESOURCE_BARRIER barrier =
-        InitTransitionBarrier(_backBuffer[_bufferIndex].get(),
-            D3D12_RESOURCE_STATE_PRESENT,
-            D3D12_RESOURCE_STATE_RENDER_TARGET);
-    cl->getResource()->ResourceBarrier(1,&barrier);
+    D3D12_RESOURCE_BARRIER barrier = InitTransitionBarrier(
+        _backBuffer[_bufferIndex].get(),
+        D3D12_RESOURCE_STATE_PRESENT,
+        D3D12_RESOURCE_STATE_RENDER_TARGET);
+    cl->getResource()->ResourceBarrier(1, &barrier);
 
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle{_rtvHeap->get_cpu(_bufferIndex)};
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle{_descHeap->get_cpu(_bufferIndex)};
     cl->getResource()->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-
-    const float clearColor[] = {0.0f, 0.2f, 0.4f, 1.0f};
-    cl->getResource()->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 };
+
 void up::d3d12::SwapChainD3D12::unbind(GpuCommandList* cmd) {
     auto cl = static_cast<CommandListD3D12*>(cmd);
 
@@ -106,20 +107,18 @@ void up::d3d12::SwapChainD3D12::unbind(GpuCommandList* cmd) {
 
 void up::d3d12::SwapChainD3D12::present() {
     _swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
-    _bufferIndex = (_bufferIndex + 1) % kNumFrames;
+    _bufferIndex = _swapChain->GetCurrentBackBufferIndex();
 }
 
 void up::d3d12::SwapChainD3D12::resizeBuffers(int width, int height) {
     _swapChain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 }
 
-auto up::d3d12::SwapChainD3D12::getBuffer(int index) -> rc<GpuTexture> {
-    ID3DResourcePtr buffer;
-    _swapChain->GetBuffer(index, __uuidof(ID3D12Resource), out_ptr(buffer));
-    if (buffer == nullptr) {
-        return nullptr;
-    }
-    return new_shared<TextureD3D12>(std::move(buffer));
+auto up::d3d12::SwapChainD3D12::getRenderTargetView() -> box<GpuResourceView> {
+
+    auto rtv = new_box<ResourceViewD3D12>(GpuViewType::RTV);
+    rtv->create(_descHeap, _bufferIndex);
+    return rtv;
 }
 
 int up::d3d12::SwapChainD3D12::getCurrentBufferIndex() {

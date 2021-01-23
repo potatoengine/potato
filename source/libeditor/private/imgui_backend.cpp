@@ -11,7 +11,10 @@
 #include "potato/render/gpu_sampler.h"
 #include "potato/render/gpu_texture.h"
 #include "potato/render/shader.h"
+#include "potato/render/camera.h"
 #include "potato/runtime/assertion.h"
+
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <SDL_clipboard.h>
 #include <SDL_events.h>
@@ -136,10 +139,12 @@ void up::ImguiBackend::endFrame() {
     ImGui::EndFrame();
 }
 
-void up::ImguiBackend::draw(Renderer& renderer) {
+void up::ImguiBackend::draw(Renderer& renderer, RenderCamera* camera) {
+
+    UP_ASSERT(camera);
 
     if (!_imGuiRenderer) {
-        _imGuiRenderer = new_box<ImGuiRenderer>(this);
+        _imGuiRenderer = new_box<ImGuiRenderer>(this, camera);
     }
 
     renderer.createRendarable(_imGuiRenderer.get());
@@ -209,8 +214,9 @@ bool up::ImguiBackend::handleEvent(SDL_Event const& ev) {
     return false;
 }
 
-void up::ImguiBackend::render(RenderContext& ctx) {
+void up::ImguiBackend::render(RenderContext& ctx, RenderCamera* camera) {
     UP_ASSERT(!_context.empty());
+    UP_ASSERT(camera);
 
     ImGui::SetCurrentContext(_context.get());
     ImGui::Render();
@@ -228,6 +234,8 @@ void up::ImguiBackend::render(RenderContext& ctx) {
 
     ctx.commandList.setPipelineState(_pipelineState.get());
     ctx.commandList.setPrimitiveTopology(GpuPrimitiveTopology::Triangles);
+
+    camera->beginFrame(ctx, {}, glm::identity<glm::mat4x4>());
 
     auto indices = ctx.commandList.map(_indexBuffer.get(), bufferSize);
     auto vertices = ctx.commandList.map(_vertexBuffer.get(), bufferSize);
@@ -265,7 +273,8 @@ void up::ImguiBackend::render(RenderContext& ctx) {
 
     ctx.commandList.bindIndexBuffer(_indexBuffer.get(), GpuIndexFormat::Unsigned16, 0);
     ctx.commandList.bindVertexBuffer(0, _vertexBuffer.get(), sizeof(ImDrawVert));
-    ctx.commandList.bindConstantBuffer(0, _constantBuffer.get(), GpuShaderStage::Vertex);
+    //ctx.commandList.bindConstantBuffer(0, _constantBuffer.get(), GpuShaderStage::Vertex);
+    ctx.commandList.bindConstantValues(16, &mvp[0][0], GpuShaderStage::Vertex);
     
     GpuViewportDesc viewport;
     viewport.width = data.DisplaySize.x;

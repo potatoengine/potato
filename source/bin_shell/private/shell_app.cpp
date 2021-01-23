@@ -208,7 +208,6 @@ int up::shell::ShellApp::initialize() {
     }
 
     _uiRenderCamera = new_box<RenderCamera>();
-    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 
     auto imguiVertShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "vertex"_sv);
     auto imguiPixelShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "pixel"_sv);
@@ -355,10 +354,8 @@ void up::shell::ShellApp::_onWindowSizeChanged() {
     int width = 0;
     int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
-    /*_uiRenderCamera->resetBackBuffer(nullptr);
-    _renderer->commandList().clear();
     _swapChain->resizeBuffers(width, height);
-    _uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));*/
+    //_uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
 }
 
 void up::shell::ShellApp::_updateTitle() {
@@ -469,7 +466,9 @@ void up::shell::ShellApp::_render() {
     viewport.width = static_cast<float>(width);
     viewport.height = static_cast<float>(height);
 
-    _imguiBackend.draw(*_renderer.get());
+    _uiRenderCamera->setRenderTarget(std::move(_swapChain->getRenderTargetView()));
+
+    _imguiBackend.draw(*_renderer.get(), _uiRenderCamera.get());
 
     _renderer->beginFrame(_swapChain.get());
     _renderer->endFrame(_swapChain.get(), 0.0f);

@@ -34,7 +34,10 @@ namespace up::null {
         rc<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) override;
         rc<GpuTexture> createRenderTarget(GpuTextureDesc const& desc, GpuSwapChain* swapChain) override;
         box<GpuSampler> createSampler() override;
-        box<GpuResourceView> createShaderResourceView(GpuPipelineState* pipelineState, GpuTexture* resource) override; 
+
+        box<GpuResourceView> createShaderResourceView(GpuPipelineState* pipelineState, GpuTexture* resource) override;
+        box<GpuResourceView> createRenderTargetView(GpuTexture* resource) override;
+        box<GpuResourceView> createDepthStencilView(GpuTexture* resource) override; 
 
         void beginFrame(GpuSwapChain* swapChain) override {}
         void endFrame(GpuSwapChain* swapChain) override {}
@@ -62,7 +65,7 @@ namespace up::null {
         void unbind(GpuCommandList* cmd) override{};
         void present() override {}
         void resizeBuffers(int width, int height) override {}
-        rc<GpuTexture> getBuffer(int index) override;
+        box<GpuResourceView> getRenderTargetView() override;
         int getCurrentBufferIndex() override;
     };
 
@@ -91,6 +94,7 @@ namespace up::null {
         void bindIndexBuffer(GpuBuffer* buffer, GpuIndexFormat indexType, uint32 offset = 0) override {}
         void bindVertexBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override {}
         void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, GpuShaderStage stage) override {}
+        void bindConstantValues(uint32 count, float* values, GpuShaderStage stage) override {} 
         void bindShaderResource(uint32 slot, GpuResourceView* view, GpuShaderStage stage) override {}
         void bindTexture(uint32 slot, GpuResourceView* view, GpuSampler* sampler, GpuShaderStage stage) override {}
         void setPrimitiveTopology(GpuPrimitiveTopology topology) override {}

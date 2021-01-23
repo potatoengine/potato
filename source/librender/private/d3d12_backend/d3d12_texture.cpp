@@ -94,12 +94,25 @@ static inline D3D12_RESOURCE_DESC ResourceDesc(
 
 auto up::d3d12::TextureD3D12::create(ContextD3D12 const& ctx, GpuTextureDesc const& desc, span<up::byte const> data)
     -> bool {
+    if (desc.type == GpuTextureType::Texture2D) {
+        return create2DTex(ctx, desc, data);
+    }
+    if (desc.type == GpuTextureType::DepthStencil) {
+        return createDepthStencilTex(ctx, desc);
+    }
 
+     UP_UNREACHABLE("Unsupported texture type");
+    return false; 
+}
+
+auto up::d3d12::TextureD3D12::create2DTex(ContextD3D12 const& ctx, GpuTextureDesc const& desc, span<up::byte const> data)
+        ->bool {
     _format = toNative(desc.format);
-    D3D12_RESOURCE_DESC resourceDesc = ResourceDesc::Tex2D(_format, desc.width, desc.height);
+    D3D12_RESOURCE_DESC resourceDesc = ResourceDesc::Tex2D(_format, desc.width, desc.height, 1, 1);
 
     D3D12MA::ALLOCATION_DESC allocDesc = {};
     allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+
 
     HRESULT hr = ctx._allocator->CreateResource(
         &allocDesc,
@@ -110,7 +123,44 @@ auto up::d3d12::TextureD3D12::create(ContextD3D12 const& ctx, GpuTextureDesc con
         __uuidof(ID3D12Resource),
         out_ptr(_texture));
 
-    uint32 stride = desc.width * toByteSize(desc.format);
+    if (data.size() != 0) {
+        uploadData(ctx, resourceDesc, data);
+    }
+
+    return true;
+}
+
+auto up::d3d12::TextureD3D12::createDepthStencilTex(ContextD3D12 const& ctx, GpuTextureDesc const& desc)
+        ->bool {
+    _format = toNative(desc.format);
+    D3D12_RESOURCE_DESC resourceDesc =
+        ResourceDesc::Tex2D(_format, desc.width, desc.height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+
+    D3D12MA::ALLOCATION_DESC allocDesc = {};
+    allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+
+    D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+    depthOptimizedClearValue.Format = _format;
+    depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+    depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+    HRESULT hr = ctx._allocator->CreateResource(
+        &allocDesc,
+        &resourceDesc,
+        D3D12_RESOURCE_STATE_DEPTH_WRITE,
+        &depthOptimizedClearValue,
+        out_ptr(_allocation),
+        __uuidof(ID3D12Resource),
+        out_ptr(_texture));
+
+    return true;
+}
+
+
+auto up::d3d12::TextureD3D12::uploadData(ContextD3D12 const& ctx, D3D12_RESOURCE_DESC& resourceDesc, span<up::byte const> data)
+    -> bool {
+
+    uint32 stride = resourceDesc.Width * toByteSize(fromNative(resourceDesc.Format));
 
     UINT64 textureUploadBufferSize = 0;
     ctx._device->GetCopyableFootprints(
@@ -122,6 +172,7 @@ auto up::d3d12::TextureD3D12::create(ContextD3D12 const& ctx, GpuTextureDesc con
         nullptr, // pNumRows
         nullptr, // pRowSizeInBytes
         &textureUploadBufferSize); // pTotalBytes
+
 
     D3D12MA::ALLOCATION_DESC uploadAllocDesc = {};
     uploadAllocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
@@ -138,14 +189,22 @@ auto up::d3d12::TextureD3D12::create(ContextD3D12 const& ctx, GpuTextureDesc con
         out_ptr(_uploadTexture));
     _uploadTexture->SetName(L"textureUpload");
 
-    auto impl = static_cast<CommandListD3D12*>(ctx._cmdList);
+    auto d3dCmd = static_cast<CommandListD3D12*>(ctx._cmdList);
 
     D3D12_SUBRESOURCE_DATA textureSubresourceData = {};
     textureSubresourceData.pData = data.data();
     textureSubresourceData.RowPitch = stride;
-    textureSubresourceData.SlicePitch = stride * desc.height;
+    textureSubresourceData.SlicePitch = stride * resourceDesc.Height;
 
-    UpdateSubresources(ctx._device, impl->getResource(), _texture.get(), _uploadTexture.get(), 0, 0, 1, &textureSubresourceData);
+    UpdateSubresources(
+        ctx._device,
+        d3dCmd->getResource(),
+        _texture.get(),
+        _uploadTexture.get(),
+        0,
+        0,
+        1,
+        &textureSubresourceData);
 
     D3D12_RESOURCE_BARRIER textureBarrier = {};
     textureBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -154,13 +213,24 @@ auto up::d3d12::TextureD3D12::create(ContextD3D12 const& ctx, GpuTextureDesc con
     textureBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
     textureBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-    impl->getResource()->ResourceBarrier(1, &textureBarrier);
+    d3dCmd->getResource()->ResourceBarrier(1, &textureBarrier);
 
     return true;
 }
 
 auto up::d3d12::TextureD3D12::type() const noexcept -> GpuTextureType {
-    // #dx12 #todo integrate proper texture types
+    com_ptr<ID3D12Resource> texture2D;
+    if (SUCCEEDED(_texture->QueryInterface(__uuidof(ID3D12Resource), out_ptr(texture2D)))) {
+        D3D12_RESOURCE_DESC desc = texture2D->GetDesc();
+        switch (desc.Dimension) {
+            case D3D12_RESOURCE_DIMENSION_TEXTURE2D:
+                return GpuTextureType::Texture2D;
+            case D3D12_RESOURCE_DIMENSION_TEXTURE3D:
+                return GpuTextureType::Texture3D;
+        }
+    }
+
+    UP_UNREACHABLE("could not detect texture type");
     return GpuTextureType::Texture2D;
 }
 
@@ -169,10 +239,21 @@ auto up::d3d12::TextureD3D12::format() const noexcept -> GpuFormat {
 }
 
 DXGI_FORMAT up::d3d12::TextureD3D12::nativeFormat() const noexcept {
-    return _format;
+    com_ptr<ID3D12Resource> texture2D;
+    if (SUCCEEDED(_texture->QueryInterface(__uuidof(ID3D12Resource), out_ptr(texture2D)))) {
+        D3D12_RESOURCE_DESC desc = texture2D->GetDesc();
+        return desc.Format;
+    }
+    return DXGI_FORMAT_UNKNOWN;
 }
 
 auto up::d3d12::TextureD3D12::dimensions() const noexcept -> glm::ivec3 {
-    // @dx12 @todo
+    com_ptr<ID3D12Resource> texture2D;
+    if (SUCCEEDED(_texture->QueryInterface(__uuidof(ID3D12Resource), out_ptr(texture2D)))) {
+        D3D12_RESOURCE_DESC desc = texture2D->GetDesc();
+        return {desc.Width, desc.Height, 0};
+    }
+
+    UP_UNREACHABLE("could not detect texture type");
     return {0, 0, 0};
 }

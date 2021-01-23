@@ -6,8 +6,8 @@
 #include "potato/spud/rc.h"
 
 namespace up {
-    class GpuTexture;
     class GpuCommandList;
+    class GpuResourceView;
 
     class GpuSwapChain : public shared<GpuSwapChain> {
     public:
@@ -22,7 +22,7 @@ namespace up {
 
         virtual void present() = 0;
         virtual void resizeBuffers(int width, int height) = 0;
-        virtual rc<GpuTexture> getBuffer(int index) = 0;
+        virtual box<GpuResourceView> getRenderTargetView() = 0;
         virtual int getCurrentBufferIndex() = 0;
     };
 } // namespace up

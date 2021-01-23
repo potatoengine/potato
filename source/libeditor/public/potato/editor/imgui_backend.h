@@ -32,6 +32,7 @@ using SDL_Event = union SDL_Event;
 
 namespace up {
     class Shader;
+    class RenderCamera;
 
     class ImguiBackend {
     public:
@@ -51,9 +52,9 @@ namespace up {
         UP_EDITOR_API void beginFrame();
         UP_EDITOR_API void endFrame();
 
-        UP_EDITOR_API void draw(Renderer& renderer);
+        UP_EDITOR_API void draw(Renderer& renderer, RenderCamera* camera);
 
-        void render(RenderContext& ctx);
+        void render(RenderContext& ctx, RenderCamera* camera);
 
         void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
         auto isCaptureRelativeMouseMode() const noexcept -> bool { return _captureRelativeMouseMode; }
@@ -61,13 +62,14 @@ namespace up {
     private:
         class ImGuiRenderer : public up::IRenderable {
         public:
-            ImGuiRenderer(ImguiBackend* backend) : _backend(backend) {}
+            ImGuiRenderer(ImguiBackend* backend, RenderCamera* camera) : _backend(backend), _camera(camera) {}
 
             void onSchedule(up::RenderContext& ctx) override{};
-            void onRender(up::RenderContext& ctx) override { _backend->render(ctx); };
+            void onRender(up::RenderContext& ctx) override { _backend->render(ctx, _camera); };
 
         private:
             ImguiBackend* _backend;
+            RenderCamera* _camera;
         };
 
         void _initialize();

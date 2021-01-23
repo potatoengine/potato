@@ -25,14 +25,16 @@ namespace up::d3d12 {
 
         bool create(ID3D12Device* device, GpuPipelineStateDesc const& desc);
 
-        void setHeaps(ID3D12DescriptorHeap* srvHeap, ID3D12DescriptorHeap* samplerHeap, ID3D12DescriptorHeap* rtHeap) {
+        void setHeaps(ID3D12DescriptorHeap* dsvHeap, ID3D12DescriptorHeap* samplerHeap, ID3D12DescriptorHeap* rtHeap) {
             _samplerHeap = samplerHeap;
-            _rtHeap = rtHeap;
+            _rtvHeap = rtHeap;
+            _dsvHeap = dsvHeap;
         }
 
         void bindPipeline(ID3D12GraphicsCommandList* cmd);
         void bindTexture(ID3D12GraphicsCommandList* cmd, D3D12_GPU_DESCRIPTOR_HANDLE srv, D3D12_GPU_DESCRIPTOR_HANDLE sampler);
         void bindConstBuffer(ID3D12GraphicsCommandList* cmd, D3D12_GPU_VIRTUAL_ADDRESS cbv);
+        void bindConstValues(ID3D12GraphicsCommandList* cmd, uint32 size, float* values);
 
         ID3D12PipelineState* state() const { return _state.get(); }
 
@@ -51,8 +53,7 @@ namespace up::d3d12 {
 
         // non-owned (external) descriptor heaps
         ID3D12DescriptorHeap* _samplerHeap;
-        ID3D12DescriptorHeap* _rtHeap;
-
-
+        ID3D12DescriptorHeap* _rtvHeap;
+        ID3D12DescriptorHeap* _dsvHeap;
     };
 } // namespace up::d3d12

@@ -58,8 +58,8 @@ bool up::d3d12::DeviceD3D12::create() {
     }
 
     // allocate different descriptor heaps for resource views
-    _rtvHeap = new_box<DescriptorHeapD3D12>(_device.get(), 1, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    _dsvHeap = new_box<DescriptorHeapD3D12>(_device.get(), 1, D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+    _rtvHeap = new_box<DescriptorHeapD3D12>(_device.get(), 2, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    _dsvHeap = new_box<DescriptorHeapD3D12>(_device.get(), 2, D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
     _samplerHeap = new_box<DescriptorHeapD3D12>(_device.get(),1,D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
     //#dx12 #todo: for now we will create a single Sampler for the app but in a future we should probably make it more
@@ -91,7 +91,7 @@ auto up::d3d12::DeviceD3D12::createRenderable(IRenderable* pInterface) -> box<Gp
 auto up::d3d12::DeviceD3D12::createSwapChain(void* nativeWindow) -> rc<GpuSwapChain> {
     UP_ASSERT(nativeWindow != nullptr);
 
-    return SwapChainD3D12::createSwapChain(_factory.get(), _device.get(), _commandQueue.get(), nativeWindow);
+    return SwapChainD3D12::createSwapChain(_factory.get(), _device.get(), _commandQueue.get(), _rtvHeap.get(), nativeWindow);
 }
 
 auto up::d3d12::DeviceD3D12::createCommandList(GpuPipelineState* pipelineState) -> box<GpuCommandList> {
@@ -152,13 +152,48 @@ auto up::d3d12::DeviceD3D12::createShaderResourceView(GpuPipelineState* pipeline
     srvDesc.Format = toNative(texture->format());
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Texture2D.MostDetailedMip = 0;
     _device->CreateShaderResourceView(
-        texture->get().get(),
+        texture->get(),
         &srvDesc,
         desc_heap->heap()->GetCPUDescriptorHandleForHeapStart());
 
+    static uint32 __srvcount = 0; 
     auto srv = new_box<ResourceViewD3D12>(GpuViewType::SRV);
-    srv->create(desc_heap, desc_heap->heap()->GetGPUDescriptorHandleForHeapStart());
+    srv->create(desc_heap, __srvcount++);
+
+    return srv;
+}
+
+auto up::d3d12::DeviceD3D12::createRenderTargetView(GpuTexture* resource) 
+    -> box<GpuResourceView> {
+    UP_ASSERT(resource != nullptr);
+
+    auto texture = static_cast<TextureD3D12*>(resource);
+
+    uint32 __rtvcount = 0;
+    auto rtv = new_box<ResourceViewD3D12>(GpuViewType::RTV);
+    rtv->create(_rtvHeap.get(), __rtvcount++);
+
+    return rtv;
+}
+
+auto up::d3d12::DeviceD3D12::createDepthStencilView(GpuTexture* resource)
+    -> box<GpuResourceView> {
+    UP_ASSERT(resource != nullptr);
+
+    auto texture = static_cast<TextureD3D12*>(resource);
+    auto desc_heap = _dsvHeap->heap();
+
+    auto srv = new_box<ResourceViewD3D12>(GpuViewType::DSV);
+    uint32 __dsvcount = 0;
+    srv->create(_dsvHeap.get(), __dsvcount++);
+
+    D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+    depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+    depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+    depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+    _device->CreateDepthStencilView(texture->get(), &depthStencilDesc, desc_heap->GetCPUDescriptorHandleForHeapStart());
 
     return srv;
 }
@@ -229,10 +264,10 @@ void up::d3d12::DeviceD3D12::waitForFrame() {
         _fence->SetEventOnCompletion(fence, _fenceEvent);
         WaitForSingleObject(_fenceEvent, INFINITE);
     }
-
-    //_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
+
 void up::d3d12::DeviceD3D12::beginFrame(GpuSwapChain* swapChain) {
+
     _mainCmdList->start(nullptr);
 
     swapChain->bind(_mainCmdList.get());
@@ -269,8 +304,8 @@ void up::d3d12::DeviceD3D12::execute(bool quitting) {
 
         ID3D12CommandList* ppCommandLists[] = {_mainCmdList->getResource()};
         _commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
-        // block until next frame is done on GPU before we start new frame
-        waitForFrame();
     }
+
+    // block until next frame is done on GPU before we start new frame
+    waitForFrame();
 }

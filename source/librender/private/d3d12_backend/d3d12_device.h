@@ -36,7 +36,10 @@ namespace up::d3d12 {
         rc<GpuTexture> createRenderTarget(GpuTextureDesc const& desc, GpuSwapChain* swapChain) override;
         rc<GpuTexture> createTexture2D(GpuTextureDesc const& desc, span<byte const> data) override;
         box<GpuSampler> createSampler() override;
+
         box<GpuResourceView> createShaderResourceView(GpuPipelineState* pipeline, GpuTexture* resource) override; 
+        box<GpuResourceView> createRenderTargetView(GpuTexture* resource) override;
+        box<GpuResourceView> createDepthStencilView(GpuTexture* resource) override; 
 
         bool create();
         void render(const FrameData& frameData, GpuRenderable* renderable) override;

@@ -30,6 +30,7 @@ namespace up::d3d12 {
         void bindIndexBuffer(GpuBuffer* buffer, GpuIndexFormat indexType, uint32 offset = 0) override;
         void bindVertexBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) override;
         void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, GpuShaderStage stage) override;
+        void bindConstantValues(uint32 count, float* values, GpuShaderStage stage) override;
         void bindShaderResource(uint32 slot, GpuResourceView* view, GpuShaderStage stage) override;
         void bindTexture(uint32 slot, GpuResourceView* view, GpuSampler* sampler, GpuShaderStage stage) override;
         void setClipRect(GpuClipRect rect) override;

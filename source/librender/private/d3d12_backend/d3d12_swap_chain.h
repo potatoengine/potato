@@ -22,14 +22,15 @@ namespace up::d3d12 {
             IDXGIFactoryType* factory,
             ID3D12Device* device,
             ID3D12CommandQueue* queue,
+            DescriptorHeapD3D12* descHeap, 
             void* nativeWindow);
 
-        bool create(IDXGIFactoryType* factory, ID3D12Device* device, ID3D12CommandQueue* queue, void* nativeWindow);
+        bool create(IDXGIFactoryType* factory, ID3D12Device* device, ID3D12CommandQueue* queue, DescriptorHeapD3D12* descHeap, void* nativeWindow);
         void bind(GpuCommandList* cmd) override;
         void unbind(GpuCommandList* cmd) override;
         void present() override;
         void resizeBuffers(int width, int height) override;
-        rc<GpuTexture> getBuffer(int index) override;
+        box<GpuResourceView> getRenderTargetView() override;
         int getCurrentBufferIndex() override;
 
     private:
@@ -37,8 +38,7 @@ namespace up::d3d12 {
 
         IDXGISwapChainPtr _swapChain;
         uint32 _bufferIndex = 0;
-
         ID3DResourcePtr _backBuffer[kNumFrames];
-        box<DescriptorHeapD3D12> _rtvHeap;
+        DescriptorHeapD3D12* _descHeap = nullptr;
     };
 } // namespace up::d3d12

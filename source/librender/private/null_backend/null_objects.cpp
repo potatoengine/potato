@@ -52,8 +52,18 @@ auto up::null::DeviceNull::createShaderResourceView(GpuPipelineState* pipelineSt
     return new_box<ResourceViewNull>(GpuViewType::SRV);
 }
 
-auto up::null::SwapChainNull::getBuffer(int index) -> rc<GpuTexture> {
-    return new_shared<TextureNull>();
+auto up::null::DeviceNull::createDepthStencilView(GpuTexture* resource)
+    -> box<GpuResourceView> {
+    return new_box<ResourceViewNull>(GpuViewType::DSV);
+}
+
+auto up::null::DeviceNull::createRenderTargetView(GpuTexture* resource)
+    -> box<GpuResourceView> {
+    return new_box<ResourceViewNull>(GpuViewType::RTV);
+}
+
+auto up::null::SwapChainNull::getRenderTargetView() -> box<GpuResourceView> {
+    return new_box<ResourceViewNull>(GpuViewType::RTV);
 }
 
 int up::null::SwapChainNull::getCurrentBufferIndex() {

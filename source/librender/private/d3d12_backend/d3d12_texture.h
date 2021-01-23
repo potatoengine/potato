@@ -28,9 +28,14 @@ namespace up::d3d12 {
         glm::ivec3 dimensions() const noexcept override;
 
         DXGI_FORMAT nativeFormat() const noexcept;
-        ID3DResourcePtr const& get() const { return _texture; }
+        ID3DResourceType* get() const { return _texture.get(); }
 
         DescriptorHeapD3D12* desc() const { return _cbvHeap.get(); }
+
+    protected:
+        bool create2DTex(ContextD3D12 const& ctx, GpuTextureDesc const& desc, span<up::byte const> data);
+        bool createDepthStencilTex(ContextD3D12 const& ctx, GpuTextureDesc const& desc);
+        bool uploadData(ContextD3D12 const& ctx, D3D12_RESOURCE_DESC& resourceDesc, span<up::byte const> data);
 
     private:
         ID3DResourcePtr _texture;

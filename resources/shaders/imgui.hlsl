@@ -1,17 +1,8 @@
 cbuffer vertexBuffer : register(b0) {
     float4x4 ProjectionMatrix;
 };
-sampler sampler0;
-Texture2D texture0;
-
-#define ImGuiRS \
-"RootFlags ( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |" \
-"            DENY_DOMAIN_SHADER_ROOT_ACCESS |" \
-"            DENY_GEOMETRY_SHADER_ROOT_ACCESS |" \
-"            DENY_HULL_SHADER_ROOT_ACCESS )," \
-"CBV(b0),"\
-"DescriptorTable ( SRV(t0), visibility = SHADER_VISIBILITY_PIXEL ),"\
-"DescriptorTable ( Sampler(s0), visibility = SHADER_VISIBILITY_PIXEL )"
+SamplerState sampler0: register(s0);;
+Texture2D texture0: register(t0);
 
 struct VS_Input {
     float2 pos : POSITION;
@@ -39,7 +30,7 @@ struct PS_INPUT {
     float2 uv : TEXCOORD0;
 };
 
-float4 pixel_main(VS_Output input) : SV_Target {
+float4 pixel_main(VS_Output input) : SV_Target{
     float4 out_col = input.col * texture0.Sample(sampler0, input.uv);
     return out_col;
 };

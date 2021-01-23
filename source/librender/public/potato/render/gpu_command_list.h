@@ -31,6 +31,7 @@ namespace up {
         virtual void bindIndexBuffer(GpuBuffer* buffer, GpuIndexFormat indexType, uint32 offset = 0) = 0;
         virtual void bindVertexBuffer(uint32 slot, GpuBuffer* buffer, uint64 stride, uint64 offset = 0) = 0;
         virtual void bindConstantBuffer(uint32 slot, GpuBuffer* buffer, GpuShaderStage stage) = 0;
+        virtual void bindConstantValues(uint32 count, float* values, GpuShaderStage stage) = 0;
         virtual void bindShaderResource(uint32 slot, GpuResourceView* view, GpuShaderStage stage) = 0;
         virtual void bindTexture(uint32 slot, GpuResourceView* view, GpuSampler* sampler, GpuShaderStage stage) = 0;
         virtual void setPrimitiveTopology(GpuPrimitiveTopology topology) = 0;

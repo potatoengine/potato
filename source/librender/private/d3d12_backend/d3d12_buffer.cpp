@@ -44,12 +44,5 @@ auto up::d3d12::BufferD3D12::create(ContextD3D12 const& ctx, GpuBufferType type,
     _size = size;
     _type = type;
 
-    //if (type == GpuBufferType::Constant) {
-    //    // Describe and create a constant buffer view.
-    //    D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-    //    cbvDesc.BufferLocation = _buffer->GetGPUVirtualAddress();
-    //    cbvDesc.SizeInBytes = size;
-    //    ctx._device->CreateConstantBufferView(&cbvDesc, heap->heap()->GetCPUDescriptorHandleForHeapStart());
-    //}
     return true;
 };

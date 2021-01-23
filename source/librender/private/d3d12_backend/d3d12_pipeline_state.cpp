@@ -21,46 +21,64 @@ auto up::d3d12::PipelineStateD3D12::createGraphicsPipelineState(ID3D12Device* de
     return pso;
 }
 
-static D3D12_BLEND_DESC defaultBlend() {
+static D3D12_BLEND_DESC defaultBlendState() {
 
-    D3D12_BLEND_DESC blend = {FALSE, FALSE, {}};
+    D3D12_BLEND_DESC blend = {};
+    blend.AlphaToCoverageEnable = FALSE;
+    blend.IndependentBlendEnable = FALSE;
 
-    const D3D12_RENDER_TARGET_BLEND_DESC defaultRenderTargetBlendDesc = {
-        FALSE,
-        FALSE,
-        D3D12_BLEND_ONE,
-        D3D12_BLEND_ZERO,
-        D3D12_BLEND_OP_ADD,
-        D3D12_BLEND_ONE,
-        D3D12_BLEND_ZERO,
-        D3D12_BLEND_OP_ADD,
-        D3D12_LOGIC_OP_NOOP,
-        D3D12_COLOR_WRITE_ENABLE_ALL,
-    };
+    D3D12_RENDER_TARGET_BLEND_DESC rtBlendOps = {};
 
-    for (up::uint32 i = 0; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
-        blend.RenderTarget[i] = defaultRenderTargetBlendDesc;
+    rtBlendOps.BlendEnable = TRUE;
+    rtBlendOps.LogicOpEnable = FALSE;
+    rtBlendOps.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+    rtBlendOps.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+    rtBlendOps.BlendOp = D3D12_BLEND_OP_ADD;
+    rtBlendOps.SrcBlendAlpha = D3D12_BLEND_SRC_ALPHA;
+    rtBlendOps.DestBlendAlpha = D3D12_BLEND_ZERO;
+    rtBlendOps.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+    rtBlendOps.LogicOp = D3D12_LOGIC_OP_CLEAR;
+    rtBlendOps.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+    for (up::uint32 i = 0; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i) {
+        blend.RenderTarget[i] = rtBlendOps;
+    }
 
     return blend;
 }
 
-static D3D12_RASTERIZER_DESC defaultRestirizer() {
-    D3D12_RASTERIZER_DESC rs = {
-        D3D12_FILL_MODE_SOLID,
-        D3D12_CULL_MODE_BACK,
-        FALSE,
-        D3D12_DEFAULT_DEPTH_BIAS,
-        D3D12_DEFAULT_DEPTH_BIAS_CLAMP,
-        D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS,
-        TRUE,
-        FALSE,
-        FALSE,
-        0,
-        D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF};
+static D3D12_RASTERIZER_DESC defaultRestirizerState() {
+    D3D12_RASTERIZER_DESC rs = {};
+
+    rs.FillMode = D3D12_FILL_MODE_SOLID;
+    rs.CullMode = D3D12_CULL_MODE_NONE;
+
+    rs.FrontCounterClockwise = FALSE;
+    rs.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+    rs.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+    rs.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+    rs.DepthClipEnable = TRUE;
+    rs.MultisampleEnable = FALSE;
+    rs.AntialiasedLineEnable = FALSE;
+    rs.ForcedSampleCount = 0;
+    rs.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 
     return rs;
 }
 
+static D3D12_DEPTH_STENCIL_DESC defeaultDepthStencilState() {
+    D3D12_DEPTH_STENCIL_DESC desc = {};
+    desc.DepthEnable = false;
+    desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+    desc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    desc.StencilEnable = false;
+    desc.FrontFace.StencilFailOp = desc.FrontFace.StencilDepthFailOp = desc.FrontFace.StencilPassOp =
+        D3D12_STENCIL_OP_KEEP;
+    desc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    desc.BackFace = desc.FrontFace;
+
+    return desc;
+}
 
 static inline void InitRange(
     _Out_ D3D12_DESCRIPTOR_RANGE1& range,
@@ -348,17 +366,16 @@ auto up::d3d12::PipelineStateD3D12::createRootSignature(ID3D12Device* device) ->
     up::com_ptr<ID3DBlob> signature;
     up::com_ptr<ID3DBlob> error;
 
-    D3D12_DESCRIPTOR_RANGE1 ranges[3];
+    D3D12_DESCRIPTOR_RANGE1 ranges[2];
     D3D12_ROOT_PARAMETER1 parameters[RootParamIndex::RootParamCount];
 
-    InitRange(ranges[0], D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0);
-    InitRange(ranges[1], D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-    InitRange(ranges[2], D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0);
+    InitRange(ranges[0], D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+    InitRange(ranges[1], D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0);
 
-    InitAsConstantBufferView(parameters[RootParamIndex::ConstantBuffer], 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE);
-    //InitAsDescriptorTable(parameters[RootParamIndex::ConstantBuffer], 1, &ranges[0], D3D12_SHADER_VISIBILITY_VERTEX);
-    InitAsDescriptorTable(parameters[RootParamIndex::TextureSRV], 1, &ranges[1], D3D12_SHADER_VISIBILITY_PIXEL);
-    InitAsDescriptorTable(parameters[RootParamIndex::TextureSampler], 1, &ranges[2], D3D12_SHADER_VISIBILITY_PIXEL);
+    //InitAsConstantBufferView(parameters[RootParamIndex::ConstantBuffer], 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE);
+    InitAsConstants(parameters[RootParamIndex::ConstantBuffer], 16, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+    InitAsDescriptorTable(parameters[RootParamIndex::TextureSRV], 1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL);
+    InitAsDescriptorTable(parameters[RootParamIndex::TextureSampler], 1, &ranges[1], D3D12_SHADER_VISIBILITY_PIXEL);
  
     // Allow input layout and deny unnecessary access to certain pipeline stages.
     D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
@@ -366,8 +383,23 @@ auto up::d3d12::PipelineStateD3D12::createRootSignature(ID3D12Device* device) ->
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
 
+    D3D12_STATIC_SAMPLER_DESC sampler = {};
+    sampler.Filter = D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+    sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    sampler.MipLODBias = 0;
+    sampler.MaxAnisotropy = 0;
+    sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+    sampler.MinLOD = 0.0f;
+    sampler.MaxLOD = 0.0f;
+    sampler.ShaderRegister = 0;
+    sampler.RegisterSpace = 0;
+    sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
     D3D12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
-    Init_1_1(rootSignatureDesc, _countof(parameters), parameters, 0, nullptr, rootSignatureFlags);
+    Init_1_1(rootSignatureDesc, _countof(parameters), parameters, 0, &sampler, rootSignatureFlags);
 
    if (FAILED(D3DX12SerializeVersionedRootSignature(
             &rootSignatureDesc,
@@ -403,30 +435,29 @@ bool up::d3d12::PipelineStateD3D12::create(ID3D12Device* device, GpuPipelineStat
             D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
             0};
 
-        offset += toByteSize(i.semantic);
+        offset += toByteSize(i.format);
         elements.push_back(desc);
     }
-
-    auto blend = defaultBlend();
-    auto rs = defaultRestirizer(); 
 
     createRootSignature(device);
     
     // Describe and create the graphics pipeline state object (PSO).
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+    psoDesc.NodeMask = 1;
     psoDesc.InputLayout = {elements.data(), static_cast<UINT>(elements.size())};
     psoDesc.pRootSignature = _signature.get();
     psoDesc.VS = {desc.vertShader.data(), desc.vertShader.size()};
     psoDesc.PS = {desc.pixelShader.data(), desc.pixelShader.size()};
-    psoDesc.RasterizerState = rs;
-    psoDesc.BlendState = blend;
-    psoDesc.DepthStencilState.DepthEnable = desc.enableDepthTest;
-    psoDesc.DepthStencilState.StencilEnable = desc.enableDepthWrite;
+    psoDesc.RasterizerState = defaultRestirizerState();
+    psoDesc.BlendState = defaultBlendState();
+    psoDesc.DepthStencilState = defeaultDepthStencilState();
     psoDesc.SampleMask = UINT_MAX;
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    psoDesc.NumRenderTargets = 2;
+    psoDesc.NumRenderTargets = 1;
+    psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
     psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
     psoDesc.SampleDesc.Count = 1;
+    psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
     device->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), out_ptr(_state));
 
@@ -444,6 +475,10 @@ void up::d3d12::PipelineStateD3D12::bindPipeline(ID3D12GraphicsCommandList* cmd)
 
     cmd->SetGraphicsRootSignature(_signature.get());
     cmd->SetPipelineState(_state.get());
+
+    // Setup blend factor
+    const float blend_factor[4] = {0.f, 0.f, 0.f, 0.f};
+    cmd->OMSetBlendFactor(blend_factor);
     
     ID3D12DescriptorHeap* ppHeaps[] = {_srvHeap->heap(), _samplerHeap};
     cmd->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
@@ -462,4 +497,9 @@ void up::d3d12::PipelineStateD3D12::bindTexture(
 void up::d3d12::PipelineStateD3D12::bindConstBuffer(ID3D12GraphicsCommandList* cmd, D3D12_GPU_VIRTUAL_ADDRESS cbv) {
     UP_ASSERT(cmd != nullptr);
     cmd->SetGraphicsRootConstantBufferView(RootParamIndex::ConstantBuffer, cbv);
+}
+
+void up::d3d12::PipelineStateD3D12::bindConstValues(ID3D12GraphicsCommandList* cmd, uint32 size, float* values) {
+    UP_ASSERT(cmd != nullptr);
+    cmd->SetGraphicsRoot32BitConstants(RootParamIndex::ConstantBuffer, size, values, 0);
 }

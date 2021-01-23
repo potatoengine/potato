@@ -46,7 +46,7 @@ auto up::d3d12::DescriptorHeapD3D12::create(ID3D12Device* device, const D3D12_DE
 
 auto up::d3d12::DescriptorHeapD3D12::get_cpu(uint64 index) -> D3D12_CPU_DESCRIPTOR_HANDLE{
     D3D12_CPU_DESCRIPTOR_HANDLE handle;
-    handle.ptr = static_cast<SIZE_T>(_cpu.ptr + (index) * static_cast<uint64>(_increment));
+    handle.ptr = static_cast<SIZE_T>(_cpu.ptr + index * static_cast<uint64>(_increment));
     return handle;
 }
 auto up::d3d12::DescriptorHeapD3D12::get_gpu(uint64 index) -> D3D12_GPU_DESCRIPTOR_HANDLE {
