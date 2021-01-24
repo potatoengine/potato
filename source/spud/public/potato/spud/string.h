@@ -35,11 +35,11 @@ public:
 
     static constexpr size_type npos = ~size_type{0};
 
-    string() noexcept = default;
+    constexpr string() noexcept = default;
     ~string() { _free(_data, _size); }
 
     /*implicit*/ string(string const& str) : _data(_copy(str._data, str._size)), _size(str._size) {}
-    string(string&& rhs) noexcept : _data(rhs._data), _size(rhs._size) {
+    constexpr string(string&& rhs) noexcept : _data(rhs._data), _size(rhs._size) {
         rhs._data = nullptr;
         rhs._size = 0;
     }
@@ -73,26 +73,26 @@ public:
         return *this;
     }
 
-    const_pointer c_str() const noexcept { return _data != nullptr ? _data : _empty; }
+    constexpr const_pointer c_str() const noexcept { return _data != nullptr ? _data : _empty; }
 
-    const_pointer data() const noexcept { return _data != nullptr ? _data : _empty; }
-    size_type size() const noexcept { return _size; }
+    constexpr const_pointer data() const noexcept { return _data != nullptr ? _data : _empty; }
+    constexpr size_type size() const noexcept { return _size; }
 
-    bool empty() const noexcept { return _size == 0; }
-    explicit operator bool() const noexcept { return _size != 0; }
+    constexpr bool empty() const noexcept { return _size == 0; }
+    constexpr explicit operator bool() const noexcept { return _size != 0; }
 
-    const_iterator begin() const noexcept { return _data; }
-    const_iterator end() const noexcept { return _data + _size; }
+    constexpr const_iterator begin() const noexcept { return _data; }
+    constexpr const_iterator end() const noexcept { return _data + _size; }
 
-    value_type front() const noexcept { return *_data; }
-    value_type back() const noexcept { return *(_data + _size - 1); }
+    constexpr value_type front() const noexcept { return *_data; }
+    constexpr value_type back() const noexcept { return *(_data + _size - 1); }
 
-    value_type operator[](size_type index) const noexcept { return _data[index]; }
+    constexpr value_type operator[](size_type index) const noexcept { return _data[index]; }
 
-    string_view first(size_type count) const noexcept { return {_data, count}; }
-    string_view last(size_type count) const noexcept { return {_data + _size - count, count}; }
+    constexpr string_view first(size_type count) const noexcept { return {_data, count}; }
+    constexpr string_view last(size_type count) const noexcept { return {_data + _size - count, count}; }
 
-    string_view substr(size_type offset, size_type count = npos) const noexcept {
+    constexpr string_view substr(size_type offset, size_type count = npos) const noexcept {
         if (offset > _size) {
             offset = _size;
         }
@@ -103,25 +103,25 @@ public:
         return {_data + offset, count};
     }
 
-    bool starts_with(string_view str) const noexcept {
+    constexpr bool starts_with(string_view str) const noexcept {
         if (str.size() > _size) {
             return false;
         }
         return stringCompare(_data, str.data(), str.size()) == 0;
     }
-    bool ends_with(string_view str) const noexcept {
+    constexpr bool ends_with(string_view str) const noexcept {
         if (str.size() > _size) {
             return false;
         }
         return stringCompare(_data + _size - str.size(), str.data(), str.size()) == 0;
     }
 
-    size_type find(value_type ch) const noexcept {
+    constexpr size_type find(value_type ch) const noexcept {
         auto iter = stringFindChar(_data, _size, ch);
         return iter != nullptr ? iter - _data : npos;
     }
 
-    size_type find_first_of(string_view chars) const noexcept {
+    constexpr size_type find_first_of(string_view chars) const noexcept {
         for (size_type i = 0; i != _size; ++i) {
             if (chars.find(_data[i]) != string_view::npos) {
                 return i;
@@ -130,7 +130,7 @@ public:
         return npos;
     }
 
-    size_type find_last_of(string_view chars) const noexcept {
+    constexpr size_type find_last_of(string_view chars) const noexcept {
         for (size_type i = _size; i != 0; --i) {
             if (chars.find(_data[i - 1]) != string_view::npos) {
                 return i - 1;
@@ -139,31 +139,31 @@ public:
         return npos;
     }
 
-    friend std::strong_ordering operator<=>(string const& lhs, string const& rhs) noexcept {
+    constexpr friend std::strong_ordering operator<=>(string const& lhs, string const& rhs) noexcept {
         auto len = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
         auto rs = stringCompare(lhs.data(), rhs.data(), len);
         return rs <=> 0;
     }
 
-    friend bool operator==(string const& lhs, string const& rhs) noexcept {
+    constexpr friend bool operator==(string const& lhs, string const& rhs) noexcept {
         return lhs.size() == rhs.size() && stringCompare(lhs.data(), rhs.data(), lhs.size()) == 0;
     }
 
-    friend std::strong_ordering operator<=>(string const& lhs, const_pointer rhs) noexcept {
+    constexpr friend std::strong_ordering operator<=>(string const& lhs, const_pointer rhs) noexcept {
         auto rhsSize = rhs != nullptr ? stringLength(rhs) : 0;
         auto len = lhs.size() < rhsSize ? lhs.size() : rhsSize;
         auto rs = stringCompare(lhs.data(), rhs, len);
         return rs <=> 0;
     };
 
-    friend bool operator==(string const& lhs, const_pointer rhs) noexcept {
+    constexpr friend bool operator==(string const& lhs, const_pointer rhs) noexcept {
         auto rhsSize = rhs != nullptr ? stringLength(rhs) : 0;
         return lhs.size() == rhsSize && stringCompare(lhs.data(), rhs, rhsSize) == 0;
     }
 
-    /*implicit*/ operator string_view() const noexcept { return {_data, _size}; }
+    /*implicit*/ operator string_view() const noexcept { return {_data != nullptr ? _data : _empty, _size}; }
 
-    /*implicit*/ operator zstring_view() const noexcept { return {_data}; }
+    /*implicit*/ operator zstring_view() const noexcept { return {_data != nullptr ? _data : _empty}; }
 
     string& assign(const_pointer str, size_type length) {
         // RAII ensures self-assign of a range works
@@ -225,7 +225,7 @@ private:
         return p;
     }
 
-    static void _free(const_pointer data, size_type length) {
+    static void _free(const_pointer data, [[maybe_unused]] size_type length) {
         delete[] data;
         data = nullptr;
     }

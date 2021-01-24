@@ -2,10 +2,20 @@
 
 #include "assertion.h"
 #include "filesystem.h"
+#include "logger.h"
 #include "stream.h"
 
 #include <filesystem>
 #include <fstream>
+#include <thread>
+
+static up::Logger dmonLogger("DirectoryWatcher");
+
+#define DMON_ASSERT(e) UP_ASSERT(e)
+#define DMON_LOG_ERROR(s) ::dmonLogger.error((s))
+#define DMON_LOG_DEBUG(s) ::dmonLogger.info((s))
+#define DMON_IMPL
+#include <dmon.h>
 
 namespace up {
     namespace {
@@ -197,7 +207,7 @@ auto up::fs::removeRecursive(zstring_view path) -> IOResult {
     return errorCodeToResult(ec);
 }
 
-auto up::fs::currentWorkingDirectory() noexcept -> string {
+auto up::fs::currentWorkingDirectory() -> string {
     std::error_code ec;
     if (auto path = std::filesystem::current_path(ec).generic_string(); !ec) {
         return {path.data(), path.size()};
@@ -261,4 +271,100 @@ auto up::fs::writeAllText(zstring_view path, string_view text) -> IOResult {
         return IOResult::System;
     }
     return writeAllText(stream, text);
+}
+
+up::fs::WatchHandle::WatchHandle() = default;
+
+namespace {
+    class WatchHandleImpl final : public up::fs::WatchHandle {
+    public:
+        explicit WatchHandleImpl(up::string directory, up::fs::WatchCallback callback)
+            : _directory(std::move(directory))
+            , _callback(std::move(callback)) {}
+        ~WatchHandleImpl() override { close(); }
+
+        bool start() {
+            {
+                std::unique_lock _(_dmonInitLock);
+                if (_dmonInitCount++ == 0) {
+                    dmon_init();
+                }
+            }
+
+            _watch = dmon_watch(
+                _directory.c_str(),
+                _dmonCallbackStatic,
+                DMON_WATCHFLAGS_RECURSIVE | DMON_WATCHFLAGS_FOLLOW_SYMLINKS,
+                this);
+            return _watch.id != 0;
+        }
+
+        bool isOpen() const noexcept override { return _watch.id != 0; }
+
+        void close() override {
+            if (!isOpen()) {
+                return;
+            }
+
+            dmon_unwatch(_watch);
+            _watch.id = 0;
+
+            {
+                std::unique_lock _(_dmonInitLock);
+                if (--_dmonInitCount == 0) {
+                    dmon_deinit();
+                }
+            }
+        }
+
+    private:
+        static void _dmonCallbackStatic(
+            dmon_watch_id,
+            dmon_action action,
+            char const*,
+            char const* filename,
+            char const* oldfilename,
+            void* user) {
+            static_cast<WatchHandleImpl*>(user)->_dmonCallback(action, filename, oldfilename);
+        }
+
+        void _dmonCallback(dmon_action action, char const* filename, char const* oldfilename) {
+            up::fs::Watch watch;
+            switch (action) {
+                case DMON_ACTION_CREATE:
+                    watch.action = up::fs::WatchAction::Create;
+                    break;
+                case DMON_ACTION_DELETE:
+                    watch.action = up::fs::WatchAction::Delete;
+                    break;
+                case DMON_ACTION_MODIFY:
+                    watch.action = up::fs::WatchAction::Modify;
+                    break;
+                case DMON_ACTION_MOVE:
+                    watch.action = up::fs::WatchAction::Rename;
+                    break;
+                default:
+                    return;
+            }
+
+            watch.path = filename;
+            _callback(watch);
+        }
+
+        dmon_watch_id _watch = {0};
+        up::string _directory;
+        up::fs::WatchCallback _callback;
+
+        static inline std::mutex _dmonInitLock;
+        static inline size_t _dmonInitCount = 0;
+    };
+} // namespace
+
+auto up::fs::watchDirectory(zstring_view path, WatchCallback callback) -> IOReturn<rc<WatchHandle>> {
+    auto handle = new_shared<WatchHandleImpl>(string(path), std::move(callback));
+    if (!handle->start()) {
+        return {IOResult::UnsupportedOperation};
+    }
+
+    return IOReturn<rc<WatchHandle>>{IOResult::Success, std::move(handle)};
 }

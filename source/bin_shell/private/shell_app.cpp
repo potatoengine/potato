@@ -4,9 +4,11 @@
 #include "camera.h"
 #include "camera_controller.h"
 #include "components_schema.h"
+#include "recon_messages_schema.h"
 #include "scene.h"
-#include "editors/filetree_editor.h"
+#include "editors/asset_browser.h"
 #include "editors/game_editor.h"
+#include "editors/material_editor.h"
 #include "editors/scene_editor.h"
 
 #include "potato/audio/sound_resource.h"
@@ -24,14 +26,14 @@
 #include "potato/render/gpu_swap_chain.h"
 #include "potato/render/gpu_texture.h"
 #include "potato/render/material.h"
-#include "potato/render/mesh.h"
-#include "potato/render/model.h"
 #include "potato/render/renderer.h"
 #include "potato/render/shader.h"
+#include "potato/tools/desktop.h"
 #include "potato/tools/project.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/path.h"
+#include "potato/runtime/resource_manifest.h"
 #include "potato/runtime/stream.h"
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
@@ -42,20 +44,22 @@
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
 
-#include <glm/common.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/functions.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/vec3.hpp>
 #include <nlohmann/json.hpp>
 #include <SDL.h>
 #include <SDL_keycode.h>
 #include <SDL_messagebox.h>
 #include <SDL_syswm.h>
+#include <Tracy.hpp>
 #include <chrono>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <nfd.h>
+
+// SDL includes X.h on Linux, which pollutes this name we care about
+// FIXME: clean up this file for better abstractions to avoid header pollution problems
+#if defined(Success)
+#    undef Success
+#endif
 
 up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
 
@@ -71,34 +75,34 @@ up::shell::ShellApp::~ShellApp() {
 }
 
 int up::shell::ShellApp::initialize() {
+    TracyAppInfo("PotatoShell", stringLength("PotatoShell"));
+    ZoneScopedN("Initialize Shell");
+
     zstring_view configPath = "shell.config.json";
     if (fs::fileExists(configPath)) {
         _loadConfig(configPath);
     }
 
-    if (_editorResourcePath.empty()) {
-        _errorDialog("No editor resource path specified");
-        return 1;
-    }
-
-    _resourceLoader.setCasPath(path::join(_editorResourcePath, ".library", "cache"));
-
-    string manifestPath = path::join(_editorResourcePath, ".library", "manifest.txt");
-    if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
-        if (!ResourceManifest::parseManifest(manifestText, _resourceLoader.manifest())) {
-            _errorDialog("Failed to parse resource manifest");
-            return 1;
+    {
+        char* prefPathSdl = SDL_GetPrefPath("potato", "shell");
+        if (auto const rs = fs::createDirectories(prefPathSdl); rs != IOResult::Success) {
+            _logger.error("Failed to create preferences folder `{}`", prefPathSdl);
         }
+        _shellSettingsPath = path::join(prefPathSdl, "settings.json");
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
+        SDL_free(prefPathSdl);
     }
-    else {
-        _errorDialog("Failed to load resource manifest");
-        return 1;
+
+    schema::EditorSettings settings;
+    if (loadShellSettings(_shellSettingsPath, settings)) {
+        _logger.info("Loaded user settings: ", _shellSettingsPath);
     }
 
     _appActions.addAction(
         {.name = "potato.quit",
          .command = "Quit",
          .menu = "File\\Quit",
+         .icon = ICON_FA_DOOR_OPEN,
          .group = "z_quit",
          .hotKey = "Alt+F4",
          .action = [this] {
@@ -108,12 +112,23 @@ int up::shell::ShellApp::initialize() {
         {.name = "potato.project.open",
          .command = "Open Project",
          .menu = "File\\Open Project",
+         .icon = ICON_FA_FOLDER_OPEN,
          .group = "3_project",
          .priority = 100,
          .hotKey = "Alt+Shift+O",
          .action = [this] {
              _openProject = true;
              _closeProject = true;
+         }});
+    _appActions.addAction(
+        {.name = "potato.project.import",
+         .command = "Import Resources",
+         .menu = "File\\Import Resources",
+         .icon = ICON_FA_FILE_IMPORT,
+         .group = "3_project",
+         .priority = 120,
+         .action = [this] {
+             _executeRecon();
          }});
     _appActions.addAction(
         {.name = "potato.project.close",
@@ -130,15 +145,27 @@ int up::shell::ShellApp::initialize() {
         {.name = "potato.assets.newScene",
          .command = "New Scene",
          .menu = "File\\New\\Scene",
+         .icon = ICON_FA_IMAGE,
          .group = "1_new",
          .enabled = [this]() { return _project != nullptr; },
          .action =
              [this] {
                  _createScene();
              }});
-    _appActions.addAction({.name = "potato.editor.about", .menu = "Help\\About", .action = [this] {
-                               _aboutDialog = true;
-                           }});
+    _appActions.addAction(
+        {.name = "potato.editor.about", .menu = "Help\\About", .icon = ICON_FA_QUESTION_CIRCLE, .action = [this] {
+             _aboutDialog = true;
+         }});
+    _appActions.addAction(
+        {.name = "potato.editor.logs",
+         .menu = "View\\Logs",
+         .icon = ICON_FA_INFO,
+         .hotKey = "Alt+Shift+L",
+         .checked = [this] { return _logWindow.isOpen(); },
+         .action =
+             [this] {
+                 _logWindow.open(!_logWindow.isOpen());
+             }});
 
     _actions.addGroup(&_appActions);
 
@@ -155,22 +182,39 @@ int up::shell::ShellApp::initialize() {
     _menu.bindActions(_actions);
     _palette.bindActions(_actions);
 
-    constexpr int default_width = 1024;
-    constexpr int default_height = 768;
-
     _window = SDL_CreateWindow(
         "loading",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        default_width,
-        default_height,
-        SDL_WINDOW_RESIZABLE);
+        800,
+        600,
+        SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
     if (_window == nullptr) {
         _errorDialog("Could not create window");
     }
     _updateTitle();
 
-    SDL_SysWMinfo wmInfo;
+    SDL_DisplayMode desktopMode;
+    int const displayIndex = SDL_GetWindowDisplayIndex(_window.get());
+    int const displayResult = SDL_GetCurrentDisplayMode(displayIndex, &desktopMode);
+    if (displayResult == 0) {
+        int currentWidth = 0;
+        int currentHeight = 0;
+        SDL_GetWindowSize(_window.get(), &currentWidth, &currentHeight);
+
+        int const newWidth = std::max(static_cast<int>(desktopMode.w * 0.75), currentWidth);
+        int const newHeight = std::max(static_cast<int>(desktopMode.h * 0.75), currentHeight);
+
+        int const newPosX = static_cast<int>((desktopMode.w - newWidth) * 0.5);
+        int const newPosY = static_cast<int>((desktopMode.h - newHeight) * 0.5);
+
+        SDL_SetWindowSize(_window.get(), newWidth, newHeight);
+        SDL_SetWindowPosition(_window.get(), newPosX, newPosY);
+    }
+
+    SDL_ShowWindow(_window.get());
+
+    SDL_SysWMinfo wmInfo{};
     SDL_VERSION(&wmInfo.version);
 
     if (SDL_GetWindowWMInfo(_window.get(), &wmInfo) != SDL_TRUE) {
@@ -178,7 +222,8 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _audio = AudioEngine::create(_resourceLoader);
+    _audio = AudioEngine::create();
+    _audio->registerAssetBackends(_assetLoader);
 
 #if defined(UP_GPU_ENABLE_D3D12)
     if (_device == nullptr) {
@@ -196,8 +241,8 @@ int up::shell::ShellApp::initialize() {
         return 1;
     }
 
-    _loader = new_box<DefaultLoader>(_resourceLoader, _device);
-    _renderer = new_box<Renderer>(*_loader, _device);
+    _renderer = new_box<Renderer>(_device);
+    _renderer->registerAssetBackends(_assetLoader);
 
 #if UP_PLATFORM_WINDOWS
     _swapChain = _device->createSwapChain(wmInfo.info.win.window);
@@ -246,23 +291,53 @@ int up::shell::ShellApp::initialize() {
     _universe->registerComponent<components::Wave>("Wave");
     _universe->registerComponent<components::Spin>("Spin");
     _universe->registerComponent<components::Ding>("Ding");
+    _universe->registerComponent<components::Test>("Test");
+
+    _editorFactories.push_back(
+        AssetBrowser::createFactory(_assetLoader, _reconClient, _assetEditService, [this](UUID const& uuid) {
+            _openAssetEditor(uuid);
+        }));
+    _editorFactories.push_back(SceneEditor::createFactory(
+        *_audio,
+        *_universe,
+        _assetLoader,
+        [this] { return _universe->components(); },
+        [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
+    _editorFactories.push_back(MaterialEditor::createFactory(_assetLoader));
+
+    if (!settings.project.empty()) {
+        _loadProject(settings.project);
+    }
 
     return 0;
 }
 
-bool up::shell::ShellApp::_selectAndLoadProject(zstring_view defaultPath) {
+bool up::shell::ShellApp::_selectAndLoadProject(zstring_view folder) {
     nfdchar_t* selectedPath = nullptr;
-    string folder = path::normalize(path::parent(defaultPath), path::Separator::Native);
-    auto const result = NFD_OpenDialog("popr", folder.c_str(), &selectedPath);
-    if (result != NFD_OKAY) {
+    auto result = NFD_OpenDialog("popr", path::normalize(folder).c_str(), &selectedPath);
+    if (result == NFD_ERROR) {
+        result = NFD_OpenDialog("popr", nullptr, &selectedPath);
+    }
+    if (result == NFD_ERROR) {
+        _logger.error("NDF_OpenDialog error: {}", NFD_GetError());
         return false;
     }
     bool success = _loadProject(selectedPath);
     free(selectedPath); // NOLINT(cppcoreguidelines-no-malloc)
+
+    if (success) {
+        schema::EditorSettings settings;
+        settings.project = string{_project->projectFilePath()};
+        if (!saveShellSettings(_shellSettingsPath, settings)) {
+            _logger.error("Failed to save shell settings to `{}`", _shellSettingsPath);
+        }
+    }
     return success;
 }
 
 bool up::shell::ShellApp::_loadProject(zstring_view path) {
+    _logger.info("Loading project: {}", path);
+
     _project = Project::loadFromFile(path);
     if (_project == nullptr) {
         _errorDialog("Could not load project file");
@@ -270,13 +345,43 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     }
 
     _projectName = string{path::filebasename(path)};
+    _assetEditService.setAssetRoot(string{_project->resourceRootPath()});
+
+    _loadManifest();
 
     _editors.closeAll();
-    _editors.open(createFileTreeEditor(_editorResourcePath, [this](zstring_view name) { _onFileOpened(name); }));
-
+    _openEditor(AssetBrowser::editorName);
     _updateTitle();
 
+    if (!_reconClient.start(*_project)) {
+        _logger.error("Failed to start recon");
+    }
+
     return true;
+}
+
+void up::shell::ShellApp::_openEditor(zstring_view editorName) {
+    for (auto const& factory : _editorFactories) {
+        if (factory->editorName() == editorName) {
+            auto editor = factory->createEditor();
+            if (editor != nullptr) {
+                _editors.open(std::move(editor));
+            }
+            return;
+        }
+    }
+}
+
+void up::shell::ShellApp::_openEditorForDocument(zstring_view editorName, zstring_view filename) {
+    for (auto const& factory : _editorFactories) {
+        if (factory->editorName() == editorName) {
+            auto editor = factory->createEditorForDocument(filename);
+            if (editor != nullptr) {
+                _editors.open(std::move(editor));
+            }
+            return;
+        }
+    }
 }
 
 void up::shell::ShellApp::run() {
@@ -293,9 +398,12 @@ void up::shell::ShellApp::run() {
     uint64 hotKeyRevision = 0;
 
     while (isRunning()) {
+        ZoneScopedN("Main Loop");
+
         imguiIO.DeltaTime = _lastFrameTime;
 
         if (!_actions.refresh(hotKeyRevision)) {
+            ZoneScopedN("Rebuild Actions");
             _hotKeys.clear();
             _actions.build([this](ActionId id, ActionDesc const& action) {
                 if (!action.hotKey.empty()) {
@@ -307,10 +415,16 @@ void up::shell::ShellApp::run() {
         _processEvents();
 
         if (_openProject && !_closeProject) {
+            ZoneScopedN("Load Project");
             _openProject = false;
-            if (!_selectAndLoadProject(path::join(_editorResourcePath, "..", "resources", "sample.popr"))) {
+            if (!_selectAndLoadProject(
+                    path::join(fs::currentWorkingDirectory(), "..", "..", "..", "..", "resources"))) {
                 continue;
             }
+        }
+
+        if (_reconClient.hasUpdatedAssets()) {
+            _loadManifest();
         }
 
         SDL_GetWindowSize(_window.get(), &width, &height);
@@ -326,6 +440,7 @@ void up::shell::ShellApp::run() {
         _render();
 
         if (_closeProject) {
+            _reconClient.stop();
             _closeProject = false;
             _editors.closeAll();
             _project = nullptr;
@@ -355,7 +470,8 @@ void up::shell::ShellApp::_onWindowSizeChanged() {
     int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
     _swapChain->resizeBuffers(width, height);
-    //_uiRenderCamera->resetBackBuffer(_swapChain->getBuffer(0));
+    
+    _logger.info("Window resized: {}x{}", width, height);
 }
 
 void up::shell::ShellApp::_updateTitle() {
@@ -372,6 +488,8 @@ void up::shell::ShellApp::_updateTitle() {
 }
 
 void up::shell::ShellApp::_processEvents() {
+    ZoneScopedN("Shell Events");
+
     auto& io = ImGui::GetIO();
 
     SDL_SetRelativeMouseMode(ImGui::IsCaptureRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
@@ -459,6 +577,8 @@ void up::shell::ShellApp::_processEvents() {
 }
 
 void up::shell::ShellApp::_render() {
+    ZoneScopedN("Shell Render");
+
     GpuViewportDesc viewport;
     int width = 0;
     int height = 0;
@@ -473,9 +593,12 @@ void up::shell::ShellApp::_render() {
     _renderer->beginFrame(_swapChain.get());
     _renderer->endFrame(_swapChain.get(), 0.0f);
     _swapChain->present();
+    FrameMark;
 }
 
 void up::shell::ShellApp::_displayUI() {
+    ZoneScopedN("Shell UI");
+
     auto& imguiIO = ImGui::GetIO();
 
     _displayMainMenu();
@@ -528,6 +651,8 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
 
     _editors.update(_actions, *_renderer, _lastFrameTime);
 
+    _logWindow.draw();
+
     ImGui::End();
 }
 
@@ -543,50 +668,63 @@ bool up::shell::ShellApp::_loadConfig(zstring_view path) {
         return false;
     }
 
-    auto const editorResourcePath = jsonRoot["editorResourcePath"];
-
-    if (editorResourcePath.is_string()) {
-        _editorResourcePath = editorResourcePath.get<string>();
-    }
-
     return true;
 }
 
-void up::shell::ShellApp::_onFileOpened(zstring_view filename) {
-    if (path::extension(filename) == ".scene") {
-        _createScene();
+void up::shell::ShellApp::_openAssetEditor(UUID const& uuid) {
+    string assetPath;
+    uint64 assetTypeHash = 0;
+    for (auto const& record : _assetLoader.manifest()->records()) {
+        if (record.uuid == uuid) {
+            assetPath = path::join(_project->resourceRootPath(), record.filename);
+            assetTypeHash = hash_value(record.type);
+            break;
+        }
+    }
+    if (assetPath.empty()) {
+        return;
+    }
+
+    zstring_view const editor = _assetEditService.findInfoForAssetTypeHash(assetTypeHash).editor;
+    if (!editor.empty()) {
+        _openEditorForDocument(SceneEditor::editorName, assetPath);
+    }
+    else {
+        if (!desktop::openInExternalEditor(assetPath)) {
+            _logger.error("Failed to open application for asset: {}", assetPath);
+        }
     }
 }
 
 void up::shell::ShellApp::_createScene() {
-    auto material = _loader->loadMaterialSync("materials/full.mat");
-    if (material == nullptr) {
-        _errorDialog("Failed to load basic material");
-        return;
-    }
-
-    auto mesh = _loader->loadMeshSync("meshes/cube.obj");
-    if (mesh == nullptr) {
-        _errorDialog("Failed to load cube mesh");
-        return;
-    }
-
-    auto ding = _audio->loadSound("audio/kenney/highUp.mp3");
-    if (ding == nullptr) {
-        _errorDialog("Failed to load highUp mp3");
-        return;
-    }
-
-    auto model = new_shared<Model>(std::move(mesh), std::move(material));
-
-    auto scene = new_shared<Scene>(*_universe, *_audio);
-    scene->create(model, ding);
-    _editors.open(createSceneEditor(
-        scene,
-        [this] { return _universe->components(); },
-        [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
+    _openEditor(SceneEditor::editorName);
 }
 
 void up::shell::ShellApp::_createGame(rc<Scene> scene) {
     _editors.open(createGameEditor(std::move(scene)));
+}
+
+void up::shell::ShellApp::_executeRecon() {
+    schema::ReconImportAllMessage msg;
+    msg.force = true;
+    _reconClient.sendMessage(msg);
+
+    _loadManifest();
+}
+
+void up::shell::ShellApp::_loadManifest() {
+    ZoneScopedN("Load Manifest");
+    string manifestPath = path::join(_project->libraryPath(), "manifest.txt");
+    _logger.info("Loading manifest {}", manifestPath);
+    if (auto [rs, manifestText] = fs::readText(manifestPath); rs == IOResult{}) {
+        auto manifest = new_box<ResourceManifest>();
+        if (!ResourceManifest::parseManifest(manifestText, *manifest)) {
+            _logger.error("Failed to parse resource manifest");
+        }
+        string casPath = path::join(_project->libraryPath(), "cache");
+        _assetLoader.bindManifest(std::move(manifest), std::move(casPath));
+    }
+    else {
+        _logger.error("Failed to load resource manifest");
+    }
 }

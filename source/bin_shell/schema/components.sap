@@ -3,17 +3,11 @@ module components;
 import common;
 import ecs;
 import tools;
+import constraint;
+import material;
 
-[cxximport("up::Model", "potato/render/model.h")]
-struct Model {}
-
-[cxximport("up::SoundResource", "potato/audio/sound_resource.h")]
-struct SourceResource {}
-
-[cxximport("up::rc<up::Model>", "potato/render/model.h")]
-type ModelHandle;
-
-[cxximport("up::rc<up::SoundResource>", "potato/audio/sound_resource.h")]
+[cxximport("up::SoundResource::Handle", "potato/audio/sound_resource.h")]
+[AssetReference("potato.asset.sound")]
 type SoundHandle;
 
 [Component]
@@ -30,7 +24,8 @@ struct Transform {
 
 [Component]
 struct Mesh {
-    ModelHandle model;
+    MeshHandle mesh;
+    MaterialHandle material;
 }
 
 [Component]
@@ -47,6 +42,27 @@ struct Spin {
 [Component]
 struct Ding {
     float period = 1;
+    [FloatRange(0, 3600)]
     float time = 0;
     SoundHandle sound;
+}
+
+struct Data {
+    [DisplayName("Value")]
+    int x;
+    [DisplayName("Description")]
+    string s;
+}
+
+[Component]
+struct Test {
+    [DisplayName("Data")]
+    Data d1;
+
+    [Flatten]
+    Data d2;
+
+    [Tooltip("Test array")]
+    [IntRange(-10, 10)]
+    int[] numbers;
 }

@@ -10,16 +10,18 @@ up_set_common_properties(potato_libreflex)
 include(up_compile_sap)
 up_compile_sap(potato_libreflex SCHEMAS
     schema/common.sap
+    schema/reflex.sap
+    schema/constraint.sap
     schema/tools.sap
 )
 
 target_sources(potato_libreflex PRIVATE
     "public/potato/reflex/_export.h"
-    
-    
     "public/potato/reflex/schema.h"
     "public/potato/reflex/traits.h"
     "public/potato/reflex/type.h"
+    "public/potato/reflex/serialize.h"
+    "private/serialize.cpp"
 )
 
 target_link_libraries(potato_libreflex
@@ -27,13 +29,18 @@ target_link_libraries(potato_libreflex
         potato::spud
         potato::libruntime
         glm::glm
-    PRIVATE
         nlohmann_json::nlohmann_json
 )
 
 add_executable(potato_libreflex_test)
 target_sources(potato_libreflex_test PRIVATE
     "tests/main.cpp"
+    "tests/test_schema.cpp"
+    "tests/test_serialize.cpp"
+)
+
+up_compile_sap(potato_libreflex_test SCHEMAS
+    schema/reflex_test.sap
 )
 
 up_set_common_properties(potato_libreflex_test)

@@ -17,10 +17,6 @@ target_sources(potato_libruntime PRIVATE
     $<$<PLATFORM_ID:Windows>:private/debug.windows.h>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.rc>
 
-    # Logger backends
-    #
-    $<$<PLATFORM_ID:Windows>:private/win32_debug_receiver.windows.cpp>
-
     # Semaphore implementations
     #
     $<$<BOOL:${UNIX}>:private/semaphore.posix.cpp>
@@ -45,16 +41,15 @@ target_sources(potato_libruntime PRIVATE
     private/logger.cpp
     private/path.cpp
     "private/filesystem.cpp"
-    private/standard_stream_receiver.cpp
     private/stream.cpp
     private/task_worker.cpp
     private/thread_util.cpp
     private/uuid.cpp
-    "public/potato/runtime/resource_loader.h"
+    "public/potato/runtime/asset_loader.h"
     "public/potato/runtime/resource_manifest.h"
-    "private/resource_loader.cpp"
+    "private/asset_loader.cpp"
     "private/resource_manifest.cpp"
-)
+ "public/potato/runtime/asset.h")
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libruntime)
@@ -83,6 +78,9 @@ target_link_libraries(potato_libruntime
         ${UP_UUID_LIBRARY}
         Threads::Threads
         nlohmann_json::nlohmann_json
+        tracy
+    PRIVATE
+        dmon
 )
 
 target_compile_definitions(potato_libruntime

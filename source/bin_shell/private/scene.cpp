@@ -6,7 +6,7 @@
 #include "potato/audio/audio_engine.h"
 #include "potato/ecs/query.h"
 #include "potato/ecs/world.h"
-#include "potato/render/model.h"
+#include "potato/render/mesh.h"
 #include "potato/runtime/json.h"
 
 #include <glm/common.hpp>
@@ -18,6 +18,7 @@
 
 up::Scene::Scene(Universe& universe, AudioEngine& audioEngine)
     : _audioEngine(audioEngine)
+    , _universe(universe)
     , _world{universe.createWorld()}
     , _waveQuery{universe.createQuery<components::Transform, components::Wave>()}
     , _orbitQuery{universe.createQuery<components::Transform>()}
@@ -26,36 +27,7 @@ up::Scene::Scene(Universe& universe, AudioEngine& audioEngine)
     , _transformQuery{universe.createQuery<components::Transform>()}
     , _renderableMeshQuery{universe.createQuery<components::Mesh, components::Transform>()} {}
 
-void up::Scene::create(rc<Model> const& cube, rc<SoundResource> const& ding) {
-    auto pi = glm::pi<float>();
-
-    constexpr int numObjects = 100;
-
-    for (size_t i = 0; i <= numObjects; ++i) {
-        float p = i / static_cast<float>(numObjects);
-        float r = p * 2.f * pi;
-        _world.createEntity(
-            components::Transform{
-                .position =
-                    {(20 + glm::cos(r) * 10.f) * glm::sin(r),
-                     1 + glm::sin(r * 10.f) * 5.f,
-                     (20 + glm::sin(r) * 10.f) * glm::cos(r)},
-                .rotation = glm::identity<glm::quat>()},
-            components::Transform{},
-            components::Mesh{cube},
-            components::Wave{0, r},
-            components::Spin{glm::sin(r) * 2.f - 1.f});
-    }
-
-    _root = _world.createEntity(
-        components::Transform{.position = {0, 5, 0}, .rotation = glm::identity<glm::quat>()},
-        components::Mesh{cube},
-        components::Ding{2, 0, ding});
-}
-
-up::Scene::~Scene() {
-    _cube.reset();
-}
+up::Scene::~Scene() = default;
 
 void up::Scene::tick(float frameTime) {
     if (!_playing) {
@@ -79,7 +51,7 @@ void up::Scene::tick(float frameTime) {
         ding.time += frameTime;
         if (ding.time > ding.period) {
             ding.time -= ding.period;
-            _audioEngine.play(ding.sound.get());
+            _audioEngine.play(ding.sound.asset());
         }
     });
 }

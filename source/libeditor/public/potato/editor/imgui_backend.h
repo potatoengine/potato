@@ -3,6 +3,7 @@
 #pragma once
 
 #include "_export.h"
+#include "imgui_fonts.h"
 
 #include "potato/runtime/stream.h"
 #include "potato/spud/box.h"
@@ -28,6 +29,7 @@ struct ImDrawList;
 struct ImData;
 struct ImGuiContext;
 struct ImGuiIO;
+struct ImFont;
 using SDL_Event = union SDL_Event;
 
 namespace up {
@@ -39,13 +41,8 @@ namespace up {
         UP_EDITOR_API ImguiBackend();
         UP_EDITOR_API ~ImguiBackend();
 
-        UP_EDITOR_API void bindShaders(rc<Shader> vertShader, rc<Shader> pixelShader);
-
         UP_EDITOR_API bool createResources(GpuDevice& device);
         UP_EDITOR_API void releaseResources();
-
-        UP_EDITOR_API bool loadFontAwesome5(Stream fontFile);
-        UP_EDITOR_API bool loadFont(Stream fontFile);
 
         UP_EDITOR_API bool handleEvent(SDL_Event const& ev);
 
@@ -58,6 +55,8 @@ namespace up {
 
         void setCaptureRelativeMouseMode(bool captured) noexcept { _captureRelativeMouseMode = captured; }
         auto isCaptureRelativeMouseMode() const noexcept -> bool { return _captureRelativeMouseMode; }
+
+        ImFont* getFont(int index) const noexcept;
 
     private:
         class ImGuiRenderer : public up::IRenderable {
@@ -74,6 +73,7 @@ namespace up {
 
         void _initialize();
         void _ensureContext();
+        void _loadFonts();
         void _applyStyle();
 
         static void _freeContext(ImGuiContext* ctx);
@@ -93,5 +93,6 @@ namespace up {
         string _clipboardTextData;
         box<ImGuiRenderer> _imGuiRenderer;
         bool _captureRelativeMouseMode = false;
+        ImFont* _fonts[static_cast<int>(ImGui::Potato::UpFont::Count_)] = {};
     };
 } // namespace up

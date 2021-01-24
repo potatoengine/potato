@@ -37,16 +37,16 @@ namespace up {
             Database(Database const&) = delete;
             Database& operator=(Database const&) = delete;
 
-            UP_POSQL_API [[nodiscard]] SqlResult open(zstring_view file_name) noexcept;
+            [[nodiscard]] UP_POSQL_API SqlResult open(zstring_view file_name) noexcept;
             UP_POSQL_API void close() noexcept;
 
             [[nodiscard]] bool empty() const noexcept { return _conn == nullptr; }
             [[nodiscard]] explicit operator bool() const noexcept { return _conn != nullptr; }
 
-            UP_POSQL_API [[nodiscard]] Statement prepare(zstring_view sql) noexcept;
-            UP_POSQL_API [[nodiscard]] SqlResult execute(zstring_view sql) noexcept;
+            [[nodiscard]] UP_POSQL_API Statement prepare(zstring_view sql) noexcept;
+            [[nodiscard]] UP_POSQL_API SqlResult execute(zstring_view sql) noexcept;
 
-            UP_POSQL_API [[nodiscard]] Transaction begin() noexcept;
+            [[nodiscard]] UP_POSQL_API Transaction begin() noexcept;
 
         private:
             sqlite3* _conn = nullptr;
@@ -107,7 +107,7 @@ namespace up {
             [[nodiscard]] bool empty() const noexcept { return _stmt == nullptr; }
             [[nodiscard]] explicit operator bool() const noexcept { return _stmt != nullptr; }
 
-            UP_POSQL_API [[nodiscard]] SqlResult execute() noexcept {
+            [[nodiscard]] UP_POSQL_API SqlResult execute() noexcept {
                 _begin();
                 return _execute();
             }
@@ -148,7 +148,7 @@ namespace up {
             }
 
             UP_POSQL_API void _bind(int index, int64 value) noexcept;
-            UP_POSQL_API void _bind(int index, zstring_view value) noexcept;
+            UP_POSQL_API void _bind(int index, string_view value) noexcept;
             template <enumeration E>
             void _bind(int index, E value) noexcept {
                 _bind(index, to_underlying(value));
@@ -177,8 +177,8 @@ namespace up {
                 }
             }
 
-            UP_POSQL_API [[nodiscard]] int64 _column_int64(int index) noexcept;
-            UP_POSQL_API [[nodiscard]] zstring_view _column_string(int index) noexcept;
+            [[nodiscard]] UP_POSQL_API int64 _column_int64(int index) noexcept;
+            [[nodiscard]] UP_POSQL_API zstring_view _column_string(int index) noexcept;
 
             template <typename...>
             friend class QueryResult;

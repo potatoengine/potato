@@ -1,0 +1,20 @@
+module reflex_test;
+
+import common;
+
+enum TestEnum {
+    First,
+    Second,
+    Third
+}
+
+struct TestStruct {
+    [json("enum")]
+    TestEnum test = First;
+}
+
+struct TestComplex {
+    float[] values;
+    string name;
+    TestStruct test;
+}

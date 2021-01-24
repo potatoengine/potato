@@ -1,9 +1,5 @@
 {
     "$type": "potato.project",
-    "$version": 0,
-    "assets": {
-        "root": ".",
-        "target": "../out",
-        "cache": "../out/cache"
-    }
+    "$version": 1,
+    "resourceRoot": "."
 }

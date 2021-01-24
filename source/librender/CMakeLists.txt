@@ -13,12 +13,15 @@ target_sources(potato_librender PRIVATE
     "private/image.cpp"
     "private/material.cpp"
     "private/mesh.cpp"
-    "private/model.cpp"
     "private/renderer.cpp"
     "private/stb_impl.cpp"
     "private/texture.cpp"
     "private/null_backend/null_objects.cpp"
 )
+
+include(up_compile_shader)
+up_compile_shader(potato_librender STAGE vertex HLSL "data/shaders/debug.hlsl")
+up_compile_shader(potato_librender STAGE pixel HLSL "data/shaders/debug.hlsl")
 
 include(up_set_common_properties)
 up_set_common_properties(potato_librender)
@@ -30,8 +33,13 @@ include(up_compile_flat_schema)
 up_compile_flat_schema(potato_librender
     NAME render
     SCHEMAS
-        "schemas/material.fbs"
-        "schemas/model.fbs"
+        "schema/material.fbs"
+        "schema/model.fbs"
+)
+
+include(up_compile_sap)
+up_compile_sap(potato_librender SCHEMAS
+    "schema/material.sap"
 )
 
 target_link_libraries(potato_librender
@@ -40,6 +48,7 @@ target_link_libraries(potato_librender
         potato::spud
         glm
     PRIVATE
+        potato::libreflex
         stb
         imgui
         SDL2

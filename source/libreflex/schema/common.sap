@@ -1,11 +1,12 @@
 module common;
 
 attribute ignore;
-attribute required { bool required = true; }
+attribute required { bool require = true; }
 attribute cxxname { string id; }
 attribute cxximport { string id; string header; }
 attribute json { string name; }
 attribute serialize {}
+attribute virtualbase {}
 
 [ignore, cxxname("char")]
 type char;
@@ -24,3 +25,6 @@ type mat4x4;
 
 [ignore, cxximport("glm::quat", "glm/gtx/quaternion.hpp")]
 type quat;
+
+[cxximport("up::UUID", "potato/runtime/uuid.h")]
+type UUID;

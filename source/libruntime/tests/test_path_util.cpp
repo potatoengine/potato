@@ -10,10 +10,10 @@ TEST_CASE("up::path", "[potato][runtime]") {
     using namespace up::path;
 
     SECTION("extension") {
-        CHECK(extension(""_zsv) == "");
+        CHECK(extension(""_zsv).empty());
         CHECK(extension("/foo/bar.txt"_zsv) == ".txt");
         CHECK(extension(".txt"_zsv) == ".txt");
-        CHECK(extension("/foo/bar"_zsv) == "");
+        CHECK(extension("/foo/bar"_zsv).empty());
 
         CHECK(extension(""_sv) == "");
         CHECK(extension("/foo/bar.txt"_sv) == ".txt");
@@ -70,7 +70,7 @@ TEST_CASE("up::path", "[potato][runtime]") {
         CHECK(normalize("/foo") == "/foo");
         CHECK(normalize("/bar.txt") == "/bar.txt");
 
-        CHECK(normalize("") == "");
+        CHECK(normalize("").empty());
         CHECK(normalize("/foo\\bar.txt") == "/foo/bar.txt");
         CHECK(normalize("//foo/bar.txt") == "/foo/bar.txt");
         CHECK(normalize("/foo/bar.txt") == "/foo/bar.txt");
@@ -90,6 +90,8 @@ TEST_CASE("up::path", "[potato][runtime]") {
         CHECK(normalize("/foo/../../bar") == "/bar");
         CHECK(normalize(".") == "/");
         CHECK(normalize("..") == "/");
+
+        CHECK(normalize("..", Separator::Windows) == "\\");
     }
 
     SECTION("join") {
@@ -98,8 +100,10 @@ TEST_CASE("up::path", "[potato][runtime]") {
         CHECK(join("/foo", "", "/bar.txt") == "/foo//bar.txt");
         CHECK(join("", "foo", "/bar.txt") == "foo//bar.txt");
         CHECK(join("foo", "bar", "") == "foo/bar");
-        CHECK(join() == "");
+        CHECK(join().empty());
 
         CHECK(join("/foo", "/bar"_sv, "baz.txt"_s) == "/foo//bar/baz.txt");
+
+        CHECK(join(Separator::Windows, "/foo", "/bar"_sv, "baz.txt"_s) == "/foo\\/bar\\baz.txt");
     }
 }

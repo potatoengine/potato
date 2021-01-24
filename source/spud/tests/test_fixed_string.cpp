@@ -13,7 +13,7 @@ TEST_CASE("[potato][spud] up::fixed_string") {
 
         CHECK(fs.empty());
 
-        CHECK(fs.size() == 0);
+        CHECK(fs.empty());
         CHECK(fs.capacity() == 31);
         CHECK(*fs.data() == '\0');
     }

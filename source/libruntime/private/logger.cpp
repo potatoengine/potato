@@ -1,51 +1,113 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "logger.h"
-#include "standard_stream_receiver.h"
-#if UP_PLATFORM_WINDOWS
-#    include "win32_debug_receiver.h"
-#endif
-
-up::Logger::Logger(string name, LogSeverity minimumSeverity)
-    : _name(std::move(name))
-    , _minimumSeverity(minimumSeverity) {
-    static auto standard = up::new_shared<up::StandardStreamReceiver>();
-    attach(standard);
 
 #if UP_PLATFORM_WINDOWS
-    static auto debug = up::new_shared<up::Win32DebugReceiver>();
-    attach(debug);
+#    include "potato/spud/platform_windows.h"
 #endif
-}
 
-up::Logger::Logger(string name, rc<LogReceiver> receiver, LogSeverity minimumSeverity) noexcept
-    : _name(std::move(name))
-    , _minimumSeverity(minimumSeverity) {
-    attach(std::move(receiver));
-}
+#include <iostream>
 
-void up::Logger::attach(rc<LogReceiver> receiver) noexcept {
-    LockGuard _(_receiversLock.writer());
-    _receivers.push_back(std::move(receiver));
-}
+void up::DefaultLogSink::log(
+    string_view loggerName,
+    LogSeverity severity,
+    string_view message,
+    LogLocation location) noexcept {
+    char buffer[2048] = {
+        0,
+    };
 
-void up::Logger::detach(LogReceiver* remove) noexcept {
-    LockGuard _(_receiversLock.writer());
-    for (size_t i = 0; i != _receivers.size(); ++i) {
-        if (_receivers[i].get() == remove) {
-            _receivers.erase(_receivers.begin() + i);
-            --i;
+    if (location.file) {
+        format_append(buffer, "{}({}): <{}> ", location.file, location.line, location.function);
+    }
+
+    format_append(buffer, "[{}] {} :: {}\n", toString(severity), loggerName, message);
+
+    {
+        std::ostream& os = severity == LogSeverity::Error ? std::cerr : std::cout;
+
+        os << buffer;
+
+        if (severity != LogSeverity::Info) {
+            os.flush();
         }
+    }
+
+#if defined(UP_PLATFORM_WINDOWS)
+    OutputDebugStringA(buffer);
+#endif
+}
+
+void up::LogSink::next(
+    string_view loggerName,
+    LogSeverity severity,
+    string_view message,
+    LogLocation location) noexcept {
+    if (_next != nullptr) {
+        _next->log(loggerName, severity, message, location);
     }
 }
 
-void up::Logger::_dispatch(LogSeverity severity, string_view message, LogLocation location) noexcept {
+up::Logger::Logger(string name, rc<Impl> parent, rc<LogSink> sink, LogSeverity minimumSeverity)
+    : _impl(new_shared<Impl>()) {
+    _impl->name = std::move(name);
+    _impl->parent = std::move(parent);
+    _impl->minimumSeverity = minimumSeverity;
+    _impl->sink = std::move(sink);
+}
+
+up::Logger::~Logger() = default;
+
+auto up::Logger::root() -> up::Logger& {
+    static Logger s_logger("Potato", nullptr, new_shared<DefaultLogSink>(), LogSeverity::Info);
+    return s_logger;
+}
+
+bool up::Logger::isEnabledFor(LogSeverity severity) const noexcept {
+    return severity >= _impl->minimumSeverity;
+}
+
+void up::Logger::attach(rc<LogSink> sink) noexcept {
+    LockGuard _(_impl->lock.writer());
+    if (sink != nullptr) {
+        sink->_next = std::move(_impl->sink);
+    }
+    _impl->sink = std::move(sink);
+}
+
+void up::Logger::detach(LogSink* sink) noexcept {
+    if (sink == nullptr) {
+        return;
+    }
+
+    LockGuard _(_impl->lock.writer());
+    if (_impl->sink.get() == sink) {
+        _impl->sink = std::move(_impl->sink->_next);
+    }
+}
+
+void up::Logger::_dispatch(Impl& impl, LogSeverity severity, string_view loggerName, string_view message) noexcept {
+    rc<Impl> parent;
+
+    {
+        LockGuard _(impl.lock.reader());
+        if (impl.sink != nullptr) {
+            impl.sink->log(loggerName, severity, message, {});
+        }
+        parent = impl.parent;
+    }
+
+    if (parent != nullptr && severity >= parent->minimumSeverity) {
+        _dispatch(*parent, severity, loggerName, message);
+    }
+}
+
+void up::Logger::log(LogSeverity severity, string_view message) noexcept {
     if (!isEnabledFor(severity)) {
         return;
     }
 
-    LockGuard _(_receiversLock.reader());
-    for (auto& receiver : _receivers) {
-        receiver->log(_name, severity, message, location);
-    }
+    rc<Impl> impl = _impl;
+
+    _dispatch(*impl, severity, impl->name, message);
 }

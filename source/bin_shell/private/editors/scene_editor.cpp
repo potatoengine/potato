@@ -5,16 +5,24 @@
 #include "camera_controller.h"
 #include "editor.h"
 #include "scene.h"
+#include "scene_doc.h"
 #include "selection.h"
 
+#include "potato/audio/audio_engine.h"
+#include "potato/audio/sound_resource.h"
 #include "potato/editor/imgui_ext.h"
+#include "potato/reflex/serialize.h"
 #include "potato/render/camera.h"
 #include "potato/render/context.h"
 #include "potato/render/debug_draw.h"
 #include "potato/render/gpu_device.h"
 #include "potato/render/gpu_resource_view.h"
 #include "potato/render/gpu_texture.h"
+#include "potato/render/material.h"
+#include "potato/render/mesh.h"
 #include "potato/render/renderer.h"
+#include "potato/runtime/asset_loader.h"
+#include "potato/runtime/filesystem.h"
 #include "potato/spud/delegate.h"
 #include "potato/spud/fixed_string_writer.h"
 
@@ -22,16 +30,87 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-auto up::shell::createSceneEditor(
-    rc<Scene> scene,
+namespace up::shell {
+    namespace {
+        class SceneEditorFactory : public EditorFactory {
+        public:
+            SceneEditorFactory(
+                AudioEngine& audioEngine,
+                Universe& universe,
+                AssetLoader& assetLoader,
+                SceneEditor::EnumerateComponents components,
+                SceneEditor::HandlePlayClicked onPlayClicked)
+                : _audioEngine(audioEngine)
+                , _universe(universe)
+                , _assetLoader(assetLoader)
+                , _components(std::move(components))
+                , _onPlayClicked(std::move(onPlayClicked)) {}
+
+            zstring_view editorName() const noexcept override { return SceneEditor::editorName; }
+
+            box<Editor> createEditor() override { return nullptr; }
+
+            box<Editor> createEditorForDocument(zstring_view filename) override {
+                auto scene = new_shared<Scene>(_universe, _audioEngine);
+                auto doc = new_box<SceneDocument>(string(filename), std::move(scene));
+
+#if 0
+                auto material = _assetLoader.loadAssetSync<Material>(
+                    _assetLoader.translate(UUID::fromString("1fe16c8f-6225-f246-9df4-824e34a28913")));
+                if (!material.isSet()) {
+                    return nullptr;
+                }
+
+                auto mesh = _assetLoader.loadAssetSync<Mesh>(
+                    _assetLoader.translate(UUID::fromString("8b589d73-8596-6a45-962b-4816b33d9ca3")));
+                if (!mesh.isSet()) {
+                    return nullptr;
+                }
+
+                auto ding = _assetLoader.loadAssetSync<SoundResource>(
+                    _assetLoader.translate(UUID::fromString("df3a7c47-d06a-cc44-abc4-e928aa4ab035")));
+                if (!ding.isSet()) {
+                    return nullptr;
+                }
+
+                doc->createTestObjects(mesh, material, ding);
+#else
+                if (auto [rs, text] = fs::readText(filename); rs == IOResult::Success) {
+                    nlohmann::json jsonDoc = nlohmann::json::parse(text);
+                    doc->fromJson(jsonDoc, _assetLoader);
+                }
+#endif
+
+                return new_box<SceneEditor>(std::move(doc), _assetLoader, _components, _onPlayClicked);
+            }
+
+        private:
+            AudioEngine& _audioEngine;
+            Universe& _universe;
+            AssetLoader& _assetLoader;
+            SceneEditor::EnumerateComponents _components;
+            SceneEditor::HandlePlayClicked _onPlayClicked;
+        };
+    } // namespace
+} // namespace up::shell
+
+auto up::shell::SceneEditor::createFactory(
+    AudioEngine& audioEngine,
+    Universe& universe,
+    AssetLoader& assetLoader,
     SceneEditor::EnumerateComponents components,
-    SceneEditor::HandlePlayClicked onPlayClicked) -> box<Editor> {
-    return new_box<SceneEditor>(std::move(scene), std::move(components), std::move(onPlayClicked));
+    SceneEditor::HandlePlayClicked onPlayClicked) -> box<EditorFactory> {
+    return new_box<SceneEditorFactory>(
+        audioEngine,
+        universe,
+        assetLoader,
+        std::move(components),
+        std::move(onPlayClicked));
 }
 
 void up::shell::SceneEditor::tick(float deltaTime) {
-    _scene->tick(deltaTime);
-    _scene->flush();
+    _doc->scene()->tick(deltaTime);
+    _doc->scene()->flush();
 }
 
 void up::shell::SceneEditor::configure() {
@@ -48,7 +127,7 @@ void up::shell::SceneEditor::configure() {
          .enabled = [this] { return isActive(); },
          .action =
              [this]() {
-                 _onPlayClicked(_scene);
+                 _onPlayClicked(_doc->scene());
              }});
     addAction(
         {.name = "potato.editors.scene.options.grid.toggle",
@@ -70,6 +149,16 @@ void up::shell::SceneEditor::content() {
     if (contentSize.x <= 0 || contentSize.y <= 0) {
         return;
     }
+
+    ImGui::BeginGroup();
+    if (ImGui::IconButton("Play", ICON_FA_PLAY)) {
+        _onPlayClicked(_doc->scene());
+    }
+    ImGui::SameLine();
+    if (ImGui::IconButton("Save", ICON_FA_SAVE)) {
+        _save();
+    }
+    ImGui::EndGroup();
 
     ImGui::BeginChild("SceneContent", contentSize, false);
     {
@@ -189,8 +278,27 @@ void up::shell::SceneEditor::_resize(GpuDevice& device, glm::ivec2 size) {
 void up::shell::SceneEditor::_inspector() {
     ComponentId deletedComponent = ComponentId::Unknown;
 
-    if (_scene == nullptr) {
+    if (_doc->scene() == nullptr) {
         return;
+    }
+
+    if (_selection.empty()) {
+        return;
+    }
+
+    EntityId const selectedId = static_cast<EntityId>(_selection.selected().front());
+
+    int const index = _doc->indexOf(selectedId);
+    if (index == -1) {
+        return;
+    }
+
+    {
+        char buffer[128];
+        format_to(buffer, "{}", _doc->entityAt(index).name);
+        if (ImGui::InputText("Name", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
+            _doc->entityAt(index).name = string{buffer};
+        }
     }
 
     if (!ImGui::BeginTable(
@@ -200,36 +308,36 @@ void up::shell::SceneEditor::_inspector() {
         return;
     }
 
-    _scene->world().interrogateEntityUnsafe(
-        _selection.selected(),
+    ImGuiID const addComponentId = ImGui::GetID("##add_component_list");
+
+    _propertyGrid.bindResourceLoader(&_assetLoader);
+
+    _doc->scene()->world().interrogateEntityUnsafe(
+        selectedId,
         [&](EntityId entity, ArchetypeId archetype, reflex::TypeInfo const* typeInfo, auto* data) {
             ImGui::PushID(data);
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
 
-            ImGuiStorage* const storage = ImGui::GetStateStorage();
-            bool open = storage->GetBool(ImGui::GetID("open"), true);
-
-            ImGuiSelectableFlags const flags = ImGuiSelectableFlags_SpanAllColumns;
-
-            if (ImGui::Selectable(typeInfo->name.c_str(), open, flags)) {
-                open = !open;
-                storage->SetBool(ImGui::GetID("open"), open);
-            }
+            const bool open = _propertyGrid.beginItem(typeInfo->name.c_str());
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
                 ImGui::OpenPopup("##component_context_menu");
             }
 
             if (ImGui::BeginPopupContextItem("##component_context_menu")) {
-                if (ImGui::MenuItemEx("Remove", ICON_FA_TRASH)) {
+                if (ImGui::IconMenuItem("Add", ICON_FA_PLUS_CIRCLE)) {
+                    ImGui::OpenPopupEx(addComponentId);
+                }
+                if (ImGui::IconMenuItem("Remove", ICON_FA_TRASH)) {
                     deletedComponent = static_cast<ComponentId>(typeInfo->hash);
                 }
                 ImGui::EndPopup();
             }
 
-            if (open && typeInfo->schema != nullptr) {
-                _propertyGrid.drawGridRaw("", *typeInfo->schema, data);
+            if (open) {
+                if (typeInfo->schema != nullptr) {
+                    _propertyGrid.editObjectRaw(*typeInfo->schema, data);
+                }
+                _propertyGrid.endItem();
             }
 
             ImGui::PopID();
@@ -238,47 +346,114 @@ void up::shell::SceneEditor::_inspector() {
     ImGui::EndTable();
 
     if (deletedComponent != ComponentId::Unknown) {
-        _scene->world().removeComponent(_selection.selected(), deletedComponent);
+        _doc->scene()->world().removeComponent(selectedId, deletedComponent);
     }
 
-    if (_selection.hasSelection()) {
-        if (ImGui::Button(as_char(u8"\uf067 Add Component"))) {
-            ImGui::OpenPopup("##add_component_list");
-        }
-        if (ImGui::BeginPopup("##add_component_list")) {
-            for (reflex::TypeInfo const* typeInfo : _components()) {
-                if (_scene->world().getComponentSlowUnsafe(
-                        _selection.selected(),
-                        static_cast<ComponentId>(typeInfo->hash)) == nullptr) {
-                    if (ImGui::MenuItemEx(typeInfo->name.c_str())) {
-                        _scene->world().addComponentDefault(_selection.selected(), *typeInfo);
-                    }
+    if (ImGui::IconButton("Add Component", ICON_FA_PLUS_CIRCLE)) {
+        ImGui::OpenPopupEx(addComponentId);
+    }
+
+    if (ImGui::BeginPopupEx(
+            addComponentId,
+            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings |
+                ImGuiWindowFlags_NoMove)) {
+        for (reflex::TypeInfo const* typeInfo : _components()) {
+            if (_doc->scene()->world().getComponentSlowUnsafe(selectedId, static_cast<ComponentId>(typeInfo->hash)) ==
+                nullptr) {
+                if (ImGui::IconMenuItem(typeInfo->name.c_str())) {
+                    _doc->scene()->world().addComponentDefault(selectedId, *typeInfo);
                 }
             }
-            ImGui::EndPopup();
         }
+        ImGui::EndPopup();
     }
 }
 
 void up::shell::SceneEditor::_hierarchy() {
-    constexpr int label_length = 64;
-
-    fixed_string_writer<label_length> label;
-
-    if (_scene != nullptr) {
-        for (auto const& chunk : _scene->world().chunks()) {
-            for (EntityId entityId : chunk->entities()) {
-                label.clear();
-                format_append(label, "Entity (#{})", entityId);
-
-                bool selected = entityId == _selection.selected();
-                if (ImGui::Selectable(label.c_str(), selected)) {
-                    _selection.select(entityId);
-                }
-                if (selected) {
-                    ImGui::SetItemDefaultFocus();
-                }
+    unsigned const flags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+        ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+    bool const open = ImGui::TreeNodeEx("Scene", flags);
+    _hierarchyContext(EntityId::None);
+    if (open) {
+        for (int index : _doc->indices()) {
+            if (_doc->entityAt(index).parent == -1) {
+                _hierarchyShowIndex(index);
             }
         }
+        ImGui::TreePop();
     }
+
+    if (_create) {
+        _create = false;
+        _doc->createEntity("New Entity", _targetId);
+        _targetId = EntityId::None;
+    }
+    if (_delete) {
+        _delete = false;
+        _doc->deleteEntity(_targetId);
+        _targetId = EntityId::None;
+    }
+}
+
+void up::shell::SceneEditor::_hierarchyShowIndex(int index) {
+    char label[128];
+
+    SceneEntity const& ent = _doc->entityAt(index);
+
+    format_to(label, "{} (#{})", !ent.name.empty() ? ent.name.c_str() : "Entity", ent.id);
+
+    bool const hasChildren = ent.firstChild != -1;
+    bool const selected = _selection.selected(to_underlying(ent.id));
+
+    unsigned flags =
+        ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow;
+    if (ent.parent == -1) {
+        flags |= ImGuiTreeNodeFlags_DefaultOpen;
+    }
+    if (!hasChildren) {
+        flags |= ImGuiTreeNodeFlags_Leaf;
+    }
+    if (selected) {
+        flags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    ImGui::PushID(index);
+    bool const open = ImGui::TreeNodeEx(label, flags);
+    if (ImGui::IsItemClicked()) {
+        _selection.click(to_underlying(ent.id), ImGui::IsModifierDown(ImGuiKeyModFlags_Ctrl));
+    }
+    _hierarchyContext(ent.id);
+
+    if (selected) {
+        ImGui::SetItemDefaultFocus();
+    }
+
+    if (open) {
+        for (int childIndex = ent.firstChild; childIndex != -1; childIndex = _doc->entityAt(childIndex).nextSibling) {
+            _hierarchyShowIndex(childIndex);
+        }
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
+}
+
+void up::shell::SceneEditor::_hierarchyContext(EntityId id) {
+    if (ImGui::BeginPopupContextItem()) {
+        if (ImGui::IconMenuItem("New Entity", ICON_FA_PLUS)) {
+            _targetId = id;
+            _create = true;
+        }
+        if (ImGui::IconMenuItem("Delete", ICON_FA_TRASH, nullptr, false, id != EntityId::None)) {
+            _targetId = id;
+            _delete = true;
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void up::shell::SceneEditor::_save() {
+    nlohmann::json doc;
+    _doc->toJson(doc);
+    auto text = doc.dump(4);
+    (void)fs::writeAllText(_doc->filename(), text);
 }

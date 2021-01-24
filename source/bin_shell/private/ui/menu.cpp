@@ -82,21 +82,26 @@ void up::shell::Menu::_drawMenu(size_t index, size_t depth) {
         auto const& item = _items[index];
 
         if (depth != 0 && item.groupIndex != lastGroup) {
-            ImGui::Separator();
+            ImGui::IconMenuSeparator();
             lastGroup = item.groupIndex;
         }
 
         if (item.id != ActionId::None) {
             auto const checked = _actions->isChecked(item.id);
             auto const enabled = _actions->isEnabled(item.id);
-            auto const hotKey = _actions->actionAt(item.id).hotKey;
+            auto const& actionDesc = _actions->actionAt(item.id);
 
-            if (ImGui::MenuItemEx(_strings[item.stringIndex].c_str(), nullptr, hotKey.c_str(), checked, enabled)) {
+            if (ImGui::IconMenuItem(
+                    _strings[item.stringIndex].c_str(),
+                    actionDesc.icon,
+                    actionDesc.hotKey.c_str(),
+                    checked,
+                    enabled)) {
                 _actions->invoke(item.id);
             }
         }
         else {
-            if (ImGui::BeginMenu(_strings[item.stringIndex].c_str())) {
+            if (ImGui::BeginIconMenu(_strings[item.stringIndex].c_str())) {
                 _drawMenu(item.childIndex, depth + 1);
                 ImGui::EndMenu();
             }

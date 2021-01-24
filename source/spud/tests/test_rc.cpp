@@ -56,7 +56,7 @@ TEST_CASE("[potato][spud] up::rc") {
     }
 
     SECTION("custom rc") {
-        bool active;
+        bool active = false;
         rc r = new_shared<TestShared>(active);
 
         CHECK_FALSE(r.empty());

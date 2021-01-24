@@ -7,40 +7,23 @@
 
 #include <charconv>
 
-auto up::ResourceManifest::findHash(ResourceId id) const noexcept -> uint64 {
-    for (auto const& record : _records) {
-        if (record.logicalId == id) {
-            return record.hash;
-        }
-    }
-
-    return 0;
-}
-
-auto up::ResourceManifest::findFilename(ResourceId id) const noexcept -> zstring_view {
-    for (auto const& record : _records) {
-        if (record.logicalId == id) {
-            return record.filename;
-        }
-    }
-
-    return {};
-}
-
 bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& manifest) {
     int rootIdColumn = -1;
     int logicalIdColumn = -1;
     int logicalNameColumn = -1;
     int contentHashColumn = -1;
+    int contentTypeColumn = -1;
     int debugNameColumn = -1;
 
     enum ColumnMask {
-        ColumnRootIdMask = (1 << 0),
+        ColumnUuidMask = (1 << 0),
         ColumnLogicalIdMask = (1 << 1),
-        ColumnLogicalNameMask = (1 << 2),
+        ColumnLogicalNameMask = (1 << 1),
         ColumnContentHashMask = (1 << 3),
         ColumnDebugNameMask = (1 << 4),
-        ColumnRequiredMask = ColumnRootIdMask | ColumnLogicalIdMask | ColumnLogicalNameMask | ColumnContentHashMask
+        ColumnContentTypeMask = (1 << 5),
+        ColumnRequiredMask =
+            ColumnUuidMask | ColumnLogicalIdMask | ColumnLogicalNameMask | ColumnContentHashMask | ColumnContentTypeMask
     };
 
     string_view::size_type sep = 0;
@@ -80,9 +63,9 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                 while (!eol && (sep = input.find_first_of("|\n")) != string_view::npos) {
                     string_view const header = input.substr(0, sep);
 
-                    if (header == columnRootId) {
+                    if (header == columnUuid) {
                         rootIdColumn = column;
-                        mask |= ColumnRootIdMask;
+                        mask |= ColumnUuidMask;
                     }
                     else if (header == columnLogicalId) {
                         logicalIdColumn = column;
@@ -99,6 +82,10 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                     else if (header == columnDebugName) {
                         debugNameColumn = column;
                         mask |= ColumnDebugNameMask;
+                    }
+                    else if (header == columnContentType) {
+                        contentTypeColumn = column;
+                        mask |= ColumnContentTypeMask;
                     }
 
                     ++column;
@@ -120,15 +107,15 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                     string_view const data = input.substr(0, sep);
 
                     if (column == rootIdColumn) {
-                        std::from_chars(data.begin(), data.end(), static_cast<uint64&>(record.rootId), 16);
-                        mask |= ColumnRootIdMask;
+                        record.uuid = UUID::fromString(data);
+                        mask |= ColumnUuidMask;
                     }
                     else if (column == logicalIdColumn) {
                         std::from_chars(data.begin(), data.end(), static_cast<uint64&>(record.logicalId), 16);
                         mask |= ColumnLogicalIdMask;
                     }
                     else if (column == logicalNameColumn) {
-                        std::from_chars(data.begin(), data.end(), static_cast<uint64&>(record.logicalName), 16);
+                        record.logicalName = string{data};
                         mask |= ColumnLogicalNameMask;
                     }
                     else if (column == contentHashColumn) {
@@ -138,6 +125,10 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                     else if (column == debugNameColumn) {
                         record.filename = string{data};
                         mask |= ColumnDebugNameMask;
+                    }
+                    else if (column == contentTypeColumn) {
+                        record.type = string{data};
+                        mask |= ColumnContentTypeMask;
                     }
 
                     ++column;

@@ -6,6 +6,7 @@
 #include "gpu_buffer.h"
 #include "gpu_command_list.h"
 #include "gpu_device.h"
+#include "gpu_pipeline_state.h"
 #include "gpu_swap_chain.h"
 #include "gpu_texture.h"
 #include "gpu_renderable.h"
@@ -14,7 +15,7 @@
 #include "shader.h"
 #include "texture.h"
 
-#include "potato/runtime/resource_loader.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/runtime/stream.h"
 
 #include <chrono>
@@ -26,6 +27,28 @@ up::Renderer::Renderer(Loader& loader, rc<GpuDevice> device) : _device(std::move
 
     _debugLineMaterial = _loader.loadMaterialSync("materials/debug_line.mat");
     _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, debug_vbo_size);
+
+    // Create the debug pipeline
+    GpuPipelineStateDesc pipelineDesc;
+
+    GpuInputLayoutElement const layout[] = {
+        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Position, 0, 0},
+        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Color, 0, 0},
+        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Normal, 0, 0},
+        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Tangent, 0, 0},
+        {GpuFormat::R32G32Float, GpuShaderSemantic::TexCoord, 0, 0},
+    };
+
+    pipelineDesc.enableDepthTest = true;
+    pipelineDesc.enableDepthWrite = true;
+    pipelineDesc.vertShader = _device->getDebugShader(GpuShaderStage::Vertex).as_bytes();
+    pipelineDesc.pixelShader = _device->getDebugShader(GpuShaderStage::Pixel).as_bytes();
+    pipelineDesc.inputLayout = layout;
+
+    // Check to support null renderer; should this be explicit?
+    if (!pipelineDesc.vertShader.empty() && !pipelineDesc.pixelShader.empty()) {
+        _debugState = _device->createPipelineState(pipelineDesc);
+    }
 }
 
 up::Renderer::~Renderer() = default;
@@ -41,7 +64,7 @@ void up::Renderer::beginFrame(GpuSwapChain* swapChain) {
         _startTimestamp = nowNanoseconds;
     }
 
-    double const now = static_cast<double>(nowNanoseconds - _startTimestamp) * nano_to_seconds;
+    double const now = static_cast<double>(nowNanoseconds - _startTimestamp) * nanoToSeconds;
     FrameData frame = {_frameCounter++, static_cast<float>(now - _frameTimestamp), now};
     _frameTimestamp = now;
 
@@ -81,6 +104,24 @@ void up::Renderer::flushDebugDraw(float frameTime) {
     //_debugLineMaterial->bindMaterialToRender(ctx);
     //_commandList->bindVertexBuffer(0, _debugLineBuffer.get(), sizeof(DebugDrawVertex));
     //_commandList->setPrimitiveTopology(GpuPrimitiveTopology::Lines);
+    if (_debugState.empty()) {
+        up::flushDebugDraw(frameTime);
+        return;
+    }
+
+    if (_debugBuffer == nullptr) {
+        _debugBuffer = _device->createBuffer(GpuBufferType::Vertex, bufferSize);
+    }
+
+    _commandList->setPipelineState(_debugState.get());
+    _commandList->bindVertexBuffer(0, _debugBuffer.get(), sizeof(DebugDrawVertex));
+    _commandList->setPrimitiveTopology(GpuPrimitiveTopology::Lines);
+
+    dumpDebugDraw([this](auto debugVertices) {
+        if (debugVertices.empty()) {
+            return;
+        }
+
 
     //dumpDebugDraw([this](auto debugVertices) {
     //    if (debugVertices.empty()) {
@@ -92,6 +133,11 @@ void up::Renderer::flushDebugDraw(float frameTime) {
     //    while (offset < debugVertices.size()) {
     //        _commandList->update(_debugLineBuffer.get(), debugVertices.subspan(offset, vertCount).as_bytes());
     //        _commandList->draw(vertCount);
+        uint32 vertCount = min(static_cast<uint32>(debugVertices.size()), maxVertsPerChunk);
+        uint32 offset = 0;
+        while (offset < debugVertices.size()) {
+            _commandList->update(_debugBuffer.get(), debugVertices.subspan(offset, vertCount).as_bytes());
+            _commandList->draw(vertCount);
 
     //        offset += vertCount;
     //        vertCount = min(static_cast<uint32>(debugVertices.size()) - offset, maxVertsPerChunk);
@@ -101,66 +147,87 @@ void up::Renderer::flushDebugDraw(float frameTime) {
     //up::flushDebugDraw(frameTime);
 }
 
-up::DefaultLoader::DefaultLoader(ResourceLoader& resourceLoader, rc<GpuDevice> device)
-    : _resourceLoader(resourceLoader)
-    , _device(std::move(device)) {}
+namespace up {
+    namespace {
+        class MeshAssetLoaderBackend : public AssetLoaderBackend {
+        public:
+            zstring_view typeName() const noexcept override { return Mesh::assetTypeName; }
+            rc<Asset> loadFromStream(AssetLoadContext const& ctx) override {
+                vector<byte> contents;
+                if (auto rs = readBinary(ctx.stream, contents); rs != IOResult::Success) {
+                    return nullptr;
+                }
+                ctx.stream.close();
 
-up::DefaultLoader::~DefaultLoader() = default;
+                return Mesh::createFromBuffer(ctx.key, contents);
+            }
+        };
 
-auto up::DefaultLoader::loadMeshSync(zstring_view path) -> rc<Mesh> {
-    vector<byte> contents;
-    auto stream = _resourceLoader.openAsset(path);
-    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
-        return nullptr;
-    }
-    stream.close();
+        class MaterialAssetLoaderBackend : public AssetLoaderBackend {
+        public:
+            zstring_view typeName() const noexcept override { return Material::assetTypeName; }
+            rc<Asset> loadFromStream(AssetLoadContext const& ctx) override {
+                vector<byte> contents;
+                if (auto rs = readBinary(ctx.stream, contents); rs != IOResult::Success) {
+                    return nullptr;
+                }
+                ctx.stream.close();
 
-    return Mesh::createFromBuffer(contents);
-}
+                return Material::createFromBuffer(ctx.key, contents, ctx.loader);
+            }
+        };
 
-auto up::DefaultLoader::loadMaterialSync(zstring_view path) -> rc<Material> {
-    vector<byte> contents;
-    auto stream = _resourceLoader.openAsset(path);
-    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
-        return nullptr;
-    }
-    stream.close();
+        class ShaderAssetLoaderBackend : public AssetLoaderBackend {
+        public:
+            zstring_view typeName() const noexcept override { return Shader::assetTypeName; }
+            rc<Asset> loadFromStream(AssetLoadContext const& ctx) override {
+                vector<byte> contents;
+                if (auto rs = readBinary(ctx.stream, contents); rs != IOResult::Success) {
+                    return nullptr;
+                }
+                ctx.stream.close();
 
-    return Material::createFromBuffer(contents, *this);
-}
+                return up::new_shared<Shader>(ctx.key, std::move(contents));
+            }
+        };
 
-auto up::DefaultLoader::loadShaderSync(zstring_view path, string_view logicalName) -> rc<Shader> {
-    vector<byte> contents;
-    auto stream = _resourceLoader.openAsset(path, logicalName);
-    if (auto rs = readBinary(stream, contents); rs != IOResult::Success) {
-        return nullptr;
-    }
-    stream.close();
+        class TextureAssetLoaderBackend : public AssetLoaderBackend {
+        public:
+            TextureAssetLoaderBackend(Renderer& renderer) : _renderer(renderer) {}
 
-    return up::new_shared<Shader>(std::move(contents));
-}
+            zstring_view typeName() const noexcept override { return Texture::assetTypeName; }
+            rc<Asset> loadFromStream(AssetLoadContext const& ctx) override {
+                auto img = loadImage(ctx.stream);
+                ctx.stream.close();
+                if (img.data().empty()) {
+                    return nullptr;
+                }
 
-auto up::DefaultLoader::loadTextureSync(zstring_view path) -> rc<Texture> {
-    Stream stream = _resourceLoader.openAsset(path);
-    if (!stream) {
-        return nullptr;
-    }
+                GpuTextureDesc desc = {};
+                desc.type = GpuTextureType::Texture2D;
+                desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
+                desc.width = img.header().width;
+                desc.height = img.header().height;
 
-    auto img = loadImage(stream);
-    if (img.data().empty()) {
-        return nullptr;
-    }
+                auto tex = _renderer.device().createTexture2D(desc, img.data());
+                if (tex == nullptr) {
+                    return nullptr;
+                }
 
-    GpuTextureDesc desc = {};
-    desc.type = GpuTextureType::Texture2D;
-    desc.format = GpuFormat::R8G8B8A8UnsignedNormalized;
-    desc.width = img.header().width;
-    desc.height = img.header().height;
+                return new_shared<Texture>(ctx.key, std::move(img), std::move(tex));
+            }
 
-    auto tex = _device->createTexture2D(desc, img.data());
-    if (tex == nullptr) {
-        return nullptr;
-    }
+        private:
+            Renderer& _renderer;
+        };
+    } // namespace
+} // namespace up
 
-    return new_shared<Texture>(std::move(img), std::move(tex));
+void up::Renderer::registerAssetBackends(AssetLoader& assetLoader) {
+    UP_ASSERT(_device != nullptr);
+    assetLoader.registerBackend(new_box<MeshAssetLoaderBackend>());
+    assetLoader.registerBackend(new_box<MaterialAssetLoaderBackend>());
+    assetLoader.registerBackend(new_box<ShaderAssetLoaderBackend>());
+    assetLoader.registerBackend(new_box<TextureAssetLoaderBackend>(*this));
+    _device->registerAssetBackends(assetLoader);
 }

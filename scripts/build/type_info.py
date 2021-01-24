@@ -111,6 +111,8 @@ class TypeDatabase:
                 type = TypeAttribute(self, name=key)
             elif kind == TypeKind.OPAQUE.value:
                 type = TypeOpaque(self, name=key)
+            elif kind == TypeKind.ENUM.value:
+                type = TypeEnum(self, name=key)
             else:
                 raise Exception(f'Unknown kind {kind}')
             self.__types[type.name] = type
@@ -124,6 +126,8 @@ class TypeDatabase:
 
 class TypeBase(AnnotationsBase):
     """User-friendly wrapper of a type-definition in the type database"""
+    __builtin_types = ['char', 'float', 'double']
+
     def __init__(self, db, name):
         self.__db = db
         self.__module = db.module
@@ -134,6 +138,10 @@ class TypeBase(AnnotationsBase):
     @property
     def name(self):
         return self.__name
+
+    @property
+    def module(self):
+        return self.__module
 
     @property
     def kind(self):
@@ -150,6 +158,21 @@ class TypeBase(AnnotationsBase):
     @property
     def cxxname(self):
         return self.get_annotation_field_or('cxxname', 'id', self.get_annotation_field_or('cxximport', 'id', self.__name))
+
+    @property
+    def qualified_cxxname(self):
+        if self.module == '$core': return self.cxxname
+
+        cxximport = self.get_annotation_field_or('cxximport', 'id', None)
+        if cxximport is not None: return cxximport
+
+        if self.__name in TypeBase.__builtin_types:
+            return self.__name
+
+        cxxname = self.get_annotation_field_or('cxxname', 'id', self.__name)
+        ns = self.get_annotation_field_or('cxxnamespace', 'ns', 'up::schema')
+
+        return f'{ns}::{cxxname}'
 
     @property
     def base(self):
@@ -203,6 +226,34 @@ class TypeStruct(TypeBase):
         for field in self.__fields.values():
             field.resolve(db)
 
+class TypeEnum(TypeBase):
+    """User-friendly wrapper of an enum definition"""
+    def __init__(self, db, name):
+        TypeBase.__init__(self, db, name)
+        self.__names = []
+        self.__values = {}
+
+    @property
+    def kind(self):
+        return TypeKind.ENUM
+
+    def value_or(self, key, otherwise=None):
+        return self.__values[key] if key in self.__values else otherwise
+
+    @property
+    def values(self):
+        return self.__values
+
+    @property
+    def names(self):
+        return self.__names
+
+    def load_from_json(self, json):
+        TypeBase.load_from_json(self, json)
+        for key,value in json['values'].items():
+            self.__values[key] = value
+        self.__names = [key for key in json['names']]
+
 class TypeAttribute(TypeStruct):
     """User-friendly wrapper for an attribute struct"""
     @property
@@ -230,7 +281,7 @@ class TypeField(AnnotationsBase):
 
     @property
     def cxxtype(self):
-        cxxname = self.__type.cxxname
+        cxxname = self.__type.qualified_cxxname
         return f"vector<{cxxname}>" if self.__is_array else cxxname
 
     @property
@@ -241,12 +292,11 @@ class TypeField(AnnotationsBase):
     def is_array(self):
         return self.__is_array
 
-    @property
     def default_or(self, otherwise):
-        if not self.__has_default:
-            return otherwise
-        else:
+        if self.__has_default:
             return self.__default
+        else:
+            return otherwise
 
     @property
     def has_default(self):

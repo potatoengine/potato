@@ -94,7 +94,7 @@ void up::World::removeComponent(EntityId entityId, ComponentId componentId) noex
     }
 }
 
-void up::World::addComponentDefault(EntityId entityId, reflex::TypeInfo const& typeInfo) {
+void* up::World::addComponentDefault(EntityId entityId, reflex::TypeInfo const& typeInfo) {
     if (auto [success, archetypeId, chunkIndex, index] = _parseEntityId(entityId); success) {
         // find the target archetype and allocate an entry in it
         reflex::TypeInfo const* infoPtr = &typeInfo;
@@ -104,11 +104,14 @@ void up::World::addComponentDefault(EntityId entityId, reflex::TypeInfo const& t
         auto* chunk = _getChunk(archetypeId, chunkIndex);
         newChunk.entities()[newIndex] = entityId;
         _moveTo(newArchetype, newChunk, newIndex, archetypeId, *chunk, index);
-        _constructAt(newArchetype, newChunk, newIndex, static_cast<ComponentId>(typeInfo.hash));
+        void* const data = _constructAt(newArchetype, newChunk, newIndex, static_cast<ComponentId>(typeInfo.hash));
 
         _deleteEntityData(archetypeId, chunkIndex, index);
         _remapEntityId(entityId, newArchetype, newChunkIndex, newIndex);
+
+        return data;
     }
+    return nullptr;
 }
 
 void up::World::_addComponentRaw(
@@ -255,9 +258,11 @@ void up::World::_copyTo(
     destRow->typeInfo->ops.copyConstructor(destChunk.payload + destRow->offset + destRow->width * destIndex, srcData);
 }
 
-void up::World::_constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component) {
+void* up::World::_constructAt(ArchetypeId arch, Chunk& chunk, int index, ComponentId component) {
     auto const row = findRowDesc(_context->layoutOf(arch), component);
-    row->typeInfo->ops.defaultConstructor(chunk.payload + row->offset + row->width * index);
+    void* data = chunk.payload + row->offset + row->width * index;
+    row->typeInfo->ops.defaultConstructor(data);
+    return data;
 }
 
 void up::World::_destroyAt(ArchetypeId arch, Chunk& chunk, int index) {

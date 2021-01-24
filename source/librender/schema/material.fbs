@@ -1,0 +1,17 @@
+namespace up.flat;
+
+struct AssetId {
+    id:uint64;
+}
+
+table MaterialShader {
+    vertex:AssetId;
+    pixel:AssetId;
+}
+
+table Material {
+    shader:MaterialShader;
+    textures:[AssetId];
+}
+
+root_type Material;

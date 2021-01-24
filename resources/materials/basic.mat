@@ -1,9 +1,22 @@
 {
-  "shaders": {
-    "vertex": "shaders/basic.hlsl",
-    "pixel": "shaders/basic.hlsl"
-  },
-  "textures": [
-    "textures/test.png"
-  ]
+    "$schema": "Material",
+    "shaders": {
+        "$schema": "MaterialShaders",
+        "pixel": {
+            "$schema": "ShaderHandle",
+            "logical": "pixel",
+            "uuid": "51ba5cbf-6ccf-d642-8e3f-3353f6ad9d69"
+        },
+        "vertex": {
+            "$schema": "ShaderHandle",
+            "logical": "vertex",
+            "uuid": "51ba5cbf-6ccf-d642-8e3f-3353f6ad9d69"
+        }
+    },
+    "textures": [
+        {
+            "$schema": "TextureHandle",
+            "uuid": "c6406bb1-cec1-6b40-9fbd-81d4066be5c3"
+        }
+    ]
 }

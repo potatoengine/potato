@@ -10,26 +10,31 @@ target_sources(potato_shell PRIVATE
     "private/camera.cpp"
     "private/camera_controller.cpp"
     "private/editor.cpp"
+    "private/editors/asset_browser.h"
+    "private/editors/asset_browser.cpp"
     "private/editors/game_editor.cpp"
+    "private/editors/game_editor.h"	
+    "private/editors/scene_editor.cpp"
+    "private/editors/scene_editor.h"	
+    "private/log_window.cpp"
+    "private/log_window.h"
     "private/main.cpp"
     "private/scene.cpp"
-    "private/editors/scene_editor.cpp"
+    "private/scene_doc.cpp"
+    "private/settings.cpp"
+    "private/settings.h"
     "private/shell_app.cpp"
-    "private/editors/filetree_editor.cpp"	
-    "private/editors/filetree_editor.h"	
-    "private/editors/game_editor.h"	
-    "private/editors/scene_editor.h"	
-    "public/potato/shell/ui/action.h"	
-    "private/ui/action.cpp"	
-    "public/potato/shell/ui/command_palette.h"	
+    "private/ui/action.cpp"
     "private/ui/command_palette.cpp"	
-    "private/ui/editor_group.h"	
     "private/ui/editor_group.cpp"	
-    "public/potato/shell/ui/menu.h"	
+    "private/ui/editor_group.h"	
     "private/ui/menu.cpp"	
     "public/potato/shell/_export.h"
-)
-
+    "public/potato/shell/scene_doc.h"
+    "public/potato/shell/ui/action.h"	
+    "public/potato/shell/ui/command_palette.h"	
+    "public/potato/shell/ui/menu.h"	
+ "private/editors/material_editor.h" "private/editors/material_editor.cpp")
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 
@@ -39,6 +44,7 @@ up_set_common_properties(potato_shell)
 
 up_compile_sap(potato_shell SCHEMAS
     schema/components.sap
+    schema/settings.sap
 )
 
 target_link_libraries(potato_shell PRIVATE
@@ -51,12 +57,14 @@ target_link_libraries(potato_shell PRIVATE
     potato::libaudio
     potato::libtools
     potato::libeditor
+    potato::librecon
     glm
     SDL2
     SDL2main
     imgui
     nfd
     nlohmann_json::nlohmann_json
+    reproc++
 )
 
 include(up_copy_library_import)

@@ -19,11 +19,8 @@ namespace up::components {
 } // namespace up::components
 
 namespace up {
-    class Model;
-    class Node;
     class RenderContext;
     class AudioEngine;
-    class SoundResource;
 
     class Scene : public shared<Scene> {
     public:
@@ -49,7 +46,6 @@ namespace up {
         Scene(Scene const&) = delete;
         Scene& operator=(Scene const&) = delete;
 
-        void create(rc<Model> const& cube, rc<SoundResource> const& ding);
         void tick(float frameTime);
         void flush();
         void render(Renderer& renderer);
@@ -61,13 +57,12 @@ namespace up {
         bool playing(bool active) { return _playing = active; }
 
         World& world() noexcept { return _world; }
-        EntityId root() const noexcept { return _root; }
+        Universe& universe() noexcept { return _universe; }
 
     private:
         AudioEngine& _audioEngine;
-        rc<Model> _cube;
+        Universe& _universe;
         World _world;
-        EntityId _root = EntityId::None;
         bool _playing = false;
 
         box<MeshRenderer> _meshRenderer;

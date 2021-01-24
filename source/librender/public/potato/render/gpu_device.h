@@ -16,6 +16,7 @@ namespace up {
     class GpuSampler;
     class GpuSwapChain;
     class GpuTexture;
+    class AssetLoader;
     class GpuRenderable;
 
     struct GpuPipelineStateDesc;

@@ -4,6 +4,13 @@ project(spud VERSION 0.1 LANGUAGES CXX)
 add_library(potato_spud INTERFACE)
 add_library(potato::spud ALIAS potato_spud)
 
+#target_sources(potato_spud PRIVATE
+#    "public/potato/spud/result.h"
+#    "public/potato/spud/erase.h"
+#    "public/potato/spud/enumerate.h"
+#    "public/potato/spud/generator.h"
+#)
+
 include(up_set_common_properties)
 up_set_common_properties(potato_spud NO_NAME_TEST)
 
@@ -31,7 +38,8 @@ target_sources(potato_spud_test PRIVATE
     "tests/test_string_view.cpp"
     "tests/test_vector.cpp"
     "tests/test_zstring_view.cpp"
- "public/potato/spud/result.h" "public/potato/spud/erase.h" "public/potato/spud/enumerate.h")
+    "tests/test_generator.cpp"
+ "public/potato/spud/overload.h" "tests/test_overload.cpp")
 
 up_set_common_properties(potato_spud_test)
 

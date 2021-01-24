@@ -5,8 +5,8 @@
     {
       "type": "default",
       "project": "CMakeLists.txt",
-      "projectTarget": "libruntime_test.exe (bin\\libruntime_test.exe)",
-      "name": "libruntime_test.exe (bin\\libruntime_test.exe)",
+      "projectTarget": "test_runtime.exe (bin\\test_runtime.exe)",
+      "name": "test_runtime.exe (bin\\test_runtime.exe)",
       "currentDir": "@UP_ROOT_DIR@/source/libruntime/tests/fixtures"
     },
     {
@@ -16,8 +16,8 @@
       "name": "recon.exe (bin\\recon.exe)",
       "currentDir": "@CMAKE_BINARY_DIR@",
       "args": [
-        "-source",
-        "@UP_ROOT_DIR@/resources",
+        "-project",
+        "@UP_ROOT_DIR@/resources/sample.popr",
         "-config",
         "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@/recon.config.json"
       ]

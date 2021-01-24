@@ -1,7 +1,9 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "material_importer.h"
+#include "importers/material_importer.h"
+#include "material_schema.h"
 
+#include "potato/reflex/serialize.h"
 #include "potato/render/material_generated.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/json.h"
@@ -43,27 +45,24 @@ bool up::MaterialImporter::import(ImporterContext& ctx) {
 
     inFile.close();
 
-    auto jsonShaders = doc["shaders"];
-    if (!jsonShaders.is_object()) {
+    schema::Material material;
+    if (!reflex::decodeFromJson(doc, material)) {
+        ctx.logger().error("Failed to deserialize `{}': {}", sourceAbsolutePath);
         return false;
     }
 
-    auto vertexPath = jsonShaders["vertex"].get<string>();
-    auto pixelPath = jsonShaders["pixel"].get<string>();
-
     flatbuffers::FlatBufferBuilder builder;
 
-    auto shader = schema::CreateMaterialShaderDirect(builder, vertexPath.c_str(), pixelPath.c_str());
+    flat::AssetId vertexId{static_cast<uint64>(material.shaders.vertex.assetId())};
+    flat::AssetId pixelId{static_cast<uint64>(material.shaders.pixel.assetId())};
 
-    std::vector<flatbuffers::Offset<flatbuffers::String>> textures;
-
+    std::vector<flat::AssetId> textures;
     auto jsonTextures = doc["textures"];
-    for (auto const& jsonTexture : jsonTextures) {
-        auto texturePath = jsonTexture.get<string>();
-        textures.push_back(builder.CreateString(texturePath.c_str()));
+    for (auto const& handle : material.textures) {
+        textures.emplace_back(flat::AssetId(static_cast<uint64>(handle.assetId())));
     }
 
-    auto mat = schema::CreateMaterialDirect(builder, shader, &textures);
+    auto mat = flat::CreateMaterialDirect(builder, flat::CreateMaterialShader(builder, &vertexId, &pixelId), &textures);
 
     builder.Finish(mat);
 
@@ -78,7 +77,7 @@ bool up::MaterialImporter::import(ImporterContext& ctx) {
     outFile.close();
 
     // output has same name as input
-    ctx.addMainOutput(string{ctx.sourceFilePath()});
+    ctx.addMainOutput(string{ctx.sourceFilePath()}, "potato.asset.material");
 
     ctx.logger().info("Compiled `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
 

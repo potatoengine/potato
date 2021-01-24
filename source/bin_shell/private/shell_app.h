@@ -1,16 +1,20 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "camera.h"
+#include "log_window.h"
+#include "settings.h"
 #include "ui/action.h"
 #include "ui/command_palette.h"
 #include "ui/editor_group.h"
 #include "ui/menu.h"
 
 #include "potato/audio/audio_engine.h"
+#include "potato/editor/asset_edit_service.h"
 #include "potato/editor/hotkeys.h"
 #include "potato/editor/imgui_backend.h"
+#include "potato/recon/recon_client.h"
+#include "potato/runtime/asset_loader.h"
 #include "potato/runtime/logger.h"
-#include "potato/runtime/resource_loader.h"
 #include "potato/spud/box.h"
 #include "potato/spud/unique_resource.h"
 
@@ -19,7 +23,6 @@
 #include <imgui.h>
 
 namespace up {
-    class Loader;
     class Renderer;
     class RenderCamera;
     class Node;
@@ -33,9 +36,12 @@ namespace up {
     class CameraController;
     class Universe;
     class Project;
+    class UUID;
 } // namespace up
 
 namespace up::shell {
+    class EditorFactory;
+
     class ShellApp {
     public:
         ShellApp();
@@ -66,13 +72,19 @@ namespace up::shell {
 
         bool _loadConfig(zstring_view path);
 
-        void _onFileOpened(zstring_view filename);
+        void _openAssetEditor(UUID const& uuid);
 
         void _createScene();
         void _createGame(rc<Scene> scene);
 
-        bool _selectAndLoadProject(zstring_view defaultPath);
+        void _executeRecon();
+        void _loadManifest();
+
+        bool _selectAndLoadProject(zstring_view folder);
         bool _loadProject(zstring_view path);
+
+        void _openEditor(zstring_view editorName);
+        void _openEditorForDocument(zstring_view editorName, zstring_view filename);
 
         bool _running = true;
         bool _openProject = false;
@@ -80,13 +92,12 @@ namespace up::shell {
         bool _aboutDialog = false;
         rc<GpuDevice> _device;
         rc<GpuSwapChain> _swapChain;
-        box<Loader> _loader;
         box<Renderer> _renderer;
         box<RenderCamera> _uiRenderCamera;
         box<Universe> _universe;
         box<AudioEngine> _audio;
         box<Project> _project;
-        string _editorResourcePath;
+        string _shellSettingsPath;
         unique_resource<SDL_Window*, SDL_DestroyWindow> _window;
         unique_resource<SDL_Cursor*, SDL_FreeCursor> _cursor;
         ActionGroup _appActions;
@@ -95,12 +106,16 @@ namespace up::shell {
         Menu _menu;
         HotKeys _hotKeys;
         EditorGroup _editors;
+        vector<box<EditorFactory>> _editorFactories;
         int _lastCursor = -1;
         ImguiBackend _imguiBackend;
         Logger _logger;
         float _lastFrameTime = 0.f;
         std::chrono::nanoseconds _lastFrameDuration = {};
         string _projectName;
-        ResourceLoader _resourceLoader;
+        AssetLoader _assetLoader;
+        LogWindow _logWindow;
+        ReconClient _reconClient;
+        AssetEditService _assetEditService;
     }; // namespace up::shell
 } // namespace up::shell

@@ -35,6 +35,8 @@ namespace up {
         template <typename Component>
         void registerComponent(zstring_view name);
 
+        UP_ECS_API reflex::TypeInfo const* findComponentByName(string_view name) const noexcept;
+
         auto components() const noexcept -> view<reflex::TypeInfo const*> { return _context->components; }
 
     private:

@@ -11,6 +11,7 @@
 #include "_detail/format_traits.h"
 
 #include "potato/spud/string_view.h"
+#include "potato/spud/zstring_view.h"
 
 #include <type_traits>
 
@@ -37,6 +38,18 @@ namespace up {
             {_detail::make_format_arg<Writer, _detail::formattable_t<Args>>(args)...});
     }
 
+    /// Write the string format using the given parameters into a fixed-size.
+    /// @param writer The write buffer that will receive the formatted text.
+    /// @param format_str The primary text and formatting controls to be written.
+    /// @param args The arguments used by the formatting string.
+    /// @returns a result code indicating any errors.
+    template <size_t N, formattable... Args>
+    constexpr auto format_to(char (&buffer)[N], string_view format_str, Args const&... args) -> zstring_view {
+        fixed_writer writer(buffer);
+        format_to(writer, format_str, args...);
+        return buffer;
+    }
+
     /// Write the string format using the given parameters and return a string with the result.
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args The arguments used by the formatting string.
@@ -54,7 +67,8 @@ namespace up {
     /// @param options The format control options.
     /// @returns a result code indicating any errors.
     template <format_writable Writer, formattable T>
-    constexpr auto format_value_to(Writer& writer, T const& value, string_view spec_string) -> format_result {
+    constexpr auto format_value_to(Writer& writer, T const& value, string_view spec_string) noexcept(
+        noexcept(writer.write({}))) -> format_result {
         return _detail::make_format_arg<Writer>(value).format_into(writer, spec_string);
     }
 
@@ -63,7 +77,8 @@ namespace up {
     /// @param value The value to format.
     /// @returns a result code indicating any errors.
     template <format_writable Writer, formattable T>
-    constexpr auto format_value_to(Writer& writer, T const& value) -> format_result {
+    constexpr auto format_value_to(Writer& writer, T const& value) noexcept(noexcept(writer.write({})))
+        -> format_result {
         return _detail::make_format_arg<Writer>(value).format_into(writer);
     }
 
@@ -76,5 +91,17 @@ namespace up {
     constexpr auto format_append(Receiver& receiver, string_view format_str, Args const&... args) -> format_result {
         auto writer = append_writer(receiver);
         return format_to(writer, format_str, args...);
+    }
+
+    /// Write the string format using the given parameters into a receiver.
+    /// @param buffer The text buffer to append to.
+    /// @param format_str The primary text and formatting controls to be written.
+    /// @param args The arguments used by the formatting string.
+    /// @returns a result code indicating any errors.
+    template <size_t N, formattable... Args>
+    constexpr auto format_append(char (&buffer)[N], string_view format_str, Args const&... args) -> zstring_view {
+        fixed_writer writer(buffer, stringLength(buffer));
+        format_to(writer, format_str, args...);
+        return buffer;
     }
 } // namespace up

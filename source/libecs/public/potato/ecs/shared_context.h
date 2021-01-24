@@ -26,6 +26,7 @@ namespace up {
         };
 
         auto findComponentById(ComponentId id) const noexcept -> reflex::TypeInfo const*;
+        auto findComponentByName(string_view name) const noexcept -> reflex::TypeInfo const*;
 
         template <typename Component>
         auto findComponentByType() const noexcept -> reflex::TypeInfo const*;
@@ -45,7 +46,7 @@ namespace up {
             const noexcept -> bool;
 
         vector<reflex::TypeInfo const*> components;
-        vector<ArchetypeLayout> archetypes = {ArchetypeLayout{0, 0, 0}};
+        vector<ArchetypeLayout> archetypes = {ArchetypeLayout{0, 0, sizeof(Chunk::Payload) / sizeof(EntityId)}};
         vector<LayoutRow> chunkRows;
         vector<box<Chunk>> allocatedChunks;
         Chunk* freeChunkHead = nullptr;

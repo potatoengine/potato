@@ -150,6 +150,11 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
         }
     };
 
+    auto const hasSlash = [&result, sep]() {
+        string_view current = result;
+        return !current.empty() && current.back() == to_underlying(sep);
+    };
+
     enum class Part { Empty, Component, Slash, Dot, DotDot } mode = Part::Empty;
 
     for (auto const ch : path) {
@@ -182,7 +187,9 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
                     mode = Part::Dot;
                 }
                 else {
-                    result.append(to_underlying(sep));
+                    if (!hasSlash()) {
+                        result.append(to_underlying(sep));
+                    }
                     result.append(ch);
                     mode = Part::Component;
                 }
@@ -225,13 +232,13 @@ auto up::path::normalize(string_view path, Separator sep) -> string {
     }
 
     if (result.empty()) {
-        result.append('/');
+        result.append(to_underlying(sep));
     }
 
     return std::move(result).to_string();
 }
 
-auto up::path::join(view<string_view> components) -> string {
+auto up::path::join(view<string_view> components, Separator sep) -> string {
     std::size_t size = 0;
 
     for (auto sv : components) {
@@ -247,7 +254,7 @@ auto up::path::join(view<string_view> components) -> string {
 
     for (auto sv : components) {
         if (!sv.empty() && !result.empty()) {
-            result.append('/');
+            result.append(to_underlying(sep));
         }
         result.append(sv.data(), sv.size());
     }

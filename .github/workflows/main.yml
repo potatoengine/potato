@@ -37,9 +37,9 @@ jobs:
           echo "ASSIMPDIR=$Env:DEPS\assimp-5.0.1-win-x64" | Out-File -FilePath "$Env:GITHUB_ENV" -Append
           ls -R $Env:DEPS
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v2
+        uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Setup VS Environment
-        uses: seanmiddleditch/gha-setup-vsdevenv@v2
+        uses: seanmiddleditch/gha-setup-vsdevenv@v3
       - name: Configure
         env:
           CXX: cl.exe
@@ -47,7 +47,7 @@ jobs:
           CXXFLAGS: /FC
         run: |
           mkdir build
-          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES
+          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX /w34295 /w34189" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
       - name: Test
@@ -65,12 +65,13 @@ jobs:
         include:
           - cxx: g++-10
             cc: gcc-10
-            warnings: -Wall -Werror -Wno-volatile # GLM triggers volatile
+            cxxflags: -fcoroutines
+            warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized -Wno-deprecated-enum-enum-conversion # GLM triggers volatile, Tracy triggers maybe-unitialized, imgui triggers deprecated-enum-enum-conversion
             packages: g++-10 gcc-10 libstdc++-10-dev
           - cxx: clang++-10
             cc: clang-10
             cxxflags: -stdlib=libc++ -fdiagnostics-absolute-paths
-            warnings: -Wall -Werror -Wno-deprecated-volatile # GLM triggers deprecated-volatile
+            warnings: -Wall -Werror -Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion # GLM triggers deprecated-volatile, imgui triggers deprecated-enum-enum-conversion
             packages: clang-10 libc++-10-dev libc++abi-10-dev
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
@@ -90,7 +91,7 @@ jobs:
         uses: Trass3r/setup-cpp@v1
         if: matrix.config == 'Debug'
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v2
+        uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
         env:
           CXXFLAGS: '${{ matrix.cxxflags }}'
@@ -137,8 +138,10 @@ jobs:
       - uses: actions/checkout@master
         with:
           lfs: true
+      - name: Install Problem Matchers
+        uses: Trass3r/setup-cpp@v1
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v2
+        uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
         env:
           CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths
@@ -146,7 +149,7 @@ jobs:
           CC: clang-10
         run: |
           mkdir -p build
-          cmake -S . -B build -G Ninja "-DUP_CXXFLAGS:STRING=-Wno-deprecated-volatile" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-10" "-DCMAKE_BUILD_TYPE:STRING=Debug"
+          cmake -S . -B build -G Ninja "-DUP_CXXFLAGS:STRING=-Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-10" "-DCMAKE_BUILD_TYPE:STRING=Debug"
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
 
@@ -167,7 +170,7 @@ jobs:
         with:
           lfs: true
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v2
+        uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
         env:
           CXX: 'g++-10'

@@ -20,7 +20,7 @@ enum class custom_enum { foo, bar };
 class custom_type {};
 
 template <typename Writer>
-void format_value(Writer& writer, custom_enum value) noexcept {
+void format_value(Writer& writer, custom_enum value) {
     switch (value) {
         case custom_enum::foo:
             format_value_to(writer, "foo");
@@ -33,13 +33,13 @@ void format_value(Writer& writer, custom_enum value) noexcept {
 // static_assert(up::formattable<custom_enum>);
 
 template <typename Writer>
-void format_value(Writer& writer, custom_type) noexcept {
+void format_value(Writer& writer, custom_type) {
     format_value_to(writer, "custom");
 }
 // static_assert(up::formattable<custom_type>);
 
 template <typename Writer>
-void format_value(Writer& writer, custom_type const*) noexcept {
+void format_value(Writer& writer, custom_type const*) {
     format_value_to(writer, "custom pointer");
 }
 // static_assert(up::formattable<custom_type const*>);

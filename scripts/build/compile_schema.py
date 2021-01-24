@@ -52,16 +52,22 @@ def cxxnamespace(type: type_info.TypeBase, namespace: str='up::schema'):
 def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     """Calculates the qualified name for types"""
     cxxname = type.cxxname
+    if type.has_annotation('cxximport'):
+        return cxxname
     cxxns = cxxnamespace(type, namespace)
-    return cxxname if '::' in cxxname else f'{cxxns}::{cxxname}'
+    return cxxname if '::' in cxxname or type.module == '$core' else f'{cxxns}::{cxxname}'
 
-def cxxvalue(value):
+def cxxvalue(value, db: type_info.TypeDatabase):
     if value is True:
         return 'true'
     if value is False:
         return 'false'
     if isinstance(value, str):
         return f'"{value}"' # FIXME: escapes
+    if isinstance(value, dict) and 'kind' in value and value['kind'] == 'enum':
+        type_name = value['type']
+        type = db.type(type_name)
+        return f'{qualified_cxxname(type)}::{value["name"]}'
     return str(value)
 
 def generate_header_types(ctx: Context):
@@ -78,13 +84,29 @@ def generate_header_types(ctx: Context):
 
         ctx.print(f'namespace {cxxns} {{\n')
 
-        ctx.print(f'    struct {type.cxxname} ')
-        if type.kind == type_info.TypeKind.ATTRIBUTE:
-            ctx.print(': reflex::SchemaAttribute ')
-        ctx.print('{\n')
-        for field in type.fields_ordered:
-            ctx.print(f"        {field.cxxtype} {field.cxxname};\n")
-        ctx.print("    };\n")
+        if type.kind == type_info.TypeKind.ENUM:
+            ctx.print(f'    enum class {type.cxxname}')
+            if type.base is not None:
+                ctx.print(f' : {type.base.cxxname}')
+            ctx.print(' {\n')
+            for key in type.names:
+                ctx.print(f'        {key} = {type.value_or(key, 0)},\n')
+            ctx.print("    };\n")
+        else:
+            ctx.print(f'    struct {type.cxxname}')
+            if type.kind == type_info.TypeKind.ATTRIBUTE:
+                ctx.print(' : reflex::SchemaAttribute')
+            elif type.base is not None:
+                ctx.print(f' : {type.base.cxxname}')
+            ctx.print(' {\n')
+            if type.has_annotation('virtualbase'):
+                ctx.print(f'        virtual ~{type.cxxname}() = default;\n')
+            for field in type.fields_ordered:
+                ctx.print(f"        {field.cxxtype} {field.cxxname}")
+                if field.has_default:
+                    ctx.print(f' = {cxxvalue(field.default_or(None), ctx.db)}')
+                ctx.print(";\n")
+            ctx.print("    };\n")
 
         ctx.print('}\n')
 
@@ -95,6 +117,8 @@ def generate_header_schemas(ctx: Context):
     for type in ctx.db.exports.values():
         if type.has_annotation('ignore'):
             continue
+        #if type.has_annotation('cxximport'):
+        #    continue
 
         qual_name = qualified_cxxname(type=type)
 
@@ -109,60 +133,6 @@ def generate_header_schemas(ctx: Context):
     
     ctx.print('}\n')
 
-def generate_header_json_parse_decl(ctx: Context):
-    """Generates json parsing function declarations for types"""
-    for type in ctx.db.exports.values():
-        if not type.has_annotation("serialize"):
-            continue
-        if type.kind == type_info.TypeKind.OPAQUE:
-            continue
-
-        cxxns = cxxnamespace(type)
-        ctx.print(f'namespace {cxxns} {{\n')
-
-        ctx.print(f"    UP_{ctx.library.upper()}_API void from_json(nlohmann::json const& root, {type.cxxname}& value);\n")
-
-        ctx.print('}\n')
-
-def generate_impl_json_parse(ctx: Context):
-    """Generates json parsing function definition for types"""
-    for type in ctx.db.exports.values():
-        if type.has_annotation('ignore'):
-            continue
-        if not type.has_annotation("serialize"):
-            continue
-        if type.kind == type_info.TypeKind.OPAQUE:
-            continue
-
-        ctx.print(f"void up::schema::from_json(nlohmann::json const& root, {type.cxxname}& value) {{\n")
-        ctx.print("""
-    if (!root.is_object()) {
-        return;
-    }
-""")
-        for field in type.fields_ordered:
-            json_name = field.get_annotation_field_or("json", "name", field.name)
-
-            if field.is_array:
-                ctx.print(f'''
-    if (auto it = root.find("{json_name}"); it != root.end() && it->is_array()) {{
-        for (auto const& child : *it) {{
-            child.get_to(value.{field.cxxname}.emplace_back());
-        }}
-    }}
-''')
-            else:
-                ctx.print(f'''
-    if (auto it = root.find("{json_name}"); it != root.end()) {{
-         it->get_to(value.{field.cxxname});
-    }}
-''')
-
-            if field.has_default:
-                ctx.print("    else {\n        value.{field.cxxname} = {field.default_or(None)};\n    }\n")
-
-        ctx.print('}\n')
-
 def generate_impl_annotations(ctx: Context, name: str, entity: type_info.AnnotationsBase):
     """Generates metadata for an annotation"""
     locals = []
@@ -173,13 +143,13 @@ def generate_impl_annotations(ctx: Context, name: str, entity: type_info.Annotat
 
         ctx.print(f'    static const {attr.cxxname} {local_name}{{')
         for field, value in zip(attr.fields_ordered, annotation.values):
-            ctx.print(f'.{field.cxxname} = {cxxvalue(value)}, ')
+            ctx.print(f'.{field.cxxname} = {cxxvalue(value, ctx.db)}, ')
         ctx.print('};\n')
 
     if len(locals) != 0:
         ctx.print(f'    static const SchemaAnnotation {name}_annotations[] = {{\n')
         for local in locals:
-            ctx.print(f'        {{ .type = &getTypeInfo<{attr.cxxname}>(), .attr = &{local} }},\n')
+            ctx.print(f'        {{ .type = &getTypeInfo<decltype({local})>(), .attr = &{local} }},\n')
         ctx.print('    };\n')
     else:
         ctx.print(f'    static const view<SchemaAnnotation> {name}_annotations;\n')
@@ -194,27 +164,51 @@ def generate_impl_schemas(ctx: Context):
 
         ctx.print(f"up::reflex::TypeInfo const& up::reflex::TypeHolder<{qual_name}>::get() noexcept {{\n")
         ctx.print('    using namespace up::schema;\n')
-        ctx.print(f'    static const TypeInfo info = makeTypeInfo<{qual_name}>("{type.name}", &getSchema<{qual_name}>());\n')
+        ctx.print(f'    static const TypeInfo info = makeTypeInfo<{qual_name}>("{type.name}"_zsv, &getSchema<{qual_name}>());\n')
         ctx.print('    return info;\n')
         ctx.print("}\n")
 
-        if type.kind == type_info.TypeKind.OPAQUE:
-            continue
         ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<{qual_name}>::get() noexcept {{\n")
         ctx.print('    using namespace up::schema;\n')
 
         generate_impl_annotations(ctx, type.name, type)
-        for field in type.fields_ordered:
-            generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
 
-        if len(type.fields_ordered) != 0:
+        if type.base is not None:
+            ctx.print(f'    static const Schema* const base = &getSchema<{qualified_cxxname(type.base)}>();\n')
+        else:
+            ctx.print('    constexpr const Schema* const base = nullptr;\n')
+
+        if type.kind == type_info.TypeKind.ENUM:
+            ctx.print('    static const SchemaEnumValue values[] = {\n')
+            for key in type.names:
+                ctx.print(f'        SchemaEnumValue{{.name = "{key}"_zsv, .value = static_cast<int64>({qual_name}::{key})}},\n')
+            ctx.print('    };\n')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Enum, .baseSchema = base, .elementType = &getSchema<std::underlying_type_t<{qual_name}>>(), .enumValues = values, .annotations = {type.name}_annotations}};\n')
+        elif type.has_annotation('AssetReference'):
+            ctx.print(f'''
+        using Type = {qual_name};
+        using AssetType = typename Type::AssetType;
+        static SchemaOperations const operations = {{
+            .pointerDeref = [](void const* ptr) -> void const* {{ return static_cast<Type const*>(ptr)->asset(); }},
+            .pointerMutableDeref = [](void* ptr) -> void* {{ return static_cast<Type const*>(ptr)->asset(); }},
+            .pointerAssign = [](void* ptr,
+                                void* object) {{ *static_cast<Type*>(ptr) = Type{{rc{{static_cast<AssetType*>(object)}}}}; }},
+        }};
+''')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::AssetRef, .baseSchema = base, .operations = &operations, .annotations = {type.name}_annotations}};\n')
+        elif type.kind == type_info.TypeKind.OPAQUE or len(type.fields_ordered) == 0:
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .annotations = {type.name}_annotations}};\n')
+        else:
+            for field in type.fields_ordered:
+                generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
+
             ctx.print('    static const SchemaField fields[] = {\n')
             for field in type.fields_ordered:
-                ctx.print(f'        SchemaField{{.name = "{field.name}", .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {type.name}_{field.name}_annotations}},\n')
+                ctx.print(f'        SchemaField{{.name = "{field.name}"_zsv, .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {type.name}_{field.name}_annotations}},\n')
             ctx.print('    };\n')
-        else:
-            ctx.print('    static constexpr view<SchemaField> fields;\n')
-        ctx.print(f'    static const Schema schema = {{.name = "{type.name}", .primitive = up::reflex::SchemaPrimitive::Object, .fields = fields, .annotations = {type.name}_annotations}};\n')
+
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .fields = fields, .annotations = {type.name}_annotations}};\n')
+
         ctx.print('    return schema;\n')
         ctx.print("}\n")
 
@@ -229,7 +223,6 @@ def generate_header(ctx: Context):
 #include "potato/spud/vector.h"
 #include "potato/reflex/schema.h"
 #include "potato/reflex/type.h"
-#include "potato/runtime/json.h"
 #include "potato/{ctx.library}/_export.h"
 """)
 
@@ -242,20 +235,27 @@ def generate_header(ctx: Context):
             ctx.print(f'#include "{header}"\n')
 
     generate_header_types(ctx)
-    generate_header_json_parse_decl(ctx)
     generate_header_schemas(ctx)
 
 def generate_source(ctx: Context):
     """Generate contents of a source file"""
 
     generate_file_prefix(ctx)
-    ctx.print(f"""
-#include "{ctx.db.module}_schema.h"
-#include <nlohmann/json.hpp>
-""")
+    ctx.print(f'#include "{ctx.db.module}_schema.h"\n')
+    ctx.print('''
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
+''')
 
-    generate_impl_json_parse(ctx)
     generate_impl_schemas(ctx)
+
+    ctx.print('''
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+''')
 
 generators = {
     'header': generate_header,

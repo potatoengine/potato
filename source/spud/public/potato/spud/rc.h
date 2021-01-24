@@ -11,6 +11,9 @@ namespace up {
     template <typename T>
     class rc;
 
+    constexpr struct {
+    } rc_acquire;
+
     template <typename Derived>
     class shared {
     public:
@@ -50,6 +53,7 @@ namespace up {
 
         rc() noexcept = default;
         explicit rc(pointer ptr) noexcept : _ptr(ptr) {}
+        rc(decltype(rc_acquire), pointer ptr) noexcept : _ptr(ptr) { _addRef(); }
         ~rc() noexcept { _removeRef(); }
 
         rc(rc const& rhs) noexcept : _ptr(rhs._ptr) { _addRef(); }

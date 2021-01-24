@@ -39,6 +39,11 @@ namespace up::null {
         box<GpuResourceView> createRenderTargetView(GpuTexture* resource) override;
         box<GpuResourceView> createDepthStencilView(GpuTexture* resource) override; 
 
+        view<unsigned char> getDebugShader(GpuShaderStage stage) override;
+
+        void execute(GpuCommandList* commands) override {}
+
+        void registerAssetBackends(AssetLoader& assetLoader) override {}
         void beginFrame(GpuSwapChain* swapChain) override {}
         void endFrame(GpuSwapChain* swapChain) override {}
         void beginResourceCreation() override {}

@@ -11,7 +11,7 @@ TEST_CASE("[potato][spud] vector") {
     SECTION("vector default initialization") {
         vector<int> vec;
 
-        CHECK(vec.size() == 0);
+        CHECK(vec.empty());
         CHECK(vec.capacity() == 0);
         CHECK(vec.empty());
     }
