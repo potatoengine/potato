@@ -88,6 +88,8 @@ void up::Scene::MeshRenderer::onSchedule(up::RenderContext& ctx) {}
 
 void up::Scene::MeshRenderer::onRender(up::RenderContext& ctx) {
     _meshQuery->select(*_world, [&](EntityId, components::Mesh& mesh, components::Transform const& trans) {
-        mesh.model->render(ctx, trans.transform);
+        if (mesh.mesh.ready() && mesh.material.ready()) {
+            mesh.mesh.asset()->render(ctx, mesh.material.asset(), trans.transform);
+        }
     });
 }

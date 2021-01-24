@@ -23,10 +23,10 @@
 constexpr int debug_vbo_size = 64 * 1024;
 constexpr double nano_to_seconds = 1.0 / 1000000000.0;
 
-up::Renderer::Renderer(Loader& loader, rc<GpuDevice> device) : _device(std::move(device)), _loader(loader) {
+up::Renderer::Renderer(rc<GpuDevice> device) : _device(std::move(device)) {
 
-    _debugLineMaterial = _loader.loadMaterialSync("materials/debug_line.mat");
-    _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, debug_vbo_size);
+    //_debugLineMaterial = _loader.loadMaterialSync("materials/debug_line.mat");
+    //_debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, debug_vbo_size);
 
     // Create the debug pipeline
     GpuPipelineStateDesc pipelineDesc;
@@ -54,6 +54,7 @@ up::Renderer::Renderer(Loader& loader, rc<GpuDevice> device) : _device(std::move
 up::Renderer::~Renderer() = default;
 
 void up::Renderer::beginFrame(GpuSwapChain* swapChain) {
+    constexpr double nanoToSeconds = 1.0 / 1000000000.0;
     UP_ASSERT(swapChain != nullptr);
     if (_frameDataBuffer == nullptr) {
         _frameDataBuffer = _device->createBuffer(GpuBufferType::Constant, sizeof(FrameData));
@@ -90,61 +91,6 @@ auto up::Renderer::createRendarable(IRenderable* pInterface) -> GpuRenderable* {
 
     auto renderable = _device->createRenderable(pInterface);
     return _rendarables.emplace_back(std::move(renderable)).get();
-}
-
-void up::Renderer::flushDebugDraw(float frameTime) {
-    static constexpr uint32 bufferSize = 64 * 1024;
-    static constexpr uint32 maxVertsPerChunk = bufferSize / sizeof(DebugDrawVertex);
-
-    //if (_debugLineBuffer == nullptr) {
-    //    _debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, bufferSize);
-    //}
-
-    //auto ctx = context();
-    //_debugLineMaterial->bindMaterialToRender(ctx);
-    //_commandList->bindVertexBuffer(0, _debugLineBuffer.get(), sizeof(DebugDrawVertex));
-    //_commandList->setPrimitiveTopology(GpuPrimitiveTopology::Lines);
-    if (_debugState.empty()) {
-        up::flushDebugDraw(frameTime);
-        return;
-    }
-
-    if (_debugBuffer == nullptr) {
-        _debugBuffer = _device->createBuffer(GpuBufferType::Vertex, bufferSize);
-    }
-
-    _commandList->setPipelineState(_debugState.get());
-    _commandList->bindVertexBuffer(0, _debugBuffer.get(), sizeof(DebugDrawVertex));
-    _commandList->setPrimitiveTopology(GpuPrimitiveTopology::Lines);
-
-    dumpDebugDraw([this](auto debugVertices) {
-        if (debugVertices.empty()) {
-            return;
-        }
-
-
-    //dumpDebugDraw([this](auto debugVertices) {
-    //    if (debugVertices.empty()) {
-    //        return;
-    //    }
-
-    //    uint32 vertCount = min(static_cast<uint32>(debugVertices.size()), maxVertsPerChunk);
-    //    uint32 offset = 0;
-    //    while (offset < debugVertices.size()) {
-    //        _commandList->update(_debugLineBuffer.get(), debugVertices.subspan(offset, vertCount).as_bytes());
-    //        _commandList->draw(vertCount);
-        uint32 vertCount = min(static_cast<uint32>(debugVertices.size()), maxVertsPerChunk);
-        uint32 offset = 0;
-        while (offset < debugVertices.size()) {
-            _commandList->update(_debugBuffer.get(), debugVertices.subspan(offset, vertCount).as_bytes());
-            _commandList->draw(vertCount);
-
-    //        offset += vertCount;
-    //        vertCount = min(static_cast<uint32>(debugVertices.size()) - offset, maxVertsPerChunk);
-    //    }
-    //});
-
-    //up::flushDebugDraw(frameTime);
 }
 
 namespace up {

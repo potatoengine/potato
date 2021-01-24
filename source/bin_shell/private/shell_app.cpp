@@ -254,31 +254,6 @@ int up::shell::ShellApp::initialize() {
 
     _uiRenderCamera = new_box<RenderCamera>();
 
-    auto imguiVertShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "vertex"_sv);
-    auto imguiPixelShader = _loader->loadShaderSync("shaders/imgui.hlsl"_zsv, "pixel"_sv);
-    if (imguiVertShader == nullptr || imguiPixelShader == nullptr) {
-        _errorDialog("Failed to load imgui shaders");
-        return 1;
-    }
-
-    _imguiBackend.bindShaders(std::move(imguiVertShader), std::move(imguiPixelShader));
-    auto fontStream = _resourceLoader.openAsset("fonts/roboto/Roboto-Regular.ttf");
-    if (!fontStream) {
-        _errorDialog("Failed to open Roboto-Regular font");
-        return 1;
-    }
-    _imguiBackend.loadFont(std::move(fontStream));
-
-    fontStream = _resourceLoader.openAsset("fonts/fontawesome5/fa-solid-900.ttf");
-    if (!fontStream) {
-        _errorDialog("Failed to open FontAwesome font");
-        return 1;
-    }
-    if (!_imguiBackend.loadFontAwesome5(std::move(fontStream))) {
-        _errorDialog("Failed to load FontAwesome font");
-        return 1;
-    }
-
     // #dx12: for now kick off new frame for resource creation -- will have to build a new system for that.
     _device->beginResourceCreation();
     _imguiBackend.createResources(*_device);

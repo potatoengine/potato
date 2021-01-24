@@ -27,8 +27,6 @@ up::RenderCamera::RenderCamera() = default;
 
 up::RenderCamera::~RenderCamera() = default;
 
-void ;
-
 void up::RenderCamera::setRenderTarget(box<GpuResourceView> rtv) {
     _rtv = std::move(rtv);
 }

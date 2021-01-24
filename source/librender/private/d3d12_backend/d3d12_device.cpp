@@ -19,6 +19,11 @@
 #include "potato/runtime/com_ptr.h"
 #include "potato/spud/out_ptr.h"
 
+#define BYTE unsigned char
+#include "debug_pixel_shader.h"
+#include "debug_vertex_shader.h"
+#undef BYTE
+
 #include <D3D12MemAlloc.h>
 #include <d3d12.h>
 #include <utility>
@@ -169,8 +174,6 @@ auto up::d3d12::DeviceD3D12::createRenderTargetView(GpuTexture* resource)
     -> box<GpuResourceView> {
     UP_ASSERT(resource != nullptr);
 
-    auto texture = static_cast<TextureD3D12*>(resource);
-
     uint32 __rtvcount = 0;
     auto rtv = new_box<ResourceViewD3D12>(GpuViewType::RTV);
     rtv->create(_rtvHeap.get(), __rtvcount++);
@@ -228,7 +231,7 @@ void up::d3d12::DeviceD3D12::createAllocator() {
     //    desc.pAllocationCallbacks = &g_AllocationCallbacks;
     //}
 
-    HRESULT hr = D3D12MA::CreateAllocator(&desc, out_ptr(_allocator));
+    D3D12MA::CreateAllocator(&desc, out_ptr(_allocator));
 
     switch (_allocator->GetD3D12Options().ResourceHeapTier) {
         case D3D12_RESOURCE_HEAP_TIER_1:
@@ -309,3 +312,16 @@ void up::d3d12::DeviceD3D12::execute(bool quitting) {
     // block until next frame is done on GPU before we start new frame
     waitForFrame();
 }
+
+auto up::d3d12::DeviceD3D12::getDebugShader(GpuShaderStage stage) -> view<unsigned char> {
+    switch (stage) {
+        case GpuShaderStage::Vertex:
+            return g_vertex_main;
+        case GpuShaderStage::Pixel:
+            return g_pixel_main;
+        default:
+            return {};
+    }
+}
+
+void up::d3d12::DeviceD3D12::registerAssetBackends(AssetLoader& assetLoader) {}

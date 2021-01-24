@@ -51,6 +51,10 @@ namespace up::d3d12 {
         void beginResourceCreation() override;
         void endResourceCreation() override;
 
+        view<unsigned char> getDebugShader(GpuShaderStage stage) override;
+
+        void registerAssetBackends(AssetLoader& assetLoader) override;
+
     protected:
         void createDefaultSampler();
         void createAllocator(); 

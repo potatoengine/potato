@@ -114,7 +114,7 @@ auto up::d3d12::TextureD3D12::create2DTex(ContextD3D12 const& ctx, GpuTextureDes
     allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 
 
-    HRESULT hr = ctx._allocator->CreateResource(
+    ctx._allocator->CreateResource(
         &allocDesc,
         &resourceDesc,
         D3D12_RESOURCE_STATE_COPY_DEST,
@@ -144,7 +144,7 @@ auto up::d3d12::TextureD3D12::createDepthStencilTex(ContextD3D12 const& ctx, Gpu
     depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
     depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
-    HRESULT hr = ctx._allocator->CreateResource(
+    ctx._allocator->CreateResource(
         &allocDesc,
         &resourceDesc,
         D3D12_RESOURCE_STATE_DEPTH_WRITE,
@@ -160,7 +160,7 @@ auto up::d3d12::TextureD3D12::createDepthStencilTex(ContextD3D12 const& ctx, Gpu
 auto up::d3d12::TextureD3D12::uploadData(ContextD3D12 const& ctx, D3D12_RESOURCE_DESC& resourceDesc, span<up::byte const> data)
     -> bool {
 
-    uint32 stride = resourceDesc.Width * toByteSize(fromNative(resourceDesc.Format));
+    uint32 stride = static_cast<uint32>(resourceDesc.Width * toByteSize(fromNative(resourceDesc.Format)));
 
     UINT64 textureUploadBufferSize = 0;
     ctx._device->GetCopyableFootprints(

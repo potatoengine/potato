@@ -77,7 +77,7 @@ void up::d3d12::CommandListD3D12::bindIndexBuffer(GpuBuffer* buffer, GpuIndexFor
     D3D12_INDEX_BUFFER_VIEW view;
     view.BufferLocation = impl->buffer()->GetGPUVirtualAddress() + offset;
     view.Format = toNative(indexType);
-    view.SizeInBytes = impl->size();
+    view.SizeInBytes = static_cast<UINT>(impl->size());
 
     _commandList->IASetIndexBuffer(&view);
 }
@@ -93,8 +93,8 @@ void up::d3d12::CommandListD3D12::bindVertexBuffer(
     auto impl = static_cast<BufferD3D12*>(buffer);
     D3D12_VERTEX_BUFFER_VIEW view;
     view.BufferLocation = impl->buffer()->GetGPUVirtualAddress() + offset;
-    view.StrideInBytes = stride;
-    view.SizeInBytes = impl->size();
+    view.StrideInBytes = static_cast<UINT>(stride);
+    view.SizeInBytes = static_cast<UINT>(impl->size());
 
     _commandList->IASetVertexBuffers(slot, 1, &view);
 }

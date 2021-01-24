@@ -55,5 +55,9 @@ namespace up {
 
         virtual void render(const FrameData& frameData, GpuRenderable* renderable) = 0;
         virtual void execute(bool quitting) = 0;
+
+       virtual view<unsigned char> getDebugShader(GpuShaderStage stage) = 0;
+
+       virtual void registerAssetBackends(AssetLoader& assetLoader) = 0;
     };
 } // namespace up
