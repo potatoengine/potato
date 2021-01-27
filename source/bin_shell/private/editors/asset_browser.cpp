@@ -79,7 +79,7 @@ void up::shell::AssetBrowser::content() {
     if (ImGui::BeginTable(
             "##asset_browser",
             2,
-            ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV,
+            ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp,
             ImGui::GetContentRegionAvail())) {
         ImGui::TableSetupColumn("##files", 0, 1);
         ImGui::TableSetupColumn("##assets", 0, 4);
