@@ -220,11 +220,7 @@ void ImGui::Potato::IconMenuSeparator() {
         ImVec2 const iconSize = ImGui::CalcTextSize(reinterpret_cast<char const*>(ICON_FA_INFO));
         ImVec2 const spacing = GetStyle().ItemInnerSpacing;
 
-        if (!window->DC.GroupStack.empty()) {
-            window->DC.CursorPos.x += window->DC.Indent.x;
-        }
-
-        window->DC.CursorPos.x += iconSize.x + spacing.x * 2.f;
+        window->DC.CursorPos.x += window->DC.Indent.x + iconSize.x + spacing.x * 2.f;
 
         ImRect const bounds(window->DC.CursorPos, window->DC.CursorPos + ImVec2(GetContentRegionAvailWidth(), 1.f));
 

@@ -301,7 +301,8 @@ void up::shell::SceneEditor::_inspector() {
     if (!ImGui::BeginTable(
             "##inspector_table",
             2,
-            ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBodyUntilResize)) {
+            ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBodyUntilResize |
+                ImGuiTableFlags_SizingStretchProp)) {
         return;
     }
 

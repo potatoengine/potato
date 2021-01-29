@@ -106,8 +106,8 @@ void up::shell::LogWindow::draw() {
     if (ImGui::BeginTable(
             "##logs",
             4,
-            ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg |
-                ImGuiTableFlags_Hideable)) {
+            ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Hideable |
+                ImGuiTableFlags_SizingStretchProp)) {
         ImGui::TableSetupColumn("Severity", ImGuiTableColumnFlags_None, 1);
         ImGui::TableSetupColumn("Category", ImGuiTableColumnFlags_None, 2);
         ImGui::TableSetupColumn("Message", ImGuiTableColumnFlags_None, 6);
