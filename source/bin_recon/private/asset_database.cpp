@@ -44,6 +44,15 @@ auto up::AssetDatabase::findRecordByFilename(zstring_view filename) const noexce
     return nullptr;
 }
 
+auto up::AssetDatabase::findRecordByFolder(zstring_view folder) const noexcept -> Imported const* {
+    for (auto const& record : _records) {
+        if (record.sourcePath.starts_with(folder)) {
+            return &record;
+        }
+    }
+    return nullptr;
+}
+
 auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept -> AssetId {
     uint64 hash = hash_value(uuid);
     if (!logicalName.empty()) {
