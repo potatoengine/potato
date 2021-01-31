@@ -114,6 +114,7 @@ namespace up::shell {
         std::chrono::nanoseconds _lastFrameDuration = {};
         string _projectName;
         AssetLoader _assetLoader;
+        LogHistory _logHistory;
         LogWindow _logWindow;
         ReconClient _reconClient;
         AssetEditService _assetEditService;

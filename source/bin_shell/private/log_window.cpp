@@ -7,34 +7,34 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-class up::shell::LogWindow::LogWindowSink : public LogSink {
+class up::shell::LogHistory::LogHistorySink : public LogSink {
 public:
-    LogWindowSink(LogWindow& window) : _window(window) {}
+    LogHistorySink(LogHistory& history) : _history(history) {}
 
     void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location) noexcept
         override {
-        if (!_window._logs.empty()) {
-            LogEntry& last = _window._logs.back();
+        if (!_history._logs.empty()) {
+            LogEntry& last = _history._logs.back();
             if (last.severity == severity && last.message == message) {
                 ++last.count;
                 return;
             }
         }
 
-        _window._logs.push_back({severity, string(message), string(loggerName), string{}});
+        _history._logs.push_back({severity, string(message), string(loggerName), string{}});
 
         next(loggerName, severity, message, location);
     }
 
-    LogWindow& _window;
+    LogHistory& _history;
 };
 
-up::shell::LogWindow::LogWindow() : _receiver(new_shared<LogWindowSink>(*this)) {
-    Logger::root().attach(_receiver);
+up::shell::LogHistory::LogHistory() : _sink(new_shared<LogHistorySink>(*this)) {
+    Logger::root().attach(_sink);
 }
 
-up::shell::LogWindow::~LogWindow() {
-    Logger::root().detach(_receiver.get());
+up::shell::LogHistory::~LogHistory() {
+    Logger::root().detach(_sink.get());
 }
 
 void up::shell::LogWindow::draw() {
@@ -114,7 +114,7 @@ void up::shell::LogWindow::draw() {
         ImGui::TableSetupColumn("Location", ImGuiTableColumnFlags_None, 4);
         ImGui::TableHeadersRow();
 
-        for (LogEntry const& log : _logs) {
+        for (LogEntry const& log : _history.logs()) {
             if ((to_underlying(toMask(log.severity)) & to_underlying(_mask)) == 0) {
                 continue;
             }
@@ -152,7 +152,7 @@ void up::shell::LogWindow::draw() {
 
     ImGui::EndChildFrame();
 
-    ImGui::TextDisabled("Showing %u of %u logs", static_cast<unsigned>(displayed), static_cast<unsigned>(_logs.size()));
+    ImGui::TextDisabled("Showing %u of %u logs", static_cast<unsigned>(displayed), static_cast<unsigned>(_history.logs().size()));
 
     ImGui::End();
 }

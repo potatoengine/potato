@@ -6,10 +6,33 @@
 #include "potato/spud/vector.h"
 
 namespace up::shell {
+    struct LogEntry {
+        LogSeverity severity = LogSeverity::Info;
+        string message;
+        string category;
+        string location;
+        size_t count = 1;
+    };
+
+    class LogHistory {
+    public:
+        LogHistory();
+        ~LogHistory();
+
+        view<LogEntry> logs() const noexcept { return _logs; }
+
+    private:
+        class LogHistorySink;
+
+        rc<LogHistorySink> _sink;
+        vector<LogEntry> _logs;
+
+        friend LogHistorySink;
+    };
+
     class LogWindow {
     public:
-        LogWindow();
-        ~LogWindow();
+        explicit LogWindow(LogHistory& history) : _history(history) {}
 
         LogWindow(LogWindow const&) = delete;
         LogWindow& operator=(LogWindow const&) = delete;
@@ -20,24 +43,12 @@ namespace up::shell {
         bool open(bool state = true) noexcept { return _open = state; }
 
     private:
-        class LogWindowSink;
-        struct LogEntry {
-            LogSeverity severity = LogSeverity::Info;
-            string message;
-            string category;
-            string location;
-            size_t count = 1;
-        };
-
-        rc<LogWindowSink> _receiver;
-        vector<LogEntry> _logs;
+        LogHistory& _history;
         LogSeverityMask _mask = LogSeverityMask::Everything;
         bool _open = false;
         bool _stickyBottom = true;
         char _filter[128] = {
             0,
         };
-
-        friend LogWindowSink;
     };
 } // namespace up::shell
