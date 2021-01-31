@@ -61,7 +61,7 @@
 #    undef Success
 #endif
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell"), _editors(_actions), _logWindow(_logHistory) {}
 
 up::shell::ShellApp::~ShellApp() {
     _imguiBackend.releaseResources();
@@ -165,6 +165,16 @@ int up::shell::ShellApp::initialize() {
          .action =
              [this] {
                  _logWindow.open(!_logWindow.isOpen());
+             }});
+    _appActions.addAction(
+        {.name = "potato.editor.closeActive"_s,
+         .menu = "File\\Close Document"_s,
+         .group = "7_document"_s,
+         .hotKey = "Ctrl+W"_s,
+         .enabled = [this]() { return _editors.canCloseActive(); },
+         .action =
+             [this] {
+                 _editors.closeActive();
              }});
 
     _actions.addGroup(&_appActions);
@@ -624,7 +634,7 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
 
-    _editors.update(_actions, *_renderer, _lastFrameTime);
+    _editors.update(*_renderer, _lastFrameTime);
 
     _logWindow.draw();
 
