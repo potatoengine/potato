@@ -29,26 +29,4 @@ namespace up::shell {
 
         friend LogHistorySink;
     };
-
-    class LogWindow {
-    public:
-        explicit LogWindow(LogHistory& history) : _history(history) {}
-
-        LogWindow(LogWindow const&) = delete;
-        LogWindow& operator=(LogWindow const&) = delete;
-
-        void draw();
-
-        bool isOpen() const noexcept { return _open; }
-        bool open(bool state = true) noexcept { return _open = state; }
-
-    private:
-        LogHistory& _history;
-        LogSeverityMask _mask = LogSeverityMask::Everything;
-        bool _open = false;
-        bool _stickyBottom = true;
-        char _filter[128] = {
-            0,
-        };
-    };
 } // namespace up::shell

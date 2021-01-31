@@ -10,6 +10,7 @@
 #include "editors/game_editor.h"
 #include "editors/material_editor.h"
 #include "editors/scene_editor.h"
+#include "editors/log_window.h"
 
 #include "potato/audio/sound_resource.h"
 #include "potato/ecs/query.h"
@@ -61,7 +62,7 @@
 #    undef Success
 #endif
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell"), _editors(_actions), _logWindow(_logHistory) {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell"), _editors(_actions) {}
 
 up::shell::ShellApp::~ShellApp() {
     _imguiBackend.releaseResources();
@@ -161,10 +162,9 @@ int up::shell::ShellApp::initialize() {
          .menu = "View\\Logs",
          .icon = ICON_FA_INFO,
          .hotKey = "Alt+Shift+L",
-         .checked = [this] { return _logWindow.isOpen(); },
          .action =
              [this] {
-                 _logWindow.open(!_logWindow.isOpen());
+                _openEditor(LogWindow::editorName);
              }});
     _appActions.addAction(
         {.name = "potato.editor.closeActive"_s,
@@ -287,6 +287,7 @@ int up::shell::ShellApp::initialize() {
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
     _editorFactories.push_back(MaterialEditor::createFactory(_assetLoader));
+    _editorFactories.push_back(LogWindow::createFactory(_logHistory));
 
     if (!settings.project.empty()) {
         _loadProject(settings.project);
@@ -635,8 +636,6 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::PopStyleVar(1);
 
     _editors.update(*_renderer, _lastFrameTime);
-
-    _logWindow.draw();
 
     ImGui::End();
 }

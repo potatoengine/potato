@@ -10,14 +10,17 @@ target_sources(potato_shell PRIVATE
     "private/camera.cpp"
     "private/camera_controller.cpp"
     "private/editor.cpp"
-    "private/editors/asset_browser.h"
     "private/editors/asset_browser.cpp"
+    "private/editors/asset_browser.h"
     "private/editors/game_editor.cpp"
     "private/editors/game_editor.h"	
+    "private/editors/log_window.cpp"
+    "private/editors/log_window.h"
+    "private/editors/material_editor.cpp"
+    "private/editors/material_editor.h"
     "private/editors/scene_editor.cpp"
     "private/editors/scene_editor.h"	
-    "private/log_window.cpp"
-    "private/log_window.h"
+    "private/log_history.cpp"
     "private/main.cpp"
     "private/scene.cpp"
     "private/scene_doc.cpp"
@@ -30,11 +33,12 @@ target_sources(potato_shell PRIVATE
     "private/ui/editor_group.h"	
     "private/ui/menu.cpp"	
     "public/potato/shell/_export.h"
+    "public/potato/shell/log_history.h"
     "public/potato/shell/scene_doc.h"
     "public/potato/shell/ui/action.h"	
     "public/potato/shell/ui/command_palette.h"	
     "public/potato/shell/ui/menu.h"	
- "private/editors/material_editor.h" "private/editors/material_editor.cpp")
+ )
 
 set_target_properties(potato_shell PROPERTIES OUTPUT_NAME shell)
 

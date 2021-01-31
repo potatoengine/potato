@@ -1,53 +1,38 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "log_window.h"
+#include "log_history.h"
 
 #include "potato/editor/imgui_ext.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
 
-class up::shell::LogHistory::LogHistorySink : public LogSink {
-public:
-    LogHistorySink(LogHistory& history) : _history(history) {}
+namespace up::shell {
+    namespace {
+        class LogWindowFactory : public EditorFactory {
+        public:
+            explicit LogWindowFactory(LogHistory& history) : _history(history) {}
 
-    void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location) noexcept
-        override {
-        if (!_history._logs.empty()) {
-            LogEntry& last = _history._logs.back();
-            if (last.severity == severity && last.message == message) {
-                ++last.count;
-                return;
+            zstring_view editorName() const noexcept override { return LogWindow::editorName; }
+
+            box<Editor> createEditorForDocument(zstring_view filename) override { return nullptr; }
+
+            box<Editor> createEditor() override {
+                return new_box<LogWindow>(_history);
             }
-        }
 
-        _history._logs.push_back({severity, string(message), string(loggerName), string{}});
+        private:
+            LogHistory& _history;
+        };
+    } // namespace
+} // namespace up::shell
 
-        next(loggerName, severity, message, location);
-    }
-
-    LogHistory& _history;
-};
-
-up::shell::LogHistory::LogHistory() : _sink(new_shared<LogHistorySink>(*this)) {
-    Logger::root().attach(_sink);
+auto up::shell::LogWindow::createFactory(LogHistory& history) -> box<EditorFactory> {
+    return new_box<LogWindowFactory>(history);
 }
 
-up::shell::LogHistory::~LogHistory() {
-    Logger::root().detach(_sink.get());
-}
-
-void up::shell::LogWindow::draw() {
-    if (!_open) {
-        return;
-    }
-
-    ImGui::SetNextWindowSize({500, 300}, ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Logs", &_open, ImGuiWindowFlags_NoCollapse)) {
-        ImGui::End();
-        return;
-    }
-
+void up::shell::LogWindow::content() {
     auto severityCombo = [this](LogSeverityMask mask, zstring_view label) {
         bool selected = (mask & _mask) == mask;
         if (ImGui::Selectable(label.c_str(), &selected)) {
@@ -152,7 +137,8 @@ void up::shell::LogWindow::draw() {
 
     ImGui::EndChildFrame();
 
-    ImGui::TextDisabled("Showing %u of %u logs", static_cast<unsigned>(displayed), static_cast<unsigned>(_history.logs().size()));
-
-    ImGui::End();
+    ImGui::TextDisabled(
+        "Showing %u of %u logs",
+        static_cast<unsigned>(displayed),
+        static_cast<unsigned>(_history.logs().size()));
 }
