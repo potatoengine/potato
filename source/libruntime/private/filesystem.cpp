@@ -123,10 +123,15 @@ static auto errorCodeToResult(std::error_code ec) noexcept -> up::IOResult {
         return up::IOResult::Success;
     }
 
+    if (ec == std::errc::no_such_file_or_directory) {
+        return up::IOResult::FileNotFound;
+    }
+
     if (ec.category() == std::system_category()) {
-        // FIXME: translate error codes
+        // FIXME: translate other error types
         return up::IOResult::System;
     }
+
     return up::IOResult::Unknown;
 }
 

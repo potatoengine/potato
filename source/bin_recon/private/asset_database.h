@@ -10,6 +10,7 @@
 #include "potato/spud/string_view.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
+#include "potato/spud/generator.h"
 
 namespace up {
     class Stream;
@@ -58,6 +59,7 @@ namespace up {
         Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
         Imported const* findRecordByFilename(zstring_view filename) const noexcept;
         Imported const* findRecordByFolder(zstring_view folder) const noexcept;
+        generator<zstring_view> collectAssetPaths() const;
 
         bool insertRecord(Imported record);
         bool deleteRecordByUuid(UUID const& uuid);

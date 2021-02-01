@@ -86,15 +86,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
 }
 
 bool up::recon::ReconApp::_runOnce() {
-    // collect all files in the source directory for conversion
-    auto sources = _collectSourceFiles();
-
-    if (sources.empty()) {
-        _logger.error("No source files found");
-        return false;
-    }
-
-    bool success = _importFiles(sources);
+    bool const success = _updateAll();
     if (!success) {
         _logger.error("Import failed");
     }
@@ -105,6 +97,36 @@ bool up::recon::ReconApp::_runOnce() {
     }
 
     return true;
+}
+
+bool up::recon::ReconApp::_updateAll(bool force) {
+    // collect all files in the source directory for conversion
+    auto sources = _collectSourceFiles();
+
+    if (sources.empty()) {
+        _logger.error("No source files found");
+        return false;
+    }
+
+    bool success = true;
+    for (auto const& path : sources) {
+        if (!_importFile(path, force)) {
+            success = false;
+        }
+    }
+
+    auto missing = _collectMissingFile();
+    for (auto const& path : missing) {
+        if (!_forgetFile(path)) {
+            success = false;
+        }
+    }
+
+    if (!success) {
+        _logger.error("Import failed");
+    }
+
+    return success;
 }
 
 namespace up::recon {
@@ -124,6 +146,16 @@ namespace up::recon {
 bool up::recon::ReconApp::_runServer() {
     // import all the initial files
     _runOnce();
+
+    // flush the initially-updated manifest
+    {
+        schema::ReconManifestMessage msg;
+        msg.path = _manifestPath;
+        nlohmann::json doc;
+        encodeReconMessage(doc, msg);
+        std::cout << doc.dump() << "\r\n";
+        std::cout.flush();
+    }
 
     ConcurrentQueue<ReconCommand> commands;
 
@@ -145,8 +177,8 @@ bool up::recon::ReconApp::_runServer() {
 
     // watch the target resource root and auto-convert any items that come in
     auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&commands](auto const& watch) {
-        // ignore dot files
-        if (watch.path.empty() || watch.path.front() == '.') {
+        // ignore dot files (except .meta files)
+        if (watch.path != ".meta"_sv && (watch.path.empty() || watch.path.front() == '.')) {
             return;
         }
         ReconCommand cmd{
@@ -190,13 +222,27 @@ bool up::recon::ReconApp::_runServer() {
             do {
                 switch (cmd.type) {
                     case ReconCommandType::Watch:
-                        // changes to meta-files should be processed as changes to the real file
-                        if (cmd.path.ends_with(".meta")) {
-                            cmd.path = path::changeExtension(cmd.path, "");
-                        }
+                        if (cmd.watchAction == fs::WatchAction::Create || cmd.watchAction == fs::WatchAction::Modify) {
+                            // changes to meta-files should be processed as changes to the real file
+                            if (cmd.path.ends_with(".meta")) {
+                                cmd.path = path::changeExtension(cmd.path, "");
+                            }
 
-                        _importFile(cmd.path);
-                        dirty = true;
+                            _importFile(cmd.path);
+                            dirty = true;
+                        }
+                        else if (cmd.watchAction == fs::WatchAction::Delete) {
+                            // if a .meta file is deleted, reimport the source
+                            if (cmd.path.ends_with(".meta")) {
+                                cmd.path = path::changeExtension(cmd.path, "");
+                                _importFile(cmd.path);
+                                dirty = true;
+                            }
+                            else {
+                                _forgetFile(cmd.path);
+                                dirty = true;
+                            }
+                        }
                         break;
                     case ReconCommandType::Import:
                         if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
@@ -208,8 +254,7 @@ bool up::recon::ReconApp::_runServer() {
                         break;
                     case ReconCommandType::ImportAll:
                         _logger.info("Import All (force={})", cmd.force);
-
-                        _importFiles(_collectSourceFiles());
+                        _updateAll(cmd.force);
                         dirty = true;
                         break;
                     case ReconCommandType::Delete:
@@ -218,7 +263,7 @@ bool up::recon::ReconApp::_runServer() {
 
                             (void)fs::remove(
                                 path::join(path::Separator::Native, _project->resourceRootPath(), record->sourcePath));
-                            _importFile(record->sourcePath, false);
+                            _forgetFile(record->sourcePath);
                             dirty = true;
                         }
                         break;
@@ -275,23 +320,13 @@ void up::recon::ReconApp::_registerImporters() {
     }
 }
 
-bool up::recon::ReconApp::_importFiles(view<string> files, bool force) {
-    bool failed = false;
-
-    for (auto const& path : files) {
-        if (!_importFile(path, force)) {
-            failed = true;
-        }
-    }
-
-    return !failed;
-}
-
 bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), file.c_str());
 
     auto const [statRs, stat] = fs::fileStat(osPath);
-    bool const deleted = statRs == IOResult::FileNotFound;
+    if (statRs != IOResult::Success) {
+        return false;
+    }
     bool const isFolder = stat.type == fs::FileType::Directory;
 
     auto metaPath = _makeMetaFilename(file, isFolder);
@@ -305,12 +340,11 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
 
     ImporterContext
         context(file, _project->resourceRootPath(), _temporaryOutputPath, importer, importerConfig, _logger);
-    bool dirty = deleted;
-    dirty |= !_checkMetafile(context, metaPath, !deleted);
+    bool dirty = !_checkMetafile(context, metaPath, true);
 
     auto const* record = _library.findRecordByUuid(context.uuid());
     dirty |= record == nullptr;
-    if (!dirty && !deleted && importer != nullptr) {
+    if (!dirty && importer != nullptr) {
         dirty |=
             record == nullptr || !_isUpToDate(*record, contentHash, *importer) || !_isUpToDate(record->dependencies);
     }
@@ -324,19 +358,6 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
         if (importer != nullptr) {
             format_append(importedName, " ({})", importer->name());
         }
-    }
-
-    if (deleted) {
-        if (record != nullptr) {
-            _logger.info("{}: deleted", importedName);
-            _library.deleteRecordByUuid(record->uuid);
-
-            auto metaOsPath = path::join(path::Separator::Native, _project->resourceRootPath(), metaPath);
-            if (fs::fileExists(metaOsPath)) {
-                (void)fs::remove(metaOsPath);
-            }
-        }
-        return true;
     }
 
     if (importer == nullptr && !isFolder) {
@@ -426,6 +447,27 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     return true;
 }
 
+bool up::recon::ReconApp::_forgetFile(zstring_view file) {
+    UUID const uuid = _library.pathToUuid(file);
+    if (!uuid.isValid()) {
+        return true; // let's not consider this an error; we were asked to forget something we didn't know about
+    }
+
+    _logger.info("{}: deleted", file);
+    _library.deleteRecordByUuid(uuid);
+
+    // remove the .meta file if it exists;
+    // we don't need to do this for a directory, since they could only be deleted
+    // if the .meta file is deleted too
+    auto metaPath = _makeMetaFilename(file, false);
+    auto metaOsPath = path::join(path::Separator::Native, _project->resourceRootPath(), metaPath);
+    if (fs::fileExists(metaOsPath)) {
+        (void)fs::remove(metaOsPath);
+    }
+
+    return true;
+}
+
 bool up::recon::ReconApp::_isUpToDate(
     AssetDatabase::Imported const& record,
     up::uint64 contentHash,
@@ -465,26 +507,27 @@ auto up::recon::ReconApp::_makeMetaFilename(zstring_view basePath, bool director
     return metaFilePath.to_string();
 }
 
+namespace up::recon {
+    static bool loadMetaFile(MetaFile& metaFile, zstring_view osPath) {
+        if (Stream stream = fs::openRead(osPath, fs::OpenMode::Text); stream) {
+            auto [result, jsonText] = readText(stream);
+            if (result == IOResult::Success) {
+                if (metaFile.parseJson(jsonText)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+} // namespace up::recon
+
 auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view metaPath, bool autoCreate) -> bool {
     string metaOsPath = path::join(path::Separator::Native, _project->resourceRootPath(), metaPath);
 
     MetaFile metaFile;
     bool dirty = false;
 
-    if (Stream stream = fs::openRead(metaOsPath, fs::OpenMode::Text); stream) {
-        auto [result, jsonText] = readText(stream);
-        if (result == IOResult::Success) {
-            if (!metaFile.parseJson(jsonText)) {
-                metaFile.generate();
-                dirty = true;
-            }
-        }
-        else {
-            metaFile.generate();
-            dirty = true;
-        }
-    }
-    else {
+    if (!loadMetaFile(metaFile, metaOsPath)) {
         metaFile.generate();
         dirty = true;
     }
@@ -522,13 +565,13 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view meta
     return true;
 }
 
-auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
+auto up::recon::ReconApp::_collectSourceFiles() -> FileSet {
     if (!fs::directoryExists(_project->resourceRootPath())) {
         _logger.error("`{}' does not exist or is not a directory", _project->resourceRootPath());
         return {};
     }
 
-    vector<string> files;
+    FileSet files;
     auto cb = [&files](auto const& item, int) {
         // do not recurse into the library folder
         //
@@ -542,7 +585,7 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
             return fs::next;
         }
 
-        files.push_back(item.path);
+        files.insert(string{item.path});
 
         return fs::recurse;
     };
@@ -550,6 +593,19 @@ auto up::recon::ReconApp::_collectSourceFiles() -> vector<string> {
     (void)fs::enumerate(_project->resourceRootPath(), cb);
     return files;
 };
+
+auto up::recon::ReconApp::_collectMissingFile() -> FileSet {
+    FileSet files;
+    for (zstring_view path : _library.collectAssetPaths()) {
+        string osPath = path::join(path::Separator::Native, _project->resourceRootPath(), path);
+
+        auto const [rs, _] = fs::fileStat(osPath);
+        if (rs == IOResult::FileNotFound) {
+            files.insert(string{path});
+        }
+    }
+    return files;
+}
 
 bool up::recon::ReconApp::_writeManifest() {
     auto manifestFile = fs::openWrite(_manifestPath.c_str(), fs::OpenMode::Text);

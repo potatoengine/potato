@@ -53,6 +53,13 @@ auto up::AssetDatabase::findRecordByFolder(zstring_view folder) const noexcept -
     return nullptr;
 }
 
+auto up::AssetDatabase::collectAssetPaths() const -> generator<zstring_view> {
+    for (auto const& record : _records) {
+        zstring_view path = record.sourcePath;
+        co_yield path;
+    }
+}
+
 auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept -> AssetId {
     uint64 hash = hash_value(uuid);
     if (!logicalName.empty()) {
