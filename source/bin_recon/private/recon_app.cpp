@@ -242,8 +242,11 @@ bool up::recon::ReconApp::_runServer() {
                                 _forgetFile(cmd.path);
 
                                 // if a directory is deleted, we don't get notifications for files under it
-                                //for (auto path : _library.collectAssetPathsByFolder(cmd.path)) {
-                                for (auto path : _library.collectAssetPaths()) {
+                                vector<string> children;
+                                for (auto path : _library.collectAssetPathsByFolder(cmd.path)) {
+                                    children.push_back(string{path});
+                                }
+                                for (string const& path : children) {
                                     _forgetFile(path);
                                 }
                                 
