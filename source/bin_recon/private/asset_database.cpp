@@ -3,9 +3,9 @@
 #include "asset_database.h"
 
 #include "potato/runtime/json.h"
+#include "potato/runtime/path.h"
 #include "potato/runtime/resource_manifest.h"
 #include "potato/runtime/stream.h"
-#include "potato/runtime/path.h"
 #include "potato/spud/hash.h"
 #include "potato/spud/hash_fnv1a.h"
 #include "potato/spud/out_ptr.h"
@@ -53,7 +53,6 @@ auto up::AssetDatabase::collectAssetPathsByFolder(zstring_view folder) const -> 
         }
     }
 }
-
 
 auto up::AssetDatabase::collectAssetPaths() const -> generator<zstring_view> {
     for (auto const& record : _records) {

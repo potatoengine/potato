@@ -6,11 +6,11 @@
 #include "potato/posql/posql.h"
 #include "potato/runtime/asset.h"
 #include "potato/runtime/uuid.h"
+#include "potato/spud/generator.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/vector.h"
-#include "potato/spud/generator.h"
 
 namespace up {
     class Stream;
