@@ -8,9 +8,9 @@
 #include "scene.h"
 #include "editors/asset_browser.h"
 #include "editors/game_editor.h"
+#include "editors/log_window.h"
 #include "editors/material_editor.h"
 #include "editors/scene_editor.h"
-#include "editors/log_window.h"
 
 #include "potato/audio/sound_resource.h"
 #include "potato/ecs/query.h"
@@ -162,10 +162,9 @@ int up::shell::ShellApp::initialize() {
          .menu = "View\\Logs",
          .icon = ICON_FA_INFO,
          .hotKey = "Alt+Shift+L",
-         .action =
-             [this] {
-                _openEditor(LogWindow::editorName);
-             }});
+         .action = [this] {
+             _openEditor(LogWindow::editorName);
+         }});
     _appActions.addAction(
         {.name = "potato.editor.closeActive"_s,
          .menu = "File\\Close Document"_s,

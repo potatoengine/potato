@@ -3,9 +3,9 @@
 #include "editor.h"
 
 #include "potato/runtime/logger.h"
+#include "potato/spud/hash.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/string.h"
-#include "potato/spud/hash.h"
 #include "potato/spud/vector.h"
 
 namespace up::shell {

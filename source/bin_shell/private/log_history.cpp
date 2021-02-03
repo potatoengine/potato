@@ -16,7 +16,7 @@ public:
             }
         }
 
-        _history._logs.push_back({ severity, string(message), string(loggerName), string{} });
+        _history._logs.push_back({severity, string(message), string(loggerName), string{}});
 
         next(loggerName, severity, message, location);
     }

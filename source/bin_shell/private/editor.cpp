@@ -45,7 +45,9 @@ bool up::shell::Editor::updateUi() {
 
     auto const dockSpaceId = ImGui::GetID("DockSpace");
     if (ImGui::DockBuilderGetNode(dockSpaceId) == nullptr) {
-        _dockId = ImGui::DockBuilderAddNode(dockSpaceId, ImGuiDockNodeFlags_DockSpace | ImGuiDockNodeFlags_NoWindowMenuButton);
+        _dockId = ImGui::DockBuilderAddNode(
+            dockSpaceId,
+            ImGuiDockNodeFlags_DockSpace | ImGuiDockNodeFlags_NoWindowMenuButton);
 
         configure();
 

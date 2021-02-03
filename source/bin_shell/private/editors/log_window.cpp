@@ -18,9 +18,7 @@ namespace up::shell {
 
             box<Editor> createEditorForDocument(zstring_view filename) override { return nullptr; }
 
-            box<Editor> createEditor() override {
-                return new_box<LogWindow>(_history);
-            }
+            box<Editor> createEditor() override { return new_box<LogWindow>(_history); }
 
         private:
             LogHistory& _history;
