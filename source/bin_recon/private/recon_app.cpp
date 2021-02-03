@@ -249,7 +249,7 @@ bool up::recon::ReconApp::_runServer() {
                                 for (string const& path : children) {
                                     _forgetFile(path);
                                 }
-                                
+
                                 dirty = true;
                             }
                         }
