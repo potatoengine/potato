@@ -16,6 +16,8 @@ target_sources(potato_recon PRIVATE
     "private/recon_app.h"
     "private/recon_config.cpp"
     "private/recon_config.h"
+    "private/recon_server.cpp"
+    "private/recon_server.h"
 )
 
 set_target_properties(potato_recon PROPERTIES

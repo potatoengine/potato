@@ -4,6 +4,7 @@
 #include "file_hash_cache.h"
 #include "meta_file.h"
 #include "recon_messages_schema.h"
+#include "recon_server.h"
 
 #include "potato/format/format.h"
 #include "potato/recon/recon_log_sink.h"
@@ -147,33 +148,23 @@ bool up::recon::ReconApp::_runServer() {
     // import all the initial files
     _runOnce();
 
-    // flush the initially-updated manifest
-    {
-        schema::ReconManifestMessage msg;
-        msg.path = _manifestPath;
-        nlohmann::json doc;
-        encodeReconMessage(doc, msg);
-        std::cout << doc.dump() << "\r\n";
-        std::cout.flush();
-    }
-
     ConcurrentQueue<ReconCommand> commands;
 
-    auto receiver = overload(
-        [&](schema::ReconImportMessage const& msg) {
-            ReconCommand cmd;
-            cmd.type = ReconCommandType::Import;
-            cmd.uuid = msg.uuid;
-            cmd.force = msg.force;
-            commands.enqueWait(std::move(cmd));
-        },
-
-        [&](schema::ReconImportAllMessage const& msg) {
-            ReconCommand cmd;
-            cmd.type = ReconCommandType::ImportAll;
-            cmd.force = msg.force;
-            commands.enqueWait(std::move(cmd));
-        });
+    ReconServer server(_logger);
+    server.listenDisconnect([&commands] { commands.enqueWait(ReconCommand{.type = ReconCommandType::Quit}); });
+    server.listenImport([&commands](schema::ReconImportMessage const& msg) {
+        ReconCommand cmd;
+        cmd.type = ReconCommandType::Import;
+        cmd.uuid = msg.uuid;
+        cmd.force = msg.force;
+        commands.enqueWait(std::move(cmd));
+    });
+    server.listenImportAll([&commands](schema::ReconImportAllMessage const& msg) {
+        ReconCommand cmd;
+        cmd.type = ReconCommandType::ImportAll;
+        cmd.force = msg.force;
+        commands.enqueWait(std::move(cmd));
+    });
 
     // watch the target resource root and auto-convert any items that come in
     auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&commands](auto const& watch) {
@@ -191,34 +182,19 @@ bool up::recon::ReconApp::_runServer() {
     if (rs != IOResult::Success) {
         return false;
     }
+    auto& handle = *watchHandle;
 
     // handle processing input from the client
-    fs::WatchHandle& handle = *watchHandle;
-    std::thread waitParent([this, &handle, &commands, &receiver] {
-        nlohmann::json doc;
-        std::string line;
-        while (std::getline(std::cin, line) && !std::cin.eof()) {
-            doc = nlohmann::json::parse(line);
-            if (!decodeReconMessage(doc, receiver)) {
-                _logger.error("Unhandled JSON message");
-                break;
-            }
-        }
-        handle.close();
-        commands.enqueWait(ReconCommand{.type = ReconCommandType::Quit});
-    });
+    server.start();
+
+    // flush the initially-updated manifest
+    server.sendManifest({.path = _manifestPath});
 
     ReconCommand cmd;
     bool quit = false;
     bool dirty = false;
     for (;;) {
-        // ensure we drain out the remaining queued items
-        if (quit) {
-            if (!commands.tryDeque(cmd)) {
-                break;
-            }
-        }
-        if (commands.dequeWait(cmd)) {
+        while (commands.dequeWait(cmd)) {
             do {
                 switch (cmd.type) {
                     case ReconCommandType::Watch:
@@ -284,28 +260,22 @@ bool up::recon::ReconApp::_runServer() {
                 }
             } while (commands.tryDeque(cmd));
         }
-        else {
-            handle.close();
-        }
 
         if (dirty) {
             dirty = false;
             _writeManifest();
 
-            schema::ReconManifestMessage msg;
-            msg.path = _manifestPath;
-            nlohmann::json doc;
-            encodeReconMessage(doc, msg);
-            std::cout << doc.dump() << "\r\n";
-            std::cout.flush();
+            server.sendManifest({.path = _manifestPath});
         }
 
         if (!handle.isOpen()) {
             quit = true;
         }
-    }
 
-    waitParent.join();
+        if (quit) {
+            break;
+        }
+    }
 
     // server only "fails" if it can't run at all
     return true;
