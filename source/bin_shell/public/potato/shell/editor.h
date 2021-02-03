@@ -82,7 +82,8 @@ namespace up::shell {
     protected:
         explicit Editor(zstring_view className);
 
-        ImGuiWindowClass const& documentClass() const noexcept { return _windowClass; }
+        ImGuiWindowClass const& panelWindowClass() const noexcept { return _panelClass; }
+        ImGuiWindowClass const& contentWindowClass() const noexcept { return _contentClass; }
 
         auto addPanel(string title, PanelUpdate update) -> PanelId;
         void dockPanel(PanelId panelId, ImGuiDir dir, PanelId otherId, float size);
@@ -98,9 +99,8 @@ namespace up::shell {
     private:
         void _content();
 
-        ImGuiWindowClass _windowClass;
-        string _title;
-        string _documentId;
+        ImGuiWindowClass _panelClass;
+        ImGuiWindowClass _contentClass;
         ImGuiID _dockId = 0;
 
         vector<box<Panel>> _panels;

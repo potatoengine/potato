@@ -21,21 +21,23 @@ namespace up::shell {
 
     class EditorGroup {
     public:
-        EditorGroup();
+        explicit EditorGroup(Actions& actions);
         ~EditorGroup();
 
-        void update(Actions& actions, Renderer& renderer, float deltaTime);
+        void update(Renderer& renderer, float deltaTime);
 
         void closeAll() noexcept;
         void closeActive() noexcept;
 
+        bool canCloseActive() const noexcept;
+
         void open(box<Editor> editor);
 
     private:
-        void _setActive(Actions& actions, Editor* editor);
+        void _setActive(Editor* editor);
 
         vector<box<Editor>> _editors;
-        ActionGroup _actions;
+        Actions& _actions;
         ImGuiWindowClass _documentWindowClass;
         Editor* _active = nullptr;
     };

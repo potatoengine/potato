@@ -8,6 +8,7 @@
 #include "scene.h"
 #include "editors/asset_browser.h"
 #include "editors/game_editor.h"
+#include "editors/log_window.h"
 #include "editors/material_editor.h"
 #include "editors/scene_editor.h"
 
@@ -61,7 +62,7 @@
 #    undef Success
 #endif
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _editors(_actions), _logger("shell") {}
 
 up::shell::ShellApp::~ShellApp() {
     _imguiBackend.releaseResources();
@@ -161,10 +162,18 @@ int up::shell::ShellApp::initialize() {
          .menu = "View\\Logs",
          .icon = ICON_FA_INFO,
          .hotKey = "Alt+Shift+L",
-         .checked = [this] { return _logWindow.isOpen(); },
+         .action = [this] {
+             _openEditor(LogWindow::editorName);
+         }});
+    _appActions.addAction(
+        {.name = "potato.editor.closeActive"_s,
+         .menu = "File\\Close Document"_s,
+         .group = "7_document"_s,
+         .hotKey = "Ctrl+W"_s,
+         .enabled = [this]() { return _editors.canCloseActive(); },
          .action =
              [this] {
-                 _logWindow.open(!_logWindow.isOpen());
+                 _editors.closeActive();
              }});
 
     _actions.addGroup(&_appActions);
@@ -277,6 +286,7 @@ int up::shell::ShellApp::initialize() {
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
     _editorFactories.push_back(MaterialEditor::createFactory(_assetLoader));
+    _editorFactories.push_back(LogWindow::createFactory(_logHistory));
 
     if (!settings.project.empty()) {
         _loadProject(settings.project);
@@ -624,9 +634,7 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
 
-    _editors.update(_actions, *_renderer, _lastFrameTime);
-
-    _logWindow.draw();
+    _editors.update(*_renderer, _lastFrameTime);
 
     ImGui::End();
 }
