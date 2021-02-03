@@ -18,6 +18,8 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
+#include <unordered_set>
+
 namespace up::recon {
     class ReconApp {
     public:
@@ -30,6 +32,8 @@ namespace up::recon {
         bool run(span<char const*> args);
 
     private:
+        using FileSet = std::unordered_set<string, uhash<>>;
+
         struct Mapping {
             delegate<bool(string_view) const> predicate;
             Importer* conveter = nullptr;
@@ -41,9 +45,13 @@ namespace up::recon {
         bool _runOnce();
         bool _runServer();
 
-        auto _collectSourceFiles() -> vector<string>;
-        bool _importFiles(view<string> files, bool force = false);
+        bool _updateAll(bool force = false);
+
+        auto _collectSourceFiles() -> FileSet;
+        auto _collectMissingFiles() -> FileSet;
+
         bool _importFile(zstring_view file, bool force = false);
+        bool _forgetFile(zstring_view file);
 
         bool _writeManifest();
 

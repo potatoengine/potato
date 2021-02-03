@@ -6,6 +6,7 @@
 #include "potato/posql/posql.h"
 #include "potato/runtime/asset.h"
 #include "potato/runtime/uuid.h"
+#include "potato/spud/generator.h"
 #include "potato/spud/string.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/unique_resource.h"
@@ -57,6 +58,8 @@ namespace up {
 
         Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
         Imported const* findRecordByFilename(zstring_view filename) const noexcept;
+        generator<zstring_view> collectAssetPathsByFolder(zstring_view folder) const;
+        generator<zstring_view> collectAssetPaths() const;
 
         bool insertRecord(Imported record);
         bool deleteRecordByUuid(UUID const& uuid);

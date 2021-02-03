@@ -46,6 +46,9 @@ namespace up::path {
     // if the path contains no directory separator, returns /
     UP_RUNTIME_API string_view parent(string_view path) noexcept;
 
+    // returns true if the filename is in the given folder
+    UP_RUNTIME_API bool isParentOf(string_view folder, string_view filename) noexcept;
+
     // returns true if the path has no . or .. components
     UP_RUNTIME_API bool isNormalized(string_view path) noexcept;
 

@@ -49,6 +49,13 @@ TEST_CASE("up::path", "[potato][runtime]") {
         CHECK(parent("/foo/bar") == "/foo");
     }
 
+    SECTION("isParentOf") {
+        CHECK(isParentOf("/foo", "/foo/bar.txt"));
+        CHECK(isParentOf("/foo", "/foo\\bar.txt"));
+        CHECK_FALSE(isParentOf("/foo", "/foobar.txt"));
+        CHECK_FALSE(isParentOf("/foo", "/foo"));
+    }
+
     SECTION("isNormalized") {
         CHECK(isNormalized("/foo/bar.txt"));
         CHECK(isNormalized("/foo"));
