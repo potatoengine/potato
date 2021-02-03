@@ -115,7 +115,7 @@ bool up::recon::ReconApp::_updateAll(bool force) {
         }
     }
 
-    auto missing = _collectMissingFile();
+    auto missing = _collectMissingFiles();
     for (auto const& path : missing) {
         if (!_forgetFile(path)) {
             success = false;
@@ -240,6 +240,13 @@ bool up::recon::ReconApp::_runServer() {
                             }
                             else {
                                 _forgetFile(cmd.path);
+
+                                // if a directory is deleted, we don't get notifications for files under it
+                                //for (auto path : _library.collectAssetPathsByFolder(cmd.path)) {
+                                for (auto path : _library.collectAssetPaths()) {
+                                    _forgetFile(path);
+                                }
+                                
                                 dirty = true;
                             }
                         }
@@ -594,7 +601,7 @@ auto up::recon::ReconApp::_collectSourceFiles() -> FileSet {
     return files;
 };
 
-auto up::recon::ReconApp::_collectMissingFile() -> FileSet {
+auto up::recon::ReconApp::_collectMissingFiles() -> FileSet {
     FileSet files;
     for (zstring_view path : _library.collectAssetPaths()) {
         string osPath = path::join(path::Separator::Native, _project->resourceRootPath(), path);

@@ -48,7 +48,7 @@ namespace up::recon {
         bool _updateAll(bool force = false);
 
         auto _collectSourceFiles() -> FileSet;
-        auto _collectMissingFile() -> FileSet;
+        auto _collectMissingFiles() -> FileSet;
 
         bool _importFile(zstring_view file, bool force = false);
         bool _forgetFile(zstring_view file);

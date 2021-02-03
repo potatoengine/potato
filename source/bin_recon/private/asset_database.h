@@ -58,7 +58,7 @@ namespace up {
 
         Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
         Imported const* findRecordByFilename(zstring_view filename) const noexcept;
-        Imported const* findRecordByFolder(zstring_view folder) const noexcept;
+        generator<zstring_view> collectAssetPathsByFolder(zstring_view folder) const;
         generator<zstring_view> collectAssetPaths() const;
 
         bool insertRecord(Imported record);
