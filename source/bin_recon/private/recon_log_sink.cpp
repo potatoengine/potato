@@ -1,8 +1,8 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "recon_log_sink.h"
-#include "recon_protocol.h"
 
+#include "potato/recon/recon_protocol.h"
 #include "potato/runtime/json.h"
 
 #include <nlohmann/json.hpp>

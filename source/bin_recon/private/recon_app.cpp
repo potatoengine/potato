@@ -3,11 +3,11 @@
 #include "recon_app.h"
 #include "file_hash_cache.h"
 #include "meta_file.h"
+#include "recon_log_sink.h"
 #include "recon_messages_schema.h"
 #include "recon_server.h"
 
 #include "potato/format/format.h"
-#include "potato/recon/recon_log_sink.h"
 #include "potato/recon/recon_protocol.h"
 #include "potato/runtime/concurrent_queue.h"
 #include "potato/runtime/filesystem.h"

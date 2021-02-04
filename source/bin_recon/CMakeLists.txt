@@ -16,6 +16,8 @@ target_sources(potato_recon PRIVATE
     "private/recon_app.h"
     "private/recon_config.cpp"
     "private/recon_config.h"
+    "private/recon_log_sink.cpp"
+    "private/recon_log_sink.h"
     "private/recon_server.cpp"
     "private/recon_server.h"
 )
