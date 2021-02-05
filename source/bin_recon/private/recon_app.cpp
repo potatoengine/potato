@@ -5,6 +5,7 @@
 #include "meta_file.h"
 #include "recon_log_sink.h"
 #include "recon_messages_schema.h"
+#include "recon_queue.h"
 #include "recon_server.h"
 
 #include "potato/format/format.h"
@@ -87,10 +88,10 @@ bool up::recon::ReconApp::run(span<char const*> args) {
 }
 
 bool up::recon::ReconApp::_runOnce() {
-    bool const success = _updateAll();
-    if (!success) {
-        _logger.error("Import failed");
-    }
+    ReconQueue queue;
+    _collectSourceFiles(queue);
+    _collectMissingFiles(queue);
+    _processQueue(queue);
 
     if (!_writeManifest()) {
         _logger.error("Failed to write manifest");
@@ -100,89 +101,40 @@ bool up::recon::ReconApp::_runOnce() {
     return true;
 }
 
-bool up::recon::ReconApp::_updateAll(bool force) {
-    // collect all files in the source directory for conversion
-    auto sources = _collectSourceFiles();
-
-    if (sources.empty()) {
-        _logger.error("No source files found");
-        return false;
-    }
-
-    bool success = true;
-    for (auto const& path : sources) {
-        if (!_importFile(path, force)) {
-            success = false;
-        }
-    }
-
-    auto missing = _collectMissingFiles();
-    for (auto const& path : missing) {
-        if (!_forgetFile(path)) {
-            success = false;
-        }
-    }
-
-    if (!success) {
-        _logger.error("Import failed");
-    }
-
-    return success;
-}
-
-namespace up::recon {
-    namespace {
-        enum ReconCommandType { Watch, Import, ImportAll, Delete, Quit };
-        struct ReconCommand {
-            ReconCommandType type = ReconCommandType::Watch;
-            fs::WatchAction watchAction = fs::WatchAction::Modify;
-            UUID uuid;
-            string path;
-            string renamedFromPath;
-            bool force = false;
-        };
-    } // namespace
-} // namespace up::recon
-
 bool up::recon::ReconApp::_runServer() {
-    // import all the initial files
-    _runOnce();
+    ReconQueue queue;
 
-    ConcurrentQueue<ReconCommand> commands;
+    _collectSourceFiles(queue);
+    _collectMissingFiles(queue);
 
     ReconServer server(_logger);
-    server.listenDisconnect([&commands] { commands.enqueWait(ReconCommand{.type = ReconCommandType::Quit}); });
-    server.listenImport([&commands](schema::ReconImportMessage const& msg) {
-        ReconCommand cmd;
-        cmd.type = ReconCommandType::Import;
-        cmd.uuid = msg.uuid;
-        cmd.force = msg.force;
-        commands.enqueWait(std::move(cmd));
-    });
-    server.listenImportAll([&commands](schema::ReconImportAllMessage const& msg) {
-        ReconCommand cmd;
-        cmd.type = ReconCommandType::ImportAll;
-        cmd.force = msg.force;
-        commands.enqueWait(std::move(cmd));
-    });
+    server.listenDisconnect([&queue] { queue.enqueTerminate(); });
+    server.listenImport([&queue](schema::ReconImportMessage const& msg) { queue.enqueImport(msg.uuid, msg.force); });
+    server.listenImportAll([&queue](schema::ReconImportAllMessage const& msg) { queue.enqueImportAll(); });
 
     // watch the target resource root and auto-convert any items that come in
-    auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&commands](auto const& watch) {
+    auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&queue](auto const& watch) {
         // ignore dot files (except .meta files)
         if (watch.path != ".meta"_sv && (watch.path.empty() || watch.path.front() == '.')) {
             return;
         }
-        ReconCommand cmd{
-            .type = ReconCommandType::Watch,
-            .watchAction = watch.action,
-            .path = string{watch.path},
-            .renamedFromPath = string{watch.renamedFromPath}};
-        commands.enqueWait(cmd);
+        switch (watch.action) {
+            case fs::WatchAction::Create:
+            case fs::WatchAction::Modify:
+                queue.enqueImport(string{watch.path});
+                break;
+            case fs::WatchAction::Delete:
+                queue.enqueForget(string{watch.path});
+                break;
+            case fs::WatchAction::Rename:
+                queue.enqueImport(string{watch.path});
+                queue.enqueForget(string{watch.renamedFromPath});
+                break;
+        }
     });
     if (rs != IOResult::Success) {
         return false;
     }
-    auto& handle = *watchHandle;
 
     // handle processing input from the client
     server.start();
@@ -190,95 +142,87 @@ bool up::recon::ReconApp::_runServer() {
     // flush the initially-updated manifest
     server.sendManifest({.path = _manifestPath});
 
-    ReconCommand cmd;
     bool quit = false;
-    bool dirty = false;
-    for (;;) {
-        while (commands.dequeWait(cmd)) {
-            do {
-                switch (cmd.type) {
-                    case ReconCommandType::Watch:
-                        if (cmd.watchAction == fs::WatchAction::Create || cmd.watchAction == fs::WatchAction::Modify) {
-                            // changes to meta-files should be processed as changes to the real file
-                            if (cmd.path.ends_with(".meta")) {
-                                cmd.path = path::changeExtension(cmd.path, "");
-                            }
+    while (!quit) {
+        queue.wait();
+        quit = !_processQueue(queue);
 
-                            _importFile(cmd.path);
-                            dirty = true;
-                        }
-                        else if (cmd.watchAction == fs::WatchAction::Delete) {
-                            // if a .meta file is deleted, reimport the source
-                            if (cmd.path.ends_with(".meta")) {
-                                cmd.path = path::changeExtension(cmd.path, "");
-                                _importFile(cmd.path);
-                                dirty = true;
-                            }
-                            else {
-                                _forgetFile(cmd.path);
-
-                                // if a directory is deleted, we don't get notifications for files under it
-                                vector<string> children;
-                                for (auto path : _library.collectAssetPathsByFolder(cmd.path)) {
-                                    children.push_back(string{path});
-                                }
-                                for (string const& path : children) {
-                                    _forgetFile(path);
-                                }
-
-                                dirty = true;
-                            }
-                        }
-                        break;
-                    case ReconCommandType::Import:
-                        if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
-                            _logger.info("Import: {} (force={})", record->sourcePath, cmd.force);
-
-                            _importFile(record->sourcePath, cmd.force);
-                            dirty = true;
-                        }
-                        break;
-                    case ReconCommandType::ImportAll:
-                        _logger.info("Import All (force={})", cmd.force);
-                        _updateAll(cmd.force);
-                        dirty = true;
-                        break;
-                    case ReconCommandType::Delete:
-                        if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
-                            _logger.info("Delete: {}", record->sourcePath);
-
-                            (void)fs::remove(
-                                path::join(path::Separator::Native, _project->resourceRootPath(), record->sourcePath));
-                            _forgetFile(record->sourcePath);
-                            dirty = true;
-                        }
-                        break;
-                    case ReconCommandType::Quit:
-                        handle.close();
-                        quit = true;
-                        break;
-                }
-            } while (commands.tryDeque(cmd));
-        }
-
-        if (dirty) {
-            dirty = false;
-            _writeManifest();
-
-            server.sendManifest({.path = _manifestPath});
-        }
-
-        if (!handle.isOpen()) {
-            quit = true;
-        }
-
-        if (quit) {
-            break;
-        }
+        _writeManifest();
+        server.sendManifest({.path = _manifestPath});
     }
+
+    watchHandle->close();
+    watchHandle = nullptr;
 
     // server only "fails" if it can't run at all
     return true;
+}
+
+bool up::recon::ReconApp::_processQueue(ReconQueue& queue) {
+    bool terminate = false;
+
+    ReconQueue::Command cmd;
+    while (queue.tryDeque(cmd)) {
+        switch (cmd.type) {
+            case ReconQueue::Type::Import:
+            case ReconQueue::Type::ForceImport:
+                if (path::extension(cmd.filename) == ".meta"_zsv) {
+                    cmd.filename = path::changeExtension(cmd.filename, "");
+                }
+
+                _importFile(cmd.filename, cmd.type == ReconQueue::Type::ForceImport);
+                break;
+            case ReconQueue::Type::Update:
+                if (path::extension(cmd.filename) == ".meta"_zsv) {
+                    cmd.filename = path::changeExtension(cmd.filename, "");
+                }
+
+                // FIXME: forget the file if it's not there
+                _importFile(cmd.filename);
+                break;
+            case ReconQueue::Type::Forget:
+                // if a .meta file is deleted, reimport the source
+                if (path::extension(cmd.filename) == ".meta"_zsv) {
+                    cmd.filename = path::changeExtension(cmd.filename, "");
+                    _importFile(cmd.filename);
+                }
+                else {
+                    _forgetFile(cmd.filename);
+
+                    // if a directory is deleted, we don't get notifications for files under it,
+                    // so explicitly delete children
+                    vector<string> children;
+                    for (auto path : _library.collectAssetPathsByFolder(cmd.filename)) {
+                        children.push_back(string{path});
+                    }
+                    for (string const& path : children) {
+                        _forgetFile(path);
+                    }
+                }
+                break;
+            case ReconQueue::Type::ImportAll:
+            case ReconQueue::Type::ForceImportAll:
+                _collectSourceFiles(queue, cmd.type == ReconQueue::Type::ForceImportAll);
+                _collectMissingFiles(queue);
+                break;
+            // case ReconCommandType::Delete:
+            //    if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
+            //        _logger.info("Delete: {}", record->sourcePath);
+
+            //        (void)fs::remove(
+            //            path::join(path::Separator::Native, _project->resourceRootPath(),
+            //            record->sourcePath));
+            //        _forgetFile(record->sourcePath);
+            //        dirty = true;
+            //    }
+            //    break;
+            case ReconQueue::Type::Terminate:
+                terminate = true;
+                break;
+        }
+    }
+
+    return !terminate;
 }
 
 void up::recon::ReconApp::_registerImporters() {
@@ -545,14 +489,13 @@ auto up::recon::ReconApp::_checkMetafile(ImporterContext& ctx, zstring_view meta
     return true;
 }
 
-auto up::recon::ReconApp::_collectSourceFiles() -> FileSet {
+void up::recon::ReconApp::_collectSourceFiles(ReconQueue& queue, bool forceUpdate) {
     if (!fs::directoryExists(_project->resourceRootPath())) {
         _logger.error("`{}' does not exist or is not a directory", _project->resourceRootPath());
-        return {};
+        return;
     }
 
-    FileSet files;
-    auto cb = [&files](auto const& item, int) {
+    auto cb = [&queue, forceUpdate](auto const& item, int) {
         // do not recurse into the library folder
         //
         if (item.path.starts_with(".library")) {
@@ -565,26 +508,23 @@ auto up::recon::ReconApp::_collectSourceFiles() -> FileSet {
             return fs::next;
         }
 
-        files.insert(string{item.path});
+        queue.enqueImport(string{item.path}, forceUpdate);
 
         return fs::recurse;
     };
 
     (void)fs::enumerate(_project->resourceRootPath(), cb);
-    return files;
 };
 
-auto up::recon::ReconApp::_collectMissingFiles() -> FileSet {
-    FileSet files;
-    for (zstring_view path : _library.collectAssetPaths()) {
-        string osPath = path::join(path::Separator::Native, _project->resourceRootPath(), path);
+void up::recon::ReconApp::_collectMissingFiles(ReconQueue& queue) {
+    for (zstring_view filename : _library.collectAssetPaths()) {
+        string osPath = path::join(path::Separator::Native, _project->resourceRootPath(), filename);
 
         auto const [rs, _] = fs::fileStat(osPath);
         if (rs == IOResult::FileNotFound) {
-            files.insert(string{path});
+            queue.enqueForget(string{filename});
         }
     }
-    return files;
 }
 
 bool up::recon::ReconApp::_writeManifest() {
