@@ -205,17 +205,15 @@ bool up::recon::ReconApp::_processQueue(ReconQueue& queue) {
                 _collectSourceFiles(queue, cmd.type == ReconQueue::Type::ForceImportAll);
                 _collectMissingFiles(queue);
                 break;
-            // case ReconCommandType::Delete:
-            //    if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
-            //        _logger.info("Delete: {}", record->sourcePath);
+            case ReconQueue::Type::Delete:
+                if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
+                    _logger.info("Delete: {}", record->sourcePath);
 
-            //        (void)fs::remove(
-            //            path::join(path::Separator::Native, _project->resourceRootPath(),
-            //            record->sourcePath));
-            //        _forgetFile(record->sourcePath);
-            //        dirty = true;
-            //    }
-            //    break;
+                    (void)fs::remove(
+                        path::join(path::Separator::Native, _project->resourceRootPath(), record->sourcePath));
+                    _forgetFile(record->sourcePath);
+                }
+                break;
             case ReconQueue::Type::Terminate:
                 terminate = true;
                 break;

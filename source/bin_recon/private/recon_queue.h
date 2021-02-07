@@ -12,7 +12,7 @@
 namespace up::recon {
     class ReconQueue {
     public:
-        enum class Type { ImportAll, ForceImportAll, Import, ForceImport, Forget, Update, Terminate };
+        enum class Type { ImportAll, ForceImportAll, Import, ForceImport, Forget, Delete, Update, Terminate };
         struct Command {
             Type type = Type::Terminate;
             string filename;
