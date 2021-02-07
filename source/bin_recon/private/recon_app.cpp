@@ -177,8 +177,10 @@ bool up::recon::ReconApp::_processQueue(ReconQueue& queue) {
                     cmd.filename = path::changeExtension(cmd.filename, "");
                 }
 
-                // FIXME: forget the file if it's not there
-                _importFile(cmd.filename);
+                // re-import the file... and forget the file if it's not there
+                if (_importFile(cmd.filename) == ReconImportResult::NotFound) {
+                    _forgetFile(cmd.filename);
+                }
                 break;
             case ReconQueue::Type::Forget:
                 // if a .meta file is deleted, reimport the source
@@ -242,12 +244,12 @@ void up::recon::ReconApp::_registerImporters() {
     }
 }
 
-bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
+auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImportResult {
     auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), file.c_str());
 
     auto const [statRs, stat] = fs::fileStat(osPath);
     if (statRs != IOResult::Success) {
-        return false;
+        return ReconImportResult::NotFound;
     }
     bool const isFolder = stat.type == fs::FileType::Directory;
 
@@ -284,12 +286,12 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
 
     if (importer == nullptr && !isFolder) {
         _logger.error("{}: unknown file type", importedName);
-        return false;
+        return ReconImportResult::UnknownType;
     }
 
     if (!dirty && !force) {
         _logger.info("{}: up-to-date", importedName);
-        return true;
+        return ReconImportResult::UpToDate;
     }
 
     if (importer != nullptr) {
@@ -297,7 +299,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
 
         if (!importer->import(context)) {
             _logger.error("{}: import failed", importedName);
-            return false;
+            return ReconImportResult::Failed;
         }
     }
 
@@ -366,7 +368,7 @@ bool up::recon::ReconApp::_importFile(zstring_view file, bool force) {
     }
 
     _library.insertRecord(std::move(newRecord));
-    return true;
+    return ReconImportResult::Imported;
 }
 
 bool up::recon::ReconApp::_forgetFile(zstring_view file) {

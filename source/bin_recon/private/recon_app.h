@@ -21,6 +21,8 @@
 namespace up::recon {
     class ReconQueue;
 
+    enum class ReconImportResult { NotFound, UnknownType, UpToDate, Failed, Imported };
+
     class ReconApp {
     public:
         ReconApp();
@@ -46,7 +48,7 @@ namespace up::recon {
         void _collectSourceFiles(ReconQueue& queue, bool forceUpdate = false);
         void _collectMissingFiles(ReconQueue& queue);
 
-        bool _importFile(zstring_view file, bool force = false);
+        ReconImportResult _importFile(zstring_view file, bool force = false);
         bool _forgetFile(zstring_view file);
 
         bool _processQueue(ReconQueue& queue);
