@@ -267,7 +267,15 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
 
     if (auto const record = _library.findRecordByUuid(context.uuid()); record.uuid.isValid()) {
         if (!dirty && importer != nullptr) {
-            dirty |= !_isUpToDate(record, contentHash, *importer) || !_isUpToDate(record.dependencies);
+            dirty |= !_isUpToDate(record, contentHash, *importer);
+        }
+        if (!dirty) {
+            for (auto const& dep : _library.assetDependencies(context.uuid())) {
+                dirty = !_isUpToDate(dep.path, dep.contentHash);
+                if (dirty) {
+                    break;
+                }
+            }
         }
     }
     else {
@@ -362,13 +370,14 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         }
     }
 
+    _library.insertRecord(std::move(newRecord));
+
     for (auto const& sourceDepPath : context.sourceDependencies()) {
         auto osPath = path::join(_project->resourceRootPath(), sourceDepPath.c_str());
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
-        newRecord.dependencies.push_back({string(sourceDepPath), contentHash});
+        _library.addDependency(context.uuid(), sourceDepPath, contentHash);
     }
 
-    _library.insertRecord(std::move(newRecord));
     return ReconImportResult::Imported;
 }
 
@@ -401,15 +410,9 @@ bool up::recon::ReconApp::_isUpToDate(
         record.importerRevision == importer.revision();
 }
 
-bool up::recon::ReconApp::_isUpToDate(span<AssetDatabase::Dependency const> records) {
-    for (auto const& rec : records) {
-        auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), rec.path.c_str());
-        auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
-        if (contentHash != rec.contentHash) {
-            return false;
-        }
-    }
-    return true;
+bool up::recon::ReconApp::_isUpToDate(zstring_view assetPath, uint64 contentHash) {
+    auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), assetPath);
+    return contentHash == _hashes.hashAssetAtPath(osPath.c_str());
 }
 
 auto up::recon::ReconApp::_findConverterMapping(string_view path) const -> Mapping const* {

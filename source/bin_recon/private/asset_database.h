@@ -19,7 +19,7 @@ namespace up {
     class AssetDatabase {
     public:
         struct Dependency {
-            string path;
+            zstring_view path;
             uint64 contentHash = 0;
         };
 
@@ -38,7 +38,6 @@ namespace up {
             uint64 importerRevision = 0;
             uint64 sourceContentHash = 0;
 
-            vector<Dependency> dependencies;
             vector<Output> outputs;
         };
 
@@ -60,8 +59,12 @@ namespace up {
         generator<zstring_view const> collectAssetPathsByFolder(zstring_view folder);
         generator<zstring_view const> collectAssetPaths();
 
+        generator<Dependency const> assetDependencies(UUID const& uuid);
+
         bool insertRecord(Imported record);
         bool deleteRecordByUuid(UUID const& uuid);
+
+        void addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash);
 
         bool open(zstring_view filename);
         bool close();

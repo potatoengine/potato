@@ -55,10 +55,6 @@ auto up::AssetDatabase::findRecordByUuid(UUID const& uuid) -> Imported {
                 Output{.name = string{name}, .type = string{type}, .logicalAssetId = id, .contentHash = hash});
         }
 
-        for (auto const& [path, hash] : _queryDependenciesStmt.query<zstring_view, uint64>(uuidStr)) {
-            record.dependencies.push_back(Dependency{.path = string{path}, .contentHash = hash});
-        }
-
         return record;
     }
 
@@ -77,6 +73,15 @@ auto up::AssetDatabase::collectAssetPaths() -> generator<zstring_view const> {
     for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
          _queryAssetsStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>()) {
         co_yield sourcePath;
+    }
+}
+
+auto up::AssetDatabase::assetDependencies(UUID const& uuid) -> generator<Dependency const> {
+    char uuidStr[UUID::strLength] = {0};
+    format_to(uuidStr, "{}", uuid);
+
+    for (auto const& [path, hash] : _queryDependenciesStmt.query<zstring_view, uint64>(uuidStr)) {
+        co_yield Dependency{.path = string{path}, .contentHash = hash};
     }
 }
 
@@ -110,9 +115,6 @@ bool up::AssetDatabase::insertRecord(Imported record) {
         }
 
         (void)_clearDependenciesStmt.execute(uuidStr);
-        for (auto const& dep : record.dependencies) {
-            (void)_insertDependencyStmt.execute(uuidStr, dep.path.c_str(), dep.contentHash);
-        }
 
         tx.commit();
     }
@@ -130,6 +132,13 @@ bool up::AssetDatabase::deleteRecordByUuid(UUID const& uuid) {
     }
 
     return true;
+}
+
+void up::AssetDatabase::addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash) {
+    char uuidStr[UUID::strLength] = {};
+    format_to(uuidStr, "{}", uuid);
+
+    (void)_insertDependencyStmt.execute(uuidStr, outputPath, outputHash);
 }
 
 bool up::AssetDatabase::open(zstring_view filename) {
