@@ -22,23 +22,18 @@ auto up::AssetDatabase::pathToUuid(string_view path) const noexcept -> UUID {
     return {};
 }
 
-auto up::AssetDatabase::uuidToPath(UUID const& uuid) const noexcept -> string_view {
-    auto record = findRecordByUuid(uuid);
-    return record != nullptr ? string_view(record->sourcePath) : string_view{};
+auto up::AssetDatabase::uuidToPath(UUID const& uuid) const noexcept -> zstring_view {
+    for (auto const& record : _records) {
+        if (record.uuid == uuid) {
+            return record.sourcePath;
+        }
+    }
+    return {};
 }
 
 auto up::AssetDatabase::findRecordByUuid(UUID const& uuid) const noexcept -> Imported const* {
     for (auto const& record : _records) {
         if (record.uuid == uuid) {
-            return &record;
-        }
-    }
-    return nullptr;
-}
-
-auto up::AssetDatabase::findRecordByFilename(zstring_view filename) const noexcept -> Imported const* {
-    for (auto const& record : _records) {
-        if (record.sourcePath == filename) {
             return &record;
         }
     }

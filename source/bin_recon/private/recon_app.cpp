@@ -208,12 +208,11 @@ bool up::recon::ReconApp::_processQueue(ReconQueue& queue) {
                 _collectMissingFiles(queue);
                 break;
             case ReconQueue::Type::Delete:
-                if (auto const* record = _library.findRecordByUuid(cmd.uuid); record != nullptr) {
-                    _logger.info("Delete: {}", record->sourcePath);
+                if (zstring_view const sourcePath = _library.uuidToPath(cmd.uuid); !sourcePath.empty()) {
+                    _logger.info("Delete: {}", sourcePath);
 
-                    (void)fs::remove(
-                        path::join(path::Separator::Native, _project->resourceRootPath(), record->sourcePath));
-                    _forgetFile(record->sourcePath);
+                    (void)fs::remove(path::join(path::Separator::Native, _project->resourceRootPath(), sourcePath));
+                    _forgetFile(sourcePath);
                 }
                 break;
             case ReconQueue::Type::Terminate:
@@ -266,11 +265,14 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         context(file, _project->resourceRootPath(), _temporaryOutputPath, importer, importerConfig, _logger);
     bool dirty = !_checkMetafile(context, metaPath, true);
 
-    auto const* record = _library.findRecordByUuid(context.uuid());
-    dirty |= record == nullptr;
-    if (!dirty && importer != nullptr) {
-        dirty |=
-            record == nullptr || !_isUpToDate(*record, contentHash, *importer) || !_isUpToDate(record->dependencies);
+    if (auto const* record = _library.findRecordByUuid(context.uuid()); record != nullptr) {
+        if (!dirty && importer != nullptr) {
+            dirty |= record == nullptr || !_isUpToDate(*record, contentHash, *importer) ||
+                !_isUpToDate(record->dependencies);
+        }
+    }
+    else {
+        dirty = true;
     }
 
     string_writer importedName;

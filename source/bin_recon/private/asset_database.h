@@ -52,12 +52,11 @@ namespace up {
         AssetDatabase& operator=(AssetDatabase const&) = delete;
 
         auto pathToUuid(string_view path) const noexcept -> UUID;
-        auto uuidToPath(UUID const& uuid) const noexcept -> string_view;
+        auto uuidToPath(UUID const& uuid) const noexcept -> zstring_view;
 
         static AssetId createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept;
 
         Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
-        Imported const* findRecordByFilename(zstring_view filename) const noexcept;
         generator<zstring_view> collectAssetPathsByFolder(zstring_view folder) const;
         generator<zstring_view> collectAssetPaths() const;
 
