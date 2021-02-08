@@ -325,28 +325,11 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         newRecord.assetType = "potato.folder"_s;
     }
 
-    string_writer logicalAssetName;
-
     // move outputs to CAS
     //
     for (auto const& output : context.outputs()) {
         auto outputOsPath = path::join(path::Separator::Native, _temporaryOutputPath, output.path);
         auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
-
-        logicalAssetName.clear();
-        format_append(
-            logicalAssetName,
-            "{}{}{}",
-            newRecord.sourcePath,
-            output.logicalAsset.empty() ? "" : ":",
-            output.logicalAsset);
-        auto const logicalAssetId = AssetDatabase::createLogicalAssetId(context.uuid(), output.logicalAsset);
-
-        newRecord.outputs.push_back(
-            {.name = output.logicalAsset,
-             .type = output.type,
-             .logicalAssetId = logicalAssetId,
-             .contentHash = outputHash});
 
         fixed_string_writer<32> casPath;
         format_append(
@@ -376,6 +359,13 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         auto osPath = path::join(_project->resourceRootPath(), sourceDepPath.c_str());
         auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
         _library.addDependency(context.uuid(), sourceDepPath, contentHash);
+    }
+
+    for (auto const& output : context.outputs()) {
+        auto outputOsPath = path::join(path::Separator::Native, _temporaryOutputPath, output.path);
+        auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
+
+        _library.addOutput(context.uuid(), output.logicalAsset, output.type, outputHash);
     }
 
     return ReconImportResult::Imported;

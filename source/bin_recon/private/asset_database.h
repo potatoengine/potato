@@ -24,8 +24,8 @@ namespace up {
         };
 
         struct Output {
-            string name;
-            string type;
+            zstring_view name;
+            zstring_view type;
             AssetId logicalAssetId = AssetId::Invalid;
             uint64 contentHash = 0;
         };
@@ -37,8 +37,6 @@ namespace up {
             string assetType;
             uint64 importerRevision = 0;
             uint64 sourceContentHash = 0;
-
-            vector<Output> outputs;
         };
 
         static constexpr zstring_view typeName = "potato.asset.library"_zsv;
@@ -60,11 +58,13 @@ namespace up {
         generator<zstring_view const> collectAssetPaths();
 
         generator<Dependency const> assetDependencies(UUID const& uuid);
+        generator<Output const> assetOutputs(UUID const& uuid);
 
-        bool insertRecord(Imported record);
+        bool insertRecord(Imported const& record);
         bool deleteRecordByUuid(UUID const& uuid);
 
         void addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash);
+        void addOutput(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash);
 
         bool open(zstring_view filename);
         bool close();

@@ -49,12 +49,6 @@ auto up::AssetDatabase::findRecordByUuid(UUID const& uuid) -> Imported {
             .importerRevision = importVer,
             .sourceContentHash = sourceHash};
 
-        for (auto const& [id, name, type, hash] :
-             _queryOutputsStmt.query<AssetId, zstring_view, zstring_view, uint64>(uuidStr)) {
-            record.outputs.push_back(
-                Output{.name = string{name}, .type = string{type}, .logicalAssetId = id, .contentHash = hash});
-        }
-
         return record;
     }
 
@@ -85,6 +79,16 @@ auto up::AssetDatabase::assetDependencies(UUID const& uuid) -> generator<Depende
     }
 }
 
+auto up::AssetDatabase::assetOutputs(UUID const& uuid) -> generator<Output const> {
+    char uuidStr[UUID::strLength] = {0};
+    format_to(uuidStr, "{}", uuid);
+
+    for (auto const& [id, name, type, hash] :
+         _queryOutputsStmt.query<AssetId, zstring_view, zstring_view, uint64>(uuidStr)) {
+        co_yield Output{.name = name, .type = type, .logicalAssetId = id, .contentHash = hash};
+    }
+}
+
 auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept -> AssetId {
     uint64 hash = hash_value(uuid);
     if (!logicalName.empty()) {
@@ -93,7 +97,7 @@ auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logic
     return static_cast<AssetId>(hash);
 }
 
-bool up::AssetDatabase::insertRecord(Imported record) {
+bool up::AssetDatabase::insertRecord(Imported const& record) {
     char uuidStr[UUID::strLength] = {};
     format_to(uuidStr, "{}", record.uuid);
 
@@ -109,11 +113,6 @@ bool up::AssetDatabase::insertRecord(Imported record) {
             record.importerRevision);
 
         (void)_clearOutputsStmt.execute(uuidStr);
-        for (auto const& output : record.outputs) {
-            (void)_insertOutputStmt
-                .execute(uuidStr, output.logicalAssetId, output.name.c_str(), output.type.c_str(), output.contentHash);
-        }
-
         (void)_clearDependenciesStmt.execute(uuidStr);
 
         tx.commit();
@@ -139,6 +138,13 @@ void up::AssetDatabase::addDependency(UUID const& uuid, zstring_view outputPath,
     format_to(uuidStr, "{}", uuid);
 
     (void)_insertDependencyStmt.execute(uuidStr, outputPath, outputHash);
+}
+
+void up::AssetDatabase::addOutput(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash) {
+    char uuidStr[UUID::strLength] = {};
+    format_to(uuidStr, "{}", uuid);
+
+    (void)_insertOutputStmt.execute(uuidStr, createLogicalAssetId(uuid, name), name, assetType, outputHash);
 }
 
 bool up::AssetDatabase::open(zstring_view filename) {
