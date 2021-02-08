@@ -51,14 +51,14 @@ namespace up {
         AssetDatabase(AssetDatabase const&) = delete;
         AssetDatabase& operator=(AssetDatabase const&) = delete;
 
-        auto pathToUuid(string_view path) const noexcept -> UUID;
-        auto uuidToPath(UUID const& uuid) const noexcept -> zstring_view;
+        auto pathToUuid(string_view path) noexcept -> UUID;
+        auto uuidToPath(UUID const& uuid) noexcept -> string;
 
         static AssetId createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept;
 
-        Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
-        generator<zstring_view> collectAssetPathsByFolder(zstring_view folder) const;
-        generator<zstring_view> collectAssetPaths() const;
+        Imported findRecordByUuid(UUID const& uuid);
+        generator<zstring_view const> collectAssetPathsByFolder(zstring_view folder);
+        generator<zstring_view const> collectAssetPaths();
 
         bool insertRecord(Imported record);
         bool deleteRecordByUuid(UUID const& uuid);
@@ -66,15 +66,19 @@ namespace up {
         bool open(zstring_view filename);
         bool close();
 
-        void generateManifest(erased_writer writer) const;
+        void generateManifest(erased_writer writer);
 
     private:
         struct HashAssetId {
             constexpr uint64 operator()(AssetId assetId) const noexcept { return static_cast<uint64>(assetId); }
         };
 
-        vector<Imported> _records;
         Database _db;
+        Statement _queryAssetsStmt;
+        Statement _queryDependenciesStmt;
+        Statement _queryOutputsStmt;
+        Statement _queryAssetByUuidStmt;
+        Statement _queryAssetBySourcePathStmt;
         Statement _insertAssetStmt;
         Statement _insertOutputStmt;
         Statement _insertDependencyStmt;

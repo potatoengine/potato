@@ -13,46 +13,70 @@
 
 up::AssetDatabase::~AssetDatabase() = default;
 
-auto up::AssetDatabase::pathToUuid(string_view path) const noexcept -> UUID {
-    for (auto const& record : _records) {
-        if (record.sourcePath == path) {
-            return record.uuid;
-        }
+auto up::AssetDatabase::pathToUuid(string_view path) noexcept -> UUID {
+    for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
+         _queryAssetBySourcePathStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>(
+             path)) {
+        return UUID::fromString(uuid);
     }
+
     return {};
 }
 
-auto up::AssetDatabase::uuidToPath(UUID const& uuid) const noexcept -> zstring_view {
-    for (auto const& record : _records) {
-        if (record.uuid == uuid) {
-            return record.sourcePath;
-        }
+auto up::AssetDatabase::uuidToPath(UUID const& uuid) noexcept -> string {
+    char uuidStr[UUID::strLength] = {0};
+    format_to(uuidStr, "{}", uuid);
+
+    for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
+         _queryAssetByUuidStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>(uuidStr)) {
+        return string{sourcePath};
     }
+
     return {};
 }
 
-auto up::AssetDatabase::findRecordByUuid(UUID const& uuid) const noexcept -> Imported const* {
-    for (auto const& record : _records) {
-        if (record.uuid == uuid) {
-            return &record;
+auto up::AssetDatabase::findRecordByUuid(UUID const& uuid) -> Imported {
+    char uuidStr[UUID::strLength] = {0};
+    format_to(uuidStr, "{}", uuid);
+
+    for (auto const& [uuid, southPath, sourceHash, assetType, importName, importVer] :
+         _queryAssetByUuidStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>(uuidStr)) {
+        Imported record{
+            .uuid = UUID::fromString(uuid),
+            .sourcePath = string{southPath},
+            .importerName = string{importName},
+            .assetType = string(assetType),
+            .importerRevision = importVer,
+            .sourceContentHash = sourceHash};
+
+        for (auto const& [id, name, type, hash] :
+             _queryOutputsStmt.query<AssetId, zstring_view, zstring_view, uint64>(uuidStr)) {
+            record.outputs.push_back(
+                Output{.name = string{name}, .type = string{type}, .logicalAssetId = id, .contentHash = hash});
         }
+
+        for (auto const& [path, hash] : _queryDependenciesStmt.query<zstring_view, uint64>(uuidStr)) {
+            record.dependencies.push_back(Dependency{.path = string{path}, .contentHash = hash});
+        }
+
+        return record;
     }
-    return nullptr;
+
+    return {};
 }
 
-auto up::AssetDatabase::collectAssetPathsByFolder(zstring_view folder) const -> generator<zstring_view> {
-    for (auto const& record : _records) {
-        if (path::isParentOf(folder, record.sourcePath)) {
-            zstring_view path = record.sourcePath;
-            co_yield path;
+auto up::AssetDatabase::collectAssetPathsByFolder(zstring_view folder) -> generator<zstring_view const> {
+    for (zstring_view sourcePath : collectAssetPaths()) {
+        if (path::isParentOf(folder, sourcePath)) {
+            co_yield sourcePath;
         }
     }
 }
 
-auto up::AssetDatabase::collectAssetPaths() const -> generator<zstring_view> {
-    for (auto const& record : _records) {
-        zstring_view path = record.sourcePath;
-        co_yield path;
+auto up::AssetDatabase::collectAssetPaths() -> generator<zstring_view const> {
+    for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
+         _queryAssetsStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>()) {
+        co_yield sourcePath;
     }
 }
 
@@ -93,15 +117,6 @@ bool up::AssetDatabase::insertRecord(Imported record) {
         tx.commit();
     }
 
-    // update in-memory data
-    for (auto& current : _records) {
-        if (current.uuid == record.uuid) {
-            current = std::move(record);
-            return true;
-        }
-    }
-
-    _records.push_back(std::move(record));
     return true;
 }
 
@@ -112,14 +127,6 @@ bool up::AssetDatabase::deleteRecordByUuid(UUID const& uuid) {
     // update database
     if (_deleteAssetStmt) {
         (void)_deleteAssetStmt.execute(uuidStr);
-    }
-
-    // update in-memory data
-    for (auto it = begin(_records); it != end(_records); ++it) {
-        if (it->uuid == uuid) {
-            _records.erase(it);
-            return true;
-        }
     }
 
     return true;
@@ -170,6 +177,16 @@ bool up::AssetDatabase::open(zstring_view filename) {
     }
 
     // create our prepared statements for later use
+    _queryAssetsStmt = _db.prepare(
+        "SELECT uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision FROM assets");
+    _queryDependenciesStmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE uuid=?");
+    _queryOutputsStmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE uuid=?");
+    _queryAssetByUuidStmt = _db.prepare(
+        "SELECT uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision FROM assets WHERE "
+        "uuid=?");
+    _queryAssetBySourcePathStmt = _db.prepare(
+        "SELECT uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision FROM assets WHERE "
+        "source_db_path=?");
     _insertAssetStmt = _db.prepare(
         "INSERT INTO assets "
         "(uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision) "
@@ -182,34 +199,6 @@ bool up::AssetDatabase::open(zstring_view filename) {
     _clearOutputsStmt = _db.prepare("DELETE FROM outputs WHERE uuid=?");
     _clearDependenciesStmt = _db.prepare("DELETE FROM dependencies WHERE uuid=?");
 
-    // create our prepared statemtnt to load values
-    auto assets_stmt = _db.prepare(
-        "SELECT uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision FROM assets");
-    auto outputs_stmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE uuid=?");
-    auto dependencies_stmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE uuid=?");
-
-    // read in all the asset records
-    for (auto const& [uuid, southPath, sourceHash, assetType, importName, importVer] :
-         assets_stmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>()) {
-        auto& record = _records.push_back(Imported{
-            .uuid = UUID::fromString(uuid),
-            .sourcePath = string{southPath},
-            .importerName = string{importName},
-            .assetType = string(assetType),
-            .importerRevision = importVer,
-            .sourceContentHash = sourceHash});
-
-        for (auto const& [id, name, type, hash] :
-             outputs_stmt.query<AssetId, zstring_view, zstring_view, uint64>(uuid)) {
-            record.outputs.push_back(
-                Output{.name = string{name}, .type = string{type}, .logicalAssetId = id, .contentHash = hash});
-        }
-
-        for (auto const& [path, hash] : dependencies_stmt.query<zstring_view, uint64>(uuid)) {
-            record.dependencies.push_back(Dependency{.path = string{path}, .contentHash = hash});
-        }
-    }
-
     return true;
 }
 
@@ -218,7 +207,7 @@ bool up::AssetDatabase::close() {
     return true;
 }
 
-void up::AssetDatabase::generateManifest(erased_writer writer) const {
+void up::AssetDatabase::generateManifest(erased_writer writer) {
     format_to(writer, "# Potato Manifest\n");
     format_to(writer, ".version={}\n", ResourceManifest::version);
     format_to(
@@ -233,27 +222,30 @@ void up::AssetDatabase::generateManifest(erased_writer writer) const {
 
     string_writer fullName;
 
-    for (auto const& record : _records) {
-        format_to(writer, "{}|||{}||{}\n", record.uuid, record.assetType, record.sourcePath);
+    for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
+         _queryAssetsStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>()) {
+        format_to(writer, "{}|||{}||{}\n", uuid, assetType, sourcePath);
     }
 
-    for (auto const& record : _records) {
-        for (auto const& output : record.outputs) {
+    for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
+         _queryAssetsStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>()) {
+        for (auto const& [logicalId, logicalName, outputType, outputHash] :
+             _queryOutputsStmt.query<AssetId, zstring_view, zstring_view, uint64>(uuid)) {
             fullName.clear();
-            fullName.append(record.sourcePath);
+            fullName.append(sourcePath);
 
-            if (!output.name.empty()) {
-                format_append(fullName, ":{}", output.name);
+            if (!logicalName.empty()) {
+                format_append(fullName, ":{}", logicalName);
             }
 
             format_to(
                 writer,
                 "{}|{:016X}|{}|{}|{:016X}|{}\n",
-                record.uuid,
-                output.logicalAssetId,
-                output.name,
-                output.type,
-                output.contentHash,
+                uuid,
+                createLogicalAssetId(UUID::fromString(uuid), logicalName),
+                logicalName,
+                outputType,
+                outputHash,
                 fullName);
         }
     }

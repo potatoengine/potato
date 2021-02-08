@@ -265,10 +265,9 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         context(file, _project->resourceRootPath(), _temporaryOutputPath, importer, importerConfig, _logger);
     bool dirty = !_checkMetafile(context, metaPath, true);
 
-    if (auto const* record = _library.findRecordByUuid(context.uuid()); record != nullptr) {
+    if (auto const record = _library.findRecordByUuid(context.uuid()); record.uuid.isValid()) {
         if (!dirty && importer != nullptr) {
-            dirty |= record == nullptr || !_isUpToDate(*record, contentHash, *importer) ||
-                !_isUpToDate(record->dependencies);
+            dirty |= !_isUpToDate(record, contentHash, *importer) || !_isUpToDate(record.dependencies);
         }
     }
     else {
