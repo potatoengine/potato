@@ -15,20 +15,16 @@ up::AssetDatabase::~AssetDatabase() = default;
 
 auto up::AssetDatabase::pathToUuid(string_view path) noexcept -> UUID {
     for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
-         _queryAssetBySourcePathStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>(
-             path)) {
-        return UUID::fromString(uuid);
+         _queryAssetBySourcePathStmt.query<UUID, zstring_view, uint64, zstring_view, zstring_view, uint64>(path)) {
+        return uuid;
     }
 
     return {};
 }
 
 auto up::AssetDatabase::uuidToPath(UUID const& uuid) noexcept -> string {
-    char uuidStr[UUID::strLength] = {0};
-    format_to(uuidStr, "{}", uuid);
-
     for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
-         _queryAssetByUuidStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>(uuidStr)) {
+         _queryAssetByUuidStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>(uuid)) {
         return string{sourcePath};
     }
 
@@ -36,13 +32,10 @@ auto up::AssetDatabase::uuidToPath(UUID const& uuid) noexcept -> string {
 }
 
 auto up::AssetDatabase::findRecordByUuid(UUID const& uuid) -> Imported {
-    char uuidStr[UUID::strLength] = {0};
-    format_to(uuidStr, "{}", uuid);
-
     for (auto const& [uuid, southPath, sourceHash, assetType, importName, importVer] :
-         _queryAssetByUuidStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>(uuidStr)) {
+         _queryAssetByUuidStmt.query<UUID, zstring_view, uint64, zstring_view, zstring_view, uint64>(uuid)) {
         Imported record{
-            .uuid = UUID::fromString(uuid),
+            .uuid = uuid,
             .sourcePath = string{southPath},
             .importerName = string{importName},
             .assetType = string(assetType),
@@ -71,20 +64,14 @@ auto up::AssetDatabase::collectAssetPaths() -> generator<zstring_view const> {
 }
 
 auto up::AssetDatabase::assetDependencies(UUID const& uuid) -> generator<Dependency const> {
-    char uuidStr[UUID::strLength] = {0};
-    format_to(uuidStr, "{}", uuid);
-
-    for (auto const& [path, hash] : _queryDependenciesStmt.query<zstring_view, uint64>(uuidStr)) {
+    for (auto const& [path, hash] : _queryDependenciesStmt.query<zstring_view, uint64>(uuid)) {
         co_yield Dependency{.path = string{path}, .contentHash = hash};
     }
 }
 
 auto up::AssetDatabase::assetOutputs(UUID const& uuid) -> generator<Output const> {
-    char uuidStr[UUID::strLength] = {0};
-    format_to(uuidStr, "{}", uuid);
-
     for (auto const& [id, name, type, hash] :
-         _queryOutputsStmt.query<AssetId, zstring_view, zstring_view, uint64>(uuidStr)) {
+         _queryOutputsStmt.query<AssetId, zstring_view, zstring_view, uint64>(uuid)) {
         co_yield Output{.name = name, .type = type, .logicalAssetId = id, .contentHash = hash};
     }
 }
@@ -98,22 +85,19 @@ auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logic
 }
 
 bool up::AssetDatabase::insertRecord(Imported const& record) {
-    char uuidStr[UUID::strLength] = {};
-    format_to(uuidStr, "{}", record.uuid);
-
     // update database
     if (_insertAssetStmt) {
         auto tx = _db.begin();
         (void)_insertAssetStmt.execute(
-            uuidStr,
+            record.uuid,
             record.sourcePath.c_str(),
             record.sourceContentHash,
             record.assetType.c_str(),
             record.importerName.c_str(),
             record.importerRevision);
 
-        (void)_clearOutputsStmt.execute(uuidStr);
-        (void)_clearDependenciesStmt.execute(uuidStr);
+        (void)_clearOutputsStmt.execute(record.uuid);
+        (void)_clearDependenciesStmt.execute(record.uuid);
 
         tx.commit();
     }
@@ -122,29 +106,20 @@ bool up::AssetDatabase::insertRecord(Imported const& record) {
 }
 
 bool up::AssetDatabase::deleteRecordByUuid(UUID const& uuid) {
-    char uuidStr[UUID::strLength] = {};
-    format_to(uuidStr, "{}", uuid);
-
     // update database
     if (_deleteAssetStmt) {
-        (void)_deleteAssetStmt.execute(uuidStr);
+        (void)_deleteAssetStmt.execute(uuid);
     }
 
     return true;
 }
 
 void up::AssetDatabase::addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash) {
-    char uuidStr[UUID::strLength] = {};
-    format_to(uuidStr, "{}", uuid);
-
-    (void)_insertDependencyStmt.execute(uuidStr, outputPath, outputHash);
+    (void)_insertDependencyStmt.execute(uuid, outputPath, outputHash);
 }
 
 void up::AssetDatabase::addOutput(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash) {
-    char uuidStr[UUID::strLength] = {};
-    format_to(uuidStr, "{}", uuid);
-
-    (void)_insertOutputStmt.execute(uuidStr, createLogicalAssetId(uuid, name), name, assetType, outputHash);
+    (void)_insertOutputStmt.execute(uuid, createLogicalAssetId(uuid, name), name, assetType, outputHash);
 }
 
 bool up::AssetDatabase::open(zstring_view filename) {
@@ -243,7 +218,7 @@ void up::AssetDatabase::generateManifest(erased_writer writer) {
     }
 
     for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
-         _queryAssetsStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>()) {
+         _queryAssetsStmt.query<UUID, zstring_view, uint64, zstring_view, zstring_view, uint64>()) {
         for (auto const& [logicalId, logicalName, outputType, outputHash] :
              _queryOutputsStmt.query<AssetId, zstring_view, zstring_view, uint64>(uuid)) {
             fullName.clear();
@@ -257,7 +232,7 @@ void up::AssetDatabase::generateManifest(erased_writer writer) {
                 writer,
                 "{}|{:016X}|{}|{}|{:016X}|{}\n",
                 uuid,
-                createLogicalAssetId(UUID::fromString(uuid), logicalName),
+                createLogicalAssetId(uuid, logicalName),
                 logicalName,
                 outputType,
                 outputHash,

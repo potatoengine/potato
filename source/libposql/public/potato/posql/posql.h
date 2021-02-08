@@ -4,6 +4,7 @@
 
 #include "_export.h"
 
+#include "potato/runtime/uuid.h"
 #include "potato/spud/concepts.h"
 #include "potato/spud/typelist.h"
 #include "potato/spud/zstring_view.h"
@@ -149,6 +150,7 @@ namespace up {
 
             UP_POSQL_API void _bind(int index, int64 value) noexcept;
             UP_POSQL_API void _bind(int index, string_view value) noexcept;
+            UP_POSQL_API void _bind(int index, UUID const& value) noexcept;
             template <enumeration E>
             void _bind(int index, E value) noexcept {
                 _bind(index, to_underlying(value));
@@ -166,7 +168,10 @@ namespace up {
 
             template <typename T>
             auto _column(int index) {
-                if constexpr (std::is_constructible_v<T, char const*>) {
+                if constexpr (std::is_same_v<T, UUID>) {
+                    return UUID::fromString(_column_string(index));
+                }
+                else if constexpr (std::is_constructible_v<T, char const*>) {
                     return _column_string(index);
                 }
                 else if constexpr (std::is_constructible_v<T, int64>) {

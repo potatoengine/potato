@@ -3,6 +3,7 @@
 #include "posql.h"
 
 #include "potato/runtime/assertion.h"
+#include "potato/spud/string_format.h"
 
 #include <sqlite3.h>
 
@@ -124,6 +125,13 @@ void up::Statement::_bind(int index, int64 value) noexcept {
 
 void up::Statement::_bind(int index, string_view value) noexcept {
     sqlite3_bind_text(_stmt, index + 1, value.data(), static_cast<int>(value.size()), nullptr);
+}
+
+void up::Statement::_bind(int index, UUID const& value) noexcept {
+    char uuidStr[UUID::strLength] = {0};
+    format_to(uuidStr, "{}", value);
+
+    sqlite3_bind_text(_stmt, index + 1, uuidStr, sizeof(uuidStr) - 1 /*NUL*/, nullptr);
 }
 
 up::int64 up::Statement::_column_int64(int index) noexcept {
