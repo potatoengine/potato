@@ -25,11 +25,11 @@ namespace up {
         Importer& operator=(Importer&&) = delete;
 
         virtual bool import(ImporterContext& ctx) = 0;
-        virtual string_view assetType([[maybe_unused]] ImporterContext& ctx) const noexcept { return ""_sv; }
+        virtual string_view assetType([[maybe_unused]] ImporterContext& ctx) const noexcept { return {}; }
 
         virtual reflex::TypeInfo const& configType() const;
 
-        virtual string_view generateSettings(ImporterContext& ctd) const = 0;
+        virtual string_view defaultSettings() const { return {}; }
 
         virtual string_view name() const noexcept = 0;
         virtual uint64 revision() const noexcept = 0;

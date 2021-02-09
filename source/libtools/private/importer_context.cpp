@@ -12,6 +12,8 @@ up::ImporterContext::ImporterContext(
     zstring_view destinationFolderPath,
     Importer const* importer,
     ImporterConfig const& config,
+    vector<string>& dependencies,
+    vector<Output>& outputs,
     Logger& logger)
     : _importer(importer)
     , _config(&config)
@@ -19,7 +21,9 @@ up::ImporterContext::ImporterContext(
     , _sourceFolderPath(sourceFolderPath)
     , _destinationFolderPath(destinationFolderPath)
     , _uuid(uuid)
-    , _logger(logger) {}
+    , _logger(logger)
+    , _sourceDependencies(dependencies)
+    , _outputs(outputs) {}
 
 up::ImporterContext::~ImporterContext() = default;
 

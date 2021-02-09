@@ -40,7 +40,7 @@ namespace up {
         };
 
         static constexpr zstring_view typeName = "potato.asset.library"_zsv;
-        static constexpr int version = 15;
+        static constexpr int version = 16;
 
         AssetDatabase() = default;
         ~AssetDatabase();
@@ -60,10 +60,15 @@ namespace up {
         generator<Dependency const> assetDependencies(UUID const& uuid);
         generator<Output const> assetOutputs(UUID const& uuid);
 
-        void mapSourceToUuid(zstring_view sourcePath, UUID const& uuid);
+        void createAsset(UUID const& uuid, zstring_view sourcePath, uint64 sourceHash);
+        void updateAssetPre(
+            UUID const& uuid,
+            zstring_view assetType,
+            zstring_view importerName,
+            uint64 importerVersion);
+        void updateAssetPost(UUID const& uuid, bool success);
 
-        bool insertRecord(Imported const& record);
-        bool deleteRecordByUuid(UUID const& uuid);
+        bool deleteAsset(UUID const& uuid);
 
         void clearDependencies(UUID const& uuid);
         void clearOutputs(UUID const& uuid);
@@ -93,9 +98,10 @@ namespace up {
         Statement _queryDependenciesStmt;
         Statement _queryOutputsStmt;
         Statement _queryAssetByUuidStmt;
-        Statement _queryAssetBySourcePathStmt;
-        Statement _mapSourceToUuidStmt;
+        Statement _queryUuidBySourcePathStmt;
         Statement _insertAssetStmt;
+        Statement _updateAssetPreStmt;
+        Statement _updateAssetPostStmt;
         Statement _insertOutputStmt;
         Statement _insertDependencyStmt;
         Statement _deleteAssetStmt;

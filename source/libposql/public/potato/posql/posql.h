@@ -180,6 +180,9 @@ namespace up {
                 else if constexpr (std::is_enum_v<T>) {
                     return T(_column_int64(index));
                 }
+                else {
+                    return {}; // NOLINT - intentionally trigger a compile error
+                }
             }
 
             [[nodiscard]] UP_POSQL_API int64 _column_int64(int index) noexcept;

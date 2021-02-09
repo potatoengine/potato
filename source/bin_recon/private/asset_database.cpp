@@ -14,8 +14,7 @@
 up::AssetDatabase::~AssetDatabase() = default;
 
 auto up::AssetDatabase::pathToUuid(string_view path) noexcept -> UUID {
-    for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
-         _queryAssetBySourcePathStmt.query<UUID, zstring_view, uint64, zstring_view, zstring_view, uint64>(path)) {
+    for (auto const& [uuid] : _queryUuidBySourcePathStmt.query<UUID>(path)) {
         return uuid;
     }
 
@@ -84,46 +83,51 @@ auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logic
     return static_cast<AssetId>(hash);
 }
 
-void up::AssetDatabase::mapSourceToUuid(zstring_view sourcePath, UUID const& uuid) {
-    (void)_mapSourceToUuidStmt.execute(uuid, sourcePath);
+void up::AssetDatabase::createAsset(UUID const& uuid, zstring_view sourcePath, uint64 sourceHash) {
+    [[maybe_unused]] auto const rc = _insertAssetStmt.execute(uuid, sourcePath, sourceHash);
+    UP_ASSERT(rc == SqlResult::Ok);
 }
 
-bool up::AssetDatabase::insertRecord(Imported const& record) {
-    // update database
-    (void)_insertAssetStmt.execute(
-        record.uuid,
-        record.sourcePath.c_str(),
-        record.sourceContentHash,
-        record.assetType.c_str(),
-        record.importerName.c_str(),
-        record.importerRevision);
-
-    return true;
+void up::AssetDatabase::updateAssetPre(
+    UUID const& uuid,
+    zstring_view assetType,
+    zstring_view importerName,
+    uint64 importerVersion) {
+    [[maybe_unused]] auto const rc = _updateAssetPreStmt.execute(importerName, assetType, importerVersion, uuid);
+    UP_ASSERT(rc == SqlResult::Ok);
 }
 
-bool up::AssetDatabase::deleteRecordByUuid(UUID const& uuid) {
-    // update database
-    if (_deleteAssetStmt) {
-        (void)_deleteAssetStmt.execute(uuid);
-    }
+void up::AssetDatabase::updateAssetPost(UUID const& uuid, bool success) {
+    [[maybe_unused]] auto const rc = _updateAssetPostStmt.execute(success ? "IMPORTED"_sv : "FAILED"_sv, uuid);
+    UP_ASSERT(rc == SqlResult::Ok);
+}
+
+bool up::AssetDatabase::deleteAsset(UUID const& uuid) {
+    [[maybe_unused]] auto const rc = _deleteAssetStmt.execute(uuid);
+    UP_ASSERT(rc == SqlResult::Ok);
 
     return true;
 }
 
 void up::AssetDatabase::clearDependencies(UUID const& uuid) {
-    (void)_clearDependenciesStmt.execute(uuid);
+    [[maybe_unused]] auto const rc = _clearDependenciesStmt.execute(uuid);
+    UP_ASSERT(rc == SqlResult::Ok);
 }
 
 void up::AssetDatabase::clearOutputs(UUID const& uuid) {
-    (void)_clearOutputsStmt.execute(uuid);
+    [[maybe_unused]] auto const rc = _clearOutputsStmt.execute(uuid);
+    UP_ASSERT(rc == SqlResult::Ok);
 }
 
 void up::AssetDatabase::addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash) {
-    (void)_insertDependencyStmt.execute(uuid, outputPath, outputHash);
+    [[maybe_unused]] auto const rc = _insertDependencyStmt.execute(uuid, outputPath, outputHash);
+    UP_ASSERT(rc == SqlResult::Ok);
 }
 
 void up::AssetDatabase::addOutput(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash) {
-    (void)_insertOutputStmt.execute(uuid, createLogicalAssetId(uuid, name), name, assetType, outputHash);
+    [[maybe_unused]] auto const rc =
+        _insertOutputStmt.execute(uuid, createLogicalAssetId(uuid, name), name, assetType, outputHash);
+    UP_ASSERT(rc == SqlResult::Ok);
 }
 
 bool up::AssetDatabase::open(zstring_view filename) {
@@ -156,8 +160,8 @@ bool up::AssetDatabase::open(zstring_view filename) {
 
     // ensure the table is created
     if (_db.execute("CREATE TABLE IF NOT EXISTS assets "
-                    "(uuid TEXT PRIMARY KEY, "
-                    "source_db_path TEXT, source_hash INTEGER, asset_type TEXT, "
+                    "(uuid TEXT PRIMARY KEY, status TEXT, "
+                    "source_path TEXT, source_hash INTEGER, asset_type TEXT, "
                     "importer_name TEXT, importer_revision INTEGER);\n"
 
                     "CREATE TABLE IF NOT EXISTS outputs "
@@ -170,26 +174,25 @@ bool up::AssetDatabase::open(zstring_view filename) {
         return false;
     }
 
+    // ensure any left-over assets are transitioned to failed status
+    (void)_db.execute("UPDATE assets SET status='FAILED' WHERE status<>'IMPORTED'");
+
     // create our prepared statements for later use
-    _queryAssetsStmt = _db.prepare(
-        "SELECT uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision FROM assets");
+    _queryAssetsStmt =
+        _db.prepare("SELECT uuid, source_path, source_hash, asset_type, importer_name, importer_revision FROM assets");
     _queryDependenciesStmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE uuid=?");
     _queryOutputsStmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE uuid=?");
     _queryAssetByUuidStmt = _db.prepare(
-        "SELECT uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision FROM assets WHERE "
+        "SELECT uuid, source_path, source_hash, asset_type, importer_name, importer_revision FROM assets WHERE "
         "uuid=?");
-    _queryAssetBySourcePathStmt = _db.prepare(
-        "SELECT uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision FROM assets WHERE "
-        "source_db_path=?");
-    _mapSourceToUuidStmt = _db.prepare(
-        "INSERT INTO ASSETS (uuid, source_db_path) VALUES(?, ?) "
-        "ON CONFLICT(uuid) DO UPDATE SET source_db_path=excluded.source_db_path");
+    _queryUuidBySourcePathStmt = _db.prepare("SELECT uuid FROM assets WHERE source_path=?");
     _insertAssetStmt = _db.prepare(
         "INSERT INTO assets "
-        "(uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision) "
-        "VALUES(?, ?, ?, ?, ?, ?)"
-        "ON CONFLICT (uuid) DO UPDATE SET source_hash=excluded.source_hash, asset_type=excluded.asset_type, "
-        "importer_name=excluded.importer_name, importer_revision=excluded.importer_revision");
+        "(uuid, source_path, source_hash, status) VALUES(?, ?, ?, 'NEW')"
+        "ON CONFLICT (uuid) DO UPDATE SET source_path=excluded.source_path, source_hash=excluded.source_hash");
+    _updateAssetPreStmt = _db.prepare(
+        "UPDATE assets SET importer_name=?, asset_type=?, importer_revision=?, status='PENDING' WHERE uuid=?");
+    _updateAssetPostStmt = _db.prepare("UPDATE assets SET status=? WHERE uuid=?");
     _insertOutputStmt = _db.prepare("INSERT INTO outputs (uuid, output_id, name, type, hash) VALUES(?, ?, ?, ?, ?)");
     _insertDependencyStmt = _db.prepare("INSERT INTO dependencies (uuid, db_path, hash) VALUES(?, ?, ?)");
     _deleteAssetStmt = _db.prepare("DELETE FROM assets WHERE uuid=?");

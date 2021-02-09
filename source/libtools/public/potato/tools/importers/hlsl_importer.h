@@ -11,7 +11,6 @@ namespace up {
         ~HlslImporter() override;
 
         bool import(ImporterContext& ctx) override;
-        string_view generateSettings(ImporterContext& ctd) const override { return {}; }
 
         string_view name() const noexcept override { return "hlsl"; }
         uint64 revision() const noexcept override { return 9; }

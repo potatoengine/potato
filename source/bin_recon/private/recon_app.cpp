@@ -277,9 +277,9 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         metaDirty = true;
     }
 
-    _library.mapSourceToUuid(file, metaFile.uuid);
-
     auto const contentHash = isFolder ? 0 : _hashes.hashAssetAtPath(osPath.c_str());
+
+    _library.createAsset(metaFile.uuid, file, contentHash);
 
     static const ImporterConfig defaultConfig;
 
@@ -287,51 +287,26 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
     Importer* const importer = mapping != nullptr ? mapping->conveter : nullptr;
     ImporterConfig const& importerConfig = mapping != nullptr ? *mapping->config : defaultConfig;
 
-    ImporterContext context(
-        metaFile.uuid,
-        file,
-        _project->resourceRootPath(),
-        _temporaryOutputPath,
-        importer,
-        importerConfig,
-        _logger);
-
-    // adding meta files to source deps to ensure proper rebuild when meta files change for any reason
-    // (like convert settings for a file)
-    context.addSourceDependency(metaPath);
-
     if (importer != nullptr) {
         if (importer->name() != string_view{metaFile.importerName}) {
             metaFile.importerName = string{importer->name()};
             metaDirty = true;
         }
 
-        string_view settings = importer->generateSettings(context);
+        string_view settings = importer->defaultSettings();
         if (settings != metaFile.importerSettings) {
             metaFile.importerSettings = string{settings};
             metaDirty = true;
         }
     }
 
-    if (metaDirty) {
-        _logger.info("Writing meta file `{}'", metaOsPath);
-
-        string jsonText = metaFile.toJson();
-
-        auto stream = fs::openWrite(metaOsPath, fs::OpenMode::Text);
-        if (!stream || writeAllText(stream, jsonText) != IOResult::Success) {
-            _logger.error("Failed to write meta file for {}", metaOsPath);
-            return ReconImportResult::Failed;
-        }
-    }
-
     bool dirty = metaDirty;
-    if (auto const record = _library.findRecordByUuid(context.uuid()); record.uuid.isValid()) {
+    if (auto const record = _library.findRecordByUuid(metaFile.uuid); record.uuid.isValid()) {
         if (!dirty && importer != nullptr) {
             dirty |= !_isUpToDate(record, contentHash, *importer);
         }
         if (!dirty) {
-            for (auto const& dep : _library.assetDependencies(context.uuid())) {
+            for (auto const& dep : _library.assetDependencies(metaFile.uuid)) {
                 dirty = !_isUpToDate(dep.path, dep.contentHash);
                 if (dirty) {
                     break;
@@ -345,8 +320,8 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
 
     string_writer importedName;
     {
-        if (context.uuid().isValid()) {
-            format_append(importedName, "{{{}} ", context.uuid());
+        if (metaFile.uuid.isValid()) {
+            format_append(importedName, "{{{}} ", metaFile.uuid);
         }
         importedName.append(file);
         if (importer != nullptr) {
@@ -354,14 +329,47 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         }
     }
 
-    if (importer == nullptr && !isFolder) {
-        _logger.error("{}: unknown file type", importedName);
-        return ReconImportResult::UnknownType;
-    }
-
     if (!dirty && !force) {
         _logger.info("{}: up-to-date", importedName);
         return ReconImportResult::UpToDate;
+    }
+
+    vector<string> dependencies;
+    vector<ImporterContext::Output> outputs;
+    ImporterContext context(
+        metaFile.uuid,
+        file,
+        _project->resourceRootPath(),
+        _temporaryOutputPath,
+        importer,
+        importerConfig,
+        dependencies,
+        outputs,
+        _logger);
+
+    _library.updateAssetPre(
+        metaFile.uuid,
+        importer != nullptr ? string(importer->name()) : string{},
+        isFolder ? "potato.folder"_s : importer != nullptr ? string(importer->assetType(context)) : string{},
+        importer != nullptr ? importer->revision() : 0);
+
+    if (metaDirty) {
+        _logger.info("Writing meta file `{}'", metaOsPath);
+
+        string jsonText = metaFile.toJson();
+
+        auto stream = fs::openWrite(metaOsPath, fs::OpenMode::Text);
+        if (!stream || writeAllText(stream, jsonText) != IOResult::Success) {
+            _logger.error("Failed to write meta file for {}", metaOsPath);
+            _library.updateAssetPost(metaFile.uuid, false);
+            return ReconImportResult::Failed;
+        }
+    }
+
+    if (importer == nullptr && !isFolder) {
+        _logger.error("{}: unknown file type", importedName);
+        _library.updateAssetPost(metaFile.uuid, false);
+        return ReconImportResult::UnknownType;
     }
 
     if (importer != nullptr) {
@@ -369,13 +377,14 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
 
         if (!importer->import(context)) {
             _logger.error("{}: import failed", importedName);
+            _library.updateAssetPost(metaFile.uuid, false);
             return ReconImportResult::Failed;
         }
     }
 
     // move outputs to CAS
     //
-    for (auto const& output : context.outputs()) {
+    for (auto const& output : outputs) {
         auto outputOsPath = path::join(path::Separator::Native, _temporaryOutputPath, output.path);
         auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
 
@@ -403,26 +412,18 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
 
     // Update AssetDatabase with result of import
     _library.transact([&](auto& library, auto&) {
-        _library.insertRecord(AssetDatabase::Imported{
-            .uuid = context.uuid(),
-            .sourcePath = string(file),
-            .importerName = importer != nullptr ? string(importer->name()) : string{},
-            .assetType =
-                isFolder ? "potato.folder"_s : importer != nullptr ? string(importer->assetType(context)) : string{},
-            .importerRevision = importer != nullptr ? importer->revision() : 0,
-            .sourceContentHash = contentHash,
-        });
+        _library.updateAssetPost(metaFile.uuid, true);
 
         library.clearDependencies(context.uuid());
         library.clearOutputs(context.uuid());
 
-        for (auto const& sourceDepPath : context.sourceDependencies()) {
+        for (auto const& sourceDepPath : dependencies) {
             auto osPath = path::join(_project->resourceRootPath(), sourceDepPath.c_str());
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
             library.addDependency(context.uuid(), sourceDepPath, contentHash);
         }
 
-        for (auto const& output : context.outputs()) {
+        for (auto const& output : outputs) {
             auto outputOsPath = path::join(path::Separator::Native, _temporaryOutputPath, output.path);
             auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
 
@@ -440,7 +441,7 @@ bool up::recon::ReconApp::_forgetFile(zstring_view file) {
     }
 
     _logger.info("{}: deleted", file);
-    _library.deleteRecordByUuid(uuid);
+    _library.deleteAsset(uuid);
 
     // remove the .meta file if it exists;
     // we don't need to do this for a directory, since they could only be deleted
