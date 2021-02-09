@@ -63,8 +63,8 @@ namespace up {
         void createAsset(UUID const& uuid, zstring_view sourcePath, uint64 sourceHash);
         void updateAssetPre(
             UUID const& uuid,
-            zstring_view assetType,
             zstring_view importerName,
+            zstring_view assetType,
             uint64 importerVersion);
         void updateAssetPost(UUID const& uuid, bool success);
 

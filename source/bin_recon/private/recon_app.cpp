@@ -278,6 +278,7 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
     }
 
     auto const contentHash = isFolder ? 0 : _hashes.hashAssetAtPath(osPath.c_str());
+    auto const currentRecord = _library.findRecordByUuid(metaFile.uuid);
 
     _library.createAsset(metaFile.uuid, file, contentHash);
 
@@ -301,9 +302,9 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
     }
 
     bool dirty = metaDirty;
-    if (auto const record = _library.findRecordByUuid(metaFile.uuid); record.uuid.isValid()) {
+    if (currentRecord.uuid.isValid()) {
         if (!dirty && importer != nullptr) {
-            dirty |= !_isUpToDate(record, contentHash, *importer);
+            dirty |= !_isUpToDate(currentRecord, contentHash, *importer);
         }
         if (!dirty) {
             for (auto const& dep : _library.assetDependencies(metaFile.uuid)) {
@@ -331,6 +332,7 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
 
     if (!dirty && !force) {
         _logger.info("{}: up-to-date", importedName);
+        _library.updateAssetPost(metaFile.uuid, true);
         return ReconImportResult::UpToDate;
     }
 

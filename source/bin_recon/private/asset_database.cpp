@@ -90,8 +90,8 @@ void up::AssetDatabase::createAsset(UUID const& uuid, zstring_view sourcePath, u
 
 void up::AssetDatabase::updateAssetPre(
     UUID const& uuid,
-    zstring_view assetType,
     zstring_view importerName,
+    zstring_view assetType,
     uint64 importerVersion) {
     [[maybe_unused]] auto const rc = _updateAssetPreStmt.execute(importerName, assetType, importerVersion, uuid);
     UP_ASSERT(rc == SqlResult::Ok);
