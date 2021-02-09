@@ -60,8 +60,13 @@ namespace up {
         generator<Dependency const> assetDependencies(UUID const& uuid);
         generator<Output const> assetOutputs(UUID const& uuid);
 
+        void mapSourceToUuid(zstring_view sourcePath, UUID const& uuid);
+
         bool insertRecord(Imported const& record);
         bool deleteRecordByUuid(UUID const& uuid);
+
+        void clearDependencies(UUID const& uuid);
+        void clearOutputs(UUID const& uuid);
 
         void addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash);
         void addOutput(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash);
@@ -70,6 +75,13 @@ namespace up {
         bool close();
 
         void generateManifest(erased_writer writer);
+
+        template <typename Fn>
+        void transact(Fn&& fn) {
+            auto tx = _db.begin();
+            fn(*this, tx);
+            tx.commit();
+        }
 
     private:
         struct HashAssetId {
@@ -82,6 +94,7 @@ namespace up {
         Statement _queryOutputsStmt;
         Statement _queryAssetByUuidStmt;
         Statement _queryAssetBySourcePathStmt;
+        Statement _mapSourceToUuidStmt;
         Statement _insertAssetStmt;
         Statement _insertOutputStmt;
         Statement _insertDependencyStmt;

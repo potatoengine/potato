@@ -6,6 +6,7 @@
 #include "potato/reflex/type.h"
 
 up::ImporterContext::ImporterContext(
+    UUID const& uuid,
     zstring_view sourceFilePath,
     zstring_view sourceFolderPath,
     zstring_view destinationFolderPath,
@@ -17,6 +18,7 @@ up::ImporterContext::ImporterContext(
     , _sourceFilePath(sourceFilePath)
     , _sourceFolderPath(sourceFolderPath)
     , _destinationFolderPath(destinationFolderPath)
+    , _uuid(uuid)
     , _logger(logger) {}
 
 up::ImporterContext::~ImporterContext() = default;

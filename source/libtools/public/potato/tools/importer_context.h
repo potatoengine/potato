@@ -28,6 +28,7 @@ namespace up {
         };
 
         UP_TOOLS_API ImporterContext(
+            UUID const& uuid,
             zstring_view sourceFilePath,
             zstring_view sourceFolderPath,
             zstring_view destinationFolderPath,
@@ -53,7 +54,6 @@ namespace up {
         view<Output> outputs() const noexcept { return _outputs; }
 
         UUID const& uuid() const noexcept { return _uuid; }
-        void setUuid(UUID const& uuid) noexcept { _uuid = uuid; }
 
         Logger& logger() noexcept { return _logger; }
 

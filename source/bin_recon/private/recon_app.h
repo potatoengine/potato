@@ -60,7 +60,6 @@ namespace up::recon {
         bool _isUpToDate(zstring_view assetPath, uint64 contentHash);
 
         string _makeMetaFilename(zstring_view basePath, bool directory);
-        bool _checkMetafile(ImporterContext& ctx, zstring_view metaPath, bool autoCreate = true);
 
         auto _findConverterMapping(string_view path) const -> Mapping const*;
 

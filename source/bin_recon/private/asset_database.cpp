@@ -84,23 +84,19 @@ auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logic
     return static_cast<AssetId>(hash);
 }
 
+void up::AssetDatabase::mapSourceToUuid(zstring_view sourcePath, UUID const& uuid) {
+    (void)_mapSourceToUuidStmt.execute(uuid, sourcePath);
+}
+
 bool up::AssetDatabase::insertRecord(Imported const& record) {
     // update database
-    if (_insertAssetStmt) {
-        auto tx = _db.begin();
-        (void)_insertAssetStmt.execute(
-            record.uuid,
-            record.sourcePath.c_str(),
-            record.sourceContentHash,
-            record.assetType.c_str(),
-            record.importerName.c_str(),
-            record.importerRevision);
-
-        (void)_clearOutputsStmt.execute(record.uuid);
-        (void)_clearDependenciesStmt.execute(record.uuid);
-
-        tx.commit();
-    }
+    (void)_insertAssetStmt.execute(
+        record.uuid,
+        record.sourcePath.c_str(),
+        record.sourceContentHash,
+        record.assetType.c_str(),
+        record.importerName.c_str(),
+        record.importerRevision);
 
     return true;
 }
@@ -112,6 +108,14 @@ bool up::AssetDatabase::deleteRecordByUuid(UUID const& uuid) {
     }
 
     return true;
+}
+
+void up::AssetDatabase::clearDependencies(UUID const& uuid) {
+    (void)_clearDependenciesStmt.execute(uuid);
+}
+
+void up::AssetDatabase::clearOutputs(UUID const& uuid) {
+    (void)_clearOutputsStmt.execute(uuid);
 }
 
 void up::AssetDatabase::addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash) {
@@ -177,6 +181,9 @@ bool up::AssetDatabase::open(zstring_view filename) {
     _queryAssetBySourcePathStmt = _db.prepare(
         "SELECT uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision FROM assets WHERE "
         "source_db_path=?");
+    _mapSourceToUuidStmt = _db.prepare(
+        "INSERT INTO ASSETS (uuid, source_db_path) VALUES(?, ?) "
+        "ON CONFLICT(uuid) DO UPDATE SET source_db_path=excluded.source_db_path");
     _insertAssetStmt = _db.prepare(
         "INSERT INTO assets "
         "(uuid, source_db_path, source_hash, asset_type, importer_name, importer_revision) "
