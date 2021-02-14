@@ -22,26 +22,8 @@ auto up::AssetDatabase::pathToUuid(string_view path) noexcept -> UUID {
 }
 
 auto up::AssetDatabase::uuidToPath(UUID const& uuid) noexcept -> string {
-    for (auto const& [uuid, sourcePath, sourceHash, assetType, importName, importVer] :
-         _queryAssetByUuidStmt.query<zstring_view, zstring_view, uint64, zstring_view, zstring_view, uint64>(uuid)) {
+    for (auto const& [sourcePath] : _querySourcePathByUuuidStmt.query<zstring_view>(uuid)) {
         return string{sourcePath};
-    }
-
-    return {};
-}
-
-auto up::AssetDatabase::findRecordByUuid(UUID const& uuid) -> Imported {
-    for (auto const& [uuid, southPath, sourceHash, assetType, importName, importVer] :
-         _queryAssetByUuidStmt.query<UUID, zstring_view, uint64, zstring_view, zstring_view, uint64>(uuid)) {
-        Imported record{
-            .uuid = uuid,
-            .sourcePath = string{southPath},
-            .importerName = string{importName},
-            .assetType = string(assetType),
-            .importerRevision = importVer,
-            .sourceContentHash = sourceHash};
-
-        return record;
     }
 
     return {};
@@ -86,6 +68,15 @@ auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logic
 void up::AssetDatabase::createAsset(UUID const& uuid, zstring_view sourcePath, uint64 sourceHash) {
     [[maybe_unused]] auto const rc = _insertAssetStmt.execute(uuid, sourcePath, sourceHash);
     UP_ASSERT(rc == SqlResult::Ok);
+}
+
+bool up::AssetDatabase::checkAssetUpToDate(
+    UUID const& uuid,
+    string_view importerName,
+    uint64 importerVersion,
+    uint64 sourceHash) {
+    auto [result] = _queryAssetUpToDateStmt.queryOne<bool>(sourceHash, importerName, importerVersion, uuid);
+    return result;
 }
 
 void up::AssetDatabase::updateAssetPre(
@@ -180,12 +171,12 @@ bool up::AssetDatabase::open(zstring_view filename) {
     // create our prepared statements for later use
     _queryAssetsStmt =
         _db.prepare("SELECT uuid, source_path, source_hash, asset_type, importer_name, importer_revision FROM assets");
+    _queryAssetUpToDateStmt = _db.prepare(
+        "SELECT (source_hash=? AND importer_name=? AND importer_revision=?) AS up_to_date FROM assets WHERE uuid=?");
     _queryDependenciesStmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE uuid=?");
     _queryOutputsStmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE uuid=?");
-    _queryAssetByUuidStmt = _db.prepare(
-        "SELECT uuid, source_path, source_hash, asset_type, importer_name, importer_revision FROM assets WHERE "
-        "uuid=?");
     _queryUuidBySourcePathStmt = _db.prepare("SELECT uuid FROM assets WHERE source_path=?");
+    _querySourcePathByUuuidStmt = _db.prepare("SELECT source_path FROM assets WHERE uuid=?");
     _insertAssetStmt = _db.prepare(
         "INSERT INTO assets "
         "(uuid, source_path, source_hash, status) VALUES(?, ?, ?, 'NEW')"

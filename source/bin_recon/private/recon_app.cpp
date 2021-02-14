@@ -277,46 +277,41 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         metaDirty = true;
     }
 
-    auto const contentHash = isFolder ? 0 : _hashes.hashAssetAtPath(osPath.c_str());
-    auto const currentRecord = _library.findRecordByUuid(metaFile.uuid);
-
-    _library.createAsset(metaFile.uuid, file, contentHash);
-
     static const ImporterConfig defaultConfig;
 
     Mapping const* const mapping = isFolder ? nullptr : _findConverterMapping(file);
     Importer* const importer = mapping != nullptr ? mapping->conveter : nullptr;
     ImporterConfig const& importerConfig = mapping != nullptr ? *mapping->config : defaultConfig;
 
+    auto const contentHash = isFolder ? 0 : _hashes.hashAssetAtPath(osPath.c_str());
+    bool dirty = importer != nullptr
+        ? !_library.checkAssetUpToDate(metaFile.uuid, importer->name(), importer->revision(), contentHash)
+        : false;
+
+    _library.createAsset(metaFile.uuid, file, contentHash);
+
     if (importer != nullptr) {
         if (importer->name() != string_view{metaFile.importerName}) {
             metaFile.importerName = string{importer->name()};
             metaDirty = true;
+            dirty = true;
         }
 
         string_view settings = importer->defaultSettings();
         if (settings != metaFile.importerSettings) {
             metaFile.importerSettings = string{settings};
             metaDirty = true;
+            dirty = true;
         }
     }
 
-    bool dirty = metaDirty;
-    if (currentRecord.uuid.isValid()) {
-        if (!dirty && importer != nullptr) {
-            dirty |= !_isUpToDate(currentRecord, contentHash, *importer);
-        }
-        if (!dirty) {
-            for (auto const& dep : _library.assetDependencies(metaFile.uuid)) {
-                dirty = !_isUpToDate(dep.path, dep.contentHash);
-                if (dirty) {
-                    break;
-                }
+    if (!dirty) {
+        for (auto const& dep : _library.assetDependencies(metaFile.uuid)) {
+            dirty = !_isUpToDate(dep.path, dep.contentHash);
+            if (dirty) {
+                break;
             }
         }
-    }
-    else {
-        dirty = true;
     }
 
     string_writer importedName;
@@ -407,7 +402,7 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         }
 
         if (auto const rs = fs::moveFileTo(outputOsPath, casOsPath); rs != IOResult::Success) {
-            _logger.error("Failed to move temp file `{}` to CAAS `{}`", outputOsPath, casOsPath);
+            _logger.error("Failed to move temp file `{}` to CAS `{}`", outputOsPath, casOsPath);
             continue;
         }
     }
@@ -455,14 +450,6 @@ bool up::recon::ReconApp::_forgetFile(zstring_view file) {
     }
 
     return true;
-}
-
-bool up::recon::ReconApp::_isUpToDate(
-    AssetDatabase::Imported const& record,
-    up::uint64 contentHash,
-    Importer const& importer) const noexcept {
-    return record.sourceContentHash == contentHash && string_view(record.importerName) == importer.name() &&
-        record.importerRevision == importer.revision();
 }
 
 bool up::recon::ReconApp::_isUpToDate(zstring_view assetPath, uint64 contentHash) {

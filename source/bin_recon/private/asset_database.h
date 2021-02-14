@@ -30,15 +30,6 @@ namespace up {
             uint64 contentHash = 0;
         };
 
-        struct Imported {
-            UUID uuid;
-            string sourcePath;
-            string importerName;
-            string assetType;
-            uint64 importerRevision = 0;
-            uint64 sourceContentHash = 0;
-        };
-
         static constexpr zstring_view typeName = "potato.asset.library"_zsv;
         static constexpr int version = 16;
 
@@ -53,7 +44,6 @@ namespace up {
 
         static AssetId createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept;
 
-        Imported findRecordByUuid(UUID const& uuid);
         generator<zstring_view const> collectAssetPathsByFolder(zstring_view folder);
         generator<zstring_view const> collectAssetPaths();
 
@@ -61,6 +51,7 @@ namespace up {
         generator<Output const> assetOutputs(UUID const& uuid);
 
         void createAsset(UUID const& uuid, zstring_view sourcePath, uint64 sourceHash);
+        bool checkAssetUpToDate(UUID const& uuid, string_view importerName, uint64 importerVersion, uint64 sourceHash);
         void updateAssetPre(
             UUID const& uuid,
             zstring_view importerName,
@@ -95,10 +86,11 @@ namespace up {
 
         Database _db;
         Statement _queryAssetsStmt;
+        Statement _queryAssetUpToDateStmt;
         Statement _queryDependenciesStmt;
         Statement _queryOutputsStmt;
-        Statement _queryAssetByUuidStmt;
         Statement _queryUuidBySourcePathStmt;
+        Statement _querySourcePathByUuuidStmt;
         Statement _insertAssetStmt;
         Statement _updateAssetPreStmt;
         Statement _updateAssetPostStmt;

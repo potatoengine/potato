@@ -55,8 +55,6 @@ namespace up::recon {
 
         bool _writeManifest();
 
-        bool _isUpToDate(AssetDatabase::Imported const& record, uint64 contentHash, Importer const& importer)
-            const noexcept;
         bool _isUpToDate(zstring_view assetPath, uint64 contentHash);
 
         string _makeMetaFilename(zstring_view basePath, bool directory);

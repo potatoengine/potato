@@ -82,11 +82,14 @@ namespace up {
             inline ~QueryResult() noexcept;
 
             using value_type = std::tuple<T...>;
+            using size_type = std::size_t;
             using iterator = QueryResultIterator<T...>;
             using sentinel = QueryResultSentinel;
 
             iterator begin() noexcept { return iterator(_stmt); }
             sentinel end() noexcept { return sentinel{}; }
+
+            inline size_type size() const noexcept;
 
         private:
             explicit QueryResult(Statement& stmt) : _stmt(stmt) {}
@@ -135,12 +138,27 @@ namespace up {
                 return QueryResult<R...>{*this};
             }
 
+            template <typename... R>
+            [[nodiscard]] auto queryOne() noexcept {
+                _begin();
+                return _columns<R...>();
+            }
+
+            template <typename... R, typename... T>
+            [[nodiscard]] auto queryOne(T const&... args) noexcept {
+                _begin();
+                _bind(std::make_integer_sequence<int, sizeof...(args)>{}, args...);
+                _begin();
+                return _columns<R...>();
+            }
+
         private:
             UP_POSQL_API void _begin() noexcept;
             UP_POSQL_API SqlResult _execute() noexcept;
             UP_POSQL_API void _query() noexcept;
             UP_POSQL_API bool _done() noexcept;
             UP_POSQL_API void _next() noexcept;
+            UP_POSQL_API std::size_t _rows() noexcept;
             UP_POSQL_API void _finalize() noexcept;
 
             template <int... I, typename... T>
