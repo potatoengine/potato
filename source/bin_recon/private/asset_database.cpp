@@ -89,7 +89,11 @@ void up::AssetDatabase::updateAssetPre(
 }
 
 void up::AssetDatabase::updateAssetPost(UUID const& uuid, bool success) {
-    [[maybe_unused]] auto const rc = _updateAssetPostStmt.execute(success ? "IMPORTED"_sv : "FAILED"_sv, uuid);
+    [[maybe_unused]] auto rc = _updateAssetPostStmt.execute(success ? "IMPORTED"_sv : "FAILED"_sv, uuid);
+    UP_ASSERT(rc == SqlResult::Ok);
+    rc = _clearDependenciesStmt.execute(uuid);
+    UP_ASSERT(rc == SqlResult::Ok);
+    rc = _clearOutputsStmt.execute(uuid);
     UP_ASSERT(rc == SqlResult::Ok);
 }
 
@@ -98,16 +102,6 @@ bool up::AssetDatabase::deleteAsset(UUID const& uuid) {
     UP_ASSERT(rc == SqlResult::Ok);
 
     return true;
-}
-
-void up::AssetDatabase::clearDependencies(UUID const& uuid) {
-    [[maybe_unused]] auto const rc = _clearDependenciesStmt.execute(uuid);
-    UP_ASSERT(rc == SqlResult::Ok);
-}
-
-void up::AssetDatabase::clearOutputs(UUID const& uuid) {
-    [[maybe_unused]] auto const rc = _clearOutputsStmt.execute(uuid);
-    UP_ASSERT(rc == SqlResult::Ok);
 }
 
 void up::AssetDatabase::addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash) {

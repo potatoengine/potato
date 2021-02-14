@@ -411,11 +411,8 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
     _library.transact([&](auto& library, auto&) {
         _library.updateAssetPost(metaFile.uuid, true);
 
-        library.clearDependencies(context.uuid());
-        library.clearOutputs(context.uuid());
-
         for (auto const& sourceDepPath : dependencies) {
-            auto osPath = path::join(_project->resourceRootPath(), sourceDepPath.c_str());
+            auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), sourceDepPath.c_str());
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
             library.addDependency(context.uuid(), sourceDepPath, contentHash);
         }
@@ -445,9 +442,7 @@ bool up::recon::ReconApp::_forgetFile(zstring_view file) {
     // if the .meta file is deleted too
     auto metaPath = _makeMetaFilename(file, false);
     auto metaOsPath = path::join(path::Separator::Native, _project->resourceRootPath(), metaPath);
-    if (fs::fileExists(metaOsPath)) {
-        (void)fs::remove(metaOsPath);
-    }
+    (void)fs::remove(metaOsPath);
 
     return true;
 }

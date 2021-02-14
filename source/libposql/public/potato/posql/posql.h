@@ -123,33 +123,26 @@ namespace up {
                 return _execute();
             }
 
-            template <typename... R>
-            [[nodiscard]] QueryResult<R...> query() noexcept {
-                _begin();
-                _query();
-                return QueryResult<R...>{*this};
-            }
-
             template <typename... R, typename... T>
             [[nodiscard]] QueryResult<R...> query(T const&... args) noexcept {
                 _begin();
-                _bind(std::make_integer_sequence<int, sizeof...(args)>{}, args...);
+                if constexpr (sizeof...(T) != 0) {
+                    _bind(std::make_integer_sequence<int, sizeof...(args)>{}, args...);
+                }
                 _query();
                 return QueryResult<R...>{*this};
-            }
-
-            template <typename... R>
-            [[nodiscard]] auto queryOne() noexcept {
-                _begin();
-                return _columns<R...>();
             }
 
             template <typename... R, typename... T>
             [[nodiscard]] auto queryOne(T const&... args) noexcept {
                 _begin();
-                _bind(std::make_integer_sequence<int, sizeof...(args)>{}, args...);
-                _begin();
-                return _columns<R...>();
+                if constexpr (sizeof...(T) != 0) {
+                    _bind(std::make_integer_sequence<int, sizeof...(args)>{}, args...);
+                }
+                _query();
+                auto result = _columns<R...>();
+                _finalize();
+                return result;
             }
 
         private:
@@ -189,17 +182,14 @@ namespace up {
                 if constexpr (std::is_same_v<T, UUID>) {
                     return UUID::fromString(_column_string(index));
                 }
-                else if constexpr (std::is_constructible_v<T, char const*>) {
-                    return _column_string(index);
-                }
                 else if constexpr (std::is_constructible_v<T, int64>) {
                     return _column_int64(index);
                 }
                 else if constexpr (std::is_enum_v<T>) {
                     return T(_column_int64(index));
                 }
-                else {
-                    return {}; // NOLINT - intentionally trigger a compile error
+                else if constexpr (std::is_constructible_v<T, zstring_view>) {
+                    return _column_string(index);
                 }
             }
 
