@@ -36,7 +36,7 @@ namespace up::recon {
     private:
         struct Mapping {
             delegate<bool(string_view) const> predicate;
-            Importer* conveter = nullptr;
+            Importer* importer = nullptr;
             box<ImporterConfig> config;
         };
 
@@ -59,13 +59,14 @@ namespace up::recon {
 
         string _makeMetaFilename(zstring_view basePath, bool directory);
 
-        auto _findConverterMapping(string_view path) const -> Mapping const*;
+        auto _findConverterMapping(string_view path, bool isFolder) const -> Mapping const*;
 
         box<Project> _project;
         string_view _programName;
         string _temporaryOutputPath;
         string _manifestPath;
         vector<Mapping> _importers;
+        Mapping _folderImporter;
         vector<string> _outputs;
         ReconConfig _config;
         AssetDatabase _library;

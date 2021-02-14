@@ -50,16 +50,12 @@ namespace up {
         generator<Dependency const> assetDependencies(UUID const& uuid);
         generator<Output const> assetOutputs(UUID const& uuid);
 
-        void createAsset(UUID const& uuid, zstring_view sourcePath, uint64 sourceHash);
+        void createAsset(UUID const& uuid, string_view sourcePath, uint64 sourceHash);
         bool deleteAsset(UUID const& uuid);
 
         bool checkAssetUpToDate(UUID const& uuid, string_view importerName, uint64 importerVersion, uint64 sourceHash);
 
-        void updateAssetPre(
-            UUID const& uuid,
-            zstring_view importerName,
-            zstring_view assetType,
-            uint64 importerVersion);
+        void updateAssetPre(UUID const& uuid, string_view importerName, string_view assetType, uint64 importerVersion);
         void addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash);
         void addOutput(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash);
         void updateAssetPost(UUID const& uuid, bool success);

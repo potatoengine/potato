@@ -227,6 +227,10 @@ bool up::recon::ReconApp::_processQueue(ReconQueue& queue) {
 void up::recon::ReconApp::_registerImporters() {
     _importerFactory.registerDefaultImporters();
 
+    _folderImporter.importer = _importerFactory.findImporterByName("folder"_sv);
+    _folderImporter.config = new_box<ImporterConfig>();
+    UP_ASSERT(_folderImporter.importer != nullptr);
+
     for (auto const& mapping : _config.mapping) {
         auto const importer = _importerFactory.findImporterByName(mapping.importer);
         if (importer == nullptr) {
@@ -266,6 +270,12 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
     }
     bool const isFolder = stat.type == fs::FileType::Directory;
 
+    Mapping const* const mapping = _findConverterMapping(file, isFolder);
+    if (mapping == nullptr) {
+        _logger.error("{}: unknown file type", file);
+        return ReconImportResult::UnknownType;
+    }
+
     auto metaPath = _makeMetaFilename(file, isFolder);
     string metaOsPath = path::join(path::Separator::Native, _project->resourceRootPath(), metaPath);
 
@@ -277,53 +287,35 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         metaDirty = true;
     }
 
-    static const ImporterConfig defaultConfig;
-
-    Mapping const* const mapping = isFolder ? nullptr : _findConverterMapping(file);
-    Importer* const importer = mapping != nullptr ? mapping->conveter : nullptr;
-    ImporterConfig const& importerConfig = mapping != nullptr ? *mapping->config : defaultConfig;
+    Importer* const importer = mapping->importer;
 
     auto const contentHash = isFolder ? 0 : _hashes.hashAssetAtPath(osPath.c_str());
-    bool dirty = importer != nullptr
-        ? !_library.checkAssetUpToDate(metaFile.uuid, importer->name(), importer->revision(), contentHash)
-        : false;
+    bool dirty = !_library.checkAssetUpToDate(metaFile.uuid, importer->name(), importer->revision(), contentHash);
 
     _library.createAsset(metaFile.uuid, file, contentHash);
 
-    if (importer != nullptr) {
-        if (importer->name() != string_view{metaFile.importerName}) {
-            metaFile.importerName = string{importer->name()};
-            metaDirty = true;
-            dirty = true;
-        }
-
-        string_view settings = importer->defaultSettings();
-        if (settings != metaFile.importerSettings) {
-            metaFile.importerSettings = string{settings};
-            metaDirty = true;
-            dirty = true;
-        }
+    if (importer->name() != string_view{metaFile.importerName}) {
+        metaFile.importerName = string{importer->name()};
+        metaDirty = true;
+        dirty = true;
     }
 
-    if (!dirty) {
-        for (auto const& dep : _library.assetDependencies(metaFile.uuid)) {
-            dirty = !_isUpToDate(dep.path, dep.contentHash);
-            if (dirty) {
-                break;
-            }
+    string_view settings = importer->defaultSettings();
+    if (settings != metaFile.importerSettings) {
+        metaFile.importerSettings = string{settings};
+        metaDirty = true;
+        dirty = true;
+    }
+
+    for (auto const& dep : _library.assetDependencies(metaFile.uuid)) {
+        if (dirty) {
+            break;
         }
+        dirty = !_isUpToDate(dep.path, dep.contentHash);
     }
 
     string_writer importedName;
-    {
-        if (metaFile.uuid.isValid()) {
-            format_append(importedName, "{{{}} ", metaFile.uuid);
-        }
-        importedName.append(file);
-        if (importer != nullptr) {
-            format_append(importedName, " ({})", importer->name());
-        }
-    }
+    format_append(importedName, "{{{}} {} ({})", metaFile.uuid, file, importer->name());
 
     if (!dirty && !force) {
         _logger.info("{}: up-to-date", importedName);
@@ -339,15 +331,15 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         _project->resourceRootPath(),
         _temporaryOutputPath,
         importer,
-        importerConfig,
+        *mapping->config,
         dependencies,
         outputs,
         _logger);
 
     _library.updateAssetPre(
         metaFile.uuid,
-        importer != nullptr ? string(importer->name()) : string{},
-        isFolder ? "potato.folder"_s : importer != nullptr ? string(importer->assetType(context)) : string{},
+        importer != nullptr ? importer->name() : string_view{},
+        importer->assetType(context),
         importer != nullptr ? importer->revision() : 0);
 
     if (metaDirty) {
@@ -363,20 +355,17 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         }
     }
 
-    if (importer == nullptr && !isFolder) {
+    if (importer == nullptr) {
         _logger.error("{}: unknown file type", importedName);
         _library.updateAssetPost(metaFile.uuid, false);
         return ReconImportResult::UnknownType;
     }
 
-    if (importer != nullptr) {
-        _logger.info("{}: importing", importedName);
-
-        if (!importer->import(context)) {
-            _logger.error("{}: import failed", importedName);
-            _library.updateAssetPost(metaFile.uuid, false);
-            return ReconImportResult::Failed;
-        }
+    _logger.info("{}: importing", importedName);
+    if (!importer->import(context)) {
+        _logger.error("{}: import failed", importedName);
+        _library.updateAssetPost(metaFile.uuid, false);
+        return ReconImportResult::Failed;
     }
 
     // move outputs to CAS
@@ -452,7 +441,11 @@ bool up::recon::ReconApp::_isUpToDate(zstring_view assetPath, uint64 contentHash
     return contentHash == _hashes.hashAssetAtPath(osPath.c_str());
 }
 
-auto up::recon::ReconApp::_findConverterMapping(string_view path) const -> Mapping const* {
+auto up::recon::ReconApp::_findConverterMapping(string_view path, bool isFolder) const -> Mapping const* {
+    if (isFolder) {
+        return &_folderImporter;
+    }
+
     for (auto const& mapping : _importers) {
         if (mapping.predicate(path)) {
             return &mapping;

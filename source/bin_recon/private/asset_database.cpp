@@ -65,7 +65,7 @@ auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logic
     return static_cast<AssetId>(hash);
 }
 
-void up::AssetDatabase::createAsset(UUID const& uuid, zstring_view sourcePath, uint64 sourceHash) {
+void up::AssetDatabase::createAsset(UUID const& uuid, string_view sourcePath, uint64 sourceHash) {
     [[maybe_unused]] auto const rc = _insertAssetStmt.execute(uuid, sourcePath, sourceHash);
     UP_ASSERT(rc == SqlResult::Ok);
 }
@@ -81,8 +81,8 @@ bool up::AssetDatabase::checkAssetUpToDate(
 
 void up::AssetDatabase::updateAssetPre(
     UUID const& uuid,
-    zstring_view importerName,
-    zstring_view assetType,
+    string_view importerName,
+    string_view assetType,
     uint64 importerVersion) {
     [[maybe_unused]] auto const rc = _updateAssetPreStmt.execute(importerName, assetType, importerVersion, uuid);
     UP_ASSERT(rc == SqlResult::Ok);
