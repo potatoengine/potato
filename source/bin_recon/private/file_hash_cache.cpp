@@ -38,27 +38,23 @@ auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
         return 0;
     }
 
-    auto it = _hashes.find(path);
+    auto const pathHash = hash_value(path);
+
+    auto it = _hashes.find(pathHash);
     if (it != _hashes.end()) {
         if (rs == IOResult::Success && stat.size == it->second.size && stat.mtime == it->second.mtime) {
-            return it->second.hash;
+            return it->second.contentHash;
         }
     }
 
     auto fstream = fs::openRead(path);
-    auto hash = hashAssetStream(fstream);
+    auto const contentHash = hashAssetStream(fstream);
 
-    // update the hash
-    HashRecord rec{.osPath = string(path), .hash = hash, .mtime = stat.mtime, .size = stat.size};
+    (void)_addEntryStmt.execute(path, contentHash, stat.mtime, stat.size);
 
-    // update database
-    if (_addEntryStmt) {
-        (void)_addEntryStmt.execute(rec.osPath.c_str(), rec.hash, rec.mtime, rec.size);
-    }
+    _hashes[pathHash] = {.pathHash = pathHash, .contentHash = contentHash, .mtime = stat.mtime, .size = stat.size};
 
-    _hashes[rec.osPath] = std::move(rec);
-
-    return hash;
+    return contentHash;
 }
 
 bool up::FileHashCache::close() {
@@ -89,11 +85,11 @@ bool up::FileHashCache::open(zstring_view cache_path) {
     // load cache entries
     auto stmt = _conn.prepare("SELECT os_path, hash, mtime, size FROM hash_cache");
 
-    for (auto const& [path, hash, mtime, size] : stmt.query<zstring_view, uint64, uint64, uint64>()) {
+    for (auto const& [path, contentHash, mtime, size] : stmt.query<zstring_view, uint64, uint64, uint64>()) {
         auto rec_ptr = new_box<HashRecord>();
         auto& rec = *rec_ptr;
-        rec.osPath = string{path};
-        rec.hash = hash;
+        rec.pathHash = hash_value(path);
+        rec.contentHash = contentHash;
         rec.mtime = mtime;
         rec.size = size;
     }
