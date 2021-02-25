@@ -52,3 +52,7 @@ FetchContent_Declare(tracy
     GIT_REPOSITORY https://github.com/wolfpld/tracy.git
     GIT_TAG v0.7.4
 )
+FetchContent_Declare(libuv
+    GIT_REPOSITORY https://github.com/libuv/libuv.git
+    GIT_TAG v1.41.0
+)

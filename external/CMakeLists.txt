@@ -20,6 +20,7 @@ set(EXTERNALS
     dmon
     reproc
     tracy
+    libuv
 )
 
 # ---------------------------- #
