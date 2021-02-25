@@ -2,8 +2,6 @@
 
 #include "recon_server.h"
 
-#include "potato/spud/overload.h"
-
 #include <nlohmann/json.hpp>
 #include <iostream>
 
@@ -36,14 +34,18 @@ void up::recon::ReconServer::listenDisconnect(DisconnectHandler handler) {
 
 bool up::recon::ReconServer::sendLog(schema::ReconLogMessage const& msg) {
     nlohmann::json doc;
-    encodeReconMessage(doc, msg);
-    return _send(doc.dump());
+    if (reflex::encodeToJson(doc, msg)) {
+        return _send(doc.dump());
+    }
+    return false;
 }
 
 bool up::recon::ReconServer::sendManifest(schema::ReconManifestMessage const& msg) {
     nlohmann::json doc;
-    encodeReconMessage(doc, msg);
-    return _send(doc.dump());
+    if (reflex::encodeToJson(doc, msg)) {
+        return _send(doc.dump());
+    }
+    return false;
 }
 
 bool up::recon::ReconServer::start() {
@@ -54,24 +56,23 @@ bool up::recon::ReconServer::start() {
 }
 
 void up::recon::ReconServer::_threadMain(ReconServer* server) {
-    auto receiver = overload(
-        [&](schema::ReconImportMessage const& msg) {
-            if (server->_importHandler) {
-                server->_importHandler(msg);
-            }
-        },
-
-        [&](schema::ReconImportAllMessage const& msg) {
-            if (server->_importAllHandler) {
-                server->_importAllHandler(msg);
-            }
-        });
+    auto handleImport = [&](schema::ReconImportMessage const& msg) {
+        if (server->_importHandler) {
+            server->_importHandler(msg);
+        }
+    };
+    auto handleImportAll = [&](schema::ReconImportAllMessage const& msg) {
+        if (server->_importAllHandler) {
+            server->_importAllHandler(msg);
+        }
+    };
 
     nlohmann::json doc;
     std::string line;
     while (std::getline(std::cin, line) && !std::cin.eof()) {
         doc = nlohmann::json::parse(line);
-        if (!decodeReconMessage(doc, receiver)) {
+        if (!decodeReconMessage<schema::ReconImportMessage>(doc, handleImport) &&
+            !decodeReconMessage<schema::ReconImportAllMessage>(doc, handleImportAll)) {
             server->_logger.error("Unhandled JSON message");
             break;
         }

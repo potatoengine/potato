@@ -30,7 +30,6 @@ up::recon::ReconApp::~ReconApp() = default;
 bool up::recon::ReconApp::run(span<char const*> args) {
     zstring_view const configFile = "recon.config.json";
     if (fs::fileExists(configFile)) {
-        _logger.info("Loading config file `{}'", configFile);
         parseConfigFile(_config, configFile, _logger);
     }
 

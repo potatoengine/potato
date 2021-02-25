@@ -9,7 +9,6 @@ target_sources(potato_librecon PRIVATE
     "public/potato/recon/recon_protocol.h"
     "public/potato/recon/recon_client.h"
     "private/recon_client.cpp"
-    "private/recon_protocol.cpp"
 )
 
 include(up_set_common_properties)

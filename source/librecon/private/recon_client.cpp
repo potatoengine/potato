@@ -5,7 +5,6 @@
 #include "potato/recon/recon_protocol.h"
 #include "potato/tools/project.h"
 #include "potato/runtime/logger.h"
-#include "potato/spud/overload.h"
 
 #include <nlohmann/json.hpp>
 #include <reproc++/drain.hpp>
@@ -33,11 +32,15 @@ struct up::ReconClient::ReprocSink {
     bool handleLine(string_view line) {
         nlohmann::json doc = nlohmann::json::parse(line, nullptr, false, true);
 
-        return decodeReconMessage(
-            doc,
-            overload(
-                [this](schema::ReconLogMessage const& msg) { client._handle(msg); },
-                [this](schema::ReconManifestMessage const& msg) { client._handle(msg); }));
+        auto handleLog = [this](schema::ReconLogMessage const& msg) {
+            client._handle(msg);
+        };
+        auto handleManifest = [this](schema::ReconManifestMessage const& msg) {
+            client._handle(msg);
+        };
+
+        return decodeReconMessage<schema::ReconLogMessage>(doc, handleLog) ||
+            decodeReconMessage<schema::ReconManifestMessage>(doc, handleManifest);
     }
 };
 
@@ -91,7 +94,7 @@ void up::ReconClient::_handle(schema::ReconManifestMessage const& msg) {
 
 bool up::ReconClient::_sendRaw(reflex::Schema const& schema, void const* object) {
     nlohmann::json doc;
-    if (!encodeReconMessageRaw(doc, schema, object)) {
+    if (!reflex::encodeToJsonRaw(doc, schema, object)) {
         return false;
     }
 

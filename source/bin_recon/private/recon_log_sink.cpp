@@ -19,7 +19,7 @@ void up::recon::ReconProtocolLogSink::log(
     msg.severity = severity;
 
     nlohmann::json doc;
-    if (encodeReconMessage(doc, msg)) {
+    if (reflex::encodeToJson(doc, msg)) {
         std::cout << doc.dump() << std::endl;
     }
 }
