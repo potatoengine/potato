@@ -18,7 +18,6 @@ set(EXTERNALS
     sapc
     sqlite
     dmon
-    reproc
     tracy
     libuv
 )
