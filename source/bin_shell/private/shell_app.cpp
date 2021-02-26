@@ -336,7 +336,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _openEditor(AssetBrowser::editorName);
     _updateTitle();
 
-    if (!_reconClient.start(*_project)) {
+    if (!_reconClient.start(uv_default_loop(), _project->projectFilePath())) {
         _logger.error("Failed to start recon");
     }
 
@@ -384,6 +384,11 @@ void up::shell::ShellApp::run() {
         ZoneScopedN("Main Loop");
 
         imguiIO.DeltaTime = _lastFrameTime;
+
+        {
+            ZoneScopedN("I/O");
+            uv_run(uv_default_loop(), UV_RUN_NOWAIT);
+        }
 
         if (!_actions.refresh(hotKeyRevision)) {
             ZoneScopedN("Rebuild Actions");

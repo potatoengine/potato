@@ -24,13 +24,8 @@ up_compile_sap(potato_librecon
 target_link_libraries(potato_librecon
     PUBLIC
         potato::libruntime
-        potato::libtools
         potato::libreflex
-        potato::libposql
-        reproc++
-    PRIVATE
-        assimp
-        sqlite3
+        uv
 )
 
 add_executable(potato_librecon_test)

@@ -34,6 +34,7 @@ target_link_libraries(potato_recon PRIVATE
     potato::libruntime
     potato::libtools
     potato::libreflex
+    uv
 )
 
 include(up_copy_library_import)

@@ -5,9 +5,10 @@
 #include "_export.h"
 #include "recon_messages_schema.h"
 
-#include <reproc++/reproc.hpp>
 #include <atomic>
-#include <thread>
+
+#define NOMINMAX
+#include <uv.h>
 
 namespace up::reflex {
     struct Schema;
@@ -22,7 +23,7 @@ namespace up {
     public:
         ~ReconClient() { stop(); }
 
-        bool UP_RECON_API start(Project& project);
+        bool UP_RECON_API start(uv_loop_t* loop, zstring_view projectPath);
         void UP_RECON_API stop();
 
         bool UP_RECON_API hasUpdatedAssets() noexcept;
@@ -33,16 +34,15 @@ namespace up {
         }
 
     private:
-        struct ReprocSink;
-
         bool UP_RECON_API _sendRaw(reflex::Schema const& schema, void const* object);
         void _handle(schema::ReconLogMessage const& msg);
         void _handle(schema::ReconManifestMessage const& msg);
+        static void _handleLine(ReconClient& client, string_view line);
+        static void _onRead(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
 
-        reproc::process _process;
-        std::thread _thread;
+        box<uv_process_t> _process;
+        box<uv_pipe_t> _sink;
+        box<uv_pipe_t> _source;
         std::atomic_bool _staleAssets = false;
-
-        friend ReprocSink;
     };
 } // namespace up
