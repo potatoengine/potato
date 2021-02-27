@@ -12,6 +12,7 @@
 #include "potato/recon/recon_protocol.h"
 #include "potato/runtime/concurrent_queue.h"
 #include "potato/runtime/filesystem.h"
+#include "potato/runtime/io_loop.h"
 #include "potato/runtime/json.h"
 #include "potato/runtime/path.h"
 #include "potato/runtime/stream.h"
@@ -22,9 +23,8 @@
 #include "potato/spud/string_writer.h"
 
 #include <nlohmann/json.hpp>
-#include <uv.h>
 
-up::recon::ReconApp::ReconApp() : _programName("recon"), _logger("recon") {}
+up::recon::ReconApp::ReconApp() : _programName("recon"), _logger("recon"), _server(_loop, _logger) {}
 
 up::recon::ReconApp::~ReconApp() = default;
 
@@ -40,7 +40,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     }
 
     if (_config.server) {
-        Logger::root().attach(new_shared<ReconProtocolLogSink>());
+        Logger::root().attach(new_shared<ReconProtocolLogSink>(_server));
     }
 
     _project = Project::loadFromFile(_config.project);
@@ -102,95 +102,65 @@ bool up::recon::ReconApp::_runOnce() {
 }
 
 bool up::recon::ReconApp::_runServer() {
-    struct State {
-        ReconApp* app = nullptr;
-        ReconQueue* queue = nullptr;
-        ReconServer* server = nullptr;
-        uv_async_t* async = nullptr;
-    };
-
-    State state;
-    state.app = this;
-
     ReconQueue queue;
-    state.queue = &queue;
 
     _collectSourceFiles(queue);
     _collectMissingFiles(queue);
 
-    uv_fs_event_t fs;
-    uv_fs_event_init(uv_default_loop(), &fs);
-    fs.data = &state;
-
-    uv_fs_event_start(
-        &fs,
-        [](uv_fs_event_t* handle, const char* zfilename, int events, int status) {
-            auto* state = static_cast<State*>(handle->data);
-            zstring_view filename{zfilename};
-
+    IOWatch watch =
+        _loop.createWatch(_project->resourceRootPath(), [&queue](zstring_view filename, IOWatchEvent event) {
             // ignore dot files (except .meta files)
             if (filename != ".meta"_sv && (filename.empty() || filename.front() == '.')) {
                 return;
             }
 
-            if (0 != (events & UV_RENAME)) {
-                if (fs::fileStat(filename)) {
-                    state->queue->enqueImport(string{filename});
-                }
-                else {
-                    state->queue->enqueForget(string{filename});
-                }
+            switch (event) {
+                case IOWatchEvent::Rename:
+                    if (fs::fileStat(filename)) {
+                        queue.enqueImport(string{filename});
+                    }
+                    else {
+                        queue.enqueForget(string{filename});
+                    }
+                    break;
+
+                case IOWatchEvent::Change:
+                    queue.enqueImport(string{filename});
+                    break;
             }
-            else if (0 != (events & UV_CHANGE)) {
-                state->queue->enqueImport(string{filename});
-            }
-        },
-        _project->resourceRootPath().c_str(),
-        UV_FS_EVENT_RECURSIVE);
+        });
 
-    uv_async_t signal;
-    uv_async_init(uv_default_loop(), &signal, nullptr);
-    state.async = &signal;
+    IOEvent event = _loop.createEvent();
 
-    uv_prepare_t prepare;
-    uv_prepare_init(uv_default_loop(), &prepare);
-    prepare.data = &state;
-    uv_prepare_start(&prepare, [](uv_prepare_t* handle) {
-        auto* state = static_cast<State*>(handle->data);
-        state->app->_processQueue(*state->queue);
-        if (state->app->_manifestDirty) {
-            state->app->_manifestDirty = false;
-            state->app->_writeManifest();
-            state->server->sendManifest({.path = state->app->_manifestPath});
-        }
+    ReconServer server(_loop, _logger);
+    server.listenDisconnect([this, &queue, &event] {
+        queue.enqueTerminate();
+        event.signal();
+        _loop.stop();
     });
-
-    ReconServer server(_logger);
-    state.server = &server;
-    server.listenDisconnect([&state] {
-        state.queue->enqueTerminate();
-        uv_async_send(state.async);
+    server.listenImport([&queue, &event](schema::ReconImportMessage const& msg) {
+        queue.enqueImport(msg.uuid, msg.force);
+        event.signal();
     });
-    server.listenImport([&state](schema::ReconImportMessage const& msg) {
-        state.queue->enqueImport(msg.uuid, msg.force);
-        uv_async_send(state.async);
-    });
-    server.listenImportAll([&state](schema::ReconImportAllMessage const& msg) {
-        state.queue->enqueImportAll();
-        uv_async_send(state.async);
+    server.listenImportAll([&queue, &event](schema::ReconImportAllMessage const& msg) {
+        queue.enqueImportAll();
+        event.signal();
     });
     server.start();
+
+    IOPrepareHook prepHook = _loop.createPrepareHook([this, &server, &queue] {
+        _processQueue(queue);
+        if (_manifestDirty) {
+            _manifestDirty = false;
+            _writeManifest();
+            server.sendManifest({.path = _manifestPath});
+        }
+    });
 
     // flush the initially-updated manifest
     server.sendManifest({.path = _manifestPath});
 
-    uv_run(uv_default_loop(), UV_RUN_DEFAULT);
-
-    uv_prepare_stop(&prepare);
-    uv_close(reinterpret_cast<uv_handle_t*>(&prepare), nullptr);
-
-    uv_fs_event_stop(&fs);
-    uv_close(reinterpret_cast<uv_handle_t*>(&fs), nullptr);
+    _loop.run(IORun::Default);
 
     // server only "fails" if it can't run at all
     return true;

@@ -14,6 +14,7 @@
 #include "potato/editor/imgui_backend.h"
 #include "potato/recon/recon_client.h"
 #include "potato/runtime/asset_loader.h"
+#include "potato/runtime/io_loop.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/box.h"
 #include "potato/spud/unique_resource.h"
@@ -117,5 +118,6 @@ namespace up::shell {
         LogHistory _logHistory;
         ReconClient _reconClient;
         AssetEditService _assetEditService;
+        IOLoop _ioLoop;
     }; // namespace up::shell
 } // namespace up::shell

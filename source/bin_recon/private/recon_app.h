@@ -5,10 +5,12 @@
 #include "asset_database.h"
 #include "file_hash_cache.h"
 #include "recon_config.h"
+#include "recon_server.h"
 
 #include "potato/tools/importer.h"
 #include "potato/tools/importer_factory.h"
 #include "potato/tools/project.h"
+#include "potato/runtime/io_loop.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
@@ -72,6 +74,8 @@ namespace up::recon {
         AssetDatabase _library;
         FileHashCache _hashes;
         Logger _logger;
+        IOLoop _loop;
+        ReconServer _server;
         ImporterFactory _importerFactory;
         bool _manifestDirty = false;
     };

@@ -1,6 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "recon_log_sink.h"
+#include "recon_server.h"
 
 #include "potato/recon/recon_protocol.h"
 #include "potato/runtime/json.h"
@@ -18,8 +19,5 @@ void up::recon::ReconProtocolLogSink::log(
     msg.message = string(message);
     msg.severity = severity;
 
-    nlohmann::json doc;
-    if (reflex::encodeToJson(doc, msg)) {
-        std::cout << doc.dump() << std::endl;
-    }
+    _server.sendLog(msg);
 }

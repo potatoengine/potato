@@ -73,6 +73,9 @@ up::shell::ShellApp::~ShellApp() {
     _window.reset();
 
     _device.reset();
+
+    _reconClient.stop();
+    _ioLoop.reset();
 }
 
 int up::shell::ShellApp::initialize() {
@@ -336,7 +339,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _openEditor(AssetBrowser::editorName);
     _updateTitle();
 
-    if (!_reconClient.start(uv_default_loop(), _project->projectFilePath())) {
+    if (!_reconClient.start(_ioLoop, _project->projectFilePath())) {
         _logger.error("Failed to start recon");
     }
 
@@ -387,7 +390,7 @@ void up::shell::ShellApp::run() {
 
         {
             ZoneScopedN("I/O");
-            uv_run(uv_default_loop(), UV_RUN_NOWAIT);
+            _ioLoop.run(IORun::Poll);
         }
 
         if (!_actions.refresh(hotKeyRevision)) {

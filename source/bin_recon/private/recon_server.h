@@ -3,11 +3,9 @@
 #pragma once
 
 #include "potato/recon/recon_protocol.h"
-#include "potato/runtime/concurrent_queue.h"
+#include "potato/runtime/io_loop.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/delegate.h"
-
-#include <thread>
 
 namespace up::recon {
     class ReconServer {
@@ -17,7 +15,7 @@ namespace up::recon {
         using ImportAllHandler = delegate<void(schema::ReconImportAllMessage const&)>;
         using DisconnectHandler = delegate<void()>;
 
-        explicit ReconServer(Logger& logger);
+        ReconServer(IOLoop& loop, Logger& logger);
         ~ReconServer();
 
         void listenImport(ImportHandler handler);
@@ -30,11 +28,11 @@ namespace up::recon {
         bool start();
 
     private:
-        static void _threadMain(ReconServer* server);
         bool _send(string_view encodedMsg);
 
-        std::thread _ioThread;
         Logger _logger;
+        IOPipe _sink;
+        IOPipe _source;
         ImportHandler _importHandler;
         ImportAllHandler _importAllHandler;
         DisconnectHandler _disconnectHandler;
