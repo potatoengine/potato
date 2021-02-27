@@ -22,6 +22,7 @@
 #include "potato/spud/string_writer.h"
 
 #include <nlohmann/json.hpp>
+#include <uv.h>
 
 up::recon::ReconApp::ReconApp() : _programName("recon"), _logger("recon") {}
 
@@ -101,57 +102,95 @@ bool up::recon::ReconApp::_runOnce() {
 }
 
 bool up::recon::ReconApp::_runServer() {
+    struct State {
+        ReconApp* app = nullptr;
+        ReconQueue* queue = nullptr;
+        ReconServer* server = nullptr;
+        uv_async_t* async = nullptr;
+    };
+
+    State state;
+    state.app = this;
+
     ReconQueue queue;
+    state.queue = &queue;
 
     _collectSourceFiles(queue);
     _collectMissingFiles(queue);
 
-    ReconServer server(_logger);
-    server.listenDisconnect([&queue] { queue.enqueTerminate(); });
-    server.listenImport([&queue](schema::ReconImportMessage const& msg) { queue.enqueImport(msg.uuid, msg.force); });
-    server.listenImportAll([&queue](schema::ReconImportAllMessage const& msg) { queue.enqueImportAll(); });
+    uv_fs_event_t fs;
+    uv_fs_event_init(uv_default_loop(), &fs);
+    fs.data = &state;
 
-    // watch the target resource root and auto-convert any items that come in
-    auto [rs, watchHandle] = fs::watchDirectory(_project->resourceRootPath(), [&queue](auto const& watch) {
-        // ignore dot files (except .meta files)
-        if (watch.path != ".meta"_sv && (watch.path.empty() || watch.path.front() == '.')) {
-            return;
-        }
-        switch (watch.action) {
-            case fs::WatchAction::Create:
-            case fs::WatchAction::Modify:
-                queue.enqueImport(string{watch.path});
-                break;
-            case fs::WatchAction::Delete:
-                queue.enqueForget(string{watch.path});
-                break;
-            case fs::WatchAction::Rename:
-                queue.enqueImport(string{watch.path});
-                queue.enqueForget(string{watch.renamedFromPath});
-                break;
+    uv_fs_event_start(
+        &fs,
+        [](uv_fs_event_t* handle, const char* zfilename, int events, int status) {
+            auto* state = static_cast<State*>(handle->data);
+            zstring_view filename{zfilename};
+
+            // ignore dot files (except .meta files)
+            if (filename != ".meta"_sv && (filename.empty() || filename.front() == '.')) {
+                return;
+            }
+
+            if (0 != (events & UV_RENAME)) {
+                if (fs::fileStat(filename)) {
+                    state->queue->enqueImport(string{filename});
+                }
+                else {
+                    state->queue->enqueForget(string{filename});
+                }
+            }
+            else if (0 != (events & UV_CHANGE)) {
+                state->queue->enqueImport(string{filename});
+            }
+        },
+        _project->resourceRootPath().c_str(),
+        UV_FS_EVENT_RECURSIVE);
+
+    uv_async_t signal;
+    uv_async_init(uv_default_loop(), &signal, nullptr);
+    state.async = &signal;
+
+    uv_prepare_t prepare;
+    uv_prepare_init(uv_default_loop(), &prepare);
+    prepare.data = &state;
+    uv_prepare_start(&prepare, [](uv_prepare_t* handle) {
+        auto* state = static_cast<State*>(handle->data);
+        state->app->_processQueue(*state->queue);
+        if (state->app->_manifestDirty) {
+            state->app->_manifestDirty = false;
+            state->app->_writeManifest();
+            state->server->sendManifest({.path = state->app->_manifestPath});
         }
     });
-    if (rs != IOResult::Success) {
-        return false;
-    }
 
-    // handle processing input from the client
+    ReconServer server(_logger);
+    state.server = &server;
+    server.listenDisconnect([&state] {
+        state.queue->enqueTerminate();
+        uv_async_send(state.async);
+    });
+    server.listenImport([&state](schema::ReconImportMessage const& msg) {
+        state.queue->enqueImport(msg.uuid, msg.force);
+        uv_async_send(state.async);
+    });
+    server.listenImportAll([&state](schema::ReconImportAllMessage const& msg) {
+        state.queue->enqueImportAll();
+        uv_async_send(state.async);
+    });
     server.start();
 
     // flush the initially-updated manifest
     server.sendManifest({.path = _manifestPath});
 
-    bool quit = false;
-    while (!quit) {
-        queue.wait();
-        quit = !_processQueue(queue);
+    uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 
-        _writeManifest();
-        server.sendManifest({.path = _manifestPath});
-    }
+    uv_prepare_stop(&prepare);
+    uv_close(reinterpret_cast<uv_handle_t*>(&prepare), nullptr);
 
-    watchHandle->close();
-    watchHandle = nullptr;
+    uv_fs_event_stop(&fs);
+    uv_close(reinterpret_cast<uv_handle_t*>(&fs), nullptr);
 
     // server only "fails" if it can't run at all
     return true;
@@ -322,6 +361,8 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         return ReconImportResult::UpToDate;
     }
 
+    _manifestDirty = true;
+
     vector<string> dependencies;
     vector<ImporterContext::Output> outputs;
     ImporterContext context(
@@ -421,6 +462,8 @@ bool up::recon::ReconApp::_forgetFile(zstring_view file) {
     if (!uuid.isValid()) {
         return true; // let's not consider this an error; we were asked to forget something we didn't know about
     }
+
+    _manifestDirty = true;
 
     _logger.info("{}: deleted", file);
     _library.deleteAsset(uuid);

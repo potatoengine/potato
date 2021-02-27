@@ -73,5 +73,6 @@ namespace up::recon {
         FileHashCache _hashes;
         Logger _logger;
         ImporterFactory _importerFactory;
+        bool _manifestDirty = false;
     };
 } // namespace up::recon
