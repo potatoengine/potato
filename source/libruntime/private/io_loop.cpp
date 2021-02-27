@@ -7,7 +7,7 @@
 namespace {
     struct StateVirtualBase {
         virtual ~StateVirtualBase() = default;
-        uv_any_handle handle;
+        uv_any_handle handle = {};
     };
 
     template <typename HandleT>

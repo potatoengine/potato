@@ -21,9 +21,9 @@ up::ImporterContext::ImporterContext(
     , _sourceFolderPath(sourceFolderPath)
     , _destinationFolderPath(destinationFolderPath)
     , _uuid(uuid)
-    , _logger(logger)
     , _sourceDependencies(dependencies)
-    , _outputs(outputs) {}
+    , _outputs(outputs)
+    , _logger(logger) {}
 
 up::ImporterContext::~ImporterContext() = default;
 
