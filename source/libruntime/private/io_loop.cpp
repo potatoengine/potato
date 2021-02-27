@@ -338,7 +338,7 @@ void up::IOLoop::reset() {
     if (_state != nullptr) {
         uv_run(&_state->loop, UV_RUN_DEFAULT);
 
-        int const rc = uv_loop_close(&_state->loop);
+        int const [[maybe_unused]] rc = uv_loop_close(&_state->loop);
         UP_ASSERT(rc == 0, "error: {}: {}", rc, uv_strerror(rc));
 
         delete _state; // NOLINT

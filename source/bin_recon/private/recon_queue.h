@@ -23,7 +23,7 @@ namespace up::recon {
             _enque({.type = force ? Type::ForceImport : Type::Import, .filename = std::move(filename)});
         }
         void enqueImport(UUID const& uuid, bool force = false) {
-            _enque({.type = force ? Type::ForceImport : Type::Import, .uuid = std::move(uuid)});
+            _enque({.type = force ? Type::ForceImport : Type::Import, .uuid = uuid});
         }
 
         void enqueImportAll(bool force = false) { _enque({.type = force ? Type::ForceImportAll : Type::ImportAll}); }

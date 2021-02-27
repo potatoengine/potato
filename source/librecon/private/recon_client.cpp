@@ -60,7 +60,7 @@ bool up::ReconClient::start(IOLoop& loop, zstring_view projectPath) {
     auto const ec = _process.spawn(config);
 
     if (ec != 0) {
-        s_logger.error("Failed to start recon: {}", loop.errorString(ec));
+        s_logger.error("Failed to start recon: {}", IOLoop::errorString(ec));
         return false;
     }
 

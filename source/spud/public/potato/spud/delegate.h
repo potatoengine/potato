@@ -190,7 +190,8 @@ class up::delegate<ReturnType(ParamTypes...) const> : public _detail::delegate_t
     using storage_t = typename _detail::delegate_typed<ReturnType, true, ParamTypes...>::storage_t;
 
 public:
-    using _detail::delegate_typed<ReturnType, true, ParamTypes...>::delegate_typed;
+    using _detail::delegate_typed<ReturnType, true, ParamTypes...>::
+        delegate_typed; // NOLINT(modernize-use-equals-default)
 
     template <typename ClassType>
     delegate(ClassType const& object, ReturnType (ClassType::*method)(ParamTypes...) const)
