@@ -17,11 +17,6 @@ target_sources(potato_libruntime PRIVATE
     $<$<PLATFORM_ID:Windows>:private/debug.windows.h>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.rc>
 
-    # Semaphore implementations
-    #
-    $<$<BOOL:${UNIX}>:private/semaphore.posix.cpp>
-    $<$<PLATFORM_ID:Windows>:private/semaphore.windows.cpp>
-
     # Threading backends
     #
     $<$<PLATFORM_ID:Darwin>:private/thread_util.darwin.cpp>
@@ -98,7 +93,6 @@ target_sources(potato_libruntime_test PRIVATE
     "tests/test_path_util.cpp"
     "tests/test_lock_free_queue.cpp"
     "tests/test_rwlock.cpp"
-    "tests/test_semaphore.cpp"
     "tests/test_stream.cpp"
     "tests/test_task_worker.cpp"
     "tests/test_thread_util.cpp"
