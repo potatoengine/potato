@@ -52,10 +52,6 @@ target_sources(potato_libruntime PRIVATE
 include(up_set_common_properties)
 up_set_common_properties(potato_libruntime)
 
-if(NOT TARGET uv)
-    find_package(uv CONFIG REQUIRED)
-endif()
-
 # setup uuid libs for different oses
 if (WIN32)
     set(UP_UUID_LIBRARY "rpcrt4.lib")
