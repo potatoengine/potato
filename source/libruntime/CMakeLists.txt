@@ -77,9 +77,8 @@ target_link_libraries(potato_libruntime
         Threads::Threads
         nlohmann_json::nlohmann_json
         tracy
-        uv
     PRIVATE
-        dmon
+        uv
 )
 
 target_compile_definitions(potato_libruntime
