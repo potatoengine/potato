@@ -25,8 +25,6 @@ up::ImporterContext::ImporterContext(
     , _outputs(outputs)
     , _logger(logger) {}
 
-up::ImporterContext::~ImporterContext() = default;
-
 void up::ImporterContext::addSourceDependency(zstring_view path) {
     _sourceDependencies.push_back(string(path));
 }

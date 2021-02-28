@@ -37,7 +37,7 @@ namespace up {
             vector<string>& dependencies,
             vector<Output>& outputs,
             Logger& logger);
-        UP_TOOLS_API ~ImporterContext();
+        ~ImporterContext() = default;
 
         ImporterContext(ImporterContext&&) = delete;
         ImporterContext& operator=(ImporterContext&&) = delete;
