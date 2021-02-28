@@ -30,7 +30,7 @@ namespace up::recon {
     private:
         template <typename MessageT>
         bool _send(zstring_view name, MessageT const& message) {
-            _handler.send(name, message, _sink);
+            return _handler.send(name, message, _sink);
         }
 
         Logger _logger;
