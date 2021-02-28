@@ -22,7 +22,7 @@ namespace up {
             return _send(name, reflex::getSchema<MessageT>(), &msg, pipe);
         }
 
-        UP_RECON_API bool receive(view<char> input);
+        UP_RECON_API bool receive(view<char> data);
 
         template <typename MessageT>
         void on(string name, Callback<MessageT> callback) {
@@ -43,12 +43,10 @@ namespace up {
         UP_RECON_API bool _send(zstring_view name, reflex::Schema const& schema, void const* object, IOPipe& pipe);
         bool _handle(string_view message, view<char> body);
 
-        static constexpr int headerLength = 128;
-
         vector<char> _buffer;
         DecodeState _state = DecodeState::Ready;
-        string _headerMessageType;
-        size_t _headerContentLength;
+        char _headerMessageType[32] = {0};
+        size_t _headerContentLength = 0;
         vector<box<HandlerBase>> _handlers;
     };
 

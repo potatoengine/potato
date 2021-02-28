@@ -5,6 +5,9 @@
 #include "potato/runtime/json.h"
 #include "potato/spud/find.h"
 
+static constexpr up::string_view headerMessageType{"Message-Type"};
+static constexpr up::string_view headerContentLength{"Content-Length"};
+
 bool up::ReconProtocol::HandlerBase::decode(nlohmann::json const& data, reflex::Schema const& schema, void* object) {
     return reflex::decodeFromJsonRaw(data, schema, object);
 }
@@ -30,6 +33,7 @@ bool up::ReconProtocol::receive(view<char> data) {
                 else {
                     _state = DecodeState::Header;
                 }
+
                 break;
 
             case DecodeState::Header:
@@ -60,10 +64,10 @@ bool up::ReconProtocol::receive(view<char> data) {
                         headerData.pop_front();
                     }
 
-                    if (headerName == "Message-Type"_sv) {
-                        _headerMessageType = string(headerData);
+                    if (headerName == headerMessageType) {
+                        format_to(_headerMessageType, "{}", headerData);
                     }
-                    else if (headerName == "Content-Length"_sv) {
+                    else if (headerName == headerContentLength) {
                         std::from_chars(headerData.data(), headerData.data() + headerData.size(), _headerContentLength);
                     }
                 }
@@ -75,12 +79,12 @@ bool up::ReconProtocol::receive(view<char> data) {
 
             case DecodeState::Body:
                 if (bytes.size() >= _headerContentLength) {
-                    if (!_headerMessageType.empty()) {
+                    if (_headerMessageType[0] != '\0') {
                         handled |= _handle(_headerMessageType, {bytes.data(), _headerContentLength});
                     }
                     consumed += _headerContentLength;
 
-                    _headerMessageType = {};
+                    _headerMessageType[0] = '\0';
                     _headerContentLength = 0;
 
                     _state = DecodeState::Ready;
@@ -88,6 +92,8 @@ bool up::ReconProtocol::receive(view<char> data) {
                 else {
                     work = false;
                 }
+
+                break;
         }
     }
 
@@ -105,7 +111,8 @@ bool up::ReconProtocol::_send(zstring_view name, reflex::Schema const& schema, v
     auto const str = doc.dump();
 
     char headersBuf[128] = {0};
-    auto const headersText = format_to(headersBuf, "Message-Type: {}\nContent-Length: {}\n\n", name, str.size());
+    auto const headersText =
+        format_to(headersBuf, "{}: {}\n{}: {}\n\n", headerMessageType, name, headerContentLength, str.size());
 
     pipe.write({headersText.data(), headersText.size()});
     pipe.write({str.data(), str.size()});
