@@ -18,9 +18,9 @@ namespace up::recon {
         ReconServer(IOLoop& loop, Logger& logger);
         ~ReconServer();
 
-        void listenImport(ImportHandler handler);
-        void listenImportAll(ImportAllHandler handler);
-        void listenDisconnect(DisconnectHandler handler);
+        void onImport(ImportHandler handler);
+        void onImportAll(ImportAllHandler handler);
+        void onDisconnect(DisconnectHandler handler);
 
         bool sendLog(schema::ReconLogMessage const& msg);
         bool sendManifest(schema::ReconManifestMessage const& msg);
@@ -28,11 +28,15 @@ namespace up::recon {
         bool start();
 
     private:
-        bool _send(string_view encodedMsg);
+        template <typename MessageT>
+        bool _send(zstring_view name, MessageT const& message) {
+            _handler.send(name, message, _sink);
+        }
 
         Logger _logger;
         IOPipe _sink;
         IOPipe _source;
+        ReconProtocol _handler;
         ImportHandler _importHandler;
         ImportAllHandler _importAllHandler;
         DisconnectHandler _disconnectHandler;

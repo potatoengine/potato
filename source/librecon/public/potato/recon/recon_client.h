@@ -3,11 +3,10 @@
 #pragma once
 
 #include "_export.h"
-#include "recon_messages_schema.h"
+#include "recon_protocol.h"
 
 #include "potato/runtime/io_loop.h"
-
-#include <atomic>
+#include "potato/spud/delegate.h"
 
 namespace up::reflex {
     struct Schema;
@@ -20,28 +19,25 @@ namespace up {
 
     class ReconClient {
     public:
+        UP_RECON_API ReconClient();
         ~ReconClient() { stop(); }
 
         bool UP_RECON_API start(IOLoop& loop, zstring_view projectPath);
         void UP_RECON_API stop();
 
-        bool UP_RECON_API hasUpdatedAssets() noexcept;
+        UP_RECON_API void onManifestChange(delegate<void()> callback);
 
         template <typename MessageT>
-        bool sendMessage(MessageT const& msg) {
-            return _sendRaw(reflex::getSchema<MessageT>(), &msg);
+        bool sendMessage(zstring_view name, MessageT const& msg) {
+            return _handler.send(name, msg, _sink);
         }
 
     private:
-        bool UP_RECON_API _sendRaw(reflex::Schema const& schema, void const* object);
-        void _handle(schema::ReconLogMessage const& msg);
-        void _handle(schema::ReconManifestMessage const& msg);
-        void _onRead(span<char> input);
-        void _handleLine(string_view line);
-
+        ReconProtocol _handler;
         IOProcess _process;
         IOPipe _sink;
         IOPipe _source;
-        std::atomic_bool _staleAssets = false;
+
+        delegate<void()> _onManifest;
     };
 } // namespace up

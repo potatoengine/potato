@@ -9,37 +9,17 @@
 
 static up::Logger s_logger("ReconClient"); // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-void up::ReconClient::_handleLine(string_view line) {
-    using namespace up::schema;
+up::ReconClient::ReconClient() {
+    _handler.on<schema::ReconLogMessage>("LOG", [this](schema::ReconLogMessage const& msg) {
+        s_logger.log(msg.severity, msg.message);
+    });
 
-    if (line.empty()) {
-        return;
-    }
-
-    nlohmann::json doc = nlohmann::json::parse(line, nullptr, false, true);
-
-    auto handleLog = [this](ReconLogMessage const& msg) {
-        _handle(msg);
-    };
-    auto handleManifest = [this](ReconManifestMessage const& msg) {
-        _handle(msg);
-    };
-
-    decodeReconMessage<ReconLogMessage>(doc, handleLog) ||
-        decodeReconMessage<ReconManifestMessage>(doc, handleManifest);
-}
-
-void up::ReconClient::_onRead(span<char> input) {
-    // FIXME: this assumes we're getting whole lines, which is not guaranteed!
-    char const* start = input.data();
-    char const* const end = input.data() + input.size();
-    for (char const* c = start; c != end; ++c) {
-        if (*c == '\n') {
-            _handleLine({start, static_cast<size_t>(c - start)});
-            start = c + 1;
+    _handler.on<schema::ReconManifestMessage>("MANIFEST", [this](schema::ReconManifestMessage const& msg) {
+        if (_onManifest) {
+            _onManifest();
         }
-    }
-};
+    });
+}
 
 bool up::ReconClient::start(IOLoop& loop, zstring_view projectPath) {
     UP_ASSERT(!projectPath.empty());
@@ -64,11 +44,15 @@ bool up::ReconClient::start(IOLoop& loop, zstring_view projectPath) {
         return false;
     }
 
-    _source.startRead([this](auto input) { _onRead(input); });
+    _source.startRead([this](auto input) { _handler.receive(input); });
 
     s_logger.info("Started recon PID={}", _process.pid());
 
     return true;
+}
+
+void up::ReconClient::onManifestChange(delegate<void()> callback) {
+    _onManifest = move(callback);
 }
 
 void up::ReconClient::stop() {
@@ -79,29 +63,4 @@ void up::ReconClient::stop() {
         _process.terminate(true);
         _process.reset();
     }
-}
-
-bool up::ReconClient::hasUpdatedAssets() noexcept {
-    return _staleAssets.exchange(false);
-}
-
-void up::ReconClient::_handle(schema::ReconLogMessage const& msg) {
-    s_logger.log(msg.severity, msg.message);
-}
-
-void up::ReconClient::_handle(schema::ReconManifestMessage const& msg) {
-    _staleAssets.store(true);
-}
-
-bool up::ReconClient::_sendRaw(reflex::Schema const& schema, void const* object) {
-    nlohmann::json doc;
-    if (!reflex::encodeToJsonRaw(doc, schema, object)) {
-        return false;
-    }
-
-    auto const str = doc.dump();
-
-    _sink.write({str.data(), str.size()});
-
-    return true;
 }

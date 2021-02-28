@@ -133,16 +133,16 @@ bool up::recon::ReconApp::_runServer() {
     IOEvent event = _loop.createEvent();
 
     ReconServer server(_loop, _logger);
-    server.listenDisconnect([this, &queue, &event] {
+    server.onDisconnect([this, &queue, &event] {
         queue.enqueTerminate();
         event.signal();
         _loop.stop();
     });
-    server.listenImport([&queue, &event](schema::ReconImportMessage const& msg) {
+    server.onImport([&queue, &event](schema::ReconImportMessage const& msg) {
         queue.enqueImport(msg.uuid, msg.force);
         event.signal();
     });
-    server.listenImportAll([&queue, &event](schema::ReconImportAllMessage const& msg) {
+    server.onImportAll([&queue, &event](schema::ReconImportAllMessage const& msg) {
         queue.enqueImportAll();
         event.signal();
     });

@@ -342,6 +342,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     if (!_reconClient.start(_ioLoop, _project->projectFilePath())) {
         _logger.error("Failed to start recon");
     }
+    _reconClient.onManifestChange([this] { _loadManifest(); });
 
     return true;
 }
@@ -412,10 +413,6 @@ void up::shell::ShellApp::run() {
                     path::join(fs::currentWorkingDirectory(), "..", "..", "..", "..", "resources"))) {
                 continue;
             }
-        }
-
-        if (_reconClient.hasUpdatedAssets()) {
-            _loadManifest();
         }
 
         SDL_GetWindowSize(_window.get(), &width, &height);
@@ -698,7 +695,7 @@ void up::shell::ShellApp::_createGame(rc<Scene> scene) {
 void up::shell::ShellApp::_executeRecon() {
     schema::ReconImportAllMessage msg;
     msg.force = true;
-    _reconClient.sendMessage(msg);
+    _reconClient.sendMessage("IMPORT_ALL", msg);
 
     _loadManifest();
 }
