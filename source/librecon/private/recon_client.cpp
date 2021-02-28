@@ -10,7 +10,7 @@
 static up::Logger s_logger("ReconClient"); // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 up::ReconClient::ReconClient() {
-    _handler.on<schema::ReconLogMessage>("LOG", [this](schema::ReconLogMessage const& msg) {
+    _handler.on<schema::ReconLogMessage>("LOG", [](schema::ReconLogMessage const& msg) {
         s_logger.log(msg.severity, msg.message);
     });
 
