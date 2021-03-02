@@ -102,7 +102,7 @@ bool up::ReconProtocol::receive(view<char> data) {
     return handled;
 }
 
-bool up::ReconProtocol::_send(zstring_view name, reflex::Schema const& schema, void const* object, IOPipe& pipe) {
+bool up::ReconProtocol::_send(zstring_view name, reflex::Schema const& schema, void const* object, IOStream& stream) {
     nlohmann::json doc;
     if (!reflex::encodeToJsonRaw(doc, schema, object)) {
         return false;
@@ -114,9 +114,9 @@ bool up::ReconProtocol::_send(zstring_view name, reflex::Schema const& schema, v
     auto const headersText =
         format_to(headersBuf, "{}: {}\n{}: {}\n\n", headerMessageType, name, headerContentLength, str.size());
 
-    pipe.write({headersText.data(), headersText.size()});
-    pipe.write({str.data(), str.size()});
-    pipe.write({"\n", 1});
+    stream.write({headersText.data(), headersText.size()});
+    stream.write({str.data(), str.size()});
+    stream.write({"\n", 1});
     return true;
 }
 

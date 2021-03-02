@@ -18,8 +18,8 @@ namespace up {
         using Callback = delegate<void(MessageT const&)>;
 
         template <typename MessageT>
-        bool send(zstring_view name, MessageT const& msg, IOPipe& pipe) {
-            return _send(name, reflex::getSchema<MessageT>(), &msg, pipe);
+        bool send(zstring_view name, MessageT const& msg, IOStream& stream) {
+            return _send(name, reflex::getSchema<MessageT>(), &msg, stream);
         }
 
         UP_RECON_API bool receive(view<char> data);
@@ -40,7 +40,7 @@ namespace up {
             Body,
         };
 
-        UP_RECON_API bool _send(zstring_view name, reflex::Schema const& schema, void const* object, IOPipe& pipe);
+        UP_RECON_API bool _send(zstring_view name, reflex::Schema const& schema, void const* object, IOStream& stream);
         bool _handle(string_view message, view<char> body);
 
         vector<char> _buffer;

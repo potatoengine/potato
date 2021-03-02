@@ -55,42 +55,42 @@ void up::IOEvent::reset() {
     close(_state);
 }
 
-struct up::IOPipe::State : StateBase<uv_pipe_t> {
+struct up::IOStream::State : StateBase<uv_any_handle> {
     ReadCallback readCallback;
     DisconnectCallback disconnectCallback;
 };
 
-struct up::IOPipe::WriteReq {
+struct up::IOStream::WriteReq {
     uv_write_t req;
     uv_buf_t buf;
 };
 
-up::IOPipe::IOPipe(uv_loop_t* loop) {
+up::IOStream::IOStream(uv_loop_t* loop) {
     UP_ASSERT(loop != nullptr);
 
     _state = new State; // NOLINT
-    uv_pipe_init(loop, &_state->handle, 0);
-    _state->handle.data = _state;
+    uv_pipe_init(loop, &_state->handle.pipe, 0);
+    _state->handle.pipe.data = _state;
 }
 
-up::IOPipe::IOPipe(uv_loop_t* loop, int fd) {
+up::IOStream::IOStream(uv_loop_t* loop, int fd) {
     UP_ASSERT(loop != nullptr);
 
     _state = new State; // NOLINT
-    uv_pipe_init(loop, &_state->handle, 0);
-    _state->handle.data = _state;
+    uv_pipe_init(loop, &_state->handle.pipe, 0);
+    _state->handle.pipe.data = _state;
 
-    uv_pipe_open(&_state->handle, fd);
+    uv_pipe_open(&_state->handle.pipe, fd);
 }
 
-void up::IOPipe::startRead(ReadCallback callback) {
+void up::IOStream::startRead(ReadCallback callback) {
     UP_ASSERT(_state != nullptr);
     UP_ASSERT(callback);
 
     _state->readCallback = move(callback);
 
     uv_read_start(
-        reinterpret_cast<uv_stream_t*>(&_state->handle),
+        &_state->handle.stream,
         [](uv_handle_t*, size_t suggestedSize, uv_buf_t* buf) {
             buf->base = (char*)malloc(suggestedSize); // NOLINT
             buf->len = static_cast<unsigned long>(suggestedSize);
@@ -114,19 +114,19 @@ void up::IOPipe::startRead(ReadCallback callback) {
         });
 }
 
-void up::IOPipe::stopRead() {
+void up::IOStream::stopRead() {
     UP_ASSERT(_state != nullptr);
 
-    uv_read_stop(reinterpret_cast<uv_stream_t*>(&_state->handle));
+    uv_read_stop(&_state->handle.stream);
 }
 
-void up::IOPipe::onDisconnect(DisconnectCallback callback) {
+void up::IOStream::onDisconnect(DisconnectCallback callback) {
     UP_ASSERT(_state != nullptr);
 
     _state->disconnectCallback = move(callback);
 }
 
-void up::IOPipe::write(view<char> bytes) {
+void up::IOStream::write(view<char> bytes) {
     UP_ASSERT(_state != nullptr);
 
     if (bytes.empty()) {
@@ -136,7 +136,7 @@ void up::IOPipe::write(view<char> bytes) {
     auto* req = new WriteReq; // NOLINT;
     req->buf = uv_buf_init((char*)malloc(bytes.size()), static_cast<unsigned int>(bytes.size())); // NOLINT
     std::memcpy(req->buf.base, bytes.data(), bytes.size());
-    uv_write(&req->req, reinterpret_cast<uv_stream_t*>(&_state->handle), &req->buf, 1, [](uv_write_t* req, int status) {
+    uv_write(&req->req, &_state->handle.stream, &req->buf, 1, [](uv_write_t* req, int status) {
         auto* writeReq = static_cast<WriteReq*>(req->data);
         free(writeReq->buf.base); // NOLINT
         delete writeReq; // NOLINT
@@ -144,12 +144,12 @@ void up::IOPipe::write(view<char> bytes) {
     req->req.data = req;
 }
 
-void up::IOPipe::reset() {
+void up::IOStream::reset() {
     close(_state);
 }
 
-uv_pipe_t* up::IOPipe::raw() const noexcept {
-    return _state != nullptr ? &_state->handle : nullptr;
+uv_stream_t* up::IOStream::rawStream() const noexcept {
+    return _state != nullptr ? &_state->handle.stream : nullptr;
 }
 
 struct up::IOWatch::State : StateBase<uv_fs_event_t> {
@@ -231,12 +231,12 @@ int up::IOProcess::spawn(IOProcessConfig const& config) {
     if (config.input != nullptr) {
         stdio[0] = {
             .flags = static_cast<uv_stdio_flags>(UV_CREATE_PIPE | UV_READABLE_PIPE),
-            .data = {.stream = reinterpret_cast<uv_stream_t*>(config.input->raw())}};
+            .data = {.stream = config.input->rawStream()}};
     }
     if (config.output != nullptr) {
         stdio[1] = {
             .flags = static_cast<uv_stdio_flags>(UV_CREATE_PIPE | UV_WRITABLE_PIPE),
-            .data = {.stream = reinterpret_cast<uv_stream_t*>(config.output->raw())}};
+            .data = {.stream = config.output->rawStream()}};
     }
 
     uv_process_options_t options = {
@@ -292,15 +292,15 @@ up::IOEvent up::IOLoop::createEvent(delegate<void()> callback) {
     return IOEvent(&_state->loop, std::move(callback));
 }
 
-up::IOPipe up::IOLoop::createPipe() {
+up::IOStream up::IOLoop::createPipe() {
     UP_ASSERT(_state != nullptr);
-    return IOPipe(&_state->loop);
+    return IOStream(&_state->loop);
 }
 
-up::IOPipe up::IOLoop::createPipeFor(int fd) {
+up::IOStream up::IOLoop::createPipeFor(int fd) {
     UP_ASSERT(_state != nullptr);
     UP_ASSERT(fd >= 0);
-    return IOPipe(&_state->loop, fd);
+    return IOStream(&_state->loop, fd);
 }
 
 up::IOWatch up::IOLoop::createWatch(zstring_view targetFilename, IOWatch::Callback callback) {
@@ -344,8 +344,4 @@ void up::IOLoop::reset() {
         delete _state; // NOLINT
         _state = nullptr;
     }
-}
-
-uv_loop_t* up::IOLoop::raw() const noexcept {
-    return _state != nullptr ? &_state->loop : nullptr;
 }

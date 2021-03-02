@@ -9,10 +9,10 @@
 #include "potato/spud/zstring_view.h"
 
 struct uv_loop_s;
-struct uv_pipe_s;
+struct uv_stream_s;
 
 using uv_loop_t = uv_loop_s;
-using uv_pipe_t = uv_pipe_s;
+using uv_stream_t = uv_stream_s;
 
 namespace up {
     class IOEvent {
@@ -42,18 +42,18 @@ namespace up {
         State* _state = nullptr;
     };
 
-    class IOPipe {
+    class IOStream {
     public:
         using ReadCallback = delegate<void(span<char> bytes)>;
         using DisconnectCallback = delegate<void()>;
 
-        IOPipe() = default;
-        explicit IOPipe(uv_loop_t* loop);
-        IOPipe(uv_loop_t* loop, int fd);
-        ~IOPipe() { reset(); }
+        IOStream() = default;
+        explicit IOStream(uv_loop_t* loop);
+        IOStream(uv_loop_t* loop, int fd);
+        ~IOStream() { reset(); }
 
-        IOPipe(IOPipe&& rhs) noexcept : _state(rhs._state) { rhs._state = nullptr; }
-        IOPipe& operator=(IOPipe&& rhs) noexcept {
+        IOStream(IOStream&& rhs) noexcept : _state(rhs._state) { rhs._state = nullptr; }
+        IOStream& operator=(IOStream&& rhs) noexcept {
             swap(_state, rhs._state);
             return *this;
         }
@@ -67,10 +67,10 @@ namespace up {
 
         UP_RUNTIME_API void write(view<char> bytes);
 
-        UP_RUNTIME_API uv_pipe_t* raw() const noexcept;
-
         bool empty() const noexcept { return _state == nullptr; }
         UP_RUNTIME_API void reset();
+
+        uv_stream_t* rawStream() const noexcept;
 
     private:
         struct State;
@@ -134,8 +134,8 @@ namespace up {
     struct IOProcessConfig {
         zstring_view process;
         view<char const*> args;
-        IOPipe* input = nullptr;
-        IOPipe* output = nullptr;
+        IOStream* input = nullptr;
+        IOStream* output = nullptr;
     };
 
     class IOProcess {
@@ -184,8 +184,8 @@ namespace up {
         explicit operator bool() const noexcept { return !empty(); }
 
         UP_RUNTIME_API IOEvent createEvent(delegate<void()> callback = {});
-        UP_RUNTIME_API IOPipe createPipe();
-        UP_RUNTIME_API IOPipe createPipeFor(int fd);
+        UP_RUNTIME_API IOStream createPipe();
+        UP_RUNTIME_API IOStream createPipeFor(int fd);
         UP_RUNTIME_API IOWatch createWatch(zstring_view targetFilename, IOWatch::Callback callback);
         UP_RUNTIME_API IOPrepareHook createPrepareHook(IOPrepareHook::Callback callback);
         UP_RUNTIME_API IOProcess createProcess();
@@ -198,8 +198,6 @@ namespace up {
 
         bool empty() const noexcept { return _state == nullptr; }
         UP_RUNTIME_API void reset();
-
-        UP_RUNTIME_API uv_loop_t* raw() const noexcept;
 
     private:
         struct State;

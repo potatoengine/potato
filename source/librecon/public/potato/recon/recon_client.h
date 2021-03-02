@@ -35,8 +35,8 @@ namespace up {
     private:
         ReconProtocol _handler;
         IOProcess _process;
-        IOPipe _sink;
-        IOPipe _source;
+        IOStream _sink;
+        IOStream _source;
 
         delegate<void()> _onManifest;
     };

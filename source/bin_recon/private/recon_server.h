@@ -34,8 +34,8 @@ namespace up::recon {
         }
 
         Logger _logger;
-        IOPipe _sink;
-        IOPipe _source;
+        IOStream _sink;
+        IOStream _source;
         ReconProtocol _handler;
         ImportHandler _importHandler;
         ImportAllHandler _importAllHandler;
