@@ -61,18 +61,18 @@ jobs:
     strategy:
       matrix:
         config: [ 'Debug', 'Release' ]
-        cxx: [ 'g++-10', 'clang++-10' ]
+        cxx: [ 'g++-10', 'clang++-11' ]
         include:
           - cxx: g++-10
             cc: gcc-10
             cxxflags: -fcoroutines
             warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized -Wno-deprecated-enum-enum-conversion # GLM triggers volatile, Tracy triggers maybe-unitialized, imgui triggers deprecated-enum-enum-conversion
             packages: g++-10 gcc-10 libstdc++-10-dev
-          - cxx: clang++-10
-            cc: clang-10
+          - cxx: clang++-11
+            cc: clang-11
             cxxflags: -stdlib=libc++ -fdiagnostics-absolute-paths
             warnings: -Wall -Werror -Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion # GLM triggers deprecated-volatile, imgui triggers deprecated-enum-enum-conversion
-            packages: clang-10 libc++-10-dev libc++abi-10-dev
+            packages: clang-11 libc++-11-dev libc++abi-11-dev
     
     name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
     runs-on: 'ubuntu-20.04'
@@ -117,10 +117,10 @@ jobs:
       - name: Apt update
         run: sudo apt-get -yq update
       - name: Install toolchain
-        run: sudo apt-get -yq install clang-format-10
+        run: sudo apt-get -yq install clang-format-11
       - uses: actions/checkout@master
       - name: Check Format
-        run: python3 ./scripts/tools/run-clang-format.py -r --clang-format-executable clang-format-10 --exclude ./external --extensions h,cpp,cc ./source
+        run: python3 ./scripts/tools/run-clang-format.py -r --clang-format-executable clang-format-11 --exclude ./external --extensions h,cpp,cc ./source
 
   clang-tidy:
     name: 'Clang Tidy'
@@ -132,7 +132,7 @@ jobs:
       - name: Install toolchain
         run: |
           sudo apt-get remove libllvm10
-          sudo apt-get -yq install cmake clang++-10 clang-tidy-10 libc++-10-dev libc++abi-10-dev
+          sudo apt-get -yq install cmake clang++-11 clang-tidy-11 libc++-11-dev libc++abi-11-dev
       - name: Install libraries
         run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
       - uses: actions/checkout@master
@@ -145,11 +145,11 @@ jobs:
       - name: Configure
         env:
           CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths
-          CXX: clang++-10
-          CC: clang-10
+          CXX: clang++-11
+          CC: clang-11
         run: |
           mkdir -p build
-          cmake -S . -B build -G Ninja "-DUP_CXXFLAGS:STRING=-Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-10" "-DCMAKE_BUILD_TYPE:STRING=Debug"
+          cmake -S . -B build -G Ninja "-DUP_CXXFLAGS:STRING=-Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-11" "-DCMAKE_BUILD_TYPE:STRING=Debug"
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
 
