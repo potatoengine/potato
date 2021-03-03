@@ -11,7 +11,7 @@ namespace up {
     class enumerate;
 
     template <typename RangeT>
-    enumerate(RangeT &&) -> enumerate<RangeT>;
+    enumerate(RangeT&&) -> enumerate<RangeT>;
     template <typename RangeT>
     enumerate(RangeT&) -> enumerate<RangeT>;
     template <typename RangeT>

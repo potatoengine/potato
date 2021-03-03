@@ -98,7 +98,7 @@ namespace up {
         ~generator() { reset(); }
 
         generator(generator const&) = delete;
-        generator(generator && rhs) noexcept : _coro(rhs._coro) { rhs._coro = nullptr; }
+        generator(generator&& rhs) noexcept : _coro(rhs._coro) { rhs._coro = nullptr; }
 
         generator& operator=(generator const&) = delete;
         generator& operator=(generator&& rhs) noexcept {
