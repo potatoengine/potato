@@ -90,8 +90,10 @@ bool ImGui::Potato::IconButton(char const* label, char8_t const* icon, ImVec2 si
     bool const pressed = ButtonBehavior(bb, id, &hovered, &held, flags);
 
     // Render
-    ImU32 const col =
-        GetColorU32((held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+    ImU32 const col = GetColorU32(
+        (held && hovered) ? ImGuiCol_ButtonActive
+            : hovered     ? ImGuiCol_ButtonHovered
+                          : ImGuiCol_Button);
     RenderNavHighlight(bb, id);
     RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
     if (icon != nullptr && *icon != u8'\0') {
@@ -334,8 +336,10 @@ bool ImGui::Potato::IconGridItem(
 
         ImU32 const textColor = ImGui::GetColorU32(ImGuiCol_Text);
         ImU32 const bgColor = ImGui::GetColorU32(
-            held ? ImGuiCol_ButtonActive
-                 : hovered ? ImGuiCol_ButtonHovered : selected ? ImGuiCol_Header : ImGuiCol_Button);
+            held           ? ImGuiCol_ButtonActive
+                : hovered  ? ImGuiCol_ButtonHovered
+                : selected ? ImGuiCol_Header
+                           : ImGuiCol_Button);
 
         bool const showBg = hovered || held || selected;
 
