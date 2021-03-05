@@ -14,10 +14,5 @@ void up::recon::ReconProtocolLogSink::log(
     LogSeverity severity,
     string_view message,
     LogLocation location) noexcept {
-    schema::ReconLogMessage msg;
-    msg.category = string(loggerName);
-    msg.message = string(message);
-    msg.severity = severity;
-
-    _server.sendLog(msg);
+    _server.send<ReconLogMessage>({.category = string(loggerName), .message = string(message), .severity = severity});
 }

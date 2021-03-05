@@ -342,7 +342,7 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     if (!_reconClient.start(_ioLoop, _project->projectFilePath())) {
         _logger.error("Failed to start recon");
     }
-    _reconClient.onManifestChange([this] { _loadManifest(); });
+    _reconClient.on<ReconManifestMessage>([this](auto const&) { _loadManifest(); });
 
     return true;
 }
@@ -695,7 +695,7 @@ void up::shell::ShellApp::_createGame(rc<Scene> scene) {
 void up::shell::ShellApp::_executeRecon() {
     schema::ReconImportAllMessage msg;
     msg.force = true;
-    _reconClient.sendMessage("IMPORT_ALL", msg);
+    _reconClient.send<ReconImportAllMessage>({});
 
     _loadManifest();
 }

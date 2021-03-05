@@ -599,7 +599,7 @@ void up::shell::AssetBrowser::_importAsset(UUID const& uuid, bool force) {
     schema::ReconImportMessage msg;
     msg.uuid = uuid;
     msg.force = force;
-    _reconClient.sendMessage("IMPORT", msg);
+    _reconClient.send<ReconImportMessage>({});
 }
 
 void up::shell::AssetBrowser::_executeCommand() {

@@ -24,7 +24,7 @@
 
 #include <nlohmann/json.hpp>
 
-up::recon::ReconApp::ReconApp() : _programName("recon"), _logger("recon"), _server(_loop, _logger) {}
+up::recon::ReconApp::ReconApp() : _programName("recon"), _logger("recon"), _server(_logger) {}
 
 up::recon::ReconApp::~ReconApp() = default;
 
@@ -40,6 +40,7 @@ bool up::recon::ReconApp::run(span<char const*> args) {
     }
 
     if (_config.server) {
+        _server.start(_loop);
         Logger::root().attach(new_shared<ReconProtocolLogSink>(_server));
     }
 
@@ -132,35 +133,35 @@ bool up::recon::ReconApp::_runServer() {
 
     IOEvent event = _loop.createEvent();
 
-    ReconServer server(_loop, _logger);
-    server.onDisconnect([this, &queue, &event] {
+    _server.onDisconnect([this, &queue, &event] {
         queue.enqueTerminate();
         event.signal();
         _loop.stop();
     });
-    server.onImport([&queue, &event](schema::ReconImportMessage const& msg) {
+    _server.on<ReconImportMessage>([&queue, &event](schema::ReconImportMessage const& msg) {
         queue.enqueImport(msg.uuid, msg.force);
         event.signal();
     });
-    server.onImportAll([&queue, &event](schema::ReconImportAllMessage const& msg) {
+    _server.on<ReconImportAllMessage>([&queue, &event](schema::ReconImportAllMessage const& msg) {
         queue.enqueImportAll();
         event.signal();
     });
-    server.start();
 
-    IOPrepareHook prepHook = _loop.createPrepareHook([this, &server, &queue] {
+    IOPrepareHook prepHook = _loop.createPrepareHook([this, &queue] {
         _processQueue(queue);
         if (_manifestDirty) {
             _manifestDirty = false;
             _writeManifest();
-            server.sendManifest({.path = _manifestPath});
+            _server.send<ReconManifestMessage>({.path = _manifestPath});
         }
     });
 
     // flush the initially-updated manifest
-    server.sendManifest({.path = _manifestPath});
+    _server.send<ReconManifestMessage>({.path = _manifestPath});
 
     _loop.run(IORun::Default);
+
+    _server.stop();
 
     // server only "fails" if it can't run at all
     return true;

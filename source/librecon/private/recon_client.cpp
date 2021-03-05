@@ -10,15 +10,7 @@
 static up::Logger s_logger("ReconClient"); // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 up::ReconClient::ReconClient() {
-    _handler.on<schema::ReconLogMessage>("LOG", [](schema::ReconLogMessage const& msg) {
-        s_logger.log(msg.severity, msg.message);
-    });
-
-    _handler.on<schema::ReconManifestMessage>("MANIFEST", [this](schema::ReconManifestMessage const& msg) {
-        if (_onManifest) {
-            _onManifest();
-        }
-    });
+    on<ReconLogMessage>([](schema::ReconLogMessage const& msg) { s_logger.log(msg.severity, msg.message); });
 }
 
 bool up::ReconClient::start(IOLoop& loop, zstring_view projectPath) {
@@ -44,15 +36,11 @@ bool up::ReconClient::start(IOLoop& loop, zstring_view projectPath) {
         return false;
     }
 
-    _source.startRead([this](auto input) { _handler.receive(input); });
+    _source.startRead([this](auto input) { receive(input); });
 
     s_logger.info("Started recon PID={}", _process.pid());
 
     return true;
-}
-
-void up::ReconClient::onManifestChange(delegate<void()> callback) {
-    _onManifest = move(callback);
 }
 
 void up::ReconClient::stop() {

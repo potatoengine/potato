@@ -5,11 +5,13 @@ add_library(potato_librecon)
 add_library(potato::librecon ALIAS potato_librecon)
 
 target_sources(potato_librecon PRIVATE
-    "public/potato/recon/_export.h"
-    "public/potato/recon/recon_protocol.h"
-    "public/potato/recon/recon_client.h"
     "private/recon_client.cpp"
- "private/recon_protocol.cpp")
+    "private/recon_protocol.cpp"
+    "public/potato/recon/_export.h"
+    "public/potato/recon/recon_client.h"
+    "public/potato/recon/recon_message.h"
+    "public/potato/recon/recon_protocol.h"
+)
 
 include(up_set_common_properties)
 up_set_common_properties(potato_librecon)

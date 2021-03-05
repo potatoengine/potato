@@ -8,37 +8,24 @@
 #include "potato/spud/delegate.h"
 
 namespace up::recon {
-    class ReconServer {
+    class ReconServer : public ReconProtocol {
     public:
-        // Note: these will all be called on the recon server thread!
-        using ImportHandler = delegate<void(schema::ReconImportMessage const&)>;
-        using ImportAllHandler = delegate<void(schema::ReconImportAllMessage const&)>;
         using DisconnectHandler = delegate<void()>;
 
-        ReconServer(IOLoop& loop, Logger& logger);
-        ~ReconServer();
+        explicit ReconServer(Logger& logger);
+        ~ReconServer() { stop(); }
 
-        void onImport(ImportHandler handler);
-        void onImportAll(ImportAllHandler handler);
         void onDisconnect(DisconnectHandler handler);
 
-        bool sendLog(schema::ReconLogMessage const& msg);
-        bool sendManifest(schema::ReconManifestMessage const& msg);
-
-        bool start();
+        bool start(IOLoop& loop);
+        void stop();
 
     private:
-        template <typename MessageT>
-        bool _send(zstring_view name, MessageT const& message) {
-            return _handler.send(name, message, _sink);
-        }
+        IOStream& sink() override { return _sink; }
 
         Logger _logger;
         IOStream _sink;
         IOStream _source;
-        ReconProtocol _handler;
-        ImportHandler _importHandler;
-        ImportAllHandler _importAllHandler;
         DisconnectHandler _disconnectHandler;
     };
 } // namespace up::recon

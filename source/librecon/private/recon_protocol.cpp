@@ -2,6 +2,7 @@
 
 #include "recon_protocol.h"
 
+#include "potato/runtime/io_loop.h"
 #include "potato/runtime/json.h"
 #include "potato/spud/find.h"
 
@@ -102,7 +103,7 @@ bool up::ReconProtocol::receive(view<char> data) {
     return handled;
 }
 
-bool up::ReconProtocol::_send(zstring_view name, reflex::Schema const& schema, void const* object, IOStream& stream) {
+bool up::ReconProtocol::_send(string_view name, reflex::Schema const& schema, void const* object) {
     nlohmann::json doc;
     if (!reflex::encodeToJsonRaw(doc, schema, object)) {
         return false;
@@ -114,9 +115,11 @@ bool up::ReconProtocol::_send(zstring_view name, reflex::Schema const& schema, v
     auto const headersText =
         format_to(headersBuf, "{}: {}\n{}: {}\n\n", headerMessageType, name, headerContentLength, str.size());
 
-    stream.write({headersText.data(), headersText.size()});
-    stream.write({str.data(), str.size()});
-    stream.write({"\n", 1});
+    IOStream& ioSink = sink();
+
+    ioSink.write({headersText.data(), headersText.size()});
+    ioSink.write({str.data(), str.size()});
+    ioSink.write({"\n", 1});
     return true;
 }
 
