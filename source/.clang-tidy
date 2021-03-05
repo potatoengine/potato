@@ -21,6 +21,7 @@ FormatStyle: "file"
 # readability-magic-numbers is just annoying for math-heavy code, though it is valuable elsewhere
 # readability-named-parmater [[TODO]] consider adding this back
 # readability-upper-literal-suffix is just stylistically objectionable, e.g. 1.2f vs 1.2F
+# readability-use-anyofallof no heavy library use to replace simple language features, thank you
 Checks: >-
     -*,
     bugprone-*,
@@ -50,5 +51,6 @@ Checks: >-
     -readability-named-parameter,
     -readability-qualified-auto,
     -readability-uppercase-literal-suffix,
+    -readability-use-anyofallof,
 HeaderFilterRegex: "(private/.*|public/potato/.*)"
 WarningsAsErrors: "*"
