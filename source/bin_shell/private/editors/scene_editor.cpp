@@ -27,6 +27,7 @@
 #include "potato/spud/fixed_string_writer.h"
 
 #include <glm/glm.hpp>
+#include <nlohmann/json.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 

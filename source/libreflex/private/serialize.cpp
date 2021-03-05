@@ -11,6 +11,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
+#include <nlohmann/json.hpp>
 
 namespace up::reflex::_detail {
     static bool encodeObject(nlohmann::json& json, Schema const& schema, void const* obj);

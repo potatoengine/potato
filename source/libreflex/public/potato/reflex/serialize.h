@@ -5,7 +5,7 @@
 #include "_export.h"
 #include "schema.h"
 
-#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 namespace up::reflex {
     template <has_schema T>
