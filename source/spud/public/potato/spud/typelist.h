@@ -47,15 +47,15 @@ namespace up {
         struct type_at_impl<N, typelist<T, U...>> {
 #if defined(__has_builtin)
 #    if __has_builtin(__type_pack_element)
-#        define _up_HAS_TYPE_PACK_ELEMENT
+#        define UP_HAS_TYPE_PACK_ELEMENT
 #    endif
 #endif
-#if defined(_up_HAS_TYPE_PACK_ELEMENT)
+#if defined(UP_HAS_TYPE_PACK_ELEMENT)
             using type = __type_pack_element<N, T, U...>;
 #else
             using type = typename type_at_impl<N - 1, typelist<U...>>::type;
 #endif
-#undef _up_HAS_TYPE_PACK_ELEMENT
+#undef UP_HAS_TYPE_PACK_ELEMENT
         };
     } // namespace _detail
 
