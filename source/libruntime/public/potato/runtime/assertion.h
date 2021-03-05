@@ -34,23 +34,23 @@ namespace up::_detail {
     void constexpr formatAssertion(Writer&) {}
 } // namespace up::_detail
 
-#    define _up_FORMAT_FAIL(condition_text, ...) \
+#    define uppriv_FORMAT_FAIL(condition_text, ...) \
         do { \
-            char _up_fail_buffer[512] = { \
+            char uppriv_fail_buffer[512] = { \
                 0, \
             }; \
-            ::up::fixed_writer _up_fail_writer(_up_fail_buffer); \
-            ::up::_detail::formatAssertion(_up_fail_writer, ##__VA_ARGS__); \
-            _up_FAIL((condition_text), _up_fail_buffer); \
+            ::up::fixed_writer uppriv_fail_writer(uppriv_fail_buffer); \
+            ::up::_detail::formatAssertion(uppriv_fail_writer, ##__VA_ARGS__); \
+            uppriv_FAIL((condition_text), uppriv_fail_buffer); \
         } while (false)
 
 #    define UP_ASSERT(condition, ...) \
         do { \
             if (UP_UNLIKELY(!((condition)))) { \
-                _up_FORMAT_FAIL(#condition, ##__VA_ARGS__); \
+                uppriv_FORMAT_FAIL(#condition, ##__VA_ARGS__); \
             } \
         } while (false)
 
-#    define UP_UNREACHABLE(...) _up_FAIL("unreachable code", ##__VA_ARGS__)
+#    define UP_UNREACHABLE(...) uppriv_FAIL("unreachable code", ##__VA_ARGS__)
 
 #endif // _PREFAST_
