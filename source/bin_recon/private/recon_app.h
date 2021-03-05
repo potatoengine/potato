@@ -5,8 +5,8 @@
 #include "asset_database.h"
 #include "file_hash_cache.h"
 #include "recon_config.h"
-#include "recon_server.h"
 
+#include "potato/recon/recon_server.h"
 #include "potato/tools/importer.h"
 #include "potato/tools/importer_factory.h"
 #include "potato/tools/project.h"

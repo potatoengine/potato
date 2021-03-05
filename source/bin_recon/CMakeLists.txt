@@ -19,8 +19,6 @@ target_sources(potato_recon PRIVATE
     "private/recon_log_sink.cpp"
     "private/recon_log_sink.h"
     "private/recon_queue.h"
-    "private/recon_server.cpp"
-    "private/recon_server.h"
 )
 
 set_target_properties(potato_recon PROPERTIES

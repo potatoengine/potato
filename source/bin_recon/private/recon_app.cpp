@@ -6,10 +6,10 @@
 #include "recon_log_sink.h"
 #include "recon_messages_schema.h"
 #include "recon_queue.h"
-#include "recon_server.h"
 
 #include "potato/format/format.h"
 #include "potato/recon/recon_protocol.h"
+#include "potato/recon/recon_server.h"
 #include "potato/runtime/concurrent_queue.h"
 #include "potato/runtime/filesystem.h"
 #include "potato/runtime/io_loop.h"

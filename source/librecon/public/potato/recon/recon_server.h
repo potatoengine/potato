@@ -2,7 +2,9 @@
 
 #pragma once
 
-#include "potato/recon/recon_protocol.h"
+#include "_export.h"
+#include "recon_protocol.h"
+
 #include "potato/runtime/io_loop.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/delegate.h"
@@ -12,13 +14,13 @@ namespace up::recon {
     public:
         using DisconnectHandler = delegate<void()>;
 
-        explicit ReconServer(Logger& logger);
+        UP_RECON_API explicit ReconServer(Logger& logger);
         ~ReconServer() { stop(); }
 
-        void onDisconnect(DisconnectHandler handler);
+        UP_RECON_API void onDisconnect(DisconnectHandler handler);
 
-        bool start(IOLoop& loop);
-        void stop();
+        UP_RECON_API bool start(IOLoop& loop);
+        UP_RECON_API void stop();
 
     private:
         IOStream& sink() override { return _sink; }
