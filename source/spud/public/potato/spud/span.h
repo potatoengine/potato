@@ -57,13 +57,6 @@ public:
     template <std::size_t N>
     /*implicit*/ constexpr span(T (&src)[N]) noexcept : _begin(src)
                                                       , _end(src + N) {}
-    template <std::size_t N>
-    /*implicit*/ constexpr span(std::array<T, N> const& array) noexcept
-        : _begin(array.data())
-        , _end(_begin + array.size()) {}
-    template <std::size_t N>
-    /*implicit*/ constexpr span(std::array<T, N>& array) noexcept : _begin(array.data())
-                                                                  , _end(_begin + array.size()) {}
 
     constexpr span& operator=(span&&) noexcept = default;
 

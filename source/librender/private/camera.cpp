@@ -9,8 +9,8 @@
 #include "gpu_texture.h"
 
 #include <glm/gtc/constants.hpp>
-#include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/mat4x4.hpp>
 
 namespace {
     struct alignas(16) CameraData {

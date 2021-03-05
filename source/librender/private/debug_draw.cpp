@@ -12,7 +12,8 @@
 static std::mutex debugLock; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 static up::vector<up::DebugDrawVertex> debugVertices; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-static void UP_VECTORCALL drawDebugLineHelper(glm::vec3 start, glm::vec3 end, glm::vec4 color, float lingerSeconds = 0) {
+static void UP_VECTORCALL
+drawDebugLineHelper(glm::vec3 start, glm::vec3 end, glm::vec4 color, float lingerSeconds = 0) {
     debugVertices.push_back({start, color, lingerSeconds});
     debugVertices.push_back({end, color, lingerSeconds});
 }
