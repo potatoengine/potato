@@ -22,6 +22,7 @@ FormatStyle: "file"
 # readability-named-parmater [[TODO]] consider adding this back
 # readability-upper-literal-suffix is just stylistically objectionable, e.g. 1.2f vs 1.2F
 # readability-use-anyofallof no heavy library use to replace simple language features, thank you
+# bugprone-reserved-identifier erroneously triggers on coroutines in Clang 11
 Checks: >-
     -*,
     bugprone-*,
@@ -52,5 +53,6 @@ Checks: >-
     -readability-qualified-auto,
     -readability-uppercase-literal-suffix,
     -readability-use-anyofallof,
+    -bugprone-reserved-identifier,
 HeaderFilterRegex: "(private/.*|public/potato/.*)"
 WarningsAsErrors: "*"
