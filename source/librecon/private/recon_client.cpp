@@ -10,7 +10,7 @@
 #include <nlohmann/json.hpp>
 #include <reproc++/drain.hpp>
 
-static up::Logger s_logger("ReconClient");
+static up::Logger s_logger("ReconClient"); // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 struct up::ReconClient::ReprocSink {
     ReconClient& client;

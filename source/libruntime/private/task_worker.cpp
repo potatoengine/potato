@@ -1,25 +1,19 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "task_worker.h"
-#include "semaphore.h"
 #include "thread_util.h"
+
+#include "potato/spud/string.h"
 
 up::TaskWorker::TaskWorker(ConcurrentQueue<Task>& queue, zstring_view name) : _queue(queue) {
     // just to make sure this is called at least once on the main thread...
     [[maybe_unused]] auto const _ = currentSmallThreadId();
 
-    Semaphore sem;
-    _thread = std::thread([this, name, &sem] {
+    _thread = std::thread([this, name = up::string(name)] {
         setCurrentThreadName(name);
         _threadId = currentSmallThreadId();
-        sem.signal();
         return _threadMain();
     });
-
-    // ensure the thread starts and sets its name and our thread-id
-    // we want the threadId to be accurate by the end of construction,
-    // and the backing of name may go out of scope afterward
-    sem.wait();
 }
 
 up::TaskWorker::~TaskWorker() {

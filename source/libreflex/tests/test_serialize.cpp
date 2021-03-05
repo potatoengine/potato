@@ -5,6 +5,7 @@
 #include "potato/reflex/serialize.h"
 
 #include <catch2/catch.hpp>
+#include <nlohmann/json.hpp>
 
 TEST_CASE("Serialize", "[potato][reflex]") {
     using namespace up;
