@@ -4,7 +4,6 @@
 
 #include "traits.h"
 
-#include <array>
 #include <cstddef>
 
 namespace up {
@@ -20,10 +19,6 @@ namespace up {
     span(T*, std::size_t) -> span<T>;
     template <typename T, std::size_t N>
     span(T (&src)[N]) -> span<T>;
-    template <typename T, std::size_t N>
-    span(std::array<T, N>&) -> span<T>;
-    template <typename T, std::size_t N>
-    span(std::array<T, N> const&) -> span<T const>;
 
     template <typename T>
     class vector;

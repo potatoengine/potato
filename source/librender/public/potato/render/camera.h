@@ -7,7 +7,7 @@
 #include "potato/spud/box.h"
 #include "potato/spud/rc.h"
 
-#include <glm/mat4x4.hpp>
+#include <glm/fwd.hpp>
 
 namespace up {
     class GpuBuffer;

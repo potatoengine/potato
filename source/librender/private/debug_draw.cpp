@@ -3,30 +3,29 @@
 #include "debug_draw.h"
 #include "gpu_buffer.h"
 #include "gpu_command_list.h"
-#include "gpu_device.h"
 #include "gpu_pipeline_state.h"
 
 #include "potato/spud/vector.h"
 
 #include <mutex>
 
-static std::mutex debugLock;
-static up::vector<up::DebugDrawVertex> debugVertices;
+static std::mutex debugLock; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+static up::vector<up::DebugDrawVertex> debugVertices; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-static void UP_VECTORCALL _drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color, float lingerSeconds = 0) {
+static void UP_VECTORCALL drawDebugLineHelper(glm::vec3 start, glm::vec3 end, glm::vec4 color, float lingerSeconds = 0) {
     debugVertices.push_back({start, color, lingerSeconds});
     debugVertices.push_back({end, color, lingerSeconds});
 }
 
 static void UP_VECTORCALL
-_drawDebugRay(glm::vec3 start, glm::vec3 direction, float length, glm::vec4 color, float lingerSeconds = 0) {
+drawDebugRayHelper(glm::vec3 start, glm::vec3 direction, float length, glm::vec4 color, float lingerSeconds = 0) {
     debugVertices.push_back({start, color, lingerSeconds});
     debugVertices.push_back({start + direction * length, color, lingerSeconds});
 }
 
 void UP_VECTORCALL up::drawDebugLine(glm::vec3 start, glm::vec3 end, glm::vec4 color, float lingerSeconds) {
     std::unique_lock _(debugLock);
-    _drawDebugLine(start, end, color, lingerSeconds);
+    drawDebugLineHelper(start, end, color, lingerSeconds);
 }
 
 void UP_VECTORCALL up::drawDebugGrid(DebugDrawGrid const& grid) {
@@ -39,10 +38,10 @@ void UP_VECTORCALL up::drawDebugGrid(DebugDrawGrid const& grid) {
     for (int i = 0; i <= grid.halfWidth; i += grid.spacing) {
         auto const color = i % grid.guidelineSpacing != 0 ? grid.lineColor : grid.guidelineColor;
         auto const f = static_cast<float>(i);
-        _drawDebugRay(start1 + grid.axis2 * f, grid.axis1, width, color);
-        _drawDebugRay(start1 - grid.axis2 * f, grid.axis1, width, color);
-        _drawDebugRay(start2 + grid.axis1 * f, grid.axis2, width, color);
-        _drawDebugRay(start2 - grid.axis1 * f, grid.axis2, width, color);
+        drawDebugRayHelper(start1 + grid.axis2 * f, grid.axis1, width, color);
+        drawDebugRayHelper(start1 - grid.axis2 * f, grid.axis1, width, color);
+        drawDebugRayHelper(start2 + grid.axis1 * f, grid.axis2, width, color);
+        drawDebugRayHelper(start2 - grid.axis1 * f, grid.axis2, width, color);
     }
 }
 
