@@ -9,7 +9,7 @@
 #include <fstream>
 #include <thread>
 
-static up::Logger dmonLogger("DirectoryWatcher");
+static up::Logger dmonLogger("DirectoryWatcher"); // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 #define DMON_ASSERT(e) UP_ASSERT(e)
 #define DMON_LOG_ERROR(s) ::dmonLogger.error((s))
@@ -360,8 +360,8 @@ namespace {
         up::string _directory;
         up::fs::WatchCallback _callback;
 
-        static inline std::mutex _dmonInitLock;
-        static inline size_t _dmonInitCount = 0;
+        static inline std::mutex _dmonInitLock; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+        static inline size_t _dmonInitCount = 0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
     };
 } // namespace
 
