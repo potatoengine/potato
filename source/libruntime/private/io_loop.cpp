@@ -322,7 +322,9 @@ bool up::IOLoop::run(IORun run) {
     UP_ASSERT(_state != nullptr);
     return uv_run(
                &_state->loop,
-               run == IORun::Poll ? UV_RUN_NOWAIT : run == IORun::WaitOne ? UV_RUN_ONCE : UV_RUN_DEFAULT) != 0;
+               run == IORun::Poll          ? UV_RUN_NOWAIT
+                   : run == IORun::WaitOne ? UV_RUN_ONCE
+                                           : UV_RUN_DEFAULT) != 0;
 }
 
 void up::IOLoop::stop() noexcept {
