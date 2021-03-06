@@ -31,7 +31,7 @@ namespace up {
 
     protected:
         ReconProtocol() = default;
-        virtual ~ReconProtocol() = default;
+        ~ReconProtocol() = default;
 
         virtual IOStream& sink() = 0;
 
