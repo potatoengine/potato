@@ -2,19 +2,20 @@
 
 #pragma once
 
-#include "_export.h"
-
 #include "potato/runtime/logger.h"
 
 namespace up::recon {
+    class ReconServer;
+
     class ReconProtocolLogSink : public LogSink {
     public:
+        explicit ReconProtocolLogSink(ReconServer& server) : _server(server) {}
         ~ReconProtocolLogSink() override = default;
 
-        UP_RECON_API void log(
-            string_view loggerName,
-            LogSeverity severity,
-            string_view message,
-            LogLocation location = {}) noexcept override;
+        void log(string_view loggerName, LogSeverity severity, string_view message, LogLocation location = {}) noexcept
+            override;
+
+    private:
+        ReconServer& _server;
     };
 } // namespace up::recon

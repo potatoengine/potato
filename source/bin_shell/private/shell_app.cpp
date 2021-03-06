@@ -73,6 +73,9 @@ up::shell::ShellApp::~ShellApp() {
     _window.reset();
 
     _device.reset();
+
+    _reconClient.stop();
+    _ioLoop.reset();
 }
 
 int up::shell::ShellApp::initialize() {
@@ -336,9 +339,10 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _openEditor(AssetBrowser::editorName);
     _updateTitle();
 
-    if (!_reconClient.start(*_project)) {
+    if (!_reconClient.start(_ioLoop, _project->projectFilePath())) {
         _logger.error("Failed to start recon");
     }
+    _reconClient.on<ReconManifestMessage>([this](auto const&) { _loadManifest(); });
 
     return true;
 }
@@ -385,6 +389,11 @@ void up::shell::ShellApp::run() {
 
         imguiIO.DeltaTime = _lastFrameTime;
 
+        {
+            ZoneScopedN("I/O");
+            _ioLoop.run(IORun::Poll);
+        }
+
         if (!_actions.refresh(hotKeyRevision)) {
             ZoneScopedN("Rebuild Actions");
             _hotKeys.clear();
@@ -404,10 +413,6 @@ void up::shell::ShellApp::run() {
                     path::join(fs::currentWorkingDirectory(), "..", "..", "..", "..", "resources"))) {
                 continue;
             }
-        }
-
-        if (_reconClient.hasUpdatedAssets()) {
-            _loadManifest();
         }
 
         SDL_GetWindowSize(_window.get(), &width, &height);
@@ -690,7 +695,7 @@ void up::shell::ShellApp::_createGame(rc<Scene> scene) {
 void up::shell::ShellApp::_executeRecon() {
     schema::ReconImportAllMessage msg;
     msg.force = true;
-    _reconClient.sendMessage(msg);
+    _reconClient.send<ReconImportAllMessage>({});
 
     _loadManifest();
 }

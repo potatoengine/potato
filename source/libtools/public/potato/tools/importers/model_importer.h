@@ -11,7 +11,6 @@ namespace up {
         ~ModelImporter() override;
 
         bool import(ImporterContext& ctx) override;
-        string_view generateSettings(ImporterContext& ctd) const override { return {}; }
 
         string_view name() const noexcept override { return "model"; }
         uint64 revision() const noexcept override { return 5; }

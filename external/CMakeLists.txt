@@ -17,9 +17,8 @@ set(EXTERNALS
     nfd
     sapc
     sqlite
-    dmon
-    reproc
     tracy
+    libuv
 )
 
 # ---------------------------- #

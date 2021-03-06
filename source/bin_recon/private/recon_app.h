@@ -6,9 +6,11 @@
 #include "file_hash_cache.h"
 #include "recon_config.h"
 
+#include "potato/recon/recon_server.h"
 #include "potato/tools/importer.h"
 #include "potato/tools/importer_factory.h"
 #include "potato/tools/project.h"
+#include "potato/runtime/io_loop.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/box.h"
 #include "potato/spud/delegate.h"
@@ -18,9 +20,11 @@
 #include "potato/spud/vector.h"
 #include "potato/spud/zstring_view.h"
 
-#include <unordered_set>
-
 namespace up::recon {
+    class ReconQueue;
+
+    enum class ReconImportResult { NotFound, UnknownType, UpToDate, Failed, Imported };
+
     class ReconApp {
     public:
         ReconApp();
@@ -32,11 +36,9 @@ namespace up::recon {
         bool run(span<char const*> args);
 
     private:
-        using FileSet = std::unordered_set<string, uhash<>>;
-
         struct Mapping {
             delegate<bool(string_view) const> predicate;
-            Importer* conveter = nullptr;
+            Importer* importer = nullptr;
             box<ImporterConfig> config;
         };
 
@@ -45,35 +47,36 @@ namespace up::recon {
         bool _runOnce();
         bool _runServer();
 
-        bool _updateAll(bool force = false);
+        void _collectSourceFiles(ReconQueue& queue, bool forceUpdate = false);
+        void _collectMissingFiles(ReconQueue& queue);
 
-        auto _collectSourceFiles() -> FileSet;
-        auto _collectMissingFiles() -> FileSet;
-
-        bool _importFile(zstring_view file, bool force = false);
+        ReconImportResult _importFile(zstring_view file, bool force = false);
         bool _forgetFile(zstring_view file);
+
+        bool _processQueue(ReconQueue& queue);
 
         bool _writeManifest();
 
-        bool _isUpToDate(AssetDatabase::Imported const& record, uint64 contentHash, Importer const& importer)
-            const noexcept;
-        bool _isUpToDate(span<AssetDatabase::Dependency const> records);
+        bool _isUpToDate(zstring_view assetPath, uint64 contentHash);
 
         string _makeMetaFilename(zstring_view basePath, bool directory);
-        bool _checkMetafile(ImporterContext& ctx, zstring_view metaPath, bool autoCreate = true);
 
-        auto _findConverterMapping(string_view path) const -> Mapping const*;
+        auto _findConverterMapping(string_view path, bool isFolder) const -> Mapping const*;
 
         box<Project> _project;
         string_view _programName;
         string _temporaryOutputPath;
         string _manifestPath;
         vector<Mapping> _importers;
+        Mapping _folderImporter;
         vector<string> _outputs;
         ReconConfig _config;
         AssetDatabase _library;
         FileHashCache _hashes;
         Logger _logger;
+        IOLoop _loop;
+        ReconServer _server;
         ImporterFactory _importerFactory;
+        bool _manifestDirty = false;
     };
 } // namespace up::recon

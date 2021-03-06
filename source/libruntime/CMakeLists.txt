@@ -31,20 +31,23 @@ target_sources(potato_libruntime PRIVATE
 
     # General runtime code
     #
+    "private/asset_loader.cpp"
+    "private/filesystem.cpp"
+    "private/io_loop.cpp"
+    "private/resource_manifest.cpp"
+    "public/potato/runtime/asset.h"
+    "public/potato/runtime/asset_loader.h"
+    "public/potato/runtime/io_loop.h"
+    "public/potato/runtime/resource_manifest.h"
     private/debug.cpp
     private/json.cpp
     private/logger.cpp
     private/path.cpp
-    "private/filesystem.cpp"
     private/stream.cpp
     private/task_worker.cpp
     private/thread_util.cpp
     private/uuid.cpp
-    "public/potato/runtime/asset_loader.h"
-    "public/potato/runtime/resource_manifest.h"
-    "private/asset_loader.cpp"
-    "private/resource_manifest.cpp"
- "public/potato/runtime/asset.h")
+ )
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libruntime)
@@ -75,7 +78,7 @@ target_link_libraries(potato_libruntime
         nlohmann_json::nlohmann_json
         tracy
     PRIVATE
-        dmon
+        uv
 )
 
 target_compile_definitions(potato_libruntime

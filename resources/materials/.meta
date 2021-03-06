@@ -1,5 +1,8 @@
 {
   "$type": "potato.asset.meta",
   "$version": 1,
-  "id": "e3671cbe-d247-6643-843f-d44fc66104cc"
+  "id": "e3671cbe-d247-6643-843f-d44fc66104cc",
+  "importer": {
+    "name": "folder"
+  }
 }

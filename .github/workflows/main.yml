@@ -81,7 +81,7 @@ jobs:
       - name: Apt update
         run: sudo apt-get -yq update
       - name: Install libraries
-        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev libuv1-dev
       - name: Install toolchain
         run: sudo apt-get -yq install cmake ${{ matrix.packages }}
       - uses: actions/checkout@master
@@ -134,7 +134,7 @@ jobs:
           sudo apt-get remove libllvm10
           sudo apt-get -yq install cmake clang++-11 clang-tidy-11 libc++-11-dev libc++abi-11-dev
       - name: Install libraries
-        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev libuv1-dev
       - uses: actions/checkout@master
         with:
           lfs: true
@@ -163,7 +163,7 @@ jobs:
       - name: Install Doxygen
         run: sudo apt-get -yq install doxygen
       - name: Install libraries
-        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev libuv1-dev
       - name: Install toolchain
         run: sudo apt-get -yq install cmake g++-10 gcc-10 libstdc++-10-dev
       - uses: actions/checkout@master

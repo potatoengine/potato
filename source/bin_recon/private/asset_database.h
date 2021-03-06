@@ -19,31 +19,19 @@ namespace up {
     class AssetDatabase {
     public:
         struct Dependency {
-            string path;
+            zstring_view path;
             uint64 contentHash = 0;
         };
 
         struct Output {
-            string name;
-            string type;
+            zstring_view name;
+            zstring_view type;
             AssetId logicalAssetId = AssetId::Invalid;
             uint64 contentHash = 0;
         };
 
-        struct Imported {
-            UUID uuid;
-            string sourcePath;
-            string importerName;
-            string assetType;
-            uint64 importerRevision = 0;
-            uint64 sourceContentHash = 0;
-
-            vector<Dependency> dependencies;
-            vector<Output> outputs;
-        };
-
         static constexpr zstring_view typeName = "potato.asset.library"_zsv;
-        static constexpr int version = 15;
+        static constexpr int version = 16;
 
         AssetDatabase() = default;
         ~AssetDatabase();
@@ -51,32 +39,54 @@ namespace up {
         AssetDatabase(AssetDatabase const&) = delete;
         AssetDatabase& operator=(AssetDatabase const&) = delete;
 
-        auto pathToUuid(string_view path) const noexcept -> UUID;
-        auto uuidToPath(UUID const& uuid) const noexcept -> string_view;
+        auto pathToUuid(string_view path) noexcept -> UUID;
+        auto uuidToPath(UUID const& uuid) noexcept -> string;
 
         static AssetId createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept;
 
-        Imported const* findRecordByUuid(UUID const& uuid) const noexcept;
-        Imported const* findRecordByFilename(zstring_view filename) const noexcept;
-        generator<zstring_view> collectAssetPathsByFolder(zstring_view folder) const;
-        generator<zstring_view> collectAssetPaths() const;
+        generator<zstring_view const> collectAssetPathsByFolder(zstring_view folder);
+        generator<zstring_view const> collectAssetPaths();
 
-        bool insertRecord(Imported record);
-        bool deleteRecordByUuid(UUID const& uuid);
+        generator<Dependency const> assetDependencies(UUID const& uuid);
+        generator<Output const> assetOutputs(UUID const& uuid);
+
+        void createAsset(UUID const& uuid, string_view sourcePath, uint64 sourceHash);
+        bool deleteAsset(UUID const& uuid);
+
+        bool checkAssetUpToDate(UUID const& uuid, string_view importerName, uint64 importerVersion, uint64 sourceHash);
+
+        void updateAssetPre(UUID const& uuid, string_view importerName, string_view assetType, uint64 importerVersion);
+        void addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash);
+        void addOutput(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash);
+        void updateAssetPost(UUID const& uuid, bool success);
 
         bool open(zstring_view filename);
         bool close();
 
-        void generateManifest(erased_writer writer) const;
+        void generateManifest(erased_writer writer);
+
+        template <typename Fn>
+        void transact(Fn&& fn) {
+            auto tx = _db.begin();
+            fn(*this, tx);
+            tx.commit();
+        }
 
     private:
         struct HashAssetId {
             constexpr uint64 operator()(AssetId assetId) const noexcept { return static_cast<uint64>(assetId); }
         };
 
-        vector<Imported> _records;
         Database _db;
+        Statement _queryAssetsStmt;
+        Statement _queryAssetUpToDateStmt;
+        Statement _queryDependenciesStmt;
+        Statement _queryOutputsStmt;
+        Statement _queryUuidBySourcePathStmt;
+        Statement _querySourcePathByUuuidStmt;
         Statement _insertAssetStmt;
+        Statement _updateAssetPreStmt;
+        Statement _updateAssetPostStmt;
         Statement _insertOutputStmt;
         Statement _insertDependencyStmt;
         Statement _deleteAssetStmt;

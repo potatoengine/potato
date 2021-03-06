@@ -4,6 +4,7 @@
 
 #include "_export.h"
 
+#include "potato/runtime/uuid.h"
 #include "potato/spud/concepts.h"
 #include "potato/spud/typelist.h"
 #include "potato/spud/zstring_view.h"
@@ -81,11 +82,14 @@ namespace up {
             inline ~QueryResult() noexcept;
 
             using value_type = std::tuple<T...>;
+            using size_type = std::size_t;
             using iterator = QueryResultIterator<T...>;
             using sentinel = QueryResultSentinel;
 
             iterator begin() noexcept { return iterator(_stmt); }
             sentinel end() noexcept { return sentinel{}; }
+
+            inline size_type size() const noexcept;
 
         private:
             explicit QueryResult(Statement& stmt) : _stmt(stmt) {}
@@ -119,19 +123,26 @@ namespace up {
                 return _execute();
             }
 
-            template <typename... R>
-            [[nodiscard]] QueryResult<R...> query() noexcept {
+            template <typename... R, typename... T>
+            [[nodiscard]] QueryResult<R...> query(T const&... args) noexcept {
                 _begin();
+                if constexpr (sizeof...(T) != 0) {
+                    _bind(std::make_integer_sequence<int, sizeof...(args)>{}, args...);
+                }
                 _query();
                 return QueryResult<R...>{*this};
             }
 
             template <typename... R, typename... T>
-            [[nodiscard]] QueryResult<R...> query(T const&... args) noexcept {
+            [[nodiscard]] auto queryOne(T const&... args) noexcept {
                 _begin();
-                _bind(std::make_integer_sequence<int, sizeof...(args)>{}, args...);
+                if constexpr (sizeof...(T) != 0) {
+                    _bind(std::make_integer_sequence<int, sizeof...(args)>{}, args...);
+                }
                 _query();
-                return QueryResult<R...>{*this};
+                auto result = _columns<R...>();
+                _finalize();
+                return result;
             }
 
         private:
@@ -140,6 +151,7 @@ namespace up {
             UP_POSQL_API void _query() noexcept;
             UP_POSQL_API bool _done() noexcept;
             UP_POSQL_API void _next() noexcept;
+            UP_POSQL_API std::size_t _rows() noexcept;
             UP_POSQL_API void _finalize() noexcept;
 
             template <int... I, typename... T>
@@ -149,6 +161,7 @@ namespace up {
 
             UP_POSQL_API void _bind(int index, int64 value) noexcept;
             UP_POSQL_API void _bind(int index, string_view value) noexcept;
+            UP_POSQL_API void _bind(int index, UUID const& value) noexcept;
             template <enumeration E>
             void _bind(int index, E value) noexcept {
                 _bind(index, to_underlying(value));
@@ -166,14 +179,17 @@ namespace up {
 
             template <typename T>
             auto _column(int index) {
-                if constexpr (std::is_constructible_v<T, char const*>) {
-                    return _column_string(index);
+                if constexpr (std::is_same_v<T, UUID>) {
+                    return UUID::fromString(_column_string(index));
                 }
                 else if constexpr (std::is_constructible_v<T, int64>) {
                     return _column_int64(index);
                 }
                 else if constexpr (std::is_enum_v<T>) {
                     return T(_column_int64(index));
+                }
+                else if constexpr (std::is_constructible_v<T, zstring_view>) {
+                    return _column_string(index);
                 }
             }
 

@@ -5,13 +5,12 @@
 #include "importer.h"
 
 namespace up {
-    class IgnoreImporter : public Importer {
+    class FolderImporter : public Importer {
     public:
-        IgnoreImporter() = default;
-
         bool import(ImporterContext& ctx) override { return true; }
+        string_view assetType(ImporterContext& ctx) const noexcept override { return "potato.folder"_sv; }
 
-        string_view name() const noexcept override { return "ignore"; }
+        string_view name() const noexcept override { return "folder"; }
         uint64 revision() const noexcept override { return 0; }
     };
 } // namespace up

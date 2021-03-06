@@ -3,6 +3,7 @@
 #include "importer_factory.h"
 #include "importer_configs_schema.h"
 #include "importers/copy_importer.h"
+#include "importers/folder_importer.h"
 #include "importers/hlsl_importer.h"
 #include "importers/ignore_importer.h"
 #include "importers/json_importer.h"
@@ -33,6 +34,7 @@ void up::ImporterFactory::registerImporter(box<Importer> importer) {
 }
 
 void up::ImporterFactory::registerDefaultImporters() {
+    registerImporter(new_box<FolderImporter>());
     registerImporter(new_box<CopyImporter>());
     registerImporter(new_box<HlslImporter>());
     registerImporter(new_box<IgnoreImporter>());

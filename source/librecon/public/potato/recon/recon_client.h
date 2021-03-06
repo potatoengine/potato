@@ -3,46 +3,26 @@
 #pragma once
 
 #include "_export.h"
-#include "recon_messages_schema.h"
+#include "recon_protocol.h"
 
-#include <reproc++/reproc.hpp>
-#include <atomic>
-#include <thread>
-
-namespace up::reflex {
-    struct Schema;
-    template <typename T>
-    Schema const& getSchema();
-} // namespace up::reflex
+#include "potato/runtime/io_loop.h"
 
 namespace up {
     class Project;
 
-    class ReconClient {
+    class ReconClient : public ReconProtocol {
     public:
+        UP_RECON_API ReconClient();
         ~ReconClient() { stop(); }
 
-        bool UP_RECON_API start(Project& project);
+        bool UP_RECON_API start(IOLoop& loop, zstring_view projectPath);
         void UP_RECON_API stop();
 
-        bool UP_RECON_API hasUpdatedAssets() noexcept;
-
-        template <typename MessageT>
-        bool sendMessage(MessageT const& msg) {
-            return _sendRaw(reflex::getSchema<MessageT>(), &msg);
-        }
-
     private:
-        struct ReprocSink;
+        IOStream& sink() override { return _sink; }
 
-        bool UP_RECON_API _sendRaw(reflex::Schema const& schema, void const* object);
-        void _handle(schema::ReconLogMessage const& msg);
-        void _handle(schema::ReconManifestMessage const& msg);
-
-        reproc::process _process;
-        std::thread _thread;
-        std::atomic_bool _staleAssets = false;
-
-        friend ReprocSink;
+        IOProcess _process;
+        IOStream _sink;
+        IOStream _source;
     };
 } // namespace up

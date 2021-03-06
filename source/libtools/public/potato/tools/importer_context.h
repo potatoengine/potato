@@ -28,13 +28,16 @@ namespace up {
         };
 
         UP_TOOLS_API ImporterContext(
+            UUID const& uuid,
             zstring_view sourceFilePath,
             zstring_view sourceFolderPath,
             zstring_view destinationFolderPath,
             Importer const* importer,
             ImporterConfig const& config,
+            vector<string>& dependencies,
+            vector<Output>& outputs,
             Logger& logger);
-        UP_TOOLS_API ~ImporterContext();
+        ~ImporterContext() = default;
 
         ImporterContext(ImporterContext&&) = delete;
         ImporterContext& operator=(ImporterContext&&) = delete;
@@ -48,13 +51,7 @@ namespace up {
         void addMainOutput(string path, string type);
 
         Importer const* importer() const noexcept { return _importer; }
-
-        view<string> sourceDependencies() const noexcept { return _sourceDependencies; }
-        view<Output> outputs() const noexcept { return _outputs; }
-
         UUID const& uuid() const noexcept { return _uuid; }
-        void setUuid(UUID const& uuid) noexcept { _uuid = uuid; }
-
         Logger& logger() noexcept { return _logger; }
 
         UP_TOOLS_API ImporterConfig const& config() const noexcept;
@@ -71,8 +68,8 @@ namespace up {
         zstring_view _destinationFolderPath;
         UUID _uuid;
 
-        vector<string> _sourceDependencies;
-        vector<Output> _outputs;
+        vector<string>& _sourceDependencies;
+        vector<Output>& _outputs;
 
         Logger& _logger;
     };

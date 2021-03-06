@@ -18,7 +18,7 @@ namespace up {
     constexpr auto begin(Range& rng) noexcept(noexcept(rng.begin())) {
         return rng.begin();
     }
-    template <class T, std::size_t N>
+    template <typename T, std::size_t N>
     constexpr T* begin(T (&array)[N]) noexcept {
         return array;
     }
@@ -31,10 +31,14 @@ namespace up {
     constexpr auto end(Range& rng) noexcept(noexcept(rng.end())) {
         return rng.end();
     }
-    template <class T, std::size_t N>
+    template <typename T, std::size_t N>
     constexpr T* end(T (&array)[N]) noexcept {
         return array + N;
     }
+
+    using std::forward;
+    using std::move;
+    using std::swap;
 
     struct identity {
         template <typename T>

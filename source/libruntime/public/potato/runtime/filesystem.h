@@ -33,31 +33,11 @@ namespace up::fs {
 
     enum class FileType { Regular, Directory, SymbolicLink, Other };
 
-    enum class WatchAction { Create, Delete, Rename, Modify };
-
     struct Stat {
         size_t size = 0;
         uint64 mtime = 0;
         FileType type = FileType::Regular;
     };
-
-    struct Watch {
-        WatchAction action = WatchAction::Modify;
-        zstring_view path;
-        zstring_view renamedFromPath;
-    };
-
-    class WatchHandle : public shared<WatchHandle> {
-    public:
-        virtual ~WatchHandle() = default;
-
-        virtual bool isOpen() const noexcept = 0;
-        virtual void close() = 0;
-
-    protected:
-        WatchHandle();
-    };
-    using WatchCallback = up::delegate<void(Watch const& watch)>;
 
     struct EnumerateItem {
         zstring_view path;
@@ -93,7 +73,4 @@ namespace up::fs {
     [[nodiscard]] UP_RUNTIME_API auto readText(zstring_view path) -> IOReturn<string>;
 
     [[nodiscard]] UP_RUNTIME_API auto writeAllText(zstring_view path, string_view text) -> IOResult;
-
-    [[nodiscard]] UP_RUNTIME_API auto watchDirectory(zstring_view path, WatchCallback callback)
-        -> IOReturn<rc<WatchHandle>>;
 } // namespace up::fs

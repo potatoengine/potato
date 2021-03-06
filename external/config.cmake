@@ -44,11 +44,11 @@ FetchContent_Declare(sapc
     GIT_REPOSITORY https://github.com/potatoengine/sapc.git
     GIT_TAG v0.10-beta
 )
-FetchContent_Declare(reproc
-    GIT_REPOSITORY https://github.com/DaanDeMeyer/reproc.git
-    GIT_TAG v14.2.1
-)
 FetchContent_Declare(tracy
     GIT_REPOSITORY https://github.com/wolfpld/tracy.git
     GIT_TAG v0.7.4
+)
+FetchContent_Declare(libuv
+    GIT_REPOSITORY https://github.com/libuv/libuv.git
+    GIT_TAG v1.41.0
 )
