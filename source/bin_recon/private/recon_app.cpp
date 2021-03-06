@@ -299,6 +299,10 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
     Importer* const importer = mapping->importer;
 
     auto const contentHash = isFolder ? 0 : _hashes.hashAssetAtPath(osPath.c_str());
+
+    for (zstring_view dependent : _library.collectAssetsDirtiedBy(file, contentHash)) {
+        _queue.enqueImport(string{dependent});
+    }
     bool dirty = !_library.checkAssetUpToDate(metaFile.uuid, importer->name(), importer->revision(), contentHash);
 
     _library.createAsset(metaFile.uuid, file, contentHash);

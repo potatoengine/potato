@@ -46,6 +46,7 @@ namespace up {
 
         generator<zstring_view const> collectAssetPathsByFolder(zstring_view folder);
         generator<zstring_view const> collectAssetPaths();
+        generator<zstring_view const> collectAssetsDirtiedBy(zstring_view dependencyPath, uint64 dependencyHash);
 
         generator<Dependency const> assetDependencies(UUID const& uuid);
         generator<Output const> assetOutputs(UUID const& uuid);
@@ -80,6 +81,7 @@ namespace up {
         Database _db;
         Statement _queryAssetsStmt;
         Statement _queryAssetUpToDateStmt;
+        Statement _queryAssetsDirtiedByStmt;
         Statement _queryDependenciesStmt;
         Statement _queryOutputsStmt;
         Statement _queryUuidBySourcePathStmt;

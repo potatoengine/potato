@@ -44,6 +44,13 @@ auto up::AssetDatabase::collectAssetPaths() -> generator<zstring_view const> {
     }
 }
 
+auto up::AssetDatabase::collectAssetsDirtiedBy(zstring_view dependencyPath, uint64 dependencyHash)
+    -> generator<zstring_view const> {
+    for (auto const& [sourcePath] : _queryAssetsDirtiedByStmt.query<zstring_view>(dependencyPath, dependencyHash)) {
+        co_yield sourcePath;
+    }
+}
+
 auto up::AssetDatabase::assetDependencies(UUID const& uuid) -> generator<Dependency const> {
     for (auto const& [path, hash] : _queryDependenciesStmt.query<zstring_view, uint64>(uuid)) {
         co_yield Dependency{.path = string{path}, .contentHash = hash};
@@ -168,6 +175,9 @@ bool up::AssetDatabase::open(zstring_view filename) {
     _queryAssetUpToDateStmt = _db.prepare(
         "SELECT (source_hash=? AND importer_name=? AND importer_revision=? AND status='IMPORTED') AS up_to_date FROM "
         "assets WHERE uuid=?");
+    _queryAssetsDirtiedByStmt = _db.prepare(
+        "SELECT source_path FROM assets INNER JOIN dependencies ON assets.uuid=dependencies.uuid WHERE "
+        "dependencies.db_path=? AND dependencies.hash<>?");
     _queryDependenciesStmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE uuid=?");
     _queryOutputsStmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE uuid=?");
     _queryUuidBySourcePathStmt = _db.prepare("SELECT uuid FROM assets WHERE source_path=?");
