@@ -328,7 +328,6 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
 
     if (!dirty && !force) {
         _logger.info("{}: up-to-date", importedName);
-        _library.updateAssetPost(metaFile.uuid, true);
         return ReconImportResult::UpToDate;
     }
 

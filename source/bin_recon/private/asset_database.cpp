@@ -166,7 +166,8 @@ bool up::AssetDatabase::open(zstring_view filename) {
     _queryAssetsStmt =
         _db.prepare("SELECT uuid, source_path, source_hash, asset_type, importer_name, importer_revision FROM assets");
     _queryAssetUpToDateStmt = _db.prepare(
-        "SELECT (source_hash=? AND importer_name=? AND importer_revision=?) AS up_to_date FROM assets WHERE uuid=?");
+        "SELECT (source_hash=? AND importer_name=? AND importer_revision=? AND status='IMPORTED') AS up_to_date FROM "
+        "assets WHERE uuid=?");
     _queryDependenciesStmt = _db.prepare("SELECT db_path, hash FROM dependencies WHERE uuid=?");
     _queryOutputsStmt = _db.prepare("SELECT output_id, name, type, hash FROM outputs WHERE uuid=?");
     _queryUuidBySourcePathStmt = _db.prepare("SELECT uuid FROM assets WHERE source_path=?");
