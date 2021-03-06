@@ -36,11 +36,11 @@ namespace up::recon {
 
         void enqueTerminate() { _enque({.type = Type::Terminate}); }
 
-        void wait();
-        bool tryDeque(Command& command);
+        inline void wait();
+        inline bool tryDeque(Command& command);
 
     private:
-        void _enque(Command&& command);
+        inline void _enque(Command&& command);
 
         std::mutex _mutex;
         std::condition_variable _signal;

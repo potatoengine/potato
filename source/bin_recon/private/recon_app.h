@@ -5,6 +5,7 @@
 #include "asset_database.h"
 #include "file_hash_cache.h"
 #include "recon_config.h"
+#include "recon_queue.h"
 
 #include "potato/recon/recon_server.h"
 #include "potato/tools/importer.h"
@@ -21,8 +22,6 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up::recon {
-    class ReconQueue;
-
     enum class ReconImportResult { NotFound, UnknownType, UpToDate, Failed, Imported };
 
     class ReconApp {
@@ -47,13 +46,13 @@ namespace up::recon {
         bool _runOnce();
         bool _runServer();
 
-        void _collectSourceFiles(ReconQueue& queue, bool forceUpdate = false);
-        void _collectMissingFiles(ReconQueue& queue);
+        void _collectSourceFiles(bool forceUpdate = false);
+        void _collectMissingFiles();
 
         ReconImportResult _importFile(zstring_view file, bool force = false);
         bool _forgetFile(zstring_view file);
 
-        bool _processQueue(ReconQueue& queue);
+        bool _processQueue();
 
         bool _writeManifest();
 
@@ -76,6 +75,7 @@ namespace up::recon {
         Logger _logger;
         IOLoop _loop;
         ReconServer _server;
+        ReconQueue _queue;
         ImporterFactory _importerFactory;
         bool _manifestDirty = false;
     };
