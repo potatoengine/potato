@@ -47,8 +47,9 @@ auto up::AssetDatabase::collectAssetPaths() -> generator<zstring_view const> {
 auto up::AssetDatabase::collectAssetsDirtiedBy(zstring_view dependencyPath, uint64 dependencyHash)
     -> generator<zstring_view const> {
     for (auto const& [sourcePath] : _db.query<zstring_view>(
-             "SELECT source_path FROM assets INNER JOIN dependencies ON assets.uuid=dependencies.uuid WHERE "
-             "dependencies.db_path=? AND dependencies.hash<>?",
+             "SELECT source_path FROM assets INNER JOIN import_dependencies ON assets.uuid=import_dependencies.uuid "
+             "WHERE "
+             "import_dependencies.path=? AND import_dependencies.hash<>?",
              dependencyPath,
              dependencyHash)) {
         co_yield sourcePath;
@@ -57,7 +58,7 @@ auto up::AssetDatabase::collectAssetsDirtiedBy(zstring_view dependencyPath, uint
 
 auto up::AssetDatabase::assetDependencies(UUID const& uuid) -> generator<Dependency const> {
     for (auto const& [path, hash] :
-         _db.query<zstring_view, uint64>("SELECT db_path, hash FROM dependencies WHERE uuid=?", uuid)) {
+         _db.query<zstring_view, uint64>("SELECT path, hash FROM import_dependencies WHERE uuid=?", uuid)) {
         co_yield Dependency{.path = string{path}, .contentHash = hash};
     }
 }
@@ -125,8 +126,8 @@ void up::AssetDatabase::updateAssetPost(UUID const& uuid, bool success) {
     [[maybe_unused]] auto rc =
         _db.execute("UPDATE assets SET status=? WHERE uuid=?", success ? "IMPORTED"_sv : "FAILED"_sv, uuid);
     UP_ASSERT(rc == SqlResult::Ok);
-    (void)_db.execute("DELETE FROM outputs WHERE uuid=?", uuid);
-    (void)_db.execute("DELETE FROM dependencies WHERE uuid=?", uuid);
+    (void)_db.execute("DELETE FROM compiled WHERE uuid=?", uuid);
+    (void)_db.execute("DELETE FROM import_dependencies WHERE uuid=?", uuid);
 }
 
 bool up::AssetDatabase::deleteAsset(UUID const& uuid) {
@@ -135,14 +136,15 @@ bool up::AssetDatabase::deleteAsset(UUID const& uuid) {
 }
 
 void up::AssetDatabase::addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash) {
-    (void)_db.execute("INSERT INTO dependencies (uuid, db_path, hash) VALUES(?, ?, ?)", uuid, outputPath, outputHash);
+    (void)
+        _db.execute("INSERT INTO import_dependencies (uuid, path, hash) VALUES(?, ?, ?)", uuid, outputPath, outputHash);
 }
 
 void up::AssetDatabase::addOutput(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash) {
     (void)_db.execute(
-        "INSERT INTO outputs (uuid, output_id, name, type, hash) VALUES(?, ?, ?, ?, ?)",
-        uuid,
+        "INSERT INTO compiled (id, uuid, name, type, hash) VALUES(?, ?, ?, ?, ?)",
         createLogicalAssetId(uuid, name),
+        uuid,
         name,
         assetType,
         outputHash);
@@ -165,9 +167,11 @@ bool up::AssetDatabase::open(zstring_view filename) {
             dbVersion = versionResult;
         }
         if (dbVersion != version) {
-            (void)_db.execute("DROP TABLE assets");
-            (void)_db.execute("DROP TABLE dependencies");
-            (void)_db.execute("DROP TABLE outputs");
+            (void)_db.execute("DROP TABLE IF EXISTS assets");
+            (void)_db.execute("DROP TABLE IF EXISTS dependencies");
+            (void)_db.execute("DROP TABLE IF EXISTS outputs");
+            (void)_db.execute("DROP TABLE IF EXISTS import_dependencies");
+            (void)_db.execute("DROP TABLE IF EXISTS compiled");
             (void)_db.execute("DELETE FROM version");
             auto dbVersionUpdateStmt = _db.prepare("INSERT INTO version (version) VALUES(?)");
             if (dbVersionUpdateStmt.execute(version) != SqlResult::Ok) {
@@ -183,14 +187,15 @@ bool up::AssetDatabase::open(zstring_view filename) {
                     "importer_name TEXT, importer_revision INTEGER)") != SqlResult::Ok) {
         return false;
     }
-    if (_db.execute("CREATE TABLE IF NOT EXISTS outputs "
-                    "(uuid TEXT, output_id INTEGER, name TEXT, type TEXT, hash TEXT, "
+    if (_db.execute("CREATE TABLE IF NOT EXISTS compiled "
+                    "(id INT NOT NULL PRIMARY KEY, uuid TEXT, name TEXT, type TEXT, hash TEXT, "
                     "FOREIGN KEY(uuid) REFERENCES assets(uuid))") != SqlResult::Ok) {
         return false;
     }
-    if (_db.execute("CREATE TABLE IF NOT EXISTS dependencies "
-                    "(uuid TEXT, db_path TEXT, hash TEXT, "
-                    "FOREIGN KEY(uuid) REFERENCES assets(uuid))") != SqlResult::Ok) {
+    if (_db.execute("CREATE TABLE IF NOT EXISTS import_dependencies "
+                    "(uuid TEXT, path TEXT, hash TEXT, "
+                    "FOREIGN KEY(uuid) REFERENCES assets(uuid), "
+                    "UNIQUE(uuid, path))") != SqlResult::Ok) {
         return false;
     }
 
@@ -231,7 +236,7 @@ void up::AssetDatabase::generateManifest(erased_writer writer) {
                                                      "assets")) {
         for (auto const& [logicalId, logicalName, outputType, outputHash] :
              _db.query<AssetId, zstring_view, zstring_view, uint64>(
-                 "SELECT output_id, name, type, hash FROM outputs WHERE uuid=?",
+                 "SELECT id, name, type, hash FROM compiled WHERE uuid=?",
                  uuid)) {
             fullName.clear();
             fullName.append(sourcePath);

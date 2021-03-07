@@ -31,7 +31,7 @@ namespace up {
         };
 
         static constexpr zstring_view typeName = "potato.asset.library"_zsv;
-        static constexpr int version = 16;
+        static constexpr int version = 17;
 
         AssetDatabase() = default;
         ~AssetDatabase();
