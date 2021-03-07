@@ -79,20 +79,5 @@ namespace up {
         };
 
         Database _db;
-        Statement _queryAssetsStmt;
-        Statement _queryAssetUpToDateStmt;
-        Statement _queryAssetsDirtiedByStmt;
-        Statement _queryDependenciesStmt;
-        Statement _queryOutputsStmt;
-        Statement _queryUuidBySourcePathStmt;
-        Statement _querySourcePathByUuuidStmt;
-        Statement _insertAssetStmt;
-        Statement _updateAssetPreStmt;
-        Statement _updateAssetPostStmt;
-        Statement _insertOutputStmt;
-        Statement _insertDependencyStmt;
-        Statement _deleteAssetStmt;
-        Statement _clearOutputsStmt;
-        Statement _clearDependenciesStmt;
     };
 } // namespace up
