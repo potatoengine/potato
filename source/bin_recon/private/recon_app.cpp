@@ -287,9 +287,9 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
     MetaFile metaFile;
     bool metaDirty = false;
 
-    if (!loadMetaFile(metaFile, metaOsPath)) {
+    bool const hasMeta = loadMetaFile(metaFile, metaOsPath);
+    if (!hasMeta) {
         metaFile.generate();
-        metaDirty = true;
     }
 
     Importer* const importer = mapping->importer;
@@ -300,32 +300,33 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         _queue.enqueImport(string{dependent});
     }
 
-    bool dirty = !_library.checkAssetUpToDate(metaFile.uuid, importer->name(), importer->revision(), contentHash);
+    bool const upToDate = _library.checkAssetUpToDate(metaFile.uuid, importer->name(), importer->revision(), contentHash);
 
     _library.createAsset(metaFile.uuid, file, contentHash);
 
-    if (importer->name() != string_view{metaFile.importerName}) {
+    bool const importerChange = importer->name() != metaFile.importerName;
+    if (importerChange) {
         metaFile.importerName = string{importer->name()};
-        metaDirty = true;
-        dirty = true;
     }
 
-    string_view settings = importer->defaultSettings();
-    if (settings != metaFile.importerSettings) {
+    string_view const settings = importer->defaultSettings();
+    bool const importerSettingsChange = settings != metaFile.importerSettings;
+    if (importerSettingsChange) {
         metaFile.importerSettings = string{settings};
-        metaDirty = true;
-        dirty = true;
     }
 
+    bool dependenciesDirty = false;
     for (auto const& dep : _library.assetDependencies(metaFile.uuid)) {
-        if (dirty) {
+        if (!_isUpToDate(dep.path, dep.contentHash)) {
+            dependenciesDirty = true;
             break;
         }
-        dirty = !_isUpToDate(dep.path, dep.contentHash);
     }
 
     string_writer importedName;
     format_append(importedName, "{{{}} {} ({})", metaFile.uuid, file, importer->name());
+
+    bool const dirty = !upToDate || !hasMeta || importerChange || importerSettingsChange || dependenciesDirty;
 
     if (!dirty && !force) {
         _logger.info("{}: up-to-date", importedName);
