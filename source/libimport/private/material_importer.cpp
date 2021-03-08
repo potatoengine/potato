@@ -1,9 +1,12 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "importers/json_importer.h"
-#include "importer_configs_schema.h"
+#include "material_importer.h"
+#include "material_schema.h"
 
+#include "potato/reflex/serialize.h"
+#include "potato/render/material_generated.h"
 #include "potato/runtime/filesystem.h"
+#include "potato/runtime/json.h"
 #include "potato/runtime/logger.h"
 #include "potato/runtime/path.h"
 #include "potato/spud/std_iostream.h"
@@ -11,17 +14,11 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 
-up::JsonImporter::JsonImporter() = default;
+up::MaterialImporter::MaterialImporter() = default;
 
-up::JsonImporter::~JsonImporter() = default;
+up::MaterialImporter::~MaterialImporter() = default;
 
-auto up::JsonImporter::configType() const noexcept -> reflex::TypeInfo const& {
-    return reflex::getTypeInfo<JsonImporterConfig>();
-}
-
-bool up::JsonImporter::import(ImporterContext& ctx) {
-    auto const& config = ctx.config<JsonImporterConfig>();
-
+bool up::MaterialImporter::import(ImporterContext& ctx) {
     auto sourceAbsolutePath = path::join(ctx.sourceFolderPath(), ctx.sourceFilePath());
     auto destAbsolutePath = path::join(ctx.destinationFolderPath(), ctx.sourceFilePath());
 
@@ -48,30 +45,41 @@ bool up::JsonImporter::import(ImporterContext& ctx) {
 
     inFile.close();
 
+    schema::Material material;
+    if (!reflex::decodeFromJson(doc, material)) {
+        ctx.logger().error("Failed to deserialize `{}': {}", sourceAbsolutePath);
+        return false;
+    }
+
+    flatbuffers::FlatBufferBuilder builder;
+
+    flat::AssetId vertexId{static_cast<uint64>(material.shaders.vertex.assetId())};
+    flat::AssetId pixelId{static_cast<uint64>(material.shaders.pixel.assetId())};
+
+    std::vector<flat::AssetId> textures;
+    auto jsonTextures = doc["textures"];
+    for (auto const& handle : material.textures) {
+        textures.emplace_back(flat::AssetId(static_cast<uint64>(handle.assetId())));
+    }
+
+    auto mat = flat::CreateMaterialDirect(builder, flat::CreateMaterialShader(builder, &vertexId, &pixelId), &textures);
+
+    builder.Finish(mat);
+
     std::ofstream outFile(destAbsolutePath.c_str());
     if (!outFile) {
         ctx.logger().error("Failed to open `{}'", destAbsolutePath);
         return false;
     }
 
-    outFile << doc;
-
-    if (!outFile) {
-        ctx.logger().error("Failed to write to `{}'", destAbsolutePath);
-        return false;
-    }
+    outFile.write(reinterpret_cast<char const*>(builder.GetBufferPointer()), builder.GetSize());
 
     outFile.close();
 
     // output has same name as input
-    ctx.addMainOutput(string{ctx.sourceFilePath()}, config.type);
+    ctx.addMainOutput(string{ctx.sourceFilePath()}, "potato.asset.material");
 
-    ctx.logger().info("Minified `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
+    ctx.logger().info("Compiled `{}' to `{}'", sourceAbsolutePath, destAbsolutePath);
 
     return true;
-}
-
-auto up::JsonImporter::assetType(ImporterContext& ctx) const noexcept -> string_view {
-    auto const& config = ctx.config<JsonImporterConfig>();
-    return config.type;
 }

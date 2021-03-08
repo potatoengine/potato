@@ -25,9 +25,10 @@ namespace up {
             string logicalAsset;
             string path;
             string type;
+            uint64 contentHash = 0;
         };
 
-        UP_TOOLS_API ImporterContext(
+        UP_IMPORT_API ImporterContext(
             UUID const& uuid,
             zstring_view sourceFilePath,
             zstring_view sourceFolderPath,
@@ -46,7 +47,7 @@ namespace up {
         auto sourceFolderPath() const noexcept { return _sourceFolderPath; }
         auto destinationFolderPath() const noexcept { return _destinationFolderPath; }
 
-        UP_TOOLS_API void addSourceDependency(zstring_view path);
+        UP_IMPORT_API void addSourceDependency(zstring_view path);
         void addOutput(string logicalAsset, string path, string type);
         void addMainOutput(string path, string type);
 
@@ -54,7 +55,7 @@ namespace up {
         UUID const& uuid() const noexcept { return _uuid; }
         Logger& logger() noexcept { return _logger; }
 
-        UP_TOOLS_API ImporterConfig const& config() const noexcept;
+        UP_IMPORT_API ImporterConfig const& config() const noexcept;
         template <derived_from<ImporterConfig> ImporterConfigT>
         ImporterConfigT const& config() const noexcept {
             return static_cast<ImporterConfigT const&>(config());

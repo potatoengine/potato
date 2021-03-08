@@ -18,6 +18,13 @@ namespace up {
             *_cursor = '\0';
         }
 
+        constexpr fixed_writer(char* buffer, size_t length) noexcept
+            : _buffer(buffer)
+            , _cursor(buffer)
+            , _length(length) {
+            *_cursor = '\0';
+        }
+
         void write(string_view str) noexcept {
             std::size_t const size = _cursor - _buffer;
             std::size_t const capacity = _length - 1 /*NUL*/;

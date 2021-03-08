@@ -5,10 +5,11 @@
 #include "asset_database.h"
 #include "file_hash_cache.h"
 #include "recon_config.h"
+#include "recon_queue.h"
 
+#include "potato/import/importer.h"
+#include "potato/import/importer_factory.h"
 #include "potato/recon/recon_server.h"
-#include "potato/tools/importer.h"
-#include "potato/tools/importer_factory.h"
 #include "potato/tools/project.h"
 #include "potato/runtime/io_loop.h"
 #include "potato/runtime/logger.h"
@@ -21,8 +22,6 @@
 #include "potato/spud/zstring_view.h"
 
 namespace up::recon {
-    class ReconQueue;
-
     enum class ReconImportResult { NotFound, UnknownType, UpToDate, Failed, Imported };
 
     class ReconApp {
@@ -47,19 +46,21 @@ namespace up::recon {
         bool _runOnce();
         bool _runServer();
 
-        void _collectSourceFiles(ReconQueue& queue, bool forceUpdate = false);
-        void _collectMissingFiles(ReconQueue& queue);
+        void _collectSourceFiles(bool forceUpdate = false);
+        void _collectMissingFiles();
 
         ReconImportResult _importFile(zstring_view file, bool force = false);
         bool _forgetFile(zstring_view file);
 
-        bool _processQueue(ReconQueue& queue);
+        bool _processQueue();
 
         bool _writeManifest();
 
         bool _isUpToDate(zstring_view assetPath, uint64 contentHash);
+        bool _isCasUpToDate(uint64 contentHash);
 
         string _makeMetaFilename(zstring_view basePath, bool directory);
+        zstring_view _makeCasPath(span<char> buffer, uint64 contentHash);
 
         auto _findConverterMapping(string_view path, bool isFolder) const -> Mapping const*;
 
@@ -76,6 +77,7 @@ namespace up::recon {
         Logger _logger;
         IOLoop _loop;
         ReconServer _server;
+        ReconQueue _queue;
         ImporterFactory _importerFactory;
         bool _manifestDirty = false;
     };

@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "importers/copy_importer.h"
+#include "copy_importer.h"
 #include "importer_configs_schema.h"
 
 #include "potato/runtime/filesystem.h"

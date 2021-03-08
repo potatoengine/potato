@@ -10,6 +10,7 @@
 #include "_detail/format_result.h"
 #include "_detail/format_traits.h"
 
+#include "potato/spud/span.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/zstring_view.h"
 
@@ -103,5 +104,17 @@ namespace up {
         fixed_writer writer(buffer, stringLength(buffer));
         format_to(writer, format_str, args...);
         return buffer;
+    }
+
+    // Write the string format using the given parameters into a receiver.
+    /// @param buffer The text buffer to append to.
+    /// @param format_str The primary text and formatting controls to be written.
+    /// @param args The arguments used by the formatting string.
+    /// @returns a result code indicating any errors.
+    template <formattable... Args>
+    constexpr auto format_append(span<char> buffer, string_view format_str, Args const&... args) -> zstring_view {
+        fixed_writer writer(buffer.data(), buffer.size());
+        format_to(writer, format_str, args...);
+        return buffer.data(); // guaranteed NUL-terminated by fixed_writer
     }
 } // namespace up

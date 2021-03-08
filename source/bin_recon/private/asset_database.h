@@ -18,20 +18,19 @@ namespace up {
 
     class AssetDatabase {
     public:
-        struct Dependency {
+        struct ImportDependency {
             zstring_view path;
             uint64 contentHash = 0;
         };
 
-        struct Output {
+        struct ImportedAsset {
             zstring_view name;
             zstring_view type;
             AssetId logicalAssetId = AssetId::Invalid;
             uint64 contentHash = 0;
         };
 
-        static constexpr zstring_view typeName = "potato.asset.library"_zsv;
-        static constexpr int version = 16;
+        // static constexpr zstring_view typeName = "potato.asset.library"_zsv;
 
         AssetDatabase() = default;
         ~AssetDatabase();
@@ -44,31 +43,40 @@ namespace up {
 
         static AssetId createLogicalAssetId(UUID const& uuid, string_view logicalName) noexcept;
 
-        generator<zstring_view const> collectAssetPathsByFolder(zstring_view folder);
-        generator<zstring_view const> collectAssetPaths();
+        generator<zstring_view const> findSourceAssetsByFolder(zstring_view folder);
+        generator<zstring_view const> findSourceAssets();
+        generator<zstring_view const> findSourceAssetsDirtiedBy(zstring_view dependencyPath, uint64 dependencyHash);
 
-        generator<Dependency const> assetDependencies(UUID const& uuid);
-        generator<Output const> assetOutputs(UUID const& uuid);
+        generator<ImportDependency const> findSourceAssetDependencies(UUID const& uuid);
+        generator<ImportedAsset const> findImportedAssets(UUID const& uuid);
 
-        void createAsset(UUID const& uuid, string_view sourcePath, uint64 sourceHash);
-        bool deleteAsset(UUID const& uuid);
+        void updateSourceAsset(UUID const& uuid, string_view filename, uint64 sourceHash);
+        bool removeSourceAsset(UUID const& uuid);
 
-        bool checkAssetUpToDate(UUID const& uuid, string_view importerName, uint64 importerVersion, uint64 sourceHash);
+        bool isSourceAssetUpToDate(
+            UUID const& uuid,
+            string_view importerName,
+            uint64 importerVersion,
+            uint64 sourceHash);
 
-        void updateAssetPre(UUID const& uuid, string_view importerName, string_view assetType, uint64 importerVersion);
-        void addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash);
-        void addOutput(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash);
-        void updateAssetPost(UUID const& uuid, bool success);
+        void beginAssetImport(
+            UUID const& uuid,
+            string_view importerName,
+            string_view assetType,
+            uint64 importerVersion);
+        void addImportDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash);
+        void addAssetImport(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash);
+        void finishAssetImport(UUID const& uuid, bool success);
 
         bool open(zstring_view filename);
         bool close();
 
         void generateManifest(erased_writer writer);
 
-        template <typename Fn>
+        template <callable<posql::Transaction&> Fn>
         void transact(Fn&& fn) {
-            auto tx = _db.begin();
-            fn(*this, tx);
+            posql::Transaction tx = _db.begin();
+            fn(tx);
             tx.commit();
         }
 
@@ -78,19 +86,5 @@ namespace up {
         };
 
         Database _db;
-        Statement _queryAssetsStmt;
-        Statement _queryAssetUpToDateStmt;
-        Statement _queryDependenciesStmt;
-        Statement _queryOutputsStmt;
-        Statement _queryUuidBySourcePathStmt;
-        Statement _querySourcePathByUuuidStmt;
-        Statement _insertAssetStmt;
-        Statement _updateAssetPreStmt;
-        Statement _updateAssetPostStmt;
-        Statement _insertOutputStmt;
-        Statement _insertDependencyStmt;
-        Statement _deleteAssetStmt;
-        Statement _clearOutputsStmt;
-        Statement _clearDependenciesStmt;
     };
 } // namespace up

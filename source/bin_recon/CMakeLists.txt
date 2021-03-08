@@ -32,6 +32,8 @@ target_link_libraries(potato_recon PRIVATE
     potato::libruntime
     potato::libtools
     potato::libreflex
+    potato::libimport
+    potato::libposql
     uv
 )
 

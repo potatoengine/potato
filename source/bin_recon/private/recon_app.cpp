@@ -89,10 +89,9 @@ bool up::recon::ReconApp::run(span<char const*> args) {
 }
 
 bool up::recon::ReconApp::_runOnce() {
-    ReconQueue queue;
-    _collectSourceFiles(queue);
-    _collectMissingFiles(queue);
-    _processQueue(queue);
+    _collectSourceFiles();
+    _collectMissingFiles();
+    _processQueue();
 
     if (!_writeManifest()) {
         _logger.error("Failed to write manifest");
@@ -103,52 +102,49 @@ bool up::recon::ReconApp::_runOnce() {
 }
 
 bool up::recon::ReconApp::_runServer() {
-    ReconQueue queue;
+    _collectSourceFiles();
+    _collectMissingFiles();
 
-    _collectSourceFiles(queue);
-    _collectMissingFiles(queue);
+    IOWatch watch = _loop.createWatch(_project->resourceRootPath(), [this](zstring_view filename, IOWatchEvent event) {
+        // ignore dot files (except .meta files)
+        if (filename != ".meta"_sv && (filename.empty() || filename.front() == '.')) {
+            return;
+        }
 
-    IOWatch watch =
-        _loop.createWatch(_project->resourceRootPath(), [&queue](zstring_view filename, IOWatchEvent event) {
-            // ignore dot files (except .meta files)
-            if (filename != ".meta"_sv && (filename.empty() || filename.front() == '.')) {
-                return;
-            }
+        switch (event) {
+            case IOWatchEvent::Rename:
+                if (fs::fileStat(filename)) {
+                    _queue.enqueImport(string{filename});
+                }
+                else {
+                    _queue.enqueForget(string{filename});
+                }
+                break;
 
-            switch (event) {
-                case IOWatchEvent::Rename:
-                    if (fs::fileStat(filename)) {
-                        queue.enqueImport(string{filename});
-                    }
-                    else {
-                        queue.enqueForget(string{filename});
-                    }
-                    break;
-
-                case IOWatchEvent::Change:
-                    queue.enqueImport(string{filename});
-                    break;
-            }
-        });
+            case IOWatchEvent::Change:
+                _queue.enqueImport(string{filename});
+                break;
+        }
+    });
 
     IOEvent event = _loop.createEvent();
 
-    _server.onDisconnect([this, &queue, &event] {
-        queue.enqueTerminate();
+    _server.onDisconnect([this, &event] {
+        _queue.enqueTerminate();
         event.signal();
         _loop.stop();
     });
-    _server.on<ReconImportMessage>([&queue, &event](schema::ReconImportMessage const& msg) {
-        queue.enqueImport(msg.uuid, msg.force);
+    _server.on<ReconImportMessage>([this, &event](schema::ReconImportMessage const& msg) {
+        _queue.enqueImport(msg.uuid, msg.force);
         event.signal();
     });
-    _server.on<ReconImportAllMessage>([&queue, &event](schema::ReconImportAllMessage const& msg) {
-        queue.enqueImportAll();
+    _server.on<ReconImportAllMessage>([this, &event](schema::ReconImportAllMessage const& msg) {
+        _queue.enqueImportAll();
         event.signal();
     });
 
-    IOPrepareHook prepHook = _loop.createPrepareHook([this, &queue] {
-        _processQueue(queue);
+    IOPrepareHook prepHook = _loop.createPrepareHook([this] {
+        _processQueue();
         if (_manifestDirty) {
             _manifestDirty = false;
             _writeManifest();
@@ -167,11 +163,11 @@ bool up::recon::ReconApp::_runServer() {
     return true;
 }
 
-bool up::recon::ReconApp::_processQueue(ReconQueue& queue) {
+bool up::recon::ReconApp::_processQueue() {
     bool terminate = false;
 
     ReconQueue::Command cmd;
-    while (queue.tryDeque(cmd)) {
+    while (_queue.tryDeque(cmd)) {
         switch (cmd.type) {
             case ReconQueue::Type::Import:
             case ReconQueue::Type::ForceImport:
@@ -203,7 +199,7 @@ bool up::recon::ReconApp::_processQueue(ReconQueue& queue) {
                     // if a directory is deleted, we don't get notifications for files under it,
                     // so explicitly delete children
                     vector<string> children;
-                    for (auto path : _library.collectAssetPathsByFolder(cmd.filename)) {
+                    for (auto path : _library.findSourceAssetsByFolder(cmd.filename)) {
                         children.push_back(string{path});
                     }
                     for (string const& path : children) {
@@ -213,8 +209,8 @@ bool up::recon::ReconApp::_processQueue(ReconQueue& queue) {
                 break;
             case ReconQueue::Type::ImportAll:
             case ReconQueue::Type::ForceImportAll:
-                _collectSourceFiles(queue, cmd.type == ReconQueue::Type::ForceImportAll);
-                _collectMissingFiles(queue);
+                _collectSourceFiles(cmd.type == ReconQueue::Type::ForceImportAll);
+                _collectMissingFiles();
                 break;
             case ReconQueue::Type::Delete:
                 if (zstring_view const sourcePath = _library.uuidToPath(cmd.uuid); !sourcePath.empty()) {
@@ -291,44 +287,59 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
     MetaFile metaFile;
     bool metaDirty = false;
 
-    if (!loadMetaFile(metaFile, metaOsPath)) {
+    bool const hasMeta = loadMetaFile(metaFile, metaOsPath);
+    if (!hasMeta) {
         metaFile.generate();
-        metaDirty = true;
     }
 
     Importer* const importer = mapping->importer;
 
     auto const contentHash = isFolder ? 0 : _hashes.hashAssetAtPath(osPath.c_str());
-    bool dirty = !_library.checkAssetUpToDate(metaFile.uuid, importer->name(), importer->revision(), contentHash);
 
-    _library.createAsset(metaFile.uuid, file, contentHash);
+    for (zstring_view dependent : _library.findSourceAssetsDirtiedBy(file, contentHash)) {
+        _queue.enqueImport(string{dependent});
+    }
 
-    if (importer->name() != string_view{metaFile.importerName}) {
+    bool const upToDate =
+        _library.isSourceAssetUpToDate(metaFile.uuid, importer->name(), importer->revision(), contentHash);
+
+    _library.updateSourceAsset(metaFile.uuid, file, contentHash);
+
+    bool const importerChange = importer->name() != metaFile.importerName;
+    if (importerChange) {
         metaFile.importerName = string{importer->name()};
-        metaDirty = true;
-        dirty = true;
     }
 
-    string_view settings = importer->defaultSettings();
-    if (settings != metaFile.importerSettings) {
+    string_view const settings = importer->defaultSettings();
+    bool const importerSettingsChange = settings != metaFile.importerSettings;
+    if (importerSettingsChange) {
         metaFile.importerSettings = string{settings};
-        metaDirty = true;
-        dirty = true;
     }
 
-    for (auto const& dep : _library.assetDependencies(metaFile.uuid)) {
-        if (dirty) {
+    bool dependenciesDirty = false;
+    for (auto const& dep : _library.findSourceAssetDependencies(metaFile.uuid)) {
+        if (!_isUpToDate(dep.path, dep.contentHash)) {
+            dependenciesDirty = true;
             break;
         }
-        dirty = !_isUpToDate(dep.path, dep.contentHash);
+    }
+
+    bool outputsDirty = false;
+    for (auto const& out : _library.findImportedAssets(metaFile.uuid)) {
+        if (!_isCasUpToDate(out.contentHash)) {
+            outputsDirty = true;
+            break;
+        }
     }
 
     string_writer importedName;
     format_append(importedName, "{{{}} {} ({})", metaFile.uuid, file, importer->name());
 
+    bool const dirty =
+        !upToDate || !hasMeta || importerChange || importerSettingsChange || dependenciesDirty || outputsDirty;
+
     if (!dirty && !force) {
         _logger.info("{}: up-to-date", importedName);
-        _library.updateAssetPost(metaFile.uuid, true);
         return ReconImportResult::UpToDate;
     }
 
@@ -347,7 +358,7 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         outputs,
         _logger);
 
-    _library.updateAssetPre(
+    _library.beginAssetImport(
         metaFile.uuid,
         importer != nullptr ? importer->name() : string_view{},
         importer->assetType(context),
@@ -361,39 +372,36 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         auto stream = fs::openWrite(metaOsPath, fs::OpenMode::Text);
         if (!stream || writeAllText(stream, jsonText) != IOResult::Success) {
             _logger.error("Failed to write meta file for {}", metaOsPath);
-            _library.updateAssetPost(metaFile.uuid, false);
+            _library.finishAssetImport(metaFile.uuid, false);
             return ReconImportResult::Failed;
         }
     }
 
     if (importer == nullptr) {
         _logger.error("{}: unknown file type", importedName);
-        _library.updateAssetPost(metaFile.uuid, false);
+        _library.finishAssetImport(metaFile.uuid, false);
         return ReconImportResult::UnknownType;
     }
 
     _logger.info("{}: importing", importedName);
     if (!importer->import(context)) {
         _logger.error("{}: import failed", importedName);
-        _library.updateAssetPost(metaFile.uuid, false);
+        _library.finishAssetImport(metaFile.uuid, false);
         return ReconImportResult::Failed;
     }
 
     // move outputs to CAS
     //
-    for (auto const& output : outputs) {
+    for (auto& output : outputs) {
         auto outputOsPath = path::join(path::Separator::Native, _temporaryOutputPath, output.path);
-        auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
+        output.contentHash = _hashes.hashAssetAtPath(outputOsPath);
 
-        fixed_string_writer<32> casPath;
-        format_append(
-            casPath,
-            "{:02X}/{:04X}/{:016X}.bin",
-            (outputHash >> 56) & 0xFF,
-            (outputHash >> 40) & 0XFFFF,
-            outputHash);
-
-        auto casOsPath = path::join(path::Separator::Native, _project->libraryPath(), "cache", casPath);
+        char casPathBuffer[64] = {};
+        auto casOsPath = path::join(
+            path::Separator::Native,
+            _project->libraryPath(),
+            "cache",
+            _makeCasPath(casPathBuffer, output.contentHash));
         auto casOsFolder = string{path::parent(casOsPath)};
 
         if (auto const rs = fs::createDirectories(casOsFolder); rs != IOResult::Success) {
@@ -408,20 +416,17 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
     }
 
     // Update AssetDatabase with result of import
-    _library.transact([&](auto& library, auto&) {
-        _library.updateAssetPost(metaFile.uuid, true);
+    _library.transact([&](posql::Transaction&) {
+        _library.finishAssetImport(metaFile.uuid, true);
 
         for (auto const& sourceDepPath : dependencies) {
             auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), sourceDepPath.c_str());
             auto const contentHash = _hashes.hashAssetAtPath(osPath.c_str());
-            library.addDependency(context.uuid(), sourceDepPath, contentHash);
+            _library.addImportDependency(context.uuid(), sourceDepPath, contentHash);
         }
 
         for (auto const& output : outputs) {
-            auto outputOsPath = path::join(path::Separator::Native, _temporaryOutputPath, output.path);
-            auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
-
-            _library.addOutput(context.uuid(), output.logicalAsset, output.type, outputHash);
+            _library.addAssetImport(context.uuid(), output.logicalAsset, output.type, output.contentHash);
         }
     });
 
@@ -437,7 +442,7 @@ bool up::recon::ReconApp::_forgetFile(zstring_view file) {
     _manifestDirty = true;
 
     _logger.info("{}: deleted", file);
-    _library.deleteAsset(uuid);
+    _library.removeSourceAsset(uuid);
 
     // remove the .meta file if it exists;
     // we don't need to do this for a directory, since they could only be deleted
@@ -452,6 +457,13 @@ bool up::recon::ReconApp::_forgetFile(zstring_view file) {
 bool up::recon::ReconApp::_isUpToDate(zstring_view assetPath, uint64 contentHash) {
     auto osPath = path::join(path::Separator::Native, _project->resourceRootPath(), assetPath);
     return contentHash == _hashes.hashAssetAtPath(osPath.c_str());
+}
+
+bool up::recon::ReconApp::_isCasUpToDate(uint64 contentHash) {
+    char buffer[64] = {};
+    auto casOsPath =
+        path::join(path::Separator::Native, _project->libraryPath(), "cache", _makeCasPath(buffer, contentHash));
+    return contentHash == _hashes.hashAssetAtPath(casOsPath.c_str());
 }
 
 auto up::recon::ReconApp::_findConverterMapping(string_view path, bool isFolder) const -> Mapping const* {
@@ -478,13 +490,22 @@ auto up::recon::ReconApp::_makeMetaFilename(zstring_view basePath, bool director
     return metaFilePath.to_string();
 }
 
-void up::recon::ReconApp::_collectSourceFiles(ReconQueue& queue, bool forceUpdate) {
+auto up::recon::ReconApp::_makeCasPath(span<char> buffer, uint64 contentHash) -> zstring_view {
+    return format_append(
+        buffer,
+        "{:02X}/{:04X}/{:016X}.bin",
+        (contentHash >> 56) & 0xFF,
+        (contentHash >> 40) & 0XFFFF,
+        contentHash);
+}
+
+void up::recon::ReconApp::_collectSourceFiles(bool forceUpdate) {
     if (!fs::directoryExists(_project->resourceRootPath())) {
         _logger.error("`{}' does not exist or is not a directory", _project->resourceRootPath());
         return;
     }
 
-    auto cb = [&queue, forceUpdate](auto const& item, int) {
+    auto cb = [this, forceUpdate](auto const& item, int) {
         // do not recurse into the library folder
         //
         if (item.path.starts_with(".library")) {
@@ -497,7 +518,7 @@ void up::recon::ReconApp::_collectSourceFiles(ReconQueue& queue, bool forceUpdat
             return fs::next;
         }
 
-        queue.enqueImport(string{item.path}, forceUpdate);
+        _queue.enqueImport(string{item.path}, forceUpdate);
 
         return fs::recurse;
     };
@@ -505,13 +526,13 @@ void up::recon::ReconApp::_collectSourceFiles(ReconQueue& queue, bool forceUpdat
     (void)fs::enumerate(_project->resourceRootPath(), cb);
 };
 
-void up::recon::ReconApp::_collectMissingFiles(ReconQueue& queue) {
-    for (zstring_view filename : _library.collectAssetPaths()) {
+void up::recon::ReconApp::_collectMissingFiles() {
+    for (zstring_view filename : _library.findSourceAssets()) {
         string osPath = path::join(path::Separator::Native, _project->resourceRootPath(), filename);
 
         auto const [rs, _] = fs::fileStat(osPath);
         if (rs == IOResult::FileNotFound) {
-            queue.enqueForget(string{filename});
+            _queue.enqueForget(string{filename});
         }
     }
 }

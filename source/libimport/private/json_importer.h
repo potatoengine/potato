@@ -3,11 +3,10 @@
 #pragma once
 
 #include "importer.h"
+#include "importer_configs_schema.h"
 
 namespace up {
-    struct JsonImporterConfig : ImporterConfig {
-        string type;
-    };
+    using JsonImporterConfig = schema::JsonImporterConfig;
 
     class JsonImporter : public Importer {
     public:
