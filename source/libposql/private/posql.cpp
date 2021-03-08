@@ -59,7 +59,7 @@ auto up::posql::sqlutil::compile(sqlite3* db, string_view sql) -> sqlite3_stmt* 
     sqlite3_stmt* stmt = nullptr;
     [[maybe_unused]] auto const rs =
         sqlite3_prepare_v3(db, sql.data(), static_cast<int>(sql.size()), 0, &stmt, nullptr);
-    UP_ASSERT(rs == SQLITE_OK);
+    UP_ASSERT(rs == SQLITE_OK, "{}: {}", rs, sqlite3_errmsg(db));
     return stmt;
 }
 
