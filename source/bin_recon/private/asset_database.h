@@ -50,7 +50,7 @@ namespace up {
         generator<ImportDependency const> findSourceAssetDependencies(UUID const& uuid);
         generator<ImportedAsset const> findImportedAssets(UUID const& uuid);
 
-        void updateSourceAsset(UUID const& uuid, string_view sourcePath, uint64 sourceHash);
+        void updateSourceAsset(UUID const& uuid, string_view filename, uint64 sourceHash);
         bool removeSourceAsset(UUID const& uuid);
 
         bool isSourceAssetUpToDate(
