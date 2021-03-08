@@ -14,7 +14,7 @@
 up::AssetDatabase::~AssetDatabase() = default;
 
 auto up::AssetDatabase::pathToUuid(string_view path) noexcept -> UUID {
-    for (auto const& [uuid] : _db.query<UUID>("SELECT uuid FROM assets WHERE source_path=?", path)) {
+    for (auto const& [uuid] : _db.query<UUID>("SELECT uuid FROM source_assets WHERE path=?", path)) {
         return uuid;
     }
 
@@ -22,52 +22,51 @@ auto up::AssetDatabase::pathToUuid(string_view path) noexcept -> UUID {
 }
 
 auto up::AssetDatabase::uuidToPath(UUID const& uuid) noexcept -> string {
-    for (auto const& [sourcePath] : _db.query<zstring_view>("SELECT source_path FROM assets WHERE uuid=?", uuid)) {
-        return string{sourcePath};
+    for (auto const& [filename] : _db.query<zstring_view>("SELECT path FROM source_assets WHERE uuid=?", uuid)) {
+        return string{filename};
     }
 
     return {};
 }
 
-auto up::AssetDatabase::collectAssetPathsByFolder(zstring_view folder) -> generator<zstring_view const> {
-    for (zstring_view sourcePath : collectAssetPaths()) {
-        if (path::isParentOf(folder, sourcePath)) {
-            co_yield sourcePath;
+auto up::AssetDatabase::findSourceAssetsByFolder(zstring_view folder) -> generator<zstring_view const> {
+    for (zstring_view filename : findSourceAssets()) {
+        if (path::isParentOf(folder, filename)) {
+            co_yield filename;
         }
     }
 }
 
-auto up::AssetDatabase::collectAssetPaths() -> generator<zstring_view const> {
-    for (auto const& [sourcePath] : _db.query<zstring_view>("SELECT source_path FROM "
-                                                            "assets")) {
-        co_yield sourcePath;
+auto up::AssetDatabase::findSourceAssets() -> generator<zstring_view const> {
+    for (auto const& [filename] : _db.query<zstring_view>("SELECT path FROM source_assets")) {
+        co_yield filename;
     }
 }
 
-auto up::AssetDatabase::collectAssetsDirtiedBy(zstring_view dependencyPath, uint64 dependencyHash)
+auto up::AssetDatabase::findSourceAssetsDirtiedBy(zstring_view dependencyPath, uint64 dependencyHash)
     -> generator<zstring_view const> {
-    for (auto const& [sourcePath] : _db.query<zstring_view>(
-             "SELECT source_path FROM assets INNER JOIN import_dependencies ON assets.uuid=import_dependencies.uuid "
-             "WHERE "
-             "import_dependencies.path=? AND import_dependencies.hash<>?",
+    for (auto const& [filename] : _db.query<zstring_view>(
+             "SELECT source_assets.path FROM source_assets INNER JOIN import_dependencies ON "
+             "source_assets.uuid=import_dependencies.uuid "
+             "WHERE import_dependencies.path=? AND import_dependencies.hash<>?",
              dependencyPath,
              dependencyHash)) {
-        co_yield sourcePath;
+        co_yield filename;
     }
 }
 
-auto up::AssetDatabase::assetDependencies(UUID const& uuid) -> generator<Dependency const> {
+auto up::AssetDatabase::findSourceAssetDependencies(UUID const& uuid) -> generator<ImportDependency const> {
     for (auto const& [path, hash] :
          _db.query<zstring_view, uint64>("SELECT path, hash FROM import_dependencies WHERE uuid=?", uuid)) {
-        co_yield Dependency{.path = string{path}, .contentHash = hash};
+        co_yield ImportDependency{.path = string{path}, .contentHash = hash};
     }
 }
 
-auto up::AssetDatabase::assetOutputs(UUID const& uuid) -> generator<Output const> {
+auto up::AssetDatabase::findImportedAssets(UUID const& uuid) -> generator<ImportedAsset const> {
     for (auto const& [id, name, type, hash] : _db.query<AssetId, zstring_view, zstring_view, uint64>(
-             "SELECT output_id, name, type, hash FROM outputs WHERE uuid=?",
+             "SELECT output_id, name, type, hash FROM imported_assets WHERE uuid=?",
              uuid)) {
-        co_yield Output{.name = name, .type = type, .logicalAssetId = id, .contentHash = hash};
+        co_yield ImportedAsset{.name = name, .type = type, .logicalAssetId = id, .contentHash = hash};
     }
 }
 
@@ -79,27 +78,27 @@ auto up::AssetDatabase::createLogicalAssetId(UUID const& uuid, string_view logic
     return static_cast<AssetId>(hash);
 }
 
-void up::AssetDatabase::createAsset(UUID const& uuid, string_view sourcePath, uint64 sourceHash) {
+void up::AssetDatabase::updateSourceAsset(UUID const& uuid, string_view filename, uint64 sourceHash) {
     [[maybe_unused]] auto const rc = _db.execute(
-        "INSERT INTO assets "
-        "(uuid, source_path, source_hash, status) VALUES(?, ?, ?, 'NEW')"
-        "ON CONFLICT (uuid) DO UPDATE SET source_path=excluded.source_path, "
-        "source_hash=excluded.source_hash",
+        "INSERT INTO source_assets "
+        "(uuid, path, hash, status) VALUES(?, ?, ?, 'NEW')"
+        "ON CONFLICT (uuid) DO UPDATE SET path=excluded.path, "
+        "hash=excluded.hash",
         uuid,
-        sourcePath,
+        filename,
         sourceHash);
     UP_ASSERT(rc == SqlResult::Ok);
 }
 
-bool up::AssetDatabase::checkAssetUpToDate(
+bool up::AssetDatabase::isSourceAssetUpToDate(
     UUID const& uuid,
     string_view importerName,
     uint64 importerVersion,
     uint64 sourceHash) {
     auto const [upToDate] = _db.queryOne<bool>(
-        "SELECT (source_hash=? AND importer_name=? AND importer_revision=? AND status='IMPORTED') AS "
+        "SELECT (hash=? AND importer_name=? AND importer_revision=? AND status='IMPORTED') AS "
         "up_to_date FROM "
-        "assets WHERE uuid=?",
+        "source_assets WHERE uuid=?",
         sourceHash,
         importerName,
         importerVersion,
@@ -107,13 +106,13 @@ bool up::AssetDatabase::checkAssetUpToDate(
     return upToDate;
 }
 
-void up::AssetDatabase::updateAssetPre(
+void up::AssetDatabase::beginAssetImport(
     UUID const& uuid,
     string_view importerName,
     string_view assetType,
     uint64 importerVersion) {
     [[maybe_unused]] auto const rc = _db.execute(
-        "UPDATE assets SET importer_name=?, asset_type=?, importer_revision=?, status='PENDING' WHERE "
+        "UPDATE source_assets SET importer_name=?, asset_type=?, importer_revision=?, status='PENDING' WHERE "
         "uuid=?",
         importerName,
         assetType,
@@ -122,27 +121,27 @@ void up::AssetDatabase::updateAssetPre(
     UP_ASSERT(rc == SqlResult::Ok);
 }
 
-void up::AssetDatabase::updateAssetPost(UUID const& uuid, bool success) {
+void up::AssetDatabase::finishAssetImport(UUID const& uuid, bool success) {
     [[maybe_unused]] auto rc =
-        _db.execute("UPDATE assets SET status=? WHERE uuid=?", success ? "IMPORTED"_sv : "FAILED"_sv, uuid);
+        _db.execute("UPDATE source_assets SET status=? WHERE uuid=?", success ? "IMPORTED"_sv : "FAILED"_sv, uuid);
     UP_ASSERT(rc == SqlResult::Ok);
-    (void)_db.execute("DELETE FROM compiled WHERE uuid=?", uuid);
+    (void)_db.execute("DELETE FROM imported_assets WHERE uuid=?", uuid);
     (void)_db.execute("DELETE FROM import_dependencies WHERE uuid=?", uuid);
 }
 
-bool up::AssetDatabase::deleteAsset(UUID const& uuid) {
-    (void)_db.execute("DELETE FROM assets WHERE uuid=?", uuid);
+bool up::AssetDatabase::removeSourceAsset(UUID const& uuid) {
+    (void)_db.execute("DELETE FROM source_assets WHERE uuid=?", uuid);
     return true;
 }
 
-void up::AssetDatabase::addDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash) {
+void up::AssetDatabase::addImportDependency(UUID const& uuid, zstring_view outputPath, uint64 outputHash) {
     (void)
         _db.execute("INSERT INTO import_dependencies (uuid, path, hash) VALUES(?, ?, ?)", uuid, outputPath, outputHash);
 }
 
-void up::AssetDatabase::addOutput(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash) {
+void up::AssetDatabase::addAssetImport(UUID const& uuid, zstring_view name, zstring_view assetType, uint64 outputHash) {
     (void)_db.execute(
-        "INSERT INTO compiled (id, uuid, name, type, hash) VALUES(?, ?, ?, ?, ?)",
+        "INSERT INTO imported_assets (id, uuid, name, type, hash) VALUES(?, ?, ?, ?, ?)",
         createLogicalAssetId(uuid, name),
         uuid,
         name,
@@ -158,36 +157,32 @@ bool up::AssetDatabase::open(zstring_view filename) {
 
     // ensure the asset database has the correct version
     {
+        static constexpr int currentVersion = 18;
+
         if (_db.execute("CREATE TABLE IF NOT EXISTS version(version INTEGER NOT NULL);") != SqlResult::Ok) {
             return false;
         }
-        auto dbVersionQueryStmt = _db.prepare("SELECT version FROM version");
-        int64 dbVersion = 0;
-        for (auto const& [versionResult] : dbVersionQueryStmt.query<int64>()) {
-            dbVersion = versionResult;
-        }
-        if (dbVersion != version) {
-            (void)_db.execute("DROP TABLE IF EXISTS assets");
-            (void)_db.execute("DROP TABLE IF EXISTS dependencies");
-            (void)_db.execute("DROP TABLE IF EXISTS outputs");
+        auto const& [dbVersion] = _db.queryOne<int64>("SELECT version FROM version");
+        if (dbVersion != currentVersion) {
+            (void)_db.execute("DROP TABLE IF EXISTS source_assets");
             (void)_db.execute("DROP TABLE IF EXISTS import_dependencies");
-            (void)_db.execute("DROP TABLE IF EXISTS compiled");
+            (void)_db.execute("DROP TABLE IF EXISTS imported_assets");
             (void)_db.execute("DELETE FROM version");
             auto dbVersionUpdateStmt = _db.prepare("INSERT INTO version (version) VALUES(?)");
-            if (dbVersionUpdateStmt.execute(version) != SqlResult::Ok) {
+            if (dbVersionUpdateStmt.execute(currentVersion) != SqlResult::Ok) {
                 return false;
             }
         }
     }
 
     // ensure the table is created
-    if (_db.execute("CREATE TABLE IF NOT EXISTS assets "
+    if (_db.execute("CREATE TABLE IF NOT EXISTS source_assets "
                     "(uuid TEXT PRIMARY KEY, status TEXT, "
-                    "source_path TEXT, source_hash INTEGER, asset_type TEXT, "
+                    "path TEXT, hash INTEGER, asset_type TEXT, "
                     "importer_name TEXT, importer_revision INTEGER)") != SqlResult::Ok) {
         return false;
     }
-    if (_db.execute("CREATE TABLE IF NOT EXISTS compiled "
+    if (_db.execute("CREATE TABLE IF NOT EXISTS imported_assets "
                     "(id INT NOT NULL PRIMARY KEY, uuid TEXT, name TEXT, type TEXT, hash TEXT, "
                     "FOREIGN KEY(uuid) REFERENCES assets(uuid))") != SqlResult::Ok) {
         return false;
@@ -199,8 +194,8 @@ bool up::AssetDatabase::open(zstring_view filename) {
         return false;
     }
 
-    // ensure any left-over assets are transitioned to failed status
-    (void)_db.execute("UPDATE assets SET status='FAILED' WHERE status<>'IMPORTED'");
+    // ensure any left-over source_assets are transitioned to failed status
+    (void)_db.execute("UPDATE source_assets SET status='FAILED' WHERE status<>'IMPORTED'");
 
     return true;
 }
@@ -225,21 +220,18 @@ void up::AssetDatabase::generateManifest(erased_writer writer) {
 
     string_writer fullName;
 
-    for (auto const& [uuid, sourcePath, assetType] :
-         _db.query<zstring_view, zstring_view, zstring_view>("SELECT uuid, source_path, asset_type FROM "
-                                                             "assets")) {
-        format_to(writer, "{}|||{}||{}\n", uuid, assetType, sourcePath);
+    for (auto const& [uuid, filename, assetType] :
+         _db.query<zstring_view, zstring_view, zstring_view>("SELECT uuid, path, asset_type FROM source_assets")) {
+        format_to(writer, "{}|||{}||{}\n", uuid, assetType, filename);
     }
 
-    for (auto const& [uuid, sourcePath, assetType] :
-         _db.query<UUID, zstring_view, zstring_view>("SELECT uuid, source_path, asset_type FROM "
-                                                     "assets")) {
+    for (auto const& [uuid, filename] : _db.query<UUID, zstring_view>("SELECT uuid, path FROM source_assets")) {
         for (auto const& [logicalId, logicalName, outputType, outputHash] :
              _db.query<AssetId, zstring_view, zstring_view, uint64>(
-                 "SELECT id, name, type, hash FROM compiled WHERE uuid=?",
+                 "SELECT id, name, type, hash FROM imported_assets WHERE uuid=?",
                  uuid)) {
             fullName.clear();
-            fullName.append(sourcePath);
+            fullName.append(filename);
 
             if (!logicalName.empty()) {
                 format_append(fullName, ":{}", logicalName);
