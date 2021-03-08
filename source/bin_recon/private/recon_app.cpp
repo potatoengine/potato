@@ -324,10 +324,19 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         }
     }
 
+    bool outputsDirty = false;
+    for (auto const& out : _library.findImportedAssets(metaFile.uuid)) {
+        if (!_isCasUpToDate(out.contentHash)) {
+            outputsDirty = true;
+            break;
+        }
+    }
+
     string_writer importedName;
     format_append(importedName, "{{{}} {} ({})", metaFile.uuid, file, importer->name());
 
-    bool const dirty = !upToDate || !hasMeta || importerChange || importerSettingsChange || dependenciesDirty;
+    bool const dirty =
+        !upToDate || !hasMeta || importerChange || importerSettingsChange || dependenciesDirty || outputsDirty;
 
     if (!dirty && !force) {
         _logger.info("{}: up-to-date", importedName);
@@ -383,19 +392,16 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
 
     // move outputs to CAS
     //
-    for (auto const& output : outputs) {
+    for (auto& output : outputs) {
         auto outputOsPath = path::join(path::Separator::Native, _temporaryOutputPath, output.path);
-        auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
+        output.contentHash = _hashes.hashAssetAtPath(outputOsPath);
 
-        fixed_string_writer<32> casPath;
-        format_append(
-            casPath,
-            "{:02X}/{:04X}/{:016X}.bin",
-            (outputHash >> 56) & 0xFF,
-            (outputHash >> 40) & 0XFFFF,
-            outputHash);
-
-        auto casOsPath = path::join(path::Separator::Native, _project->libraryPath(), "cache", casPath);
+        char casPathBuffer[64] = {};
+        auto casOsPath = path::join(
+            path::Separator::Native,
+            _project->libraryPath(),
+            "cache",
+            _makeCasPath(casPathBuffer, output.contentHash));
         auto casOsFolder = string{path::parent(casOsPath)};
 
         if (auto const rs = fs::createDirectories(casOsFolder); rs != IOResult::Success) {
@@ -420,10 +426,7 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
         }
 
         for (auto const& output : outputs) {
-            auto outputOsPath = path::join(path::Separator::Native, _temporaryOutputPath, output.path);
-            auto const outputHash = _hashes.hashAssetAtPath(outputOsPath);
-
-            _library.addAssetImport(context.uuid(), output.logicalAsset, output.type, outputHash);
+            _library.addAssetImport(context.uuid(), output.logicalAsset, output.type, output.contentHash);
         }
     });
 
@@ -456,6 +459,13 @@ bool up::recon::ReconApp::_isUpToDate(zstring_view assetPath, uint64 contentHash
     return contentHash == _hashes.hashAssetAtPath(osPath.c_str());
 }
 
+bool up::recon::ReconApp::_isCasUpToDate(uint64 contentHash) {
+    char buffer[64] = {};
+    auto casOsPath =
+        path::join(path::Separator::Native, _project->libraryPath(), "cache", _makeCasPath(buffer, contentHash));
+    return contentHash == _hashes.hashAssetAtPath(casOsPath.c_str());
+}
+
 auto up::recon::ReconApp::_findConverterMapping(string_view path, bool isFolder) const -> Mapping const* {
     if (isFolder) {
         return &_folderImporter;
@@ -478,6 +488,15 @@ auto up::recon::ReconApp::_makeMetaFilename(zstring_view basePath, bool director
     metaFilePath.append(basePath);
     metaFilePath.append(".meta");
     return metaFilePath.to_string();
+}
+
+auto up::recon::ReconApp::_makeCasPath(span<char> buffer, uint64 contentHash) -> zstring_view {
+    return format_append(
+        buffer,
+        "{:02X}/{:04X}/{:016X}.bin",
+        (contentHash >> 56) & 0xFF,
+        (contentHash >> 40) & 0XFFFF,
+        contentHash);
 }
 
 void up::recon::ReconApp::_collectSourceFiles(bool forceUpdate) {

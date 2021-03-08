@@ -57,8 +57,10 @@ namespace up::recon {
         bool _writeManifest();
 
         bool _isUpToDate(zstring_view assetPath, uint64 contentHash);
+        bool _isCasUpToDate(uint64 contentHash);
 
         string _makeMetaFilename(zstring_view basePath, bool directory);
+        zstring_view _makeCasPath(span<char> buffer, uint64 contentHash);
 
         auto _findConverterMapping(string_view path, bool isFolder) const -> Mapping const*;
 

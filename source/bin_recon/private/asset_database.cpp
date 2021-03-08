@@ -64,7 +64,7 @@ auto up::AssetDatabase::findSourceAssetDependencies(UUID const& uuid) -> generat
 
 auto up::AssetDatabase::findImportedAssets(UUID const& uuid) -> generator<ImportedAsset const> {
     for (auto const& [id, name, type, hash] : _db.query<AssetId, zstring_view, zstring_view, uint64>(
-             "SELECT output_id, name, type, hash FROM imported_assets WHERE uuid=?",
+             "SELECT id, name, type, hash FROM imported_assets WHERE uuid=?",
              uuid)) {
         co_yield ImportedAsset{.name = name, .type = type, .logicalAssetId = id, .contentHash = hash};
     }

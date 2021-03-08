@@ -25,6 +25,7 @@ namespace up {
             string logicalAsset;
             string path;
             string type;
+            uint64 contentHash = 0;
         };
 
         UP_IMPORT_API ImporterContext(
