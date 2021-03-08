@@ -7,9 +7,9 @@
 #include "recon_config.h"
 #include "recon_queue.h"
 
+#include "potato/import/importer.h"
+#include "potato/import/importer_factory.h"
 #include "potato/recon/recon_server.h"
-#include "potato/tools/importer.h"
-#include "potato/tools/importer_factory.h"
 #include "potato/tools/project.h"
 #include "potato/runtime/io_loop.h"
 #include "potato/runtime/logger.h"
