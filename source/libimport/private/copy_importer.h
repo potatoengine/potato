@@ -3,11 +3,10 @@
 #pragma once
 
 #include "importer.h"
+#include "importer_configs_schema.h"
 
 namespace up {
-    struct CopyImporterConfig : ImporterConfig {
-        string type;
-    };
+    using CopyImporterConfig = schema::CopyImporterConfig;
 
     class CopyImporter : public Importer {
     public:

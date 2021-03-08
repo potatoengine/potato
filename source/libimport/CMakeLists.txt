@@ -6,6 +6,7 @@ add_library(potato::libimport ALIAS potato_libimport)
 
 target_sources(potato_libimport PRIVATE
     "private/copy_importer.cpp"
+    "private/copy_importer.h"
     "private/folder_importer.h"
     "private/hlsl_importer.cpp"
     "private/hlsl_importer.h"
@@ -13,16 +14,15 @@ target_sources(potato_libimport PRIVATE
     "private/importer_context.cpp"
     "private/importer_factory.cpp"
     "private/json_importer.cpp"
+    "private/json_importer.h"
     "private/material_importer.cpp"
     "private/material_importer.h"
     "private/model_importer.cpp"
     "private/model_importer.h"
     "public/potato/import/_export.h"
-    "public/potato/import/copy_importer.h"
     "public/potato/import/importer.h"
     "public/potato/import/importer_context.h"
     "public/potato/import/importer_factory.h"
-    "public/potato/import/json_importer.h"
 )
 
 include(up_set_common_properties)

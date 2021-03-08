@@ -6,13 +6,11 @@ import common;
 struct ImporterConfig {
 }
 
-[cxximport("up::JsonImporterConfig", "json_importer.h")]
 struct JsonImporterConfig : ImporterConfig {
     [cxxname("type"), json("type")]
     string _type;
 }
 
-[cxximport("up::CopyImporterConfig", "copy_importer.h")]
 struct CopyImporterConfig : ImporterConfig {
     [cxxname("type"), json("type")]
     string _type;
