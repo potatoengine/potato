@@ -5,7 +5,7 @@ mark_as_advanced(libuv_LIBRARY)
 
 if (NOT libuv_LIBRARY)
     FetchContent_Populate(libuv)
-    add_subdirectory(${libuv_SOURCE_DIR} ${libuv_BINARY_DIR} EXCLUDE_FROM_ALL)
+    add_subdirectory(${libuv_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/libuv EXCLUDE_FROM_ALL)
 
     # Silence warnings that libuv generates (ugh)
     if(MSVC)
