@@ -6,9 +6,9 @@ FetchContent_Declare(catch2
     GIT_SHALLOW ON
 )
 FetchContent_Declare(imgui
-    GIT_REPOSITORY https://github.com/potatoengine/imgui.git
-    GIT_TAG up20210127
-    GIT_SHALLOW ON
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG d5a4d5300055c1222585a5f6758a232bb9d22d3f
+    GIT_SHALLOW OFF
 )
 FetchContent_Declare(glm
     GIT_REPOSITORY https://github.com/g-truc/glm.git
@@ -16,9 +16,9 @@ FetchContent_Declare(glm
     GIT_SHALLOW ON
 )
 FetchContent_Declare(stb
-    GIT_REPOSITORY https://github.com/potatoengine/stb.git
-    GIT_TAG up20200529
-    GIT_SHALLOW ON
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG b42009b3b9d4ca35bc703f5310eedc74f584be58
+    GIT_SHALLOW OFF
 )
 FetchContent_Declare(json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
