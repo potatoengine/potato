@@ -10,7 +10,7 @@ enum TestEnum {
 
 struct TestStruct {
     [json("enum")]
-    TestEnum test = First;
+    TestEnum test = TestEnum.First;
 }
 
 struct TestComplex {

@@ -9,9 +9,9 @@ attribute serialize {}
 attribute virtualbase {}
 
 [ignore, cxxname("char")]
-type char;
+struct char;
 [ignore, cxxname("double")]
-type double;
+struct double;
 
 [ignore, cxximport("glm::vec3", "glm/vec3.hpp")]
 struct vec3 {
@@ -21,10 +21,10 @@ struct vec3 {
 }
 
 [ignore, cxximport("glm::mat4x4", "glm/mat4x4.hpp")]
-type mat4x4;
+struct mat4x4;
 
 [ignore, cxximport("glm::quat", "glm/gtx/quaternion.hpp")]
-type quat;
+struct quat;
 
 [cxximport("up::UUID", "potato/runtime/uuid.h")]
-type UUID;
+struct UUID;

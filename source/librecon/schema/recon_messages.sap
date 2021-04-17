@@ -11,7 +11,7 @@ enum ReconLogSeverity {
 struct ReconLogMessage {
     string category;
     string message;
-    ReconLogSeverity severity = Info;
+    ReconLogSeverity severity = ReconLogSeverity.Info;
 }
 
 struct ReconImportMessage {

@@ -8,7 +8,7 @@ import material;
 
 [cxximport("up::SoundResource::Handle", "potato/audio/sound_resource.h")]
 [AssetReference("potato.asset.sound")]
-type SoundHandle;
+struct SoundHandle;
 
 [Component]
 struct Transform {
