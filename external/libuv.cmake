@@ -3,7 +3,10 @@ include(config.cmake)
 find_library(libuv_LIBRARY NAMES uv libuv)
 mark_as_advanced(libuv_LIBRARY)
 
-if (NOT libuv_LIBRARY)
+find_path(libuv_INCLUDE_DIR NAMES uv.h)
+mark_as_advanced(libuv_INCLUDE_DIR)
+
+if (NOT libuv_LIBRARY OR NOT libuv_INCLUDE_DIR)
     FetchContent_Populate(libuv)
     add_subdirectory(${libuv_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/libuv EXCLUDE_FROM_ALL)
 
@@ -19,8 +22,7 @@ if (NOT libuv_LIBRARY)
         )
     endif()
 else()
-    find_path(libuv_INCLUDE_DIR NAMES uv.h)
-    mark_as_advanced(libuv_INCLUDE_DIR)
+    message(STATUS "Using system libuv ${libuv_LIBRARY}")
 
     add_library(uv INTERFACE)
     target_link_libraries(uv INTERFACE ${libuv_LIBRARY})
