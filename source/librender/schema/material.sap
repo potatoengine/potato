@@ -5,19 +5,19 @@ import tools;
 
 [cxximport("up::Shader::Handle", "potato/render/shader.h")]
 [AssetReference("potato.asset.shader")]
-struct ShaderHandle;
+using ShaderHandle;
 
 [cxximport("up::Mesh::Handle", "potato/render/mesh.h")]
 [AssetReference("potato.asset.model")]
-struct MeshHandle;
+using MeshHandle;
 
 [cxximport("up::Material::Handle", "potato/render/material.h")]
 [AssetReference("potato.asset.material")]
-struct MaterialHandle;
+using MaterialHandle;
 
 [cxximport("up::Texture::Handle", "potato/render/texture.h")]
 [AssetReference("potato.asset.texture")]
-struct TextureHandle;
+using TextureHandle;
 
 struct MaterialShaders {
     ShaderHandle vertex;
