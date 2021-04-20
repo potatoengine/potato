@@ -52,10 +52,12 @@ def cxxnamespace(type: type_info.TypeBase, namespace: str='up::schema'):
 def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     """Calculates the qualified name for types"""
     cxxname = type.cxxname
+    if '::' in cxxname or type.kind == type_info.TypeKind.SIMPLE:
+        return cxxname
     if type.has_annotation('cxximport'):
         return cxxname
     cxxns = cxxnamespace(type, namespace)
-    return cxxname if '::' in cxxname or type.module == '$core' else f'{cxxns}::{cxxname}'
+    return f'{cxxns}::{cxxname}'
 
 def cxxvalue(value, db: type_info.TypeDatabase):
     if value is True:
@@ -72,10 +74,10 @@ def cxxvalue(value, db: type_info.TypeDatabase):
 
 def generate_header_types(ctx: Context):
     """Generates the type definitions for types"""
-    for _, type in ctx.db.exports.items():
+    for type in ctx.db.exports:
         if type.has_annotation('ignore'):
             continue
-        if type.kind == type_info.TypeKind.OPAQUE:
+        if type.kind == type_info.TypeKind.SIMPLE:
             continue
         if type.has_annotation('cxximport'):
             continue
@@ -92,7 +94,7 @@ def generate_header_types(ctx: Context):
             for key in type.names:
                 ctx.print(f'        {key} = {type.value_or(key, 0)},\n')
             ctx.print("    };\n")
-        else:
+        elif type.kind == type_info.TypeKind.STRUCT or type.kind == type_info.TypeKind.ATTRIBUTE:
             ctx.print(f'    struct {type.cxxname}')
             if type.kind == type_info.TypeKind.ATTRIBUTE:
                 ctx.print(' : reflex::SchemaAttribute')
@@ -114,11 +116,11 @@ def generate_header_schemas(ctx: Context):
     """Generates the Schema declarations for types"""
     ctx.print("namespace up::reflex {\n")
 
-    for type in ctx.db.exports.values():
+    for type in ctx.db.exports:
         if type.has_annotation('ignore'):
             continue
-        #if type.has_annotation('cxximport'):
-        #    continue
+        if type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
+            continue
 
         qual_name = qualified_cxxname(type=type)
 
@@ -156,8 +158,10 @@ def generate_impl_annotations(ctx: Context, name: str, entity: type_info.Annotat
 
 def generate_impl_schemas(ctx: Context):
     """Generates the Schema definitions for types"""
-    for type in ctx.db.exports.values():
+    for type in ctx.db.exports:
         if type.has_annotation('ignore'):
+            continue
+        if type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
             continue
 
         qual_name = qualified_cxxname(type=type)
@@ -196,16 +200,19 @@ def generate_impl_schemas(ctx: Context):
         }};
 ''')
             ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::AssetRef, .baseSchema = base, .operations = &operations, .annotations = {type.name}_annotations}};\n')
-        elif type.kind == type_info.TypeKind.OPAQUE or len(type.fields_ordered) == 0:
+        elif type.kind == type_info.TypeKind.SIMPLE or type.kind == type_info.TypeKind.ALIAS:
             ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .annotations = {type.name}_annotations}};\n')
-        else:
+        elif type.kind == type_info.TypeKind.STRUCT or type.kind == type_info.TypeKind.ATTRIBUTE:
             for field in type.fields_ordered:
                 generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
 
-            ctx.print('    static const SchemaField fields[] = {\n')
-            for field in type.fields_ordered:
-                ctx.print(f'        SchemaField{{.name = "{field.name}"_zsv, .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {type.name}_{field.name}_annotations}},\n')
-            ctx.print('    };\n')
+            if len(type.fields):
+                ctx.print('    static const SchemaField fields[] = {\n')
+                for field in type.fields_ordered:
+                    ctx.print(f'        SchemaField{{.name = "{field.name}"_zsv, .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {type.name}_{field.name}_annotations}},\n')
+                ctx.print('    };\n')
+            else:
+                ctx.print('    static span<SchemaField const> const fields;\n')
 
             ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .fields = fields, .annotations = {type.name}_annotations}};\n')
 
@@ -229,7 +236,7 @@ def generate_header(ctx: Context):
     for imported in ctx.db.imports:
         ctx.print(f'#include "{imported}_schema.h"\n')
 
-    for type in ctx.db.types.values():
+    for type in ctx.db.types:
         header = type.get_annotation_field_or('cxximport', 'header', None)
         if header is not None:
             ctx.print(f'#include "{header}"\n')

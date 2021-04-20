@@ -6,9 +6,12 @@ class TypeKind(Enum):
     """Type kinds differentiate declarations such as structs and enums"""
 
     ATTRIBUTE = "attribute"
-    OPAQUE = "opaque"
+    ALIAS = "alias"
     STRUCT = "struct"
     ENUM = "enum"
+    SIMPLE = "simple"
+    POINTER = "pointer"
+    ARRAY = "array"
 
 class Annotation:
     """A single annotation"""
@@ -16,8 +19,8 @@ class Annotation:
         self.__name = ''
         self.__type = None
         self.__type_name = type_name
-        self.__values_ordered = []
-        self.__values = {}
+        self.__args = []
+        self.__argmap = {}
 
     @property
     def type(self):
@@ -25,18 +28,21 @@ class Annotation:
 
     @property
     def values(self):
-        return self.__values_ordered
+        return (arg for arg in self.__args)
 
     def value_or(self, key, default):
-        return self.__values[key] if key in self.__values else default
+        if isinstance(key, str):
+            return self.__argmap[key] if key in self.__argmap else default
+        else:
+            return self.__args[key]
 
     def load_from_json(self, json):
-        self.__values = {key:value for key,value in json.items()}
+        self.__args = [arg for arg in json['args']]
 
     def resolve(self, db):
-        self.__type = db.types[self.__type_name]
-        for field in self.__type.fields_ordered:
-            self.__values_ordered.append(self.__values[field.name])
+        self.__type = db.type(self.__type_name)
+        for index,field in enumerate(self.__type.fields_ordered):
+            self.__argmap[field.name] = self.__args[index]
 
 class AnnotationsBase:
     """Holder for annotations"""
@@ -45,37 +51,43 @@ class AnnotationsBase:
 
     @property
     def annotations(self):
-        return self.__annotations.values()
+        return self.__annotations
 
-    def __contains__(self, key):
-        return key in self.__annotations
+    def __contains__(self, type):
+        return self.has_annotation(type)
 
-    def has_annotation(self, key):
-        return key in self.__annotations
+    def has_annotation(self, type):
+        for anno in self.__annotations:
+            if anno.type.name == type:
+                return True
+        return False
 
-    def get_annotation(self, key, sub):
-        return self.__annotations[key] if key in self.__annotations else None
+    def get_annotation(self, type, field):
+        return self.get_annotation_field_or(type, field, None)
 
-    def get_annotation_field_or(self, key, sub, otherwise):
-        return self.__annotations[key].value_or(sub, otherwise) if key in self.__annotations else otherwise
+    def get_annotation_field_or(self, type, field, otherwise):
+        for anno in self.__annotations:
+            if anno.type.name == type:
+                return anno.value_or(field, otherwise)
+        return otherwise
 
     def load_from_json(self, json):
-        def annotate(name, json):
-            anno = Annotation(name)
+        def annotate(json):
+            anno = Annotation(json['type'])
             anno.load_from_json(json)
             return anno
-        self.__annotations = {key:annotate(key, value) for key,value in json['annotations'].items()}
+        self.__annotations = [annotate(anno) for anno in json['annotations']]
 
     def resolve(self, db):
-        for key,anno in self.__annotations.items():
+        for anno in self.__annotations:
             anno.resolve(db)
 
 class TypeDatabase:
     """Collection of all known types"""
     def __init__(self):
-        self.__types = {}
+        self.__types = []
+        self.__typemap = {}
         self.__module = ''
-        self.__exports = []
         self.__imports = []
 
     @property
@@ -84,60 +96,74 @@ class TypeDatabase:
 
     @property
     def types(self):
-        return self.__types
+        return (type for type in self.__types)
 
     @property
     def imports(self):
-        return self.__imports
+        return (imp for imp in self.__imports)
 
     @property
     def exports(self):
-        return {name:(self.__types[name]) for name in self.__exports}
+        return (type for type in self.__types if type.module == self.__module)
 
     def type(self, name):
-        return self.__types[name]
+        return self.__typemap[name]
 
     def load_from_json(self, doc):
-        AnnotationsBase.load_from_json(self, doc)
+        module = doc['module']
 
-        self.__module = doc['module']
-        self.__imports = [name for name in doc['imports']]
-        self.__exports = [name for name in doc['exports']]
-        for key,type_json in doc['types'].items():
+        AnnotationsBase.load_from_json(self, module)
+
+        self.__module = module['name']
+        self.__imports = [mod['name'] for mod in module['imports']]
+        for type_json in doc['types']:
+            qualified = type_json['qualified']
             kind = type_json['kind']
             if kind == TypeKind.STRUCT.value:
-                type = TypeStruct(self, name=key)
+                type = TypeStruct(self, qualified=qualified)
             elif kind == TypeKind.ATTRIBUTE.value:
-                type = TypeAttribute(self, name=key)
-            elif kind == TypeKind.OPAQUE.value:
-                type = TypeOpaque(self, name=key)
+                type = TypeAttribute(self, qualified=qualified)
+            elif kind == TypeKind.SIMPLE.value:
+                type = TypeSimple(self, qualified=qualified)
+            elif kind == TypeKind.ALIAS.value:
+                type = TypeAlias(self, qualified=qualified)
             elif kind == TypeKind.ENUM.value:
-                type = TypeEnum(self, name=key)
+                type = TypeEnum(self, qualified=qualified)
+            elif kind == TypeKind.POINTER.value:
+                type = TypePointer(self, qualified=qualified)
+            elif kind == TypeKind.ARRAY.value:
+                type = TypeArray(self, qualified=qualified)
             else:
                 raise Exception(f'Unknown kind {kind}')
-            self.__types[type.name] = type
+            self.__types.append(type)
+            self.__typemap[type.qualified] = type
             type.load_from_json(type_json)
 
         self.__resolve_types()
 
     def __resolve_types(self):
-        for type in self.__types.values():
+        for type in self.__types:
             type.resolve(self)
 
 class TypeBase(AnnotationsBase):
     """User-friendly wrapper of a type-definition in the type database"""
     __builtin_types = ['char', 'float', 'double']
 
-    def __init__(self, db, name):
+    def __init__(self, db, qualified):
         self.__db = db
         self.__module = db.module
-        self.__name = name
+        self.__name = ''
+        self.__qualified = qualified
         self.__base_type_name = ''
         self.__base_type = None
 
     @property
     def name(self):
         return self.__name
+
+    @property
+    def qualified(self):
+        return self.__qualified
 
     @property
     def module(self):
@@ -161,18 +187,14 @@ class TypeBase(AnnotationsBase):
 
     @property
     def qualified_cxxname(self):
-        if self.module == '$core': return self.cxxname
-
         cxximport = self.get_annotation_field_or('cxximport', 'id', None)
         if cxximport is not None: return cxximport
 
         if self.__name in TypeBase.__builtin_types:
             return self.__name
 
-        cxxname = self.get_annotation_field_or('cxxname', 'id', self.__name)
         ns = self.get_annotation_field_or('cxxnamespace', 'ns', 'up::schema')
-
-        return f'{ns}::{cxxname}'
+        return f'{ns}::{self.cxxname}'
 
     @property
     def base(self):
@@ -180,6 +202,7 @@ class TypeBase(AnnotationsBase):
 
     def load_from_json(self, json):
         AnnotationsBase.load_from_json(self, json)
+        self.__name = json['name']
         self.__base_type_name = json['base'] if 'base' in json and json['base'] is not None else ''
         self.__module = json['module']
 
@@ -188,18 +211,66 @@ class TypeBase(AnnotationsBase):
             self.__base_type = db.type(self.__base_type_name)
         AnnotationsBase.resolve(self, db)
 
-class TypeOpaque(TypeBase):
-    """User-friendly wrapper of an opaque definition"""
+class TypeSimple(TypeBase):
+    """User-friendly wrapper of a simple type"""
     @property
     def kind(self):
-        return TypeKind.OPAQUE
+        return TypeKind.SIMPLE
+
+    @property
+    def qualified_cxxname(self):
+        return self.cxxname
+
+class TypeAlias(TypeBase):
+    """User-friendly wrapper of an alias"""
+    @property
+    def kind(self):
+        return TypeKind.ALIAS
+
+class TypePointer(TypeBase):
+    """User-friendly wrapper of a pointer type"""
+    @property
+    def kind(self):
+        return TypeKind.POINTER
+
+class TypeArray(TypeBase):
+    """User-friendly wrapper of an array type"""
+    def __init__(self, db, qualified):
+        TypeBase.__init__(self, db, qualified)
+        self.__of_type_name = ''
+        self.__of_type = None
+
+    @property
+    def kind(self):
+        return TypeKind.ARRAY
+
+    @property
+    def of(self):
+        return self.__of_type
+
+    @property
+    def cxxname(self):
+        return self.get_annotation_field_or('cxxname', 'id', self.get_annotation_field_or('cxximport', 'id', self.of.cxxname))
+
+    @property
+    def qualified_cxxname(self):
+        return f'up::vector<{self.of.qualified_cxxname}>'
+
+    def load_from_json(self, json):
+        TypeBase.load_from_json(self, json)
+        self.__of_type_name = json['refType']
+
+    def resolve(self, db):
+        TypeBase.resolve(self, db)
+        if self.__of_type_name != '':
+            self.__of_type = db.type(self.__of_type_name)
 
 class TypeStruct(TypeBase):
     """User-friendly wrapper of a struct definition"""
-    def __init__(self, db, name):
-        TypeBase.__init__(self, db, name)
-        self.__fields_ordered = []
-        self.__fields = {}
+    def __init__(self, db, qualified):
+        TypeBase.__init__(self, db, qualified)
+        self.__fields = []
+        self.__fieldmap = {}
 
     @property
     def kind(self):
@@ -207,52 +278,61 @@ class TypeStruct(TypeBase):
 
     @property
     def fields(self):
-        return self.__fields
+        return self.__fieldmap
 
     @property
     def fields_ordered(self):
-        return [self.__fields[name] for name in self.__fields_ordered]
+        return self.__fields
 
     def load_from_json(self, json):
         TypeBase.load_from_json(self, json)
-        self.__fields_ordered = [name for name in json['order']]
-        for key,field_json in json['fields'].items():
+        for field_json in json['fields']:
+            key = field_json['name']
             field = TypeField(owner=self, name=key)
             field.load_from_json(field_json)
-            self.__fields[key] = field
+            self.__fields.append(field)
+            self.__fieldmap[key] = field
 
     def resolve(self, db):
         TypeBase.resolve(self, db)
-        for field in self.__fields.values():
+        for field in self.__fields:
             field.resolve(db)
 
 class TypeEnum(TypeBase):
     """User-friendly wrapper of an enum definition"""
-    def __init__(self, db, name):
-        TypeBase.__init__(self, db, name)
-        self.__names = []
-        self.__values = {}
+
+    class EnumItem(object):
+        """Individual enumeration item"""
+        def __init__(self, name, value):
+            self.name = name
+            self.value = value
+
+    def __init__(self, db, qualified):
+        TypeBase.__init__(self, db, qualified)
+        self.__items = []
+        self.__itemmap = {}
 
     @property
     def kind(self):
         return TypeKind.ENUM
 
     def value_or(self, key, otherwise=None):
-        return self.__values[key] if key in self.__values else otherwise
+        return self.__itemmap[key].value if key in self.__itemmap else otherwise
 
     @property
     def values(self):
-        return self.__values
+        return (item.value for item in self.__items)
 
     @property
     def names(self):
-        return self.__names
+        return (item.name for item in self.__items)
 
     def load_from_json(self, json):
         TypeBase.load_from_json(self, json)
-        for key,value in json['values'].items():
-            self.__values[key] = value
-        self.__names = [key for key in json['names']]
+        for item_json in json['items']:
+            item = TypeEnum.EnumItem(item_json['name'], item_json['value'])
+            self.__items.append(item)
+            self.__itemmap[item.name] = item
 
 class TypeAttribute(TypeStruct):
     """User-friendly wrapper for an attribute struct"""
@@ -269,7 +349,6 @@ class TypeField(AnnotationsBase):
         self.__type = None
         self.__default = None
         self.__has_default = False
-        self.__is_array = False
 
     @property
     def name(self):
@@ -281,8 +360,7 @@ class TypeField(AnnotationsBase):
 
     @property
     def cxxtype(self):
-        cxxname = self.__type.qualified_cxxname
-        return f"vector<{cxxname}>" if self.__is_array else cxxname
+        return self.__type.qualified_cxxname
 
     @property
     def type(self):
@@ -290,7 +368,7 @@ class TypeField(AnnotationsBase):
 
     @property
     def is_array(self):
-        return self.__is_array
+        return self.type.kind == TypeKind.ARRAY
 
     def default_or(self, otherwise):
         if self.__has_default:
@@ -307,9 +385,6 @@ class TypeField(AnnotationsBase):
         type = json['type']
         if isinstance(type, str):
             self.__type_name = json['type']
-        elif type['kind'] == 'array':
-            self.__type_name = type['of']
-            self.__is_array = True
         if 'default' in json:
             self.__default = json['default']
             self.__has_default = True
