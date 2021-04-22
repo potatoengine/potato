@@ -9,5 +9,4 @@ attribute Tooltip { string text; }
 attribute AssetType { string assetType; }
 
 [cxximport("up::AssetHandle<$AssetT>", "potato/runtime/asset.h")]
-struct AssetRef<AssetT> {
-}
+struct AssetRef<AssetT> { }
