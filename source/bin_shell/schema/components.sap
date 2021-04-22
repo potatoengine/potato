@@ -6,9 +6,11 @@ import tools;
 import constraint;
 import material;
 
-[cxximport("up::SoundResource::Handle", "potato/audio/sound_resource.h")]
-[AssetReference("potato.asset.sound")]
-using SoundHandle;
+[cxximport("up::SoundResource", "potato/audio/sound_resource.h")]
+[AssetType("potato.asset.sound")]
+using SoundAsset;
+
+using SoundRef = AssetRef<SoundAsset>;
 
 [Component]
 struct Transform {
@@ -44,7 +46,7 @@ struct Ding {
     float period = 1;
     [FloatRange(0, 3600)]
     float time = 0;
-    SoundHandle sound;
+    SoundRef sound;
 }
 
 struct Data {

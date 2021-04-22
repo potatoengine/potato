@@ -87,7 +87,7 @@ bool up::reflex::_detail::encodeAssetRef(nlohmann::json& json, Schema const& sch
     json = nlohmann::json::object();
     json["$schema"] = schema.name;
 
-    auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
+    auto const* const resourceAnnotation = queryAnnotation<schema::AssetType>(schema);
     if (resourceAnnotation != nullptr) {
         json["type"] = resourceAnnotation->assetType;
     }

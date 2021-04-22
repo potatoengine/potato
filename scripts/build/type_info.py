@@ -12,6 +12,34 @@ class TypeKind(Enum):
     SIMPLE = "simple"
     POINTER = "pointer"
     ARRAY = "array"
+    GENERIC = "generic"
+    SPECIALIZED = "specialized"
+
+class Location:
+    """Source location"""
+    def __init__(self, filename, line = None, column = None):
+        self.filename = filename
+        self.line = line
+        self.column = column
+
+    @classmethod
+    def empty(cls):
+        return Location('')
+
+    def __str__(self):
+        if self.line is None:
+            return self.filename
+        elif self.column is None:
+            return f'{self.filename}({self.line})'
+        else:
+            return f'{self.filename}({self.line},{self.column})'
+
+    @classmethod
+    def from_json(cls, json):
+        filename = json['filename'] if 'filename' in json else ''
+        line = json['line'] if 'line' in json else None
+        column = json['column'] if 'column' in json else None
+        return Location(filename, line, column)
 
 class Annotation:
     """A single annotation"""
@@ -21,10 +49,15 @@ class Annotation:
         self.__type_name = type_name
         self.__args = []
         self.__argmap = {}
+        self.__location = Location.empty()
 
     @property
     def type(self):
         return self.__type
+
+    @property
+    def location(self):
+        return self.__location
 
     @property
     def values(self):
@@ -37,6 +70,7 @@ class Annotation:
             return self.__args[key]
 
     def load_from_json(self, json):
+        self.__location = Location.from_json(json['location'])
         self.__args = [arg for arg in json['args']]
 
     def resolve(self, db):
@@ -133,6 +167,10 @@ class TypeDatabase:
                 type = TypePointer(self, qualified=qualified)
             elif kind == TypeKind.ARRAY.value:
                 type = TypeArray(self, qualified=qualified)
+            elif kind == TypeKind.GENERIC.value:
+                type = TypeGeneric(self, qualified=qualified)
+            elif kind == TypeKind.SPECIALIZED.value:
+                type = TypeSpecialized(self, qualified=qualified)
             else:
                 raise Exception(f'Unknown kind {kind}')
             self.__types.append(type)
@@ -156,6 +194,11 @@ class TypeBase(AnnotationsBase):
         self.__qualified = qualified
         self.__base_type_name = ''
         self.__base_type = None
+        self.__location = Location.empty()
+
+    @property
+    def location(self):
+        return self.__location
 
     @property
     def name(self):
@@ -186,22 +229,12 @@ class TypeBase(AnnotationsBase):
         return self.get_annotation_field_or('cxxname', 'id', self.get_annotation_field_or('cxximport', 'id', self.__name))
 
     @property
-    def qualified_cxxname(self):
-        cxximport = self.get_annotation_field_or('cxximport', 'id', None)
-        if cxximport is not None: return cxximport
-
-        if self.__name in TypeBase.__builtin_types:
-            return self.__name
-
-        ns = self.get_annotation_field_or('cxxnamespace', 'ns', 'up::schema')
-        return f'{ns}::{self.cxxname}'
-
-    @property
     def base(self):
         return self.__base_type
 
     def load_from_json(self, json):
         AnnotationsBase.load_from_json(self, json)
+        self.__location = Location.from_json(json['location'])
         self.__name = json['name']
         self.__base_type_name = json['base'] if 'base' in json and json['base'] is not None else ''
         self.__module = json['module']
@@ -217,15 +250,30 @@ class TypeSimple(TypeBase):
     def kind(self):
         return TypeKind.SIMPLE
 
-    @property
-    def qualified_cxxname(self):
-        return self.cxxname
-
 class TypeAlias(TypeBase):
     """User-friendly wrapper of an alias"""
+    def __init__(self, db, qualified):
+        TypeBase.__init__(self, db, qualified)
+        self.__ref_name = ''
+        self.__ref = None
+
     @property
     def kind(self):
         return TypeKind.ALIAS
+
+    @property
+    def ref(self):
+        return self.__ref
+
+    def load_from_json(self, json):
+        TypeBase.load_from_json(self, json)
+        if 'refType' in json:
+            self.__ref_name = json['refType']
+
+    def resolve(self, db):
+        TypeBase.resolve(self, db)
+        if self.__ref_name != '':
+            self.__ref = db.type(self.__ref_name)
 
 class TypePointer(TypeBase):
     """User-friendly wrapper of a pointer type"""
@@ -250,11 +298,7 @@ class TypeArray(TypeBase):
 
     @property
     def cxxname(self):
-        return self.get_annotation_field_or('cxxname', 'id', self.get_annotation_field_or('cxximport', 'id', self.of.cxxname))
-
-    @property
-    def qualified_cxxname(self):
-        return f'up::vector<{self.of.qualified_cxxname}>'
+        self.get_annotation_field_or('cxxname', 'id', self.get_annotation_field_or('cxximport', 'id', self.of.cxxname))
 
     def load_from_json(self, json):
         TypeBase.load_from_json(self, json)
@@ -271,6 +315,7 @@ class TypeStruct(TypeBase):
         TypeBase.__init__(self, db, qualified)
         self.__fields = []
         self.__fieldmap = {}
+        self.__generics = []
 
     @property
     def kind(self):
@@ -284,6 +329,10 @@ class TypeStruct(TypeBase):
     def fields_ordered(self):
         return self.__fields
 
+    @property
+    def generics(self):
+        return [gen for gen in self.__generics]
+
     def load_from_json(self, json):
         TypeBase.load_from_json(self, json)
         for field_json in json['fields']:
@@ -292,6 +341,9 @@ class TypeStruct(TypeBase):
             field.load_from_json(field_json)
             self.__fields.append(field)
             self.__fieldmap[key] = field
+        if 'generics' in json:
+            for generic in json['generics']:
+                self.__generics.append(generic)
 
     def resolve(self, db):
         TypeBase.resolve(self, db)
@@ -340,6 +392,49 @@ class TypeAttribute(TypeStruct):
     def kind(self):
         return TypeKind.ATTRIBUTE
 
+class TypeGeneric(TypeBase):
+    """User-friendly wrapper for a generic type placeholder"""
+    @property
+    def kind(self):
+        return TypeKind.GENERIC
+
+class TypeSpecialized(TypeBase):
+    """User-friendly wrapper of an specialized type definition"""
+
+    def __init__(self, db, qualified):
+        TypeBase.__init__(self, db, qualified)
+        self.__ref = None
+        self.__ref_name = None
+        self.__params = []
+        self.__param_names = []
+
+    @property
+    def kind(self):
+        return TypeKind.SPECIALIZED
+
+    @property
+    def ref(self):
+        return self.__ref
+
+    @property
+    def params(self):
+        return (param for param in self.__params)
+
+    @property
+    def cxxname(self):
+        return f'{self.ref.cxxname}<{", ".join(p.qualified_cxxname for p in self.params)}>'
+
+    def load_from_json(self, json):
+        TypeBase.load_from_json(self, json)
+        self.__ref_name = json['refType']
+        for param_name in json['typeParams']:
+            self.__param_names.append(param_name)
+
+    def resolve(self, db):
+        self.__ref = db.type(self.__ref_name)
+        for param_name in self.__param_names:
+            self.__params.append(db.type(param_name))
+
 class TypeField(AnnotationsBase):
     """User-friendly wrapper for a field definition of a type"""
     def __init__(self, owner, name):
@@ -357,10 +452,6 @@ class TypeField(AnnotationsBase):
     @property
     def cxxname(self):
         return self.get_annotation_field_or('cxxname', 'id', self.__name)
-
-    @property
-    def cxxtype(self):
-        return self.__type.qualified_cxxname
 
     @property
     def type(self):

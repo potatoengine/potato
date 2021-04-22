@@ -363,9 +363,8 @@ void up::editor::PropertyGrid::_editAssetField(
     UP_ASSERT(schema.primitive == reflex::SchemaPrimitive::AssetRef);
 
     zstring_view assetType{};
-    if (auto const* const resourceAnnotation = queryAnnotation<schema::AssetReference>(schema);
-        resourceAnnotation != nullptr) {
-        assetType = resourceAnnotation->assetType;
+    if (auto const* const assetTypeAnno = queryAnnotation<schema::AssetType>(schema); assetTypeAnno != nullptr) {
+        assetType = assetTypeAnno->assetType;
     }
 
     auto* const handle = static_cast<UntypedAssetHandle*>(object);

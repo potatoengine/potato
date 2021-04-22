@@ -5,6 +5,7 @@ import sys
 import json
 import argparse
 import os
+import re
 from os import path
 from datetime import datetime
 import type_info
@@ -36,6 +37,10 @@ class Context:
     def print(self, *args):
         self.__output.write(''.join(args))
 
+    def error(self, location, *args):
+        print(f'{location}: {"".join(str(arg) for arg in args)}\n', file=sys.stderr)
+        sys.exit(1)
+
 def generate_file_prefix(ctx: Context):
     """Writes the header at the top of a generated C++ file"""
     ctx.print(f"""
@@ -45,19 +50,55 @@ def generate_file_prefix(ctx: Context):
 // - Generated from {path.basename(ctx.input_name)}
 """)
 
+def cxxident(id):
+    """Returns a legal C++ identifier from a given string"""
+    return re.sub(r'[^a-zA-Z0-9]+', '_', id)
+
 def cxxnamespace(type: type_info.TypeBase, namespace: str='up::schema'):
     """Returns the desired namespace for a type"""
     return type.get_annotation_field_or('cxxnamespace', 'ns', namespace if not type.has_annotation('Component') else 'up::components')
 
 def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     """Calculates the qualified name for types"""
-    cxxname = type.cxxname
-    if '::' in cxxname or type.kind == type_info.TypeKind.SIMPLE:
-        return cxxname
+
     if type.has_annotation('cxximport'):
-        return cxxname
-    cxxns = cxxnamespace(type, namespace)
-    return f'{cxxns}::{cxxname}'
+        return type.cxxname
+
+    elif type.kind == type_info.TypeKind.SPECIALIZED:
+        refType = type.ref
+        if refType.has_annotation('cxximport'):
+            cxxname = refType.cxxname
+            for idx, gen in enumerate(type.params):
+                param_name = refType.generics[idx]
+                param_cxxname = qualified_cxxname(gen)
+                cxxname = cxxname.replace(f'${idx + 1}', param_cxxname).replace(f'${param_name}', param_cxxname)
+            return cxxname
+        else:
+            return f'{qualified_cxxname(type.ref)}<{", ".join(qualified_cxxname(p) for p in type.params)}>'
+
+    elif type.kind == type_info.TypeKind.ARRAY:
+        return f'up::vector<{qualified_cxxname(type.of)}>'
+
+    elif type.kind == type_info.TypeKind.POINTER:
+        return f'up::box<{qualified_cxxname(type.to)}>'
+
+    elif type.kind == type_info.TypeKind.ALIAS and type.ref is not None:
+        return qualified_cxxname(type.ref)
+
+    elif type.kind == type_info.TypeKind.ALIAS and type.ref is None:
+        return type.cxxname
+
+    elif type.kind == type_info.TypeKind.SIMPLE:
+        return type.cxxname
+
+    else:
+        cxxname = type.cxxname
+
+        if '::' in cxxname:
+            return cxxname
+
+        cxxns = cxxnamespace(type, namespace)
+        return f'{cxxns}::{cxxname}'
 
 def cxxvalue(value, db: type_info.TypeDatabase):
     if value is True:
@@ -77,7 +118,7 @@ def generate_header_types(ctx: Context):
     for type in ctx.db.exports:
         if type.has_annotation('ignore'):
             continue
-        if type.kind == type_info.TypeKind.SIMPLE:
+        if type.kind == type_info.TypeKind.SIMPLE or type.kind == type_info.TypeKind.GENERIC or type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
             continue
         if type.has_annotation('cxximport'):
             continue
@@ -89,26 +130,34 @@ def generate_header_types(ctx: Context):
         if type.kind == type_info.TypeKind.ENUM:
             ctx.print(f'    enum class {type.cxxname}')
             if type.base is not None:
-                ctx.print(f' : {type.base.cxxname}')
+                ctx.print(f' : {qualified_cxxname(type.base)}')
             ctx.print(' {\n')
             for key in type.names:
                 ctx.print(f'        {key} = {type.value_or(key, 0)},\n')
             ctx.print("    };\n")
         elif type.kind == type_info.TypeKind.STRUCT or type.kind == type_info.TypeKind.ATTRIBUTE:
+            if len(type.generics):
+                ctx.print(f'    template <typename {", typename ".join(type.generics)}>')
             ctx.print(f'    struct {type.cxxname}')
             if type.kind == type_info.TypeKind.ATTRIBUTE:
                 ctx.print(' : reflex::SchemaAttribute')
             elif type.base is not None:
-                ctx.print(f' : {type.base.cxxname}')
+                ctx.print(f' : {qualified_cxxname(type.base)}')
             ctx.print(' {\n')
             if type.has_annotation('virtualbase'):
                 ctx.print(f'        virtual ~{type.cxxname}() = default;\n')
             for field in type.fields_ordered:
-                ctx.print(f"        {field.cxxtype} {field.cxxname}")
+                ctx.print(f"        {qualified_cxxname(field.type)} {field.cxxname}")
                 if field.has_default:
                     ctx.print(f' = {cxxvalue(field.default_or(None), ctx.db)}')
                 ctx.print(";\n")
             ctx.print("    };\n")
+        elif type.kind == type_info.TypeKind.SPECIALIZED:
+            ctx.print(f'    template <> struct {type.cxxname} {{}};\n')
+        elif type.kind == type_info.TypeKind.ALIAS and type.ref is not None:
+            ctx.print(f'    using {type.cxxname} = {qualified_cxxname(type.ref)};\n')
+        else:
+            ctx.error(type.location, 'Unknown type kind', type.kind)
 
         ctx.print('}\n')
 
@@ -119,12 +168,18 @@ def generate_header_schemas(ctx: Context):
     for type in ctx.db.exports:
         if type.has_annotation('ignore'):
             continue
-        if type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
+
+        if type.kind == type_info.TypeKind.ALIAS and type.ref is not None:
+            type = type.ref
+
+        if type.kind == type_info.TypeKind.SIMPLE or type.kind == type_info.TypeKind.GENERIC or type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
+            continue
+        if type.kind == type_info.TypeKind.STRUCT and len(type.generics) != 0:
             continue
 
         qual_name = qualified_cxxname(type=type)
 
-        ctx.print("    template <>\n")
+        ctx.print(f'    template <>\n')
         ctx.print(f"    struct TypeHolder<{qual_name}> {{\n")
         ctx.print(f"        UP_{ctx.library.upper()}_API static TypeInfo const& get() noexcept;\n")
         ctx.print("    };\n")
@@ -161,7 +216,13 @@ def generate_impl_schemas(ctx: Context):
     for type in ctx.db.exports:
         if type.has_annotation('ignore'):
             continue
-        if type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
+
+        if type.kind == type_info.TypeKind.ALIAS and type.ref is not None:
+            type = type.ref
+
+        if type.kind == type_info.TypeKind.SIMPLE or type.kind == type_info.TypeKind.GENERIC or type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
+            continue
+        if type.kind == type_info.TypeKind.STRUCT and len(type.generics) != 0:
             continue
 
         qual_name = qualified_cxxname(type=type)
@@ -175,7 +236,7 @@ def generate_impl_schemas(ctx: Context):
         ctx.print(f"up::reflex::Schema const& up::reflex::SchemaHolder<{qual_name}>::get() noexcept {{\n")
         ctx.print('    using namespace up::schema;\n')
 
-        generate_impl_annotations(ctx, type.name, type)
+        generate_impl_annotations(ctx, cxxident(type.name), type)
 
         if type.base is not None:
             ctx.print(f'    static const Schema* const base = &getSchema<{qualified_cxxname(type.base)}>();\n')
@@ -200,21 +261,28 @@ def generate_impl_schemas(ctx: Context):
         }};
 ''')
             ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::AssetRef, .baseSchema = base, .operations = &operations, .annotations = {type.name}_annotations}};\n')
-        elif type.kind == type_info.TypeKind.SIMPLE or type.kind == type_info.TypeKind.ALIAS:
+        elif type.kind == type_info.TypeKind.ALIAS and type.ref is None:
             ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .annotations = {type.name}_annotations}};\n')
-        elif type.kind == type_info.TypeKind.STRUCT or type.kind == type_info.TypeKind.ATTRIBUTE:
-            for field in type.fields_ordered:
-                generate_impl_annotations(ctx, f'{type.name}_{field.name}', field)
+        elif type.kind == type_info.TypeKind.STRUCT or type.kind == type_info.TypeKind.ATTRIBUTE or type.kind == type_info.TypeKind.SPECIALIZED:
+            if type.kind == type_info.TypeKind.SPECIALIZED:
+                fields = type.ref.fields_ordered
+            else:
+                fields = type.fields_ordered
 
-            if len(type.fields):
+            for field in fields:
+                generate_impl_annotations(ctx, f'{cxxident(type.name)}_{field.name}', field)
+
+            if len(fields):
                 ctx.print('    static const SchemaField fields[] = {\n')
-                for field in type.fields_ordered:
-                    ctx.print(f'        SchemaField{{.name = "{field.name}"_zsv, .schema = &getSchema<{field.cxxtype}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {type.name}_{field.name}_annotations}},\n')
+                for field in fields:
+                    ctx.print(f'        SchemaField{{.name = "{field.name}"_zsv, .schema = &getSchema<{qualified_cxxname(field.type)}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {cxxident(type.name)}_{field.name}_annotations}},\n')
                 ctx.print('    };\n')
             else:
                 ctx.print('    static span<SchemaField const> const fields;\n')
 
-            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .fields = fields, .annotations = {type.name}_annotations}};\n')
+            ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .fields = fields, .annotations = {cxxident(type.name)}_annotations}};\n')
+        else:
+            ctx.error(type.location, 'Unrecognized type kind', type.kind)
 
         ctx.print('    return schema;\n')
         ctx.print("}\n")
