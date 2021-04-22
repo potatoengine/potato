@@ -296,10 +296,6 @@ class TypeArray(TypeBase):
     def of(self):
         return self.__of_type
 
-    @property
-    def cxxname(self):
-        self.get_annotation_field_or('cxxname', 'id', self.get_annotation_field_or('cxximport', 'id', self.of.cxxname))
-
     def load_from_json(self, json):
         TypeBase.load_from_json(self, json)
         self.__of_type_name = json['refType']
@@ -420,10 +416,6 @@ class TypeSpecialized(TypeBase):
     def params(self):
         return (param for param in self.__params)
 
-    @property
-    def cxxname(self):
-        return f'{self.ref.cxxname}<{", ".join(p.qualified_cxxname for p in self.params)}>'
-
     def load_from_json(self, json):
         TypeBase.load_from_json(self, json)
         self.__ref_name = json['refType']
@@ -448,10 +440,6 @@ class TypeField(AnnotationsBase):
     @property
     def name(self):
         return self.__name
-
-    @property
-    def cxxname(self):
-        return self.get_annotation_field_or('cxxname', 'id', self.__name)
 
     @property
     def type(self):

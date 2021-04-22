@@ -1,3 +1,4 @@
 module ecs;
 
-attribute Component;
+[cxxnamespace("up::components")]
+use component : struct;

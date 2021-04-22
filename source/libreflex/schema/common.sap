@@ -4,6 +4,7 @@ attribute ignore;
 attribute required { bool require = true; }
 attribute cxxname { string id; }
 attribute cxximport { string id; string header; }
+attribute cxxnamespace { string ns; }
 attribute json { string name; }
 attribute serialize {}
 attribute virtualbase {}

@@ -37,7 +37,7 @@ target_sources(potato_libecs_test PRIVATE
 
 up_compile_sap(potato_libecs_test
     SCHEMAS
-        tests/components.sap
+        tests/test_components.sap
 )
 
 up_set_common_properties(potato_libecs_test)

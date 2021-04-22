@@ -50,9 +50,13 @@ def generate_file_prefix(ctx: Context):
 // - Generated from {path.basename(ctx.input_name)}
 """)
 
-def cxxident(id):
+def cxxident(id: str):
     """Returns a legal C++ identifier from a given string"""
     return re.sub(r'[^a-zA-Z0-9]+', '_', id)
+
+def cxxname(type: type_info.TypeBase):
+    """Returns a non-qualified C++ name for a type"""
+    return type.get_annotation_field_or('cxximport', 'id', type.get_annotation_field_or('cxxname', 'id', cxxident(type.name)))
 
 def cxxnamespace(type: type_info.TypeBase, namespace: str='up::schema'):
     """Returns the desired namespace for a type"""
@@ -62,17 +66,17 @@ def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     """Calculates the qualified name for types"""
 
     if type.has_annotation('cxximport'):
-        return type.cxxname
+        return cxxname(type)
 
     elif type.kind == type_info.TypeKind.SPECIALIZED:
         refType = type.ref
         if refType.has_annotation('cxximport'):
-            cxxname = refType.cxxname
+            name = cxxname(refType)
             for idx, gen in enumerate(type.params):
                 param_name = refType.generics[idx]
                 param_cxxname = qualified_cxxname(gen)
-                cxxname = cxxname.replace(f'${idx + 1}', param_cxxname).replace(f'${param_name}', param_cxxname)
-            return cxxname
+                name = name.replace(f'${idx + 1}', param_cxxname).replace(f'${param_name}', param_cxxname)
+            return name
         else:
             return f'{qualified_cxxname(type.ref)}<{", ".join(qualified_cxxname(p) for p in type.params)}>'
 
@@ -86,19 +90,19 @@ def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
         return qualified_cxxname(type.ref)
 
     elif type.kind == type_info.TypeKind.ALIAS and type.ref is None:
-        return type.cxxname
+        return cxxname(type)
 
     elif type.kind == type_info.TypeKind.SIMPLE:
-        return type.cxxname
+        return cxxname(type)
 
     else:
-        cxxname = type.cxxname
+        name = cxxname(type)
 
-        if '::' in cxxname:
-            return cxxname
+        if '::' in name:
+            return name
 
-        cxxns = cxxnamespace(type, namespace)
-        return f'{cxxns}::{cxxname}'
+        ns = cxxnamespace(type, namespace)
+        return f'{ns}::{name}'
 
 def cxxvalue(value, db: type_info.TypeDatabase):
     if value is True:
@@ -128,7 +132,7 @@ def generate_header_types(ctx: Context):
         ctx.print(f'namespace {cxxns} {{\n')
 
         if type.kind == type_info.TypeKind.ENUM:
-            ctx.print(f'    enum class {type.cxxname}')
+            ctx.print(f'    enum class {cxxname(type)}')
             if type.base is not None:
                 ctx.print(f' : {qualified_cxxname(type.base)}')
             ctx.print(' {\n')
@@ -138,24 +142,24 @@ def generate_header_types(ctx: Context):
         elif type.kind == type_info.TypeKind.STRUCT or type.kind == type_info.TypeKind.ATTRIBUTE:
             if len(type.generics):
                 ctx.print(f'    template <typename {", typename ".join(type.generics)}>')
-            ctx.print(f'    struct {type.cxxname}')
+            ctx.print(f'    struct {cxxname(type)}')
             if type.kind == type_info.TypeKind.ATTRIBUTE:
                 ctx.print(' : reflex::SchemaAttribute')
             elif type.base is not None:
                 ctx.print(f' : {qualified_cxxname(type.base)}')
             ctx.print(' {\n')
             if type.has_annotation('virtualbase'):
-                ctx.print(f'        virtual ~{type.cxxname}() = default;\n')
+                ctx.print(f'        virtual ~{cxxname(type)}() = default;\n')
             for field in type.fields_ordered:
-                ctx.print(f"        {qualified_cxxname(field.type)} {field.cxxname}")
+                ctx.print(f"        {qualified_cxxname(field.type)} {cxxname(field)}")
                 if field.has_default:
                     ctx.print(f' = {cxxvalue(field.default_or(None), ctx.db)}')
                 ctx.print(";\n")
             ctx.print("    };\n")
         elif type.kind == type_info.TypeKind.SPECIALIZED:
-            ctx.print(f'    template <> struct {type.cxxname} {{}};\n')
+            ctx.print(f'    template <> struct {cxxname(type)} {{}};\n')
         elif type.kind == type_info.TypeKind.ALIAS and type.ref is not None:
-            ctx.print(f'    using {type.cxxname} = {qualified_cxxname(type.ref)};\n')
+            ctx.print(f'    using {cxxname(type)} = {qualified_cxxname(type.ref)};\n')
         else:
             ctx.error(type.location, 'Unknown type kind', type.kind)
 
@@ -195,12 +199,15 @@ def generate_impl_annotations(ctx: Context, name: str, entity: type_info.Annotat
     locals = []
     for annotation in entity.annotations:
         attr = annotation.type
+
+        if attr.name[0] == '$': continue
+
         local_name = f'attr_{name}_{attr.name}'
         locals.append(local_name)
 
-        ctx.print(f'    static const {attr.cxxname} {local_name}{{')
+        ctx.print(f'    static const {qualified_cxxname(attr)} {local_name}{{')
         for field, value in zip(attr.fields_ordered, annotation.values):
-            ctx.print(f'.{field.cxxname} = {cxxvalue(value, ctx.db)}, ')
+            ctx.print(f'.{cxxname(field)} = {cxxvalue(value, ctx.db)}, ')
         ctx.print('};\n')
 
     if len(locals) != 0:
@@ -275,7 +282,7 @@ def generate_impl_schemas(ctx: Context):
             if len(fields):
                 ctx.print('    static const SchemaField fields[] = {\n')
                 for field in fields:
-                    ctx.print(f'        SchemaField{{.name = "{field.name}"_zsv, .schema = &getSchema<{qualified_cxxname(field.type)}>(), .offset = offsetof({qual_name}, {field.cxxname}), .annotations = {cxxident(type.name)}_{field.name}_annotations}},\n')
+                    ctx.print(f'        SchemaField{{.name = "{field.name}"_zsv, .schema = &getSchema<{qualified_cxxname(field.type)}>(), .offset = offsetof({qual_name}, {cxxname(field)}), .annotations = {cxxident(type.name)}_{field.name}_annotations}},\n')
                 ctx.print('    };\n')
             else:
                 ctx.print('    static span<SchemaField const> const fields;\n')
