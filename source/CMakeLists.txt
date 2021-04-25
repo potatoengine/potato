@@ -1,4 +1,5 @@
 add_subdirectory(bin_headerify)
+add_subdirectory(bin_codegen)
 add_subdirectory(libformat)
 add_subdirectory(spud)
 add_subdirectory(libruntime)

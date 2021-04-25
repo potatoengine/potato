@@ -44,6 +44,7 @@ function(up_compile_sap TARGET)
         up_path_combine(${OUT_JSON_DIR} ${FILE_NAME}.json.d JSON_DEP_FILE)
         up_path_combine(${OUT_SOURCE_DIR} ${FILE_NAME}_gen.cpp GENERATED_SOURCE_FILE)
         up_path_combine(${OUT_HEADER_DIR} ${FILE_NAME}_schema.h GENERATED_HEADER_FILE)
+        up_path_combine(${OUT_HEADER_DIR} ${FILE_NAME}_codegen.h GENERATED_CODEGEN_FILE)
         
         list(APPEND JSON_FILES ${JSON_FILE})
 
@@ -75,6 +76,7 @@ function(up_compile_sap TARGET)
                     -L "${SHORT_NAME}"
                     -i "${JSON_FILE}"
                     -o "${GENERATED_SOURCE_FILE}"
+            COMMAND potato::bin_codegen "${JSON_FILE}" "${GENERATED_CODEGEN_FILE}" "${SHORT_NAME}"
             MAIN_DEPENDENCY "${JSON_FILE}"
             DEPENDS "${SAP_SCHEMA_COMPILE_FILES}"
         )
