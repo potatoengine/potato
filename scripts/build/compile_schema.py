@@ -72,8 +72,8 @@ def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
         refType = type.ref
         if refType.has_annotation('cxximport'):
             name = cxxname(refType)
-            for idx, gen in enumerate(type.params):
-                param_name = refType.generics[idx]
+            for idx, gen in enumerate(type.generic_type_args):
+                param_name = refType.generic_type_params[idx]
                 param_cxxname = qualified_cxxname(gen)
                 name = name.replace(f'${idx + 1}', param_cxxname).replace(f'${param_name}', param_cxxname)
             return name
@@ -86,11 +86,8 @@ def qualified_cxxname(type: type_info.TypeBase, namespace: str='up::schema'):
     elif type.kind == type_info.TypeKind.POINTER:
         return f'up::box<{qualified_cxxname(type.to)}>'
 
-    elif type.kind == type_info.TypeKind.ALIAS and type.ref is not None:
+    elif type.kind == type_info.TypeKind.ALIAS:
         return qualified_cxxname(type.ref)
-
-    elif type.kind == type_info.TypeKind.ALIAS and type.ref is None:
-        return cxxname(type)
 
     elif type.kind == type_info.TypeKind.SIMPLE:
         return cxxname(type)
@@ -122,7 +119,7 @@ def generate_header_types(ctx: Context):
     for type in ctx.db.exports:
         if type.has_annotation('ignore'):
             continue
-        if type.kind == type_info.TypeKind.SIMPLE or type.kind == type_info.TypeKind.GENERIC or type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
+        if type.kind == type_info.TypeKind.SIMPLE or type.kind == type_info.TypeKind.TYPE_PARAM or type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
             continue
         if type.has_annotation('cxximport'):
             continue
@@ -140,8 +137,8 @@ def generate_header_types(ctx: Context):
                 ctx.print(f'        {key} = {type.value_or(key, 0)},\n')
             ctx.print("    };\n")
         elif type.kind == type_info.TypeKind.STRUCT or type.kind == type_info.TypeKind.ATTRIBUTE:
-            if len(type.generics):
-                ctx.print(f'    template <typename {", typename ".join(type.generics)}>')
+            if len(type.generic_type_params):
+                ctx.print(f'    template <typename {", typename ".join(type.generic_type_params)}>')
             ctx.print(f'    struct {cxxname(type)}')
             if type.kind == type_info.TypeKind.ATTRIBUTE:
                 ctx.print(' : reflex::SchemaAttribute')
@@ -158,7 +155,7 @@ def generate_header_types(ctx: Context):
             ctx.print("    };\n")
         elif type.kind == type_info.TypeKind.SPECIALIZED:
             ctx.print(f'    template <> struct {cxxname(type)} {{}};\n')
-        elif type.kind == type_info.TypeKind.ALIAS and type.ref is not None:
+        elif type.kind == type_info.TypeKind.ALIAS:
             ctx.print(f'    using {cxxname(type)} = {qualified_cxxname(type.ref)};\n')
         else:
             ctx.error(type.location, 'Unknown type kind', type.kind)
@@ -173,12 +170,12 @@ def generate_header_schemas(ctx: Context):
         if type.has_annotation('ignore'):
             continue
 
-        if type.kind == type_info.TypeKind.ALIAS and type.ref is not None:
+        if type.kind == type_info.TypeKind.ALIAS:
             type = type.ref
 
-        if type.kind == type_info.TypeKind.SIMPLE or type.kind == type_info.TypeKind.GENERIC or type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
+        if type.kind == type_info.TypeKind.TYPE_PARAM or type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
             continue
-        if type.kind == type_info.TypeKind.STRUCT and len(type.generics) != 0:
+        if type.kind == type_info.TypeKind.STRUCT and len(type.generic_type_params) != 0:
             continue
 
         qual_name = qualified_cxxname(type=type)
@@ -224,12 +221,12 @@ def generate_impl_schemas(ctx: Context):
         if type.has_annotation('ignore'):
             continue
 
-        if type.kind == type_info.TypeKind.ALIAS and type.ref is not None:
+        if type.kind == type_info.TypeKind.ALIAS:
             type = type.ref
 
-        if type.kind == type_info.TypeKind.SIMPLE or type.kind == type_info.TypeKind.GENERIC or type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
+        if type.kind == type_info.TypeKind.SIMPLE or type.kind == type_info.TypeKind.TYPE_PARAM or type.kind == type_info.TypeKind.ARRAY or type.kind == type_info.TypeKind.POINTER:
             continue
-        if type.kind == type_info.TypeKind.STRUCT and len(type.generics) != 0:
+        if type.kind == type_info.TypeKind.STRUCT and len(type.generic_type_params) != 0:
             continue
 
         qual_name = qualified_cxxname(type=type)
@@ -268,7 +265,7 @@ def generate_impl_schemas(ctx: Context):
         }};
 ''')
             ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::AssetRef, .baseSchema = base, .operations = &operations, .annotations = {type.name}_annotations}};\n')
-        elif type.kind == type_info.TypeKind.ALIAS and type.ref is None:
+        elif type.kind == type_info.TypeKind.ALIAS:
             ctx.print(f'    static const Schema schema = {{.name = "{type.name}"_zsv, .primitive = up::reflex::SchemaPrimitive::Object, .baseSchema = base, .annotations = {type.name}_annotations}};\n')
         elif type.kind == type_info.TypeKind.STRUCT or type.kind == type_info.TypeKind.ATTRIBUTE or type.kind == type_info.TypeKind.SPECIALIZED:
             if type.kind == type_info.TypeKind.SPECIALIZED:

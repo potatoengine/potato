@@ -12,7 +12,7 @@ class TypeKind(Enum):
     SIMPLE = "simple"
     POINTER = "pointer"
     ARRAY = "array"
-    GENERIC = "generic"
+    TYPE_PARAM = "typeparam"
     SPECIALIZED = "specialized"
 
 class Location:
@@ -167,8 +167,8 @@ class TypeDatabase:
                 type = TypePointer(self, qualified=qualified)
             elif kind == TypeKind.ARRAY.value:
                 type = TypeArray(self, qualified=qualified)
-            elif kind == TypeKind.GENERIC.value:
-                type = TypeGeneric(self, qualified=qualified)
+            elif kind == TypeKind.TYPE_PARAM.value:
+                type = TypeParam(self, qualified=qualified)
             elif kind == TypeKind.SPECIALIZED.value:
                 type = TypeSpecialized(self, qualified=qualified)
             else:
@@ -311,7 +311,7 @@ class TypeStruct(TypeBase):
         TypeBase.__init__(self, db, qualified)
         self.__fields = []
         self.__fieldmap = {}
-        self.__generics = []
+        self.__type_params = []
 
     @property
     def kind(self):
@@ -326,8 +326,8 @@ class TypeStruct(TypeBase):
         return self.__fields
 
     @property
-    def generics(self):
-        return [gen for gen in self.__generics]
+    def generic_type_params(self):
+        return [gen for gen in self.__type_params]
 
     def load_from_json(self, json):
         TypeBase.load_from_json(self, json)
@@ -337,9 +337,9 @@ class TypeStruct(TypeBase):
             field.load_from_json(field_json)
             self.__fields.append(field)
             self.__fieldmap[key] = field
-        if 'generics' in json:
-            for generic in json['generics']:
-                self.__generics.append(generic)
+        if 'typeParams' in json:
+            for generic in json['typeParams']:
+                self.__type_params.append(generic)
 
     def resolve(self, db):
         TypeBase.resolve(self, db)
@@ -388,11 +388,11 @@ class TypeAttribute(TypeStruct):
     def kind(self):
         return TypeKind.ATTRIBUTE
 
-class TypeGeneric(TypeBase):
+class TypeParam(TypeBase):
     """User-friendly wrapper for a generic type placeholder"""
     @property
     def kind(self):
-        return TypeKind.GENERIC
+        return TypeKind.TYPE_PARAM
 
 class TypeSpecialized(TypeBase):
     """User-friendly wrapper of an specialized type definition"""
@@ -401,8 +401,8 @@ class TypeSpecialized(TypeBase):
         TypeBase.__init__(self, db, qualified)
         self.__ref = None
         self.__ref_name = None
-        self.__params = []
-        self.__param_names = []
+        self.__type_args = []
+        self.__type_arg_names = []
 
     @property
     def kind(self):
@@ -413,19 +413,19 @@ class TypeSpecialized(TypeBase):
         return self.__ref
 
     @property
-    def params(self):
-        return (param for param in self.__params)
+    def generic_type_args(self):
+        return (type for type in self.__type_args)
 
     def load_from_json(self, json):
         TypeBase.load_from_json(self, json)
         self.__ref_name = json['refType']
-        for param_name in json['typeParams']:
-            self.__param_names.append(param_name)
+        for arg_name in json['typeArgs']:
+            self.__type_arg_names.append(arg_name)
 
     def resolve(self, db):
         self.__ref = db.type(self.__ref_name)
-        for param_name in self.__param_names:
-            self.__params.append(db.type(param_name))
+        for arg_name in self.__type_arg_names:
+            self.__type_args.append(db.type(arg_name))
 
 class TypeField(AnnotationsBase):
     """User-friendly wrapper for a field definition of a type"""

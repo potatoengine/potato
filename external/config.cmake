@@ -50,8 +50,8 @@ FetchContent_Declare(nfd
 )
 FetchContent_Declare(sapc
     GIT_REPOSITORY https://github.com/potatoengine/sapc.git
-    GIT_TAG v0.14-beta
-    GIT_SHALLOW ON
+    GIT_TAG ba57eb7bec5cabdf340e45042515bd8665ae04dc #v0.15-beta
+    #GIT_SHALLOW ON
 )
 FetchContent_Declare(tracy
     GIT_REPOSITORY https://github.com/wolfpld/tracy.git
