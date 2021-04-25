@@ -1,6 +1,6 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
-#include "components_schema.h"
+#include "test_components_schema.h"
 
 #include "potato/ecs/query.h"
 #include "potato/ecs/universe.h"
