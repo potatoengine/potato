@@ -5,11 +5,18 @@ add_executable(potato_bin_codegen)
 add_executable(potato::bin_codegen ALIAS potato_bin_codegen)
 
 target_sources(potato_bin_codegen PRIVATE
+    "private/cxx.h"
+    "private/generator.cpp"
+    "private/generator.h"
+    "private/generators/schema_header_gen.cpp"
     "private/main.cpp"
+    "private/schema.cpp"
+    "private/schema.h"
 )
 
 target_link_libraries(potato_bin_codegen PRIVATE
     nlohmann_json::nlohmann_json
+    potato::libformat
 )
 
 include(up_set_common_properties)
