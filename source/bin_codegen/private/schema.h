@@ -47,6 +47,11 @@ namespace schema {
         Annotations annotations;
     };
 
+    struct EnumItem : Entity {
+        std::string name;
+        Number value = 0;
+    };
+
     struct TypeBase : Entity {
         TypeKind kind = TypeKind::Unknown;
         std::string name;
@@ -69,6 +74,12 @@ namespace schema {
 
     struct TypeAggregate : TypeBase {
         std::vector<Field const*> fields;
+        std::vector<TypeBase const*> typeParams;
+        TypeBase const* baseType = nullptr;
+    };
+
+    struct TypeEnum : TypeBase {
+        std::vector<EnumItem const*> items;
     };
 
     struct Namespace : Entity {

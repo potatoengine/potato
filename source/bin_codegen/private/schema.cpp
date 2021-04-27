@@ -22,6 +22,7 @@ static void loadAnnotations(schema::Annotations& annotated, schema::Module& mod,
 static void loadType(schema::TypeBase& type, schema::Module& mod, nlohmann::json const& json);
 static void loadTypeBase(schema::TypeBase& type, schema::Module& mod, nlohmann::json const& json);
 static void loadTypeAggregate(schema::TypeAggregate& type, schema::Module& mod, nlohmann::json const& json);
+static void loadTypeEnum(schema::TypeEnum& type, schema::Module& mod, nlohmann::json const& json);
 static void loadTypeIndirect(schema::TypeIndirect& type, schema::Module& mod, nlohmann::json const& json);
 static void loadTypeArray(schema::TypeArray& type, schema::Module& mod, nlohmann::json const& json);
 static void loadTypeSpecialized(schema::TypeSpecialized& type, schema::Module& mod, nlohmann::json const& json);
@@ -45,7 +46,7 @@ bool schema::loadModule(std::istream& input, Module& mod) {
         if (type == nullptr) {
             return false;
         }
-        typeMap[type->qualifiedName] = type;
+        typeMap.insert({type->qualifiedName, type});
         mod.allTypes.push_back(type);
     }
 
@@ -158,6 +159,9 @@ schema::TypeBase* createType(schema::Module& mod, nlohmann::json const& json) {
     if (kind == TypeKind::Struct || kind == TypeKind::Attribute || kind == TypeKind::Union) {
         type = createEntity<TypeAggregate>(mod);
     }
+    else if (kind == TypeKind::Enum) {
+        type = createEntity<TypeEnum>(mod);
+    }
     else if (kind == TypeKind::Alias || kind == TypeKind::Pointer) {
         type = createEntity<TypeIndirect>(mod);
     }
@@ -217,6 +221,9 @@ void loadType(schema::TypeBase& type, schema::Module& mod, nlohmann::json const&
     if (type.kind == TypeKind::Struct || type.kind == TypeKind::Attribute || type.kind == TypeKind::Union) {
         return loadTypeAggregate(static_cast<TypeAggregate&>(type), mod, json);
     }
+    if (type.kind == TypeKind::Enum) {
+        return loadTypeEnum(static_cast<TypeEnum&>(type), mod, json);
+    }
     if (type.kind == TypeKind::Alias || type.kind == TypeKind::Pointer) {
         return loadTypeIndirect(static_cast<TypeIndirect&>(type), mod, json);
     }
@@ -241,12 +248,36 @@ void loadTypeAggregate(schema::TypeAggregate& type, schema::Module& mod, nlohman
 
     loadTypeBase(type, mod, json);
 
+    if (json.contains("base")) {
+        type.baseType = findType(mod, json["base"]);
+    }
+
     for (auto const& field_json : json["fields"]) {
         auto* const field = createEntity<Field>(mod);
         type.fields.push_back(field);
 
         field->name = field_json["name"];
         field->type = findType(mod, field_json["type"]);
+    }
+
+    if (json.contains("typeParams")) {
+        for (auto const& type_json : json["typeParams"]) {
+            type.typeParams.push_back(findType(mod, type_json));
+        }
+    }
+}
+
+void loadTypeEnum(schema::TypeEnum& type, schema::Module& mod, nlohmann::json const& json) {
+    using namespace schema;
+
+    loadTypeBase(type, mod, json);
+
+    for (auto const& item_json : json["items"]) {
+        auto* const item = createEntity<EnumItem>(mod);
+        type.items.push_back(item);
+
+        item->name = item_json["name"];
+        item->value = item_json["value"];
     }
 }
 

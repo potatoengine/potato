@@ -44,11 +44,10 @@ function(up_compile_sap TARGET)
         up_path_combine(${OUT_JSON_DIR} ${FILE_NAME}.json.d JSON_DEP_FILE)
         up_path_combine(${OUT_SOURCE_DIR} ${FILE_NAME}_gen.cpp GENERATED_SOURCE_FILE)
         up_path_combine(${OUT_HEADER_DIR} ${FILE_NAME}_schema.h GENERATED_HEADER_FILE)
-        up_path_combine(${OUT_HEADER_DIR} ${FILE_NAME}_codegen.h GENERATED_CODEGEN_FILE)
         
         list(APPEND JSON_FILES ${JSON_FILE})
 
-        target_sources(${TARGET} PRIVATE "${JSON_FILE}" "${GENERATED_SOURCE_FILE}")
+        target_sources(${TARGET} PRIVATE "${JSON_FILE}" "${GENERATED_SOURCE_FILE}" "${GENERATED_HEADER_FILE}")
 
         add_custom_command(
             OUTPUT "${JSON_FILE}"
@@ -63,22 +62,26 @@ function(up_compile_sap TARGET)
             COMMAND_EXPAND_LISTS
         )
         add_custom_command(
-            OUTPUT "${GENERATED_SOURCE_FILE}" "${GENERATED_HEADER_FILE}"
-            COMMAND Python3::Interpreter
-                    -B "${SAP_SCHEMA_COMPILE_ENTRY}"
-                    -G header
-                    -L "${SHORT_NAME}"
-                    -i "${JSON_FILE}"
-                    -o "${GENERATED_HEADER_FILE}"
+            OUTPUT "${GENERATED_SOURCE_FILE}"
             COMMAND Python3::Interpreter
                     -B "${SAP_SCHEMA_COMPILE_ENTRY}"
                     -G source
                     -L "${SHORT_NAME}"
                     -i "${JSON_FILE}"
                     -o "${GENERATED_SOURCE_FILE}"
-            COMMAND potato::bin_codegen "${JSON_FILE}" "${GENERATED_CODEGEN_FILE}" "${SHORT_NAME}"
             MAIN_DEPENDENCY "${JSON_FILE}"
             DEPENDS "${SAP_SCHEMA_COMPILE_FILES}"
+        )
+        add_custom_command(
+            OUTPUT "${GENERATED_HEADER_FILE}"
+            COMMAND potato_bin_codegen
+                    -i "${JSON_FILE}"
+                    -o "${GENERATED_HEADER_FILE}"
+                    -m schema_header
+                    -D EXPORT_HEADER "potato/${SHORT_NAME}/_export.h"
+                    -D EXPORT_MACRO "UP_$<UPPER_CASE:${SHORT_NAME}>_API"
+            MAIN_DEPENDENCY "${JSON_FILE}"
+            DEPENDS potato_bin_codegen
         )
     endforeach()
 
