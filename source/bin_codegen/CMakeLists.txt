@@ -9,6 +9,7 @@ target_sources(potato_bin_codegen PRIVATE
     "private/generator.cpp"
     "private/generator.h"
     "private/generators/schema_header_gen.cpp"
+    "private/generators/schema_source_gen.cpp"
     "private/main.cpp"
     "private/schema.cpp"
     "private/schema.h"

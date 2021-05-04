@@ -12,6 +12,7 @@
 
 namespace schema {
     struct TypeBase;
+    struct TypeAggregate;
 
     using Number = long long;
     using Value = std::variant<Number, std::string, std::nullptr_t, bool, TypeBase const*>;
@@ -35,7 +36,7 @@ namespace schema {
     };
 
     struct Annotation : Entity {
-        TypeBase const* type = nullptr;
+        TypeAggregate const* type = nullptr;
         std::vector<Value> args;
     };
 

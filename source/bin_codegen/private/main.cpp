@@ -15,6 +15,7 @@
 using GeneratorFactory = std::function<std::unique_ptr<Generator>(GeneratorContext const&)>;
 
 extern std::unique_ptr<Generator> newSchemaHeaderGenerator(GeneratorContext const& ctx);
+extern std::unique_ptr<Generator> newSchemaSourceGenerator(GeneratorContext const& ctx);
 
 static void usage(char const* program);
 static GeneratorFactory selectGeneratorFactory(std::string_view mode);
@@ -122,6 +123,12 @@ GeneratorFactory selectGeneratorFactory(std::string_view mode) {
     if (mode == "schema_header"sv) {
         return [](GeneratorContext const& ctx) {
             return newSchemaHeaderGenerator(ctx);
+        };
+    }
+
+    if (mode == "schema_source"sv) {
+        return [](GeneratorContext const& ctx) {
+            return newSchemaSourceGenerator(ctx);
         };
     }
 

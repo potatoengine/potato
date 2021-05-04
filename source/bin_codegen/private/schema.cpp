@@ -207,7 +207,7 @@ void loadAnnotations(schema::Annotations& annotated, schema::Module& mod, nlohma
 
     for (auto const& anno_json : json["annotations"]) {
         auto* const anno = createEntity<Annotation>(mod);
-        anno->type = findType(mod, anno_json["type"]);
+        anno->type = static_cast<TypeAggregate const*>(findType(mod, anno_json["type"]));
         for (auto const& arg_json : anno_json["args"]) {
             loadValue(anno->args.emplace_back(), mod, arg_json);
         }

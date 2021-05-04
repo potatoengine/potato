@@ -9,10 +9,25 @@
 #include <string_view>
 
 namespace cxx {
+    inline bool isIdent(char ch) noexcept { return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'; }
+    inline bool isDigit(char ch) noexcept { return ch >= '0' && ch <= '9'; }
+
     struct Ident {
         std::string_view ident;
 
-        friend std::ostream& operator<<(std::ostream& os, Ident const&& self) { return os << self.ident; }
+        friend std::ostream& operator<<(std::ostream& os, Ident const&& self) {
+            if (self.ident.empty()) {
+                return os << '_';
+            }
+
+            os << (isIdent(self.ident.front()) ? self.ident.front() : '_');
+
+            for (auto ch : self.ident.substr(1)) {
+                os << ((isIdent(ch) || isDigit(ch)) ? ch : '_');
+            }
+
+            return os;
+        }
     };
 
     struct TypeNamespace {
@@ -68,7 +83,6 @@ namespace cxx {
     };
 
     struct Type {
-        schema::Module const& mod;
         schema::TypeBase const& type;
 
         friend std::ostream& operator<<(std::ostream& os, Type const&& self) {
@@ -76,12 +90,11 @@ namespace cxx {
 
             switch (self.type.kind) {
                 case TypeKind::Pointer:
-                    return os << "up::box<" << Type{self.mod, *static_cast<TypeIndirect const&>(self.type).ref} << ">";
+                    return os << "up::box<" << Type{*static_cast<TypeIndirect const&>(self.type).ref} << ">";
                 case TypeKind::Alias:
-                    return os << Type{self.mod, *static_cast<TypeIndirect const&>(self.type).ref};
+                    return os << Type{*static_cast<TypeIndirect const&>(self.type).ref};
                 case TypeKind::Array:
-                    return os << "up::vector<" << Type{self.mod, *static_cast<TypeIndirect const&>(self.type).ref}
-                              << ">";
+                    return os << "up::vector<" << Type{*static_cast<TypeIndirect const&>(self.type).ref} << ">";
                 case TypeKind::Specialized:
                     if (auto const cxximport = getAnnotationArg(
                             static_cast<TypeSpecialized const&>(self.type).ref->annotations,
@@ -124,14 +137,44 @@ namespace cxx {
         static void buildSpecialization(std::ostream& os, Type const& self) {
             auto const& type = static_cast<schema::TypeSpecialized const&>(self.type);
 
-            os << Type{self.mod, *type.ref} << "<";
+            os << Type{*type.ref} << "<";
             for (auto const* typeArg : type.typeArgs) {
                 if (typeArg != type.typeArgs.front()) {
                     os << ", ";
                 }
-                os << Type{self.mod, *typeArg};
+                os << Type{*typeArg};
             }
             os << ">";
+        }
+    };
+
+    struct Value {
+        schema::Value const& value;
+
+        friend std::ostream& operator<<(std::ostream& os, Value const&& self) {
+            using namespace schema;
+            std::visit(
+                [&os](auto const& value) {
+                    using ValueType = std::remove_cvref_t<decltype(value)>;
+                    if constexpr (std::is_same_v<ValueType, TypeBase const*>) {
+                        os << "::up::reflex::getTypeInfo<" << Type{*value} << ">()";
+                    }
+                    else if constexpr (std::is_same_v<ValueType, std::string>) {
+                        os << '"';
+                        for (auto const ch : value) {
+                            if (ch == '\\' || ch == '"') {
+                                os << '\\';
+                            }
+                            os << ch;
+                        }
+                        os << '"';
+                    }
+                    else {
+                        os << value;
+                    }
+                },
+                self.value);
+            return os;
         }
     };
 

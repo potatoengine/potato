@@ -23,6 +23,8 @@ namespace {
 
         void enterNamespace(std::string ns);
 
+        bool allowType(schema::TypeBase const& type) const noexcept;
+
         std::string _currentNamespace;
     };
 } // namespace
@@ -77,29 +79,32 @@ void SchemaHeaderGenerator::writeTypeDeclarations() {
     _output << "\n// Type declarations\n\n";
 
     for (TypeBase const* type : _module.exportedTypes) {
-        if (hasAnnotation(type->annotations, "ignore")) {
-            continue;
-        }
-        if (hasAnnotation(type->annotations, "cxximport")) {
+        if (!allowType(*type)) {
             continue;
         }
 
-        writeTypeDeclaration(*type);
+        if (type->kind == TypeKind::Alias) {
+            // hack because specialized types aren't owned by correct module
+            writeTypeDeclaration(*static_cast<schema::TypeIndirect const*>(type)->ref);
+        }
+        else {
+            writeTypeDeclaration(*type);
+        }
 
         _output << "\n";
     }
+
+    enterNamespace({});
 }
 
 void SchemaHeaderGenerator::writeTypeDeclaration(schema::TypeBase const& type) {
     using namespace schema;
 
-    enterNamespace({});
-
     switch (type.kind) {
         case TypeKind::Alias:
             enterNamespace(cxx::typeNamespace(type));
             _output << "  using " << cxx::Ident{type.name} << " = "
-                    << cxx::Type{_module, *static_cast<TypeIndirect const&>(type).ref} << ";\n";
+                    << cxx::Type{*static_cast<TypeIndirect const&>(type).ref} << ";\n";
             break;
         case TypeKind::Enum:
             enterNamespace(cxx::typeNamespace(type));
@@ -125,11 +130,11 @@ void SchemaHeaderGenerator::writeTypeDeclaration(schema::TypeBase const& type) {
                 _output << " : reflex::SchemaAttribute";
             }
             else if (static_cast<TypeAggregate const&>(type).baseType != nullptr) {
-                _output << " : " << cxx::Type{_module, *static_cast<TypeAggregate const&>(type).baseType};
+                _output << " : " << cxx::Type{*static_cast<TypeAggregate const&>(type).baseType};
             }
             _output << " {\n";
             for (Field const* field : static_cast<TypeAggregate const&>(type).fields) {
-                _output << "    " << cxx::Type{_module, *field->type} << " " << cxx::Ident{field->name} << ";\n";
+                _output << "    " << cxx::Type{*field->type} << " " << cxx::Ident{field->name} << ";\n";
             }
             _output << "  };\n";
             break;
@@ -152,27 +157,26 @@ void SchemaHeaderGenerator::writeTypeReflex() {
     _output << "\n// Reflex and schema holders\n\n";
 
     for (TypeBase const* type : _module.exportedTypes) {
-        if (hasAnnotation(type->annotations, "ignore")) {
+        if (!allowType(*type)) {
+            _output << "  // disallowed: " << type->qualifiedName << "\n";
             continue;
         }
 
-        if (type->kind == TypeKind::TypeParam || type->kind == TypeKind::Array || type->kind == TypeKind::Pointer) {
-            continue;
-        }
-
-        if (type->kind == TypeKind::Struct && !static_cast<TypeAggregate const*>(type)->typeParams.empty()) {
-            continue;
+        // hack because specialized types aren't owned by correct module
+        //
+        if (type->kind == TypeKind::Alias) {
+            type = static_cast<schema::TypeIndirect const*>(type)->ref;
         }
 
         enterNamespace("up::reflex");
 
         _output << "  template<>\n";
-        _output << "  struct TypeHolder<" << cxx::Type{_module, *type} << "> {\n";
+        _output << "  struct TypeHolder<" << cxx::Type{*type} << "> {\n";
         _output << "      " << config("EXPORT_MACRO") << " static TypeInfo const &get() noexcept;\n";
         _output << "  };\n\n";
 
         _output << "  template<>\n";
-        _output << "  struct SchemaHolder<" << cxx::Type{_module, *type} << "> {\n";
+        _output << "  struct SchemaHolder<" << cxx::Type{*type} << "> {\n";
         _output << "      " << config("EXPORT_MACRO") << " static Schema const& get() noexcept;\n";
         _output << "  };\n\n";
     }
@@ -194,4 +198,37 @@ void SchemaHeaderGenerator::enterNamespace(std::string ns) {
     if (!_currentNamespace.empty()) {
         _output << "namespace " << _currentNamespace << " {\n";
     }
+}
+
+bool SchemaHeaderGenerator::allowType(schema::TypeBase const& type) const noexcept {
+    using namespace schema;
+
+    // aliases don't need their own info; we just use the base info
+    //
+    // FIXME: aliases allowed because specialized types are not in the correct module
+    //
+    if (type.kind == TypeKind::Alias && static_cast<TypeIndirect const&>(type).ref == nullptr) {
+        return false;
+    }
+
+    // indirect types don't (currently) get schemas
+    //
+    if (type.kind == TypeKind::Array || type.kind == TypeKind::Pointer) {
+        return false;
+    }
+
+    // generic types (non-specialized) don't get schemas
+    //
+    if (type.kind == TypeKind::TypeParam ||
+        (type.kind == TypeKind::Struct && !static_cast<TypeAggregate const&>(type).typeParams.empty())) {
+        return false;
+    }
+
+    // explicitly ignored types are skipped
+    //
+    if (hasAnnotation(type.annotations, "ignore")) {
+        return false;
+    }
+
+    return true;
 }
