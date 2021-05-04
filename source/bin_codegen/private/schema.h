@@ -101,7 +101,7 @@ namespace schema {
     std::optional<Value> getAnnotationArg(Annotations const& annotations, std::string_view name, size_t index = 0);
 
     template <typename ValueT>
-    ValueT valueCast(Value const& value) noexcept {
+    constexpr ValueT valueCast(Value const& value) {
         return std::visit(
             [](auto const& actual) -> ValueT {
                 using ActualType = std::remove_cvref_t<decltype(actual)>;

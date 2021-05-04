@@ -693,9 +693,7 @@ void up::shell::ShellApp::_createGame(rc<Scene> scene) {
 }
 
 void up::shell::ShellApp::_executeRecon() {
-    schema::ReconImportAllMessage msg;
-    msg.force = true;
-    _reconClient.send<ReconImportAllMessage>({});
+    _reconClient.send<ReconImportAllMessage>({.force = true});
 
     _loadManifest();
 }

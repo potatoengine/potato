@@ -22,15 +22,16 @@ struct GeneratorContext {
 class Generator {
 public:
     explicit Generator(GeneratorContext const& ctx) : _output(ctx.output), _module(ctx.mod), _config(ctx.config) {}
+    virtual ~Generator() = default;
 
     virtual bool generate() = 0;
 
     int errors() const noexcept { return _errors; }
 
 protected:
-    std::ostream& _output;
-    schema::Module const& _module;
-    GeneratorConfig const& _config;
+    std::ostream& _output; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
+    schema::Module const& _module; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
+    GeneratorConfig const& _config; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
 
     void fail(std::string_view message);
 

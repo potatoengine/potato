@@ -33,7 +33,7 @@ bool schema::loadModule(std::istream& input, Module& mod) {
         return false;
     }
 
-    schema::Namespace* root = createEntity<Namespace>(mod);
+    auto* const root = createEntity<Namespace>(mod);
     mod.root = root;
 
     std::unordered_map<std::string_view, schema::TypeBase*> typeMap;
@@ -52,7 +52,7 @@ bool schema::loadModule(std::istream& input, Module& mod) {
 
     // fill in type details
     for (auto const& type_json : doc["types"]) {
-        auto const it = typeMap.find(type_json["qualified"]);
+        auto const it = typeMap.find(type_json["qualified"].get<std::string_view>());
         assert(it != typeMap.end());
         schema::TypeBase* const type = it->second;
         loadType(*type, mod, type_json);
@@ -152,7 +152,7 @@ schema::TypeBase* createType(schema::Module& mod, nlohmann::json const& json) {
     using namespace nlohmann;
     using namespace schema;
 
-    auto const kind = kindFromString(json["kind"]);
+    auto const kind = kindFromString(json["kind"].get<std::string_view>());
 
     TypeBase* type = nullptr;
 
@@ -207,7 +207,7 @@ void loadAnnotations(schema::Annotations& annotated, schema::Module& mod, nlohma
 
     for (auto const& anno_json : json["annotations"]) {
         auto* const anno = createEntity<Annotation>(mod);
-        anno->type = static_cast<TypeAggregate const*>(findType(mod, anno_json["type"]));
+        anno->type = static_cast<TypeAggregate const*>(findType(mod, anno_json["type"].get<std::string_view>()));
         for (auto const& arg_json : anno_json["args"]) {
             loadValue(anno->args.emplace_back(), mod, arg_json);
         }
@@ -249,7 +249,7 @@ void loadTypeAggregate(schema::TypeAggregate& type, schema::Module& mod, nlohman
     loadTypeBase(type, mod, json);
 
     if (json.contains("base")) {
-        type.baseType = findType(mod, json["base"]);
+        type.baseType = findType(mod, json["base"].get<std::string_view>());
     }
 
     for (auto const& field_json : json["fields"]) {
@@ -257,12 +257,12 @@ void loadTypeAggregate(schema::TypeAggregate& type, schema::Module& mod, nlohman
         type.fields.push_back(field);
 
         field->name = field_json["name"];
-        field->type = findType(mod, field_json["type"]);
+        field->type = findType(mod, field_json["type"].get<std::string_view>());
     }
 
     if (json.contains("typeParams")) {
         for (auto const& type_json : json["typeParams"]) {
-            type.typeParams.push_back(findType(mod, type_json));
+            type.typeParams.push_back(findType(mod, type_json.get<std::string_view>()));
         }
     }
 }
@@ -284,7 +284,7 @@ void loadTypeEnum(schema::TypeEnum& type, schema::Module& mod, nlohmann::json co
 void loadTypeIndirect(schema::TypeIndirect& type, schema::Module& mod, nlohmann::json const& json) {
     loadTypeBase(type, mod, json);
 
-    type.ref = findType(mod, json["refType"]);
+    type.ref = findType(mod, json["refType"].get<std::string_view>());
 }
 
 void loadTypeArray(schema::TypeArray& type, schema::Module& mod, nlohmann::json const& json) {
@@ -299,6 +299,6 @@ void loadTypeSpecialized(schema::TypeSpecialized& type, schema::Module& mod, nlo
     loadTypeIndirect(type, mod, json);
 
     for (auto const& type_json : json["typeArgs"]) {
-        type.typeArgs.push_back(findType(mod, type_json));
+        type.typeArgs.push_back(findType(mod, type_json.get<std::string_view>()));
     }
 }
