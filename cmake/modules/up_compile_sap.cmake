@@ -62,17 +62,6 @@ function(up_compile_sap TARGET)
             COMMAND_EXPAND_LISTS
         )
         add_custom_command(
-            OUTPUT "${GENERATED_SOURCE_FILE}"
-            COMMAND Python3::Interpreter
-                    -B "${SAP_SCHEMA_COMPILE_ENTRY}"
-                    -G source
-                    -L "${SHORT_NAME}"
-                    -i "${JSON_FILE}"
-                    -o "${GENERATED_SOURCE_FILE}"
-            MAIN_DEPENDENCY "${JSON_FILE}"
-            DEPENDS "${SAP_SCHEMA_COMPILE_FILES}"
-        )
-        add_custom_command(
             OUTPUT "${GENERATED_HEADER_FILE}"
             COMMAND potato_bin_codegen
                     -i "${JSON_FILE}"
@@ -80,6 +69,16 @@ function(up_compile_sap TARGET)
                     -m schema_header
                     -D EXPORT_HEADER "potato/${SHORT_NAME}/_export.h"
                     -D EXPORT_MACRO "UP_$<UPPER_CASE:${SHORT_NAME}>_API"
+            MAIN_DEPENDENCY "${JSON_FILE}"
+            DEPENDS potato_bin_codegen
+        )
+        add_custom_command(
+            OUTPUT "${GENERATED_SOURCE_FILE}"
+            COMMAND potato_bin_codegen
+                    -i "${JSON_FILE}"
+                    -o "${GENERATED_SOURCE_FILE}"
+                    -m schema_source
+                    -D MODULE_HEADER "${FILE_NAME}_schema.h"
             MAIN_DEPENDENCY "${JSON_FILE}"
             DEPENDS potato_bin_codegen
         )
