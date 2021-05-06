@@ -169,12 +169,16 @@ up::IOWatch::IOWatch(uv_loop_t* loop, zstring_view targetFilename, Callback call
     uv_fs_event_start(
         &_state->handle,
         [](uv_fs_event_t* ev, char const* filename, int events, int status) {
+            if (filename == nullptr) {
+                return;
+            }
+
             auto* state = static_cast<State*>(ev->data);
             if ((events & UV_CHANGE) != 0) {
                 state->callback(filename, IOWatchEvent::Change);
             }
             if ((events & UV_RENAME) != 0) {
-                state->callback(filename, IOWatchEvent::Change);
+                state->callback(filename, IOWatchEvent::Rename);
             }
         },
         targetFilename.c_str(),
