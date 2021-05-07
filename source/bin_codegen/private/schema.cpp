@@ -258,6 +258,8 @@ void loadTypeAggregate(schema::TypeAggregate& type, schema::Module& mod, nlohman
 
         field->name = field_json["name"];
         field->type = findType(mod, field_json["type"].get<std::string_view>());
+
+        loadAnnotations(field->annotations, mod, field_json);
     }
 
     if (json.contains("typeParams")) {

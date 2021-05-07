@@ -96,24 +96,24 @@ void SchemaSourceGenerator::writeAnnotations(std::string_view unique, schema::An
             continue;
         }
 
-        _output << "    static const " << cxx::Type{type} << " annotation_" << annotationIndex << "_"
+        _output << "  static const " << cxx::Type{type} << " annotation_" << annotationIndex << "_"
                 << cxx::Ident{unique} << " {\n ";
         for (size_t argIndex = 0; argIndex != anno->args.size(); ++argIndex) {
             auto const& field = *type.fields[argIndex];
             auto const& arg = anno->args[argIndex];
-            _output << "      ." << cxx::Ident{field.name} << " = " << cxx::Value{arg} << ",\n";
+            _output << "    ." << cxx::Ident{field.name} << " = " << cxx::Value{arg} << ",\n";
         }
-        _output << "    };\n";
+        _output << "  };\n";
 
         ++annotationIndex;
     }
 
     if (annotationIndex == 0) {
-        _output << "    static const up::view<SchemaAnnotation> " << cxx::Ident{unique} << ";\n";
+        _output << "  static const up::view<SchemaAnnotation> " << cxx::Ident{unique} << ";\n\n";
         return;
     }
 
-    _output << "    static const SchemaAnnotation " << cxx::Ident{unique} << "[] = {\n";
+    _output << "  static const SchemaAnnotation " << cxx::Ident{unique} << "[] = {\n";
 
     annotationIndex = 0;
     for (auto const* const anno : annotations) {
@@ -123,11 +123,11 @@ void SchemaSourceGenerator::writeAnnotations(std::string_view unique, schema::An
             continue;
         }
 
-        _output << "      {.type = &getTypeInfo<" << cxx::Type{type} << ">(), .attr = &annotation_" << annotationIndex++
+        _output << "    {.type = &getTypeInfo<" << cxx::Type{type} << ">(), .attr = &annotation_" << annotationIndex++
                 << "_" << cxx::Ident{unique} << "},\n";
     }
 
-    _output << "    };\n";
+    _output << "  };\n\n";
 }
 
 //        elif type.has_annotation('AssetReference'):
@@ -197,7 +197,7 @@ void SchemaSourceGenerator::writeSchema() {
 
                 if (!static_cast<TypeAggregate const&>(*type).fields.empty()) {
                     for (auto const* const field : static_cast<TypeAggregate const&>(*type).fields) {
-                        writeAnnotations("field_annotations_" + field->name, type->annotations);
+                        writeAnnotations("field_annotations_" + field->name, field->annotations);
                     }
 
                     _output << "  static SchemaField const fields[] = {\n";
