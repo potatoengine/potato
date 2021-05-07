@@ -3,15 +3,12 @@ module importer_configs;
 import common;
 
 [cxximport("up::ImporterConfig", "potato/import/importer.h")]
-struct ImporterConfig {
-}
+using ImporterConfig;
 
 struct JsonImporterConfig : ImporterConfig {
-    [cxxname("type"), json("type")]
-    string _type;
+    string type;
 }
 
 struct CopyImporterConfig : ImporterConfig {
-    [cxxname("type"), json("type")]
-    string _type;
+    string type;
 }
