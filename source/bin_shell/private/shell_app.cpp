@@ -214,8 +214,8 @@ int up::shell::ShellApp::initialize() {
         int currentHeight = 0;
         SDL_GetWindowSize(_window.get(), &currentWidth, &currentHeight);
 
-        int const newWidth = std::max(static_cast<int>(desktopMode.w * 0.75), currentWidth);
-        int const newHeight = std::max(static_cast<int>(desktopMode.h * 0.75), currentHeight);
+        int const newWidth = clamp(static_cast<int>(desktopMode.w * 0.8), 640, 1024);
+        int const newHeight = clamp(static_cast<int>(desktopMode.h * 0.8), 480, 768);
 
         int const newPosX = static_cast<int>((desktopMode.w - newWidth) * 0.5);
         int const newPosY = static_cast<int>((desktopMode.h - newHeight) * 0.5);
