@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-doxygen:
-    name: Doxygen
+    name: Build Doxygen
     runs-on: 'ubuntu-20.04'
 
     steps:
@@ -41,7 +41,7 @@ jobs:
           path: build/documentation/doxygen/html
 
   deply-doxygen:
-    name: Deploy
+    name: Deploy Docs
     needs: [ 'build-doxygen' ]
     runs-on: 'ubuntu-latest'
 

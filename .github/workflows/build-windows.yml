@@ -20,7 +20,7 @@ jobs:
             name: MSVC
             warnings: /W3 /WX /w34295 /w34189
 
-    name: '${{ matrix.name }} ${{ matrix.config }}'
+    name: 'Windows ${{ matrix.name }} ${{ matrix.config }}'
     runs-on: 'windows-latest'
 
     steps:
