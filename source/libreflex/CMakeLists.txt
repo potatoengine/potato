@@ -54,4 +54,5 @@ target_compile_definitions(potato_libreflex_test PRIVATE
     DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING=1
 )
 
-add_test(NAME potato_libreflex_test COMMAND potato_libreflex_test)
+include(Catch)
+catch_discover_tests(potato_libreflex_test)

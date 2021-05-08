@@ -110,13 +110,11 @@ target_link_libraries(potato_libruntime_test PRIVATE
     Catch2::Catch2
 )
 
-add_test(	
-    NAME potato_libruntime_test	
-    COMMAND potato_libruntime_test	
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"	
+include(Catch)
+catch_discover_tests(potato_libruntime_test
+    # for filesystem tests
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+
+    # because concurrency tests can deadlock (which is a test failure)
+    PROPERTIES TIMEOUT 10
 )
-
-# because concurrency tests can deadlock (which is a test failure)
-#
-set_tests_properties(potato_libruntime_test PROPERTIES TIMEOUT 10) 
-
