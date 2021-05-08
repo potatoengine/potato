@@ -1,0 +1,60 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request: {}
+
+jobs:
+  build-ubuntu:
+    strategy:
+      matrix:
+        config: [ 'Debug', 'Release' ]
+        cxx: [ 'g++-10', 'clang++-11' ]
+        include:
+          - cxx: g++-10
+            cc: gcc-10
+            cxxflags: -fcoroutines
+            warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized -Wno-deprecated-enum-enum-conversion # GLM triggers volatile, Tracy triggers maybe-unitialized, imgui triggers deprecated-enum-enum-conversion
+            packages: g++-10 gcc-10 libstdc++-10-dev
+          - cxx: clang++-11
+            cc: clang-11
+            cxxflags: -stdlib=libc++ -fdiagnostics-absolute-paths
+            warnings: -Wall -Werror -Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion # GLM triggers deprecated-volatile, imgui triggers deprecated-enum-enum-conversion
+            packages: clang-11 libc++-11-dev libc++abi-11-dev
+    
+    name: 'Ubuntu (${{ matrix.config }} ${{ matrix.cxx }})'
+    runs-on: 'ubuntu-20.04'
+
+    steps:
+      - name: Apt update
+        run: sudo apt-get -yq update
+      - name: Install libraries
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev libuv1-dev
+      - name: Install toolchain
+        run: sudo apt-get -yq install cmake ${{ matrix.packages }}
+      - uses: actions/checkout@master
+        with:
+          lfs: true
+      - name: Install Problem Matchers
+        uses: Trass3r/setup-cpp@v1
+        if: matrix.config == 'Debug'
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v3
+      - name: Configure
+        env:
+          CXXFLAGS: '${{ matrix.cxxflags }}'
+          CXX: '${{ matrix.cxx }}'
+          CC: '${{ matrix.cc }}'
+        run: |
+          mkdir -p build
+          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="${{ matrix.warnings }}" -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+      - name: Build
+        run: cmake --build build --parallel -- -k 0 -v
+      - name: Test
+        run: |
+          cd build
+          ctest -T test -R potato --verbose
+      - name: Build Resources
+        run: cmake --build build --target potato_convert_all

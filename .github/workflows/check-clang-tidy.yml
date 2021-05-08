@@ -1,0 +1,39 @@
+name: Check
+
+on:
+  push:
+    branches:
+      - master
+  pull_request: {}
+
+jobs:
+  clang-tidy:
+    name: 'Clang Tidy'
+    runs-on: 'ubuntu-20.04'
+
+    steps:
+      - name: Apt update
+        run: sudo apt-get -yq update
+      - name: Install toolchain
+        run: |
+          sudo apt-get remove libllvm10
+          sudo apt-get -yq install cmake clang++-11 clang-tidy-11 libc++-11-dev libc++abi-11-dev
+      - name: Install libraries
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev libuv1-dev
+      - uses: actions/checkout@master
+        with:
+          lfs: true
+      - name: Install Problem Matchers
+        uses: Trass3r/setup-cpp@v1
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v3
+      - name: Configure
+        env:
+          CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths
+          CXX: clang++-11
+          CC: clang-11
+        run: |
+          mkdir -p build
+          cmake -S . -B build -G Ninja "-DUP_CXXFLAGS:STRING=-Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-11" "-DCMAKE_BUILD_TYPE:STRING=Debug"
+      - name: Build
+        run: cmake --build build --parallel -- -k 0 -v
