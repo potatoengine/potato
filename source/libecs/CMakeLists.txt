@@ -47,5 +47,5 @@ target_link_libraries(potato_libecs_test PRIVATE
     Catch2::Catch2
 )
 
-add_test(NAME potato_libecs_test COMMAND potato_libecs_test)
-
+include(Catch)
+catch_discover_tests(potato_libecs_test)

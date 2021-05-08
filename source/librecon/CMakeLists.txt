@@ -31,18 +31,3 @@ target_link_libraries(potato_librecon
         potato::libreflex
         uv
 )
-
-add_executable(potato_librecon_test)
-
-target_sources(potato_librecon_test PRIVATE
-    "tests/main.cpp"
-)
-
-up_set_common_properties(potato_librecon_test)
-
-target_link_libraries(potato_librecon_test PRIVATE
-    potato::librecon
-    Catch2::Catch2
-)
-
-add_test(NAME potato_librecon_test COMMAND potato_librecon_test)

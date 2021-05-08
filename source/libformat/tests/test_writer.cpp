@@ -8,7 +8,7 @@
 #include <ostream>
 #include <vector>
 
-TEST_CASE("writer") {
+TEST_CASE("potato.format.writer", "[potato][format]") {
     using namespace up;
 
     SECTION("fixed") {

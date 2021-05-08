@@ -25,8 +25,5 @@ target_link_libraries(potato_libformat_test PRIVATE
     Catch2::Catch2
 )
 
-add_test(	
-    NAME potato_libformat_test	
-    COMMAND potato_libformat_test	
-)
-
+include(Catch)
+catch_discover_tests(potato_libformat_test)

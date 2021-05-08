@@ -20,18 +20,3 @@ target_link_libraries(potato_libtools
         potato::libreflex
         potato::spud
 )
-
-add_executable(potato_libtools_test)
-
-target_sources(potato_libtools_test PRIVATE
-    "tests/main.cpp"
-)
-
-up_set_common_properties(potato_libtools_test)
-
-target_link_libraries(potato_libtools_test PRIVATE
-    potato::libtools
-    Catch2::Catch2
-)
-
-add_test(NAME potato_libtools_test COMMAND potato_libtools_test)

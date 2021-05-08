@@ -43,18 +43,3 @@ target_link_libraries(potato_libeditor
         glm::glm
         imgui
 )
-
-add_executable(potato_libeditor_test)
-
-target_sources(potato_libeditor_test PRIVATE
-    "tests/main.cpp"
-)
-
-up_set_common_properties(potato_libeditor_test)
-
-target_link_libraries(potato_libeditor_test PRIVATE
-    potato::libeditor
-    Catch2::Catch2
-)
-
-add_test(NAME potato_libeditor_test COMMAND potato_libeditor_test)

@@ -8,7 +8,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("Query", "[potato][ecs]") {
+TEST_CASE("potato.ecs.Query", "[potato][ecs]") {
     using namespace up;
     using namespace up::components;
 

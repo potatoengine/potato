@@ -10,7 +10,7 @@
 #include <iostream>
 #include <string>
 
-TEST_CASE("up::fs", "[potato][runtime]") {
+TEST_CASE("potato.runtime.filesystem", "[potato][runtime]") {
     using namespace up;
     using namespace up::fs;
 

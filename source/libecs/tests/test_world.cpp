@@ -10,7 +10,7 @@
 
 CATCH_REGISTER_ENUM(up::EntityId);
 
-TEST_CASE("World", "[potato][ecs]") {
+TEST_CASE("potato.ecs.World", "[potato][ecs]") {
     using namespace up;
     using namespace up::components;
 

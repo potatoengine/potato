@@ -5,7 +5,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("[potato][spud] vector") {
+TEST_CASE("potato.spud.vector", "[potato][spud]") {
     using namespace up;
 
     SECTION("vector default initialization") {

@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <iostream>
 
-TEST_CASE("up::path", "[potato][runtime]") {
+TEST_CASE("potato.runtime.path_util", "[potato][runtime]") {
     using namespace up;
     using namespace up::path;
 

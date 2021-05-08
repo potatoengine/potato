@@ -7,7 +7,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("DeviceNull", "[potato][gpu]") {
+TEST_CASE("potato.render.DeviceNull", "[potato][gpu]") {
     using namespace up;
 
     SECTION("factory enumerates") {

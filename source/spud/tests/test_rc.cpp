@@ -19,7 +19,7 @@ namespace {
     };
 } // namespace
 
-TEST_CASE("[potato][spud] up::rc") {
+TEST_CASE("potato.spud.rc", "[potato][spud]") {
     using namespace up;
 
     SECTION("empty rc") {

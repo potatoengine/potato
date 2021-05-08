@@ -4,7 +4,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("[potato][spud] up::span") {
+TEST_CASE("potato.spud.span", "[potato][spud]") {
     using namespace up;
 
     SECTION("span default initialization") {

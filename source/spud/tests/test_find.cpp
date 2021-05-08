@@ -11,7 +11,7 @@ namespace {
     constexpr bool is_negative(int val) noexcept { return val < 0; }
 } // namespace
 
-TEST_CASE("[potato][spud] find algorithms") {
+TEST_CASE("potato.spud.find", "[potato][spud]") {
     using namespace up;
 
     int array[] = {4, 7, 9, 2, 1, 0, 900};

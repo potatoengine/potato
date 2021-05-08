@@ -20,18 +20,3 @@ target_link_libraries(potato_libposql
     PRIVATE
         sqlite3
 )
-
-add_executable(potato_libposql_test)
-
-target_sources(potato_libposql_test PRIVATE
-    "tests/main.cpp"
-)
-
-up_set_common_properties(potato_libposql_test)
-
-target_link_libraries(potato_libposql_test PRIVATE
-    potato::libposql
-    Catch2::Catch2
-)
-
-add_test(NAME potato_libposql_test COMMAND potato_libposql_test)

@@ -22,17 +22,3 @@ target_link_libraries(potato_libaudio
         soloud
         SDL2
 )
-
-add_executable(potato_libaudio_test)
-target_sources(potato_libaudio_test PRIVATE
-    "tests/main.cpp"
-)
-
-up_set_common_properties(potato_libaudio_test)
-
-target_link_libraries(potato_libaudio_test PRIVATE
-    potato::libaudio
-    Catch2::Catch2
-)
-
-add_test(NAME potato_libaudio_test COMMAND potato_libaudio_test)
