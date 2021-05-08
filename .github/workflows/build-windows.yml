@@ -12,8 +12,20 @@ jobs:
       fail-fast: false
       matrix:
         config: [ Debug, Release ]
+        cxx: [ 'cl', 'clang-cl' ]
+        include:
+          - cxx: cl
+            cc: cl
+            cxxflags: /FC
+            name: MSVC
+            warnings: /W3 /WX /w34295 /w34189
+          - cxx: clang-cl
+            cc: clang-cl
+            cxxflags:
+            name: Clang
+            warnings: /w
 
-    name: 'Windows MSVC ${{ matrix.config }}'
+    name: 'Windows ${{ matrix.name }} ${{ matrix.config }}'
     runs-on: 'windows-latest'
 
     steps:
@@ -42,12 +54,12 @@ jobs:
         uses: seanmiddleditch/gha-setup-vsdevenv@v3
       - name: Configure
         env:
-          CXX: cl.exe
-          CC: cl.exe
-          CXXFLAGS: /FC
+          CXX: '${{ matrix.cxx }}'
+          CC: '${{ matrix.cc }}'
+          CXXFLAGS: '${{ matrix.cxxflags }}'
         run: |
           mkdir build
-          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="/W3 /WX /w34295 /w34189" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES
+          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="${{ matrix.warnings }}" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }} -DBUILD_SHARED_LIBS=YES
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
       - name: Test
