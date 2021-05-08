@@ -12,18 +12,13 @@ jobs:
       fail-fast: false
       matrix:
         config: [ Debug, Release ]
-        cxx: [ 'cl', 'clang-cl' ]
+        cxx: [ 'cl' ]
         include:
           - cxx: cl
             cc: cl
             cxxflags: /FC
             name: MSVC
             warnings: /W3 /WX /w34295 /w34189
-          - cxx: clang-cl
-            cc: clang-cl
-            cxxflags:
-            name: Clang
-            warnings: /w
 
     name: 'Windows ${{ matrix.name }} ${{ matrix.config }}'
     runs-on: 'windows-latest'
