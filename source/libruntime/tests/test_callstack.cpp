@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <array>
 
-TEST_CASE("up::callstack", "[potato][runtime]") {
+TEST_CASE("potato.runtime.callstack", "[potato][runtime]") {
     using namespace up;
     using namespace up::callstack;
 

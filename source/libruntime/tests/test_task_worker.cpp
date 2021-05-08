@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <thread>
 
-TEST_CASE("TaskWorker", "[potato][runtime]") {
+TEST_CASE("potato.runtime.TaskWorker", "[potato][runtime]") {
     using namespace up;
 
     SECTION("single") {

@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <thread>
 
-TEST_CASE("LockFreeQueue", "[potato][runtime]") {
+TEST_CASE("potato.runtime.LockFreeQueue", "[potato][runtime]") {
     using namespace up;
 
     SECTION("default") { LockFreeQueue<int> queue; }

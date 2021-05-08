@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <thread>
 
-TEST_CASE("RWLock", "[potato][runtime]") {
+TEST_CASE("potato.runtime.RWLock", "[potato][runtime]") {
     using namespace up;
 
     SECTION("writer-reader-writer") {
