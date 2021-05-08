@@ -2,7 +2,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("up::bit_set", "[potato][spud]") {
+TEST_CASE("potato.spud.bit_set", "[potato][spud]") {
     using namespace up;
 
     SECTION("empty") {

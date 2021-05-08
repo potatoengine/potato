@@ -2,7 +2,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("up::delegate_ref", "[potato][spud]") {
+TEST_CASE("potato.spud.delegate_ref", "[potato][spud]") {
     using namespace up;
 
     SECTION("lambda delegate_ref") {

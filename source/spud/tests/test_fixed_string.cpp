@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <iostream>
 
-TEST_CASE("up::fixed_string", "[potato][spud]") {
+TEST_CASE("potato.spud.fixed_string", "[potato][spud]") {
     using namespace up;
 
     SECTION("empty fixed_string") {

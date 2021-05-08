@@ -4,7 +4,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("up::overload", "[potato][spud]") {
+TEST_CASE("potato.spud.overload", "[potato][spud]") {
     int result = 0;
 
     auto o = up::overload(

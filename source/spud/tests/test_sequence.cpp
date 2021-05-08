@@ -9,7 +9,7 @@ namespace {
     enum class StrongEnum { A, B, C, Max };
 } // namespace
 
-TEST_CASE("up::sequence", "[potato][spud]") {
+TEST_CASE("potato.spud.sequence", "[potato][spud]") {
     using namespace up;
 
     SECTION("sequence range") {

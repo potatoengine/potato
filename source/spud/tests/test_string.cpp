@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <ostream>
 
-TEST_CASE("up::string", "[potato][spud]") {
+TEST_CASE("potato.spud.string", "[potato][spud]") {
     using namespace up;
 
     SECTION("default initialization") {
