@@ -7,7 +7,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("[potato][spud] up::hash") {
+TEST_CASE("up::hash", "[potato][spud]") {
     using namespace up;
 
     SECTION("default hash_value") {

@@ -25,7 +25,7 @@ static up::generator<std::string_view> strings(int last) {
     }
 }
 
-TEST_CASE("[potato][spud] up::generator") {
+TEST_CASE("up::generator", "[potato][spud]") {
     using namespace up;
 
     SECTION("generator") {
