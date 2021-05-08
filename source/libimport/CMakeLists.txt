@@ -49,18 +49,3 @@ find_library(D3DCOMPILER_PATH d3dcompiler)
 if(D3DCOMPILER_PATH)
     target_link_libraries(potato_libimport PRIVATE ${D3DCOMPILER_PATH})
 endif()
-
-add_executable(potato_libimport_test)
-
-target_sources(potato_libimport_test PRIVATE
-    "tests/main.cpp"
-)
-
-up_set_common_properties(potato_libimport_test)
-
-target_link_libraries(potato_libimport_test PRIVATE
-    potato::libimport
-    Catch2::Catch2
-)
-
-add_test(NAME potato_libimport_test COMMAND potato_libimport_test)
