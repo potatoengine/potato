@@ -7,7 +7,7 @@
 #include <catch2/catch.hpp>
 #include <nlohmann/json.hpp>
 
-TEST_CASE("Serialize", "[potato][reflex]") {
+TEST_CASE("potato.reflex.Serialize", "[potato][reflex]") {
     using namespace up;
     using namespace up::schema;
 

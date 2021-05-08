@@ -4,7 +4,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("TestSchema", "[potato][reflex]") {
+TEST_CASE("potato.reflex.Schema", "[potato][reflex]") {
     using namespace up;
     using namespace up::schema;
 
