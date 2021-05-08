@@ -1,4 +1,4 @@
-name: Build
+name: Build Windows
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
             name: MSVC
             warnings: /W3 /WX /w34295 /w34189
 
-    name: 'Windows ${{ matrix.name }} ${{ matrix.config }}'
+    name: '${{ matrix.name }} ${{ matrix.config }}'
     runs-on: 'windows-latest'
 
     steps:

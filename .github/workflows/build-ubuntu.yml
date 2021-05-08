@@ -1,4 +1,4 @@
-name: Build
+name: Build Ubuntu
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
             warnings: -Wall -Werror -Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion # GLM triggers deprecated-volatile, imgui triggers deprecated-enum-enum-conversion
             packages: clang-11 libc++-11-dev libc++abi-11-dev
     
-    name: 'Ubuntu ${{ matrix.name }} ${{ matrix.config }}'
+    name: '${{ matrix.name }} ${{ matrix.config }}'
     runs-on: 'ubuntu-20.04'
 
     steps:
