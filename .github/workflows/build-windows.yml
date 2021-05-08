@@ -7,13 +7,13 @@ on:
   pull_request: {}
 
 jobs:
-  build-windows:
+  build-windows-msvc:
     strategy:
       fail-fast: false
       matrix:
         config: [ Debug, Release ]
 
-    name: 'Windows (${{ matrix.config }} msvc)'
+    name: 'Windows MSVC ${{ matrix.config }}'
     runs-on: 'windows-latest'
 
     steps:
