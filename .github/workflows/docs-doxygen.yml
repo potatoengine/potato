@@ -1,0 +1,64 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - master
+  pull_request: {}
+
+jobs:
+  build-doxygen:
+    name: Build Doxygen
+    runs-on: 'ubuntu-20.04'
+
+    steps:
+      - name: Apt update
+        run: sudo apt-get -yq update
+      - name: Install Doxygen
+        run: sudo apt-get -yq install doxygen
+      - name: Install libraries
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev libuv1-dev
+      - name: Install toolchain
+        run: sudo apt-get -yq install cmake g++-10 gcc-10 libstdc++-10-dev
+      - uses: actions/checkout@master
+        with:
+          lfs: true
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v3
+      - name: Configure
+        env:
+          CXX: 'g++-10'
+          CC: 'gcc-10'
+        run: |
+          mkdir build
+          cmake -S . -B build -G Ninja -DUP_BUILD_DOCS=ON
+      - name: Build Docs
+        run: cmake --build build --target doxygen
+      - name: Post Artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: html-docs
+          path: build/documentation/doxygen/html
+
+  deply-doxygen:
+    name: Deploy Docs
+    needs: [ 'build-doxygen' ]
+    runs-on: 'ubuntu-latest'
+
+    if: github.event == 'push' && github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Fetch Documentation Artifacts
+        uses: actions/download-artifact@master
+        with:
+          name: html-docs
+          path: html
+      - name: Publish to potatoengine.github.io
+        uses: seanmiddleditch/gha-publish-to-git@v2
+        with:
+          repository: potatoengine/potatoengine.github.io
+          branch: master
+          github_token: '${{ secrets.GITHUB_TOKEN  }}'
+          github_pat: '${{ secrets.GH_PAT }}'
+          source_folder: html
+          target_folder: '${{ steps.branch.outputs.branch }}'
