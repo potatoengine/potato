@@ -20,6 +20,7 @@ target_sources(potato_libeditor PRIVATE
     "public/potato/editor/imgui_ext.h"
     "public/potato/editor/imgui_fonts.h"
     "public/potato/editor/property_grid.h"
+    "public/potato/editor/slate.h"
 )
 
 include(up_headerify)
@@ -43,3 +44,19 @@ target_link_libraries(potato_libeditor
         glm::glm
         imgui
 )
+
+add_executable(potato_libeditor_test)
+target_sources(potato_libeditor_test PRIVATE
+    "tests/main.cpp"
+    "tests/test_slate.cpp"
+)
+
+up_set_common_properties(potato_libeditor_test)
+
+target_link_libraries(potato_libeditor_test PRIVATE
+    potato::libeditor
+    Catch2::Catch2
+)
+
+include(Catch)
+catch_discover_tests(potato_libeditor_test)
