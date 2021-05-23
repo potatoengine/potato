@@ -40,10 +40,10 @@ auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
 
     auto const pathHash = hash_value(path);
 
-    auto it = _hashes.find(pathHash);
-    if (it != _hashes.end()) {
-        if (rs == IOResult::Success && stat.size == it->second.size && stat.mtime == it->second.mtime) {
-            return it->second.contentHash;
+    auto item = _hashes.find(pathHash);
+    if (item) {
+        if (rs == IOResult::Success && stat.size == item->value.size && stat.mtime == item->value.mtime) {
+            return item->value.contentHash;
         }
     }
 
@@ -52,7 +52,9 @@ auto up::FileHashCache::hashAssetAtPath(zstring_view path) -> up::uint64 {
 
     (void)_addEntryStmt.execute(path, contentHash, stat.mtime, stat.size);
 
-    _hashes[pathHash] = {.pathHash = pathHash, .contentHash = contentHash, .mtime = stat.mtime, .size = stat.size};
+    _hashes.insert(
+        pathHash,
+        {.pathHash = pathHash, .contentHash = contentHash, .mtime = stat.mtime, .size = stat.size});
 
     return contentHash;
 }
