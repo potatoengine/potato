@@ -19,7 +19,7 @@ jobs:
       - name: Install libraries
         run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev libuv1-dev
       - name: Install toolchain
-        run: sudo apt-get -yq install cmake g++-10 gcc-10 libstdc++-10-dev
+        run: sudo apt-get -yq install cmake g++-11 gcc-11 libstdc++-11-dev
       - uses: actions/checkout@master
         with:
           lfs: true
@@ -27,8 +27,8 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
         env:
-          CXX: 'g++-10'
-          CC: 'gcc-10'
+          CXX: 'g++-11'
+          CC: 'gcc-11'
         run: |
           mkdir build
           cmake -S . -B build -G Ninja -DUP_BUILD_DOCS=ON
