@@ -95,7 +95,7 @@ namespace up {
         using mapped_type = Value;
         using value_type = _detail::hash_map::key_value<key_type const, mapped_type>;
         using size_type = size_t;
-        using hash_type = typename Hash::result_type;
+        using hash_type = hash_result_t<Hash, Key>;
 
         struct proxy_type : _detail::hash_map::kv_proxy<Key, Value> {
             using _detail::hash_map::kv_proxy<Key, Value>::kv_proxy;
@@ -138,21 +138,21 @@ namespace up {
 
         constexpr void clear() noexcept;
 
-        template <convertible_to<Key> FindKey>
+        template <convertible_to<Key> FindKey = Key>
         [[nodiscard]] constexpr bool contains(FindKey const& key) const noexcept {
             return _find(key, Hash{}(key)) != _detail::hash_table::constants::SENTINEL;
         }
 
-        template <convertible_to<Key> FindKey>
+        template <convertible_to<Key> FindKey = Key>
         [[nodiscard]] constexpr proxy_type find(FindKey const& key) noexcept {
             auto const index = _find(key, Hash{}(key));
             return proxy_type{_items, index};
         }
 
-        template <convertible_to<Key> InsertKey, convertible_to<Value> InsertValue>
+        template <convertible_to<Key> InsertKey = Key, convertible_to<Value> InsertValue = Value>
         constexpr bool insert(InsertKey&& key, InsertValue&& value);
 
-        template <convertible_to<Key> EraseKey>
+        template <convertible_to<Key> EraseKey = Key>
         constexpr bool erase(EraseKey const& key) noexcept;
 
     private:
@@ -183,7 +183,8 @@ namespace up {
     };
 
     template <typename Key, typename Value, typename Hash, typename Equality>
-    constexpr hash_map<Key, Value, Hash, Equality>& hash_map<Key, Value, Hash, Equality>::operator=(hash_map&& rhs) noexcept {
+    constexpr hash_map<Key, Value, Hash, Equality>& hash_map<Key, Value, Hash, Equality>::operator=(
+        hash_map&& rhs) noexcept {
         if (_control != rhs._control) {
             clear();
             _drop();

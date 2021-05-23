@@ -30,7 +30,7 @@ namespace up {
     public:
         using value_type = Value const;
         using size_type = size_t;
-        using hash_type = typename Hash::result_type;
+        using hash_type = hash_result_t<Hash, Value>;
 
         constexpr hash_set() noexcept = default;
         constexpr ~hash_set() noexcept {
@@ -66,22 +66,22 @@ namespace up {
 
         constexpr void clear() noexcept;
 
-        template <convertible_to<Value> FindValue>
+        template <convertible_to<Value> FindValue = Value>
         [[nodiscard]] constexpr bool contains(FindValue const& value) const noexcept {
             return _find(value, Hash{}(value)) != _detail::hash_table::constants::SENTINEL;
         }
 
-        template <convertible_to<Value> FindValue>
+        template <convertible_to<Value> FindValue = Value>
         [[nodiscard]] constexpr Value const* find(FindValue const& value) noexcept {
             using constants = _detail::hash_table::constants;
             auto const index = _find(value, Hash{}(value));
             return index != constants::SENTINEL ? &_items[index] : nullptr;
         }
 
-        template <convertible_to<Value> InsertValue>
+        template <convertible_to<Value> InsertValue = Value>
         constexpr bool insert(InsertValue&& value);
 
-        template <convertible_to<Value> EraseValue>
+        template <convertible_to<Value> EraseValue = Value>
         constexpr bool erase(EraseValue const& value) noexcept;
 
     private:

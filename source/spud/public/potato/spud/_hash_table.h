@@ -71,17 +71,17 @@ namespace up::_detail::hash_table {
             uint8 const* control,
             Item const* items,
             Key const& key,
-            typename Hash::result_type hash) noexcept;
+            hash_result_t<Hash, Key> hash) noexcept;
         static constexpr size_t findEmptyOrTombstone(
             size_t groups,
             uint8 const* control,
-            typename Hash::result_type hash) noexcept;
+            hash_result_t<Hash, Key> hash) noexcept;
         static constexpr bool erase(
             size_t groups,
             uint8* control,
             Item* items,
             Key const& key,
-            typename Hash::result_type hash) noexcept;
+            hash_result_t<Hash, Key> hash) noexcept;
 
         // returns true if the caller must drop allocated memory (it won't be cleared/reset)
         static bool clear(size_t groups, uint8* control, Item* items) noexcept;
@@ -147,7 +147,7 @@ namespace up::_detail::hash_table {
         uint8 const* control,
         Item const* items,
         Key const& key,
-        typename Hash::result_type hash) noexcept -> size_t {
+        hash_result_t<Hash, Key> hash) noexcept -> size_t {
         using constants = constants;
 
         size_t group = HashOps::_h1(hash) & (groups - 1);
@@ -184,7 +184,7 @@ namespace up::_detail::hash_table {
     constexpr auto table_ops<Item, Key, Hash, Equality, HashOps, MatchOps>::findEmptyOrTombstone(
         size_t groups,
         uint8 const* controls,
-        typename Hash::result_type hash) noexcept -> size_t {
+        hash_result_t<Hash, Key> hash) noexcept -> size_t {
         size_t group = HashOps::_h1(hash) & (groups - 1);
         size_t probe = 1;
 
@@ -209,7 +209,7 @@ namespace up::_detail::hash_table {
         uint8* control,
         Item* items,
         Key const& key,
-        typename Hash::result_type hash) noexcept {
+        hash_result_t<Hash, Key> hash) noexcept {
         using constants = constants;
 
         auto const index = find(groups, control, items, key, hash);

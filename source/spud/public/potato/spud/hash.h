@@ -20,8 +20,13 @@ namespace up {
     template <typename HashAlgorithm = default_hash, size_t N>
     constexpr auto hash_value(char const (&value)[N]) -> typename HashAlgorithm::result_type;
 
-    template <class Hash>
+    template <typename Hash>
     constexpr auto hash_combine(Hash left, Hash right) noexcept -> Hash;
+
+    template <typename HashAlgorithm, typename Value>
+    struct hash_result;
+    template <typename HashAlgorithm, typename Value>
+    using hash_result_t = typename hash_result<HashAlgorithm, Value>::type;
 
     template <typename>
     class vector;
@@ -81,8 +86,13 @@ constexpr auto up::hash_value(char const (&value)[N]) -> typename HashAlgorithm:
     return hasher.finalize();
 }
 
-template <class Hash>
+template <typename Hash>
 constexpr auto up::hash_combine(Hash left, Hash right) noexcept -> Hash {
     left ^= right + 0x9e3779b9 + (left << 6) + (left >> 2);
     return left;
 }
+
+template <typename HashAlgorithm, typename Value>
+struct up::hash_result {
+    using type = decltype(std::declval<HashAlgorithm>()(std::declval<Value>()));
+};
