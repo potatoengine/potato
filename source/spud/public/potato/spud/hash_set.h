@@ -180,7 +180,6 @@ namespace up {
         hash_set temp = std::move(*this);
 
         _groups = temp._groups != 0 ? temp._groups << 1 : 1;
-        auto const newCapacity = capacity();
 
         memory_ops::allocate(_groups, _control, _items);
 

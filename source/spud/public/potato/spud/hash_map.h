@@ -22,6 +22,10 @@ namespace up {
     namespace _detail::hash_map {
         template <typename Key, typename Value>
         struct key_value {
+            template <typename K, typename V>
+            constexpr key_value(K&& k, V&& v) : key(std::forward<K>(k))
+                                              , value(std::forward<V>(v)) {}
+
             Key key;
             Value value;
         };
@@ -258,7 +262,6 @@ namespace up {
         hash_map temp = std::move(*this);
 
         _groups = temp._groups != 0 ? temp._groups << 1 : 1;
-        auto const newCapacity = capacity();
 
         memory_ops::allocate(_groups, _control, _items);
 

@@ -17,13 +17,13 @@ jobs:
             cc: gcc-11
             name: GCC
             cxxflags: -fcoroutines
-            warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized -Wno-deprecated-enum-enum-conversion # GLM triggers volatile, Tracy triggers maybe-unitialized, imgui triggers deprecated-enum-enum-conversion
+            warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized -Wno-deprecated-enum-enum-conversion -Wno-unknown-attributes # GLM triggers volatile, Tracy triggers maybe-unitialized, imgui triggers deprecated-enum-enum-conversion
             packages: g++-11 gcc-11 libstdc++-11-dev
           - cxx: clang++-11
             cc: clang-11
             name: Clang
             cxxflags: -stdlib=libc++ -fdiagnostics-absolute-paths
-            warnings: -Wall -Werror -Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion # GLM triggers deprecated-volatile, imgui triggers deprecated-enum-enum-conversion
+            warnings: -Wall -Werror -Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion -Wno-unknown-attributes # GLM triggers deprecated-volatile, imgui triggers deprecated-enum-enum-conversion
             packages: clang-11 libc++-11-dev libc++abi-11-dev
     
     name: 'Ubuntu ${{ matrix.name }} ${{ matrix.config }}'

@@ -14,6 +14,7 @@
 #endif
 
 #include <bit>
+#include <cstring>
 
 namespace up::_detail::hash_table {
     struct constants {
