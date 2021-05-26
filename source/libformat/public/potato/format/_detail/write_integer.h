@@ -6,6 +6,7 @@
 
 #include "potato/format/format.h"
 #include "potato/spud/ascii.h"
+#include "potato/spud/platform.h"
 #include "potato/spud/utility.h"
 
 #include <charconv>
@@ -69,6 +70,12 @@ namespace up::_detail {
         return spec;
     }
 
+    // GCC 11.1 seems to spuriously emit this error in the uppercase loop
+#if UP_COMPILER_GCC
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+
     template <typename Writer, typename T>
     constexpr void write_integer(Writer& out, T raw, string_view spec_string) {
         constexpr auto max_hex_chars = sizeof(raw) * CHAR_BIT + 1 /*negative*/;
@@ -104,5 +111,9 @@ namespace up::_detail {
             out.write({buffer, result.ptr});
         }
     }
+
+#if UP_COMPILER_GCC
+#    pragma GCC diagnostic pop
+#endif
 
 } // namespace up::_detail

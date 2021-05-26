@@ -11,14 +11,14 @@ jobs:
     strategy:
       matrix:
         config: [ 'Debug', 'Release' ]
-        cxx: [ 'g++-10', 'clang++-11' ]
+        cxx: [ 'g++-11', 'clang++-11' ]
         include:
-          - cxx: g++-10
-            cc: gcc-10
+          - cxx: g++-11
+            cc: gcc-11
             name: GCC
             cxxflags: -fcoroutines
             warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized -Wno-deprecated-enum-enum-conversion # GLM triggers volatile, Tracy triggers maybe-unitialized, imgui triggers deprecated-enum-enum-conversion
-            packages: g++-10 gcc-10 libstdc++-10-dev
+            packages: g++-11 gcc-11 libstdc++-11-dev
           - cxx: clang++-11
             cc: clang-11
             name: Clang
