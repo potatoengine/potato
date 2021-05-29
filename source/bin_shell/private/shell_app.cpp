@@ -350,10 +350,13 @@ void up::shell::ShellApp::_openEditor(zstring_view editorName) {
 void up::shell::ShellApp::_openEditorForDocument(zstring_view editorName, zstring_view filename) {
     for (auto const& factory : _editorFactories) {
         if (factory->editorName() == editorName) {
+            // #dx12: for now kick off new frame for resource creation -- will have to build a new system for that.
+            _device->beginResourceCreation();
             auto editor = factory->createEditorForDocument(filename);
             if (editor != nullptr) {
                 _editors.open(std::move(editor));
             }
+            _device->endResourceCreation();
             return;
         }
     }
@@ -444,8 +447,11 @@ void up::shell::ShellApp::_onWindowSizeChanged() {
     int width = 0;
     int height = 0;
     SDL_GetWindowSize(_window.get(), &width, &height);
-    _swapChain->resizeBuffers(width, height);
-    
+  //  _renderer->clearCommandList();
+  //  _uiRenderCamera->setRenderTarget(nullptr);
+  //  _swapChain->resizeBuffers(_renderer->device(), width, height);
+  //  _uiRenderCamera->setRenderTarget(std::move(_swapChain->getRenderTargetView()));
+
     _logger.info("Window resized: {}x{}", width, height);
 }
 

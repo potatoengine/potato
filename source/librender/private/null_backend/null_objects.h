@@ -49,6 +49,7 @@ namespace up::null {
         void endResourceCreation() override {}
         void render(const FrameData& frameData, GpuRenderable* renderable) override {}
         void execute(bool quitting) override {}
+        void clearCommandList() override {}
     };
 
     class ResourceViewNull final : public GpuResourceView {
@@ -68,7 +69,7 @@ namespace up::null {
         void bind(GpuCommandList* cmd) override{};
         void unbind(GpuCommandList* cmd) override{};
         void present() override {}
-        void resizeBuffers(int width, int height) override {}
+        void resizeBuffers(GpuDevice& device, int width, int height) override {}
         box<GpuResourceView> getRenderTargetView() override;
         int getCurrentBufferIndex() override;
     };

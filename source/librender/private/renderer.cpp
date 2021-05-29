@@ -28,27 +28,27 @@ up::Renderer::Renderer(rc<GpuDevice> device) : _device(std::move(device)) {
     //_debugLineMaterial = _loader.loadMaterialSync("materials/debug_line.mat");
     //_debugLineBuffer = _device->createBuffer(GpuBufferType::Vertex, debug_vbo_size);
 
-    // Create the debug pipeline
-    GpuPipelineStateDesc pipelineDesc;
+    //// Create the debug pipeline
+    //GpuPipelineStateDesc pipelineDesc;
 
-    GpuInputLayoutElement const layout[] = {
-        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Position, 0, 0},
-        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Color, 0, 0},
-        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Normal, 0, 0},
-        {GpuFormat::R32G32B32Float, GpuShaderSemantic::Tangent, 0, 0},
-        {GpuFormat::R32G32Float, GpuShaderSemantic::TexCoord, 0, 0},
-    };
+    //GpuInputLayoutElement const layout[] = {
+    //    {GpuFormat::R32G32B32Float, GpuShaderSemantic::Position, 0, 0},
+    //    {GpuFormat::R32G32B32Float, GpuShaderSemantic::Color, 0, 0},
+    //    {GpuFormat::R32G32B32Float, GpuShaderSemantic::Normal, 0, 0},
+    //    {GpuFormat::R32G32B32Float, GpuShaderSemantic::Tangent, 0, 0},
+    //    {GpuFormat::R32G32Float, GpuShaderSemantic::TexCoord, 0, 0},
+    //};
 
-    pipelineDesc.enableDepthTest = true;
-    pipelineDesc.enableDepthWrite = true;
-    pipelineDesc.vertShader = _device->getDebugShader(GpuShaderStage::Vertex).as_bytes();
-    pipelineDesc.pixelShader = _device->getDebugShader(GpuShaderStage::Pixel).as_bytes();
-    pipelineDesc.inputLayout = layout;
+    //pipelineDesc.enableDepthTest = true;
+    //pipelineDesc.enableDepthWrite = true;
+    //pipelineDesc.vertShader = _device->getDebugShader(GpuShaderStage::Vertex).as_bytes();
+    //pipelineDesc.pixelShader = _device->getDebugShader(GpuShaderStage::Pixel).as_bytes();
+    //pipelineDesc.inputLayout = layout;
 
-    // Check to support null renderer; should this be explicit?
-    if (!pipelineDesc.vertShader.empty() && !pipelineDesc.pixelShader.empty()) {
-        _debugState = _device->createPipelineState(pipelineDesc);
-    }
+    //// Check to support null renderer; should this be explicit?
+    //if (!pipelineDesc.vertShader.empty() && !pipelineDesc.pixelShader.empty()) {
+    //    _debugState = _device->createPipelineState(pipelineDesc);
+    //}
 }
 
 up::Renderer::~Renderer() = default;
@@ -176,4 +176,8 @@ void up::Renderer::registerAssetBackends(AssetLoader& assetLoader) {
     assetLoader.registerBackend(new_box<ShaderAssetLoaderBackend>());
     assetLoader.registerBackend(new_box<TextureAssetLoaderBackend>(*this));
     _device->registerAssetBackends(assetLoader);
+}
+
+void up::Renderer::clearCommandList() {
+    _device->clearCommandList();
 }

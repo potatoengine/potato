@@ -237,7 +237,9 @@ void up::shell::SceneEditor::render(Renderer& renderer, float deltaTime) {
     renderer.createRendarable(_gridRenderer.get());
 
     // render the scene
-   // _scene->render(renderer);
+    if (_doc->scene() != nullptr) {
+        _doc->scene()->render(renderer);
+    }
 }
 
 void up::shell::SceneEditor::_drawGrid() {

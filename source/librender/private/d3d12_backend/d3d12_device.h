@@ -51,10 +51,13 @@ namespace up::d3d12 {
         void beginResourceCreation() override;
         void endResourceCreation() override;
 
+        void clearCommandList() override; 
+
         view<unsigned char> getDebugShader(GpuShaderStage stage) override;
 
         void registerAssetBackends(AssetLoader& assetLoader) override;
 
+        ID3D12Device* getDevice() const { return _device.get(); }
     protected:
         void createDefaultSampler();
         void createAllocator(); 

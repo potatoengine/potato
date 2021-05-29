@@ -5,6 +5,7 @@
 #include "d3d12_platform.h"
 #include "d3d12_texture.h"
 #include "d3d12_resource_view.h"
+#include "d3d12_device.h"
 
 #include "d3d12_command_list.h"
 
@@ -54,13 +55,9 @@ auto up::d3d12::SwapChainD3D12::create(
 
     factory->MakeWindowAssociation(window, DXGI_MWA_NO_ALT_ENTER);
 
-    for (uint32 i = 0; i < kNumFrames; i++) {
-        _swapChain->GetBuffer(i, __uuidof(ID3D12Resource), out_ptr(_backBuffer[i]));
-        device->CreateRenderTargetView(_backBuffer[i].get(), nullptr, descHeap->get_cpu(i));
-    }
+    _descHeap = descHeap;
 
-    _descHeap = descHeap; 
-    _bufferIndex = _swapChain->GetCurrentBackBufferIndex();
+    initBackBufferTargets(device);
 
     return true;
 }
@@ -110,8 +107,17 @@ void up::d3d12::SwapChainD3D12::present() {
     _bufferIndex = _swapChain->GetCurrentBackBufferIndex();
 }
 
-void up::d3d12::SwapChainD3D12::resizeBuffers(int width, int height) {
-    _swapChain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+void up::d3d12::SwapChainD3D12::resizeBuffers(GpuDevice& device, int width, int height) {
+
+    for (uint32 i = 0; i < kNumFrames; i++) {
+        _backBuffer[i].reset();
+    }
+
+    _swapChain->ResizeBuffers(kNumFrames, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+
+    initBackBufferTargets(static_cast<DeviceD3D12&>(device).getDevice());
+
+    _bufferIndex = _swapChain->GetCurrentBackBufferIndex();
 }
 
 auto up::d3d12::SwapChainD3D12::getRenderTargetView() -> box<GpuResourceView> {
@@ -123,4 +129,13 @@ auto up::d3d12::SwapChainD3D12::getRenderTargetView() -> box<GpuResourceView> {
 
 int up::d3d12::SwapChainD3D12::getCurrentBufferIndex() {
     return _bufferIndex;
+}
+
+void up::d3d12::SwapChainD3D12::initBackBufferTargets(ID3D12Device* device) {
+    for (uint32 i = 0; i < kNumFrames; i++) {
+        _swapChain->GetBuffer(i, __uuidof(ID3D12Resource), out_ptr(_backBuffer[i]));
+        device->CreateRenderTargetView(_backBuffer[i].get(), nullptr, _descHeap->get_cpu(i));
+    }
+
+    _bufferIndex = _swapChain->GetCurrentBackBufferIndex();
 }

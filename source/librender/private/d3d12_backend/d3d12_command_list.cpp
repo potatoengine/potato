@@ -197,10 +197,8 @@ void up::d3d12::CommandListD3D12::finish() {
 }
 
 void up::d3d12::CommandListD3D12::clear(GpuPipelineState* pipelineState) {
-    UP_ASSERT(pipelineState != nullptr);
-
     auto ps = static_cast<PipelineStateD3D12*>(pipelineState);
-    _commandList->ClearState(ps->state());
+    _commandList->ClearState(ps ? ps->state() : nullptr);
     _commandList->RSSetScissorRects(0, nullptr);
     if (pipelineState != nullptr) {
         setPipelineState(pipelineState);

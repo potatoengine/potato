@@ -52,6 +52,8 @@ namespace up {
 
         UP_RENDER_API void registerAssetBackends(AssetLoader& assetLoader);
 
+        UP_RENDER_API void clearCommandList(); 
+
         GpuDevice& device() const noexcept { return *_device; }
     
     private:

@@ -286,9 +286,12 @@ void up::d3d12::DeviceD3D12::beginResourceCreation() {
 
 void up::d3d12::DeviceD3D12::endResourceCreation() {
     execute(false);
-    waitForFrame();
 }
 
+void up::d3d12::DeviceD3D12::clearCommandList() {
+    execute(false);
+    //_mainCmdList->start(nullptr);
+}
 
 void up::d3d12::DeviceD3D12::render(const FrameData& frameData, GpuRenderable* renderable) {
     UP_ASSERT(renderable);

@@ -21,7 +21,7 @@ namespace up {
 
     struct GpuPipelineStateDesc;
     struct GpuTextureDesc;
-    struct FrameData; 
+    struct FrameData;
 
     class IRenderable;
 
@@ -44,7 +44,7 @@ namespace up {
 
         virtual box<GpuResourceView> createShaderResourceView(GpuPipelineState* pipeline, GpuTexture* resource) = 0;
         virtual box<GpuResourceView> createRenderTargetView(GpuTexture* resource) = 0;
-        virtual box<GpuResourceView> createDepthStencilView(GpuTexture* resource) = 0; 
+        virtual box<GpuResourceView> createDepthStencilView(GpuTexture* resource) = 0;
 
         virtual void beginFrame(GpuSwapChain* swapChain) = 0;
         virtual void endFrame(GpuSwapChain* swapChain) = 0;
@@ -56,8 +56,10 @@ namespace up {
         virtual void render(const FrameData& frameData, GpuRenderable* renderable) = 0;
         virtual void execute(bool quitting) = 0;
 
-       virtual view<unsigned char> getDebugShader(GpuShaderStage stage) = 0;
+        virtual void clearCommandList() = 0;
 
-       virtual void registerAssetBackends(AssetLoader& assetLoader) = 0;
+        virtual view<unsigned char> getDebugShader(GpuShaderStage stage) = 0;
+
+        virtual void registerAssetBackends(AssetLoader& assetLoader) = 0;
     };
 } // namespace up

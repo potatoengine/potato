@@ -47,11 +47,11 @@ void up::Material::bindMaterialToRender(RenderContext& ctx) {
         pipelineDesc.inputLayout = layout;
         _state = ctx.device.createPipelineState(pipelineDesc);
 
-        /*int texIndex = 0;
+        int texIndex = 0;
         for (auto const& tex : _textures) {
-            _srvs[texIndex] = ctx.device.createShaderResourceView(&tex.asset()->texture());
+            _srvs[texIndex] = ctx.device.createShaderResourceView(_state.get(), &tex.asset()->texture());
             _samplers[texIndex++] = ctx.device.createSampler();
-        }*/
+        }
     }
 
     ctx.commandList.setPipelineState(_state.get());

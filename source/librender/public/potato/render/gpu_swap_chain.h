@@ -8,6 +8,7 @@
 namespace up {
     class GpuCommandList;
     class GpuResourceView;
+    class GpuDevice; 
 
     class GpuSwapChain : public shared<GpuSwapChain> {
     public:
@@ -21,8 +22,9 @@ namespace up {
         virtual void unbind(GpuCommandList* cmd) = 0;
 
         virtual void present() = 0;
-        virtual void resizeBuffers(int width, int height) = 0;
+        virtual void resizeBuffers(GpuDevice& device, int width, int height) = 0;
         virtual box<GpuResourceView> getRenderTargetView() = 0;
         virtual int getCurrentBufferIndex() = 0;
+
     };
 } // namespace up

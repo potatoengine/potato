@@ -29,9 +29,13 @@ namespace up::d3d12 {
         void bind(GpuCommandList* cmd) override;
         void unbind(GpuCommandList* cmd) override;
         void present() override;
-        void resizeBuffers(int width, int height) override;
+        void resizeBuffers(GpuDevice& device, int width, int height) override;
         box<GpuResourceView> getRenderTargetView() override;
         int getCurrentBufferIndex() override;
+
+        protected:
+
+        void initBackBufferTargets(ID3D12Device* device);
 
     private:
         static const up::uint32 kNumFrames = 2;
