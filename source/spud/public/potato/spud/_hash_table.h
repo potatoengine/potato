@@ -228,7 +228,7 @@ namespace up::_detail::hash_table {
         items[index].~Item();
 
 #if !defined(NDEBUG)
-        std::memset(&items[index], constants::MEM_FREE, sizeof(Item));
+        std::memset(reinterpret_cast<char*>(&items[index]), constants::MEM_FREE, sizeof(Item));
 #endif
 
         return true;
@@ -256,7 +256,7 @@ namespace up::_detail::hash_table {
                     items[index].~Item();
 
 #if !defined(NDEBUG)
-                    std::memset(&items[index], constants::MEM_FREE, sizeof(Item));
+                    std::memset(reinterpret_cast<char*>(&items[index]), constants::MEM_FREE, sizeof(Item));
 #endif
 
                     matches &= matches - 1;
@@ -266,7 +266,10 @@ namespace up::_detail::hash_table {
         else {
 #if !defined(NDEBUG)
             if (!shouldDrop) {
-                std::memset(items, constants::MEM_FREE, sizeof(Item) * groups * constants::WIDTH);
+                std::memset(
+                    reinterpret_cast<char*>(items),
+                    constants::MEM_FREE,
+                    sizeof(Item) * groups * constants::WIDTH);
             }
 #endif
         }
