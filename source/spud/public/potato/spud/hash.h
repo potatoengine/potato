@@ -94,5 +94,5 @@ constexpr auto up::hash_combine(Hash left, Hash right) noexcept -> Hash {
 
 template <typename HashAlgorithm, typename Value>
 struct up::hash_result {
-    using type = decltype(std::declval<HashAlgorithm>()(std::declval<Value>()));
+    using type = std::remove_cvref_t<decltype(std::declval<HashAlgorithm>()(std::declval<Value>()))>;
 };
