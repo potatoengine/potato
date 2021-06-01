@@ -42,7 +42,7 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
         env:
-          CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths
+          CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths -mssse3
           CXX: clang++-11
           CC: clang-11
         run: |
