@@ -6,12 +6,11 @@
 #include "potato/runtime/stream.h"
 #include "potato/spud/box.h"
 #include "potato/spud/hash.h"
+#include "potato/spud/hash_map.h"
 #include "potato/spud/int_types.h"
 #include "potato/spud/span.h"
 #include "potato/spud/unique_resource.h"
 #include "potato/spud/zstring_view.h"
-
-#include <unordered_map>
 
 namespace up {
     class FileHashCache {
@@ -38,7 +37,7 @@ namespace up {
             uint64 size = 0;
         };
 
-        std::unordered_map<uint64, HashRecord, identity> _hashes;
+        hash_map<uint64, HashRecord, identity> _hashes;
         Database _conn;
         Statement _addEntryStmt;
     };

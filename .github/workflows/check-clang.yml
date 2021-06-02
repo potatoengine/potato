@@ -42,11 +42,11 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
         env:
-          CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths
+          CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths -mssse3
           CXX: clang++-11
           CC: clang-11
         run: |
           mkdir -p build
-          cmake -S . -B build -G Ninja "-DUP_CXXFLAGS:STRING=-Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-11" "-DCMAKE_BUILD_TYPE:STRING=Debug"
+          cmake -S . -B build -G Ninja "-DUP_CXXFLAGS:STRING=-Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion -Wno-unknown-attributes" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-11" "-DCMAKE_BUILD_TYPE:STRING=Debug"
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
