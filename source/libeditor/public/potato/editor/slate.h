@@ -4,11 +4,10 @@
 
 #include "_export.h"
 
+#include "potato/spud/hash_map.h"
 #include "potato/spud/rc.h"
 #include "potato/spud/string.h"
 #include "potato/spud/vector.h"
-
-#include <unordered_map>
 
 namespace up {
     class SlateDocument;
@@ -104,7 +103,7 @@ namespace up {
     private:
         Kind _kind = Kind::Map;
 
-        std::unordered_map<string, SlateItem> _map;
+        hash_map<string, SlateItem> _map;
         vector<SlateItem> _array;
     };
 } // namespace up
