@@ -1,0 +1,51 @@
+name: setup-llvm
+description: Install LLVM
+inputs:
+  version:
+    description: 'Version of LLVM to install'
+    required: false
+    default: '12'
+  components:
+    description: 'List of components to install (space-separated)'
+    required: false
+    default: 'clang clang-format clang-tidy libc++'
+  apt_repo_name:
+    description: 'Name of the repo on apt.llvm.org'
+    required: false
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure LLVM Apt Repository
+      shell: bash
+      env:
+        LLVM_VERSION: ${{ inputs.version }}
+        REPO_NAME: ${{ inputs.apt_repo_name }}
+      run: |
+        . /etc/lsb-release
+
+        REPO_NAME="${REPO_NAME:-llvm-toolchain-${DISTRIB_CODENAME}-${LLVM_VERSION}}"
+        APT_REPO="deb https://apt.llvm.org/${DISTRIB_CODENAME}/ ${REPO_NAME} main"
+
+        echo "Configuring: ${APT_REPO}"
+
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo apt clean
+        sudo add-apt-repository "${APT_REPO}"
+        sudo apt-get -yq update
+    - name: Install Packages
+      shell: bash
+      env:
+        LLVM_VERSION: ${{ inputs.version }}
+        COMPONENTS: ${{ inputs.components }}
+      run: |
+        INSTALL=''
+        for component in ${COMPONENTS} ; do
+          if [ "n${component}" = 'nlibc++' ] ; then
+            INSTALL="${INSTALL} libc++-${LLVM_VERSION}-dev libc++abi-${LLVM_VERSION}-dev"
+          else
+            INSTALL="${INSTALL} ${component}-${LLVM_VERSION}"
+          fi
+        done
+
+        echo "Installing: ${INSTALL}"
+        sudo apt-get -yq install ${INSTALL}

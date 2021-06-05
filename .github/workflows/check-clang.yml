@@ -15,7 +15,7 @@ jobs:
       - name: Apt update
         run: sudo apt-get -yq update
       - name: Install toolchain
-        run: sudo apt-get -yq install clang-format-11
+        run: sudo apt-get -yq install clang-format-11 # Match VS2019's version
       - uses: actions/checkout@master
       - name: Check Format
         run: python3 ./scripts/tools/run-clang-format.py -r --clang-format-executable clang-format-11 --exclude ./external --extensions h,cpp,cc ./source
@@ -24,29 +24,33 @@ jobs:
     name: 'Clang Tidy'
     runs-on: 'ubuntu-20.04'
 
+    env:
+      CXX: clang++-12
+      CC: clang-12
+      CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths -mssse3
+      UP_CXXFLAGS: -Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion -Wno-unknown-attributes
+      CONFIG: Debug
+      SHARED: OFF
+      TIDY: clang-tidy-12
+
     steps:
-      - name: Apt update
-        run: sudo apt-get -yq update
-      - name: Install toolchain
-        run: |
-          sudo apt-get remove libllvm10
-          sudo apt-get -yq install cmake clang++-11 clang-tidy-11 libc++-11-dev libc++abi-11-dev
-      - name: Install libraries
-        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev libuv1-dev
       - uses: actions/checkout@master
         with:
           lfs: true
+      - name: Install Clang
+        uses: ./.github/actions/setup-llvm
+        with:
+          version: 12
+          components: clang clang-tidy libc++
+      - name: Install libraries
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev libuv1-dev
       - name: Install Problem Matchers
         uses: Trass3r/setup-cpp@v1
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Configure
-        env:
-          CXXFLAGS: -stdlib=libc++ -fdiagnostics-absolute-paths -mssse3
-          CXX: clang++-11
-          CC: clang-11
         run: |
           mkdir -p build
-          cmake -S . -B build -G Ninja "-DUP_CXXFLAGS:STRING=-Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion -Wno-unknown-attributes" -DBUILD_SHARED_LIBS=OFF "-DUP_CLANG_TIDY:PATH=clang-tidy-11" "-DCMAKE_BUILD_TYPE:STRING=Debug"
+          cmake -S . -B build -G Ninja "-DUP_CXXFLAGS:STRING=${{ env.UP_CXXFLAGS }}" "-DBUILD_SHARED_LIBS=${{ env.SHARED }}" "-DUP_CLANG_TIDY:PATH=${{ env.TIDY }}" "-DCMAKE_BUILD_TYPE:STRING=${{ env.CONFIG }}"
       - name: Build
         run: cmake --build build --parallel -- -k 0 -v
