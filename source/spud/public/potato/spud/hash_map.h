@@ -161,7 +161,7 @@ namespace up {
 
     private:
         using item_type = _detail::hash_map::key_value<Key, Value>;
-        using control_type = uint8;
+        using control_type = int8;
         using match_ops = _detail::hash_table::match_ops_sse;
         using memory_ops = _detail::hash_table::memory_ops<item_type>;
         using hash_ops = _detail::hash_table::hash_ops<hash_type>;

@@ -54,7 +54,7 @@ namespace up {
             return 0;
         }
 
-        for (ssize_t index = 0, end = haystackLen - needleLen; index <= end; ++index) {
+        for (ssize_t index = 0, end = static_cast<ssize_t>(haystackLen - needleLen); index <= end; ++index) {
             if (stringEqualNoCase(haystack + index, needle, needleLen)) {
                 return index;
             }

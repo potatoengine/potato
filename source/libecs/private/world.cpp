@@ -59,8 +59,8 @@ void up::World::_deleteEntityData(ArchetypeId archetypeId, uint16 chunkIndex, ui
 
     // Copy the last element over the to-be-removed element, so we don't have holes in our array
     //
-    auto const lastIndex = chunk->header.entities - 1;
-    if (index != lastIndex) {
+    auto const lastIndex = static_cast<int>(chunk->header.entities - 1);
+    if (static_cast<int>(index) != lastIndex) {
         auto const movedEntity = chunk->entities()[index] = chunk->entities()[lastIndex];
         _moveTo(archetypeId, *chunk, index, *chunk, lastIndex);
         _remapEntityId(movedEntity, archetypeId, chunkIndex, index);

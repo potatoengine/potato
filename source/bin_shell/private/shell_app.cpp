@@ -437,7 +437,7 @@ void up::shell::ShellApp::run() {
 
         auto endFrame = std::chrono::high_resolution_clock::now();
         _lastFrameDuration = endFrame - now;
-        _lastFrameTime = static_cast<float>(_lastFrameDuration.count() * nano_to_seconds);
+        _lastFrameTime = static_cast<float>(static_cast<double>(_lastFrameDuration.count()) * nano_to_seconds);
         now = endFrame;
     }
 }

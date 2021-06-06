@@ -131,7 +131,7 @@ void up::SceneDocument::createTestObjects(
 
     auto const ringId = createEntity("Ring", rootId);
     for (size_t i = 0; i <= numObjects; ++i) {
-        float p = i / static_cast<float>(numObjects);
+        float p = static_cast<float>(i) / static_cast<float>(numObjects);
         float r = p * 2.f * pi;
         auto const id = createEntity("Orbit", ringId);
         _scene->world().addComponent(

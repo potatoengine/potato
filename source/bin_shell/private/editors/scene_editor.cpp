@@ -404,7 +404,7 @@ void up::shell::SceneEditor::_hierarchyShowIndex(int index) {
     bool const hasChildren = ent.firstChild != -1;
     bool const selected = _selection.selected(to_underlying(ent.id));
 
-    unsigned flags =
+    int flags =
         ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow;
     if (ent.parent == -1) {
         flags |= ImGuiTreeNodeFlags_DefaultOpen;
