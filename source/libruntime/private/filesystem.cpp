@@ -41,7 +41,7 @@ namespace up {
                     return IOResult::InvalidArgument;
                 }
 
-                _stream.read(buffer.as_chars().data(), buffer.size());
+                _stream.read(buffer.as_chars().data(), static_cast<std::streamsize>(buffer.size()));
                 buffer = buffer.first(_stream.gcount());
                 if (_stream.eof()) {
                     _stream.clear();
@@ -73,7 +73,7 @@ namespace up {
             Stream::difference_type remaining() const noexcept override { return 0; }
 
             IOResult write(span<byte const> buffer) override {
-                _stream.write(buffer.as_chars().data(), buffer.size());
+                _stream.write(buffer.as_chars().data(), static_cast<std::streamsize>(buffer.size()));
                 return IOResult::Success;
             }
 

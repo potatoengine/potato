@@ -122,7 +122,7 @@ namespace cxx {
                     auto const& typeParam = aggr.typeParams[index]->name;
 
                     if (std::string_view{cxxname}.substr(pos + 1).starts_with(typeParam)) {
-                        os.write(cxxname.data() + last, pos - last);
+                        os.write(cxxname.data() + last, static_cast<std::streamsize>(pos - last));
                         os << QualifiedName{*type.typeArgs[index]};
                         last = pos = pos + typeParam.length() + 1;
                         break;

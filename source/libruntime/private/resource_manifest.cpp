@@ -56,7 +56,6 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                 break;
             case ':': // header
                 input.pop_front();
-                sep = 0;
                 column = 0;
                 mask = 0;
                 eol = false;
@@ -98,7 +97,6 @@ bool up::ResourceManifest::parseManifest(string_view input, ResourceManifest& ma
                 }
                 break;
             default: // content
-                sep = 0;
                 column = 0;
                 mask = 0;
                 record = {};

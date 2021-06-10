@@ -361,17 +361,21 @@ bool up::reflex::_detail::decodeValue(nlohmann::json const& json, Schema const& 
 up::int64 up::reflex::_detail::readInt(Schema const& schema, void const* obj) {
     switch (schema.primitive) {
         case SchemaPrimitive::Int8:
+            return static_cast<int64>(*reinterpret_cast<int8 const*>(obj));
         case SchemaPrimitive::UInt8:
-            return *reinterpret_cast<uint8 const*>(obj);
+            return static_cast<int64>(*reinterpret_cast<uint8 const*>(obj));
         case SchemaPrimitive::Int16:
+            return static_cast<int64>(*reinterpret_cast<int16 const*>(obj));
         case SchemaPrimitive::UInt16:
-            return *reinterpret_cast<uint16 const*>(obj);
+            return static_cast<int64>(*reinterpret_cast<uint16 const*>(obj));
         case SchemaPrimitive::Int32:
+            return static_cast<int64>(*reinterpret_cast<int32 const*>(obj));
         case SchemaPrimitive::UInt32:
-            return *reinterpret_cast<uint32 const*>(obj);
+            return static_cast<int64>(*reinterpret_cast<uint32 const*>(obj));
         case SchemaPrimitive::Int64:
+            return *reinterpret_cast<int64 const*>(obj);
         case SchemaPrimitive::UInt64:
-            return *reinterpret_cast<uint64 const*>(obj);
+            return static_cast<int64>(*reinterpret_cast<uint64 const*>(obj));
         default:
             UP_UNREACHABLE("Incorrect primitive type");
             return 0;
@@ -381,20 +385,28 @@ up::int64 up::reflex::_detail::readInt(Schema const& schema, void const* obj) {
 void up::reflex::_detail::writeInt(Schema const& schema, void* obj, int64 value) {
     switch (schema.primitive) {
         case SchemaPrimitive::Int8:
+            *reinterpret_cast<int8*>(obj) = static_cast<int8>(value);
+            break;
         case SchemaPrimitive::UInt8:
-            *reinterpret_cast<uint8*>(obj) = static_cast<int8>(value);
+            *reinterpret_cast<uint8*>(obj) = static_cast<uint8>(value);
             break;
         case SchemaPrimitive::Int16:
+            *reinterpret_cast<int16*>(obj) = static_cast<int16>(value);
+            break;
         case SchemaPrimitive::UInt16:
-            *reinterpret_cast<uint16*>(obj) = static_cast<int16>(value);
+            *reinterpret_cast<uint16*>(obj) = static_cast<uint16>(value);
             break;
         case SchemaPrimitive::Int32:
+            *reinterpret_cast<int32*>(obj) = static_cast<int32>(value);
+            break;
         case SchemaPrimitive::UInt32:
-            *reinterpret_cast<uint32*>(obj) = static_cast<int32>(value);
+            *reinterpret_cast<uint32*>(obj) = static_cast<uint32>(value);
             break;
         case SchemaPrimitive::Int64:
+            *reinterpret_cast<int64*>(obj) = value;
+            break;
         case SchemaPrimitive::UInt64:
-            *reinterpret_cast<uint64*>(obj) = value;
+            *reinterpret_cast<uint64*>(obj) = static_cast<uint64>(value);
             break;
         default:
             UP_UNREACHABLE("Incorrect primitive type");

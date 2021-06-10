@@ -194,7 +194,7 @@ namespace up {
 
         UP_RUNTIME_API void stop() noexcept;
 
-        static UP_RUNTIME_API zstring_view errorString(int code) noexcept;
+        UP_RUNTIME_API static zstring_view errorString(int code) noexcept;
 
         bool empty() const noexcept { return _state == nullptr; }
         UP_RUNTIME_API void reset();

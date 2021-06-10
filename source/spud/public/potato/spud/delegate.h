@@ -180,7 +180,8 @@ public:
 
     auto operator()(ParamTypes... params) -> ReturnType {
         UP_SPUD_ASSERT(this->_vtable != nullptr, "Invoking an empty delegate");
-        return static_cast<vtable_c const*>(this->_vtable)->call(&this->_storage, std::forward<ParamTypes>(params)...);
+        auto const* const vtable = static_cast<vtable_c const*>(this->_vtable);
+        return vtable->call(&this->_storage, std::forward<ParamTypes>(params)...);
     }
 };
 

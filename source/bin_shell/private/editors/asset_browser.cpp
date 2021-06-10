@@ -284,7 +284,7 @@ void up::shell::AssetBrowser::_showBreadcrumbs() {
 }
 
 void up::shell::AssetBrowser::_showTreeFolder(int index) {
-    unsigned flags = 0;
+    int flags = 0;
 
     UP_ASSERT(_entries[index].typeHash == folderTypeHash);
 

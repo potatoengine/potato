@@ -18,6 +18,7 @@ FormatStyle: "file"
 # modernize-raw-string-literal style choice, don't like it in some cases
 # readability-qualified-auto is often "wrong" because we use raw pointers as iterators
 # readability-convert-member-functions-to-static has side effects (e.g. calling conventions)
+# readability-function-cognitive-complexity having trouble getting this to not trigger on assert macros (IgnoreMacros not working?)
 # readability-magic-numbers is just annoying for math-heavy code, though it is valuable elsewhere
 # readability-named-parmater [[TODO]] consider adding this back
 # readability-upper-literal-suffix is just stylistically objectionable, e.g. 1.2f vs 1.2F
@@ -48,6 +49,7 @@ Checks: >-
     -modernize-use-trailing-return-type,
     -modernize-raw-string-literal,
     -readability-convert-member-functions-to-static,
+    -readability-function-cognitive-complexity,
     -readability-magic-numbers,
     -readability-named-parameter,
     -readability-qualified-auto,
