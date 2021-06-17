@@ -35,9 +35,9 @@ namespace up::_detail {
     raiseFatalError(char const* file, int line, char const* failedConditionText, char const* messageText);
 } // namespace up::_detail
 
-#define _up_FAIL(failure, message) \
+#define uppriv_FAIL(failure, message) \
     do { \
-        if (static bool _up_IgnoreFailure = false; UP_LIKELY(!_up_IgnoreFailure)) { \
+        if (static bool uppriv_IgnoreFailure = false; UP_LIKELY(!uppriv_IgnoreFailure)) { \
             switch (::up::_detail::raiseFatalError(__FILE__, __LINE__, (failure), (message))) { \
                 case ::up::_detail::FatalErrorAction::Abort: \
                     std::abort(); \
@@ -48,7 +48,7 @@ namespace up::_detail {
                 case ::up::_detail::FatalErrorAction::IgnoreOnce: \
                     break; \
                 case ::up::_detail::FatalErrorAction::IgnoreAlways: \
-                    _up_IgnoreFailure = true; \
+                    uppriv_IgnoreFailure = true; \
                     break; \
             } \
         } \

@@ -7,6 +7,6 @@ if(WIN32)
         FetchContent_Populate(assimp_win64_sdk)
 
         set(ASSIMP_ROOT_DIR ${assimp_win64_sdk_SOURCE_DIR} CACHE PATH "local AssImp path" FORCE)
-        find_package(Assimp REQUIRED)
+        find_package(Assimp REQUIRED QUIET)
     endif()
 endif()

@@ -3,28 +3,33 @@ module material;
 import common;
 import tools;
 
-[cxximport("up::Shader::Handle", "potato/render/shader.h")]
-[AssetReference("potato.asset.shader")]
-type ShaderHandle;
+[cxximport("up::Shader", "potato/render/shader.h")]
+[AssetType("potato.asset.shader")]
+using ShaderAsset;
 
-[cxximport("up::Mesh::Handle", "potato/render/mesh.h")]
-[AssetReference("potato.asset.model")]
-type MeshHandle;
+[cxximport("up::Mesh", "potato/render/mesh.h")]
+[AssetType("potato.asset.model")]
+using MeshAsset;
 
-[cxximport("up::Material::Handle", "potato/render/material.h")]
-[AssetReference("potato.asset.material")]
-type MaterialHandle;
+[cxximport("up::Material", "potato/render/material.h")]
+[AssetType("potato.asset.material")]
+using MaterialAsset;
 
-[cxximport("up::Texture::Handle", "potato/render/texture.h")]
-[AssetReference("potato.asset.texture")]
-type TextureHandle;
+[cxximport("up::Texture", "potato/render/texture.h")]
+[AssetType("potato.asset.texture")]
+using TextureAsset;
+
+using ShaderRef = AssetRef<ShaderAsset>;
+using MeshRef = AssetRef<MeshAsset>;
+using MaterialRef = AssetRef<MaterialAsset>;
+using TextureRef = AssetRef<TextureAsset>;
 
 struct MaterialShaders {
-    ShaderHandle vertex;
-    ShaderHandle pixel;
+    ShaderRef vertex;
+    ShaderRef pixel;
 }
 
 struct Material {
     MaterialShaders shaders;
-    TextureHandle[] textures;
+    TextureRef[] textures;
 }

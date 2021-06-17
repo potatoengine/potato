@@ -230,7 +230,7 @@ private:
         data = nullptr;
     }
 
-    inline static value_type _empty[] = "";
+    constexpr static value_type _empty[] = "";
 
     pointer _data = nullptr;
     size_type _size = 0;

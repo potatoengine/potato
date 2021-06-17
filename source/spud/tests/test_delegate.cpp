@@ -11,7 +11,7 @@ namespace {
     };
 } // namespace
 
-TEST_CASE("[potato][spud] up::delegate") {
+TEST_CASE("potato.spud.delegate", "[potato][spud]") {
     using namespace up;
 
     SECTION("empty delegate") {

@@ -1,7 +1,7 @@
 // Copyright by Potato Engine contributors. See accompanying License.txt for copyright details.
 
 #include "camera.h"
-#include "log_window.h"
+#include "log_history.h"
 #include "settings.h"
 #include "ui/action.h"
 #include "ui/command_palette.h"
@@ -14,6 +14,7 @@
 #include "potato/editor/imgui_backend.h"
 #include "potato/recon/recon_client.h"
 #include "potato/runtime/asset_loader.h"
+#include "potato/runtime/io_loop.h"
 #include "potato/runtime/logger.h"
 #include "potato/spud/box.h"
 #include "potato/spud/unique_resource.h"
@@ -114,8 +115,9 @@ namespace up::shell {
         std::chrono::nanoseconds _lastFrameDuration = {};
         string _projectName;
         AssetLoader _assetLoader;
-        LogWindow _logWindow;
+        LogHistory _logHistory;
         ReconClient _reconClient;
         AssetEditService _assetEditService;
+        IOLoop _ioLoop;
     }; // namespace up::shell
 } // namespace up::shell

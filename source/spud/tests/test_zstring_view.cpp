@@ -6,7 +6,7 @@
 #include <cstring>
 #include <ostream>
 
-TEST_CASE("[potato][spud] up::zstring_view") {
+TEST_CASE("potato.spud.zstring_view", "[potato][spud]") {
     using namespace up;
 
     SECTION("default initialization") {

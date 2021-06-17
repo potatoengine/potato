@@ -4,7 +4,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("[potato][spud] up::fixed_string_writer") {
+TEST_CASE("potato.spud.fixed_string_writer", "[potato][spud]") {
     using namespace up;
 
     SECTION("default initialization") {

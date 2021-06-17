@@ -32,11 +32,11 @@ auto up::_detail::raiseFatalError(char const* file, int line, char const* failed
         format_append(buffer, "{}({}): {}\r\n", file, line, messageText);
     }
 
-    std::array<uintptr, num_addresses> addresses = {};
+    uintptr addresses[num_addresses] = {};
 
 #if !defined(NDEBUG)
     constexpr int num_records = 20;
-    auto records = std::array<callstack::TraceRecord, num_records>{};
+    callstack::TraceRecord records[num_records] = {};
     auto const stack = callstack::readTrace(addresses);
 
     auto const resolvedRecords = callstack::resolveTraceRecords(stack, records);

@@ -3,72 +3,87 @@
 #pragma once
 
 #include "_export.h"
-#include "recon_messages_schema.h"
+#include "recon_message.h"
 
 #include "potato/reflex/schema.h"
+#include "potato/reflex/serialize.h"
+#include "potato/spud/delegate.h"
 
-#include <nlohmann/json_fwd.hpp>
+#include <nlohmann/json.hpp>
 
 namespace up {
-    bool UP_RECON_API encodeReconMessageRaw(nlohmann::json& target, reflex::Schema const& schema, void const* message);
+    class IOStream;
 
-    template <typename MessageT>
-    bool encodeReconMessage(nlohmann::json& target, MessageT const& message) {
-        return encodeReconMessageRaw(target, reflex::getSchema<MessageT>(), &message);
-    }
-
-    class ReconMessageReceiverBase {
+    class ReconProtocol {
     public:
-        virtual bool handle(schema::ReconLogMessage const& msg) const { return _handleUnknown(msg); }
-        virtual bool handle(schema::ReconManifestMessage const& msg) const { return _handleUnknown(msg); }
-        virtual bool handle(schema::ReconImportMessage const& msg) const { return _handleUnknown(msg); }
-        virtual bool handle(schema::ReconImportAllMessage const& msg) const { return _handleUnknown(msg); }
+        template <ReconMessage MessageT>
+        using Callback = delegate<void(typename MessageT::type const&)>;
 
-        virtual bool handleUnknownRaw(reflex::Schema const& schema, void const* object) const { return false; }
+        template <ReconMessage MessageT>
+        bool send(typename MessageT::type const& msg) {
+            return _send(MessageT::name, reflex::getSchema<typename MessageT::type>(), &msg);
+        }
+
+        template <ReconMessage MessageT>
+        void on(Callback<MessageT> callback) {
+            _handlers.push_back(new_box<Handler<MessageT>>(move(callback)));
+        }
 
     protected:
-        virtual ~ReconMessageReceiverBase() = default;
+        ReconProtocol() = default;
+        ~ReconProtocol() = default;
+
+        virtual IOStream& sink() = 0;
+
+        UP_RECON_API bool receive(view<char> data);
 
     private:
-        template <typename MessageT>
-        bool _handleUnknown(MessageT const& msg) const {
-            return handleUnknownRaw(reflex::getSchema<MessageT>(), &msg);
-        }
+        struct HandlerBase;
+        template <ReconMessage MessageT>
+        struct Handler;
+
+        enum class DecodeState {
+            Ready,
+            Header,
+            Body,
+        };
+
+        UP_RECON_API bool _send(string_view name, reflex::Schema const& schema, void const* object);
+        bool _handle(string_view message, view<char> body);
+
+        vector<char> _buffer;
+        DecodeState _state = DecodeState::Ready;
+        char _headerMessageType[32] = {0};
+        size_t _headerContentLength = 0;
+        vector<box<HandlerBase>> _handlers;
     };
 
-    template <typename ReceiverT, typename MessageT>
-    concept ReconReceiverHandles = requires(ReceiverT& receiver, MessageT const& msg) {
-        receiver(msg);
+    struct ReconProtocol::HandlerBase {
+        virtual ~HandlerBase() = default;
+
+        virtual bool match(string_view nm) const noexcept = 0;
+        virtual bool handle(nlohmann::json const& data) = 0;
+        UP_RECON_API bool decode(nlohmann::json const& data, reflex::Schema const& schema, void* object);
     };
 
-    template <typename ReceiverT>
-    class ReconMessageReceiverWrapper final : public ReconMessageReceiverBase {
-    public:
-        ReconMessageReceiverWrapper(ReceiverT& receiver) : _receiver(receiver) {}
+    template <ReconMessage MessageT>
+    struct ReconProtocol::Handler : HandlerBase {
+        using Callback = ReconProtocol::Callback<MessageT>;
 
-        bool handle(schema::ReconLogMessage const& msg) const override { return _handle(msg); }
-        bool handle(schema::ReconManifestMessage const& msg) const override { return _handle(msg); }
-        bool handle(schema::ReconImportMessage const& msg) const override { return _handle(msg); }
-        bool handle(schema::ReconImportAllMessage const& msg) const override { return _handle(msg); }
+        explicit Handler(Callback cb) : schema(reflex::getSchema<typename MessageT::type>()), callback(move(cb)) {}
 
-    private:
-        template <typename MessageT>
-        bool _handle(MessageT const& msg) const {
-            if constexpr (ReconReceiverHandles<ReceiverT, MessageT>) {
-                _receiver(msg);
-                return true;
+        bool match(string_view name) const noexcept override { return name == MessageT::name; }
+
+        bool handle(nlohmann::json const& data) override {
+            typename MessageT::type msg;
+            if (!decode(data, schema, &msg)) {
+                return false;
             }
-            return false;
+            callback(msg);
+            return true;
         }
 
-        ReceiverT& _receiver;
+        reflex::Schema const& schema;
+        Callback callback;
     };
-
-    bool UP_RECON_API
-    decodeReconMessageDispatch(nlohmann::json const& source, ReconMessageReceiverBase const& receiver);
-
-    template <typename ReceiverT>
-    bool decodeReconMessage(nlohmann::json const& source, ReceiverT&& receiver) {
-        return decodeReconMessageDispatch(source, ReconMessageReceiverWrapper{receiver});
-    }
 } // namespace up

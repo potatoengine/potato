@@ -4,7 +4,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("ResourceManifest", "[potato][runtime]") {
+TEST_CASE("potato.runtime.ResourceManifest", "[potato][runtime]") {
     using namespace up;
 
     SECTION("parse") {

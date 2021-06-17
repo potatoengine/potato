@@ -47,7 +47,7 @@ namespace up {
             return nullptr;
         }
 
-        static UP_RUNTIME_API bool parseManifest(string_view input, ResourceManifest& manifest);
+        UP_RUNTIME_API static bool parseManifest(string_view input, ResourceManifest& manifest);
 
     private:
         vector<Record> _records;

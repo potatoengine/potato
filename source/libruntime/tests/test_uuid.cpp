@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <array>
 
-TEST_CASE("[potato][runtime] up::UUID") {
+TEST_CASE("potato.runtime.UUID", "[potato][runtime]") {
     using namespace up;
 
     SECTION("basic uuid") {

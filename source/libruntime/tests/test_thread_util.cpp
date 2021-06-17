@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <thread>
 
-TEST_CASE("thread_util", "[potato][runtime]") {
+TEST_CASE("potato.runtime.thread_util", "[potato][runtime]") {
     using namespace up;
 
     SECTION("setCurrentThreadName") {

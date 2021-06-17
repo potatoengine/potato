@@ -117,7 +117,7 @@ namespace up {
 
     template <typename T>
     auto rc<T>::operator=(rc const& rhs) noexcept -> rc& {
-        if (this != std::addressof(rhs)) {
+        if (this != &rhs) {
             _removeRef();
             _ptr = rhs._ptr;
             _addRef();
@@ -128,7 +128,7 @@ namespace up {
     template <typename T>
     template <typename U>
     auto rc<T>::operator=(rc<U> const& rhs) noexcept -> rc& requires std::is_convertible_v<U*, T*> {
-        if (this != std::addressof(rhs)) {
+        if (this != &rhs) {
             _removeRef();
             _ptr = rhs.get();
             _addRef();
@@ -138,7 +138,7 @@ namespace up {
 
     template <typename T>
     auto rc<T>::operator=(rc&& rhs) noexcept -> rc& {
-        if (this != std::addressof(rhs)) {
+        if (this != &rhs) {
             _removeRef();
             _ptr = rhs.release();
         }
@@ -148,7 +148,7 @@ namespace up {
     template <typename T>
     template <typename U>
     auto rc<T>::operator=(rc<U>&& rhs) noexcept -> rc& requires std::is_convertible_v<U*, T*> {
-        if (this != std::addressof(rhs)) {
+        if (this != &rhs) {
             _removeRef();
             _ptr = rhs.release();
         }

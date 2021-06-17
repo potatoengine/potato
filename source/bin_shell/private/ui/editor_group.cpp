@@ -8,29 +8,19 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-up::shell::EditorGroup::EditorGroup() {
-    _documentWindowClass.ClassId = ImHashStr("EditorDocumentClass");
+up::shell::EditorGroup::EditorGroup(Actions& actions) : _actions(actions) {
+    _documentWindowClass.ClassId = narrow_cast<ImU32>(reinterpret_cast<uintptr_t>(this));
     _documentWindowClass.DockingAllowUnclassed = false;
     _documentWindowClass.DockingAlwaysTabBar = true;
-
-    _actions.addAction(
-        {.name = "potato.editors.closeActive"_s,
-         .menu = "File\\Close Document"_s,
-         .group = "7_document"_s,
-         .hotKey = "Ctrl+W"_s,
-         .enabled = [this]() { return _active != nullptr && _active->isClosable(); },
-         .action = delegate(this, &EditorGroup::closeActive)});
 }
 
 up::shell::EditorGroup::~EditorGroup() = default;
 
-void up::shell::EditorGroup::update(Actions& actions, Renderer& renderer, float deltaTime) {
-    actions.addGroup(&_actions);
-
+void up::shell::EditorGroup::update(Renderer& renderer, float deltaTime) {
     for (auto it = _editors.begin(); it != _editors.end();) {
         if (it->get()->isClosed()) {
             if (it->get() == _active) {
-                _setActive(actions, nullptr);
+                _setActive(nullptr);
             }
             it = _editors.erase(it);
         }
@@ -63,7 +53,7 @@ void up::shell::EditorGroup::update(Actions& actions, Renderer& renderer, float 
         auto const active = editor->updateUi();
 
         if (!editor->isClosed() && active) {
-            _setActive(actions, editor);
+            _setActive(editor);
         }
     }
 }
@@ -80,22 +70,26 @@ void up::shell::EditorGroup::closeActive() noexcept {
     }
 }
 
+bool up::shell::EditorGroup::canCloseActive() const noexcept {
+    return _active != nullptr && _active->isClosable();
+}
+
 void up::shell::EditorGroup::open(box<Editor> editor) {
     _editors.push_back(std::move(editor));
 }
 
-void up::shell::EditorGroup::_setActive(Actions& actions, Editor* editor) {
+void up::shell::EditorGroup::_setActive(Editor* editor) {
     if (editor == _active) {
         return;
     }
 
     if (_active != nullptr) {
-        _active->activate(false, actions);
+        _active->activate(false, _actions);
     }
 
     _active = editor;
 
     if (_active != nullptr) {
-        _active->activate(true, actions);
+        _active->activate(true, _actions);
     }
 }

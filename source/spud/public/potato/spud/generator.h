@@ -37,12 +37,12 @@ namespace up {
             coro_std::suspend_always initial_suspend() const noexcept { return {}; }
             coro_std::suspend_always final_suspend() const noexcept { return {}; }
 
-            coro_std::suspend_always yield_value(value_type& value) noexcept {
+            coro_std::suspend_always yield_value(reference value) noexcept {
                 _value = &value;
                 return {};
             }
 
-            reference value() const noexcept { return static_cast<reference>(*_value); }
+            reference value() const noexcept { return *_value; }
 
             void unhandled_exception() const noexcept { UP_SPUD_ASSERT(false, "unhandled exception in generator"); }
             template <typename U>
@@ -98,7 +98,7 @@ namespace up {
         ~generator() { reset(); }
 
         generator(generator const&) = delete;
-        generator(generator && rhs) noexcept : _coro(rhs._coro) { rhs._coro = nullptr; }
+        generator(generator&& rhs) noexcept : _coro(rhs._coro) { rhs._coro = nullptr; }
 
         generator& operator=(generator const&) = delete;
         generator& operator=(generator&& rhs) noexcept {
@@ -113,15 +113,7 @@ namespace up {
         iterator begin() noexcept;
         sentinel end() const noexcept { return {}; }
 
-        explicit operator bool() const noexcept { return _coro == nullptr || _coro.done(); }
-
-        ItemT& operator()() {
-            UP_SPUD_ASSERT(_coro != nullptr, "operator() called on an invalid generator");
-            UP_SPUD_ASSERT(!_coro.done(), "operator() called on completed generator");
-
-            _coro.resume();
-            return _coro.promise().value();
-        }
+        explicit operator bool() const noexcept { return _coro != nullptr && !_coro.done(); }
 
         void reset() noexcept {
             if (_coro != nullptr) {

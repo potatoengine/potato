@@ -27,6 +27,7 @@
 #include "potato/spud/fixed_string_writer.h"
 
 #include <glm/glm.hpp>
+#include <nlohmann/json.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -306,7 +307,8 @@ void up::shell::SceneEditor::_inspector() {
     if (!ImGui::BeginTable(
             "##inspector_table",
             2,
-            ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBodyUntilResize)) {
+            ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBodyUntilResize |
+                ImGuiTableFlags_SizingStretchProp)) {
         return;
     }
 
@@ -407,7 +409,7 @@ void up::shell::SceneEditor::_hierarchyShowIndex(int index) {
     bool const hasChildren = ent.firstChild != -1;
     bool const selected = _selection.selected(to_underlying(ent.id));
 
-    unsigned flags =
+    int flags =
         ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow;
     if (ent.parent == -1) {
         flags |= ImGuiTreeNodeFlags_DefaultOpen;

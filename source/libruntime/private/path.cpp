@@ -72,6 +72,23 @@ up::string_view up::path::parent(string_view path) noexcept {
     return "/";
 }
 
+bool up::path::isParentOf(string_view folder, string_view filename) noexcept {
+    // we check that the filename has the folder as a prefix, and that a directory
+    // separator follows the folder (so that /abcdef/file.txt isn't considered
+    // a child of /abc
+
+    if (filename.size() <= folder.size()) {
+        return false;
+    }
+
+    if (!filename.starts_with(folder)) {
+        return false;
+    }
+
+    char const sep = filename[folder.size()];
+    return sep == '/' || sep == '\\';
+}
+
 bool up::path::isNormalized(string_view path) noexcept {
     if (path.empty()) {
         return true;

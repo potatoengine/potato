@@ -58,7 +58,11 @@ void up::shell::MaterialEditor::content() {
     }
     ImGui::EndGroup();
 
-    if (!ImGui::BeginTable("##material", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBodyUntilResize)) {
+    if (!ImGui::BeginTable(
+            "##material",
+            2,
+            ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBodyUntilResize |
+                ImGuiTableFlags_SizingStretchProp)) {
         return;
     }
 

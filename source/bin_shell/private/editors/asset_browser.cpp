@@ -79,7 +79,7 @@ void up::shell::AssetBrowser::content() {
     if (ImGui::BeginTable(
             "##asset_browser",
             2,
-            ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV,
+            ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp,
             ImGui::GetContentRegionAvail())) {
         ImGui::TableSetupColumn("##files", 0, 1);
         ImGui::TableSetupColumn("##assets", 0, 4);
@@ -284,7 +284,7 @@ void up::shell::AssetBrowser::_showBreadcrumbs() {
 }
 
 void up::shell::AssetBrowser::_showTreeFolder(int index) {
-    unsigned flags = 0;
+    int flags = 0;
 
     UP_ASSERT(_entries[index].typeHash == folderTypeHash);
 
@@ -599,7 +599,7 @@ void up::shell::AssetBrowser::_importAsset(UUID const& uuid, bool force) {
     schema::ReconImportMessage msg;
     msg.uuid = uuid;
     msg.force = force;
-    _reconClient.sendMessage(msg);
+    _reconClient.send<ReconImportMessage>({});
 }
 
 void up::shell::AssetBrowser::_executeCommand() {

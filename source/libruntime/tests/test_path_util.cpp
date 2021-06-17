@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <iostream>
 
-TEST_CASE("up::path", "[potato][runtime]") {
+TEST_CASE("potato.runtime.path_util", "[potato][runtime]") {
     using namespace up;
     using namespace up::path;
 
@@ -47,6 +47,13 @@ TEST_CASE("up::path", "[potato][runtime]") {
         CHECK(parent("/foo/bar.txt") == "/foo");
         CHECK(parent("bar.txt") == "/");
         CHECK(parent("/foo/bar") == "/foo");
+    }
+
+    SECTION("isParentOf") {
+        CHECK(isParentOf("/foo", "/foo/bar.txt"));
+        CHECK(isParentOf("/foo", "/foo\\bar.txt"));
+        CHECK_FALSE(isParentOf("/foo", "/foobar.txt"));
+        CHECK_FALSE(isParentOf("/foo", "/foo"));
     }
 
     SECTION("isNormalized") {

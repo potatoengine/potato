@@ -1,0 +1,69 @@
+name: Build Ubuntu
+
+on:
+  push:
+    branches:
+      - master
+  pull_request: {}
+
+jobs:
+  build-ubuntu:
+    strategy:
+      matrix:
+        config: [ 'Debug', 'Release' ]
+        cxx: [ 'g++-11', 'clang++-12' ]
+        include:
+          - cxx: g++-11
+            cc: gcc-11
+            name: GCC
+            cxxflags: -fcoroutines -mssse3
+            warnings: -Wall -Werror -Wno-volatile -Wno-maybe-uninitialized -Wno-deprecated-enum-enum-conversion -Wno-unknown-attributes # GLM triggers volatile, Tracy triggers maybe-unitialized, imgui triggers deprecated-enum-enum-conversion
+            packages: g++-11 gcc-11 libstdc++-11-dev
+          - cxx: clang++-12
+            cc: clang-12
+            name: Clang
+            cxxflags: -stdlib=libc++ -fdiagnostics-absolute-paths -mssse3
+            warnings: -Wall -Werror -Wno-deprecated-volatile -Wno-deprecated-enum-enum-conversion -Wno-unknown-attributes # GLM triggers deprecated-volatile, imgui triggers deprecated-enum-enum-conversion
+            llvm_version: 12
+    
+    name: 'Ubuntu ${{ matrix.name }} ${{ matrix.config }}'
+    runs-on: 'ubuntu-20.04'
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          lfs: true
+      - name: Install Clang
+        if: ${{ matrix.llvm_version }}
+        uses: ./.github/actions/setup-llvm
+        with:
+          version: ${{ matrix.llvm_version }}
+          components: clang libc++
+      - name: Apt update
+        run: sudo apt-get -yq update
+      - name: Install libraries
+        run: sudo apt-get -yq install uuid-dev libsdl2-dev libassimp-dev libuv1-dev
+      - name: Install packages
+        run: sudo apt-get -yq install cmake ${{ matrix.packages }}
+        if: ${{ matrix.packages }}
+      - name: Install Problem Matchers
+        uses: Trass3r/setup-cpp@v1
+        if: matrix.config == 'Debug'
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v3
+      - name: Configure
+        env:
+          CXXFLAGS: '${{ matrix.cxxflags }}'
+          CXX: '${{ matrix.cxx }}'
+          CC: '${{ matrix.cc }}'
+        run: |
+          mkdir -p build
+          cmake -S . -B build -G Ninja -DUP_CXXFLAGS:STRING="${{ matrix.warnings }}" -DBUILD_SHARED_LIBS=OFF "-DCMAKE_BUILD_TYPE:STRING=${{ matrix.config }}" ..
+      - name: Build
+        run: cmake --build build --parallel -- -k 0 -v
+      - name: Test
+        run: |
+          cd build
+          ctest -T test -R potato --verbose
+      - name: Build Resources
+        run: cmake --build build --target potato_convert_all

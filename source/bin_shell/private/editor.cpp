@@ -10,52 +10,56 @@
 #include <imgui_internal.h>
 
 up::shell::Editor::Editor(zstring_view className) {
-    _windowClass.ClassId = narrow_cast<ImU32>(reinterpret_cast<uintptr_t>(this));
-    _windowClass.DockingAllowUnclassed = false;
-    _windowClass.DockingAlwaysTabBar = false;
+    _panelClass.ClassId = narrow_cast<ImU32>(reinterpret_cast<uintptr_t>(this));
+    _panelClass.DockingAllowUnclassed = false;
+    _panelClass.DockingAlwaysTabBar = true;
+
+    _contentClass.ClassId = narrow_cast<ImU32>(reinterpret_cast<uintptr_t>(this));
+    _contentClass.DockNodeFlagsOverrideSet =
+        ImGuiDockNodeFlags_NoCloseButton | ImGuiDockNodeFlags_NoDockingOverMe | ImGuiDockNodeFlags_NoTabBar;
+    _contentClass.DockingAllowUnclassed = false;
+    _contentClass.DockingAlwaysTabBar = false;
 }
 
 bool up::shell::Editor::updateUi() {
-    if (_title.empty()) {
-        string_writer tmp;
-        format_append(tmp, "{}##{}", displayName(), this);
-        _title = std::move(tmp).to_string();
-    }
+    char editorTitle[128] = {
+        0,
+    };
+    char contentTitle[128] = {
+        0,
+    };
+
+    format_to(editorTitle, "{}##{}", displayName(), this);
+    format_to(contentTitle, "Document##{}", this);
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     if (isClosable()) {
         bool wantOpen = true;
-        ImGui::Begin(_title.c_str(), &wantOpen, ImGuiWindowFlags_NoCollapse);
+        ImGui::Begin(editorTitle, &wantOpen, ImGuiWindowFlags_NoCollapse);
         _wantClose = _wantClose || !wantOpen;
     }
     else {
-        ImGui::Begin(_title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
+        ImGui::Begin(editorTitle, nullptr, ImGuiWindowFlags_NoCollapse);
     }
     ImGui::PopStyleVar(1);
 
-    if (_documentId.empty()) {
-        string_writer tmp;
-        format_append(tmp, "Document##{}", this);
-        _documentId = std::move(tmp).to_string();
-    }
-
     auto const dockSpaceId = ImGui::GetID("DockSpace");
     if (ImGui::DockBuilderGetNode(dockSpaceId) == nullptr) {
-        ImGui::DockBuilderRemoveNode(dockSpaceId);
-        ImGui::DockBuilderAddNode(dockSpaceId, ImGuiDockNodeFlags_DockSpace);
-        _dockId = ImGui::DockBuilderAddNode(dockSpaceId, ImGuiDockNodeFlags_HiddenTabBar);
+        _dockId = ImGui::DockBuilderAddNode(
+            dockSpaceId,
+            ImGuiDockNodeFlags_DockSpace | ImGuiDockNodeFlags_NoWindowMenuButton);
 
         configure();
 
         ImGui::DockBuilderFinish(dockSpaceId);
     }
 
-    ImGui::DockSpace(dockSpaceId, {}, ImGuiDockNodeFlags_NoWindowMenuButton, &_windowClass);
+    ImGui::DockSpace(dockSpaceId, {}, ImGuiDockNodeFlags_None, &_panelClass);
 
-    ImGui::SetNextWindowClass(&_windowClass);
-    ImGui::SetNextWindowDockID(_dockId, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowClass(&_contentClass);
+    ImGui::SetNextWindowDockID(_dockId, ImGuiCond_Always);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    auto const contentOpen = ImGui::Begin(_documentId.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
+    auto const contentOpen = ImGui::Begin(contentTitle, nullptr, ImGuiWindowFlags_NoCollapse);
     ImGui::PopStyleVar(1);
 
     if (contentOpen) {
@@ -66,7 +70,7 @@ bool up::shell::Editor::updateUi() {
 
     for (auto const& panel : _panels) {
         if (panel->open) {
-            ImGui::SetNextWindowClass(&_windowClass);
+            ImGui::SetNextWindowClass(&_panelClass);
             ImGui::SetNextWindowDockID(panel->dockId, ImGuiCond_FirstUseEver);
             if (ImGui::Begin(panel->imguiLabel.c_str(), &panel->open, ImGuiWindowFlags_NoCollapse)) {
                 panel->update();

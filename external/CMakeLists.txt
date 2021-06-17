@@ -17,10 +17,9 @@ set(EXTERNALS
     nfd
     sapc
     sqlite
-    dmon
-    reproc
     tracy
     dx12memalloc
+    libuv
 )
 
 # ---------------------------- #

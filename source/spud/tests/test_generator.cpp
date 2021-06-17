@@ -4,30 +4,45 @@
 
 #include <catch2/catch.hpp>
 #include <sstream>
+#include <string_view>
 
-static up::generator<int> count(int last) {
-    for (int i = 0; i != last; ++i) {
-        co_yield i;
-    }
-}
-
-TEST_CASE("[potato][spud] up::generator") {
+TEST_CASE("potato.spud.generator", "[potato][spud]") {
     using namespace up;
 
+    struct Count {
+        up::generator<int> operator()(int last) {
+            for (int i = 0; i != last; ++i) {
+                co_yield i;
+            }
+        }
+    };
+
+    struct Strings {
+        up::generator<std::string_view> operator()(int last) {
+            std::ostringstream buf;
+            std::string str;
+            for (int i = 0; i != last; ++i) {
+                buf << '[' << i << ']';
+                str = buf.str();
+                buf.str("");
+
+                std::string_view sv = str;
+                co_yield sv;
+            }
+        }
+    };
+
     SECTION("generator") {
-        generator<int> g = count(3);
-
-        CHECK(g() == 0);
-        CHECK(g() == 1);
-        CHECK(g() == 2);
-        CHECK_FALSE(g);
-    }
-
-    SECTION("generator range") {
         std::ostringstream buf;
-        for (int i : count(5)) {
+        for (int i : Count{}(7)) {
             buf << i;
         }
-        CHECK(buf.str() == "01234");
+        CHECK(buf.str() == "0123456");
+
+        buf.str("");
+        for (std::string_view i : Strings{}(3)) {
+            buf << i;
+        }
+        CHECK(buf.str() == "[0][1][2]");
     }
 }

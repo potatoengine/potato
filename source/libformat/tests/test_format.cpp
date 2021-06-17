@@ -52,7 +52,7 @@ std::string format_as_string(T const& value) {
     return result;
 }
 
-TEST_CASE("format") {
+TEST_CASE("potato.format.format", "[potato][format]") {
     using namespace up;
 
     SECTION("integers") {

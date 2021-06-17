@@ -7,15 +7,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <thread>
-
-static up::Logger dmonLogger("DirectoryWatcher");
-
-#define DMON_ASSERT(e) UP_ASSERT(e)
-#define DMON_LOG_ERROR(s) ::dmonLogger.error((s))
-#define DMON_LOG_DEBUG(s) ::dmonLogger.info((s))
-#define DMON_IMPL
-#include <dmon.h>
 
 namespace up {
     namespace {
@@ -31,8 +22,9 @@ namespace up {
             IOResult seek(Stream::Seek position, Stream::difference_type offset) override {
                 _stream.seekg(
                     offset,
-                    position == Stream::Seek::Begin ? std::ios::beg
-                                                    : position == Stream::Seek::End ? std::ios::end : std::ios::cur);
+                    position == Stream::Seek::Begin     ? std::ios::beg
+                        : position == Stream::Seek::End ? std::ios::end
+                                                        : std::ios::cur);
                 return IOResult::Success;
             }
             Stream::difference_type tell() const override { return _stream.tellg(); }
@@ -49,7 +41,7 @@ namespace up {
                     return IOResult::InvalidArgument;
                 }
 
-                _stream.read(buffer.as_chars().data(), buffer.size());
+                _stream.read(buffer.as_chars().data(), static_cast<std::streamsize>(buffer.size()));
                 buffer = buffer.first(_stream.gcount());
                 if (_stream.eof()) {
                     _stream.clear();
@@ -81,7 +73,7 @@ namespace up {
             Stream::difference_type remaining() const noexcept override { return 0; }
 
             IOResult write(span<byte const> buffer) override {
-                _stream.write(buffer.as_chars().data(), buffer.size());
+                _stream.write(buffer.as_chars().data(), static_cast<std::streamsize>(buffer.size()));
                 return IOResult::Success;
             }
 
@@ -123,10 +115,15 @@ static auto errorCodeToResult(std::error_code ec) noexcept -> up::IOResult {
         return up::IOResult::Success;
     }
 
+    if (ec == std::errc::no_such_file_or_directory) {
+        return up::IOResult::FileNotFound;
+    }
+
     if (ec.category() == std::system_category()) {
-        // FIXME: translate error codes
+        // FIXME: translate other error types
         return up::IOResult::System;
     }
+
     return up::IOResult::Unknown;
 }
 
@@ -148,11 +145,10 @@ auto up::fs::fileStat(zstring_view path) -> IOReturn<Stat> {
             std::filesystem::last_write_time(std::string_view(path.c_str(), path.size()), ec).time_since_epoch())
             .count();
     auto const status = std::filesystem::status(std::string_view(path.c_str(), path.size()), ec);
-    FileType const type = status.type() == std::filesystem::file_type::regular
-        ? FileType::Regular
-        : status.type() == std::filesystem::file_type::directory
-            ? FileType::Directory
-            : status.type() == std::filesystem::file_type::symlink ? FileType::SymbolicLink : FileType::Other;
+    FileType const type = status.type() == std::filesystem::file_type::regular ? FileType::Regular
+        : status.type() == std::filesystem::file_type::directory               ? FileType::Directory
+        : status.type() == std::filesystem::file_type::symlink                 ? FileType::SymbolicLink
+                                                                               : FileType::Other;
     return {errorCodeToResult(ec), {size, mtime, type}};
 }
 
@@ -166,10 +162,10 @@ auto up::fs::enumerate(zstring_view path, EnumerateCallback cb) -> EnumerateResu
         std::string genPath = std::filesystem::relative(iter->path(), path.c_str()).generic_string();
 
         zstring_view const path = genPath.c_str();
-        FileType const type = iter->is_regular_file()
-            ? FileType::Regular
-            : iter->is_directory() ? FileType::Directory
-                                   : iter->is_symlink() ? FileType::SymbolicLink : FileType::Other;
+        FileType const type = iter->is_regular_file() ? FileType::Regular
+            : iter->is_directory()                    ? FileType::Directory
+            : iter->is_symlink()                      ? FileType::SymbolicLink
+                                                      : FileType::Other;
         size_t const size = type == FileType::Regular ? iter->file_size() : 0;
 
         auto result = cb({path, size, type}, iter.depth());
@@ -271,100 +267,4 @@ auto up::fs::writeAllText(zstring_view path, string_view text) -> IOResult {
         return IOResult::System;
     }
     return writeAllText(stream, text);
-}
-
-up::fs::WatchHandle::WatchHandle() = default;
-
-namespace {
-    class WatchHandleImpl final : public up::fs::WatchHandle {
-    public:
-        explicit WatchHandleImpl(up::string directory, up::fs::WatchCallback callback)
-            : _directory(std::move(directory))
-            , _callback(std::move(callback)) {}
-        ~WatchHandleImpl() override { close(); }
-
-        bool start() {
-            {
-                std::unique_lock _(_dmonInitLock);
-                if (_dmonInitCount++ == 0) {
-                    dmon_init();
-                }
-            }
-
-            _watch = dmon_watch(
-                _directory.c_str(),
-                _dmonCallbackStatic,
-                DMON_WATCHFLAGS_RECURSIVE | DMON_WATCHFLAGS_FOLLOW_SYMLINKS,
-                this);
-            return _watch.id != 0;
-        }
-
-        bool isOpen() const noexcept override { return _watch.id != 0; }
-
-        void close() override {
-            if (!isOpen()) {
-                return;
-            }
-
-            dmon_unwatch(_watch);
-            _watch.id = 0;
-
-            {
-                std::unique_lock _(_dmonInitLock);
-                if (--_dmonInitCount == 0) {
-                    dmon_deinit();
-                }
-            }
-        }
-
-    private:
-        static void _dmonCallbackStatic(
-            dmon_watch_id,
-            dmon_action action,
-            char const*,
-            char const* filename,
-            char const* oldfilename,
-            void* user) {
-            static_cast<WatchHandleImpl*>(user)->_dmonCallback(action, filename, oldfilename);
-        }
-
-        void _dmonCallback(dmon_action action, char const* filename, char const* oldfilename) {
-            up::fs::Watch watch;
-            switch (action) {
-                case DMON_ACTION_CREATE:
-                    watch.action = up::fs::WatchAction::Create;
-                    break;
-                case DMON_ACTION_DELETE:
-                    watch.action = up::fs::WatchAction::Delete;
-                    break;
-                case DMON_ACTION_MODIFY:
-                    watch.action = up::fs::WatchAction::Modify;
-                    break;
-                case DMON_ACTION_MOVE:
-                    watch.action = up::fs::WatchAction::Rename;
-                    break;
-                default:
-                    return;
-            }
-
-            watch.path = filename;
-            _callback(watch);
-        }
-
-        dmon_watch_id _watch = {0};
-        up::string _directory;
-        up::fs::WatchCallback _callback;
-
-        static inline std::mutex _dmonInitLock;
-        static inline size_t _dmonInitCount = 0;
-    };
-} // namespace
-
-auto up::fs::watchDirectory(zstring_view path, WatchCallback callback) -> IOReturn<rc<WatchHandle>> {
-    auto handle = new_shared<WatchHandleImpl>(string(path), std::move(callback));
-    if (!handle->start()) {
-        return {IOResult::UnsupportedOperation};
-    }
-
-    return IOReturn<rc<WatchHandle>>{IOResult::Success, std::move(handle)};
 }

@@ -17,11 +17,6 @@ target_sources(potato_libruntime PRIVATE
     $<$<PLATFORM_ID:Windows>:private/debug.windows.h>
     $<$<PLATFORM_ID:Windows>:private/debug.windows.rc>
 
-    # Semaphore implementations
-    #
-    $<$<BOOL:${UNIX}>:private/semaphore.posix.cpp>
-    $<$<PLATFORM_ID:Windows>:private/semaphore.windows.cpp>
-
     # Threading backends
     #
     $<$<PLATFORM_ID:Darwin>:private/thread_util.darwin.cpp>
@@ -36,20 +31,23 @@ target_sources(potato_libruntime PRIVATE
 
     # General runtime code
     #
+    "private/asset_loader.cpp"
+    "private/filesystem.cpp"
+    "private/io_loop.cpp"
+    "private/resource_manifest.cpp"
+    "public/potato/runtime/asset.h"
+    "public/potato/runtime/asset_loader.h"
+    "public/potato/runtime/io_loop.h"
+    "public/potato/runtime/resource_manifest.h"
     private/debug.cpp
     private/json.cpp
     private/logger.cpp
     private/path.cpp
-    "private/filesystem.cpp"
     private/stream.cpp
     private/task_worker.cpp
     private/thread_util.cpp
     private/uuid.cpp
-    "public/potato/runtime/asset_loader.h"
-    "public/potato/runtime/resource_manifest.h"
-    "private/asset_loader.cpp"
-    "private/resource_manifest.cpp"
- "public/potato/runtime/asset.h")
+ )
 
 include(up_set_common_properties)
 up_set_common_properties(potato_libruntime)
@@ -80,7 +78,7 @@ target_link_libraries(potato_libruntime
         nlohmann_json::nlohmann_json
         tracy
     PRIVATE
-        dmon
+        uv
 )
 
 target_compile_definitions(potato_libruntime
@@ -94,12 +92,10 @@ target_sources(potato_libruntime_test PRIVATE
     "tests/main.cpp"
     "tests/test_callstack.cpp"
     "tests/test_concurrent_queue.cpp"
-    "tests/test_native_backend.cpp"
+    "tests/test_filesystem.cpp"
     "tests/test_path_util.cpp"
     "tests/test_lock_free_queue.cpp"
     "tests/test_rwlock.cpp"
-    "tests/test_semaphore.cpp"
-    "tests/test_stream.cpp"
     "tests/test_task_worker.cpp"
     "tests/test_thread_util.cpp"
     "tests/test_uuid.cpp"
@@ -113,13 +109,11 @@ target_link_libraries(potato_libruntime_test PRIVATE
     Catch2::Catch2
 )
 
-add_test(	
-    NAME potato_libruntime_test	
-    COMMAND potato_libruntime_test	
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"	
+include(Catch)
+catch_discover_tests(potato_libruntime_test
+    # for filesystem tests
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+
+    # because concurrency tests can deadlock (which is a test failure)
+    PROPERTIES TIMEOUT 10
 )
-
-# because concurrency tests can deadlock (which is a test failure)
-#
-set_tests_properties(potato_libruntime_test PROPERTIES TIMEOUT 10) 
-

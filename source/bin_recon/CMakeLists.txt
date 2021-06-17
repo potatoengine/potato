@@ -16,6 +16,9 @@ target_sources(potato_recon PRIVATE
     "private/recon_app.h"
     "private/recon_config.cpp"
     "private/recon_config.h"
+    "private/recon_log_sink.cpp"
+    "private/recon_log_sink.h"
+    "private/recon_queue.h"
 )
 
 set_target_properties(potato_recon PROPERTIES
@@ -24,7 +27,15 @@ set_target_properties(potato_recon PROPERTIES
 
 up_set_common_properties(potato_recon)
 
-target_link_libraries(potato_recon PRIVATE potato_librecon)
+target_link_libraries(potato_recon PRIVATE
+    potato::librecon
+    potato::libruntime
+    potato::libtools
+    potato::libreflex
+    potato::libimport
+    potato::libposql
+    uv
+)
 
 include(up_copy_library_import)
 up_copy_library_import(assimp potato_recon)

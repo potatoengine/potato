@@ -5,13 +5,14 @@ add_library(potato_librecon)
 add_library(potato::librecon ALIAS potato_librecon)
 
 target_sources(potato_librecon PRIVATE
-    "public/potato/recon/_export.h"
-    "public/potato/recon/recon_log_sink.h"
-    "public/potato/recon/recon_protocol.h"
-    "public/potato/recon/recon_client.h"
     "private/recon_client.cpp"
-    "private/recon_log_sink.cpp"
     "private/recon_protocol.cpp"
+    "private/recon_server.cpp"
+    "public/potato/recon/_export.h"
+    "public/potato/recon/recon_client.h"
+    "public/potato/recon/recon_message.h"
+    "public/potato/recon/recon_protocol.h"
+    "public/potato/recon/recon_server.h"
 )
 
 include(up_set_common_properties)
@@ -27,26 +28,6 @@ up_compile_sap(potato_librecon
 target_link_libraries(potato_librecon
     PUBLIC
         potato::libruntime
-        potato::libtools
         potato::libreflex
-        potato::libposql
-        reproc++
-    PRIVATE
-        assimp
-        sqlite3
+        uv
 )
-
-add_executable(potato_librecon_test)
-
-target_sources(potato_librecon_test PRIVATE
-    "tests/main.cpp"
-)
-
-up_set_common_properties(potato_librecon_test)
-
-target_link_libraries(potato_librecon_test PRIVATE
-    potato::librecon
-    Catch2::Catch2
-)
-
-add_test(NAME potato_librecon_test COMMAND potato_librecon_test)

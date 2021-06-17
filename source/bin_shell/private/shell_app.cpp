@@ -8,6 +8,7 @@
 #include "scene.h"
 #include "editors/asset_browser.h"
 #include "editors/game_editor.h"
+#include "editors/log_window.h"
 #include "editors/material_editor.h"
 #include "editors/scene_editor.h"
 
@@ -61,7 +62,7 @@
 #    undef Success
 #endif
 
-up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _logger("shell") {}
+up::shell::ShellApp::ShellApp() : _universe(new_box<Universe>()), _editors(_actions), _logger("shell") {}
 
 up::shell::ShellApp::~ShellApp() {
     _imguiBackend.releaseResources();
@@ -72,6 +73,9 @@ up::shell::ShellApp::~ShellApp() {
     _window.reset();
 
     _device.reset();
+
+    _reconClient.stop();
+    _ioLoop.reset();
 }
 
 int up::shell::ShellApp::initialize() {
@@ -161,10 +165,18 @@ int up::shell::ShellApp::initialize() {
          .menu = "View\\Logs",
          .icon = ICON_FA_INFO,
          .hotKey = "Alt+Shift+L",
-         .checked = [this] { return _logWindow.isOpen(); },
+         .action = [this] {
+             _openEditor(LogWindow::editorName);
+         }});
+    _appActions.addAction(
+        {.name = "potato.editor.closeActive"_s,
+         .menu = "File\\Close Document"_s,
+         .group = "7_document"_s,
+         .hotKey = "Ctrl+W"_s,
+         .enabled = [this]() { return _editors.canCloseActive(); },
          .action =
              [this] {
-                 _logWindow.open(!_logWindow.isOpen());
+                 _editors.closeActive();
              }});
 
     _actions.addGroup(&_appActions);
@@ -202,8 +214,8 @@ int up::shell::ShellApp::initialize() {
         int currentHeight = 0;
         SDL_GetWindowSize(_window.get(), &currentWidth, &currentHeight);
 
-        int const newWidth = std::max(static_cast<int>(desktopMode.w * 0.75), currentWidth);
-        int const newHeight = std::max(static_cast<int>(desktopMode.h * 0.75), currentHeight);
+        int const newWidth = clamp(static_cast<int>(desktopMode.w * 0.8), 640, 1024);
+        int const newHeight = clamp(static_cast<int>(desktopMode.h * 0.8), 480, 768);
 
         int const newPosX = static_cast<int>((desktopMode.w - newWidth) * 0.5);
         int const newPosY = static_cast<int>((desktopMode.h - newHeight) * 0.5);
@@ -279,6 +291,7 @@ int up::shell::ShellApp::initialize() {
         [this] { return _universe->components(); },
         [this](rc<Scene> scene) { _createGame(std::move(scene)); }));
     _editorFactories.push_back(MaterialEditor::createFactory(_assetLoader));
+    _editorFactories.push_back(LogWindow::createFactory(_logHistory));
 
     if (!settings.project.empty()) {
         _loadProject(settings.project);
@@ -328,9 +341,10 @@ bool up::shell::ShellApp::_loadProject(zstring_view path) {
     _openEditor(AssetBrowser::editorName);
     _updateTitle();
 
-    if (!_reconClient.start(*_project)) {
+    if (!_reconClient.start(_ioLoop, _project->projectFilePath())) {
         _logger.error("Failed to start recon");
     }
+    _reconClient.on<ReconManifestMessage>([this](auto const&) { _loadManifest(); });
 
     return true;
 }
@@ -380,6 +394,11 @@ void up::shell::ShellApp::run() {
 
         imguiIO.DeltaTime = _lastFrameTime;
 
+        {
+            ZoneScopedN("I/O");
+            _ioLoop.run(IORun::Poll);
+        }
+
         if (!_actions.refresh(hotKeyRevision)) {
             ZoneScopedN("Rebuild Actions");
             _hotKeys.clear();
@@ -399,10 +418,6 @@ void up::shell::ShellApp::run() {
                     path::join(fs::currentWorkingDirectory(), "..", "..", "..", "..", "resources"))) {
                 continue;
             }
-        }
-
-        if (_reconClient.hasUpdatedAssets()) {
-            _loadManifest();
         }
 
         SDL_GetWindowSize(_window.get(), &width, &height);
@@ -427,7 +442,7 @@ void up::shell::ShellApp::run() {
 
         auto endFrame = std::chrono::high_resolution_clock::now();
         _lastFrameDuration = endFrame - now;
-        _lastFrameTime = static_cast<float>(_lastFrameDuration.count() * nano_to_seconds);
+        _lastFrameTime = static_cast<float>(static_cast<double>(_lastFrameDuration.count()) * nano_to_seconds);
         now = endFrame;
     }
 
@@ -630,9 +645,7 @@ void up::shell::ShellApp::_displayDocuments(glm::vec4 rect) {
     ImGui::Begin("MainWindow", nullptr, windowFlags);
     ImGui::PopStyleVar(1);
 
-    _editors.update(_actions, *_renderer, _lastFrameTime);
-
-    _logWindow.draw();
+    _editors.update(*_renderer, _lastFrameTime);
 
     ImGui::End();
 }
@@ -668,7 +681,7 @@ void up::shell::ShellApp::_openAssetEditor(UUID const& uuid) {
 
     zstring_view const editor = _assetEditService.findInfoForAssetTypeHash(assetTypeHash).editor;
     if (!editor.empty()) {
-        _openEditorForDocument(SceneEditor::editorName, assetPath);
+        _openEditorForDocument(editor, assetPath);
     }
     else {
         if (!desktop::openInExternalEditor(assetPath)) {
@@ -686,9 +699,7 @@ void up::shell::ShellApp::_createGame(rc<Scene> scene) {
 }
 
 void up::shell::ShellApp::_executeRecon() {
-    schema::ReconImportAllMessage msg;
-    msg.force = true;
-    _reconClient.sendMessage(msg);
+    _reconClient.send<ReconImportAllMessage>({.force = true});
 
     _loadManifest();
 }

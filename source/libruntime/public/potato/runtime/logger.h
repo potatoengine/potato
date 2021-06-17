@@ -80,8 +80,11 @@ namespace up {
             LogLocation location = {}) noexcept = 0;
 
     protected:
-        void UP_RUNTIME_API
-        next(string_view loggerName, LogSeverity severity, string_view message, LogLocation location) noexcept;
+        UP_RUNTIME_API void next(
+            string_view loggerName,
+            LogSeverity severity,
+            string_view message,
+            LogLocation location) noexcept;
 
     private:
         rc<LogSink> _next;
@@ -114,7 +117,7 @@ namespace up {
 
         template <typename... T>
         void log(LogSeverity severity, string_view format, T const&... args);
-        void UP_RUNTIME_API log(LogSeverity severity, string_view message) noexcept;
+        UP_RUNTIME_API void log(LogSeverity severity, string_view message) noexcept;
 
         template <typename... T>
         void info(string_view format, T const&... args) {
@@ -128,8 +131,8 @@ namespace up {
         }
         void error(string_view message) noexcept { log(LogSeverity::Error, message); }
 
-        void UP_RUNTIME_API attach(rc<LogSink> sink) noexcept;
-        void UP_RUNTIME_API detach(LogSink* sink) noexcept;
+        UP_RUNTIME_API void attach(rc<LogSink> sink) noexcept;
+        UP_RUNTIME_API void detach(LogSink* sink) noexcept;
 
     private:
         static constexpr int log_length = 1024;
@@ -142,8 +145,7 @@ namespace up {
             rc<Impl> parent;
         };
 
-        UP_RUNTIME_API
-        Logger(string name, rc<Impl> parent, rc<LogSink> sink, LogSeverity minimumSeverity);
+        UP_RUNTIME_API Logger(string name, rc<Impl> parent, rc<LogSink> sink, LogSeverity minimumSeverity);
         static void _dispatch(Impl& impl, LogSeverity severity, string_view loggerName, string_view message) noexcept;
 
         rc<Impl> _impl;

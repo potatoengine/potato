@@ -4,14 +4,15 @@ attribute ignore;
 attribute required { bool require = true; }
 attribute cxxname { string id; }
 attribute cxximport { string id; string header; }
+attribute cxxnamespace { string ns; }
 attribute json { string name; }
 attribute serialize {}
 attribute virtualbase {}
 
 [ignore, cxxname("char")]
-type char;
+using char;
 [ignore, cxxname("double")]
-type double;
+using double;
 
 [ignore, cxximport("glm::vec3", "glm/vec3.hpp")]
 struct vec3 {
@@ -21,10 +22,10 @@ struct vec3 {
 }
 
 [ignore, cxximport("glm::mat4x4", "glm/mat4x4.hpp")]
-type mat4x4;
+using mat4x4;
 
 [ignore, cxximport("glm::quat", "glm/gtx/quaternion.hpp")]
-type quat;
+using quat;
 
 [cxximport("up::UUID", "potato/runtime/uuid.h")]
-type UUID;
+using UUID;

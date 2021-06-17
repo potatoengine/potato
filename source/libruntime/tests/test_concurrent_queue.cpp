@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 #include <thread>
 
-TEST_CASE("ConcurrentQueue", "[potato][runtime]") {
+TEST_CASE("potato.runtime.ConcurrentQueue", "[potato][runtime]") {
     using namespace up;
 
     SECTION("default") { ConcurrentQueue<int> queue; }
