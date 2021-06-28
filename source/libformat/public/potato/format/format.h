@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "_detail/fixed_writer.h"
 #include "_detail/format_arg.h"
 #include "_detail/format_arg_impl.h"
 #include "_detail/format_impl.h"

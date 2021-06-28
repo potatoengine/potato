@@ -14,15 +14,13 @@ TEST_CASE("potato.format.writer", "[potato][format]") {
     SECTION("fixed") {
         // can hold 9 characters and a NUL byte
         char buffer[10];
-        fixed_writer writer(buffer);
 
         // should not truncate
-        writer.write("test");
+        format_to(buffer, "test");
         CHECK(buffer == std::string("test"));
 
         // should truncate
-        writer = fixed_writer(buffer);
-        format_to(writer, "test {0}", /*too big*/ 1234567890LL);
+        format_to(buffer, "test {0}", /*too big*/ 1234567890LL);
         CHECK(buffer == std::string("test 1234"));
     }
 

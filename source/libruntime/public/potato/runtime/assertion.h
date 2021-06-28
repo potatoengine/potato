@@ -26,12 +26,13 @@
 
 namespace up::_detail {
     // abstraction to deal with assert instances that don't have a message at all
-    template <typename Writer, typename... Args>
-    void constexpr formatAssertion(Writer& writer, char const* format, Args&&... args) {
-        format_to(writer, format, std::forward<Args>(args)...);
+    template <typename OutputT, typename... Args>
+    void constexpr formatAssertion(OutputT& output, char const* format, Args&&... args) {
+        format_to(output, format, std::forward<Args>(args)...);
     }
-    template <typename Writer>
-    void constexpr formatAssertion(Writer&) {}
+
+    template <typename OutputT>
+    void constexpr formatAssertion(OutputT&) {}
 } // namespace up::_detail
 
 #    define uppriv_FORMAT_FAIL(condition_text, ...) \
@@ -39,8 +40,7 @@ namespace up::_detail {
             char uppriv_fail_buffer[512] = { \
                 0, \
             }; \
-            ::up::fixed_writer uppriv_fail_writer(uppriv_fail_buffer); \
-            ::up::_detail::formatAssertion(uppriv_fail_writer, ##__VA_ARGS__); \
+            ::up::_detail::formatAssertion(uppriv_fail_buffer, ##__VA_ARGS__); \
             uppriv_FAIL((condition_text), uppriv_fail_buffer); \
         } while (false)
 
