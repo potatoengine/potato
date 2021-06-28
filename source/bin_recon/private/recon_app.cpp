@@ -543,13 +543,14 @@ void up::recon::ReconApp::_collectMissingFiles() {
 }
 
 bool up::recon::ReconApp::_writeManifest() {
-    auto manifestFile = fs::openWrite(_manifestPath.c_str(), fs::OpenMode::Text);
-    if (!manifestFile) {
+    string_writer writer;
+    _library.generateManifest(writer);
+
+    auto const rs = fs::writeAllText(_manifestPath, writer);
+    if (rs != IOResult::Success) {
         _logger.error("Failed to open manifest `{}'", _manifestPath);
         return false;
     };
-    _library.generateManifest(manifestFile);
-    manifestFile.flush();
-    manifestFile.close();
+
     return true;
 }

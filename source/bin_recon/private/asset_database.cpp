@@ -205,7 +205,7 @@ bool up::AssetDatabase::close() {
     return true;
 }
 
-void up::AssetDatabase::generateManifest(erased_writer writer) {
+void up::AssetDatabase::generateManifest(string_writer& writer) {
     format_to(writer, "# Potato Manifest\n");
     format_to(writer, ".version={}\n", ResourceManifest::version);
     format_to(
