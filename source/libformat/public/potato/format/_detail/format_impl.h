@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "format_arg.h"
 #include "format_result.h"
 #include "format_write.h"
 #include "parse_unsigned.h"
@@ -11,19 +12,27 @@
 #include <initializer_list>
 
 namespace up::_detail {
+    template <typename OutputT>
+    struct format_context {
+        OutputT& out;
+        char const* input = nullptr;
+        char const* end = nullptr;
+        format_args args;
+        int next = 0;
+    };
 
     struct format_impl_inner_result {
         format_result result;
-        unsigned index = 0;
+        int index = 0;
         string_view spec_string;
     };
 
     constexpr format_impl_inner_result format_impl_inner(
         char const*& iter,
         char const* const end,
-        unsigned next_index) noexcept {
+        int next_index) noexcept {
         // determine which argument we're going to format
-        unsigned index = next_index;
+        int index = next_index;
         char const* const start = iter;
         iter = parse_unsigned(start, end, index);
 
@@ -55,63 +64,58 @@ namespace up::_detail {
     }
 
     template <typename OutputT>
-    constexpr format_result format_impl(OutputT& out, string_view format, std::initializer_list<format_arg> args) {
-        unsigned next_index = 0;
+    constexpr format_result format_impl(format_context<OutputT>&& ctx) {
+        char const* begin = ctx.input;
 
-        char const* begin = format.data();
-        char const* const end = begin + format.size();
-        char const* iter = begin;
-
-        while (iter != end) {
-            if (*iter != '{') {
-                ++iter;
+        while (ctx.input != ctx.end) {
+            if (*ctx.input != '{') {
+                ++ctx.input;
                 continue;
             }
 
             // write out the string so far, since we don't write characters immediately
-            if (iter != begin) {
-                format_write(out, {begin, iter});
+            if (ctx.input != begin) {
+                format_write(ctx.out, {begin, ctx.input});
             }
 
-            ++iter; // swallow the {
+            ++ctx.input; // swallow the {
 
             // if we hit the end of the input, we have an incomplete format, and nothing else we can do
-            if (iter == end) {
+            if (ctx.input == ctx.end) {
                 return format_result::malformed_input;
             }
 
             // if we just have another { then take it as a literal character by starting our next begin here,
             // so it'll get written next time we write out the begin; nothing else to do for formatting here
-            if (*iter == '{') {
-                begin = iter++;
+            if (*ctx.input == '{') {
+                begin = ctx.input++;
                 continue;
             }
 
-            auto const [result, index, spec_string] = format_impl_inner(iter, end, next_index);
+            auto const [result, index, spec_string] = format_impl_inner(ctx.input, ctx.end, ctx.next);
             if (result != format_result::success) {
                 return result;
             }
 
-            if (index >= args.size()) {
+            if (index >= ctx.args.argc) {
                 return format_result::out_of_range;
             }
 
-            format_arg const& arg = *(args.begin() + index);
-            format_result const arg_result = arg.format_into(out, spec_string);
+            format_result const arg_result = ctx.args.args[index].format_into(ctx.out, spec_string);
             if (arg_result != format_result::success) {
                 return arg_result;
             }
 
             // the remaining text begins with the next character following the format directive's end
-            begin = iter = iter + 1;
+            begin = ++ctx.input;
 
             // if we continue to receive {} then the next index will be the next one after the last one used
-            next_index = index + 1;
+            ctx.next = index + 1;
         }
 
         // write out tail end of format string
-        if (iter != begin) {
-            format_write(out, {begin, iter});
+        if (ctx.input != begin) {
+            format_write(ctx.out, {begin, ctx.input});
         }
 
         return format_result::success;

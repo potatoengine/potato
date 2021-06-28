@@ -8,16 +8,17 @@
 #include <initializer_list>
 #include <type_traits>
 
-namespace up::_detail {
+namespace up {
     enum class format_arg_type;
 
     class format_arg;
+    class format_args;
 
     template <typename Writer, typename T>
     constexpr format_arg make_format_arg(T const& value) noexcept;
-} // namespace up::_detail
+} // namespace up
 
-enum class up::_detail::format_arg_type {
+enum class up::format_arg_type {
     unknown,
     char_t,
     signed_char,
@@ -40,14 +41,14 @@ enum class up::_detail::format_arg_type {
 };
 
 /// Abstraction for a single formattable value
-class up::_detail::format_arg {
+class up::format_arg {
 public:
     using thunk_type = format_result (*)(void*, void const*);
 
     constexpr format_arg() noexcept = default;
-    constexpr format_arg(_detail::format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
+    constexpr format_arg(format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
     constexpr format_arg(thunk_type thunk, void const* value) noexcept
-        : _type(_detail::format_arg_type::custom)
+        : _type(format_arg_type::custom)
         , _thunk(thunk)
         , _value(value) {}
 
@@ -55,13 +56,24 @@ public:
     constexpr format_result format_into(Writer& output, string_view spec_string = {}) const;
 
 private:
-    _detail::format_arg_type _type = _detail::format_arg_type::unknown;
+    format_arg_type _type = format_arg_type::unknown;
     thunk_type _thunk = nullptr;
     void const* _value = nullptr;
 };
 
-namespace up::_detail {
+/// List of format args.
+///
+/// Only use this type as a temporary value!
+///
+class up::format_args {
+public:
+    /*implicit*/ format_args(std::initializer_list<format_arg> args) noexcept : args(args.begin()), argc(args.size()) {}
 
+    format_arg const* args = nullptr;
+    size_t argc = 0;
+};
+
+namespace up::_detail {
     template <typename T>
     struct type_of {
         static constexpr format_arg_type value = format_arg_type::unknown;
@@ -99,25 +111,27 @@ namespace up::_detail {
         format_value(writer, value);
         return format_result::success;
     }
+} // namespace up::_detail
 
+namespace up {
     template <typename Writer, typename T>
     constexpr format_arg make_format_arg(T const& value) noexcept {
-        constexpr format_arg_type type = type_of<T>::value;
+        constexpr format_arg_type type = _detail::type_of<T>::value;
 
         if constexpr (type != format_arg_type::unknown) {
             return {type, &value};
         }
         else if constexpr (_detail::has_format_value<Writer, T>::value) {
-            return format_arg(&format_value_thunk<remove_cvref_t<Writer>, T>, &value);
+            return format_arg(&_detail::format_value_thunk<remove_cvref_t<Writer>, T>, &value);
         }
         else if constexpr (std::is_pointer_v<T>) {
             return {format_arg_type::void_pointer, &value};
         }
         else if constexpr (std::is_enum_v<T>) {
-            return {type_of<std::underlying_type_t<T>>::value, &value};
+            return {_detail::type_of<std::underlying_type_t<T>>::value, &value};
         }
         else {
             return {};
         }
     }
-} // namespace up::_detail
+} // namespace up

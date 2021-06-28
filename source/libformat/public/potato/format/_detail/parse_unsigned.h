@@ -6,7 +6,8 @@
 namespace up::_detail {
 
     // std::from_chars is not (yet) constexpr
-    constexpr char const* parse_unsigned(char const* start, char const* end, unsigned& result) noexcept {
+    template <typename T>
+    constexpr char const* parse_unsigned(char const* start, char const* end, T& result) noexcept {
         if (start != end && ascii::is_digit(*start)) {
             result = 0;
             do {
