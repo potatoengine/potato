@@ -28,13 +28,12 @@ TEST_CASE("potato.format.writer", "[potato][format]") {
 
     SECTION("append") {
         std::string tmp;
-        append_writer writer(tmp);
 
-        format_to(writer, "1{}3", "2");
+        format_to(tmp, "1{}3", "2");
         CHECK(tmp == std::string("123"));
 
         tmp.clear();
-        format_to(writer, "1{}3{}5{}7{}9{}", 2, 4, 6, 8, 0);
+        format_to(tmp, "1{}3{}5{}7{}9{}", 2, 4, 6, 8, 0);
         CHECK(tmp == std::string("1234567890"));
     }
 }

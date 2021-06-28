@@ -44,14 +44,6 @@ void format_value(Writer& writer, custom_type const*) {
 }
 // static_assert(up::formattable<custom_type const*>);
 
-template <typename T>
-std::string format_as_string(T const& value) {
-    std::string result;
-    up::append_writer writer(result);
-    up::format_to(writer, "{}", value);
-    return result;
-}
-
 TEST_CASE("potato.format.format", "[potato][format]") {
     using namespace up;
 
@@ -169,6 +161,4 @@ TEST_CASE("potato.format.format", "[potato][format]") {
         CHECK(format_to(writer, "{0} {1}", "abc", 9) == up::format_result::success);
         CHECK(format_to(writer, "{0} {1} {5}", "abc", 9, 12.57) == up::format_result::out_of_range);
     }
-
-    SECTION("format_value_into") { CHECK(format_as_string(123) == "123"); }
 }
