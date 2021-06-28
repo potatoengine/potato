@@ -408,8 +408,11 @@ void up::shell::AssetBrowser::_showNewAssetDialog() {
                     _newAssetType = info.typeHash;
                     if (_nameBuffer[0] != '\0' && !info.extension.empty()) {
                         auto const base = path::filebasename(_nameBuffer);
-                        _nameBuffer[base.size()] = '\0';
-                        format_append(_nameBuffer, "{}", info.extension);
+                        format_to_n(
+                            _nameBuffer + base.size(),
+                            sizeof(_nameBuffer) - base.size() - 1 /*NUL*/,
+                            "{}",
+                            info.extension);
                     }
                 }
                 if (selected) {

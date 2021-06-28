@@ -3,6 +3,7 @@
 #pragma once
 
 #include "format_spec.h"
+#include "format_write.h"
 
 #include <cstdio>
 
@@ -57,8 +58,8 @@ namespace up::_detail {
     }
 
     // std::to_chars<float> is still mostly unsupported by vendors
-    template <typename Writer>
-    inline void write_float(Writer& out, double value, string_view spec_string) {
+    template <typename OutputT>
+    inline void write_float(OutputT& out, double value, string_view spec_string) {
         constexpr std::size_t buf_size = 1078;
         char buf[buf_size] = {
             0,
@@ -66,7 +67,7 @@ namespace up::_detail {
 
         int const result = write_float_helper(buf, buf_size, value, spec_string);
         if (result > 0) {
-            out.write({buf, std::size_t(result) < buf_size ? std::size_t(result) : buf_size});
+            format_write(out, {buf, std::size_t(result) < buf_size ? std::size_t(result) : buf_size});
         }
     }
 

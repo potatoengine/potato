@@ -157,9 +157,9 @@ namespace up {
             return;
         }
 
-        fixed_string_writer<log_length> writer;
-        format_append(writer, format, args...);
+        char buffer[log_length] = {0};
+        format_to(buffer, format, args...);
 
-        log(severity, writer);
+        log(severity, buffer);
     }
 } // namespace up

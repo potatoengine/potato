@@ -234,7 +234,7 @@ void up::AssetDatabase::generateManifest(erased_writer writer) {
             fullName.append(filename);
 
             if (!logicalName.empty()) {
-                format_append(fullName, ":{}", logicalName);
+                format_to(fullName, ":{}", logicalName);
             }
 
             format_to(

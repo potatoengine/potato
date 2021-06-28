@@ -99,7 +99,7 @@ auto up::shell::Editor::addPanel(string title, PanelUpdate update) -> PanelId {
     panel->update = std::move(update);
 
     string_writer tmp;
-    format_append(tmp, "{}##{}", panel->title, panel.get());
+    format_to(tmp, "{}##{}", panel->title, panel.get());
     panel->imguiLabel = tmp.to_string();
 
     auto const id = panel->id = ImGui::GetID(panel.get());
@@ -107,7 +107,7 @@ auto up::shell::Editor::addPanel(string title, PanelUpdate update) -> PanelId {
     panel->dockId = _dockId;
 
     tmp.clear();
-    format_append(tmp, "View\\Panels\\{}", panel->title);
+    format_to(tmp, "View\\Panels\\{}", panel->title);
 
     _actions.addAction(
         {.menu = tmp.to_string(),

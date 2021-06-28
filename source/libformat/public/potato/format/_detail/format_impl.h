@@ -3,6 +3,7 @@
 #pragma once
 
 #include "format_result.h"
+#include "format_write.h"
 #include "parse_unsigned.h"
 
 #include "potato/spud/string_view.h"
@@ -42,25 +43,19 @@ namespace up::_detail {
                 ++iter;
             }
 
-            if (iter == end) {
-                // invalid options
-                return {format_result::malformed_input};
-            }
-
             spec_string = {spec_begin, iter};
         }
 
         // after the index/options, we expect an end to the format marker
-        if (*iter != '}') {
-            // we have something besides a number, no bueno
+        if (iter == end || *iter != '}') {
             return {format_result::malformed_input};
         }
 
         return {format_result::success, index, spec_string};
     }
 
-    template <format_writable Writer>
-    constexpr format_result format_impl(Writer& out, string_view format, std::initializer_list<format_arg> args) {
+    template <typename OutputT>
+    constexpr format_result format_impl(OutputT& out, string_view format, std::initializer_list<format_arg> args) {
         unsigned next_index = 0;
 
         char const* begin = format.data();
@@ -75,7 +70,7 @@ namespace up::_detail {
 
             // write out the string so far, since we don't write characters immediately
             if (iter != begin) {
-                out.write({begin, iter});
+                format_write(out, {begin, iter});
             }
 
             ++iter; // swallow the {
@@ -116,7 +111,7 @@ namespace up::_detail {
 
         // write out tail end of format string
         if (iter != begin) {
-            out.write({begin, iter});
+            format_write(out, {begin, iter});
         }
 
         return format_result::success;

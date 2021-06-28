@@ -18,10 +18,19 @@ void up::DefaultLogSink::log(
     };
 
     if (location.file) {
-        format_append(buffer, "{}({}): <{}> ", location.file, location.line, location.function);
+        format_to(
+            buffer,
+            "{}({}): <{}> [{}] {} :: {}",
+            location.file,
+            location.line,
+            location.function,
+            toString(severity),
+            loggerName,
+            message);
     }
-
-    format_append(buffer, "[{}] {} :: {}\n", toString(severity), loggerName, message);
+    else {
+        format_to(buffer, "[{}] {} :: {}\n", toString(severity), loggerName, message);
+    }
 
     {
         std::ostream& os = severity == LogSeverity::Error ? std::cerr : std::cout;

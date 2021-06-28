@@ -112,12 +112,11 @@ bool up::ReconProtocol::_send(string_view name, reflex::Schema const& schema, vo
     auto const str = doc.dump();
 
     char headersBuf[128] = {0};
-    auto const headersText =
-        format_to(headersBuf, "{}: {}\n{}: {}\n\n", headerMessageType, name, headerContentLength, str.size());
+    format_to(headersBuf, "{}: {}\n{}: {}\n\n", headerMessageType, name, headerContentLength, str.size());
 
     IOStream& ioSink = sink();
 
-    ioSink.write({headersText.data(), headersText.size()});
+    ioSink.write({headersBuf, stringLength(headersBuf)});
     ioSink.write({str.data(), str.size()});
     ioSink.write({"\n", 1});
     return true;

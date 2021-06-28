@@ -23,10 +23,10 @@ template <typename Writer>
 void format_value(Writer& writer, custom_enum value) {
     switch (value) {
         case custom_enum::foo:
-            format_value_to(writer, "foo");
+            up::format_to(writer, "foo");
             return;
         case custom_enum::bar:
-            format_value_to(writer, "bar");
+            up::format_to(writer, "bar");
             return;
     }
 }
@@ -34,13 +34,13 @@ void format_value(Writer& writer, custom_enum value) {
 
 template <typename Writer>
 void format_value(Writer& writer, custom_type) {
-    format_value_to(writer, "custom");
+    up::format_to(writer, "custom");
 }
 // static_assert(up::formattable<custom_type>);
 
 template <typename Writer>
 void format_value(Writer& writer, custom_type const*) {
-    format_value_to(writer, "custom pointer");
+    up::format_to(writer, "custom pointer");
 }
 // static_assert(up::formattable<custom_type const*>);
 
@@ -48,7 +48,7 @@ template <typename T>
 std::string format_as_string(T const& value) {
     std::string result;
     up::append_writer writer(result);
-    up::format_value_to(writer, value, {});
+    up::format_to(writer, "{}", value);
     return result;
 }
 

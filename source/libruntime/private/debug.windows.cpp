@@ -7,6 +7,7 @@
 #include "potato/spud/fixed_string_writer.h"
 #include "potato/spud/platform_windows.h"
 #include "potato/spud/string_format.h"
+#include "potato/spud/string_util.h"
 
 namespace {
     struct DialogData {
@@ -23,19 +24,20 @@ namespace {
         if (OpenClipboard(nullptr) == TRUE) {
             EmptyClipboard();
 
-            up::fixed_string_writer<clipboard_size_bytes> buffer;
-            up::format_append(
+            char buffer[clipboard_size_bytes];
+            up::format_to(
                 buffer,
                 "ASSERTION FAILED: {}\r\n{}\r\n{}\r\n{}",
                 data.condition,
                 data.message,
                 data.location,
                 data.callstack);
+            auto const bufLen = up::stringLength(buffer);
 
-            if (HANDLE handle = GlobalAlloc(GMEM_MOVEABLE, buffer.size() + 1)) {
+            if (HANDLE handle = GlobalAlloc(GMEM_MOVEABLE, bufLen + 1)) {
                 void* lockedData = GlobalLock(handle);
                 if (lockedData != nullptr) {
-                    std::memcpy(lockedData, buffer.data(), buffer.size());
+                    std::memcpy(lockedData, buffer, bufLen + 1);
                     GlobalUnlock(handle);
 
                     SetClipboardData(CF_TEXT, handle);
@@ -105,14 +107,13 @@ namespace up::_detail {
         char const* failedConditionText,
         char const* messageText,
         char const* callstackText) -> FatalErrorAction {
-        constexpr int location_buffer_bytes = 128;
-        fixed_string_writer<location_buffer_bytes> location_buffer;
-        format_append(location_buffer, "{}({})", file, line);
+        char location_buffer[128];
+        format_to(location_buffer, "{}({})", file, line);
 
         DialogData data;
         data.message = messageText;
         data.condition = failedConditionText;
-        data.location = location_buffer.c_str();
+        data.location = location_buffer;
         data.callstack = callstackText;
 
         // display dialog

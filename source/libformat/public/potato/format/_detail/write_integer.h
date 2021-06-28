@@ -3,6 +3,7 @@
 #pragma once
 
 #include "format_spec.h"
+#include "format_write.h"
 
 #include "potato/format/format.h"
 #include "potato/spud/ascii.h"
@@ -15,19 +16,19 @@
 
 namespace up::_detail {
 
-    template <char PadChar, typename Writer>
-    constexpr void write_padding(Writer& out, size_t width) noexcept {
+    template <char PadChar, typename OutputT>
+    constexpr void write_padding(OutputT& out, size_t width) noexcept {
         constexpr auto pad_run_count = 8;
         constexpr char padding[pad_run_count] =
             {PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar};
 
         while (width > pad_run_count) {
-            out.write({padding, pad_run_count});
+            format_write(out, {padding, pad_run_count});
             width -= pad_run_count;
         }
 
         if (width > 0) {
-            out.write({padding, width});
+            format_write(out, {padding, width});
         }
     }
 
@@ -76,8 +77,8 @@ namespace up::_detail {
 #    pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
 
-    template <typename Writer, typename T>
-    constexpr void write_integer(Writer& out, T raw, string_view spec_string) {
+    template <typename OutputT, typename T>
+    constexpr void write_integer(OutputT& out, T raw, string_view spec_string) {
         constexpr auto max_hex_chars = sizeof(raw) * CHAR_BIT + 1 /*negative*/;
         constexpr auto max_dec_chars = std::numeric_limits<T>::digits10 + 2 /*overflow digit, negative*/;
         constexpr auto max_bin_chars = std::numeric_limits<T>::digits + 1 /*negative*/;
@@ -108,7 +109,7 @@ namespace up::_detail {
                 }
             }
 
-            out.write({buffer, result.ptr});
+            format_write(out, {buffer, result.ptr});
         }
     }
 

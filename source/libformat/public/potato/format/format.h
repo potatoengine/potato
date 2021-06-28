@@ -9,34 +9,75 @@
 #include "_detail/format_impl.h"
 #include "_detail/format_result.h"
 #include "_detail/format_traits.h"
+#include "_detail/format_write.h"
 
-#include "potato/spud/span.h"
 #include "potato/spud/string_view.h"
-#include "potato/spud/zstring_view.h"
 
 #include <type_traits>
 
 namespace up {
+    /// Counted writer
+    template <typename OutputT>
+    class writer_counted final {
+    public:
+        writer_counted(OutputT& output, size_t limit) noexcept : _output(output), _limit(limit) {}
+
+        constexpr void write(string_view text) {
+            if (text.size() <= _limit) {
+                format_write(_output, text);
+                _limit -= text.size();
+            }
+            else {
+                format_write(_output, text.first(_limit));
+                _limit = 0;
+            }
+        }
+
+    private:
+        OutputT& _output;
+        size_t _limit = 0;
+    };
+
     /// Default format helpers.
-    template <format_writable Writer>
+    template <typename Writer>
     constexpr void format_value(Writer& out, string_view str) noexcept(noexcept(out.write(str))) {
-        out.write(str);
+        format_write(out, str);
     }
 
     /// Write the string format using the given parameters into a buffer.
-    /// @param writer The write buffer that will receive the formatted text.
+    /// @param output The output iterator or writeable buffer that will receive the formatted text.
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args The arguments used by the formatting string.
     /// @returns a result code indicating any errors.
-    template <format_writable Writer, formattable... Args>
-    constexpr auto format_to(Writer& writer, string_view format_str, Args const&... args) -> format_result {
+    template <typename OutputT, formattable... Args>
+    constexpr auto format_to(OutputT&& output, string_view format_str, Args const&... args) -> format_result {
         // The argument list _must_ be a temporary in the parameter list, as conversions may be involved in
         // formattable_t constructor; trying to store this in a local array or variable will allow those temporaries to
         // be destructed before the call to format_impl.
         return _detail::format_impl(
-            writer,
+            output,
             format_str,
-            {_detail::make_format_arg<Writer, _detail::formattable_t<Args>>(args)...});
+            {_detail::make_format_arg<std::remove_reference_t<OutputT>, _detail::formattable_t<Args>>(args)...});
+    }
+
+    /// Write the string format using the given parameters into a buffer up to a given size.
+    /// @param output The write buffer that will receive the formatted text.
+    /// @param count The maximum number of characters to write.
+    /// @param format_str The primary text and formatting controls to be written.
+    /// @param args The arguments used by the formatting string.
+    /// @returns a result code indicating any errors.
+    template <typename OutputT, formattable... Args>
+    constexpr auto format_to_n(OutputT&& output, size_t count, string_view format_str, Args const&... args)
+        -> format_result {
+        // The argument list _must_ be a temporary in the parameter list, as conversions may be involved in
+        // formattable_t constructor; trying to store this in a local array or variable will allow those temporaries to
+        // be destructed before the call to format_impl.
+        using CountedT = writer_counted<std::remove_reference_t<OutputT>>;
+        CountedT counted(output, count);
+        return _detail::format_impl(
+            counted,
+            format_str,
+            {_detail::make_format_arg<CountedT, _detail::formattable_t<Args>>(args)...});
     }
 
     /// Write the string format using the given parameters into a fixed-size.
@@ -45,76 +86,18 @@ namespace up {
     /// @param args The arguments used by the formatting string.
     /// @returns a result code indicating any errors.
     template <size_t N, formattable... Args>
-    constexpr auto format_to(char (&buffer)[N], string_view format_str, Args const&... args) -> zstring_view {
-        fixed_writer writer(buffer);
-        format_to(writer, format_str, args...);
-        return buffer;
+    constexpr auto format_to(char (&buffer)[N], string_view format_str, Args const&... args) {
+        return format_to_n(static_cast<char*>(buffer), N - 1 /*NUL*/, format_str, args...);
     }
 
     /// Write the string format using the given parameters and return a string with the result.
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args The arguments used by the formatting string.
     /// @returns a formatted string.
-    template <format_appendable ResultT, formattable... Args>
+    template <typename ResultT, formattable... Args>
     constexpr auto format_as(string_view format_str, Args const&... args) -> ResultT {
         ResultT result;
-        format_append(result, format_str, args...);
+        format_to(result, format_str, args...);
         return result;
-    }
-
-    /// Format a value into a buffer using the given options.
-    /// @param writer The write buffer that will receive the formatted text.
-    /// @param value The value to format.
-    /// @param options The format control options.
-    /// @returns a result code indicating any errors.
-    template <format_writable Writer, formattable T>
-    constexpr auto format_value_to(Writer& writer, T const& value, string_view spec_string) noexcept(
-        noexcept(writer.write({}))) -> format_result {
-        return _detail::make_format_arg<Writer>(value).format_into(writer, spec_string);
-    }
-
-    /// Format a value into a buffer using the given options.
-    /// @param writer The write buffer that will receive the formatted text.
-    /// @param value The value to format.
-    /// @returns a result code indicating any errors.
-    template <format_writable Writer, formattable T>
-    constexpr auto format_value_to(Writer& writer, T const& value) noexcept(noexcept(writer.write({})))
-        -> format_result {
-        return _detail::make_format_arg<Writer>(value).format_into(writer);
-    }
-
-    /// Write the string format using the given parameters into a receiver.
-    /// @param receiver The receiver of the formatted text.
-    /// @param format_str The primary text and formatting controls to be written.
-    /// @param args The arguments used by the formatting string.
-    /// @returns a result code indicating any errors.
-    template <format_appendable Receiver, formattable... Args>
-    constexpr auto format_append(Receiver& receiver, string_view format_str, Args const&... args) -> format_result {
-        auto writer = append_writer(receiver);
-        return format_to(writer, format_str, args...);
-    }
-
-    /// Write the string format using the given parameters into a receiver.
-    /// @param buffer The text buffer to append to.
-    /// @param format_str The primary text and formatting controls to be written.
-    /// @param args The arguments used by the formatting string.
-    /// @returns a result code indicating any errors.
-    template <size_t N, formattable... Args>
-    constexpr auto format_append(char (&buffer)[N], string_view format_str, Args const&... args) -> zstring_view {
-        fixed_writer writer(buffer, stringLength(buffer));
-        format_to(writer, format_str, args...);
-        return buffer;
-    }
-
-    // Write the string format using the given parameters into a receiver.
-    /// @param buffer The text buffer to append to.
-    /// @param format_str The primary text and formatting controls to be written.
-    /// @param args The arguments used by the formatting string.
-    /// @returns a result code indicating any errors.
-    template <formattable... Args>
-    constexpr auto format_append(span<char> buffer, string_view format_str, Args const&... args) -> zstring_view {
-        fixed_writer writer(buffer.data(), buffer.size());
-        format_to(writer, format_str, args...);
-        return buffer.data(); // guaranteed NUL-terminated by fixed_writer
     }
 } // namespace up

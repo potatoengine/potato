@@ -12,7 +12,6 @@ namespace up::_detail {
     enum class format_arg_type;
 
     class format_arg;
-    class format_arg_list;
 
     template <typename Writer, typename T>
     constexpr format_arg make_format_arg(T const& value) noexcept;
@@ -59,31 +58,6 @@ private:
     _detail::format_arg_type _type = _detail::format_arg_type::unknown;
     thunk_type _thunk = nullptr;
     void const* _value = nullptr;
-};
-
-/// Abstraction for a set of format arguments.
-class up::_detail::format_arg_list {
-public:
-    using format_arg_type = format_arg;
-    using thunk_type = typename format_arg_type::thunk_type;
-    using size_type = std::size_t;
-
-    constexpr format_arg_list() noexcept = default;
-    constexpr format_arg_list(format_arg_type const* args, size_type count) noexcept : _args(args), _count(count) {}
-
-    template <typename Writer>
-    constexpr format_result format_arg_into(Writer& output, size_type index, string_view spec_string) const {
-        return index < _count ? _args[index].format_into(output, spec_string) : format_result::out_of_range;
-    }
-
-    template <typename Writer>
-    constexpr format_result format_arg_into(Writer& output, size_type index) const {
-        return index < _count ? _args[index].format_into(output) : format_result::out_of_range;
-    }
-
-private:
-    format_arg const* _args = nullptr;
-    size_type _count = 0;
 };
 
 namespace up::_detail {
@@ -134,7 +108,7 @@ namespace up::_detail {
             return {type, &value};
         }
         else if constexpr (_detail::has_format_value<Writer, T>::value) {
-            return format_arg(&format_value_thunk<Writer, T>, &value);
+            return format_arg(&format_value_thunk<remove_cvref_t<Writer>, T>, &value);
         }
         else if constexpr (std::is_pointer_v<T>) {
             return {format_arg_type::void_pointer, &value};

@@ -333,7 +333,7 @@ auto up::recon::ReconApp::_importFile(zstring_view file, bool force) -> ReconImp
     }
 
     string_writer importedName;
-    format_append(importedName, "{{{}} {} ({})", metaFile.uuid, file, importer->name());
+    format_to(importedName, "{{{}} {} ({})", metaFile.uuid, file, importer->name());
 
     bool const dirty =
         !upToDate || !hasMeta || importerChange || importerSettingsChange || dependenciesDirty || outputsDirty;
@@ -491,12 +491,17 @@ auto up::recon::ReconApp::_makeMetaFilename(zstring_view basePath, bool director
 }
 
 auto up::recon::ReconApp::_makeCasPath(span<char> buffer, uint64 contentHash) -> zstring_view {
-    return format_append(
-        buffer,
+    if (buffer.empty()) {
+        return {};
+    }
+    format_to_n(
+        buffer.data(),
+        buffer.size() - 1 /*NUL*/,
         "{:02X}/{:04X}/{:016X}.bin",
         (contentHash >> 56) & 0xFF,
         (contentHash >> 40) & 0XFFFF,
         contentHash);
+    return buffer.data();
 }
 
 void up::recon::ReconApp::_collectSourceFiles(bool forceUpdate) {

@@ -26,10 +26,10 @@ auto up::_detail::raiseFatalError(char const* file, int line, char const* failed
     // FIXME: this can be invoked via memory exhaustion, what do?
     string_writer buffer;
 
-    format_append(buffer, "{}({}): ***ASSERTION FAILED*** {}\r\n", file, line, failedConditionText);
+    format_to(buffer, "{}({}): ***ASSERTION FAILED*** {}\r\n", file, line, failedConditionText);
 
     if (messageText != nullptr && *messageText != '\0') {
-        format_append(buffer, "{}({}): {}\r\n", file, line, messageText);
+        format_to(buffer, "{}({}): {}\r\n", file, line, messageText);
     }
 
     uintptr addresses[num_addresses] = {};
@@ -42,7 +42,7 @@ auto up::_detail::raiseFatalError(char const* file, int line, char const* failed
     auto const resolvedRecords = callstack::resolveTraceRecords(stack, records);
     if (!resolvedRecords.empty()) {
         for (auto const& record : resolvedRecords) {
-            format_append(
+            format_to(
                 buffer,
                 "[{:016X}] ({}:{}) {}\r\n",
                 record.address,
@@ -55,7 +55,7 @@ auto up::_detail::raiseFatalError(char const* file, int line, char const* failed
 #endif // !defined(NDEBUG)
     {
         for (auto const addr : addresses) {
-            format_append(buffer, "{:016X}\r\n", addr);
+            format_to(buffer, "{:016X}\r\n", addr);
         }
     }
 

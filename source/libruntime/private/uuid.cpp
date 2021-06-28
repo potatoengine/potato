@@ -19,7 +19,7 @@ constexpr char byteToString(up::byte byte) noexcept {
 
 auto up::UUID::toString() const -> string {
     string_writer buffer;
-    format_append(buffer, "{}", *this);
+    format_to(buffer, "{}", *this);
     return buffer.c_str();
 }
 
