@@ -4,15 +4,6 @@
 #include "potato/format/std_string.h"
 
 #include <catch2/catch.hpp>
-#include <ostream>
-
-// Not support in MSVC yet
-// static_assert(requires(up::formattable<int>));
-// static_assert(requires(up::formattable<float>));
-// static_assert(requires(up::formattable<char>));
-// static_assert(requires(up::formattable<up::byte>));
-// static_assert(requires(up::formattable<std::string>));
-// static_assert(requires(up::formattable<decltype("test")>));
 
 enum class standard_enum { one, two };
 enum class custom_enum { foo, bar };
@@ -21,33 +12,33 @@ class custom_type {};
 
 namespace up {
     template <>
-    struct formatter<custom_enum> : formatter<string_view> {
+    struct formatter<custom_enum> {
         template <typename OutputT>
         void format(OutputT& output, custom_enum value) {
             switch (value) {
                 case custom_enum::foo:
-                    return formatter<string_view>::format(output, "foo");
+                    format_write(output, "foo");
+                    break;
                 case custom_enum::bar:
-                    return formatter<string_view>::format(output, "bar");
-                default:
-                    return;
+                    format_write(output, "bar");
+                    break;
             }
         }
     };
 
     template <>
-    struct formatter<custom_type> : formatter<string_view> {
+    struct formatter<custom_type> {
         template <typename OutputT>
         void format(OutputT& output, custom_type) {
-            formatter<string_view>::format(output, "custom");
+            format_write(output, "custom");
         }
     };
 
     template <>
-    struct formatter<custom_type const*> : formatter<string_view> {
+    struct formatter<custom_type const*> {
         template <typename OutputT>
         void format(OutputT& output, custom_type const*) {
-            formatter<string_view>::format(output, "custom pointer");
+            format_write(output, "custom pointer");
         }
     };
 } // namespace up

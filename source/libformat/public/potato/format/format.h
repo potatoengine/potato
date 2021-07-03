@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "_detail/counted_output.h"
 #include "_detail/format_arg.h"
 #include "_detail/format_arg_impl.h"
 #include "_detail/format_impl.h"
@@ -15,28 +16,6 @@
 #include <type_traits>
 
 namespace up {
-    /// Counted writer
-    template <typename OutputT>
-    class writer_counted final {
-    public:
-        writer_counted(OutputT& output, size_t limit) noexcept : _output(output), _limit(limit) {}
-
-        constexpr void write(string_view text) {
-            if (text.size() <= _limit) {
-                format_write(_output, text);
-                _limit -= text.size();
-            }
-            else {
-                format_write(_output, text.first(_limit));
-                _limit = 0;
-            }
-        }
-
-    private:
-        OutputT& _output;
-        size_t _limit = 0;
-    };
-
     /// Write the string format using the given arguments into a buffer.
     /// @param output The output iterator or writeable buffer that will receive the formatted text.
     /// @param format_str The primary text and formatting controls to be written.
@@ -70,7 +49,7 @@ namespace up {
     template <typename OutputT, formattable... Args>
     constexpr auto format_to_n(OutputT&& output, size_t count, string_view format_str, Args const&... args)
         -> format_result {
-        using CountedT = writer_counted<std::remove_reference_t<OutputT>>;
+        using CountedT = counted_output<std::remove_reference_t<OutputT>>;
         CountedT counted(output, count);
         return vformat_to(counted, format_str, {make_format_arg<CountedT, _detail::formattable_t<Args>>(args)...});
     }

@@ -241,7 +241,4 @@ namespace up {
     }
 
     inline auto operator"" _s(char const* str, size_t size) -> string { return string{str, size}; }
-
-    template <>
-    struct formatter<string> : formatter<string_view> {};
 } // namespace up

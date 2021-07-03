@@ -7,7 +7,7 @@
 #include "potato/spud/string_view.h"
 
 namespace up {
-    /// @brief Generic formatter
+    /// Generic formatter
     template <typename T>
     struct formatter {
         // constexpr format_result parse(string_view) noexcept;
@@ -16,12 +16,21 @@ namespace up {
         // constexpr void format(OutputT& out, T const& value);
     };
 
-    /// @brief Formatter for void types
+    /// Formatter for void types
     template <>
     struct formatter<void> {
         constexpr format_result parse(string_view) noexcept { return format_result::success; }
 
         template <typename OutputT, typename ValueT>
         constexpr void format(OutputT&, ValueT const&) {}
+    };
+
+    /// Format for string types
+    template <>
+    struct formatter<string_view> : formatter<void> {
+        template <typename OutputT>
+        constexpr void format(OutputT& output, string_view str) {
+            format_write(output, str);
+        }
     };
 } // namespace up

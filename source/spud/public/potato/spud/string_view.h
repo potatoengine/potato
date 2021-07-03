@@ -157,15 +157,4 @@ namespace up {
     }
 
     constexpr auto operator"" _sv(char const* str, size_t size) noexcept -> string_view { return {str, size}; }
-
-    template <typename>
-    struct formatter;
-
-    template <>
-    struct formatter<string_view> {
-        template <typename OutputT>
-        void format(OutputT& output, string_view value) {
-            format_write(output, value);
-        }
-    };
 } // namespace up

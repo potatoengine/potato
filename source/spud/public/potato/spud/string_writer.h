@@ -187,7 +187,4 @@ namespace up {
             _capacity = newCapacity;
         }
     }
-
-    template <>
-    struct formatter<string_writer> : formatter<string_view> {};
 } // namespace up

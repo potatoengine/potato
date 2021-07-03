@@ -129,18 +129,33 @@ namespace up::_detail {
         fmt.format(output, value);
         return format_result::success;
     }
+
+    template <typename OutputT, typename T>
+    constexpr format_result format_string_thunk(void* out, void const* ptr, string_view spec) {
+        auto& output = *static_cast<OutputT*>(out);
+        auto const& value = *static_cast<T const*>(ptr);
+        up::formatter<up::string_view> formatter;
+        if (const auto result = formatter.parse(spec); result != format_result::success) {
+            return result;
+        }
+        formatter.format(output, value);
+        return format_result::success;
+    }
 } // namespace up::_detail
 
 namespace up {
-    template <typename Writer, typename T>
+    template <typename OutputT, typename T>
     constexpr format_arg make_format_arg(T const& value) noexcept {
         constexpr format_arg_type type = _detail::type_of<T>::value;
 
         if constexpr (type != format_arg_type::unknown) {
             return {type, &value};
         }
-        else if constexpr (_detail::has_format_value<Writer, T>) {
-            return format_arg(&_detail::format_value_thunk<remove_cvref_t<Writer>, T>, &value);
+        else if constexpr (_detail::has_format_value<OutputT, T>) {
+            return format_arg(&_detail::format_value_thunk<remove_cvref_t<OutputT>, T>, &value);
+        }
+        else if constexpr (std::is_convertible_v<T, string_view>) {
+            return format_arg(&_detail::format_string_thunk<remove_cvref_t<OutputT>, T>, &value);
         }
         else if constexpr (std::is_pointer_v<T>) {
             return {format_arg_type::void_pointer, &value};

@@ -123,7 +123,4 @@ namespace up {
     }
 
     constexpr auto operator"" _zsv(char const* str, size_t) noexcept -> zstring_view { return {str}; }
-
-    template <>
-    struct formatter<zstring_view> : formatter<string_view> {};
 } // namespace up

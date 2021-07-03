@@ -33,8 +33,9 @@ namespace up::_detail {
     };
 
     template <typename T>
-    constexpr bool is_native_formattable_v = std::is_integral_v<T> || std::is_floating_point_v<T> ||
-        std::is_pointer_v<T> || std::is_enum_v<T> || std::is_convertible_v<T, char const*>;
+    constexpr bool is_native_formattable_v =
+        std::is_integral_v<T> || std::is_floating_point_v<T> || std::is_pointer_v<T> || std::is_enum_v<T> ||
+        std::is_convertible_v<T, char const*> || std::is_convertible_v<T, string_view>;
 
     template <typename T>
     constexpr bool is_formattable_v = is_native_formattable_v<T> || has_format_value<_empty_format_writer, T>;
