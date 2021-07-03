@@ -4,6 +4,7 @@
 
 #include "format_result.h"
 #include "format_traits.h"
+#include "formatter.h"
 
 #include <initializer_list>
 #include <type_traits>
@@ -43,7 +44,7 @@ enum class up::format_arg_type {
 /// Abstraction for a single formattable value
 class up::format_arg {
 public:
-    using thunk_type = format_result (*)(void*, void const*);
+    using thunk_type = format_result (*)(void*, void const*, string_view);
 
     constexpr format_arg() noexcept = default;
     constexpr format_arg(format_arg_type type, void const* value) noexcept : _type(type), _value(value) {}
@@ -70,6 +71,14 @@ private:
 class up::format_args {
 public:
     /*implicit*/ format_args(std::initializer_list<format_arg> args) noexcept : args(args.begin()), argc(args.size()) {}
+
+    template <typename OutputT>
+    format_result format_into(OutputT&& output, int index, string_view spec) {
+        if (index >= 0 && index < argc) {
+            return args[index].format_into(output, spec);
+        }
+        return format_result::out_of_range;
+    }
 
     format_arg const* args = nullptr;
     size_t argc = 0;
@@ -106,11 +115,18 @@ namespace up::_detail {
     FORMATXX_TYPE(void const*, void_pointer);
 #undef FORMTAXX_TYPE
 
-    template <typename Writer, typename T>
-    constexpr format_result format_value_thunk(void* out, void const* ptr) {
-        auto& writer = *static_cast<Writer*>(out);
+    template <typename OutputT, typename T>
+    constexpr format_result format_value_thunk(void* out, void const* ptr, string_view spec) {
+        auto& output = *static_cast<OutputT*>(out);
         auto const& value = *static_cast<T const*>(ptr);
-        format_value(writer, value);
+        using formatter_type = up::formatter<T>;
+        auto fmt = formatter_type{};
+        if constexpr (has_formatter_parse<formatter_type>) {
+            if (const auto result = fmt.parse(spec); result != format_result::success) {
+                return result;
+            }
+        }
+        fmt.format(output, value);
         return format_result::success;
     }
 } // namespace up::_detail
@@ -123,7 +139,7 @@ namespace up {
         if constexpr (type != format_arg_type::unknown) {
             return {type, &value};
         }
-        else if constexpr (_detail::has_format_value<Writer, T>::value) {
+        else if constexpr (_detail::has_format_value<Writer, T>) {
             return format_arg(&_detail::format_value_thunk<remove_cvref_t<Writer>, T>, &value);
         }
         else if constexpr (std::is_pointer_v<T>) {

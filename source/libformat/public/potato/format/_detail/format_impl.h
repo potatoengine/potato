@@ -97,12 +97,8 @@ namespace up::_detail {
                 return result;
             }
 
-            if (index >= ctx.args.argc) {
-                return format_result::out_of_range;
-            }
-
-            format_result const arg_result = ctx.args.args[index].format_into(ctx.out, spec_string);
-            if (arg_result != format_result::success) {
+            if (format_result const arg_result = ctx.args.format_into(ctx.out, index, spec_string);
+                arg_result != format_result::success) {
                 return arg_result;
             }
 

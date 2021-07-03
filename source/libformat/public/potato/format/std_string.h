@@ -8,13 +8,19 @@
 #include <string_view>
 
 namespace up {
-    template <format_writable Writer, typename StringCharT, typename TraitsT, typename AllocatorT>
-    constexpr void format_value(Writer& out, std::basic_string<StringCharT, TraitsT, AllocatorT> const& string) {
-        format_value(out, string_view(string.data(), string.size()));
-    }
+    template <typename StringCharT, typename TraitsT, typename AllocatorT>
+    struct formatter<std::basic_string<StringCharT, TraitsT, AllocatorT>> : formatter<void> {
+        template <typename OutputT>
+        void format(OutputT& output, std::basic_string<StringCharT, TraitsT, AllocatorT> const& value) {
+            format_write(output, string_view(value.data(), value.size()));
+        }
+    };
 
-    template <format_writable Writer, typename StringCharT, typename TraitsT>
-    constexpr void format_value(Writer& out, std::basic_string_view<StringCharT, TraitsT> const& string) {
-        format_value(out, string_view(string.data(), string.size()));
-    }
+    template <typename StringCharT, typename TraitsT>
+    struct formatter<std::basic_string_view<StringCharT, TraitsT>> : formatter<void> {
+        template <typename OutputT>
+        void format(OutputT& output, std::basic_string_view<StringCharT, TraitsT> const& value) {
+            format_write(output, string_view(value.data(), value.size()));
+        }
+    };
 } // namespace up

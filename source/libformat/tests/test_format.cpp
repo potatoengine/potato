@@ -19,30 +19,38 @@ enum class custom_enum { foo, bar };
 
 class custom_type {};
 
-template <typename Writer>
-void format_value(Writer& writer, custom_enum value) {
-    switch (value) {
-        case custom_enum::foo:
-            up::format_to(writer, "foo");
-            return;
-        case custom_enum::bar:
-            up::format_to(writer, "bar");
-            return;
-    }
-}
-// static_assert(up::formattable<custom_enum>);
+namespace up {
+    template <>
+    struct formatter<custom_enum> : formatter<string_view> {
+        template <typename OutputT>
+        void format(OutputT& output, custom_enum value) {
+            switch (value) {
+                case custom_enum::foo:
+                    return formatter<string_view>::format(output, "foo");
+                case custom_enum::bar:
+                    return formatter<string_view>::format(output, "bar");
+                default:
+                    return;
+            }
+        }
+    };
 
-template <typename Writer>
-void format_value(Writer& writer, custom_type) {
-    up::format_to(writer, "custom");
-}
-// static_assert(up::formattable<custom_type>);
+    template <>
+    struct formatter<custom_type> : formatter<string_view> {
+        template <typename OutputT>
+        void format(OutputT& output, custom_type) {
+            formatter<string_view>::format(output, "custom");
+        }
+    };
 
-template <typename Writer>
-void format_value(Writer& writer, custom_type const*) {
-    up::format_to(writer, "custom pointer");
-}
-// static_assert(up::formattable<custom_type const*>);
+    template <>
+    struct formatter<custom_type const*> : formatter<string_view> {
+        template <typename OutputT>
+        void format(OutputT& output, custom_type const*) {
+            formatter<string_view>::format(output, "custom pointer");
+        }
+    };
+} // namespace up
 
 TEST_CASE("potato.format.format", "[potato][format]") {
     using namespace up;

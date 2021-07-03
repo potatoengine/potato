@@ -66,7 +66,7 @@ constexpr up::format_result up::format_arg::format_into(Writer& output, string_v
                 spec_string);
             return format_result::success;
         case format_arg_type::custom:
-            return _thunk(&output, _value);
+            return _thunk(&output, _value, spec_string);
         default:
             return format_result::success;
     }

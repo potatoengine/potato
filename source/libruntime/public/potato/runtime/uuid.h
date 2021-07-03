@@ -36,30 +36,6 @@ namespace up {
 
         up::byte const* bytes() const noexcept { return _data.ub; }
 
-        template <format_writable FormatterT>
-        friend void format_value(FormatterT& writer, UUID uuid) {
-            // format 9554084e-4100-4098-b470-2125f5eed133
-            format_to(
-                writer,
-                "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                uuid._data.ub[0],
-                uuid._data.ub[1],
-                uuid._data.ub[2],
-                uuid._data.ub[3],
-                uuid._data.ub[4],
-                uuid._data.ub[5],
-                uuid._data.ub[6],
-                uuid._data.ub[7],
-                uuid._data.ub[8],
-                uuid._data.ub[9],
-                uuid._data.ub[10],
-                uuid._data.ub[11],
-                uuid._data.ub[12],
-                uuid._data.ub[13],
-                uuid._data.ub[14],
-                uuid._data.ub[15]);
-        }
-
         template <typename HashAlgorithm = default_hash>
         friend uint64 hash_value(UUID uuid) noexcept {
             HashAlgorithm hasher{};
@@ -83,6 +59,35 @@ namespace up {
         };
 
         Storage _data = {HighLow{}};
+    };
+
+    template <>
+    struct formatter<UUID> {
+        constexpr format_result parse(string_view) noexcept { return format_result::success; }
+        template <typename OutputT>
+        constexpr void format(OutputT& out, UUID const& uuid) {
+            // format 9554084e-4100-4098-b470-2125f5eed133
+            byte const* const bytes = uuid.bytes();
+            format_to(
+                out,
+                "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+                bytes[0],
+                bytes[1],
+                bytes[2],
+                bytes[3],
+                bytes[4],
+                bytes[5],
+                bytes[6],
+                bytes[7],
+                bytes[8],
+                bytes[9],
+                bytes[10],
+                bytes[11],
+                bytes[12],
+                bytes[13],
+                bytes[14],
+                bytes[15]);
+        }
     };
 
     static_assert(sizeof(UUID) == UUID::octects, "sizeof(uuid) must be 16 octects");

@@ -115,17 +115,17 @@ namespace up {
 
         UP_RUNTIME_API bool isEnabledFor(LogSeverity severity) const noexcept;
 
-        template <typename... T>
+        template <formattable... T>
         void log(LogSeverity severity, string_view format, T const&... args);
         UP_RUNTIME_API void log(LogSeverity severity, string_view message) noexcept;
 
-        template <typename... T>
+        template <formattable... T>
         void info(string_view format, T const&... args) {
             log(LogSeverity::Info, format, args...);
         }
         void info(string_view message) noexcept { log(LogSeverity::Info, message); }
 
-        template <typename... T>
+        template <formattable... T>
         void error(string_view format, T const&... args) {
             log(LogSeverity::Error, format, args...);
         }
@@ -151,7 +151,7 @@ namespace up {
         rc<Impl> _impl;
     };
 
-    template <typename... T>
+    template <formattable... T>
     void Logger::log(LogSeverity severity, string_view format, T const&... args) {
         if (!isEnabledFor(severity)) {
             return;

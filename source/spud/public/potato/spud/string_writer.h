@@ -85,108 +85,109 @@ namespace up {
             0,
         };
     };
-} // namespace up
 
-void up::string_writer::append(value_type ch) {
-    _grow(_size + 1);
-    _ptr[_size++] = ch;
-    _ptr[_size] = '\0';
-}
+    void string_writer::append(value_type ch) {
+        _grow(_size + 1);
+        _ptr[_size++] = ch;
+        _ptr[_size] = '\0';
+    }
 
-void up::string_writer::append(const_pointer data, size_type length) {
-    _grow(_size + length);
-    std::memmove(_ptr + _size, data, length);
-    _size += length;
-    _ptr[_size] = '\0';
-}
+    void string_writer::append(const_pointer data, size_type length) {
+        _grow(_size + length);
+        std::memmove(_ptr + _size, data, length);
+        _size += length;
+        _ptr[_size] = '\0';
+    }
 
-void up::string_writer::reserve(size_type capacity) {
-    if (capacity >= _capacity) {
-        size_type newCapacity = capacity + 1;
-        UP_SPUD_ASSERT(newCapacity > capacity, "overflow");
+    void string_writer::reserve(size_type capacity) {
+        if (capacity >= _capacity) {
+            size_type newCapacity = capacity + 1;
+            UP_SPUD_ASSERT(newCapacity > capacity, "overflow");
 
-        auto newBuffer = new value_type[newCapacity];
+            auto newBuffer = new value_type[newCapacity];
 
-        std::memcpy(newBuffer, _ptr, _size + 1 /*NUL*/);
+            std::memcpy(newBuffer, _ptr, _size + 1 /*NUL*/);
 
+            if (_ptr != static_cast<char*>(_fixed)) {
+                delete[] _ptr;
+            }
+
+            _ptr = newBuffer;
+            _capacity = newCapacity;
+        }
+    }
+
+    auto string_writer::acquire(size_type size) -> span<char> {
+        _grow(_size + size);
+        return {_ptr + _size, _capacity - 1 - _size};
+    }
+
+    void string_writer::commit(span<char const> data) {
+        UP_SPUD_ASSERT(data.data() == _ptr + _size, "commit() does not match acquire()d buffer");
+        UP_SPUD_ASSERT(data.size() <= _capacity - 1 - _size, "commit() size exceeds acquired()d buffer");
+
+        _size += data.size();
+        _ptr[_size] = '\0';
+    }
+
+    void string_writer::reset() {
         if (_ptr != static_cast<char*>(_fixed)) {
             delete[] _ptr;
+            _ptr = _fixed;
+            _capacity = sizeof(_fixed);
+        }
+        _size = 0;
+        *_ptr = '\0';
+    }
+
+    auto string_writer::to_string() const& -> string { return string(_ptr, _size); }
+
+    auto string_writer::to_string() && -> string {
+        string result;
+
+        if (_ptr != _fixed && _size == _capacity - 1 /*NUL*/) {
+            result = string::take_ownership(_ptr, _size);
+            _ptr = nullptr;
+        }
+        else {
+            result = string(_ptr, _size);
         }
 
-        _ptr = newBuffer;
-        _capacity = newCapacity;
-    }
-}
-
-auto up::string_writer::acquire(size_type size) -> span<char> {
-    _grow(_size + size);
-    return {_ptr + _size, _capacity - 1 - _size};
-}
-
-void up::string_writer::commit(span<char const> data) {
-    UP_SPUD_ASSERT(data.data() == _ptr + _size, "commit() does not match acquire()d buffer");
-    UP_SPUD_ASSERT(data.size() <= _capacity - 1 - _size, "commit() size exceeds acquired()d buffer");
-
-    _size += data.size();
-    _ptr[_size] = '\0';
-}
-
-void up::string_writer::reset() {
-    if (_ptr != static_cast<char*>(_fixed)) {
-        delete[] _ptr;
-        _ptr = _fixed;
-        _capacity = sizeof(_fixed);
-    }
-    _size = 0;
-    *_ptr = '\0';
-}
-
-auto up::string_writer::to_string() const& -> string {
-    return string(_ptr, _size);
-}
-
-auto up::string_writer::to_string() && -> string {
-    string result;
-
-    if (_ptr != _fixed && _size == _capacity - 1 /*NUL*/) {
-        result = string::take_ownership(_ptr, _size);
-        _ptr = nullptr;
-    }
-    else {
-        result = string(_ptr, _size);
+        reset();
+        return result;
     }
 
-    reset();
-    return result;
-}
-
-void up::string_writer::resize(size_type newSize, value_type fill) {
-    if (_size < newSize) {
-        _grow(newSize);
-        std::memset(_ptr + _size, fill, newSize - _size);
+    void string_writer::resize(size_type newSize, value_type fill) {
+        if (_size < newSize) {
+            _grow(newSize);
+            std::memset(_ptr + _size, fill, newSize - _size);
+            _size = newSize;
+        }
         _size = newSize;
+        _ptr[_size] = 0;
     }
-    _size = newSize;
-    _ptr[_size] = 0;
-}
 
-void up::string_writer::_grow(size_type requiredSize) {
-    // >= to account for NUL byte
-    if (requiredSize >= _capacity) {
-        size_type newCapacity = _capacity * 2;
-        if (newCapacity <= requiredSize) {
-            newCapacity = requiredSize + 1 /*NUL*/;
+    void string_writer::_grow(size_type requiredSize) {
+        // >= to account for NUL byte
+        if (requiredSize >= _capacity) {
+            size_type newCapacity = _capacity * 2;
+            if (newCapacity <= requiredSize) {
+                newCapacity = requiredSize + 1 /*NUL*/;
+            }
+
+            auto newBuffer = new value_type[newCapacity];
+
+            std::memcpy(newBuffer, _ptr, _size + 1 /*NUL*/);
+
+            if (_ptr != static_cast<char*>(_fixed)) {
+                delete[] _ptr;
+            }
+
+            _ptr = newBuffer;
+            _capacity = newCapacity;
         }
-
-        auto newBuffer = new value_type[newCapacity];
-
-        std::memcpy(newBuffer, _ptr, _size + 1 /*NUL*/);
-
-        if (_ptr != static_cast<char*>(_fixed)) {
-            delete[] _ptr;
-        }
-
-        _ptr = newBuffer;
-        _capacity = newCapacity;
     }
-}
+
+    template <>
+    struct formatter<string_writer> : formatter<string_view> {};
+} // namespace up

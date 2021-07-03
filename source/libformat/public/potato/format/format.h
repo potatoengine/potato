@@ -8,6 +8,7 @@
 #include "_detail/format_result.h"
 #include "_detail/format_traits.h"
 #include "_detail/format_write.h"
+#include "_detail/formatter.h"
 
 #include "potato/spud/string_view.h"
 
@@ -35,12 +36,6 @@ namespace up {
         OutputT& _output;
         size_t _limit = 0;
     };
-
-    /// Default format helpers.
-    template <typename Writer>
-    constexpr void format_value(Writer& out, string_view str) noexcept(noexcept(format_write(out, str))) {
-        format_write(out, str);
-    }
 
     /// Write the string format using the given arguments into a buffer.
     /// @param output The output iterator or writeable buffer that will receive the formatted text.

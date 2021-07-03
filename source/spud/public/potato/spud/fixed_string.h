@@ -45,11 +45,6 @@ namespace up {
 
         constexpr void clear() noexcept;
 
-        template <typename Writer, typename Spec>
-        friend void format_value(Writer& writer, fixed_string const& fs, Spec const& options) noexcept {
-            format_value(writer, string_view{fs._buffer, fs._size}, options);
-        }
-
     private:
         size_t _size = 0;
         char _buffer[Capacity] = {
@@ -106,4 +101,15 @@ namespace up {
     void hash_append(HashAlgorithm& hasher, fixed_string<Size> const& string) {
         hasher(string.data(), string.size());
     }
+
+    template <typename>
+    struct formatter;
+
+    template <size_t Capacity>
+    struct formatter<fixed_string<Capacity>> : formatter<string_view> {
+        template <typename OutputT>
+        constexpr void format(OutputT& output, fixed_string<Capacity> const& value) {
+            format_write(output, value);
+        }
+    };
 } // namespace up
