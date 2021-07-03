@@ -55,6 +55,8 @@ public:
     template <typename Writer>
     constexpr format_result format_into(Writer& output, string_view spec_string = {}) const;
 
+    constexpr int as_int() const;
+
 private:
     format_arg_type _type = format_arg_type::unknown;
     thunk_type _thunk = nullptr;

@@ -71,3 +71,32 @@ constexpr up::format_result up::format_arg::format_into(Writer& output, string_v
             return format_result::success;
     }
 }
+
+constexpr int up::format_arg::as_int() const {
+    switch (_type) {
+        case format_arg_type::char_t:
+            return static_cast<int>(*static_cast<char const*>(_value));
+        case format_arg_type::signed_char:
+            return static_cast<int>(*static_cast<signed char const*>(_value));
+        case format_arg_type::unsigned_char:
+            return static_cast<int>(*static_cast<unsigned char const*>(_value));
+        case format_arg_type::signed_int:
+            return static_cast<int>(*static_cast<signed int const*>(_value));
+        case format_arg_type::unsigned_int:
+            return static_cast<int>(*static_cast<unsigned int const*>(_value));
+        case format_arg_type::signed_short_int:
+            return static_cast<int>(*static_cast<signed short const*>(_value));
+        case format_arg_type::unsigned_short_int:
+            return static_cast<int>(*static_cast<unsigned short const*>(_value));
+        case format_arg_type::signed_long_int:
+            return static_cast<int>(*static_cast<signed long const*>(_value));
+        case format_arg_type::unsigned_long_int:
+            return static_cast<int>(*static_cast<unsigned long const*>(_value));
+        case format_arg_type::signed_long_long_int:
+            return static_cast<int>(*static_cast<signed long long const*>(_value));
+        case format_arg_type::unsigned_long_long_int:
+            return static_cast<int>(*static_cast<unsigned long long const*>(_value));
+        default:
+            return -1;
+    }
+}
