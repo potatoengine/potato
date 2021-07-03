@@ -25,11 +25,11 @@ namespace up {
         constexpr void format(OutputT&, ValueT const&) {}
     };
 
-    /// Format for string types
+    /// Formatter for string types
     template <>
     struct formatter<string_view> : formatter<void> {
         template <typename OutputT>
-        constexpr void format(OutputT& output, string_view str) {
+        constexpr void format(OutputT& output, string_view str) noexcept(noexcept(format_write(output, str))) {
             format_write(output, str);
         }
     };

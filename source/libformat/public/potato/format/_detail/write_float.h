@@ -59,7 +59,8 @@ namespace up::_detail {
 
     // std::to_chars<float> is still mostly unsupported by vendors
     template <typename OutputT>
-    inline void write_float(OutputT& out, double value, string_view spec_string) {
+    inline void write_float(OutputT& out, double value, string_view spec_string) noexcept(
+        is_format_write_noexcept<OutputT>) {
         constexpr std::size_t buf_size = 1078;
         char buf[buf_size] = {
             0,

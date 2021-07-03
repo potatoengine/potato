@@ -7,12 +7,13 @@
 namespace up::_detail {
 
     template <typename OutputT>
-    constexpr void write_string(OutputT& out, string_view str, string_view) {
+    constexpr void write_string(OutputT& out, string_view str, string_view) noexcept(
+        is_format_write_noexcept<OutputT>) {
         up::format_write(out, str);
     }
 
     template <typename OutputT>
-    constexpr void write_char(OutputT& out, char ch, string_view) {
+    constexpr void write_char(OutputT& out, char ch, string_view) noexcept(is_format_write_noexcept<OutputT>) {
         up::format_write(out, {&ch, 1});
     }
 

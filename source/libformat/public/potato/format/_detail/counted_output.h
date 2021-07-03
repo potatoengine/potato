@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "format_write.h"
+
 #include "potato/spud/int_types.h"
 #include "potato/spud/string_view.h"
 
@@ -12,7 +14,7 @@ namespace up {
     public:
         counted_output(OutputT& output, size_t limit) noexcept : _output(output), _limit(limit) {}
 
-        constexpr void write(string_view text) {
+        constexpr void write(string_view text) noexcept(is_format_write_noexcept<OutputT>) {
             if (text.size() <= _limit) {
                 format_write(_output, text);
                 _limit -= text.size();

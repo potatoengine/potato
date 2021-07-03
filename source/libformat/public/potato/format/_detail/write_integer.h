@@ -17,7 +17,7 @@
 namespace up::_detail {
 
     template <char PadChar, typename OutputT>
-    constexpr void write_padding(OutputT& out, size_t width) noexcept {
+    constexpr void write_padding(OutputT& out, size_t width) noexcept(is_format_write_noexcept<OutputT>) {
         constexpr auto pad_run_count = 8;
         constexpr char padding[pad_run_count] =
             {PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar};
@@ -78,7 +78,8 @@ namespace up::_detail {
 #endif
 
     template <typename OutputT, typename T>
-    constexpr void write_integer(OutputT& out, T raw, string_view spec_string) {
+    constexpr void write_integer(OutputT& out, T raw, string_view spec_string) noexcept(
+        is_format_write_noexcept<OutputT>) {
         constexpr auto max_hex_chars = sizeof(raw) * CHAR_BIT + 1 /*negative*/;
         constexpr auto max_dec_chars = std::numeric_limits<T>::digits10 + 2 /*overflow digit, negative*/;
         constexpr auto max_bin_chars = std::numeric_limits<T>::digits + 1 /*negative*/;
