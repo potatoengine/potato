@@ -4,11 +4,13 @@
 
 #include "_detail/counted_output.h"
 #include "_detail/format_arg.h"
-#include "_detail/format_arg_impl.h"
 #include "_detail/format_impl.h"
 #include "_detail/format_traits.h"
 #include "_detail/format_write.h"
 #include "_detail/formatter.h"
+#include "_detail/formatter_float.h"
+#include "_detail/formatter_int.h"
+#include "_detail/formatter_string.h"
 
 #include "potato/spud/string_view.h"
 

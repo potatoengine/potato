@@ -15,9 +15,11 @@ namespace up {
         counted_output(OutputT& output, size_t limit) noexcept : _output(output), _limit(limit) {}
 
         constexpr void write(string_view text) noexcept(is_format_write_noexcept<OutputT>) {
-            if (text.size() <= _limit) {
+            auto const size = text.size();
+
+            if (size <= _limit) {
                 format_write(_output, text);
-                _limit -= text.size();
+                _limit -= size;
             }
             else {
                 format_write(_output, text.first(_limit));
