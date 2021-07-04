@@ -14,7 +14,7 @@ namespace up {
     public:
         counted_output(OutputT& output, size_t limit) noexcept : _output(output), _limit(limit) {}
 
-        constexpr void write(string_view text) noexcept(is_format_write_noexcept<OutputT>) {
+        constexpr void append(string_view text) noexcept(is_format_write_noexcept<OutputT>) {
             auto const size = text.size();
 
             if (size <= _limit) {

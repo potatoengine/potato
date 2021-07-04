@@ -62,7 +62,9 @@ namespace up {
     /// @returns a result code indicating any errors.
     template <size_t N, formattable... Args>
     constexpr char* format_to(char (&buffer)[N], string_view format_str, Args const&... args) {
-        return format_to_n(static_cast<char*>(buffer), N - 1 /*NUL*/, format_str, args...);
+        char* const end = format_to_n(static_cast<char*>(buffer), N - 1 /*NUL*/, format_str, args...);
+        *end = '\0';
+        return end;
     }
 
     /// Write the string format using the given parameters and return a string with the result.
