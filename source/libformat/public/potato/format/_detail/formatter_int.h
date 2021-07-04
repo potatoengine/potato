@@ -46,7 +46,7 @@ namespace up::_detail {
                 return in;
             }
 
-            if (in != end && *in == '\0') {
+            if (in != end && *in == '0') {
                 ++in;
                 leading_zeroes = true;
             }
