@@ -17,6 +17,8 @@ namespace up {
         constexpr void append(string_view text) noexcept(is_format_write_noexcept<OutputT>) {
             auto const size = text.size();
 
+            _count += size;
+
             if (size <= _limit) {
                 format_write(_output, text);
                 _limit -= size;
@@ -28,9 +30,11 @@ namespace up {
         }
 
         constexpr OutputT& current() noexcept { return _output; }
+        constexpr size_t count() noexcept { return _count; }
 
     private:
         OutputT& _output;
         size_t _limit = 0;
+        size_t _count = 0;
     };
 } // namespace up

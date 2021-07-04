@@ -41,18 +41,29 @@ namespace up {
             {make_format_arg<std::remove_reference_t<OutputT>, _detail::formattable_t<Args>>(args)...});
     }
 
+    /// Result type of format_to_n
+    template <typename OutputT>
+    struct format_to_n_result {
+        OutputT out;
+        size_t size = 0;
+    };
+
     /// Write the string format using the given arguments into a buffer up to a given size.
     /// @param output The write buffer that will receive the formatted text.
     /// @param count The maximum number of characters to write.
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args The arguments used by the formatting string.
-    /// @returns a result code indicating any errors.
+    /// @returns a format_to_n_result with the output iterator and count that would have been written.
     template <typename OutputT, formattable... Args>
-    constexpr auto format_to_n(OutputT&& output, size_t count, string_view format_str, Args const&... args) {
+    constexpr format_to_n_result<OutputT> format_to_n(
+        OutputT&& output,
+        size_t count,
+        string_view format_str,
+        Args const&... args) {
         using CountedT = counted_output<std::remove_reference_t<OutputT>>;
         CountedT counted(output, count);
         format_to(counted, format_str, args...);
-        return counted.current();
+        return {counted.current(), counted.count()};
     }
 
     /// Write the string format using the given arguments into a fixed-size.
