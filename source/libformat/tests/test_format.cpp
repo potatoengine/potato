@@ -33,14 +33,6 @@ namespace up {
             format_write(output, "custom");
         }
     };
-
-    template <>
-    struct formatter<custom_type const*> {
-        template <typename OutputT>
-        void format(OutputT& output, custom_type const*) {
-            format_write(output, "custom pointer");
-        }
-    };
 } // namespace up
 
 TEST_CASE("potato.format.format", "[potato][format]") {
@@ -143,12 +135,10 @@ TEST_CASE("potato.format.format", "[potato][format]") {
     SECTION("custom") {
         custom_type local;
         custom_type& ref = local;
-        custom_type* ptr = &local;
 
         CHECK(format_as<std::string>("{}", custom_type{}) == "custom");
         CHECK(format_as<std::string>("{}", local) == "custom");
         CHECK(format_as<std::string>("{}", ref) == "custom");
-        CHECK(format_as<std::string>("{}", ptr) == "custom pointer");
     }
 
     // SECTION("errors") {
