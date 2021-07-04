@@ -51,7 +51,7 @@ namespace up {
     constexpr auto format_to_n(OutputT&& output, size_t count, string_view format_str, Args const&... args) {
         using CountedT = counted_output<std::remove_reference_t<OutputT>>;
         CountedT counted(output, count);
-        vformat_to(counted, format_str, {make_format_arg<CountedT, _detail::formattable_t<Args>>(args)...});
+        format_to(counted, format_str, args...);
         return counted.current();
     }
 

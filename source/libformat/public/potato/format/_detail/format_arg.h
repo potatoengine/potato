@@ -139,6 +139,11 @@ namespace up {
         UP_FORMAT_MAP_TYPE(std::nullptr_t, void const*);
 #undef UP_FORMAT_MAP_TYPE
 
+        template <typename FormatterT>
+        concept has_formatter_parse = requires(FormatterT& formatter) {
+            formatter.parse(string_view{});
+        };
+
         template <typename OutputT, typename T>
         constexpr void format_value_to(OutputT& output, T const& value, string_view spec) {
             formatter<T> fmt;
@@ -160,7 +165,7 @@ namespace up {
 
     template <typename OutputT, formattable T>
     constexpr format_arg make_format_arg(T const& value) noexcept {
-        if constexpr (_detail::has_format_value<OutputT, T>) {
+        if constexpr (has_formatter_v<T>) {
             return format_arg(&_detail::format_value_thunk<remove_cvref_t<OutputT>, T>, &value);
         }
         else if constexpr (std::is_convertible_v<T, up::string_view>) {

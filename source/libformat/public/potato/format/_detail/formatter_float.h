@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "format_spec.h"
 #include "format_write.h"
 
 #include <cstdio>
@@ -66,33 +65,14 @@ namespace up {
         }
 
         int sprintf_helper(char* buf, size_t buf_size, double value) noexcept {
-            constexpr std::size_t fmt_buf_size = 8;
-            char fmt_buf[fmt_buf_size] = {
-                0,
-            };
-            char* fmt_ptr = fmt_buf + fmt_buf_size;
-
-            // required NUL terminator for sprintf formats (1)
-            *--fmt_ptr = 0;
-
-            // every sprint call must have a valid code (1)
-            *--fmt_ptr = format_type;
-
-            // we always pass in a width and precision, defaulting to 0 which has no effect
-            // as width, and -1 which is a guaranteed "ignore" (3)
-            *--fmt_ptr = '*';
-            *--fmt_ptr = '.';
-            *--fmt_ptr = '*';
-
-            // leading zeroes flag (1)
-            if (leading_zeroes) {
-                *--fmt_ptr = '0';
+            if (!leading_zeroes) {
+                char const fmt_buf[] = {'%', '*', '.', '*', format_type, '\0'};
+                return std::snprintf(buf, buf_size, fmt_buf, width, precision, value);
             }
-
-            // every format must start with this (1)
-            *--fmt_ptr = '%';
-
-            return std::snprintf(buf, buf_size, fmt_ptr, width, precision, value);
+            else {
+                char const fmt_buf[] = {'%', '0', '*', '.', '*', format_type, '\0'};
+                return std::snprintf(buf, buf_size, fmt_buf, width, precision, value);
+            }
         }
     };
 
