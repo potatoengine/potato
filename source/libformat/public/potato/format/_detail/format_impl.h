@@ -47,9 +47,11 @@ namespace up::_detail {
             char const* const spec_begin = iter;
             unsigned nested = 1;
 
-            while (iter != end && nested != 0) {
+            while (iter != end) {
                 if (*iter == '}') {
-                    --nested;
+                    if (--nested == 0) {
+                        break;
+                    }
                 }
                 else if (*iter == '{') {
                     ++nested;
