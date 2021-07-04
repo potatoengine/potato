@@ -2,15 +2,13 @@
 
 #pragma once
 
-#include "format_result.h"
-
 #include "potato/spud/string_view.h"
 
 namespace up {
     /// Generic formatter
     template <typename T>
     struct formatter {
-        // constexpr format_result parse(string_view) noexcept;
+        // constexpr char const* parse(string_view) noexcept;
 
         // template <typename OutputT>
         // constexpr void format(OutputT& out, T const& value);
@@ -19,7 +17,7 @@ namespace up {
     /// Formatter for void types
     template <>
     struct formatter<void> {
-        constexpr format_result parse(string_view) noexcept { return format_result::success; }
+        constexpr char const* parse(string_view spec) noexcept { return spec.end(); }
 
         template <typename OutputT, typename ValueT>
         constexpr void format(OutputT&, ValueT const&) {}

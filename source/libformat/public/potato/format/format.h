@@ -6,7 +6,6 @@
 #include "_detail/format_arg.h"
 #include "_detail/format_arg_impl.h"
 #include "_detail/format_impl.h"
-#include "_detail/format_result.h"
 #include "_detail/format_traits.h"
 #include "_detail/format_write.h"
 #include "_detail/formatter.h"
@@ -22,7 +21,7 @@ namespace up {
     /// @param args Packaged arguments to use for formatting.
     /// @returns a result code indicating any errors.
     template <typename OutputT>
-    constexpr auto vformat_to(OutputT&& output, string_view format_str, format_args&& args) {
+    constexpr decltype(auto) vformat_to(OutputT&& output, string_view format_str, format_args&& args) {
         return _detail::format_impl(
             _detail::format_context<OutputT>{output, format_str.begin(), format_str.end(), args});
     }
@@ -33,7 +32,7 @@ namespace up {
     /// @param args The arguments used by the formatting string.
     /// @returns a result code indicating any errors.
     template <typename OutputT, formattable... Args>
-    constexpr auto format_to(OutputT&& output, string_view format_str, Args const&... args) -> format_result {
+    constexpr decltype(auto) format_to(OutputT&& output, string_view format_str, Args const&... args) {
         return vformat_to(
             output,
             format_str,
@@ -47,11 +46,11 @@ namespace up {
     /// @param args The arguments used by the formatting string.
     /// @returns a result code indicating any errors.
     template <typename OutputT, formattable... Args>
-    constexpr auto format_to_n(OutputT&& output, size_t count, string_view format_str, Args const&... args)
-        -> format_result {
+    constexpr auto format_to_n(OutputT&& output, size_t count, string_view format_str, Args const&... args) {
         using CountedT = counted_output<std::remove_reference_t<OutputT>>;
         CountedT counted(output, count);
-        return vformat_to(counted, format_str, {make_format_arg<CountedT, _detail::formattable_t<Args>>(args)...});
+        vformat_to(counted, format_str, {make_format_arg<CountedT, _detail::formattable_t<Args>>(args)...});
+        return counted.current();
     }
 
     /// Write the string format using the given arguments into a fixed-size.
@@ -60,7 +59,7 @@ namespace up {
     /// @param args The arguments used by the formatting string.
     /// @returns a result code indicating any errors.
     template <size_t N, formattable... Args>
-    constexpr auto format_to(char (&buffer)[N], string_view format_str, Args const&... args) {
+    constexpr char* format_to(char (&buffer)[N], string_view format_str, Args const&... args) {
         return format_to_n(static_cast<char*>(buffer), N - 1 /*NUL*/, format_str, args...);
     }
 
@@ -69,7 +68,7 @@ namespace up {
     /// @param args The arguments used by the formatting string.
     /// @returns a formatted string.
     template <typename ResultT, formattable... Args>
-    constexpr auto format_as(string_view format_str, Args const&... args) -> ResultT {
+    constexpr ResultT format_as(string_view format_str, Args const&... args) {
         ResultT result;
         format_to(result, format_str, args...);
         return result;

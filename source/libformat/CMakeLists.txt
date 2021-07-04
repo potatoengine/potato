@@ -16,7 +16,9 @@ add_executable(potato_libformat_test)
 target_sources(potato_libformat_test PRIVATE
     "tests/main.cpp"
     "tests/test_format.cpp"
-    "tests/test_writer.cpp" "public/potato/format/_detail/format_write.h")
+    "tests/test_writer.cpp"
+    "public/potato/format/_detail/format_write.h"
+)
 
 up_set_common_properties(potato_libformat_test)
 

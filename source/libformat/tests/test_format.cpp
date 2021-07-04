@@ -151,12 +151,12 @@ TEST_CASE("potato.format.format", "[potato][format]") {
         CHECK(format_as<std::string>("{}", ptr) == "custom pointer");
     }
 
-    SECTION("errors") {
-        char buffer[256];
+    // SECTION("errors") {
+    //    char buffer[256];
 
-        CHECK(format_to(buffer, "{} {:4d} {:3.5f}", "abc", 9, 12.57) == up::format_result::success);
-        CHECK(format_to(buffer, "{} {:4d", "abc", 9) == up::format_result::malformed_input);
-        CHECK(format_to(buffer, "{0} {1}", "abc", 9) == up::format_result::success);
-        CHECK(format_to(buffer, "{0} {1} {5}", "abc", 9, 12.57) == up::format_result::out_of_range);
-    }
+    //    CHECK(format_to(buffer, "{} {:4d} {:3.5f}", "abc", 9, 12.57) == up::format_result::success);
+    //    CHECK(format_to(buffer, "{} {:4d", "abc", 9) == up::format_result::malformed_input);
+    //    CHECK(format_to(buffer, "{0} {1}", "abc", 9) == up::format_result::success);
+    //    CHECK(format_to(buffer, "{0} {1} {5}", "abc", 9, 12.57) == up::format_result::out_of_range);
+    //}
 }

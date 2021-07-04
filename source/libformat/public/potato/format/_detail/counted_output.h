@@ -25,6 +25,8 @@ namespace up {
             }
         }
 
+        constexpr OutputT& current() noexcept { return _output; }
+
     private:
         OutputT& _output;
         size_t _limit = 0;

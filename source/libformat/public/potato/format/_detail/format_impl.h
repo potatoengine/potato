@@ -3,7 +3,6 @@
 #pragma once
 
 #include "format_arg.h"
-#include "format_result.h"
 #include "format_write.h"
 #include "parse_unsigned.h"
 
@@ -22,7 +21,6 @@ namespace up::_detail {
     };
 
     struct format_impl_inner_result {
-        format_result result;
         int index = 0;
         string_view spec_string;
     };
@@ -38,7 +36,7 @@ namespace up::_detail {
 
         // if we hit the end of the string, we have an incomplete format
         if (iter == end) {
-            return {format_result::malformed_input};
+            return {next_index, {}};
         }
 
         string_view spec_string = {};
@@ -55,16 +53,11 @@ namespace up::_detail {
             spec_string = {spec_begin, iter};
         }
 
-        // after the index/options, we expect an end to the format marker
-        if (iter == end || *iter != '}') {
-            return {format_result::malformed_input};
-        }
-
-        return {format_result::success, index, spec_string};
+        return {index, spec_string};
     }
 
     template <typename OutputT>
-    constexpr format_result format_impl(format_context<OutputT>&& ctx) {
+    constexpr OutputT& format_impl(format_context<OutputT>&& ctx) {
         char const* begin = ctx.input;
 
         while (ctx.input != ctx.end) {
@@ -82,7 +75,7 @@ namespace up::_detail {
 
             // if we hit the end of the input, we have an incomplete format, and nothing else we can do
             if (ctx.input == ctx.end) {
-                return format_result::malformed_input;
+                return ctx.out;
             }
 
             // if we just have another { then take it as a literal character by starting our next begin here,
@@ -92,14 +85,18 @@ namespace up::_detail {
                 continue;
             }
 
-            auto const [result, index, spec_string] = format_impl_inner(ctx.input, ctx.end, ctx.next);
-            if (result != format_result::success) {
-                return result;
+            // after the index/options, we expect an end to the format marker
+            auto const [index, spec_string] = format_impl_inner(ctx.input, ctx.end, ctx.next);
+            if (ctx.input == ctx.end) {
+                return ctx.out;
+            }
+            if (*ctx.input != '}') {
+                begin = ctx.input++;
+                continue;
             }
 
-            if (format_result const arg_result = ctx.args.format_into(ctx.out, index, spec_string);
-                arg_result != format_result::success) {
-                return arg_result;
+            if (ctx.args.is_valid(index)) {
+                ctx.args.format_into(ctx.out, index, spec_string);
             }
 
             // the remaining text begins with the next character following the format directive's end
@@ -114,7 +111,7 @@ namespace up::_detail {
             format_write(ctx.out, {begin, ctx.input});
         }
 
-        return format_result::success;
+        return ctx.out;
     }
 
 } // namespace up::_detail

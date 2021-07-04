@@ -63,7 +63,6 @@ namespace up {
 
     template <>
     struct formatter<UUID> {
-        constexpr format_result parse(string_view) noexcept { return format_result::success; }
         template <typename OutputT>
         constexpr void format(OutputT& out, UUID const& uuid) {
             // format 9554084e-4100-4098-b470-2125f5eed133
