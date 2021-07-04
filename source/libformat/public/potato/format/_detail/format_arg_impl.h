@@ -3,7 +3,7 @@
 #pragma once
 
 #include "formatter_float.h"
-#include "write_integer.h"
+#include "formatter_int.h"
 #include "write_string.h"
 
 #include <cinttypes>
@@ -16,16 +16,16 @@ constexpr void up::format_arg::format_into(OutputT& output, string_view spec_str
             _detail::write_char(output, _value._char, spec_string);
             break;
         case t::t_int:
-            _detail::write_integer(output, _value._int, spec_string);
+            _detail::format_value_to(output, _value._int, spec_string);
             break;
         case t::t_unsigned:
-            _detail::write_integer(output, _value._unsigned, spec_string);
+            _detail::format_value_to(output, _value._unsigned, spec_string);
             break;
         case t::t_longlong:
-            _detail::write_integer(output, _value._longlong, spec_string);
+            _detail::format_value_to(output, _value._longlong, spec_string);
             break;
         case t::t_ulonglong:
-            _detail::write_integer(output, _value._ulonglong, spec_string);
+            _detail::format_value_to(output, _value._ulonglong, spec_string);
             break;
         case t::t_float:
             _detail::format_value_to(output, _value._float, spec_string);
@@ -43,7 +43,7 @@ constexpr void up::format_arg::format_into(OutputT& output, string_view spec_str
             _detail::format_value_to(output, _value._stringview, spec_string);
             break;
         case t::t_voidptr:
-            _detail::write_integer(output, reinterpret_cast<std::uintptr_t>(_value._voidptr), spec_string);
+            _detail::format_value_to(output, reinterpret_cast<std::uintptr_t>(_value._voidptr), spec_string);
             break;
         case t::t_custom:
             _value._custom.thunk(&output, _value._custom.value, spec_string);
