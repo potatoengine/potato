@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "format_spec.h"
 #include "format_write.h"
+#include "formatter.h"
 
 #include "potato/format/format.h"
 #include "potato/spud/ascii.h"

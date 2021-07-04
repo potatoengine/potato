@@ -77,28 +77,6 @@ namespace up {
         };
     } // namespace _detail
 
-    enum class format_arg_type {
-        unknown,
-        char_t,
-        signed_char,
-        unsigned_char,
-        signed_int,
-        unsigned_int,
-        signed_short_int,
-        unsigned_short_int,
-        signed_long_int,
-        unsigned_long_int,
-        signed_long_long_int,
-        unsigned_long_long_int,
-        single_float,
-        double_float,
-        boolean,
-        char_string,
-        null_pointer,
-        void_pointer,
-        custom
-    };
-
     /// Abstraction for a single formattable value
     class format_arg {
     public:
@@ -121,18 +99,20 @@ namespace up {
     class format_args {
     public:
         /*implicit*/ format_args(std::initializer_list<format_arg> args) noexcept
-            : args(args.begin())
-            , argc(args.size()) {}
+            : _args(args.begin())
+            , _count(args.size()) {}
 
-        constexpr bool is_valid(int index) const noexcept { return index >= 0 && index < argc; }
-
-        template <typename OutputT>
-        constexpr void format_into(OutputT&& output, int index, string_view spec) {
-            args[index].format_into(output, spec);
+        constexpr format_arg get(int index) const noexcept {
+            format_arg result;
+            if (index >= 0 && index < _count) {
+                result = _args[index];
+            }
+            return result;
         }
 
-        format_arg const* args = nullptr;
-        size_t argc = 0;
+    private:
+        format_arg const* _args = nullptr;
+        size_t _count = 0;
     };
 
     namespace _detail {

@@ -45,8 +45,16 @@ namespace up::_detail {
         if (*iter == ':') {
             ++iter; // eat separator
             char const* const spec_begin = iter;
+            unsigned nested = 1;
 
-            while (iter != end && *iter != '}') {
+            while (iter != end && nested != 0) {
+                if (*iter == '}') {
+                    --nested;
+                }
+                else if (*iter == '{') {
+                    ++nested;
+                }
+
                 ++iter;
             }
 
@@ -85,8 +93,10 @@ namespace up::_detail {
                 continue;
             }
 
-            // after the index/options, we expect an end to the format marker
+            // consume the format control
             auto const [index, spec_string] = format_impl_inner(ctx.input, ctx.end, ctx.next);
+
+            // validate that we successfully parsed the format controls
             if (ctx.input == ctx.end) {
                 return ctx.out;
             }
@@ -95,9 +105,9 @@ namespace up::_detail {
                 continue;
             }
 
-            if (ctx.args.is_valid(index)) {
-                ctx.args.format_into(ctx.out, index, spec_string);
-            }
+            // format the value
+            auto const arg = ctx.args.get(index);
+            arg.format_into(ctx.out, spec_string);
 
             // the remaining text begins with the next character following the format directive's end
             begin = ++ctx.input;

@@ -4,7 +4,7 @@
 
 #include "formatter_float.h"
 #include "formatter_int.h"
-#include "write_string.h"
+#include "formatter_string.h"
 
 #include <cinttypes>
 
@@ -13,7 +13,7 @@ constexpr void up::format_arg::format_into(OutputT& output, string_view spec_str
     using t = _detail::format_value::types;
     switch (_value.type) {
         case t::t_char:
-            _detail::write_char(output, _value._char, spec_string);
+            _detail::format_value_to(output, _value._char, spec_string);
             break;
         case t::t_int:
             _detail::format_value_to(output, _value._int, spec_string);
@@ -34,10 +34,10 @@ constexpr void up::format_arg::format_into(OutputT& output, string_view spec_str
             _detail::format_value_to(output, _value._double, spec_string);
             break;
         case t::t_bool:
-            _detail::write_string(output, _value._bool ? "true"_sv : "false"_sv, spec_string);
+            _detail::format_value_to(output, _value._bool ? "true"_sv : "false"_sv, spec_string);
             break;
         case t::t_cstring:
-            _detail::write_string(output, string_view(_value._cstring), spec_string);
+            _detail::format_value_to(output, string_view(_value._cstring), spec_string);
             break;
         case t::t_stringview:
             _detail::format_value_to(output, _value._stringview, spec_string);
