@@ -12,7 +12,7 @@
 
 namespace up::_detail {
     template <typename OutputT>
-    struct format_context {
+    struct format_impl_context {
         OutputT& out;
         char const* input = nullptr;
         char const* end = nullptr;
@@ -67,7 +67,7 @@ namespace up::_detail {
     }
 
     template <typename OutputT>
-    constexpr OutputT& format_impl(format_context<OutputT>&& ctx) {
+    constexpr OutputT& format_impl(format_impl_context<OutputT>&& ctx) {
         char const* begin = ctx.input;
 
         while (ctx.input != ctx.end) {

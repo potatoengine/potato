@@ -9,16 +9,28 @@ namespace up {
     /// Generic formatter
     template <typename T>
     struct formatter {
-        // constexpr char const* parse(string_view) noexcept;
+        // constexpr char const* parse(format_parse_context& ctx) noexcept;
 
         // template <typename OutputT>
         // constexpr void format(OutputT& out, T const& value);
     };
 
+    /// Formatter parse context
+    class format_parse_context {
+    public:
+        constexpr explicit format_parse_context(string_view spec) noexcept : _spec(spec) {}
+
+        constexpr char const* begin() const noexcept { return _spec.begin(); }
+        constexpr char const* end() const noexcept { return _spec.end(); }
+
+    private:
+        string_view _spec;
+    };
+
     /// Formatter for void types
     template <>
     struct formatter<void> {
-        constexpr char const* parse(string_view spec) noexcept { return spec.end(); }
+        constexpr char const* parse(format_parse_context& ctx) noexcept { return ctx.begin(); }
 
         template <typename OutputT, typename ValueT>
         constexpr void format(OutputT&, ValueT const&) {}

@@ -102,10 +102,14 @@ TEST_CASE("potato.format.format", "[potato][format]") {
     }
 
     SECTION("strings") {
+        char const s[] = "array";
+
         CHECK(format_as<std::string>("{}", "test") == "test");
         CHECK(format_as<std::string>("{}", std::string("test")) == "test");
         CHECK(format_as<std::string>("{}", std::string_view("test")) == "test");
         CHECK(format_as<std::string>("{}", up::string_view("test")) == "test");
+
+        CHECK(format_as<std::string>("{}", s) == "array");
 
         CHECK(format_as<std::string>("{}{}{}", up::string_view("ab"), std::string("cd"), "ef") == "abcdef");
 

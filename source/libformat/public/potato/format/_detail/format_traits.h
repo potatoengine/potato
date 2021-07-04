@@ -9,12 +9,6 @@
 
 namespace up::_detail {
     template <typename T>
-    using decay_array_t = std::conditional_t<std::is_array_v<T>, std::remove_extent_t<T> const*, T>;
-
-    template <typename T>
-    using formattable_t = decay_array_t<std::remove_reference_t<T>>;
-
-    template <typename T>
     constexpr bool is_native_formattable_v =
         std::is_integral_v<T> || std::is_floating_point_v<T> || std::is_pointer_v<T> || std::is_enum_v<T> ||
         std::is_convertible_v<T, char const*> || std::is_convertible_v<T, string_view>;

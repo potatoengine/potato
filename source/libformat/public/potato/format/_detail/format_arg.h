@@ -5,6 +5,7 @@
 #include "format_traits.h"
 #include "formatter.h"
 
+#include "potato/spud/concepts.h"
 #include "potato/spud/string_view.h"
 
 #include <cinttypes>
@@ -139,16 +140,33 @@ namespace up {
         UP_FORMAT_MAP_TYPE(std::nullptr_t, void const*);
 #undef UP_FORMAT_MAP_TYPE
 
+        template <convertible_to<string_view> T>
+        struct map_type<T> {
+            using type = string_view;
+        };
+
+        template <typename T>
+        struct map_type<T*> {
+            using type = void const*;
+        };
+
+        template <enumeration T>
+        struct map_type<T> {
+            using type = std::underlying_type_t<T>;
+        };
+
         template <typename FormatterT>
-        concept has_formatter_parse = requires(FormatterT& formatter) {
-            formatter.parse(string_view{});
+        concept has_formatter_parse = requires(FormatterT& formatter, format_parse_context& ctx) {
+            { formatter.parse(ctx) }
+            ->std::convertible_to<decltype(ctx.begin())>;
         };
 
         template <typename OutputT, typename T>
         constexpr void format_value_to(OutputT& output, T const& value, string_view spec) {
             formatter<T> fmt;
             if constexpr (has_formatter_parse<formatter<T>>) {
-                char const* const parsed = fmt.parse(spec);
+                format_parse_context ctx(spec);
+                char const* const parsed = fmt.parse(ctx);
                 if (parsed != spec.end()) {
                     return;
                 }
@@ -167,13 +185,6 @@ namespace up {
     constexpr format_arg make_format_arg(T const& value) noexcept {
         if constexpr (has_formatter_v<T>) {
             return format_arg(&_detail::format_value_thunk<remove_cvref_t<OutputT>, T>, &value);
-        }
-        else if constexpr (std::is_convertible_v<T, up::string_view>) {
-            return format_arg(string_view(value));
-        }
-        else if constexpr (std::is_enum_v<T>) {
-            using value_type = typename _detail::map_type<std::underlying_type_t<T>>::type;
-            return format_arg(static_cast<value_type>(value));
         }
         else {
             using value_type = typename _detail::map_type<remove_cvref_t<T>>::type;

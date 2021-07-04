@@ -25,7 +25,7 @@ namespace up {
     template <typename OutputT>
     constexpr decltype(auto) vformat_to(OutputT&& output, string_view format_str, format_args&& args) {
         return _detail::format_impl(
-            _detail::format_context<OutputT>{output, format_str.begin(), format_str.end(), args});
+            _detail::format_impl_context<OutputT>{output, format_str.begin(), format_str.end(), args});
     }
 
     /// Write the string format using the given arguments into a buffer.
@@ -35,10 +35,7 @@ namespace up {
     /// @returns a result code indicating any errors.
     template <typename OutputT, formattable... Args>
     constexpr decltype(auto) format_to(OutputT&& output, string_view format_str, Args const&... args) {
-        return vformat_to(
-            output,
-            format_str,
-            {make_format_arg<std::remove_reference_t<OutputT>, _detail::formattable_t<Args>>(args)...});
+        return vformat_to(output, format_str, {make_format_arg<std::remove_reference_t<OutputT>, Args>(args)...});
     }
 
     /// Result type of format_to_n
@@ -73,7 +70,7 @@ namespace up {
     /// @returns a result code indicating any errors.
     template <size_t N, formattable... Args>
     constexpr char* format_to(char (&buffer)[N], string_view format_str, Args const&... args) {
-        char* const end = format_to_n(static_cast<char*>(buffer), N - 1 /*NUL*/, format_str, args...);
+        auto const [end, _] = format_to_n(static_cast<char*>(buffer), N - 1 /*NUL*/, format_str, args...);
         *end = '\0';
         return end;
     }
