@@ -3,8 +3,8 @@
 #pragma once
 
 #include "format_arg.h"
+#include "format_parse_nonnegative.h"
 #include "format_write.h"
-#include "parse_unsigned.h"
 
 #include "potato/spud/string_view.h"
 
@@ -51,7 +51,7 @@ namespace up::_detail {
 
             // determine argument index
             int index = ctx.next;
-            ctx.input = parse_unsigned(ctx.input, ctx.end, index);
+            ctx.input = format_parse_nonnegative(ctx.input, ctx.end, index);
 
             // extract formatter specification/arguments
             if (ctx.input != ctx.end && *ctx.input == ':') {

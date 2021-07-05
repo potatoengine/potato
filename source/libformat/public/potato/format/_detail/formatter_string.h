@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include "format_parse_nonnegative.h"
 #include "format_write.h"
 #include "formatter.h"
-#include "parse_unsigned.h"
 
 namespace up {
     template <>
@@ -25,7 +25,7 @@ namespace up {
                 left_align = true;
             }
 
-            in = _detail::parse_unsigned(in, end, width);
+            in = format_parse_nonnegative(in, end, width);
 
             return in;
         }

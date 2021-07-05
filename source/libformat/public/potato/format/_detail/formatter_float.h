@@ -9,8 +9,8 @@
 namespace up {
     template <>
     struct formatter<double> {
-        unsigned width = 0u;
-        unsigned precision = ~0u;
+        int width = 0;
+        int precision = -1;
         bool leading_zeroes = false;
         char format_type = 'f';
 
@@ -24,11 +24,11 @@ namespace up {
             }
 
             if (in != end) {
-                in = _detail::parse_unsigned(in, end, width);
+                in = format_parse_nonnegative(in, end, width);
             }
 
             if (in != end && *in == '.') {
-                in = _detail::parse_unsigned(++in, end, precision);
+                in = format_parse_nonnegative(++in, end, precision);
             }
 
             if (in != end) {
@@ -69,7 +69,8 @@ namespace up {
                 char const fmt_buf[] = {'%', '*', '.', '*', format_type, '\0'};
                 return std::snprintf(buf, buf_size, fmt_buf, width, precision, value);
             }
-            else {
+
+            {
                 char const fmt_buf[] = {'%', '0', '*', '.', '*', format_type, '\0'};
                 return std::snprintf(buf, buf_size, fmt_buf, width, precision, value);
             }

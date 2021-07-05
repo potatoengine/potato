@@ -17,7 +17,7 @@
 namespace up::_detail {
     template <typename IntT>
     struct int_formatter {
-        unsigned width = 0u;
+        int width = -1;
         int base = 10;
         bool leading_zeroes = false;
         bool uppercase = false;
@@ -36,7 +36,7 @@ namespace up::_detail {
             }
 
             if (in != end) {
-                in = parse_unsigned(in, end, width);
+                in = format_parse_nonnegative(in, end, width);
             }
 
             if (in != end) {
@@ -91,7 +91,7 @@ namespace up::_detail {
                 }
             }
 
-            if (width > 0U) {
+            if (width >= 0U) {
                 auto const written_width = result.ptr - buffer;
                 auto const required_padding = width > written_width ? width - written_width : 0;
                 if (leading_zeroes) {

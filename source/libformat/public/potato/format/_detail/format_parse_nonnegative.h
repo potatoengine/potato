@@ -2,10 +2,9 @@
 
 #pragma once
 
-namespace up::_detail {
-    // std::from_chars is not (yet) constexpr
-    template <typename T>
-    constexpr char const* parse_unsigned(char const* start, char const* end, T& result) noexcept {
+namespace up {
+    constexpr char const* format_parse_nonnegative(char const* start, char const* end, int& result) noexcept {
+        // std::from_chars is not (yet) constexpr
         result = 0;
         while (start != end && *start >= '0' && *start <= '9') {
             result *= 10;
@@ -14,4 +13,4 @@ namespace up::_detail {
         }
         return start;
     }
-} // namespace up::_detail
+} // namespace up
