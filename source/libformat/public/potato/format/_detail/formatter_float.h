@@ -49,8 +49,8 @@ namespace up {
             return in;
         }
 
-        template <typename OutputT>
-        void format(OutputT& output, double value) noexcept(is_format_write_noexcept<OutputT>) {
+        template <typename ContextT>
+        void format(double value, ContextT& ctx) {
             constexpr std::size_t buf_size = 1078;
             char buf[buf_size] = {
                 0,
@@ -62,7 +62,7 @@ namespace up {
                 if (length > buf_size) {
                     length = buf_size;
                 }
-                format_write_n(output, buf, length);
+                format_write_n(ctx.out(), buf, length);
             }
         }
 

@@ -29,8 +29,7 @@ namespace up {
     /// @returns a result code indicating any errors.
     template <typename OutputT>
     constexpr decltype(auto) vformat_to(OutputT&& output, string_view format_str, format_args&& args) {
-        return _detail::format_impl(
-            _detail::format_impl_context<OutputT>{output, format_str.begin(), format_str.end(), args});
+        return _detail::format_impl(output, format_str.begin(), format_str.end(), args);
     }
 
     /// Write the string format using the given arguments into a buffer.
@@ -62,8 +61,7 @@ namespace up {
         size_t count,
         string_view format_str,
         Args const&... args) {
-        using CountedT = counted_output<std::remove_reference_t<OutputT>>;
-        CountedT counted(output, count);
+        counted_output<std::remove_reference_t<OutputT>> counted(output, count);
         format_to(counted, format_str, args...);
         return {counted.current(), counted.count()};
     }

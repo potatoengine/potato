@@ -150,7 +150,8 @@ namespace up {
         constexpr void format_value_to(OutputT& output, T const& value, format_parse_context& ctx) {
             formatter<T> fmt;
             ctx.advance_to(fmt.parse(ctx));
-            fmt.format(output, value);
+            format_format_context fctx(output);
+            fmt.format(value, fctx);
         }
 
         template <typename OutputT, typename T>

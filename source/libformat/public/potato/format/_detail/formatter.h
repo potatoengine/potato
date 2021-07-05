@@ -33,22 +33,37 @@ namespace up {
         char const* _end = nullptr;
     };
 
+    /// Formatter format context
+    template <typename OutputT>
+    class format_format_context {
+    public:
+        constexpr explicit format_format_context(OutputT& output) noexcept : _output(output) {}
+
+        constexpr OutputT& out() noexcept { return _output; }
+
+    private:
+        OutputT& _output;
+    };
+
     /// Formatter for void types
     template <>
     struct formatter<void> {
         constexpr char const* parse(format_parse_context& ctx) noexcept { return ctx.begin(); }
 
-        template <typename OutputT, typename ValueT>
-        constexpr void format(OutputT&, ValueT const&) {}
+        template <typename ContextT, typename ValueT>
+        constexpr void format(ValueT const&, ContextT&) {}
     };
 
     /// Concept to determine if a formatter accepts a given value type
     template <typename FormatterT, typename ValueT>
-    concept formatter_for =
-        requires(char* output, FormatterT& formatter, format_parse_context& ctx, ValueT const& value) {
-        { formatter.parse(ctx) }
-        ->convertible_to<decltype(ctx.begin())>;
-        formatter.format(output, value);
+    concept formatter_for = requires(
+        FormatterT& formatter,
+        format_parse_context& pctx,
+        ValueT const& value,
+        format_format_context<char*>& fctx) {
+        { formatter.parse(pctx) }
+        ->convertible_to<decltype(pctx.begin())>;
+        formatter.format(value, fctx);
     };
 
     /// Trait to determine if a formatter for a given value exist

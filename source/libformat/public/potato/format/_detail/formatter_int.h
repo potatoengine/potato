@@ -64,50 +64,40 @@ namespace up::_detail {
             return in;
         }
 
-        // GCC 11.1 seems to spuriously emit this error in the uppercase loop
-#if UP_COMPILER_GCC
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wstringop-overflow"
-#endif
-
-        template <typename OutputT>
-        void format(OutputT& output, IntT value) noexcept(is_format_write_noexcept<OutputT>) {
-            constexpr auto max_hex_chars = sizeof(value) * CHAR_BIT + 1 /*negative*/;
-            constexpr auto max_dec_chars = std::numeric_limits<IntT>::digits10 + 2 /*overflow digit, negative*/;
-            constexpr auto max_bin_chars = std::numeric_limits<IntT>::digits + 1 /*negative*/;
-            constexpr auto max_buffer = 1 /*NUL*/ + (max_hex_chars | max_dec_chars | max_bin_chars);
-
-            char buffer[max_buffer] = {
+        template <typename ContextT>
+        void format(IntT value, ContextT& ctx) {
+            constexpr auto buffer_size = sizeof(value) * CHAR_BIT + 1 /*negative*/;
+            char buffer[buffer_size] = {
                 0,
             };
-            auto const result = std::to_chars(buffer, buffer + sizeof(buffer), value, base);
+
+            auto const result = std::to_chars(buffer, buffer + buffer_size, value, base);
             if (result.ec != std::errc()) {
                 return;
             }
 
+            auto const length = result.ptr - buffer;
+
             if (uppercase) {
-                for (char* c = buffer; c != result.ptr; ++c) {
-                    *c = ascii::toUppercase(*c);
+                for (char *c = buffer, *const end = buffer + length; c != end; ++c) {
+                    if (*c >= 'a' && *c <= 'z') {
+                        *c = *c - 'a' + 'A';
+                    }
                 }
             }
 
-            if (width >= 0U) {
-                auto const written_width = result.ptr - buffer;
-                auto const required_padding = width > written_width ? width - written_width : 0;
+            if (width >= 0 && static_cast<decltype(length)>(width) > length) {
+                auto const padding = static_cast<decltype(length)>(width) - length;
                 if (leading_zeroes) {
-                    format_pad_n<'0'>(output, required_padding);
+                    format_pad_n<'0'>(ctx.out(), padding);
                 }
                 else {
-                    format_pad_n<' '>(output, required_padding);
+                    format_pad_n<' '>(ctx.out(), padding);
                 }
             }
 
-            format_write_n(output, buffer, result.ptr - buffer);
+            format_write_n(ctx.out(), buffer, result.ptr - buffer);
         }
-
-#if UP_COMPILER_GCC
-#    pragma GCC diagnostic pop
-#endif
     };
 } // namespace up::_detail
 

@@ -13,14 +13,14 @@ class custom_type {};
 namespace up {
     template <>
     struct formatter<custom_enum> : formatter<string_view> {
-        template <typename OutputT>
-        void format(OutputT& output, custom_enum value) {
+        template <typename ContextT>
+        void format(custom_enum value, ContextT& ctx) {
             switch (value) {
                 case custom_enum::foo:
-                    formatter<string_view>::format(output, "foo");
+                    formatter<string_view>::format("foo", ctx);
                     break;
                 case custom_enum::bar:
-                    formatter<string_view>::format(output, "bar");
+                    formatter<string_view>::format("bar", ctx);
                     break;
             }
         }
@@ -28,9 +28,9 @@ namespace up {
 
     template <>
     struct formatter<custom_type> : formatter<string_view> {
-        template <typename OutputT>
-        void format(OutputT& output, custom_type) {
-            formatter<string_view>::format(output, "custom");
+        template <typename ContextT>
+        void format(custom_type, ContextT& ctx) {
+            formatter<string_view>::format("custom", ctx);
         }
     };
 } // namespace up
