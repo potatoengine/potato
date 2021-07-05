@@ -32,7 +32,7 @@ namespace up::_detail {
 
             // write out the string so far, since we don't write characters immediately
             if (ctx.input != begin) {
-                format_write(ctx.out, {begin, ctx.input});
+                format_write_n(ctx.out, begin, ctx.input - begin);
             }
 
             ++ctx.input; // swallow the {
@@ -78,7 +78,7 @@ namespace up::_detail {
 
         // write out tail end of format string
         if (ctx.input != begin) {
-            format_write(ctx.out, {begin, ctx.input});
+            format_write_n(ctx.out, begin, ctx.input - begin);
         }
 
         return ctx.out;

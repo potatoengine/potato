@@ -34,14 +34,17 @@ namespace up {
         constexpr void format(OutputT& output, string_view value) noexcept(is_format_write_noexcept<OutputT>) {
             auto const size = value.size();
             if (width < 0 || size >= static_cast<size_t>(width)) {
-                up::format_write(output, value);
+                up::format_write_n(output, value.data(), size);
             }
             else {
+                auto const padding = static_cast<size_t>(width) - size;
                 if (left_align) {
-                    up::format_write(output, value);
+                    up::format_write_n(output, value.data(), size);
+                    up::format_pad_n<' '>(output, padding);
                 }
                 else {
-                    up::format_write(output, value);
+                    up::format_pad_n<' '>(output, padding);
+                    up::format_write_n(output, value.data(), size);
                 }
             }
         }
@@ -54,7 +57,7 @@ namespace up {
     struct formatter<char> : formatter<void> {
         template <typename OutputT>
         constexpr void format(OutputT& out, char ch) noexcept(is_format_write_noexcept<OutputT>) {
-            up::format_write(out, {&ch, 1});
+            up::format_write_n(out, &ch, 1);
         }
     };
 

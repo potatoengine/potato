@@ -15,22 +15,6 @@
 #include <limits>
 
 namespace up::_detail {
-    template <char PadChar, typename OutputT>
-    constexpr void write_padding(OutputT& out, size_t width) noexcept(is_format_write_noexcept<OutputT>) {
-        constexpr auto pad_run_count = 8;
-        constexpr char padding[pad_run_count] =
-            {PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar, PadChar};
-
-        while (width > pad_run_count) {
-            format_write(out, {padding, pad_run_count});
-            width -= pad_run_count;
-        }
-
-        if (width > 0) {
-            format_write(out, {padding, width});
-        }
-    }
-
     template <typename IntT>
     struct int_formatter {
         unsigned width = 0u;
@@ -111,14 +95,14 @@ namespace up::_detail {
                 auto const written_width = result.ptr - buffer;
                 auto const required_padding = width > written_width ? width - written_width : 0;
                 if (leading_zeroes) {
-                    write_padding<'0'>(output, required_padding);
+                    format_pad_n<'0'>(output, required_padding);
                 }
                 else {
-                    write_padding<' '>(output, required_padding);
+                    format_pad_n<' '>(output, required_padding);
                 }
             }
 
-            format_write(output, {buffer, result.ptr});
+            format_write_n(output, buffer, result.ptr - buffer);
         }
 
 #if UP_COMPILER_GCC

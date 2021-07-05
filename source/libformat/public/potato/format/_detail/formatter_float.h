@@ -60,7 +60,7 @@ namespace up {
                 if (length > buf_size) {
                     length = buf_size;
                 }
-                format_write(output, {buf, length});
+                format_write_n(output, buf, length);
             }
         }
 

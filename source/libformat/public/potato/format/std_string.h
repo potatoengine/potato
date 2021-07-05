@@ -9,20 +9,20 @@
 
 namespace up {
     template <typename StringCharT, typename TraitsT, typename AllocatorT>
-    struct formatter<std::basic_string<StringCharT, TraitsT, AllocatorT>> : formatter<void> {
+    struct formatter<std::basic_string<StringCharT, TraitsT, AllocatorT>> : formatter<string_view> {
         template <typename OutputT>
         void format(OutputT& output, std::basic_string<StringCharT, TraitsT, AllocatorT> const& value) noexcept(
             is_format_write_noexcept<OutputT>) {
-            format_write(output, {value.data(), value.size()});
+            formatter<string_view>::format(output, {value.data(), value.size()});
         }
     };
 
     template <typename StringCharT, typename TraitsT>
-    struct formatter<std::basic_string_view<StringCharT, TraitsT>> : formatter<void> {
+    struct formatter<std::basic_string_view<StringCharT, TraitsT>> : formatter<string_view> {
         template <typename OutputT>
         void format(OutputT& output, std::basic_string_view<StringCharT, TraitsT> const& value) noexcept(
             is_format_write_noexcept<OutputT>) {
-            format_write(output, {value.data(), value.size()});
+            formatter<string_view>::format(output, {value.data(), value.size()});
         }
     };
 } // namespace up

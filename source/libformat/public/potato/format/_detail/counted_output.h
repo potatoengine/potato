@@ -14,17 +14,15 @@ namespace up {
     public:
         counted_output(OutputT& output, size_t limit) noexcept : _output(output), _limit(limit) {}
 
-        constexpr void append(string_view text) noexcept(is_format_write_noexcept<OutputT>) {
-            auto const size = text.size();
-
+        constexpr void append(char const* str, size_t size) noexcept(is_format_write_noexcept<OutputT>) {
             _count += size;
 
             if (size <= _limit) {
-                format_write(_output, text);
+                format_write_n(_output, str, size);
                 _limit -= size;
             }
             else {
-                format_write(_output, text.first(_limit));
+                format_write_n(_output, str, _limit);
                 _limit = 0;
             }
         }
