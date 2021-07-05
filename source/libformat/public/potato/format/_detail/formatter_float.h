@@ -14,9 +14,9 @@ namespace up {
         bool leading_zeroes = false;
         char format_type = 'f';
 
-        constexpr char const* parse(string_view spec) noexcept {
-            char const* in = spec.begin();
-            char const* const end = spec.end();
+        constexpr char const* parse(format_parse_context& ctx) noexcept {
+            char const* in = ctx.begin();
+            char const* const end = ctx.end();
 
             if (in != end && *in == '0') {
                 ++in;

@@ -20,52 +20,6 @@ namespace up::_detail {
         int next = 0;
     };
 
-    struct format_impl_inner_result {
-        int index = 0;
-        string_view spec_string;
-    };
-
-    constexpr format_impl_inner_result format_impl_inner(
-        char const*& iter,
-        char const* const end,
-        int next_index) noexcept {
-        // determine which argument we're going to format
-        int index = next_index;
-        char const* const start = iter;
-        iter = parse_unsigned(start, end, index);
-
-        // if we hit the end of the string, we have an incomplete format
-        if (iter == end) {
-            return {next_index, {}};
-        }
-
-        string_view spec_string = {};
-
-        // if a : follows the number, we have some formatting controls
-        if (*iter == ':') {
-            ++iter; // eat separator
-            char const* const spec_begin = iter;
-            unsigned nested = 1;
-
-            while (iter != end) {
-                if (*iter == '}') {
-                    if (--nested == 0) {
-                        break;
-                    }
-                }
-                else if (*iter == '{') {
-                    ++nested;
-                }
-
-                ++iter;
-            }
-
-            spec_string = {spec_begin, iter};
-        }
-
-        return {index, spec_string};
-    }
-
     template <typename OutputT>
     constexpr OutputT& format_impl(format_impl_context<OutputT>&& ctx) {
         char const* begin = ctx.input;
@@ -95,24 +49,28 @@ namespace up::_detail {
                 continue;
             }
 
-            // consume the format control
-            auto const [index, spec_string] = format_impl_inner(ctx.input, ctx.end, ctx.next);
+            // determine argument index
+            int index = ctx.next;
+            ctx.input = parse_unsigned(ctx.input, ctx.end, index);
 
-            // validate that we successfully parsed the format controls
-            if (ctx.input == ctx.end) {
-                return ctx.out;
-            }
-            if (*ctx.input != '}') {
-                begin = ctx.input++;
-                continue;
+            // extract formatter specification/arguments
+            if (ctx.input != ctx.end && *ctx.input == ':') {
+                ++ctx.input;
             }
 
             // format the value
+            format_parse_context pctx(ctx.input, ctx.end);
             auto const arg = ctx.args.get(index);
-            arg.format_into(ctx.out, spec_string);
+            arg.format_into(ctx.out, pctx);
 
-            // the remaining text begins with the next character following the format directive's end
-            begin = ++ctx.input;
+            // consume parse specification, and any trailing }
+            ctx.input = pctx.begin();
+            if (ctx.input != ctx.end && *ctx.input == '}') {
+                ++ctx.input;
+            }
+
+            // mark where the next text run will begin
+            begin = ctx.input;
 
             // if we continue to receive {} then the next index will be the next one after the last one used
             ctx.next = index + 1;

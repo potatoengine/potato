@@ -4,26 +4,54 @@
 
 #include "format_write.h"
 #include "formatter.h"
+#include "parse_unsigned.h"
 
 namespace up {
     template <>
     struct formatter<string_view> {
+        int width = -1;
+        bool left_align = false;
+
+        constexpr char const* parse(format_parse_context& ctx) noexcept {
+            char const* in = ctx.begin();
+            char const* const end = ctx.end();
+
+            if (in == end) {
+                return in;
+            }
+
+            if (*in == '-') {
+                ++in;
+                left_align = true;
+            }
+
+            in = _detail::parse_unsigned(in, end, width);
+
+            return in;
+        }
+
         template <typename OutputT>
         constexpr void format(OutputT& output, string_view value) noexcept(is_format_write_noexcept<OutputT>) {
-            up::format_write(output, value);
+            auto const size = value.size();
+            if (width < 0 || size >= static_cast<size_t>(width)) {
+                up::format_write(output, value);
+            }
+            else {
+                if (left_align) {
+                    up::format_write(output, value);
+                }
+                else {
+                    up::format_write(output, value);
+                }
+            }
         }
     };
 
     template <>
-    struct formatter<char const*> {
-        template <typename OutputT>
-        constexpr void format(OutputT& output, const char* const value) noexcept(is_format_write_noexcept<OutputT>) {
-            up::format_write(output, value);
-        }
-    };
+    struct formatter<char const*> : formatter<string_view> {};
 
     template <>
-    struct formatter<char> {
+    struct formatter<char> : formatter<void> {
         template <typename OutputT>
         constexpr void format(OutputT& out, char ch) noexcept(is_format_write_noexcept<OutputT>) {
             up::format_write(out, {&ch, 1});

@@ -62,7 +62,7 @@ namespace up {
     };
 
     template <>
-    struct formatter<UUID> {
+    struct formatter<UUID> : formatter<void> {
         template <typename OutputT>
         constexpr void format(OutputT& out, UUID const& uuid) {
             // format 9554084e-4100-4098-b470-2125f5eed133

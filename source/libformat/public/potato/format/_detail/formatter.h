@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "potato/spud/concepts.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/traits.h"
 
@@ -18,13 +19,18 @@ namespace up {
     /// Formatter parse context
     class format_parse_context {
     public:
-        constexpr explicit format_parse_context(string_view spec) noexcept : _spec(spec) {}
+        constexpr explicit format_parse_context(char const* begin, char const* end) noexcept
+            : _begin(begin)
+            , _end(end) {}
 
-        constexpr char const* begin() const noexcept { return _spec.begin(); }
-        constexpr char const* end() const noexcept { return _spec.end(); }
+        constexpr char const* begin() const noexcept { return _begin; }
+        constexpr char const* end() const noexcept { return _end; }
+
+        constexpr void advance_to(char const* ptr) noexcept { _begin = ptr; }
 
     private:
-        string_view _spec;
+        char const* _begin = nullptr;
+        char const* _end = nullptr;
     };
 
     /// Formatter for void types
@@ -38,7 +44,10 @@ namespace up {
 
     /// Concept to determine if a formatter accepts a given value type
     template <typename FormatterT, typename ValueT>
-    concept formatter_for = requires(char* output, FormatterT& formatter, ValueT const& value) {
+    concept formatter_for =
+        requires(char* output, FormatterT& formatter, format_parse_context& ctx, ValueT const& value) {
+        { formatter.parse(ctx) }
+        ->convertible_to<decltype(ctx.begin())>;
         formatter.format(output, value);
     };
 

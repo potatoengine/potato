@@ -24,7 +24,7 @@ namespace up {
     /// Abstraction for a single formattable value
     class format_arg {
     public:
-        using thunk_type = void (*)(void*, void const*, up::string_view);
+        using thunk_type = void (*)(void*, void const*, format_parse_context& ctx);
 
         constexpr format_arg() noexcept {} // clang disallows =default here
         constexpr format_arg(int value) noexcept : _int(value), _type(types::t_int) {}
@@ -42,8 +42,8 @@ namespace up {
             : _custom({thunk, value})
             , _type(types::t_custom) {}
 
-        template <typename Writer>
-        constexpr void format_into(Writer& output, string_view spec_string = {}) const;
+        template <typename OutputT>
+        constexpr void format_into(OutputT& output, format_parse_context& ctx) const;
 
         constexpr int as_int() const noexcept;
 
@@ -155,29 +155,16 @@ namespace up {
             using type = std::underlying_type_t<T>;
         };
 
-        template <typename FormatterT>
-        concept has_formatter_parse = requires(FormatterT& formatter, format_parse_context& ctx) {
-            { formatter.parse(ctx) }
-            ->std::convertible_to<decltype(ctx.begin())>;
-        };
-
         template <typename OutputT, typename T>
-        constexpr void format_value_to(OutputT& output, T const& value, string_view spec) {
+        constexpr void format_value_to(OutputT& output, T const& value, format_parse_context& ctx) {
             formatter<T> fmt;
-            if constexpr (has_formatter_parse<formatter<T>>) {
-                format_parse_context ctx(spec);
-                char const* const parsed = fmt.parse(ctx);
-                if (parsed != spec.end()) {
-                    return;
-                }
-            }
-
+            ctx.advance_to(fmt.parse(ctx));
             fmt.format(output, value);
         }
 
         template <typename OutputT, typename T>
-        constexpr void format_value_thunk(void* output, void const* ptr, string_view spec) {
-            format_value_to(*static_cast<OutputT*>(output), *static_cast<T const*>(ptr), spec);
+        constexpr void format_value_thunk(void* output, void const* ptr, format_parse_context& ctx) {
+            return format_value_to(*static_cast<OutputT*>(output), *static_cast<T const*>(ptr), ctx);
         }
     } // namespace _detail
 
@@ -193,46 +180,34 @@ namespace up {
     }
 
     template <typename OutputT>
-    constexpr void format_arg::format_into(OutputT& output, string_view spec_string) const {
+    constexpr void format_arg::format_into(OutputT& output, format_parse_context& ctx) const {
         switch (_type) {
             case types::t_char:
-                _detail::format_value_to(output, _char, spec_string);
-                break;
+                return _detail::format_value_to(output, _char, ctx);
             case types::t_int:
-                _detail::format_value_to(output, _int, spec_string);
-                break;
+                return _detail::format_value_to(output, _int, ctx);
             case types::t_unsigned:
-                _detail::format_value_to(output, _unsigned, spec_string);
-                break;
+                return _detail::format_value_to(output, _unsigned, ctx);
             case types::t_longlong:
-                _detail::format_value_to(output, _longlong, spec_string);
-                break;
+                return _detail::format_value_to(output, _longlong, ctx);
             case types::t_ulonglong:
-                _detail::format_value_to(output, _ulonglong, spec_string);
-                break;
+                return _detail::format_value_to(output, _ulonglong, ctx);
             case types::t_float:
-                _detail::format_value_to(output, _float, spec_string);
-                break;
+                return _detail::format_value_to(output, _float, ctx);
             case types::t_double:
-                _detail::format_value_to(output, _double, spec_string);
-                break;
+                return _detail::format_value_to(output, _double, ctx);
             case types::t_bool:
-                _detail::format_value_to(output, _bool ? "true"_sv : "false"_sv, spec_string);
-                break;
+                return _detail::format_value_to(output, _bool ? "true"_sv : "false"_sv, ctx);
             case types::t_cstring:
-                _detail::format_value_to(output, string_view(_cstring), spec_string);
-                break;
+                return _detail::format_value_to(output, string_view(_cstring), ctx);
             case types::t_stringview:
-                _detail::format_value_to(output, _stringview, spec_string);
-                break;
+                return _detail::format_value_to(output, _stringview, ctx);
             case types::t_voidptr:
-                _detail::format_value_to(output, reinterpret_cast<std::uintptr_t>(_voidptr), spec_string);
-                break;
+                return _detail::format_value_to(output, reinterpret_cast<std::uintptr_t>(_voidptr), ctx);
             case types::t_custom:
-                _custom.thunk(&output, _custom.value, spec_string);
-                break;
+                return _custom.thunk(&output, _custom.value, ctx);
             default:
-                break;
+                return;
         }
     }
 
