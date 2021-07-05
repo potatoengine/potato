@@ -5,7 +5,6 @@
 #include "_detail/counted_output.h"
 #include "_detail/format_arg.h"
 #include "_detail/format_impl.h"
-#include "_detail/format_traits.h"
 #include "_detail/format_write.h"
 #include "_detail/formatter.h"
 #include "_detail/formatter_float.h"
@@ -17,6 +16,12 @@
 #include <type_traits>
 
 namespace up {
+    /// Concept for formattable types
+    template <typename T>
+    concept formattable = requires(T const& value) {
+        ::up::make_format_arg<char*>(value);
+    };
+
     /// Write the string format using the given arguments into a buffer.
     /// @param output The output iterator or writeable buffer that will receive the formatted text.
     /// @param format_str The primary text and formatting controls to be written.

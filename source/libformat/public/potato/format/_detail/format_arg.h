@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "format_traits.h"
 #include "formatter.h"
 
 #include "potato/spud/concepts.h"
@@ -13,13 +12,7 @@
 #include <type_traits>
 
 namespace up {
-    enum class format_arg_type;
-
     class format_arg;
-    class format_args;
-
-    template <typename Writer, typename T>
-    constexpr format_arg make_format_arg(T const& value) noexcept;
 
     /// Abstraction for a single formattable value
     class format_arg {
@@ -112,9 +105,7 @@ namespace up {
 
     namespace _detail {
         template <typename T>
-        struct map_type {
-            using type = T;
-        };
+        struct map_type {};
 #define UP_FORMAT_MAP_TYPE(x, e) \
     template <> \
     struct map_type<x> { \
@@ -168,15 +159,17 @@ namespace up {
         }
     } // namespace _detail
 
-    template <typename OutputT, formattable T>
-    constexpr format_arg make_format_arg(T const& value) noexcept {
-        if constexpr (has_formatter_v<T>) {
-            return format_arg(&_detail::format_value_thunk<remove_cvref_t<OutputT>, T>, &value);
-        }
-        else {
-            using value_type = typename _detail::map_type<remove_cvref_t<T>>::type;
-            return format_arg(static_cast<value_type>(value));
-        }
+    template <typename ValueT>
+    using format_mapped_t = typename _detail::map_type<remove_cvref_t<ValueT>>::type;
+
+    template <typename OutputT, typename ValueT>
+    requires has_formatter_v<ValueT> constexpr format_arg make_format_arg(ValueT const& value) noexcept {
+        return format_arg(&_detail::format_value_thunk<remove_cvref_t<OutputT>, ValueT>, &value);
+    }
+
+    template <typename OutputT, typename ValueT, typename = std::void_t<format_mapped_t<ValueT>>>
+    constexpr format_arg make_format_arg(ValueT const& value) noexcept {
+        return format_arg(static_cast<format_mapped_t<ValueT>>(value));
     }
 
     template <typename OutputT>
