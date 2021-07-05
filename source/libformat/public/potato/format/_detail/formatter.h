@@ -53,5 +53,5 @@ namespace up {
 
     /// Trait to determine if a formatter for a given value exist
     template <typename ValueT, typename FormatterT = formatter<remove_cvref_t<ValueT>>>
-    constexpr bool has_formatter_v = formatter_for<FormatterT, ValueT>;
+    concept formatter_enabled = formatter_for<FormatterT, ValueT>;
 } // namespace up

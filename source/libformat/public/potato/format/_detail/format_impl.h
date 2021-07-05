@@ -6,10 +6,6 @@
 #include "format_parse_nonnegative.h"
 #include "format_write.h"
 
-#include "potato/spud/string_view.h"
-
-#include <initializer_list>
-
 namespace up::_detail {
     template <typename OutputT>
     struct format_impl_context {

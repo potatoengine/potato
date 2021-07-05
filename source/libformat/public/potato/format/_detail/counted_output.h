@@ -4,9 +4,6 @@
 
 #include "format_write.h"
 
-#include "potato/spud/int_types.h"
-#include "potato/spud/string_view.h"
-
 namespace up {
     /// Counted writer
     template <typename OutputT>

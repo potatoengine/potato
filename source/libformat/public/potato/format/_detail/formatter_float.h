@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include "format_parse_nonnegative.h"
 #include "format_write.h"
+#include "formatter.h"
 
 #include <cstdio>
 

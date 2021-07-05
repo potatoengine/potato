@@ -16,7 +16,7 @@
 #include <type_traits>
 
 namespace up {
-    /// Concept for formattable types
+    /// Concept which determines whether a particular type can be formatted with vformat_to and friends.
     template <typename T>
     concept formattable = requires(T const& value) {
         ::up::make_format_arg<char*>(value);
