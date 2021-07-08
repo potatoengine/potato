@@ -12,8 +12,8 @@ namespace up {
     struct formatter {
         // constexpr char const* parse(format_parse_context& ctx) noexcept;
 
-        // template <typename OutputT>
-        // constexpr void format(OutputT& out, T const& value);
+        // template <typename ContextT>
+        // constexpr void format(T const& value, ContextT& ctx);
     };
 
     /// Formatter parse context
@@ -35,9 +35,9 @@ namespace up {
 
     /// Formatter format context
     template <typename OutputT>
-    class format_format_context {
+    class format_context {
     public:
-        constexpr explicit format_format_context(OutputT& output) noexcept : _output(output) {}
+        constexpr explicit format_context(OutputT& output) noexcept : _output(output) {}
 
         constexpr OutputT& out() noexcept { return _output; }
 
@@ -53,20 +53,4 @@ namespace up {
         template <typename ContextT, typename ValueT>
         constexpr void format(ValueT const&, ContextT&) {}
     };
-
-    /// Concept to determine if a formatter accepts a given value type
-    template <typename FormatterT, typename ValueT>
-    concept formatter_for = requires(
-        FormatterT& formatter,
-        format_parse_context& pctx,
-        ValueT const& value,
-        format_format_context<char*>& fctx) {
-        { formatter.parse(pctx) }
-        ->convertible_to<decltype(pctx.begin())>;
-        formatter.format(value, fctx);
-    };
-
-    /// Trait to determine if a formatter for a given value exist
-    template <typename ValueT, typename FormatterT = formatter<remove_cvref_t<ValueT>>>
-    concept formatter_enabled = formatter_for<FormatterT, ValueT>;
 } // namespace up

@@ -16,11 +16,7 @@ namespace up {
             char const* in = ctx.begin();
             char const* const end = ctx.end();
 
-            if (in == end) {
-                return in;
-            }
-
-            if (*in == '-') {
+            if (in != end && *in == '-') {
                 ++in;
                 left_align = true;
             }

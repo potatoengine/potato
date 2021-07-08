@@ -6,16 +6,7 @@
 #include "format_parse_nonnegative.h"
 #include "format_write.h"
 
-namespace up::_detail {
-    template <typename OutputT>
-    struct format_impl_context {
-        OutputT& out;
-        char const* input = nullptr;
-        char const* end = nullptr;
-        format_args args;
-        int next = 0;
-    };
-
+namespace up::_detail_format {
     template <typename OutputT>
     constexpr OutputT& format_impl(OutputT& out, char const* input, char const* const end, format_args args) {
         int next = 0;
@@ -48,7 +39,12 @@ namespace up::_detail {
 
             // determine argument index
             int index = next;
-            input = format_parse_nonnegative(input, end, index);
+            if (char const* const index_input = format_parse_nonnegative(input, end, index); index_input != input) {
+                input = index_input;
+            }
+            else {
+                index = next;
+            }
 
             // extract formatter specification/arguments
             if (input != end && *input == ':') {
@@ -56,12 +52,13 @@ namespace up::_detail {
             }
 
             // format the value
-            format_parse_context ctx(input, end);
+            format_parse_context pctx(input, end);
+            format_context<OutputT> fctx(out);
             auto const arg = args.get(index);
-            arg.format_into(out, ctx);
+            arg.format(pctx, fctx);
 
             // consume parse specification, and any trailing }
-            input = ctx.begin();
+            input = pctx.begin();
             if (input != end && *input == '}') {
                 ++input;
             }
@@ -81,4 +78,4 @@ namespace up::_detail {
         return out;
     }
 
-} // namespace up::_detail
+} // namespace up::_detail_format

@@ -14,7 +14,7 @@
 #include <climits>
 #include <limits>
 
-namespace up::_detail {
+namespace up::_detail_format {
     template <typename IntT>
     struct int_formatter {
         int width = -1;
@@ -25,10 +25,6 @@ namespace up::_detail {
         constexpr char const* parse(format_parse_context& ctx) noexcept {
             char const* in = ctx.begin();
             char const* const end = ctx.end();
-
-            if (in == end) {
-                return in;
-            }
 
             if (in != end && *in == '0') {
                 ++in;
@@ -99,18 +95,18 @@ namespace up::_detail {
             format_write_n(ctx.out(), buffer, result.ptr - buffer);
         }
     };
-} // namespace up::_detail
+} // namespace up::_detail_format
 
 namespace up {
     template <>
-    struct formatter<int> : _detail::int_formatter<int> {};
+    struct formatter<int> : _detail_format::int_formatter<int> {};
 
     template <>
-    struct formatter<unsigned> : _detail::int_formatter<unsigned> {};
+    struct formatter<unsigned> : _detail_format::int_formatter<unsigned> {};
 
     template <>
-    struct formatter<long long> : _detail::int_formatter<long long> {};
+    struct formatter<long long> : _detail_format::int_formatter<long long> {};
 
     template <>
-    struct formatter<unsigned long long> : _detail::int_formatter<unsigned long long> {};
+    struct formatter<unsigned long long> : _detail_format::int_formatter<unsigned long long> {};
 } // namespace up

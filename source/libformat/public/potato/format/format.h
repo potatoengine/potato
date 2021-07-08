@@ -16,12 +16,6 @@
 #include <type_traits>
 
 namespace up {
-    /// Concept which determines whether a particular type can be formatted with vformat_to and friends.
-    template <typename T>
-    concept formattable = requires(T const& value) {
-        ::up::make_format_arg<char*>(value);
-    };
-
     /// Write the string format using the given arguments into a buffer.
     /// @param output The output iterator or writeable buffer that will receive the formatted text.
     /// @param format_str The primary text and formatting controls to be written.
@@ -29,7 +23,7 @@ namespace up {
     /// @returns a result code indicating any errors.
     template <typename OutputT>
     constexpr decltype(auto) vformat_to(OutputT&& output, string_view format_str, format_args&& args) {
-        return _detail::format_impl(output, format_str.begin(), format_str.end(), args);
+        return _detail_format::format_impl(output, format_str.begin(), format_str.end(), args);
     }
 
     /// Write the string format using the given arguments into a buffer.
@@ -37,9 +31,9 @@ namespace up {
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args The arguments used by the formatting string.
     /// @returns a result code indicating any errors.
-    template <typename OutputT, formattable... Args>
+    template <typename OutputT, typename... Args>
     constexpr decltype(auto) format_to(OutputT&& output, string_view format_str, Args const&... args) {
-        return vformat_to(output, format_str, {make_format_arg<std::remove_reference_t<OutputT>, Args>(args)...});
+        return vformat_to(output, format_str, up::make_format_args<std::remove_reference_t<OutputT>>(args...));
     }
 
     /// Result type of format_to_n
@@ -55,7 +49,7 @@ namespace up {
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args The arguments used by the formatting string.
     /// @returns a format_to_n_result with the output iterator and count that would have been written.
-    template <typename OutputT, formattable... Args>
+    template <typename OutputT, typename... Args>
     constexpr format_to_n_result<OutputT> format_to_n(
         OutputT&& output,
         size_t count,
@@ -71,7 +65,7 @@ namespace up {
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args The arguments used by the formatting string.
     /// @returns a result code indicating any errors.
-    template <size_t N, formattable... Args>
+    template <size_t N, typename... Args>
     constexpr char* format_to(char (&buffer)[N], string_view format_str, Args const&... args) {
         auto const [end, _] = format_to_n(static_cast<char*>(buffer), N - 1 /*NUL*/, format_str, args...);
         *end = '\0';
@@ -82,7 +76,7 @@ namespace up {
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args The arguments used by the formatting string.
     /// @returns a formatted string.
-    template <typename ResultT, formattable... Args>
+    template <typename ResultT, typename... Args>
     constexpr ResultT format_as(string_view format_str, Args const&... args) {
         ResultT result;
         format_to(result, format_str, args...);

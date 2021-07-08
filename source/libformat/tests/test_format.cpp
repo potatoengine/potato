@@ -115,7 +115,7 @@ TEST_CASE("potato.format.format", "[potato][format]") {
 
         CHECK(format_as<std::string>(std::string("a{}c"), "b") == "abc");
 
-        CHECK(format_as<std::string>("{:-8}{:05}", "value", 42) == "value00042");
+        CHECK(format_as<std::string>("{:-8}{:05}", "value", 42) == "value   00042");
     }
 
     SECTION("booleans") {
@@ -132,7 +132,7 @@ TEST_CASE("potato.format.format", "[potato][format]") {
     }
 
     SECTION("enums") {
-        CHECK(format_as<std::string>("{:0}", standard_enum::two) == "1");
+        CHECK(format_as<std::string>("{0}", standard_enum::two) == "1");
         CHECK(format_as<std::string>("{}", custom_enum::bar) == "bar");
     }
 
