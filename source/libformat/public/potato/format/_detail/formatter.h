@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "format_context.h"
+
 #include "potato/spud/concepts.h"
 #include "potato/spud/string_view.h"
 #include "potato/spud/traits.h"
@@ -14,35 +16,6 @@ namespace up {
 
         // template <typename ContextT>
         // constexpr void format(T const& value, ContextT& ctx);
-    };
-
-    /// Formatter parse context
-    class format_parse_context {
-    public:
-        constexpr explicit format_parse_context(char const* begin, char const* end) noexcept
-            : _begin(begin)
-            , _end(end) {}
-
-        constexpr char const* begin() const noexcept { return _begin; }
-        constexpr char const* end() const noexcept { return _end; }
-
-        constexpr void advance_to(char const* ptr) noexcept { _begin = ptr; }
-
-    private:
-        char const* _begin = nullptr;
-        char const* _end = nullptr;
-    };
-
-    /// Formatter format context
-    template <typename OutputT>
-    class format_context {
-    public:
-        constexpr explicit format_context(OutputT& output) noexcept : _output(output) {}
-
-        constexpr OutputT& out() noexcept { return _output; }
-
-    private:
-        OutputT& _output;
     };
 
     /// Formatter for void types

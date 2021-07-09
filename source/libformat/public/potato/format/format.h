@@ -4,6 +4,7 @@
 
 #include "_detail/counted_output.h"
 #include "_detail/format_arg.h"
+#include "_detail/format_context.h"
 #include "_detail/format_impl.h"
 #include "_detail/format_write.h"
 #include "_detail/formatter.h"
@@ -23,7 +24,9 @@ namespace up {
     /// @returns a result code indicating any errors.
     template <typename OutputT>
     constexpr decltype(auto) vformat_to(OutputT&& output, string_view format_str, format_args&& args) {
-        return _detail_format::format_impl(output, format_str.begin(), format_str.end(), args);
+        format_context<OutputT> ctx(output);
+        _detail_format::format_impl(ctx, format_str.begin(), format_str.end(), args);
+        return ctx.out();
     }
 
     /// Write the string format using the given arguments into a buffer.
@@ -33,7 +36,7 @@ namespace up {
     /// @returns a result code indicating any errors.
     template <typename OutputT, typename... Args>
     constexpr decltype(auto) format_to(OutputT&& output, string_view format_str, Args const&... args) {
-        return vformat_to(output, format_str, up::make_format_args<std::remove_reference_t<OutputT>>(args...));
+        return vformat_to(output, format_str, up::make_format_args<format_context<OutputT>>(args...));
     }
 
     /// Result type of format_to_n

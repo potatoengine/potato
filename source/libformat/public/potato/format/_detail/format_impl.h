@@ -7,8 +7,8 @@
 #include "format_write.h"
 
 namespace up::_detail_format {
-    template <typename OutputT>
-    constexpr OutputT& format_impl(OutputT& out, char const* input, char const* const end, format_args args) {
+    template <typename ContextT>
+    constexpr void format_impl(ContextT&& ctx, char const* input, char const* const end, format_args args) {
         int next = 0;
         char const* begin = input;
 
@@ -20,14 +20,14 @@ namespace up::_detail_format {
 
             // write out the string so far, since we don't write characters immediately
             if (input != begin) {
-                format_write_n(out, begin, input - begin);
+                format_write_n(ctx.out(), begin, input - begin);
             }
 
             ++input; // swallow the {
 
             // if we hit the end of the input, we have an incomplete format, and nothing else we can do
             if (input == end) {
-                return out;
+                return;
             }
 
             // if we just have another { then take it as a literal character by starting our next begin here,
@@ -53,9 +53,8 @@ namespace up::_detail_format {
 
             // format the value
             format_parse_context pctx(input, end);
-            format_context<OutputT> fctx(out);
             auto const arg = args.get(index);
-            arg.format(pctx, fctx);
+            arg.format(pctx, ctx);
 
             // consume parse specification, and any trailing }
             input = pctx.begin();
@@ -72,10 +71,8 @@ namespace up::_detail_format {
 
         // write out tail end of format string
         if (input != begin) {
-            format_write_n(out, begin, input - begin);
+            format_write_n(ctx.out(), begin, input - begin);
         }
-
-        return out;
     }
 
 } // namespace up::_detail_format

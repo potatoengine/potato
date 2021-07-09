@@ -146,15 +146,14 @@ namespace up {
             fmt.format(value, fctx);
         };
 
-        template <typename OutputT, typename ValueT>
+        template <typename ContextT, typename ValueT>
         constexpr auto make_format_value(ValueT const& value) noexcept {
             using vtype = std::decay_t<remove_cvref_t<decltype(value)>>;
             if constexpr (_detail_format::is_value_type<vtype>) {
                 return _detail_format::value(value);
             }
             else if constexpr (_detail_format::is_formatter_type<vtype>) {
-                using context = format_context<remove_cvref_t<OutputT>>;
-                return _detail_format::custom_type(&_detail_format::custom_thunk<context, ValueT>, &value);
+                return _detail_format::custom_type(&_detail_format::custom_thunk<ContextT, ValueT>, &value);
             }
             else if constexpr (_detail_format::is_mapped_type<vtype>) {
                 using mtype = typename type_mapper<vtype>::type;
@@ -207,14 +206,14 @@ namespace up {
         size_t _count = 0;
     };
 
-    template <typename OutputT, typename ValueT>
+    template <typename ContextT, typename ValueT>
     constexpr auto make_format_arg(ValueT const& value) noexcept {
-        return _detail_format::make_format_value<OutputT>(value);
+        return _detail_format::make_format_value<ContextT>(value);
     }
 
-    template <typename OutputT, typename... Args>
+    template <typename ContextT, typename... Args>
     constexpr auto make_format_args(Args const&... args) noexcept {
-        return _detail_format::value_store<sizeof...(Args)>{_detail_format::make_format_value<OutputT>(args)...};
+        return _detail_format::value_store<sizeof...(Args)>{_detail_format::make_format_value<ContextT>(args)...};
     }
 
     template <typename ContextT>
