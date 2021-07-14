@@ -10,152 +10,150 @@
 #include <initializer_list>
 #include <type_traits>
 
-namespace up {
-    namespace _detail_format {
-        template <typename T>
-        struct type_mapper {};
+namespace up::_detail_format {
+    template <typename T>
+    struct type_mapper {};
 
 #define UP_FORMAT_MAP_TYPE(x, e) \
     template <> \
     struct type_mapper<x> { \
         using type = e; \
     };
-        UP_FORMAT_MAP_TYPE(char, char);
-        UP_FORMAT_MAP_TYPE(signed char, int);
-        UP_FORMAT_MAP_TYPE(unsigned char, unsigned);
-        UP_FORMAT_MAP_TYPE(signed int, int);
-        UP_FORMAT_MAP_TYPE(unsigned int, unsigned);
-        UP_FORMAT_MAP_TYPE(signed short, int);
-        UP_FORMAT_MAP_TYPE(unsigned short, unsigned);
-        UP_FORMAT_MAP_TYPE(signed long, long long);
-        UP_FORMAT_MAP_TYPE(unsigned long, unsigned long long);
-        UP_FORMAT_MAP_TYPE(signed long long, long long);
-        UP_FORMAT_MAP_TYPE(unsigned long long, unsigned long long);
-        UP_FORMAT_MAP_TYPE(float, float);
-        UP_FORMAT_MAP_TYPE(double, double);
-        UP_FORMAT_MAP_TYPE(bool, bool);
-        UP_FORMAT_MAP_TYPE(char*, char const*);
-        UP_FORMAT_MAP_TYPE(char const*, char const*);
-        UP_FORMAT_MAP_TYPE(void*, void const*);
-        UP_FORMAT_MAP_TYPE(void const*, void const*);
-        UP_FORMAT_MAP_TYPE(::up::string_view, ::up::string_view);
-        UP_FORMAT_MAP_TYPE(std::nullptr_t, void const*);
+    UP_FORMAT_MAP_TYPE(char, char);
+    UP_FORMAT_MAP_TYPE(signed char, int);
+    UP_FORMAT_MAP_TYPE(unsigned char, unsigned);
+    UP_FORMAT_MAP_TYPE(signed int, int);
+    UP_FORMAT_MAP_TYPE(unsigned int, unsigned);
+    UP_FORMAT_MAP_TYPE(signed short, int);
+    UP_FORMAT_MAP_TYPE(unsigned short, unsigned);
+    UP_FORMAT_MAP_TYPE(signed long, long long);
+    UP_FORMAT_MAP_TYPE(unsigned long, unsigned long long);
+    UP_FORMAT_MAP_TYPE(signed long long, long long);
+    UP_FORMAT_MAP_TYPE(unsigned long long, unsigned long long);
+    UP_FORMAT_MAP_TYPE(float, float);
+    UP_FORMAT_MAP_TYPE(double, double);
+    UP_FORMAT_MAP_TYPE(bool, bool);
+    UP_FORMAT_MAP_TYPE(char*, char const*);
+    UP_FORMAT_MAP_TYPE(char const*, char const*);
+    UP_FORMAT_MAP_TYPE(void*, void const*);
+    UP_FORMAT_MAP_TYPE(void const*, void const*);
+    UP_FORMAT_MAP_TYPE(::up::string_view, ::up::string_view);
+    UP_FORMAT_MAP_TYPE(std::nullptr_t, void const*);
 #undef UP_FORMAT_MAP_TYPE
 
-        struct custom_type {
-            using thunk_type = void (*)(void const* value, format_parse_context& pctx, format_context& fctx);
+    struct custom_type {
+        using thunk_type = void (*)(void const* value, format_parse_context& pctx, format_context& fctx);
 
-            thunk_type thunk = nullptr;
-            void const* value = nullptr;
+        thunk_type thunk = nullptr;
+        void const* value = nullptr;
+    };
+
+    template <typename ValueT>
+    constexpr void custom_thunk(void const* value, format_parse_context& pctx, format_context& fctx);
+
+    template <typename ValueT, typename FormatterT = formatter<ValueT>>
+    constexpr void invoke_format(ValueT const& value, format_parse_context& pctx, format_context& fctx);
+
+    struct monostate {};
+
+    struct value {
+        enum class types {
+            t_mono,
+            t_int,
+            t_unsigned,
+            t_longlong,
+            t_ulonglong,
+            t_char,
+            t_float,
+            t_double,
+            t_bool,
+            t_cstring,
+            t_stringview,
+            t_voidptr,
+            t_custom
         };
 
-        template <typename ValueT>
-        constexpr void custom_thunk(void const* value, format_parse_context& pctx, format_context& fctx);
+        constexpr value() noexcept : val_mono() {}
+        constexpr value(int value) noexcept : val_int(value), type(types::t_int) {}
+        constexpr value(unsigned value) noexcept : val_unsigned(value), type(types::t_unsigned) {}
+        constexpr value(long long value) noexcept : val_long_long(value), type(types::t_longlong) {}
+        constexpr value(unsigned long long value) noexcept : val_unsigned_long_long(value), type(types::t_ulonglong) {}
+        constexpr value(char value) noexcept : val_char(value), type(types::t_char) {}
+        constexpr value(float value) noexcept : val_float(value), type(types::t_float) {}
+        constexpr value(double value) noexcept : val_double(value), type(types::t_double) {}
+        constexpr value(bool value) noexcept : val_bool(value), type(types::t_bool) {}
+        constexpr value(char const* value) noexcept : val_cstring(value), type(types::t_cstring) {}
+        constexpr value(string_view value) noexcept : val_string_view(value), type(types::t_stringview) {}
+        constexpr value(void const* value) noexcept : val_voidptr(value), type(types::t_voidptr) {}
+        constexpr value(custom_type value) noexcept : val_custom(value), type(types::t_custom) {}
 
-        template <typename ValueT, typename FormatterT = formatter<ValueT>>
-        constexpr void invoke_format(ValueT const& value, format_parse_context& pctx, format_context& fctx);
+        template <typename VisitorT>
+        constexpr decltype(auto) visit(VisitorT&& visitor) const;
 
-        struct monostate {};
-
-        struct value {
-            enum class types {
-                t_mono,
-                t_int,
-                t_unsigned,
-                t_longlong,
-                t_ulonglong,
-                t_char,
-                t_float,
-                t_double,
-                t_bool,
-                t_cstring,
-                t_stringview,
-                t_voidptr,
-                t_custom
-            };
-
-            constexpr value() noexcept : val_mono() {}
-            constexpr value(int value) noexcept : val_int(value), type(types::t_int) {}
-            constexpr value(unsigned value) noexcept : val_unsigned(value), type(types::t_unsigned) {}
-            constexpr value(long long value) noexcept : val_long_long(value), type(types::t_longlong) {}
-            constexpr value(unsigned long long value) noexcept
-                : val_unsigned_long_long(value)
-                , type(types::t_ulonglong) {}
-            constexpr value(char value) noexcept : val_char(value), type(types::t_char) {}
-            constexpr value(float value) noexcept : val_float(value), type(types::t_float) {}
-            constexpr value(double value) noexcept : val_double(value), type(types::t_double) {}
-            constexpr value(bool value) noexcept : val_bool(value), type(types::t_bool) {}
-            constexpr value(char const* value) noexcept : val_cstring(value), type(types::t_cstring) {}
-            constexpr value(string_view value) noexcept : val_string_view(value), type(types::t_stringview) {}
-            constexpr value(void const* value) noexcept : val_voidptr(value), type(types::t_voidptr) {}
-            constexpr value(custom_type value) noexcept : val_custom(value), type(types::t_custom) {}
-
-            template <typename VisitorT>
-            constexpr decltype(auto) visit(VisitorT&& visitor) const;
-
-            union {
-                monostate val_mono;
-                int val_int;
-                unsigned val_unsigned;
-                long long val_long_long;
-                unsigned long long val_unsigned_long_long;
-                char val_char;
-                float val_float;
-                double val_double;
-                bool val_bool;
-                char const* val_cstring;
-                string_view val_string_view;
-                void const* val_voidptr;
-                custom_type val_custom;
-            };
-
-            types type = types::t_mono;
+        union {
+            monostate val_mono;
+            int val_int;
+            unsigned val_unsigned;
+            long long val_long_long;
+            unsigned long long val_unsigned_long_long;
+            char val_char;
+            float val_float;
+            double val_double;
+            bool val_bool;
+            char const* val_cstring;
+            string_view val_string_view;
+            void const* val_voidptr;
+            custom_type val_custom;
         };
 
-        template <size_t N>
-        struct value_store {
-            value values[N + 1 /* avoid size 0 */];
-        };
+        types type = types::t_mono;
+    };
 
-        template <typename T>
-        concept is_value_type = requires(T const& value) {
-            ::up::_detail_format::value{value};
-        };
+    template <size_t N>
+    struct value_store {
+        value values[N + 1 /* avoid size 0 */];
+    };
 
-        template <typename T>
-        concept is_mapped_type = requires {
-            typename type_mapper<T>::type;
-        };
+    template <typename T>
+    concept is_value_type = requires(T const& value) {
+        ::up::_detail_format::value{value};
+    };
 
-        template <typename ValueT, typename FormatterT = formatter<ValueT>>
-        concept is_formatter_type =
-            requires(FormatterT& fmt, format_parse_context& pctx, ValueT const& value, format_context& fctx) {
-            pctx.advance_to(fmt.parse(pctx));
-            fmt.format(value, fctx);
-        };
+    template <typename T>
+    concept is_mapped_type = requires {
+        typename type_mapper<T>::type;
+    };
 
-        template <typename ValueT>
-        constexpr auto make_format_value(ValueT const& value) noexcept {
-            using T = std::decay_t<std::remove_cvref_t<ValueT>>;
-            if constexpr (_detail_format::is_value_type<T>) {
-                return _detail_format::value(value);
-            }
-            else if constexpr (_detail_format::is_formatter_type<T>) {
-                return _detail_format::custom_type(&_detail_format::custom_thunk<T>, &value);
-            }
-            else if constexpr (_detail_format::is_mapped_type<T>) {
-                return _detail_format::value(static_cast<typename type_mapper<T>::type>(value));
-            }
-            else if constexpr (std::is_enum_v<T>) {
-                return _detail_format::value(static_cast<typename type_mapper<std::underlying_type_t<T>>::type>(value));
-            }
-        };
-    } // namespace _detail_format
+    template <typename ValueT, typename FormatterT = formatter<ValueT>>
+    concept is_formatter_type =
+        requires(FormatterT& fmt, format_parse_context& pctx, ValueT const& value, format_context& fctx) {
+        pctx.advance_to(fmt.parse(pctx));
+        fmt.format(value, fctx);
+    };
 
+    template <typename ValueT>
+    constexpr auto make_format_value(ValueT const& value) noexcept {
+        using T = std::decay_t<std::remove_cvref_t<ValueT>>;
+        if constexpr (_detail_format::is_value_type<T>) {
+            return _detail_format::value(value);
+        }
+        else if constexpr (_detail_format::is_formatter_type<T>) {
+            return _detail_format::custom_type(&_detail_format::custom_thunk<T>, &value);
+        }
+        else if constexpr (_detail_format::is_mapped_type<T>) {
+            return _detail_format::value(static_cast<typename type_mapper<T>::type>(value));
+        }
+        else if constexpr (std::is_enum_v<T>) {
+            return _detail_format::value(static_cast<typename type_mapper<std::underlying_type_t<T>>::type>(value));
+        }
+    };
+} // namespace up::_detail_format
+
+namespace up {
     /// Abstraction for a single formattable value
     class format_arg {
     public:
-        struct handle : _detail_format::custom_type {};
+        class handle : private _detail_format::custom_type {};
 
         constexpr format_arg() noexcept = default;
         constexpr explicit format_arg(_detail_format::value value) : _value(value) {}
@@ -214,6 +212,8 @@ namespace up {
     constexpr void format_arg::format(format_parse_context& pctx, format_context& fctx) const {
         using types = _detail_format::value::types;
         switch (_value.type) {
+            case types::t_mono:
+                return;
             case types::t_char:
                 return _detail_format::invoke_format(_value.val_char, pctx, fctx);
             case types::t_int:
@@ -238,14 +238,14 @@ namespace up {
                 return _detail_format::invoke_format(reinterpret_cast<std::uintptr_t>(_value.val_voidptr), pctx, fctx);
             case types::t_custom:
                 return _value.val_custom.thunk(_value.val_custom.value, pctx, fctx);
-            default:
-                return;
         }
     }
 
     template <class VisitorT>
     constexpr decltype(auto) _detail_format::value::visit(VisitorT&& visitor) const {
         switch (type) {
+            case types::t_mono:
+                return visitor(monostate{});
             case types::t_char:
                 return visitor(val_char);
             case types::t_int:
@@ -270,8 +270,6 @@ namespace up {
                 return visitor(val_voidptr);
             case types::t_custom:
                 return visitor(val_custom);
-            default:
-                return visitor(monostate{});
         }
     }
 
