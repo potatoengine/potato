@@ -26,8 +26,7 @@ namespace up {
             return in;
         }
 
-        template <typename ContextT>
-        constexpr void format(string_view value, ContextT& ctx) {
+        constexpr void format(string_view value, format_context& ctx) {
             auto const size = value.size();
             if (width < 0 || size >= static_cast<size_t>(width)) {
                 up::format_write_n(ctx.out(), value.data(), size);
@@ -51,10 +50,7 @@ namespace up {
 
     template <>
     struct formatter<char> : formatter<void> {
-        template <typename ContextT>
-        constexpr void format(char ch, ContextT& ctx) {
-            up::format_write_n(ctx.out(), &ch, 1);
-        }
+        constexpr void format(char ch, format_context& ctx) { up::format_write_n(ctx.out(), &ch, 1); }
     };
 
 } // namespace up

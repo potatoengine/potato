@@ -60,8 +60,7 @@ namespace up::_detail_format {
             return in;
         }
 
-        template <typename ContextT>
-        void format(IntT value, ContextT& ctx) {
+        void format(IntT value, format_context& ctx) {
             constexpr auto buffer_size = sizeof(value) * CHAR_BIT + 1 /*negative*/;
             char buffer[buffer_size] = {
                 0,

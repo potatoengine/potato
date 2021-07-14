@@ -63,8 +63,7 @@ namespace up {
 
     template <>
     struct formatter<UUID> : formatter<void> {
-        template <typename ContextT>
-        constexpr void format(UUID const& uuid, ContextT& ctx) {
+        constexpr void format(UUID const& uuid, format_context& ctx) {
             // format 9554084e-4100-4098-b470-2125f5eed133
             byte const* const bytes = uuid.bytes();
             format_to(

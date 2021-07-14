@@ -13,9 +13,7 @@ namespace up {
     template <typename T>
     struct formatter {
         // constexpr char const* parse(format_parse_context& ctx) noexcept;
-
-        // template <typename ContextT>
-        // constexpr void format(T const& value, ContextT& ctx);
+        // constexpr void format(T const& value, format_context& ctx);
     };
 
     /// Formatter for void types
@@ -23,7 +21,7 @@ namespace up {
     struct formatter<void> {
         constexpr char const* parse(format_parse_context& ctx) noexcept { return ctx.begin(); }
 
-        template <typename ContextT, typename ValueT>
-        constexpr void format(ValueT const&, ContextT&) {}
+        template <typename ValueT>
+        constexpr void format(ValueT const&, format_context&) {}
     };
 } // namespace up

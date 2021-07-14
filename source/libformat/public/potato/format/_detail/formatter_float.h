@@ -49,8 +49,7 @@ namespace up {
             return in;
         }
 
-        template <typename ContextT>
-        void format(double value, ContextT& ctx) {
+        void format(double value, format_context& ctx) {
             constexpr std::size_t buf_size = 1078;
             char buf[buf_size] = {
                 0,
