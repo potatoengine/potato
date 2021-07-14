@@ -3,12 +3,12 @@
 #pragma once
 
 #include "format_arg.h"
+#include "format_buffer.h"
 #include "format_parse_nonnegative.h"
 #include "format_write.h"
 
 namespace up::_detail_format {
-    template <typename ContextT>
-    constexpr void format_impl(ContextT&& ctx, char const* input, char const* const end, format_args args) {
+    constexpr void format_impl(format_iterator out, char const* input, char const* const end, format_args args) {
         int next = 0;
         char const* begin = input;
 
@@ -20,7 +20,7 @@ namespace up::_detail_format {
 
             // write out the string so far, since we don't write characters immediately
             if (input != begin) {
-                format_write_n(ctx.out(), begin, input - begin);
+                format_write_n(out, begin, input - begin);
             }
 
             ++input; // swallow the {
@@ -53,8 +53,9 @@ namespace up::_detail_format {
 
             // format the value
             format_parse_context pctx(input, end);
+            format_context fctx(out);
             auto const arg = args.get(index);
-            arg.format(pctx, ctx);
+            arg.format(pctx, fctx);
 
             // consume parse specification, and any trailing }
             input = pctx.begin();
@@ -71,7 +72,7 @@ namespace up::_detail_format {
 
         // write out tail end of format string
         if (input != begin) {
-            format_write_n(ctx.out(), begin, input - begin);
+            format_write_n(out, begin, input - begin);
         }
     }
 

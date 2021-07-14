@@ -14,6 +14,13 @@ namespace up::_detail_format {
     concept is_push_back = requires(T& o, char c) {
         o.push_back(c);
     };
+
+    template <typename T>
+    concept is_output_iterator = requires(T& out, char ch) {
+        ++out;
+        out++;
+        *out = ch;
+    };
 } // namespace up::_detail_format
 
 namespace up {
@@ -27,7 +34,7 @@ namespace up {
                 output.push_back(*str);
             }
         }
-        else {
+        else if constexpr (_detail_format::is_output_iterator<OutputT>) {
             for (; n != 0; ++str, ++output, --n) {
                 *output = *str;
             }

@@ -2,17 +2,20 @@
 
 #pragma once
 
+#include "format_buffer.h"
+
 namespace up {
     /// Formatter format context
-    template <typename OutputT>
     class format_context {
     public:
-        constexpr explicit format_context(OutputT& output) noexcept : _output(output) {}
+        using iterator = _detail_format::format_iterator;
 
-        constexpr OutputT& out() noexcept { return _output; }
+        constexpr explicit format_context(iterator output) noexcept : _output(output) {}
+
+        constexpr iterator& out() noexcept { return _output; }
 
     private:
-        OutputT& _output;
+        iterator _output;
     };
 
     /// Formatter parse context

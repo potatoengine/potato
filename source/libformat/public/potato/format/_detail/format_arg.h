@@ -43,17 +43,17 @@ namespace up {
 #undef UP_FORMAT_MAP_TYPE
 
         struct custom_type {
-            using thunk_type = void (*)(void const* value, format_parse_context& pctx, void* fctx);
+            using thunk_type = void (*)(void const* value, format_parse_context& pctx, format_context& fctx);
 
             thunk_type thunk = nullptr;
             void const* value = nullptr;
         };
 
-        template <typename ContextT, typename ValueT>
-        constexpr void custom_thunk(void const* value, format_parse_context& pctx, void* fctx);
+        template <typename ValueT>
+        constexpr void custom_thunk(void const* value, format_parse_context& pctx, format_context& fctx);
 
-        template <typename ValueT, typename ContextT, typename FormatterT = formatter<ValueT>>
-        constexpr void invoke_format(ValueT const& value, format_parse_context& pctx, ContextT& fctx);
+        template <typename ValueT, typename FormatterT = formatter<ValueT>>
+        constexpr void invoke_format(ValueT const& value, format_parse_context& pctx, format_context& fctx);
 
         struct monostate {};
 
@@ -129,19 +129,19 @@ namespace up {
 
         template <typename ValueT, typename FormatterT = formatter<ValueT>>
         concept is_formatter_type =
-            requires(FormatterT& fmt, format_parse_context& pctx, ValueT const& value, format_context<char*>& fctx) {
+            requires(FormatterT& fmt, format_parse_context& pctx, ValueT const& value, format_context& fctx) {
             pctx.advance_to(fmt.parse(pctx));
             fmt.format(value, fctx);
         };
 
-        template <typename ContextT, typename ValueT>
+        template <typename ValueT>
         constexpr auto make_format_value(ValueT const& value) noexcept {
             using T = std::decay_t<std::remove_cvref_t<ValueT>>;
             if constexpr (_detail_format::is_value_type<T>) {
                 return _detail_format::value(value);
             }
             else if constexpr (_detail_format::is_formatter_type<T>) {
-                return _detail_format::custom_type(&_detail_format::custom_thunk<ContextT, T>, &value);
+                return _detail_format::custom_type(&_detail_format::custom_thunk<T>, &value);
             }
             else if constexpr (_detail_format::is_mapped_type<T>) {
                 return _detail_format::value(static_cast<typename type_mapper<T>::type>(value));
@@ -164,8 +164,7 @@ namespace up {
             return _value.type != _detail_format::value::types::t_mono;
         }
 
-        template <typename ContextT>
-        constexpr void format(format_parse_context& pctx, ContextT& fctx) const;
+        constexpr void format(format_parse_context& pctx, format_context& fctx) const;
 
         template <class VisitorT>
         friend constexpr decltype(auto) visit_format_arg(VisitorT&& visitor, format_arg const& arg);
@@ -197,14 +196,14 @@ namespace up {
         size_t _count = 0;
     };
 
-    template <typename ContextT, typename ValueT>
+    template <typename ValueT>
     constexpr auto make_format_arg(ValueT const& value) noexcept {
-        return _detail_format::make_format_value<ContextT>(value);
+        return _detail_format::make_format_value(value);
     }
 
-    template <typename ContextT, typename... Args>
+    template <typename... Args>
     constexpr auto make_format_args(Args const&... args) noexcept {
-        return _detail_format::value_store<sizeof...(Args)>{_detail_format::make_format_value<ContextT>(args)...};
+        return _detail_format::value_store<sizeof...(Args)>{_detail_format::make_format_value(args)...};
     }
 
     template <class VisitorT>
@@ -212,8 +211,7 @@ namespace up {
         return arg._value.visit(static_cast<decltype(visitor)>(visitor));
     }
 
-    template <typename ContextT>
-    constexpr void format_arg::format(format_parse_context& pctx, ContextT& fctx) const {
+    constexpr void format_arg::format(format_parse_context& pctx, format_context& fctx) const {
         using types = _detail_format::value::types;
         switch (_value.type) {
             case types::t_char:
@@ -239,7 +237,7 @@ namespace up {
             case types::t_voidptr:
                 return _detail_format::invoke_format(reinterpret_cast<std::uintptr_t>(_value.val_voidptr), pctx, fctx);
             case types::t_custom:
-                return _value.val_custom.thunk(_value.val_custom.value, pctx, &fctx);
+                return _value.val_custom.thunk(_value.val_custom.value, pctx, fctx);
             default:
                 return;
         }
@@ -277,15 +275,18 @@ namespace up {
         }
     }
 
-    template <typename ValueT, typename ContextT, typename FormatterT>
-    constexpr void _detail_format::invoke_format(ValueT const& value, format_parse_context& pctx, ContextT& fctx) {
+    template <typename ValueT, typename FormatterT>
+    constexpr void _detail_format::invoke_format(
+        ValueT const& value,
+        format_parse_context& pctx,
+        format_context& fctx) {
         FormatterT fmt;
         pctx.advance_to(fmt.parse(pctx));
         fmt.format(value, fctx);
     }
 
-    template <typename ContextT, typename ValueT>
-    constexpr void _detail_format::custom_thunk(void const* value, format_parse_context& pctx, void* fctx) {
-        return invoke_format(*static_cast<ValueT const*>(value), pctx, *static_cast<ContextT*>(fctx));
+    template <typename ValueT>
+    constexpr void _detail_format::custom_thunk(void const* value, format_parse_context& pctx, format_context& fctx) {
+        return invoke_format(*static_cast<ValueT const*>(value), pctx, fctx);
     }
 } // namespace up

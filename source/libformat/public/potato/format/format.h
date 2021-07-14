@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "_detail/counted_output.h"
 #include "_detail/format_arg.h"
+#include "_detail/format_buffer.h"
 #include "_detail/format_context.h"
 #include "_detail/format_impl.h"
 #include "_detail/format_write.h"
@@ -17,16 +17,41 @@
 #include <type_traits>
 
 namespace up {
+    /// Result type of format_to_n
+    template <typename OutputT>
+    struct format_to_n_result {
+        OutputT out;
+        size_t size = 0;
+    };
+
     /// Write the string format using the given arguments into a buffer.
     /// @param output The output iterator or writeable buffer that will receive the formatted text.
     /// @param format_str The primary text and formatting controls to be written.
     /// @param args Packaged arguments to use for formatting.
     /// @returns a result code indicating any errors.
     template <typename OutputT>
-    constexpr decltype(auto) vformat_to(OutputT&& output, string_view format_str, format_args&& args) {
-        format_context<OutputT> ctx(output);
-        _detail_format::format_impl(ctx, format_str.begin(), format_str.end(), args);
-        return ctx.out();
+    constexpr OutputT vformat_to(OutputT&& output, string_view format_str, format_args&& args) {
+        decltype(auto) buffer = _detail_format::make_format_buffer(output);
+        _detail_format::format_impl(
+            _detail_format::format_iterator{buffer},
+            format_str.begin(),
+            format_str.end(),
+            args);
+        return buffer.out();
+    }
+
+    /// Write the string format using the given arguments into a buffer up to a given size.
+    /// @param output The output iterator or writeable buffer that will receive the formatted text.
+    /// @param count The maximum number of characters to write.
+    /// @param format_str The primary text and formatting controls to be written.
+    /// @param args Packaged arguments to use for formatting.
+    /// @returns a result code indicating any errors.
+    template <typename OutputT>
+    constexpr auto vformat_to_n(OutputT&& output, size_t count, string_view format_str, format_args&& args)
+        -> format_to_n_result<OutputT> {
+        decltype(auto) buffer = _detail_format::make_format_buffer(output, count);
+        vformat_to(buffer, format_str, args);
+        return {buffer.out(), buffer.count()};
     }
 
     /// Write the string format using the given arguments into a buffer.
@@ -35,16 +60,9 @@ namespace up {
     /// @param args The arguments used by the formatting string.
     /// @returns a result code indicating any errors.
     template <typename OutputT, typename... Args>
-    constexpr decltype(auto) format_to(OutputT&& output, string_view format_str, Args const&... args) {
-        return vformat_to(output, format_str, up::make_format_args<format_context<OutputT>>(args...));
+    constexpr OutputT format_to(OutputT&& output, string_view format_str, Args const&... args) {
+        return vformat_to(output, format_str, up::make_format_args(args...));
     }
-
-    /// Result type of format_to_n
-    template <typename OutputT>
-    struct format_to_n_result {
-        OutputT out;
-        size_t size = 0;
-    };
 
     /// Write the string format using the given arguments into a buffer up to a given size.
     /// @param output The write buffer that will receive the formatted text.
@@ -53,14 +71,9 @@ namespace up {
     /// @param args The arguments used by the formatting string.
     /// @returns a format_to_n_result with the output iterator and count that would have been written.
     template <typename OutputT, typename... Args>
-    constexpr format_to_n_result<OutputT> format_to_n(
-        OutputT&& output,
-        size_t count,
-        string_view format_str,
-        Args const&... args) {
-        counted_output<std::remove_reference_t<OutputT>> counted(output, count);
-        format_to(counted, format_str, args...);
-        return {counted.current(), counted.count()};
+    constexpr auto format_to_n(OutputT&& output, size_t count, string_view format_str, Args const&... args)
+        -> format_to_n_result<OutputT> {
+        return vformat_to_n(output, count, format_str, up::make_format_args(args...));
     }
 
     /// Write the string format using the given arguments into a fixed-size.
@@ -69,8 +82,10 @@ namespace up {
     /// @param args The arguments used by the formatting string.
     /// @returns a result code indicating any errors.
     template <size_t N, typename... Args>
-    constexpr char* format_to(char (&buffer)[N], string_view format_str, Args const&... args) {
-        auto const [end, _] = format_to_n(static_cast<char*>(buffer), N - 1 /*NUL*/, format_str, args...);
+    constexpr char* format_to(char (&output)[N], string_view format_str, Args const&... args) {
+        _detail_format::format_fixed_buffer buffer(output, N - 1);
+        vformat_to(_detail_format::format_iterator{buffer}, format_str, up::make_format_args(args...));
+        char* const end = buffer.out();
         *end = '\0';
         return end;
     }
@@ -82,7 +97,7 @@ namespace up {
     template <typename ResultT, typename... Args>
     constexpr ResultT format_as(string_view format_str, Args const&... args) {
         ResultT result;
-        format_to(result, format_str, args...);
+        vformat_to(result, format_str, up::make_format_args(args...));
         return result;
     }
 } // namespace up
